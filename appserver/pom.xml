@@ -66,7 +66,7 @@
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
         <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+        <jakarta.ejb-api.version>3.2.5</jakarta.ejb-api.version>
 
         <!-- JSP -->
         <jsp-api.version>2.3.3</jsp-api.version>
@@ -93,11 +93,11 @@
         <yasson.version>1.0.4.payara-p1</yasson.version>
 
         <!-- JPA -->
-        <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
+        <javax-persistence-api.version>2.2.2</javax-persistence-api.version>
         <eclipselink.version>2.7.4.payara-p2</eclipselink.version>
 
         <!-- JTA -->
-        <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
+        <jakarta.transaction-api.version>1.3.2</jakarta.transaction-api.version>
 
         <!-- Concurrency -->
         <concurrent-api.version>1.0</concurrent-api.version>
@@ -121,13 +121,13 @@
         <javax.security.enterprise.version>1.1-b01.payara-p3</javax.security.enterprise.version>
 
         <!-- JACC -->
-        <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
+        <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
 
         <!-- JASPIC -->
         <jakarta.security.auth.message-api.version>1.1.2</jakarta.security.auth.message-api.version>
 
         <!-- JMS -->
-        <jms-api.version>2.0.1</jms-api.version>
+        <jms-api.version>2.0.2</jms-api.version>
 
         <jna.version>5.2.0</jna.version>
         
@@ -147,7 +147,7 @@
         <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
 
         <!-- Metro Webservices is the JAX-WS impl -->
-        <webservices.version>2.4.3.payara-p2</webservices.version>
+        <webservices.version>2.4.3.payara-p3</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
         <woodstox.version>5.1.0</woodstox.version>
         <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
@@ -156,7 +156,7 @@
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
 
-        <javax.resource-api.version>1.7</javax.resource-api.version>
+        <jakarta.resource-api.version>1.7.3</jakarta.resource-api.version>
 
         <!-- Deployment API (JSR 88) (deprecated/pruned) -->
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
@@ -211,7 +211,7 @@
         <microprofile-fault-tolerance.version>2.0</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.1.payara-p1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
-        <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
+        <microprofile-metrics.version>2.0.1.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>1.2.1.payara-p1</microprofile-rest-client.version>
         <microprofile-openapi.version>1.1.2</microprofile-openapi.version>
 
@@ -280,7 +280,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
                     <specs>
 
                         <!-- JavaMail -->
@@ -360,14 +360,14 @@
                         <!-- JACC -->
                         <spec>
                             <artifact>
-                                <groupId>javax.security.jacc</groupId>
-                                <artifactId>javax.security.jacc-api</artifactId>
-                                <version>${javax.security.jacc-api.version}</version>
+                                <groupId>jakarta.security.jacc</groupId>
+                                <artifactId>jakarta.security.jacc-api</artifactId>
+                                <version>${jakarta.security.jacc-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.security.jacc-api.version}</specVersion>
-                            <specImplVersion>${javax.security.jacc-api.version}</specImplVersion>
+                            <specVersion>${jakarta.security.jacc-api.version}</specVersion>
+                            <specImplVersion>${jakarta.security.jacc-api.version}</specImplVersion>
                             <apiPackage>javax.security.jacc</apiPackage>
                         </spec>
 
@@ -402,15 +402,15 @@
                         <!-- JTA -->
                         <spec>
                             <artifact>
-                                <groupId>javax.transaction</groupId>
-                                <artifactId>javax.transaction-api</artifactId>
-                                <version>${javax.transaction-api.version}</version>
+                                <groupId>jakarta.transaction</groupId>
+                                <artifactId>jakarta.transaction-api</artifactId>
+                                <version>${jakarta.transaction-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.transaction-api.version}</specVersion>
-                            <specImplVersion>${javax.transaction-api.version}</specImplVersion>
-                            <apiPackage>javax.transaction</apiPackage>
+                            <specVersion>${jakarta.transaction-api.version}</specVersion>
+                            <specImplVersion>${jakarta.transaction-api.version}</specImplVersion>
+                            <apiPackage>jakarta.transaction</apiPackage>
                         </spec>
 
                         <!-- BATCH -->
@@ -430,15 +430,15 @@
                         <!-- JMS -->
                         <spec>
                             <artifact>
-                                <groupId>javax.jms</groupId>
-                                <artifactId>javax.jms-api</artifactId>
+                                <groupId>jakarta.jms</groupId>
+                                <artifactId>jakarta.jms-api</artifactId>
                                 <version>${jms-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${jms-api.version}</specVersion>
                             <specImplVersion>${jms-api.version}</specImplVersion>
-                            <apiPackage>javax.jms</apiPackage>
+                            <apiPackage>jakarta.jms</apiPackage>
                         </spec>
 
                         <!-- Concurrency Utils -->
@@ -458,13 +458,13 @@
                         <!-- Servlet -->
                         <spec>
                             <artifact>
-                                <groupId>javax.servlet</groupId>
-                                <artifactId>javax.servlet-api</artifactId>
+                                <groupId>jakarta.servlet</groupId>
+                                <artifactId>jakarta.servlet-api</artifactId>
                                 <version>${servlet-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>3.1</specVersion>
+                            <specVersion>4.0</specVersion>
                             <specImplVersion>${servlet-api.version}</specImplVersion>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
@@ -514,15 +514,15 @@
                         <!-- EJB -->
                         <spec>
                             <artifact>
-                                <groupId>javax.ejb</groupId>
-                                <artifactId>javax.ejb-api</artifactId>
-                                <version>${javax.ejb-api.version}</version>
+                                <groupId>jakarta.ejb</groupId>
+                                <artifactId>jakarta.ejb-api</artifactId>
+                                <version>${jakarta.ejb-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.ejb-api.version}</specVersion>
-			                <specImplVersion>${javax.ejb-api.version}</specImplVersion>
-                            <apiPackage>javax.ejb</apiPackage>
+                            <specVersion>${jakarta.ejb-api.version}</specVersion>
+			                <specImplVersion>${jakarta.ejb-api.version}</specImplVersion>
+                            <apiPackage>jakarta.ejb</apiPackage>
                         </spec>
 
                         <!-- Interceptor -->
@@ -540,15 +540,15 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>javax.resource</groupId>
-                                <artifactId>javax.resource-api</artifactId>
-                                <version>${javax.resource-api.version}</version>
+                                <groupId>jakarta.resource</groupId>
+                                <artifactId>jakarta.resource-api</artifactId>
+                                <version>${jakarta.resource-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.resource-api.version}</specVersion>
-			                <specImplVersion>${javax.resource-api.version}</specImplVersion>
-                            <apiPackage>javax.resource</apiPackage>
+                            <specVersion>${jakarta.resource-api.version}</specVersion>
+			                <specImplVersion>${jakarta.resource-api.version}</specImplVersion>
+                            <apiPackage>jakarta.resource</apiPackage>
                         </spec>
                         <spec>
                             <artifact>
@@ -641,9 +641,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>javax.ejb</groupId>
-                <artifactId>javax.ejb-api</artifactId>
-                <version>${javax.ejb-api.version}</version>
+                <groupId>jakarta.ejb</groupId>
+                <artifactId>jakarta.ejb-api</artifactId>
+                <version>${jakarta.ejb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.interceptor</groupId>
@@ -651,14 +651,14 @@
                 <version>${javax.interceptor-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>javax.transaction-api</artifactId>
-                <version>${javax.transaction-api.version}</version>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${jakarta.transaction-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.transaction.cdi</groupId>
-                <artifactId>javax.transaction.cdi-api</artifactId>
-                <version>${javax.transaction.cdi-api.version}</version>
+                <groupId>jakarta.transaction.cdi</groupId>
+                <artifactId>jakarta.transaction.cdi-api</artifactId>
+                <version>${jakarta.transaction.cdi-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.xml.rpc</groupId>
@@ -676,9 +676,9 @@
                 <version>${javax.inject.version}</version>
             </dependency>
     	    <dependency>
-                <groupId>javax.resource</groupId>
-    		        <artifactId>javax.resource-api</artifactId>
-    		        <version>${javax.resource-api.version}</version>
+                <groupId>jakarta.resource</groupId>
+    		        <artifactId>jakarta.resource-api</artifactId>
+    		        <version>${jakarta.resource-api.version}</version>
     	        </dependency>
             <dependency>
                 <groupId>javax.enterprise.deploy</groupId>
@@ -717,9 +717,9 @@
 
             <!-- JACC -->
             <dependency>
-                <groupId>javax.security.jacc</groupId>
-                <artifactId>javax.security.jacc-api</artifactId>
-                <version>${javax.security.jacc-api.version}</version>
+                <groupId>jakarta.security.jacc</groupId>
+                <artifactId>jakarta.security.jacc-api</artifactId>
+                <version>${jakarta.security.jacc-api.version}</version>
             </dependency>
 
             <!-- JASPIC -->
@@ -732,7 +732,7 @@
             <!-- JPA -->
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>javax.persistence</artifactId>
+                <artifactId>jakarta.persistence</artifactId>
                 <version>${javax-persistence-api.version}</version>
             </dependency>
             <dependency>
@@ -944,8 +944,8 @@
                 <version>${mq.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.jms</groupId>
-                <artifactId>javax.jms-api</artifactId>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
                 <version>${jms-api.version}</version>
             </dependency>
             <dependency>

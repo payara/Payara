@@ -343,6 +343,27 @@ public class DriverLoader implements ConnectorConstants {
     }
 
     /**
+     * Get the library locations corresponding to the ext directories mentioned
+     * as part of the jvm-options.
+     */
+    private Vector getLibExtDirs() {
+        String extDirStr = System.getProperty("java.ext.dirs");
+        logger.log(Level.FINE, "lib/ext dirs : " + extDirStr);
+
+        Vector extDirs = new Vector();
+        StringTokenizer st = new StringTokenizer(extDirStr, File.pathSeparator);
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if(logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE,"Ext Dir : " + token);
+            }
+            extDirs.addElement(token);
+        }
+
+        return extDirs;
+    }
+
+    /**
      * Returns a list of all driver class names that were loaded from the jar file.
      * @param f
      * @param dbVendor
@@ -555,6 +576,10 @@ public class DriverLoader implements ConnectorConstants {
         jarFileLocations.add(getLocation(SystemPropertyConstants.DERBY_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY));
+        Vector extLibDirs = getLibExtDirs();
+        for (int i = 0; i < extLibDirs.size(); i++) {
+            jarFileLocations.add(new File((String) extLibDirs.elementAt(i)));
+        }
         return jarFileLocations;
     }
 

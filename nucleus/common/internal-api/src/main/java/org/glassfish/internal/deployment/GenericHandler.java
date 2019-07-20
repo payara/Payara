@@ -62,6 +62,8 @@ import java.net.URI;
 import java.net.URL;
 
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
 import javax.inject.Inject;
 
@@ -132,19 +134,15 @@ public abstract class GenericHandler implements ArchiveHandler {
      */
     public String getDefaultApplicationName(ReadableArchive archive, 
         DeploymentContext context) {
+
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.PROVIDE_APPINFO);
+
         // first try to get the name from ApplicationInfoProvider if 
         // we can find an implementation of this service
         ApplicationInfoProvider nameProvider = habitat.getService(ApplicationInfoProvider.class);
 
-        DeploymentTracing tracing = null;
-
-        if (context != null) {
-            tracing = context.getModuleMetaData(DeploymentTracing.class);
-        }
-
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.APPINFO_PROVIDED);
-        }
+        span.close();
 
 
         String appName = null;

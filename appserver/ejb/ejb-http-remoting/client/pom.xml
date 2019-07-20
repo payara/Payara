@@ -138,8 +138,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -166,6 +166,25 @@
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Required to do component testing with grizzly HTTP server -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.ejb.http</groupId>
+            <artifactId>ejb-http-endpoint</artifactId>
+            <version>${project.version}</version>
+            <classifier>tester</classifier>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

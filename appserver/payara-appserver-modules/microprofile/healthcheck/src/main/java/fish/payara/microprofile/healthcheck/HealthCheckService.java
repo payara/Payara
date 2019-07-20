@@ -127,6 +127,14 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
     }
 
+    public boolean isEnabled() {
+        return Boolean.parseBoolean(configuration.getEnabled());
+    }
+
+    public boolean isSecurityEnabled() {
+        return Boolean.parseBoolean(configuration.getSecurityEnabled());
+    }
+    
     /**
      * Register a HealthCheck to the Set of HealthChecks to execute when performHealthChecks is called.
      *

@@ -69,8 +69,6 @@ import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 
-import sun.security.x509.X500Name;
-
 /**
  * This class contains a collection of methods used by the JASPIC implementation to interact
  * with the Payara JAAS/Realm system.
@@ -138,7 +136,7 @@ public class JaspicToJaasBridge {
 
         String callerPrincipalName = "";
         try {
-            callerPrincipalName = x500Principal.getName(X500Principal.RFC1779);
+            callerPrincipalName = x500Principal.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
 
             privileged(() -> validSubject.getPublicCredentials().add(x500Principal));
 

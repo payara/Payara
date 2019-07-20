@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -62,9 +62,17 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 public class InstalledLibrariesResolver {
 
-    /** Installed libraries list (accounts only for "domainRoot/lib/applibs" and not any
-     *of "java.ext.dirs" entries)
-     */
+    // optional packages are stored in this map that is keyed by the extension
+    // (accounts only for ext dir jars)
+    private static Map<Extension, String> extDirsLibsStore = new HashMap<Extension, String>();
+
+    // Fully qualified names of all jar files in all ext dirs.  Note that
+    // this will include even jars that do not explicitly declare the
+    // extension name and specification version in their manifest.
+    private static Set extDirJars = new LinkedHashSet();
+
+    // installed libraries list (accounts only for "domainRoot/lib/applibs" and not any
+    // of "java.ext.dirs" entries)
     private static Map<Extension, String> appLibsDirLibsStore = new HashMap<Extension, String>();
 
     public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
@@ -88,23 +96,29 @@ public class InstalledLibrariesResolver {
     private static final String SKIPPING_PROCESSING_INFO = "NCLS-DEPLOYMENT-00016";
 
     /**
-     * resolves installed library dependencies
+     * Resolves installed library dependencies
      * @param manifest Manifest File
      * @param archiveUri archive
      * @return status indicating whether all dependencies (transitive) is resolved or not
      */
     public static boolean resolveDependencies(Manifest manifest, String archiveUri) {
 
-        //let us try app-libs directory
         try {
-            getInstalledLibraries(archiveUri, manifest, true, appLibsDirLibsStore);
-        } catch (MissingResourceException e1) {
-            deplLogger.log(Level.WARNING, PACKAGE_NOT_FOUND, new Object[] { e1.getClass(), archiveUri});
-            return false;
+            getInstalledLibraries(archiveUri, manifest, true, extDirsLibsStore);
+        } catch (MissingResourceException e) {
+            // Let us try app-libs directory
+            try {
+                getInstalledLibraries(archiveUri, manifest, true, appLibsDirLibsStore);
+            } catch (MissingResourceException e1) {
+                deplLogger.log(Level.WARNING,
+                        PACKAGE_NOT_FOUND,
+                        new Object[]{e1.getClass(), archiveUri});
+                return false;
+            }
         }
 
         deplLogger.log(Level.INFO, PACKAGE_SATISFIED, new Object[]{archiveUri});
-        
+
         return true;
     }
 
@@ -114,19 +128,103 @@ public class InstalledLibrariesResolver {
      * @param libDir libraryDirectory
      */
     public static void initializeInstalledLibRegistry(String libDir ) {
+        initializeInstalledLibRegistryForExtDirs();
         initializeInstalledLibRegistryForApplibs(libDir);
+    }
+
+    private static void initializeInstalledLibRegistryForExtDirs() {
+        String ext_dirStr = System.getProperty("java.ext.dirs");
+        // GLASSFISH-21317 bug fix.Null checking as JDK 9 will not have system
+        // prop java.ext.dirs
+        if (ext_dirStr != null) {
+            if (deplLogger.isLoggable(Level.FINE)) {
+                deplLogger.fine("ext-Dir-Str : " + ext_dirStr);
+            }
+            Vector extDirs = new Vector();
+            StringTokenizer st = new StringTokenizer(ext_dirStr,
+                    File.pathSeparator);
+            while (st.hasMoreTokens()) {
+                String next = st.nextToken();
+                deplLogger.log(Level.FINE, "string tokens..." + next);
+                extDirs.addElement(next);
+            }
+
+            for (int v = 0; v < extDirs.size(); v++) {
+
+                File extDir = new File((String) extDirs.elementAt(v));
+
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.log(Level.FINE, "extension dir..." + extDir);
+                }
+
+                /*
+                 * Records the files that are legitimate JARs.
+                 */
+                ArrayList<File> validExtDirLibFiles = new ArrayList<File>();
+
+                File[] installedLibraries = extDir.listFiles();
+                if (installedLibraries != null) {
+                    try {
+                        Map<Extension, String> installedLibrariesList = getInstalledLibraries(
+                                extDir.getAbsolutePath(), extDirJars,
+                                validExtDirLibFiles);
+                        extDirsLibsStore.putAll(installedLibrariesList);
+
+                        for (File file : validExtDirLibFiles) {
+                            JarFile jarFile = null;
+                            try {
+                                jarFile = new JarFile(file);
+                                Manifest m = jarFile.getManifest();
+                                if (m != null) {
+                                    try {
+                                        getInstalledLibraries(
+                                                file.getAbsolutePath(), m,
+                                                true, extDirsLibsStore);
+                                    } catch (MissingResourceException e) {
+                                        deplLogger
+                                                .log(Level.WARNING,
+                                                        PACKAGE_NOT_FOUND,
+                                                        new Object[] {
+                                                                e.getClass(),
+                                                                file.getAbsolutePath() });
+                                    }
+                                }
+                            } catch (IOException ioe) {
+                                deplLogger.log(Level.WARNING, INVALID_ZIP,
+                                        new Object[] { file.getAbsolutePath(),
+                                                ioe.getMessage() });
+                            } finally {
+                                if (jarFile != null)
+                                    jarFile.close();
+                            }
+                        }
+                    } catch (IOException e) {
+                        deplLogger.log(Level.WARNING, EXCEPTION_OCCURRED,
+                                new Object[] { e.getMessage() });
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Adds all the jar files in all of the ext dirs into a single string
      * in classpath format.  Returns the empty string if there are no
      * jar files in any ext dirs.
-     * @return an empty string
-     * @deprecated This will always return an empty string for JDK9+
      */
     @Deprecated
     public static String getExtDirFilesAsClasspath() {
-        return "";
+        StringBuffer classpath = new StringBuffer();
+
+        for(Iterator iter = extDirJars.iterator(); iter.hasNext();) {
+            String next = (String) iter.next();
+            if( classpath.length() > 0 ) {
+                classpath.append(File.pathSeparator);
+            }
+            classpath.append(next);
+        }
+
+        return classpath.toString();
     }
 
     public static Set<String> getInstalledLibraries(ReadableArchive archive) throws IOException {
@@ -259,7 +357,6 @@ public class InstalledLibrariesResolver {
      * @param domainLibDir library directory (of a domain)
      */
     private static void initializeInstalledLibRegistryForApplibs(String domainLibDir) {
-
         String applibsDirString = domainLibDir + File.separator + "applibs";
 
         deplLogger.fine("applib-Dir-String..." + applibsDirString);
@@ -274,25 +371,30 @@ public class InstalledLibrariesResolver {
                 jarFile = new JarFile(file);
                 Manifest m = jarFile.getManifest();
                 if (m!=null) {
+                    boolean found = true;
                     try{
                         getInstalledLibraries(file.getAbsolutePath(), m, true, appLibsDirLibsStore);
                     }catch(MissingResourceException mre ){
-                        deplLogger.log(Level.WARNING, PACKAGE_NOT_FOUND, new Object[] {mre.getClass(), file.getAbsolutePath()});
+                        found = false;
                     }
-                    
+                    // it is possible that an library in "applibs" specified dependency on an library in "ext-dirs"
+                    if(!found){
+                        try{
+                            getInstalledLibraries(file.getAbsolutePath(), m, true, extDirsLibsStore);
+                        }catch(MissingResourceException mre ){
+                            deplLogger.log(Level.WARNING, PACKAGE_NOT_FOUND, new Object[] {mre.getClass(),
+                                    file.getAbsolutePath()});
+                        }
+                    }
                 }
             } catch (IOException ioe) {
-              deplLogger.log(Level.WARNING,
-                             INVALID_ZIP,
-                             new Object[] {file.getAbsolutePath(), ioe.getMessage()});
+              deplLogger.log(Level.WARNING, INVALID_ZIP, new Object[] {file.getAbsolutePath(), ioe.getMessage()});
             }finally {
                 if (jarFile!=null)
                     try {
                         jarFile.close();
                     } catch (IOException e) {
-                      deplLogger.log(Level.WARNING,
-                                     EXCEPTION_OCCURRED,
-                                     new Object[] {e.getMessage()});
+                      deplLogger.log(Level.WARNING, EXCEPTION_OCCURRED, new Object[] {e.getMessage()});
                     }
             }
         }

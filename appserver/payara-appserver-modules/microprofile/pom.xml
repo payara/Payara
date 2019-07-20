@@ -61,5 +61,6 @@ holder.
         <module>opentracing</module>
         <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
         <module>opentracing-jaxws</module>
+        <module>microprofile-common</module>
     </modules>
 </project>

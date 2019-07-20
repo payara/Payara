@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,70 +54,33 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-import fish.payara.microprofile.metrics.Tag;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import static org.eclipse.microprofile.metrics.Metadata.GLOBAL_TAGS_VARIABLE;
+import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @ApplicationScoped
 public class MetricsHelper {
-
-    public static String getGlobalTagsString() {
-        return System.getenv(GLOBAL_TAGS_VARIABLE);
-    }
-
-    public static List<Tag> getGlobalTags() {
-        return convertToTags(getGlobalTagsString());
-    }
-
-    public static Map<String, String> getGlobalTagsMap() {
-        return convertToMap(getGlobalTagsString());
-    }
-
-    private static List<Tag> convertToTags(String tagsString) {
-        List<Tag> tags = Collections.emptyList();
-        if (tagsString != null) {
-            String[] singleTags = tagsString.split(",");
-            tags = Stream.of(singleTags)
-                    .map(tag -> tag.trim())
-                    .map(tag -> new Tag(tag))
-                    .collect(toList());
-        }
-        return tags;
-    }
-
-    private static Map<String, String> convertToMap(String tagsString) {
-        Map<String, String> tags = Collections.EMPTY_MAP;
-        if (tagsString != null) {
-            String[] singleTags = tagsString.split(",");
-            tags = Arrays.stream(singleTags)
-                    .map(Tag::of)
-                    .collect(toMap(Entry::getKey, Entry::getValue));
-        }
-        return tags;
-    }
 
     public String metricNameOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
@@ -168,47 +131,91 @@ public class MetricsHelper {
         }
     }
 
-    public Metadata metadataOf(InjectionPoint ip, Class<?> type) {
+    public Metadata metadataOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
-        String name = metricNameOf(ip);
-        return metadataOf(annotated, type, name);
+        return metadataOf(annotated, ip.getMember().getDeclaringClass().getCanonicalName(), ip.getMember().getName());
     }
 
     public Metadata metadataOf(AnnotatedMember<?> member) {
-        String typeName = member.getBaseType().getTypeName();
-        if (typeName.startsWith(Gauge.class.getName())) {
-            return metadataOf(member, Gauge.class);
-        } else if (typeName.startsWith(Counter.class.getName())) {
-            return metadataOf(member, Counter.class);
-        } else if (typeName.startsWith(Meter.class.getName())) {
-            return metadataOf(member, Meter.class);
-        } else if (typeName.startsWith(Histogram.class.getName())) {
-            return metadataOf(member, Histogram.class);
-        } else if (typeName.startsWith(Timer.class.getName())) {
-            return metadataOf(member, Timer.class);
-        }
-        return null;
+        return metadataOf(member, member.getJavaMember().getDeclaringClass().getCanonicalName(), member.getJavaMember().getName());
     }
 
-    private Metadata metadataOf(AnnotatedMember<?> member, Class<?> type) {
-        return metadataOf(member, type, metricNameOf(member));
-    }
-
-    private Metadata metadataOf(Annotated annotated, Class<?> type, String name) {
-        Metadata metadata = new Metadata(name, MetricType.from(type));
-        if (annotated.isAnnotationPresent(Metric.class)) {
-            Metric metric = annotated.getAnnotation(Metric.class);
-            metadata.setDescription(metric.description() == null || metric.description().trim().isEmpty() ? null
-                    : metric.description());
-            metadata.setDisplayName(metric.displayName() == null || metric.displayName().trim().isEmpty() ? null
-                    : metric.displayName());
-            metadata.setUnit(metric.unit() == null || metric.unit().trim().isEmpty() ? null
-                    : metric.unit());
-            for (String tag : metric.tags()) {
-                metadata.addTag(tag);
+    private Metadata metadataOf(Annotated annotated, String enclosingClass, String memberName) {
+        MetadataBuilder metadataBuilder = Metadata.builder();
+        Metric metric = annotated.getAnnotation(Metric.class);
+        metadataBuilder = metadataBuilder.withDescription(metric.description())
+            .withDisplayName(metric.displayName())
+            .withUnit(metric.unit());
+        if (metric.absolute()) {
+            if (metric.name().isEmpty()) {
+                metadataBuilder = metadataBuilder.withName(memberName);
+            } else {
+                metadataBuilder = metadataBuilder.withName(metric.name());
+            }
+        } else {
+            if (metric.name().isEmpty()) {
+                metadataBuilder = metadataBuilder.withName(enclosingClass + '.' + memberName);
+            } else {
+                metadataBuilder = metadataBuilder.withName(enclosingClass + '.' + metric.name());
             }
         }
-        return metadata;
+        setMetricType(metadataBuilder, annotated);
+        metadataBuilder = metadataBuilder.notReusable();
+        return metadataBuilder.build();
+    }
+    
+    private MetadataBuilder setMetricType(MetadataBuilder builder, Annotated annotated) {
+        String typeName = annotated.getBaseType().getTypeName();
+        if (typeName.startsWith(Gauge.class.getName())) {
+            builder.withType(MetricType.GAUGE);
+        } else if (typeName.startsWith(ConcurrentGauge.class.getName())) {
+            builder.withType(MetricType.CONCURRENT_GAUGE);
+        } else if (typeName.startsWith(Counter.class.getName())) {
+            builder.withType(MetricType.COUNTER);
+        } else if (typeName.startsWith(Meter.class.getName())) {
+            builder.withType(MetricType.METERED);
+        } else if (typeName.startsWith(Histogram.class.getName())) {
+            builder.withType(MetricType.HISTOGRAM);
+        } else if (typeName.startsWith(Timer.class.getName())) {
+            builder.withType(MetricType.TIMER);
+        }
+        return builder;
+    }
+    
+    public MetricID metricIDOf(InjectionPoint ip) {
+        Annotated annotated = ip.getAnnotated();
+        if (annotated instanceof AnnotatedMember) {
+            return metricIDOf((AnnotatedMember<?>) annotated, ip.getMember().getDeclaringClass());
+        } else if (annotated instanceof AnnotatedParameter) {
+            return metricIDOf((AnnotatedParameter<?>) annotated, ip.getMember().getDeclaringClass());
+        } else {
+            throw new IllegalArgumentException("Unable to retrieve metric name for injection point [" + ip + "], only members and parameters are supported");
+        }
+    }
+    
+    public MetricID metricIDOf(Annotated member, Class baseClass) {
+        if (member.isAnnotationPresent(Metric.class)) {
+            Metric metric = member.getAnnotation(Metric.class);
+            if (metric.absolute()) {
+                return new MetricID(metric.name(), tagsFromString(metric.tags()));
+            } else {
+                return new MetricID(baseClass + "." + metric.name(), tagsFromString(metric.tags()));
+            }
+        } 
+        return null;
+    }
+    
+    public static Tag[] tagsFromString(String[] stringtags) {
+        Tag[] tags = new Tag[stringtags.length];
+        for (int i = 0; i < stringtags.length; i++) {
+            int splitIndex = stringtags[i].indexOf('=');
+            if (splitIndex == -1) {
+                throw new IllegalArgumentException("invalid tag: " + stringtags[i] + ", tags must be in the form key=value");
+            } else {
+                tags[i] = new Tag(stringtags[i].substring(0, splitIndex), stringtags[i].substring(splitIndex + 1));
+            }
+        }
+        return tags;
     }
 
 }

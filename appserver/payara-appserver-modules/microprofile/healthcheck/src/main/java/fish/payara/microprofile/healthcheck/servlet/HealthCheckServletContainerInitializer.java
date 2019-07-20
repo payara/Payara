@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.healthcheck.servlet;
 
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
@@ -50,10 +51,13 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
@@ -95,6 +99,10 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // Register servlet
             ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
             reg.addMapping("/" + configuration.getEndpoint());
+            if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
+                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+                ctx.declareRoles(DEFAULT_GROUP_NAME);
+            }
         }
         
         // Get the BeanManager

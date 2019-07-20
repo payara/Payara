@@ -50,6 +50,7 @@ import javax.naming.NamingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -145,9 +146,10 @@ public class NamedNamingObjectManager {
     private static NamedNamingObjectProxy getCachedProxy(String name) {
         rwLock.readLock().lock();
         try {
-            for (String proxyPrefix : proxies.keySet()) {
+            for (Entry<String, NamedNamingObjectProxy> entry : proxies.entrySet()) {
+                String proxyPrefix = entry.getKey();
                 if (name.startsWith(proxyPrefix)) {
-                    return proxies.get(proxyPrefix);
+                    return entry.getValue();
                 }
             }
         } finally {

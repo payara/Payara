@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import org.eclipse.microprofile.metrics.MetricID;
 
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
@@ -99,7 +100,7 @@ public class MetricsService implements EventListener {
     private MetricsServiceConfiguration metricsServiceConfiguration;
     
     private Boolean metricsEnabled;
-    
+
     private Boolean metricsSecure;
 
     private List<MBeanMetadata> unresolvedBaseMetadataList;
@@ -117,7 +118,7 @@ public class MetricsService implements EventListener {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         // Only start if metrics are enabled
-        if (isMetricsEnabled()) {
+        if (isEnabled()) {
             PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
             payaraExecutor.submit(() -> {
                 bootstrap();
@@ -162,18 +163,17 @@ public class MetricsService implements EventListener {
      * @param metadataConfig
      */
     private void initMetadataConfig(List<MBeanMetadata> baseMetadataList, List<MBeanMetadata> vendorMetadataList, boolean isRetry) {
-        Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
         if (!baseMetadataList.isEmpty()) {
             unresolvedBaseMetadataList = helper.registerMetadata(
                     getOrAddRegistry(BASE.getName()),
                     baseMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
         if (!vendorMetadataList.isEmpty()) {
             unresolvedVendorMetadataList = helper.registerMetadata(
                     getOrAddRegistry(VENDOR.getName()),
                     vendorMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
     }
 
@@ -209,7 +209,7 @@ public class MetricsService implements EventListener {
         return config;
     }
 
-    public Boolean isMetricsEnabled() {
+    public Boolean isEnabled() {
         if (metricsEnabled == null) {
             metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
         }
@@ -226,12 +226,16 @@ public class MetricsService implements EventListener {
         }
         return metricsSecure;
     }
-    
+
     public void resetMetricsSecureProperty() {
         metricsSecure = null;
     }
+    
+    public boolean isSecurityEnabled() {
+        return Boolean.parseBoolean(metricsServiceConfiguration.getSecurityEnabled());
+    }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
         return registry.getMetrics();
     }
@@ -241,14 +245,27 @@ public class MetricsService implements EventListener {
         return registry.getMetadata();
     }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
         MetricRegistry registry = getRegistry(registryName);
-        Map<String, Metric> metricMap = registry.getMetrics();
-        if (metricMap.containsKey(metricName)) {
-            return Collections.singletonMap(metricName, metricMap.get(metricName));
-        } else {
-            throw new NoSuchMetricException(metricName);
+        Map<MetricID, Metric> metricMap = registry.getMetrics();
+        Set<MetricID> metricIDs = new HashSet<>();
+        for (MetricID id: metricMap.keySet()) {
+            if (id.getName().contains(metricName)) {
+                metricIDs.add(id);
+            }
         }
+        return metricIDs;
+    }
+    
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+        MetricRegistry registry = getRegistry(registryName);
+        Map<MetricID, Metric> metricMap = new HashMap<>();
+        for (Map.Entry<MetricID, Metric> metricPair: registry.getMetrics().entrySet()) {
+            if (metricPair.getKey().getName().equals(metricName)) {
+                metricMap.put(metricPair.getKey(), metricPair.getValue());
+            }
+        }
+        return metricMap;
     }
         
     public Map<String, Metadata> getMetadataAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {

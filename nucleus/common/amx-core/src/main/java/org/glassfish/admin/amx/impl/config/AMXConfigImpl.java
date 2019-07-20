@@ -423,9 +423,10 @@ public class AMXConfigImpl extends AMXImplBase
             if ( values == null ) return null;
             
             final List<AttributeChanges> changes = ListUtil.newList();
-            for (final String xmlName : mAttrs.keySet() )
+            for (final Map.Entry<String,Object> entry : mAttrs.entrySet())
             {
-                final Object value = mAttrs.get(xmlName);
+                String xmlName = entry.getKey();
+                final Object value = entry.getValue();
 
                 if ( value instanceof String )
                 {
@@ -1362,9 +1363,10 @@ public class AMXConfigImpl extends AMXImplBase
         protected void makeChanges()
                 throws TransactionFailure
         {
-            for (final String xmlName : mChanges.keySet())
+            for (final Map.Entry<String, Object> entry : mChanges.entrySet())
             {
-                final Object value = mChanges.get(xmlName);
+                String xmlName = entry.getKey();
+                final Object value = entry.getValue();
                 final ConfigModel.Property prop = getConfigModel_Property(xmlName);
 
                 if (prop.isCollection())

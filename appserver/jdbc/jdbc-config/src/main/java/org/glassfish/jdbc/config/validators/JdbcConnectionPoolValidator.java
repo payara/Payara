@@ -37,15 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
+import java.util.Properties;
 import org.glassfish.config.support.Constants;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * Implementation for Connection Pool validation.
@@ -65,24 +68,79 @@ public class JdbcConnectionPoolValidator
         this.poolFaults = constraint.value();
     }
 
+    public String getParsedVariable(String variableToRetrieve) {
+
+        String[] variableReference = variableToRetrieve.split("=");
+
+        if (variableReference.length == 1) {
+            //We got a system variable as no split occured
+            return System.getProperty(variableReference[0]);
+        }
+
+        String variableToFind = variableReference[1];
+
+        switch (variableReference[0]) {
+            case "ENV":
+                //Check environment variables for requested value
+                String varValue = System.getenv(variableToFind);
+                if (varValue != null && !varValue.isEmpty()) {
+                    return varValue;
+                }
+                break;
+            case "MPCONFIG":
+                //Check microprofile config for requested value
+                Config config = ConfigProvider.getConfig();
+                varValue = config.getValue(variableToFind, String.class);
+                if (varValue != null && !varValue.isEmpty()) {
+                    return varValue;
+                }
+                break;
+        }
+        
+        //If this point is reached, the variable value could not be found
+        return null; 
+    }
+    
     @Override
     public boolean isValid(final ResourcePool pool,
         final ConstraintValidatorContext constraintValidatorContext) {
 
         if(poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
             if(pool instanceof JdbcConnectionPool) {
+                
                 JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
                 String maxPoolSize = jdbcPool.getMaxPoolSize();
                 String steadyPoolSize = jdbcPool.getSteadyPoolSize();
-                if(steadyPoolSize == null) {
+                
+                int maxPoolSizeValue = 0;
+                int steadyPoolSizeValue = 0;
+                
+                if (steadyPoolSize == null) {
                     steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
+                } else if(steadyPoolSize.startsWith("$")) {
+                    steadyPoolSize = getParsedVariable(steadyPoolSize.substring(2, steadyPoolSize.length() - 1));
+                    if(steadyPoolSize == null) return false;
                 }
+                
                 if (maxPoolSize == null) {
                     maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
+                } else if(maxPoolSize.startsWith("$")) {
+                    maxPoolSize = getParsedVariable(maxPoolSize.substring(2, maxPoolSize.length() - 1));
+                    if(maxPoolSize == null) return false;
                 }
-                if (Integer.parseInt(maxPoolSize) <
-                        (Integer.parseInt(steadyPoolSize))) {
-                    //max pool size fault
+                
+                try {
+                    maxPoolSizeValue = Integer.parseInt(maxPoolSize);
+                    steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
+                } catch(NumberFormatException nfe) {
+                    System.out.println("Exception occured whilst parsing value to int: \n - " + nfe.getMessage());
+                    return false;
+                }
+                
+                if (maxPoolSizeValue < steadyPoolSizeValue 
+                        || steadyPoolSizeValue <= 0 
+                        || maxPoolSizeValue <= 0) {
+                    //Value(s) are invalid so return error
                     return false;
                 }
             }
@@ -151,7 +209,7 @@ public class JdbcConnectionPoolValidator
                 String dsClassName = jdbcPool.getDatasourceClassname();
                 String driverClassName = jdbcPool.getDriverClassname();
                 if (resType == null) {
-                    //One of datasource/driver classnames must be provided.
+                    //One of each datasource/driver classnames must be provided.
                     if ((dsClassName == null || dsClassName.equals("")) &&
                             (driverClassName == null || driverClassName.equals(""))) {
                         return false;
