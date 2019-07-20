@@ -154,7 +154,7 @@ public class JsonMetricWriter extends JsonWriter {
                 payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getMeterNumbers((Meter) metric), tagsToStringSuffix(tagsSet));
             } else if (Timer.class.isInstance(metric)) {
                 Metadata metricMetaData = metadataMap.get(metricID.getName());
-                String unit = metricMetaData.getUnit();
+                String unit = metricMetaData.getUnit().orElse(MetricUnits.NANOSECONDS);
                 payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getTimerNumbers((Timer) metric, getConversionFactor(unit)), tagsToStringSuffix(tagsSet));
             } else {
                 LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
