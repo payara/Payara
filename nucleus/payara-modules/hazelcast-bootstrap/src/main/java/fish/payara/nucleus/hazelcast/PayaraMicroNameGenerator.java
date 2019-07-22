@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class to generate random names for Payara Micro instances.
@@ -72,18 +73,19 @@ public class PayaraMicroNameGenerator extends NameGenerator
         }
         
         // Find a name not in use
-        for (String adjective : names.keySet()) {
+        for (Entry<String, List<String>> entry : names.entrySet()) {
             // If a name has been found, exit the loop
-            if (name.equals("")) {
-                for (String fish : names.get(adjective)) {
-                    String potentialName = adjective + "-" + fish;
-                    if (!takenNames.contains(potentialName)) {
-                        name = potentialName;
-                        break;
-                    }
-                }
-            } else {
+            if (!name.equals("")) {
                 break;
+            }
+
+            String adjective = entry.getKey();
+            for (String fish : entry.getValue()) {
+                String potentialName = adjective + "-" + fish;
+                if (!takenNames.contains(potentialName)) {
+                    name = potentialName;
+                    break;
+                }
             }
         }
         
