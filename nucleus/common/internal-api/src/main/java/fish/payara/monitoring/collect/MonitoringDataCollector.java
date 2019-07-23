@@ -1,6 +1,5 @@
 package fish.payara.monitoring.collect;
 
-import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
@@ -114,33 +113,6 @@ public interface MonitoringDataCollector {
         }
         return this;
     }
-
-    /**
-     * Collects data from the bean using its getter methods.
-     * 
-     * This implementation is very basic or even naive version that should be overridden by implementations.
-     * 
-     * @param bean expected to be a bean with getters
-     * @return This collector for chaining
-     */
-    default MonitoringDataCollector collectBean(Object bean) {
-        for (Method method : bean.getClass().getMethods()) {
-            if (method.getParameterCount() == 0) {
-                try {
-                    Object value = method.invoke(bean);
-                    if (value instanceof Number) {
-                        collect(method.getName(), (Number) value);
-                    } else if (value instanceof Boolean) {
-                        collect(method.getName(), (Boolean) value);
-                    }
-                } catch (Exception e) {
-                    // just try next
-                }
-            }
-        }
-        return this;
-    }
-
 
     default MonitoringDataCollector app(CharSequence appName) {
         return tag("app", appName);
