@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amxtest.base;
 
@@ -537,7 +538,7 @@ public final class AMXTest
                 }
             } else if (type.endsWith("Stats")) {
                 isSuitable = type.startsWith("com.sun.appserv.management.monitor.statistics") ||
-                        type.startsWith("org.glassfish.j2ee.statistics");
+                        type.startsWith("javax.management.j2ee.statistics");
             }
         }
 

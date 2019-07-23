@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.TimeStatistic;
-import com.sun.enterprise.admin.monitor.stats.AverageRangeStatistic;
+
+import javax.management.j2ee.statistics.CountStatistic;
 
 /**
  *

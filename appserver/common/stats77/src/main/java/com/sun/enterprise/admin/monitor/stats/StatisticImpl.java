@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.Statistic;
+
+import javax.management.j2ee.statistics.Statistic;
 import java.io.Serializable;
 import com.sun.enterprise.util.i18n.StringManager;
 
@@ -92,6 +94,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the name of the statistic
      */
+    @Override
     public String getName() {
         return this.statisticName;
     }
@@ -99,6 +102,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the description of the statistic
      */
+    @Override
     public String getDescription() {
         return this.statisticDesc;
     }
@@ -106,6 +110,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the unit of measurement for the statistic
      */
+    @Override
     public String getUnit() {
         return this.statisticUnit;
     }
@@ -113,6 +118,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the time in millis, at which the last measurement was taken
      */
+    @Override
     public long getLastSampleTime() {
         return this.sampleTime;
     }
@@ -120,6 +126,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the time in millis, at which the first measurement was taken
      */
+    @Override
     public long getStartTime() {
         return this.startTime;
     }
@@ -131,6 +138,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
         this.statisticDesc = desc;
     }
     
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
             "Name: " + getName() + NEWLINE +

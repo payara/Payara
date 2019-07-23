@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
 import java.util.List;
 import java.util.Map;
-import org.glassfish.j2ee.statistics.JTAStats;
+import javax.management.j2ee.statistics.JTAStats;
 
 /** Defines additional Sun ONE Application Server specific statistic to transaction service.
  * @author  <a href="mailto:Kedar.Mhaswade@sun.com">Kedar Mhaswade</a>
@@ -54,7 +55,7 @@ public interface GFJTAStats extends JTAStats {
 	/** Returns the IDs of the transactions that are currently active, as a StrignStatistic. 
 	 * An active transaction is same as an in-flight transaction. Every such transaction can be rolled back after
 	 * freezing the transaction service.
-	 * @see org.glassfish.j2ee.statistics.JTAStats#getActiveCount
+	 * @see javax.management.j2ee.statistics.JTAStats#getActiveCount
 	 * @return		a comma separated String of IDs
 	 */
 	public StringStatistic getActiveIds();

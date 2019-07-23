@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.CountStatistic;
+
+import javax.management.j2ee.statistics.CountStatistic;
 import com.sun.enterprise.util.i18n.StringManager;
 
 /** An implementation of a CountStatistic. All instances of this class are
@@ -49,7 +51,6 @@ import com.sun.enterprise.util.i18n.StringManager;
  * @since S1AS8.0
  * @verison 1.0
  */
-
 public class CountStatisticImpl extends StatisticImpl implements CountStatistic {
     
     private long count;
@@ -128,6 +129,7 @@ public class CountStatisticImpl extends StatisticImpl implements CountStatistic 
         count = countVal; 
     }
     
+    @Override
     public String toString() {
         return super.toString() + NEWLINE + "Count: " + getCount();
     }
@@ -137,6 +139,7 @@ public class CountStatisticImpl extends StatisticImpl implements CountStatistic 
      * Returns the current value of this statistic.
 	 * @return long indicating current value
      */
+    @Override
     public long getCount() {
         return count;
     }
