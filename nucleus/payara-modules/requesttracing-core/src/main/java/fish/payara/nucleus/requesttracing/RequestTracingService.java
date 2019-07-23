@@ -84,6 +84,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -559,14 +560,18 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 collectTrace(tracingCollector, entry.getValue());
             }
         }
-        if (requestEventStore != null) {
-            for (RequestTrace trace : requestTraceStore.getTraces()) {
-                collectTrace(tracingCollector, trace);
-            }
+        if (requestTraceStore != null) {
+            collectTraces(tracingCollector, requestTraceStore.getTraces());
         }
         if (historicRequestTraceStore != null) {
-            for (RequestTrace trace : historicRequestTraceStore.getTraces()) {
-                collectTrace(tracingCollector, trace);
+            collectTraces(tracingCollector, historicRequestTraceStore.getTraces());
+        }
+    }
+
+    private static void collectTraces(MonitoringDataCollector collector, Collection<RequestTrace> traces) {
+        if (traces != null) {
+            for (RequestTrace trace : traces) {
+                collectTrace(collector, trace);
             }
         }
     }

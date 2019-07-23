@@ -135,8 +135,8 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             .collect("enabled", enabled)
             .collect("historicalTraceEnabled", historicalTraceEnabled)
             .collect("historicalTraceStoreSize", historicalTraceStoreSize)
-            .collect("notifiers", notifierExecutionOptionsList.size())
-            .collect("checkers", scheduledCheckers.size())
+            .collect("notifiers", notifierExecutionOptionsList == null ? 0 : notifierExecutionOptionsList.size())
+            .collect("checkers", scheduledCheckers == null ? 0 : scheduledCheckers.size())
             .type("checker").collectAll(registeredTasks, HealthCheckService::collectTask)
             .type("notifier").collectObjects(notifierExecutionOptionsList, HealthCheckService::collectNotifierOption);
     }

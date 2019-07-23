@@ -31,6 +31,9 @@ public class SinkDataCollector implements MonitoringDataCollector {
 
     @Override
     public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
+        if (value == null || value.length() == 0) {
+            return this;
+        }
         StringBuilder tagged = new StringBuilder(tags);
         int nameIndex = indexOf(name);
         if (nameIndex >= 0) {

@@ -124,7 +124,7 @@ public class MicroProfileHealthChecker
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        if (!isInProgress() && getOptions().isEnabled()) {
+        if (isReady()) {
             MonitoringDataCollector statusCollector = collector.in("health-check").type("checker").entity("MP")
                     .collect("checksDone", getChecksDone())
                     .collectNonZero("checksFailed", getChecksFailed());

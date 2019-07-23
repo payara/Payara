@@ -1,5 +1,6 @@
 package fish.payara.monitoring.collect;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
@@ -47,10 +48,7 @@ public interface MonitoringDataCollector {
      * Same as {@link #collect(CharSequence, long)} except that zero value are ignored and not collected.
      */
     default MonitoringDataCollector collectNonZero(CharSequence key, long value) {
-        if (value != 0L) {
-            collect(key, value);
-        }
-        return this;
+        return value != 0L ? collect(key, value) : this;
     }
 
     /**
@@ -85,14 +83,15 @@ public interface MonitoringDataCollector {
         return this;
     }
 
+    default MonitoringDataCollector collect(CharSequence key, Boolean value) {
+        return value != null ? collect(key, value.booleanValue()) : this;
+    }
+
     /**
      * Same as calling {@link #collect(CharSequence, long)} with a non null value and {@link Instant#toEpochMilli()}.
      */
     default MonitoringDataCollector collect(CharSequence key, Instant value) {
-        if (value != null) {
-            return collect(key, value.toEpochMilli());
-        }
-        return this;
+        return value != null ?  collect(key, value.toEpochMilli()) : this;
     }
 
     default <V> MonitoringDataCollector collectObject(V obj, BiConsumer<MonitoringDataCollector, V> collect) {
@@ -115,6 +114,33 @@ public interface MonitoringDataCollector {
         }
         return this;
     }
+
+    /**
+     * Collects data from the bean using its getter methods.
+     * 
+     * This implementation is very basic or even naive version that should be overridden by implementations.
+     * 
+     * @param bean expected to be a bean with getters
+     * @return This collector for chaining
+     */
+    default MonitoringDataCollector collectBean(Object bean) {
+        for (Method method : bean.getClass().getMethods()) {
+            if (method.getParameterCount() == 0) {
+                try {
+                    Object value = method.invoke(bean);
+                    if (value instanceof Number) {
+                        collect(method.getName(), (Number) value);
+                    } else if (value instanceof Boolean) {
+                        collect(method.getName(), (Boolean) value);
+                    }
+                } catch (Exception e) {
+                    // just try next
+                }
+            }
+        }
+        return this;
+    }
+
 
     default MonitoringDataCollector app(CharSequence appName) {
         return tag("app", appName);

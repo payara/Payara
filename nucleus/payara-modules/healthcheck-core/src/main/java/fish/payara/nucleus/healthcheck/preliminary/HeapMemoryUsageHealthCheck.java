@@ -67,7 +67,7 @@ public class HeapMemoryUsageHealthCheck
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        if (!isInProgress() && getOptions().isEnabled() && heap != null) {
+        if (isReady() && heap != null) {
             collector.in("health-check").type("checker").entity("HEAP")
                 .collect("checksDone", getChecksDone())
                 .collectNonZero("checksFailed", getChecksFailed())

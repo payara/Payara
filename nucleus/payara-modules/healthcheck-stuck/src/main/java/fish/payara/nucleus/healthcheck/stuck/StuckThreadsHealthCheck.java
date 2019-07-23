@@ -79,7 +79,7 @@ public class StuckThreadsHealthCheck extends
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        if (!isInProgress() && getOptions().isEnabled()) {
+        if (isReady()) {
             MonitoringDataCollector stuckCollector = collector.in("health-check").type("checker").entity("STUCK")
                     .collect("checksDone", getChecksDone())
                     .collectNonZero("checksFailed", getChecksFailed())

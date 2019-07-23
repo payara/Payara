@@ -161,7 +161,9 @@ public class ModuleInfo {
 
     public Properties getModuleProps() {
         Properties props =  new Properties();
-        props.putAll(moduleProps);
+        if (moduleProps != null) {
+            props.putAll(moduleProps);
+        }
         return props;
     }
 

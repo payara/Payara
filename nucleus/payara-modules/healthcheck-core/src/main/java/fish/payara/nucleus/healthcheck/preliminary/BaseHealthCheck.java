@@ -130,6 +130,11 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return checksFailed.get();
     }
 
+    public boolean isReady() {
+        O options = getOptions();
+        return !isInProgress() && options != null && options.isEnabled();
+    }
+
     protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
         this.checkerType = checkerType;
         if (configuration == null) {

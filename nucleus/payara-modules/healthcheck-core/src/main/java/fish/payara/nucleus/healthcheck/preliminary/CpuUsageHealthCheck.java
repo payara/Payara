@@ -77,7 +77,7 @@ public class CpuUsageHealthCheck
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        if (!isInProgress() && getOptions().isEnabled()) {
+        if (isReady()) {
             collector.in("health-check").type("checker").entity("CPUC")
                 .collect("checksDone", getChecksDone())
                 .collectNonZero("checksFailed", getChecksFailed())

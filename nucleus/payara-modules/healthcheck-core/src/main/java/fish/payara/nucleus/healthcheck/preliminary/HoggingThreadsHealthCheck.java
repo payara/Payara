@@ -76,7 +76,7 @@ public class HoggingThreadsHealthCheck
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        if (!isInProgress() && getOptions().isEnabled()) {
+        if (isReady()) {
             collector.in("health-check").type("checker").entity("HOGT")
                 .collect("checksDone", getChecksDone())
                 .collectNonZero("checksFailed", getChecksFailed())
