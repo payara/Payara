@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,33 +37,46 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid.google;
+package fish.payara.security.openid.api;
 
-import fish.payara.security.annotations.GoogleAuthenticationDefinition;
-import fish.payara.security.openid.OpenIdAuthenticationMechanism;
-import static fish.payara.security.openid.google.GoogleOpenIdExtension.toOpenIdAuthDefinition;
-import javax.enterprise.inject.Typed;
+import static java.util.Arrays.asList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import static java.util.Objects.isNull;
 
 /**
- * The Google AuthenticationMechanism used to authenticate users using the
- * OpenId Connect protocol.
  *
  * @author Gaurav Gupta
  */
-@Typed(GoogleOpenIdAuthenticationMechanism.class)
-public class GoogleOpenIdAuthenticationMechanism extends OpenIdAuthenticationMechanism {
+public class Scope extends LinkedHashSet<String> {
 
-    public GoogleOpenIdAuthenticationMechanism() {
+    public Scope() {
     }
 
-    public GoogleOpenIdAuthenticationMechanism(GoogleAuthenticationDefinition definition) {
-        this();
-        setConfiguration(definition);
+    public Scope(final List<String> values) {
+        addAll(values);
     }
 
-    public GoogleOpenIdAuthenticationMechanism setConfiguration(GoogleAuthenticationDefinition googleDefinition) {
-        super.setConfiguration(toOpenIdAuthDefinition(googleDefinition));
-        return this;
+    public static Scope parse(final String scopeValue) {
+
+        if (isNull(scopeValue)) {
+            return null;
+        }
+
+        Scope scope = new Scope();
+
+        if (scopeValue.trim().isEmpty()) {
+            return scope;
+        }
+
+        // Multiple scope values may be used by creating a space delimited
+        scope.addAll(asList(scopeValue.split(" ")));
+        return scope;
+    }
+
+    @Override
+    public String toString() {
+        return String.join(" ", this);
     }
 
 }
