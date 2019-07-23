@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.server.util;
 
@@ -53,6 +54,8 @@ import org.glassfish.api.*;
  * preprocessors, all preprocessing is disabled.
  */
 public class PreprocessorUtil {
+    
+    private PreprocessorUtil() {}
 
     private static boolean _preprocessorEnabled = false;
     private static BytecodePreprocessor[] _preprocessor;
@@ -78,15 +81,14 @@ public class PreprocessorUtil {
      * @return - the processed class byte array.
      */
     public static byte[] processClass (String className, byte[] classBytes) {
-        Logger _logger = CULoggerInfo.getLogger();
+        Logger logger = CULoggerInfo.getLogger();
         byte[] goodBytes = classBytes;
-        if (_preprocessorEnabled) {
-            if (_preprocessor != null) {
+        if (_preprocessorEnabled && _preprocessor != null) {
                 // Loop through all of the defined preprocessors...
                 for (int i=0; i < _preprocessor.length; i++) {
                     classBytes =
                         _preprocessor[i].preprocess(className, classBytes);
-                    _logger.log(Level.FINE,
+                    logger.log(Level.FINE,
                             "[PreprocessorUtil.processClass] Preprocessor {0} Processed Class: {1}",
                             new Object[]{i, className});
                     // Verify the preprocessor returned some bytes
@@ -94,29 +96,28 @@ public class PreprocessorUtil {
                         goodBytes = classBytes;
                     }
                     else{
-                        _logger.log(Level.SEVERE, CULoggerInfo.preprocessFailed,
+                        logger.log(Level.SEVERE, CULoggerInfo.preprocessFailed,
                             new String[] {className,
                                           _preprocessor[i].getClass().getName()});
 
                         // If were on the 1st preprocessor
                         if (i == 0){
-                            _logger.log(Level.SEVERE, CULoggerInfo.resettingOriginal,
+                            logger.log(Level.SEVERE, CULoggerInfo.resettingOriginal,
                                 className);
                         }
                         // We're on the 2nd or nth preprocessor.
                         else {
-                            _logger.log(Level.SEVERE, CULoggerInfo.resettingLastGood,
+                            logger.log(Level.SEVERE, CULoggerInfo.resettingLastGood,
                                 className);
                         }
                     }
                 }
-            }
         }
         return goodBytes;
     }
 
-    private synchronized static void setupPreprocessor(String[] ppClassNames) {
-        Logger _logger = CULoggerInfo.getLogger();
+    private static synchronized void setupPreprocessor(String[] ppClassNames) {
+        Logger logger = CULoggerInfo.getLogger();
 
         if (_preprocessor != null) {
             // The preprocessors have already been set up.
@@ -135,21 +136,19 @@ public class PreprocessorUtil {
                 }
                 if (_preprocessor[i] != null){
                     if (!_preprocessor[i].initialize(new Hashtable())) {
-                        _logger.log(Level.SEVERE, CULoggerInfo.failedInit,
-                            ppClassName);
-                        _logger.log(Level.SEVERE, CULoggerInfo.disabled);
+                        logger.log(Level.SEVERE, CULoggerInfo.failedInit, ppClassName);
+                        logger.log(Level.SEVERE, CULoggerInfo.disabled);
                         _preprocessorEnabled = false;
                     }
                 } else {
-                    _logger.log(Level.SEVERE, CULoggerInfo.failedInit,
-                        ppClassName);
-                    _logger.log(Level.SEVERE, CULoggerInfo.disabled);
+                    logger.log(Level.SEVERE, CULoggerInfo.failedInit, ppClassName);
+                    logger.log(Level.SEVERE, CULoggerInfo.disabled);
                     _preprocessorEnabled = false;
                 }
             }
         } catch (Throwable t) {
-            _logger.log(Level.SEVERE, CULoggerInfo.setupEx, t);
-            _logger.log(Level.SEVERE, CULoggerInfo.disabled);
+            logger.log(Level.SEVERE, CULoggerInfo.setupEx, t);
+            logger.log(Level.SEVERE, CULoggerInfo.disabled);
             _preprocessorEnabled = false;
         }
     }

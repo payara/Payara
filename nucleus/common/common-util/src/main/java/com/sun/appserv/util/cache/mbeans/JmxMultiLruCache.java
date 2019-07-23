@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/**
- * @Version $Id: JmxMultiLruCache.java,v 1.4 2005/12/25 04:25:23 tcfujii Exp $
- * Created on May 4, 2005 02:30 PM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -51,12 +47,13 @@ import com.sun.appserv.util.cache.Constants;
  * This class provides implementation for JmxLruCache MBean
  *
  * @author Krishnamohan Meduri (Krishna.Meduri@Sun.com)
- *
+ * @version 1.4
+ * @since May 4, 2005 
  */
 public class JmxMultiLruCache extends JmxBaseCache 
                               implements JmxMultiLruCacheMBean {
 
-    private MultiLruCache multiLruCache;
+    private final MultiLruCache multiLruCache;
 
     public JmxMultiLruCache(MultiLruCache multiLruCache, String name) {
         super(multiLruCache,name);
@@ -66,6 +63,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the number of entries that have been trimmed
      */
+    @Override
     public Integer getTrimCount() {
         return (Integer) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_TRIM_COUNT);
@@ -74,6 +72,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the size of each segment
      */
+    @Override
     public Integer getSegmentSize() {
         return (Integer) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE);
@@ -82,6 +81,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the legnth of the segment list
      */
+    @Override
     public Integer[] getSegmentListLength() {
         return (Integer[]) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_SEGMENT_LIST_LENGTH);

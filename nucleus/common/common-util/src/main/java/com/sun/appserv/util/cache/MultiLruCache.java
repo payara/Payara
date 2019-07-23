@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
-import java.text.MessageFormat;
-
 import java.util.Properties;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * MultiLruCache -- in-memory bounded LRU cache with multiple LRU lists
@@ -72,6 +70,7 @@ public class MultiLruCache extends BaseCache {
      * initialize the LRU cache
      * @param maxCapacity maximum number of entries this cache may hold
      */
+    @Override
     public void init(int maxCapacity, Properties props) throws Exception {
         super.init(maxCapacity, props);
 
@@ -109,6 +108,7 @@ public class MultiLruCache extends BaseCache {
      * subclasses may override to provide their own CacheItem extensions
      * e.g. one that permits persistence.
      */
+    @Override
     protected CacheItem createItem(int hashCode, Object key,
                                         Object value, int size) {
         return new LruCacheItem(hashCode, key, value, size);
@@ -145,6 +145,7 @@ public class MultiLruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected CacheItem itemAdded(CacheItem item) {
         CacheItem overflow = null;
         if(! (item instanceof LruCacheItem))
@@ -184,6 +185,7 @@ public class MultiLruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemAccessed(CacheItem item) {
         int index = getIndex(item.hashCode());
         int segment = (index/segmentSize);
@@ -222,6 +224,7 @@ public class MultiLruCache extends BaseCache {
      * @param oldSize size of the previous value that was refreshed
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
         itemAccessed(item);
     }
@@ -232,6 +235,7 @@ public class MultiLruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRemoved(CacheItem item) {
         if(! (item instanceof LruCacheItem))
             return;
@@ -269,6 +273,7 @@ public class MultiLruCache extends BaseCache {
      * cache has reached threshold so trim its size. subclasses are expected
      * to provide a robust cache replacement algorithm.
      */
+    @Override
     protected void handleOverflow() {
         LruCacheItem l = null;
 
@@ -294,20 +299,25 @@ public class MultiLruCache extends BaseCache {
      * @return an Object corresponding to the stat
      * See also: Constant.java for the key
      */
+    @Override
     public Object getStatByName(String key) {
         Object stat = super.getStatByName(key);
 
         if (stat == null && key != null) {
-            if (key.equals(Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE))
-                stat = Integer.valueOf(segmentSize);
-            else if (key.equals(Constants.STAT_MULTILRUCACHE_TRIM_COUNT))
-                stat = Integer.valueOf(trimCount);
-            else if (key.equals(Constants.STAT_MULTILRUCACHE_SEGMENT_LIST_LENGTH)) {
-                stat = new Integer[lists.length];
-
-                for (int i = 0; i < lists.length; i++) {
-                    ((Integer[])stat)[i] = Integer.valueOf(listsLength[i]);
-                }
+            switch (key) {
+                case Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE:
+                    stat = segmentSize;
+                    break;
+                case Constants.STAT_MULTILRUCACHE_TRIM_COUNT:
+                    stat = trimCount;
+                    break;
+                case Constants.STAT_MULTILRUCACHE_SEGMENT_LIST_LENGTH:
+                    stat = new Integer[lists.length];
+                    for (int i = 0; i < lists.length; i++) {
+                        ((Integer[])stat)[i] = listsLength[i];
+                    }   break;
+                default:
+                    break;
             }
         }
 
@@ -319,18 +329,16 @@ public class MultiLruCache extends BaseCache {
      * @return a Map of stats
      * See also: Constant.java for the keys
      */
+    @Override
     public Map getStats() {
         Map stats = super.getStats();
 
-        stats.put(Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE,
-                  Integer.valueOf(segmentSize));
+        stats.put(Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE, segmentSize);
         for (int i = 0; i < lists.length; i++) {
             stats.put(Constants.STAT_MULTILRUCACHE_SEGMENT_LIST_LENGTH + "["
-                      + i + "]:",
-                      Integer.valueOf(listsLength[i]));
+                      + i + "]:", listsLength[i]);
         }
-        stats.put(Constants.STAT_MULTILRUCACHE_TRIM_COUNT,
-                  Integer.valueOf(trimCount));
+        stats.put(Constants.STAT_MULTILRUCACHE_TRIM_COUNT, trimCount);
         return stats;
     }
 
