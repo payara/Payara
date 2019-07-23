@@ -108,6 +108,11 @@
             <sun:checkbox id="securityEnabled" selected="#{pageSession.securityEnabled}"
                           selectedValue="true" />
         </sun:property>
+        <sun:property id="rolesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.openAPI.configuration.roles}"
+                      helpText="$resource{i18n_microprofile.openAPI.configuration.rolesHelp}">
+            <sun:textField id="roles" maxLength="250" text="#{pageSession.valueMap['roles']}"/>
+        </sun:property>
         <sun:property id="virtualServersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                       label="$resource{i18n_microprofile.openAPI.configuration.virtualServers}"
                       helpText="$resource{i18n_microprofile.openAPI.configuration.virtualServersHelp}" >
