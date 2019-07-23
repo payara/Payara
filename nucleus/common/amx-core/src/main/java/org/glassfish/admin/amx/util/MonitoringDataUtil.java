@@ -9,6 +9,11 @@ import org.glassfish.admin.amx.core.AMXProxy;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 
+/**
+ * Utility to collect monitoring data from monitoring beans.
+ *
+ * @author Jan Bernitt
+ */
 public class MonitoringDataUtil {
 
     public static void collectBean(MonitoringDataCollector collector, AMXProxy bean) {
