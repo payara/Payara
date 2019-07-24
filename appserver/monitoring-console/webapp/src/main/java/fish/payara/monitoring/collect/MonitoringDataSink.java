@@ -48,5 +48,11 @@ package fish.payara.monitoring.collect;
 @FunctionalInterface
 public interface MonitoringDataSink {
 
+    /**
+     * Publishes a key-value pair to this sink.
+     *
+     * @param key the full metric name, e.g. <code>x=y a=b xCount</code>
+     * @param value numeric value of the metric
+     */
     void accept(CharSequence key, long value);
 }
