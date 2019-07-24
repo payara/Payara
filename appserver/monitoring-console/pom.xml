@@ -58,7 +58,6 @@
 
     <modules>
         <module>webapp</module>
-        <module>api</module>
     </modules>
    
 </project>

@@ -1,3 +1,42 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.monitoring.collect;
 
 import java.time.Instant;
@@ -33,15 +72,17 @@ public interface MonitoringDataCollector {
      * x=y" and tag is called with name "foo" and value "baz" the new context is "foo=baz" (not "foo=bar x=y foo=baz").
      * 
      * @param name  name of the type of context
-     * @param value identifier within the context type
+     * @param value identifier within the context type, if <code>null</code> or empty the tag is ignored
      * @return A collector that collects data within the context of this collector extended by the given name-value
      *         pair.
      */
     MonitoringDataCollector tag(CharSequence name, CharSequence value);
 
+
     /*
      * Helper methods for convenience and consistent tagging.
      */
+
 
     /**
      * Same as {@link #collect(CharSequence, long)} except that zero value are ignored and not collected.
@@ -72,6 +113,10 @@ public interface MonitoringDataCollector {
         return collect(key, (long) value);
     }
 
+    /**
+     * Ignores <code>null</code>, collects {@link Double} and {@link Float} using
+     * {@link #collect(CharSequence, double)}, others using {@link #collect(CharSequence, long)}.
+     */
     default MonitoringDataCollector collect(CharSequence key, Number value) {
         if (value != null) {
             if (value instanceof Double || value instanceof Float) {
@@ -82,6 +127,9 @@ public interface MonitoringDataCollector {
         return this;
     }
 
+    /**
+     * Ignores <code>null</code>, otherwise collects using {@link #collect(CharSequence, boolean)}.
+     */
     default MonitoringDataCollector collect(CharSequence key, Boolean value) {
         return value != null ? collect(key, value.booleanValue()) : this;
     }
@@ -93,14 +141,27 @@ public interface MonitoringDataCollector {
         return value != null ?  collect(key, value.toEpochMilli()) : this;
     }
 
+    /**
+     * Same as calling {@link BiConsumer#accept(Object, Object)} with this collector and the passed object.
+     * @return this for chaining, added purely to allow fluent API use
+     */
     default <V> MonitoringDataCollector collectObject(V obj, BiConsumer<MonitoringDataCollector, V> collect) {
         collect.accept(this, obj);
         return this;
     }
 
+    /**
+     * Collects data points using the passed {@link BiConsumer} for every entry if the passed {@link Collection}.
+     * The context is not changed
+     * @param entries <code>null</code> or empty {@link Collection}s are ignored
+     * @param collect the function collecting the individual data points
+     * @return this for chaining (unchanged context)
+     */
     default <V> MonitoringDataCollector collectObjects(Collection<V> entries, BiConsumer<MonitoringDataCollector, V> collect) {
-        for (V entry : entries) {
-            collect.accept(this, entry);
+        if (entries != null) {
+            for (V entry : entries) {
+                collect.accept(this, entry);
+            }
         }
         return this;
     }
@@ -121,7 +182,7 @@ public interface MonitoringDataCollector {
     /**
      * Namespaces are used to distinguish data points of different origin.
      * Each origin uses its own namespace. The namespace should be the first (top/right most) tag added.
-     * 
+     *
      * @param namespace the namespace to use, e.g. "health-monitor"
      * @return A collector with the namespace context added/set
      */
@@ -129,14 +190,21 @@ public interface MonitoringDataCollector {
         return tag("ns", namespace);
     }
 
+    /**
+     * The type tag states the type of a collected entry. Most often used for collections of entries of the same kind.
+     * The type is usually the second tag added after the namespace.
+     *
+     * @param type type of entity or collection of entities that are about to be collected
+     * @return A collector with the type context added/set
+     */
     default MonitoringDataCollector type(CharSequence type) {
         return tag("type", type);
     }
 
     /**
-     * The entity tag gives the identity that distinguishes values of one entry from another within the same collection of entries.
-     * The entity is usually the second tag added after the namespace (if needed).
-     * 
+     * The entity tag states the identity that distinguishes values of one entry from another within the same collection
+     * of entries. The entity is usually the third tag added after the namespace and type (if needed).
+     *
      * @param entity the entity to use, e.g. "log-notifier" (as opposed to "teams-notifier")
      * @return A collector with the entity context added/set
      */
