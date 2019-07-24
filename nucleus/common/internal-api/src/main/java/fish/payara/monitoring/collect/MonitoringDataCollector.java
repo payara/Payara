@@ -146,7 +146,9 @@ public interface MonitoringDataCollector {
      * @return this for chaining, added purely to allow fluent API use
      */
     default <V> MonitoringDataCollector collectObject(V obj, BiConsumer<MonitoringDataCollector, V> collect) {
-        collect.accept(this, obj);
+        if (obj != null) {
+            collect.accept(this, obj);
+        }
         return this;
     }
 
@@ -168,9 +170,11 @@ public interface MonitoringDataCollector {
 
     default <K extends CharSequence, V> MonitoringDataCollector collectAll(Map<K, V> entries,
             BiConsumer<MonitoringDataCollector, V> collect) {
-        collectNonZero("size", entries.size());
-        for (Entry<K,V> entry : entries.entrySet()) {
-            collect.accept(entity(entry.getKey()), entry.getValue());
+        if (entries != null) {
+            collectNonZero("size", entries.size());
+            for (Entry<K,V> entry : entries.entrySet()) {
+                collect.accept(entity(entry.getKey()), entry.getValue());
+            }
         }
         return this;
     }
