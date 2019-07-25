@@ -39,39 +39,47 @@
  */
 package fish.payara.monitoring.web;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.glassfish.internal.api.Globals;
-
-import fish.payara.monitoring.collect.SinkDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringDataWindow;
+import fish.payara.monitoring.collect.PointsWindow;
+import fish.payara.monitoring.collect.Series;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
+@RequestScoped
 public class MonitoringConsoleResouce {
 
+    @Inject
+    private MonitoringDataWindow data;
+
     @GET
-    @Path("/points")
+    @Path("/points/recent")
     public Map<String, Long> getPoints() {
         Map<String, Long> res = new TreeMap<>();
-        List<MonitoringDataSource> sources = Globals.getDefaultBaseServiceLocator()
-                .getAllServices(MonitoringDataSource.class);
-        MonitoringDataCollector collector = new SinkDataCollector((key, value) -> res.put(key.toString(), value));
-        for (MonitoringDataSource source : sources) {
-            try {
-                source.collect(collector);
-            } catch (RuntimeException e) {
-                // ignore and continue with next
-            }
+        for (Entry<Series, PointsWindow> entry : data) {
+            res.put(entry.getKey().toString(), entry.getValue().last());
         }
         return res;
     }
+
+    @GET
+    @Path("/points")
+    public Map<String, long[][]> getPointsWindow() {
+        Map<String, long[][]> res = new TreeMap<>();
+        for (Entry<Series, PointsWindow> entry : data) {
+            res.put(entry.getKey().toString(), entry.getValue().snapshot());
+        }
+        return res;
+    }
+
 }
