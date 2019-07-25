@@ -245,7 +245,7 @@ public class MetricsService implements EventListener {
         return registry.getMetadata();
     }
 
-    public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
         Map<MetricID, Metric> metricMap = registry.getMetrics();
         Set<MetricID> metricIDs = new HashSet<>();
@@ -257,7 +257,7 @@ public class MetricsService implements EventListener {
         return metricIDs;
     }
     
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
         Map<MetricID, Metric> metricMap = new HashMap<>();
         for (Map.Entry<MetricID, Metric> metricPair: registry.getMetrics().entrySet()) {

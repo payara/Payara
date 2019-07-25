@@ -248,7 +248,7 @@ public class MBeanMetadataHelper {
                         subAttribute = subAttrResolvedName;
                         if ("description".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && metadata.getDescription() == null) {
+                                && metadata.getDescription().isPresent()) {
                             newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
@@ -256,7 +256,7 @@ public class MBeanMetadataHelper {
                             newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && MetricUnits.NONE.equals(metadata.getUnit())) {
+                                && MetricUnits.NONE.equals(metadata.getUnit().get())) {
                             newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
                         }
                         if (compositeData.get(subAttribute) != null

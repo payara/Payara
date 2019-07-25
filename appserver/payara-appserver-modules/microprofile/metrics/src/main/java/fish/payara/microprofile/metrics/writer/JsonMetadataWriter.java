@@ -96,7 +96,7 @@ public class JsonMetadataWriter extends JsonWriter {
             Set<MetricID> metricIDs = new HashSet<>();
             try {
                 metricIDs.addAll(service.getMetricsIDs(registryName, entry.getKey()));
-            } catch (NoSuchRegistryException | NoSuchMetricException ex) {
+            } catch (NoSuchRegistryException ex) {
                 //this should not be possible as checked earlier
                 throw new RuntimeException(ex);
             }

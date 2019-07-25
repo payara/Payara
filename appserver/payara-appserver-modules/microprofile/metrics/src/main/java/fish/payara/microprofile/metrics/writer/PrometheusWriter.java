@@ -56,7 +56,6 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -185,7 +184,7 @@ public class PrometheusWriter implements MetricsWriter {
             } else if (Timer.class.isInstance(metric)) {
                 exporter.exportTimer((Timer) metric, name, description, metricId.getTagsAsString(), unit);
             } else {
-                LOGGER.log(Level.WARNING, "Metric type {0} for {1} is invalid", new Object[]{metric.getClass(), metricId.toString()});
+                LOGGER.log(Level.WARNING, "Metric type {0} for {1} is invalid", new Object[]{metric.getClass(), metricId});
             }
         }
     }
