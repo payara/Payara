@@ -55,6 +55,8 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import org.glassfish.admingui.common.util.GuiUtil;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  *
@@ -91,10 +93,9 @@ public class NewSSLHandlers {
         Object ciphers = handlerCtx.getInputValue("ciphers");
         if (ciphers != null) {
             if (ciphers instanceof String) {
-                String[] ary = getSelectedCiphersList((String) ciphers);
-                ciphersList = getCiphers(ary);
+                ciphersList = Arrays.asList(getSelectedCiphersList((String) ciphers));
             } else {
-                ciphersList = getCiphers((String[]) ciphers);
+                ciphersList = Arrays.asList((String[]) ciphers);
             }
         }
         handlerCtx.setOutputValue("CommonCiphersList", getCommonCiphers(ciphersList));
@@ -128,19 +129,14 @@ public class NewSSLHandlers {
         handlerCtx.setOutputValue("ciphers", ciphers);
     }
 
-
-
     private static String[] getSelectedCiphersList(String selectedCiphers){
-        List<String> selItems = new ArrayList<>();
         if(selectedCiphers != null){
-            String[] sel = selectedCiphers.split(","); //NOI18N
-            for (String cName : sel) {
-                if (cName.startsWith("+")) { //NOI18N
-                    selItems.add(cName.substring(1));
-                }
-            }
+            return filterCiphers(
+                    Arrays.asList(selectedCiphers.split(",")),
+                    cipher -> cipher.startsWith("+"),
+                    cipher -> cipher.substring(1));
         }
-        return selItems.toArray(new String[0]);
+        return new String[0];
     }
 
     private static String processSelectedCiphers(String[] selectedCiphers, String ciphers){
@@ -159,55 +155,40 @@ public class NewSSLHandlers {
         return sb.toString();
     }
 
-    private static List<String> getCiphers(String[] allCiphers){
-        List<String> ciphers = new ArrayList<>();
-        if (allCiphers != null){
-            Collections.addAll(ciphers, allCiphers);
-        }
-        return ciphers;
-    }
-
     private static String[] getCommonCiphers(List<String> ciphers){
-        return filterCiphers(ciphers, COMMON_CIPHERS).toArray(new String[0]);
+        return filterCiphers(ciphers, cypher -> COMMON_CIPHERS.contains(cypher));
     }
 
     private static String[] getEccCiphers(List<String> ciphers){
-        List<String> eccCiphers = breakUpCiphers(new ArrayList<>(), ciphers, "_ECDH_"); //NOI18N
-        eccCiphers = breakUpCiphers(eccCiphers, ciphers, "_ECDHE_"); //NOI18N
-        return eccCiphers.toArray(new String[0]);
+        return filterCiphers(
+                ciphers,
+                cipher -> !BIT_CIPHERS.contains(cipher) && (cipher.contains("_ECDH_") || cipher.contains("_ECDHE_"))
+        );
     }
 
     private static String[] getEphemeralCiphers(List<String> ciphers){
-        List<String> ephmCiphers = breakUpCiphers(new ArrayList<>(), ciphers, "_DHE_RSA_"); //NOI18N
-        ephmCiphers = breakUpCiphers(ephmCiphers, ciphers, "_DHE_DSS_"); //NOI18N
-        return ephmCiphers.toArray(new String[0]);
+        return filterCiphers(
+                ciphers,
+                cipher -> !BIT_CIPHERS.contains(cipher) && (cipher.contains("_DHE_RSA_") || cipher.contains("_DHE_DSS_"))
+        );
     }
 
     private static String[] getOtherCiphers(List<String> ciphers){
-        return filterCiphers(ciphers, BIT_CIPHERS).toArray(new String[0]);
+        return filterCiphers(ciphers, cypher -> BIT_CIPHERS.contains(cypher));
     }
 
-    private static List<String> filterCiphers(List<String> ciphers, Set<String> filterList){
-        List<String> listCiphers = new ArrayList<>();
+    private static String[] filterCiphers(List<String> ciphers, Predicate<String> filter){
+        return filterCiphers(ciphers, filter, str -> str);
+    }
+
+    private static String[] filterCiphers(List<String> ciphers, Predicate<String> filter, Function<String, String> transformation){
         if (ciphers != null) {
-            listCiphers.addAll(ciphers);
-            listCiphers.retainAll(filterList);
+            return ciphers.stream()
+                    .filter(filter)
+                    .map(transformation)
+                    .toArray(String[]::new);
         }
-        return listCiphers;
-    }
-
-
-    private static List<String> breakUpCiphers(List<String> cipherSubset, List<String> allCiphers, String type){
-        if (allCiphers != null){
-            for (String cipherName : allCiphers) {
-                if (cipherName.contains(type)) {
-                    if (!BIT_CIPHERS.contains(cipherName)) {
-                        cipherSubset.add(cipherName);
-                    }
-                }
-            }
-        }
-        return cipherSubset;
+        return new String[0];
     }
 
 }
