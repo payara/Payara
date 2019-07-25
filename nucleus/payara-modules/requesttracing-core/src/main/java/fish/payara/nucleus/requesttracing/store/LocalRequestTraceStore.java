@@ -45,15 +45,12 @@ import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.glassfish.api.event.Events;
-
 /**
  * A store of {@link RequestTrace} objects.
  * Stores the list locally.
  */
 public class LocalRequestTraceStore implements RequestTraceStoreInterface {
 
-    private Events events;
     private BoundedTreeSet<RequestTrace> store;
     private int maxStoreSize;
 
@@ -63,7 +60,6 @@ public class LocalRequestTraceStore implements RequestTraceStoreInterface {
         this.store = new BoundedTreeSet<>(0);
         this.maxStoreSize = store.size();
         this.strategy = strategy;
-        this.events = events;
     }
 
     @Override
