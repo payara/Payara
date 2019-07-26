@@ -1,4 +1,4 @@
-package fish.payara.monitoring.collect;
+package fish.payara.monitoring.store;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ public final class Series implements Comparable<Series>, Serializable {
     private final String[] values;
 
     public Series(String key) {
-        String[] parts = key.split("\\s+");
+        String[] parts = key.split("\\s+|[,;_]");
         this.tags = new String[parts.length - 1];
         this.values = new String[tags.length];
         this.metric = parts[parts.length - 1].intern();

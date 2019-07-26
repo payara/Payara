@@ -39,20 +39,23 @@
  */
 package fish.payara.monitoring.web;
 
+import static java.util.stream.StreamSupport.stream;
+
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import fish.payara.monitoring.collect.MonitoringDataWindow;
-import fish.payara.monitoring.collect.PointsWindow;
-import fish.payara.monitoring.collect.Series;
+import fish.payara.monitoring.store.MonitoringDataStore;
+import fish.payara.monitoring.store.Point;
+import fish.payara.monitoring.store.Series;
+import fish.payara.monitoring.store.SeriesSlidingWindow;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -60,26 +63,38 @@ import fish.payara.monitoring.collect.Series;
 public class MonitoringConsoleResouce {
 
     @Inject
-    private MonitoringDataWindow data;
+    private MonitoringDataStore data;
 
     @GET
-    @Path("/points/recent")
-    public Map<String, Long> getPoints() {
+    @Path("/points/newest")
+    public Map<String, Long> getMostRecentPoints() {
         Map<String, Long> res = new TreeMap<>();
-        for (Entry<Series, PointsWindow> entry : data) {
-            res.put(entry.getKey().toString(), entry.getValue().last());
+        for (SeriesSlidingWindow slidingWindow : data.selectAllSeriesWindow()) {
+            res.put(slidingWindow.getSeries().toString(), slidingWindow.last());
         }
         return res;
     }
 
     @GET
     @Path("/points")
-    public Map<String, long[][]> getPointsWindow() {
-        Map<String, long[][]> res = new TreeMap<>();
-        for (Entry<Series, PointsWindow> entry : data) {
-            res.put(entry.getKey().toString(), entry.getValue().snapshot());
+    public Map<String, Point[]> getSlidingWindows() {
+        Map<String, Point[]> res = new TreeMap<>();
+        for (SeriesSlidingWindow slidingWindow : data.selectAllSeriesWindow()) {
+            res.put(slidingWindow.getSeries().toString(), slidingWindow.snapshot());
         }
         return res;
     }
 
+    @GET
+    @Path("/points/series/{series}")
+    public Point[] getSlidingWindow(@PathParam("series") String series) {
+        return data.selectSlidingWindow(new Series(series)).snapshot();
+    }
+
+    @GET
+    @Path("/points/series/")
+    public String[] getSlidingWindowSeries() {
+        return stream(data.selectAllSeriesWindow().spliterator(), false)
+                .map(window -> window.getSeries().toString()).toArray(String[]::new);
+    }
 }

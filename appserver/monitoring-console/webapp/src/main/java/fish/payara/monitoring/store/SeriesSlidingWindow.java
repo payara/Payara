@@ -1,4 +1,4 @@
-package fish.payara.monitoring.collect;
+package fish.payara.monitoring.store;
 
 import java.io.Serializable;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -14,19 +14,25 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * 
  * @author Jan Bernitt
  */
-public final class PointsWindow implements Serializable {
+public final class SeriesSlidingWindow implements Serializable {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Series series;
     private final long[] times;
     private final long[] values;
     private volatile int offset;
     private volatile int length;
 
-    public PointsWindow(int size) {
+    public SeriesSlidingWindow(Series series, int size) {
+        this.series = series;
         this.length = 0;
         this.offset = 0;
         this.values = new long[size * 2];
         this.times = new long[size * 2];
+    }
+
+    public Series getSeries() {
+        return series;
     }
 
     public int length() {
@@ -53,13 +59,14 @@ public final class PointsWindow implements Serializable {
         return length == 0 ? -1 : times[offset];
     }
 
-    public long[][] snapshot() {
+    public Point[] snapshot() {
         lock.readLock().lock();
         try {
-            long[][] res = new long[2][length];
-            System.arraycopy(times, offset, res[0], 0, length);
-            System.arraycopy(values, offset, res[1], 0, length);
-            return res;
+            Point[] points = new Point[length];
+            for (int i = 0; i < length; i++) {
+                points[i] = new Point(time(i), value(i));
+            }
+            return points;
         } finally {
             lock.readLock().unlock();
         }

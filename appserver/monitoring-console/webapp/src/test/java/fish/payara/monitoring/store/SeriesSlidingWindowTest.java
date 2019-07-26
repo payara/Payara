@@ -1,20 +1,25 @@
-package fish.payara.monitoring.collect;
+package fish.payara.monitoring.store;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import fish.payara.monitoring.store.Series;
+import fish.payara.monitoring.store.SeriesSlidingWindow;
+
 /**
- * Tests the basic correctness of {@link PointsWindow}, in particular the correctness of the sliding window mechanism.
+ * Tests the basic correctness of {@link SeriesSlidingWindow}, in particular the correctness of the sliding window mechanism.
  * 
  * @author Jan Bernitt
  */
-public class PointsWindowTest {
+public class SeriesSlidingWindowTest {
 
+    private static final Series SERIES = new Series("test");
+    
     @Test
     public void fillToCapacity() {
         int capacity = 3;
-        PointsWindow window = new PointsWindow(capacity);
+        SeriesSlidingWindow window = new SeriesSlidingWindow(SERIES, capacity);
         assertEquals(capacity, window.capacity());
         assertEquals(0, window.length());
         window.add(1, 1);
@@ -27,7 +32,7 @@ public class PointsWindowTest {
 
     @Test
     public void fillAndSlideByCapacity() {
-        PointsWindow window = new PointsWindow(3);
+        SeriesSlidingWindow window = new SeriesSlidingWindow(SERIES, 3);
         window.add(1, 1);
         window.add(2, 2);
         window.add(3, 3);
@@ -43,7 +48,7 @@ public class PointsWindowTest {
 
     @Test
     public void fillAndSlideOverCapacity() {
-        PointsWindow window = new PointsWindow(3);
+        SeriesSlidingWindow window = new SeriesSlidingWindow(SERIES, 3);
         window.add(1, 1);
         window.add(2, 2);
         window.add(3, 3);
@@ -65,14 +70,14 @@ public class PointsWindowTest {
 
     @Test
     public void fillAndSlideManyTimesOverCapacity() {
-        PointsWindow window = new PointsWindow(3);
+        SeriesSlidingWindow window = new SeriesSlidingWindow(SERIES, 3);
         for (int i = 0; i < 100; i++) {
             window.add(i, i);
         }
         assertValues(window, 97, 98, 99);
     }
 
-    private static void assertValues(PointsWindow window, long... values) {
+    private static void assertValues(SeriesSlidingWindow window, long... values) {
         assertEquals(values.length, window.length());
         for (int i = 0; i < values.length; i++) {
             assertEquals(values[i], window.value(i));

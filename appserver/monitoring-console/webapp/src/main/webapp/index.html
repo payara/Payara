@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,700" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic" rel="stylesheet" type="text/css">
+	<link href="https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css" rel="stylesheet" type="text/css">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="metricsgraphics.css" rel="stylesheet" type="text/css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="metricsgraphics.min.js"></script>
+    
+    <style>
+    
+        body { margin: 2em; }
+    </style>
+</head>
+<body>
+
+<h1>Monitoring Console</h1>
+
+Series: <select id="options"></select>
+<div id="chart"></div>
+
+<script>
+
+
+var options = $("#options");
+$.getJSON("api/points/series/", function(response) {
+     $.each(response, function() {
+     options.append($("<option />").val(this.replace(/ /g, ',')).text(this));
+ });
+});
+
+var refresher;
+
+$('select').on('change', function() {
+	var selectedSeries = this.value;
+	if (refresher) {
+		clearInterval(refresher);
+	}
+	refresher = setInterval(showSeries, 1000, selectedSeries);
+});
+
+function showSeries(series) {
+	d3.json('api/points/series/' + series, function(data) {
+		if (data) {
+		    for (var i = 0; i < data.length; i++) {
+		        data[i].time = new Date(data[i].time);
+		    }
+		}
+	    MG.data_graphic({
+	        title: series,
+	        description: "Test",
+	        data: data,
+	        width: 600,
+	        height: 400,
+	        right: 40,
+	        target: '#chart',
+	        x_accessor: 'time',
+	        y_accessor: 'value'
+	    });
+	});
+} 
+</script>
+
+</body>
+</html>
