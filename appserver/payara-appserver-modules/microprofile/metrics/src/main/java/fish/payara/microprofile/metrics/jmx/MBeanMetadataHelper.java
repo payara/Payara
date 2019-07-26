@@ -54,6 +54,7 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
@@ -93,8 +94,13 @@ public class MBeanMetadataHelper {
 
         List<MBeanMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
         for (MBeanMetadata beanMetadata : metadataList) {
+            List<Tag> tags = new ArrayList<>();
+            for (fish.payara.microprofile.metrics.jmx.XmlTag tag : beanMetadata.getTags()) {
+                tags.add(new Tag(tag.getName(), tag.getValue()));
+            }
             try {
-                if (metricRegistry.getNames().contains(beanMetadata.getName())) {
+                if (metricRegistry.getNames().contains(beanMetadata.getName()) && 
+                        metricRegistry.getMetricIDs().contains(new MetricID(beanMetadata.getName(), tags.toArray(new Tag[tags.size()])))) {
                     continue;
                 }
                 Metric type;
@@ -108,10 +114,6 @@ public class MBeanMetadataHelper {
                         break;
                     default:
                         throw new IllegalStateException("Unsupported type : " + beanMetadata);
-                }
-                List<Tag> tags = new ArrayList<>();
-                for (fish.payara.microprofile.metrics.jmx.XmlTag tag : beanMetadata.getTags()){
-                    tags.add(new Tag(tag.getName(), tag.getValue()));
                 }
                 metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
             } catch (IllegalArgumentException ex) {
