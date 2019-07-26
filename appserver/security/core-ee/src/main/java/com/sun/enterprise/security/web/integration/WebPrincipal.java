@@ -44,10 +44,13 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import org.glassfish.security.common.PrincipalImpl;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityContextProxy;
+
+import javax.security.auth.x500.X500Principal;
 
 public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy {
 
@@ -173,7 +176,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         // Use the full DN name from the certificates. This should normally be the same as 
         // context.getCallerPrincipal(), but a realm could have decided to map the name in which
         // case they will be different.
-        return certificates[0].getSubjectX500Principal().getName();
+        return certificates[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
     }
 
 }

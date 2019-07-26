@@ -40,6 +40,9 @@
 package fish.payara.ejb.invoke;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
+
+import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -74,7 +77,9 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
+ * @deprecated Replaced by {@link EjbOverHttpResource}
  */
+@Deprecated
 @WebServlet("/ejb/*")
 public class InvokeEJBServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;

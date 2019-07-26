@@ -100,7 +100,7 @@ public class MetricsInterceptor {
     private Object constructorInvocation(InvocationContext context) throws Exception {
         Object target;
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (metricsService.isMetricsEnabled()) {
+        if (metricsService.isEnabled()) {
             Class<?> beanClass = bean.getBeanClass();
             registerMetrics(beanClass, context.getConstructor(), context.getTarget());
 

@@ -40,8 +40,10 @@
 //Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.amx.util.stringifier;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import org.glassfish.admin.amx.util.StringUtil;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;

@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -193,11 +194,12 @@ public class PayaraConfig implements Config {
             
         if (converter == null) {
             // search for a matching raw type
-            for (Type type1 : converters.keySet()) {
+            for (Entry<Type, Converter> entry : converters.entrySet()) {
+                Type type1 = entry.getKey();
                 if (type1 instanceof ParameterizedType) {
                     ParameterizedType ptype = (ParameterizedType)type1;
                     if (ptype.getRawType().equals(propertyType)) {
-                        converter = converters.get(type1);
+                        converter = entry.getValue();
                         break;
                     }
                 }

@@ -90,6 +90,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -5083,14 +5084,15 @@ public class StandardContext
         boolean ok = true;
         synchronized (filterConfigs) {
             filterConfigs.clear();
-            for (String name : filterDefs.keySet()) {
+            for (Entry<String, FilterDef> entry : filterDefs.entrySet()) {
+                String name = entry.getKey();
                 if(log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, " Starting filter '" + name + "'");
                 }
                 try {
                     filterConfigs.put(name,
                         new ApplicationFilterConfig(this,
-                                                    filterDefs.get(name)));
+                                                    entry.getValue()));
                 } catch(Throwable t) {
                     String msg = MessageFormat.format(rb.getString(LogFacade.STARTING_FILTER_EXCEPTION), name);
                     getServletContext().log(msg, t);
@@ -5115,11 +5117,12 @@ public class StandardContext
 
         // Release all Filter and FilterConfig instances
         synchronized (filterConfigs) {
-            for (String filterName : filterConfigs.keySet()) {
+            for (Entry<String, FilterConfig> entry : filterConfigs.entrySet()) {
+                String filterName = entry.getKey();
                 if(log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, " Stopping filter '" + filterName + "'");
                 }
-                ApplicationFilterConfig filterConfig = (ApplicationFilterConfig)filterConfigs.get(filterName);
+                ApplicationFilterConfig filterConfig = (ApplicationFilterConfig)entry.getValue();
                 filterConfig.release();
             }
             filterConfigs.clear();

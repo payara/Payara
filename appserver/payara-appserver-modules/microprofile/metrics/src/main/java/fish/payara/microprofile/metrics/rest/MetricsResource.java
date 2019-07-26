@@ -40,8 +40,8 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
-import static fish.payara.microprofile.metrics.Constants.REGISTRY_NAMES;
+import static fish.payara.microprofile.metrics.MetricsConstants.EMPTY_STRING;
+import static fish.payara.microprofile.metrics.MetricsConstants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -70,6 +70,8 @@ import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
     
+    private static final String APPLICATION_WILDCARD = "application/*";
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
      * methods.
@@ -81,14 +83,10 @@ public class MetricsResource extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (!metricsService.isMetricsEnabled()) {
-            response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
-            return;
-        }
-        if(!request.isSecure() && metricsService.isMetricsSecure()){
-            response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
+
+        if (!metricsService.isEnabled()) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service is disabled");
             return;
         }
         metricsService.reregisterMetadataConfig();
@@ -156,7 +154,7 @@ public class MetricsResource extends HttpServlet {
                         } else {
                             qTextFormat = 1;
                         }
-                    } else if (format.contains(APPLICATION_JSON) || format.contains("application/*")) {
+                    } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
                         String[] splitJsonFormat = format.split(";");
                         if (splitJsonFormat.length == 2) {
                             qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
@@ -176,7 +174,7 @@ public class MetricsResource extends HttpServlet {
                 }
                 break;
             case OPTIONS:
-                if (accept.contains(APPLICATION_JSON)) {
+                if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
                     outputWriter = new JsonMetadataWriter(writer);
                 } else {
                     response.sendError(

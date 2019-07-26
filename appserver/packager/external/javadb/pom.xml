@@ -40,17 +40,40 @@
     holder.
 
 -->
+<!--
+    Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+-->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
         <version>5.193-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>javadb</artifactId>
     <packaging>distribution-fragment</packaging>
+    
     <name>JavaDB to be bundled into GlassFish</name>
+    
+    <developers>
+        <developer>
+            <id>kohsuke</id>
+            <name>Kohsuke Kawaguchi</name>
+            <organization>Oracle, Inc.</organization>
+        </developer>
+    </developers>
+    
+    <dependencies>
+        <dependency>
+            <groupId>javadb</groupId>
+            <artifactId>javadb</artifactId>
+            <version>${javadb.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -68,7 +91,7 @@
                                 <resolveArtifact artifactId="javadb" property="javadb.zip" />
 
                                 <mkdir dir="target/classes/glassfish/javadb" />
-				<unzip src="${javadb.zip}" dest="target/classes/glassfish/javadb">
+                                <unzip src="${javadb.zip}" dest="target/classes/glassfish/javadb">
                                     <patternset>
                                         <exclude name="demo/**" />
                                         <exclude name="docs/**" />
@@ -86,20 +109,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <developers>
-        <developer>
-            <id>kohsuke</id>
-            <name>Kohsuke Kawaguchi</name>
-            <organization>Oracle, Inc.</organization>
-        </developer>
-    </developers>
-    <dependencies>
-        <dependency>
-            <groupId>javadb</groupId>
-            <artifactId>javadb</artifactId>
-            <version>${javadb.version}</version>
-	    <type>zip</type>
-        </dependency>
-    </dependencies>
+    
 </project>

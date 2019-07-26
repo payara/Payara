@@ -46,6 +46,7 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -126,10 +127,10 @@ public class PayaraPropertiesHandlers {
 
         if (props != null) {
             for (Map<String, String> prop : props) {
-                for (String key : prop.keySet()) {
-                    if (key.equals("name")) {
-                        if (prop.get(key).toString().contains("payara.microprofile")) {
-                            prop.put(key, prop.get(key).toString().replaceAll("payara.microprofile.", ""));
+                for (Entry<String, String> entry : prop.entrySet()) {
+                    if (entry.getKey().equals("name")) {
+                        if (entry.getValue().toString().contains("payara.microprofile")) {
+                            prop.put(entry.getKey(), entry.getValue().toString().replaceAll("payara.microprofile.", ""));
                             convertedProps.add(prop);
                         }
                     }
@@ -159,10 +160,10 @@ public class PayaraPropertiesHandlers {
 
         if (props != null) {
             for (Map<String, String> prop : props) {
-                for (String key : prop.keySet()) {
-                    if (key.equals("name")) {
-                        if (!prop.get(key).toString().contains("payara.microprofile.")) {
-                            prop.put(key, "payara.microprofile." + prop.get(key).toString().replaceAll("\\s+", ""));
+                for (Entry<String, String> entry : prop.entrySet()) {
+                    if (entry.getKey().equals("name")) {
+                        if (!entry.getValue().toString().contains("payara.microprofile.")) {
+                            prop.put(entry.getKey(), "payara.microprofile." + entry.getValue().toString().replaceAll("\\s+", ""));
                         }
                     }
                 }

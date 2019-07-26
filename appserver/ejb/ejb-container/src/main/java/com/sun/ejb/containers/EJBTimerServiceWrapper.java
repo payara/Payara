@@ -273,7 +273,7 @@ public class EJBTimerServiceWrapper implements TimerService {
             Collection<TimerPrimaryKey> timerIds
                     = timerService_.getTimerIds(containerIds);
             for (TimerPrimaryKey timerId : timerIds) {
-                timerWrappers.add(new TimerWrapper(timerId, persistentTimerService_));
+                timerWrappers.add(new TimerWrapper(timerId, timerService_));
             }
         }
 

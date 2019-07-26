@@ -219,11 +219,11 @@ public class ListSubComponentsCommand implements AdminCommand {
             part.setMessage(localStrings.getLocalString("listsubcomponents.no.elements.to.list", "Nothing to List."));
         }
         int i=0;
-        for (String key : subComponents.keySet()) {
+        for (Map.Entry<String, String> entry : subComponents.entrySet()) {
             ActionReport.MessagePart childPart = part.addChild();
             childPart.setMessage(
                     String.format(formattedLine,
-                    new Object[]{key, subComponents.get(key)} ));
+                    new Object[]{entry.getKey(), entry.getValue()} ));
             if (appname == null && !app.isVirtual()) {
                 // we use the property mechanism to provide
                 // support for JSR88 client
@@ -233,7 +233,7 @@ public class ListSubComponentsCommand implements AdminCommand {
                 }
             }
             if (resources) {
-                Module module = application.getModule(key);
+                Module module = application.getModule(entry.getKey());
                 if (module != null) {
                     ActionReport subReport = report.addSubActionsReport();
                     CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_list-resources", subReport, context.getSubject());

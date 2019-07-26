@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -240,12 +240,25 @@ public final class JDK {
     }
 
     public static boolean isCorrectJDK(Optional<Version> minVersion, Optional<Version> maxVersion) {
+        return isCorrectJDK(Optional.of(JDK_VERSION), minVersion, maxVersion);
+    }
+
+    /**
+     * Check if the reference version falls between the minVersion and maxVersion.
+     *
+     * @param reference The version to compare; falls back to the current JDK version if empty.
+     * @param minVersion The inclusive minimum version.
+     * @param maxVersion The inclusive maximum version.
+     * @return true if within the version range, false otherwise
+     */
+    public static boolean isCorrectJDK(Optional<Version> reference, Optional<Version> minVersion, Optional<Version> maxVersion) {
+        Version version = reference.orElse(JDK_VERSION);
         boolean correctJDK = true;
         if (minVersion.isPresent()) {
-            correctJDK = JDK_VERSION.newerOrEquals(minVersion.get());
+            correctJDK = version.newerOrEquals(minVersion.get());
         }
         if (correctJDK && maxVersion.isPresent()) {
-            correctJDK = JDK_VERSION.olderOrEquals(maxVersion.get());
+            correctJDK = version.olderOrEquals(maxVersion.get());
         }
         return correctJDK;
     }

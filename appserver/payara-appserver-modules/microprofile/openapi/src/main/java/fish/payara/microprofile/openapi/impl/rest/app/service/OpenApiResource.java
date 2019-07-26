@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.OpenApiService;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
+import javax.servlet.http.HttpServletRequest;
 
 @Path("/")
 public class OpenApiResource {
@@ -68,18 +69,19 @@ public class OpenApiResource {
 
     @GET
     @Produces({ APPLICATION_YAML, APPLICATION_JSON })
-    public Response getResponse(@Context HttpServletResponse response) throws IOException {
+    public Response getResponse(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+        OpenApiService openApiService = OpenApiService.getInstance();
 
         // If the server is disabled, throw an error
-        if (!OpenApiService.getInstance().isEnabled()) {
-            response.sendError(FORBIDDEN.getStatusCode(), "OpenAPI Service is disabled.");
+        if (!openApiService.isEnabled()) {
+            response.sendError(FORBIDDEN.getStatusCode(), "MicroProfile OpenAPI Service is disabled.");
             return Response.status(FORBIDDEN).build();
         }
 
         // Get the OpenAPI document
         OpenAPI document = null;
         try {
-            document = OpenApiService.getInstance().getDocument();
+            document = openApiService.getDocument();
         } catch (OpenAPIBuildException ex) {
             LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
         }

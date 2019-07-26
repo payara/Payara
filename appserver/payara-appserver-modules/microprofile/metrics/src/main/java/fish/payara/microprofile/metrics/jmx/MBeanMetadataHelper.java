@@ -110,7 +110,7 @@ public class MBeanMetadataHelper {
                         throw new IllegalStateException("Unsupported type : " + beanMetadata);
                 }
                 List<Tag> tags = new ArrayList<>();
-                for (fish.payara.microprofile.metrics.jmx.Tag tag : beanMetadata.getTags()){
+                for (fish.payara.microprofile.metrics.jmx.XmlTag tag : beanMetadata.getTags()){
                     tags.add(new Tag(tag.getName(), tag.getValue()));
                 }
                 metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
@@ -243,28 +243,28 @@ public class MBeanMetadataHelper {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
                 if (obj instanceof CompositeDataSupport) {
                     CompositeDataSupport compositeData = (CompositeDataSupport) obj;
-                    MetadataBuilder newMetadata = Metadata.builder(metadata);
+                    MetadataBuilder newMetadataBuilder = Metadata.builder(metadata);
                     for (String subAttrResolvedName : compositeData.getCompositeType().keySet()) {
                         subAttribute = subAttrResolvedName;
                         if ("description".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && metadata.getDescription() == null) {
-                            newMetadata.withDescription((String) compositeData.get(subAttribute));
+                                && metadata.getDescription().isPresent()) {
+                            newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && metadata.getDisplayName() == null) {
-                            newMetadata.withDisplayName((String) compositeData.get(subAttribute));
+                            newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && MetricUnits.NONE.equals(metadata.getUnit())) {
-                            newMetadata.withUnit((String) compositeData.get(subAttribute));
+                                && MetricUnits.NONE.equals(metadata.getUnit().get())) {
+                            newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
                         }
                         if (compositeData.get(subAttribute) != null
                                 && !(compositeData.get(subAttribute) instanceof Number)) {
                             continue;
                         }
                     }
-                    MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadata.build());
+                    MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadataBuilder.build());
                     newMbeanMetadata.addTags(metadata.getTags());
                     metadataList.add(createMetadata(newMbeanMetadata, exp, key, attribute, subAttribute));
                 }
@@ -321,8 +321,8 @@ public class MBeanMetadataHelper {
                 metadata.getTypeRaw(),
                 metadata.getUnit().orElse(null)
         );
-        for (fish.payara.microprofile.metrics.jmx.Tag oldTag: metadata.getTags()) {
-            fish.payara.microprofile.metrics.jmx.Tag newTag = new fish.payara.microprofile.metrics.jmx.Tag();
+        for (fish.payara.microprofile.metrics.jmx.XmlTag oldTag: metadata.getTags()) {
+            fish.payara.microprofile.metrics.jmx.XmlTag newTag = new fish.payara.microprofile.metrics.jmx.XmlTag();
             newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute));
             newTag.setValue(formatMetadata(oldTag.getValue(), key, attribute, subAttribute));
             newMetaData.getTags().add(newTag);

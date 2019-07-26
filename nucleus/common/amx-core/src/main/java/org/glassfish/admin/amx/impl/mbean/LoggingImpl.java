@@ -386,7 +386,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     public Map<String, Number>[] getErrorInfo() {
         unimplemented();//throws UnsupportedOperationException
 
-        final List<Map<String, Object>> infos = null;
+        final List<Map<String, Object>> infos = Collections.emptyList(); //getLogMBean().getErrorInformation();
 
         final Map<String, Number>[] results = TypeCast.asArray(new HashMap[infos.size()]);
 

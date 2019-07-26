@@ -55,10 +55,7 @@
 package fish.payara.microprofile.metrics.cdi;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
@@ -80,25 +77,6 @@ import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @ApplicationScoped
 public class MetricsHelper {
-    
-    private static final String GLOBAL_TAGS_VARIABLE = "MP_METRICS_TAGS";
-
-    public static String getGlobalTagsString() {
-        return System.getenv(GLOBAL_TAGS_VARIABLE);
-    }
-
-    public static List<Tag> getGlobalTags() {
-        return convertToTags(getGlobalTagsString());
-    }
-
-    private static List<Tag> convertToTags(String tagsString) {
-        List<Tag> tags = Collections.emptyList();
-        if (tagsString != null) {
-            String[] singleTags = tagsString.split(",");
-            tags = Arrays.asList(tagsFromString(singleTags));
-        }
-        return tags;
-    }
 
     public String metricNameOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
@@ -150,7 +128,7 @@ public class MetricsHelper {
     }
 
     public Metadata metadataOf(InjectionPoint ip) {
-        Annotated annotated = ip.getAnnotated();ip.getMember().getDeclaringClass().getCanonicalName();
+        Annotated annotated = ip.getAnnotated();
         return metadataOf(annotated, ip.getMember().getDeclaringClass().getCanonicalName(), ip.getMember().getName());
     }
 
@@ -161,24 +139,24 @@ public class MetricsHelper {
     private Metadata metadataOf(Annotated annotated, String enclosingClass, String memberName) {
         MetadataBuilder metadataBuilder = Metadata.builder();
         Metric metric = annotated.getAnnotation(Metric.class);
-        metadataBuilder.withDescription(metric.description());
-        metadataBuilder.withDisplayName(metric.displayName());
-        metadataBuilder.withUnit(metric.unit());
+        metadataBuilder = metadataBuilder.withDescription(metric.description())
+            .withDisplayName(metric.displayName())
+            .withUnit(metric.unit());
         if (metric.absolute()) {
             if (metric.name().isEmpty()) {
-                metadataBuilder.withName(memberName);
+                metadataBuilder = metadataBuilder.withName(memberName);
             } else {
-                metadataBuilder.withName(metric.name());
+                metadataBuilder = metadataBuilder.withName(metric.name());
             }
         } else {
             if (metric.name().isEmpty()) {
-                metadataBuilder.withName(enclosingClass + '.' + memberName);
+                metadataBuilder = metadataBuilder.withName(enclosingClass + '.' + memberName);
             } else {
-                metadataBuilder.withName(enclosingClass + '.' + metric.name());
+                metadataBuilder = metadataBuilder.withName(enclosingClass + '.' + metric.name());
             }
         }
         setMetricType(metadataBuilder, annotated);
-        metadataBuilder.notReusable();
+        metadataBuilder = metadataBuilder.notReusable();
         return metadataBuilder.build();
     }
     

@@ -380,7 +380,6 @@ public class AMXConfigImpl extends AMXImplBase {
             final List<AttributeChanges> changes = ListUtil.newList();
             for (Map.Entry<String, Object> xmlEntry : mAttrs.entrySet()) {
                 final Object value = xmlEntry.getValue();
-
                 if (value instanceof String) {
                     changes.add(new ConfigSupport.SingleAttributeChange(xmlEntry.getKey(), (String) value));
                 } else {
@@ -1123,10 +1122,20 @@ public class AMXConfigImpl extends AMXImplBase {
 
         @Override
         protected void makeChanges()
+<<<<<<< HEAD
                 throws TransactionFailure {
             for (Map.Entry<String, Object> xmlEntry : mChanges.entrySet()) {
                 final Object value = xmlEntry.getValue();
                 final ConfigModel.Property prop = getConfigModel_Property(xmlEntry.getKey());
+=======
+                throws TransactionFailure
+        {
+            for (final Map.Entry<String, Object> entry : mChanges.entrySet())
+            {
+                String xmlName = entry.getKey();
+                final Object value = entry.getValue();
+                final ConfigModel.Property prop = getConfigModel_Property(xmlName);
+>>>>>>> cbd8ee76a15a945e8b1d91ac9407b335068e2f8f
 
                 if (prop.isCollection()) {
                     handleCollection(mWriteable, prop, ListUtil.asStringList(value));

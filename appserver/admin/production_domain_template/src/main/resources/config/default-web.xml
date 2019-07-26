@@ -310,16 +310,16 @@
         jspcaching-connector.jar
         web-glue.jar
         hibernate-validator.jar
-        javax.ejb.jar
+        jakarta.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
         jakarta.mail.jar
         javax.management.j2ee-api.jar
-        javax.persistence.jar
+        jakarta.persistence.jar
         javax.resource-api.jar
         javax.security.auth.message.jar
         javax.security.jacc.jar
-        javax.transaction-api.jar
+        jakarta.transaction-api.jar
         javax.xml.rpc-api.jar
         webservices-osgi.jar
         weld-osgi-bundle.jar

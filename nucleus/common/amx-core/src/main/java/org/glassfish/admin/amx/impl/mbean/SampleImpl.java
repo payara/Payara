@@ -51,6 +51,7 @@ import javax.management.openmbean.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.List;
 import java.util.HashMap;
 
