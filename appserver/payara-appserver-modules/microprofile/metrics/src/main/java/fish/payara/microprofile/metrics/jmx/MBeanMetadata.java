@@ -46,7 +46,6 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
 import java.util.ArrayList;
 import static java.util.Arrays.asList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import static java.util.Objects.isNull;
@@ -130,7 +129,7 @@ public class MBeanMetadata implements Metadata {
     }
     
     public MBeanMetadata(Metadata metadata) {
-        this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().get(), metadata.getTypeRaw(), metadata.getUnit().get());
+        this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().orElse(null), metadata.getTypeRaw(), metadata.getUnit().orElse(null));
         
     }
 
@@ -186,17 +185,11 @@ public class MBeanMetadata implements Metadata {
     
     @Override
     public Optional<String> getUnit() {
-        if (unit.isEmpty()) {
-            return Optional.empty();
-        }
         return Optional.ofNullable(unit);
     }
     
     @Override
     public Optional<String> getDescription() {
-        if (description.isEmpty()) {
-            return Optional.empty();
-        }
         return Optional.ofNullable(description);
     }
     
@@ -272,10 +265,10 @@ public class MBeanMetadata implements Metadata {
     }
     
     public void addTags(List<XmlTag> tags) {
-        if (tags == null) {
-            tags = new ArrayList<>();
+        if (this.tags == null) {
+            this.tags = new ArrayList<>();
         }
-        tags.addAll(tags);
+        this.tags.addAll(tags);
     }
 
 }
