@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amxtest.monitor;
 
@@ -45,7 +46,7 @@ import com.sun.appserv.management.util.j2ee.J2EEUtil;
 import com.sun.appserv.management.util.misc.TypeCast;
 import org.glassfish.admin.amxtest.AMXTestBase;
 
-import org.glassfish.j2ee.statistics.Statistic;
+import javax.management.j2ee.statistics.Statistic;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
