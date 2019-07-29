@@ -58,7 +58,7 @@ public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
 
     private void addPoint(CharSequence key, long value) {
         slidingWindowsPerSeries.computeIfAbsent(new Series(key.toString()), 
-                series -> new SeriesSlidingWindow(series, 50)).add(time, value);
+                series -> new SeriesSlidingWindow(series, 24)).add(time, value);
     }
 
     @Override

@@ -95,6 +95,6 @@ public class MonitoringConsoleResouce {
     @Path("/points/series/")
     public String[] getSlidingWindowSeries() {
         return stream(data.selectAllSeriesWindow().spliterator(), false)
-                .map(window -> window.getSeries().toString()).toArray(String[]::new);
+                .map(window -> window.getSeries().toString()).sorted().toArray(String[]::new);
     }
 }
