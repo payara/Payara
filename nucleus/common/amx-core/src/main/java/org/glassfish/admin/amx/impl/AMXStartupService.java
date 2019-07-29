@@ -396,7 +396,7 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
             MonitoringDataCollector amxCollector = collector.in("amx");
             for (AMXProxy proxy : domainRoot.getQueryMgr().queryAll()) {
                 if ("monitoring".equals(proxy.extra().group())) {
-                    amxCollector.tag("bean", proxy.getName().replaceAll("\\s|[=/]", "."))
+                    amxCollector.entity(proxy.getName().replaceAll("\\s|[=/]", "."))
                         .collectObject(proxy, MonitoringDataUtil::collectBean);
                 }
             }
