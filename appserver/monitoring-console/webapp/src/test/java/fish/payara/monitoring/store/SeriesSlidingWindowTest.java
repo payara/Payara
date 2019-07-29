@@ -15,7 +15,7 @@ import fish.payara.monitoring.store.SeriesSlidingWindow;
 public class SeriesSlidingWindowTest {
 
     private static final Series SERIES = new Series("test");
-    
+
     @Test
     public void fillToCapacity() {
         int capacity = 3;

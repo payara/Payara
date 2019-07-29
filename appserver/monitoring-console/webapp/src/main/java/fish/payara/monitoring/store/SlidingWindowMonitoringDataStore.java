@@ -38,13 +38,22 @@ public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
         time = (System.currentTimeMillis() / 1000L) * 1000L;
         MonitoringDataCollector collector = new SinkDataCollector(this::addPoint);
+        long collectionStart = System.currentTimeMillis();
+        int collectedSources = 0;
+        int failedSources = 0;
         for (MonitoringDataSource source : sources) {
             try {
+                collectedSources++;
                 source.collect(collector);
             } catch (RuntimeException e) {
+                failedSources++;
                 // ignore and continue with next
             }
         }
+        collector.in("collect")
+            .collect("duration", System.currentTimeMillis() - collectionStart)
+            .collectNonZero("sources", collectedSources)
+            .collectNonZero("failed", failedSources);
     }
 
     private void addPoint(CharSequence key, long value) {
