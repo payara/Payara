@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.nucleus.notification.log;
 
-import com.google.common.base.Strings;
-import com.google.common.eventbus.Subscribe;
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
@@ -51,10 +49,10 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import javax.inject.Provider;
 import java.text.MessageFormat;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
@@ -73,7 +71,7 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
 
     @Override
     public void bootstrap() {
-        register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
+        register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class);
 
         execOptions = (LogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
@@ -111,8 +109,7 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(LogNotificationEvent event) {
+    public void handleNotification(@SubscribeTo LogNotificationEvent event) {
         if (execOptions != null && execOptions.isEnabled()) {
             if (event.getParameters() != null && event.getParameters().length > 0) {
                 String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());

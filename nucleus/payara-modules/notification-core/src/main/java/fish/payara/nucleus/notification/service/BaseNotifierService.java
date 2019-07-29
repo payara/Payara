@@ -95,11 +95,15 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         events.register(this);
     }
 
+    @Deprecated
     protected void register(NotifierType type, Class<C> notifierType, Class<NC> notifierConfigType, BaseNotifierService service) {
+        register(type, notifierType, notifierConfigType);
+    }
+    
+    protected void register(NotifierType type, Class<C> notifierType, Class<NC> notifierConfigType) {
         this.type = type;
         this.notifierType = notifierType;
         this.notifierConfigType = notifierConfigType;
-        eventBus.register(service);
     }
 
     public abstract void handleNotification(E event);

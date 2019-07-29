@@ -39,8 +39,6 @@
  */
 package fish.payara.micro.cmd.options;
 
-import com.google.common.base.Joiner;
-
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -131,8 +129,14 @@ public class RuntimeOptions {
             }
         }
         if (invalidArgs.size() > 0) {
-            String argsStr = Joiner.on(",").skipNulls().join(invalidArgs);
-            throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArguments"), argsStr));
+            StringBuilder invalid = new StringBuilder();
+            for (String invalidArgument: invalidArgs) {
+                if (invalidArgument != null) {
+                    invalid.append(invalidArgument);
+                    invalid.append(',');
+                }
+            }
+            throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArguments"), invalid.toString()));
         }
     }
     

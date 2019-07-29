@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,6 @@
  */
 package fish.payara.notification.jms;
 
-import com.google.common.base.Strings;
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.JmsNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
@@ -78,7 +76,7 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
 
     @Override
     public void bootstrap() {
-        register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class, this);
+        register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class);
 
         try {
             executionOptions = (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
@@ -87,19 +85,19 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
                 initializeExecutor();
 
                 final Properties env = new Properties();
-                if (!Strings.isNullOrEmpty(executionOptions.getContextFactoryClass())) {
+                if (StringUtils.ok(executionOptions.getContextFactoryClass())) {
                     env.put(Context.INITIAL_CONTEXT_FACTORY, executionOptions.getContextFactoryClass());
                 }
-                if (!Strings.isNullOrEmpty(executionOptions.getUrl())) {
+                if (StringUtils.ok(executionOptions.getUrl())) {
                     env.put(Context.PROVIDER_URL, executionOptions.getUrl());
                 }
-                if (!Strings.isNullOrEmpty(executionOptions.getUsername())) {
+                if (StringUtils.ok(executionOptions.getUsername())) {
                     env.put(Context.SECURITY_PRINCIPAL, executionOptions.getUsername());
                 }
-                if (!Strings.isNullOrEmpty(executionOptions.getPassword())) {
+                if (StringUtils.ok(executionOptions.getPassword())) {
                     env.put(Context.SECURITY_CREDENTIALS, executionOptions.getPassword());
                 }
-                if (!Strings.isNullOrEmpty(executionOptions.getConnectionFactoryName())) {
+                if (StringUtils.ok(executionOptions.getConnectionFactoryName())) {
                     try {
                         InitialContext ctx = new InitialContext(env);
                         ConnectionFactory connectionFactory =
@@ -124,8 +122,7 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(JmsNotificationEvent event) {
+    public void handleNotification(@SubscribeTo JmsNotificationEvent event) {
         if (executionOptions != null && executionOptions.isEnabled()) {
             JmsMessage message = new JmsMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);

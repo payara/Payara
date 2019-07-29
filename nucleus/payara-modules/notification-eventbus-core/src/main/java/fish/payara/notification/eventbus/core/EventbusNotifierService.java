@@ -39,7 +39,6 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
 import fish.payara.nucleus.notification.configuration.EventbusNotifier;
@@ -50,6 +49,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
@@ -66,8 +66,7 @@ public class EventbusNotifierService extends BaseNotifierService<EventbusNotific
     private EventbusNotifierConfigurationExecutionOptions executionOptions;
 
     @Override
-    @Subscribe
-    public void handleNotification(EventbusNotificationEvent event) {
+    public void handleNotification(@SubscribeTo EventbusNotificationEvent event) {
         if(executionOptions != null && executionOptions.isEnabled()) {
             EventbusMessageImpl message = new EventbusMessageImpl(event, event.getSubject(), event.getMessage());
             eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
@@ -76,7 +75,7 @@ public class EventbusNotifierService extends BaseNotifierService<EventbusNotific
 
     @Override
     public void bootstrap() {
-        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
+        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class);
 
         executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
     }

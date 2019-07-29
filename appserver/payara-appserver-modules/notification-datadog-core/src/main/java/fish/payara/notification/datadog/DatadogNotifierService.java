@@ -39,11 +39,11 @@
  */
 package fish.payara.notification.datadog;
 
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.DatadogNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -64,8 +64,7 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
 }
 
     @Override
-    @Subscribe
-    public void handleNotification(DatadogNotificationEvent event) {
+    public void handleNotification(@SubscribeTo DatadogNotificationEvent event) {
         if (executionOptions != null && executionOptions.isEnabled()) {
             DatadogMessage message = new DatadogMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
@@ -74,7 +73,7 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
 
     @Override
     public void bootstrap() {
-        register(NotifierType.DATADOG, DatadogNotifier.class, DatadogNotifierConfiguration.class, this);
+        register(NotifierType.DATADOG, DatadogNotifier.class, DatadogNotifierConfiguration.class);
         executionOptions = (DatadogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
         if (executionOptions != null && executionOptions.isEnabled()) {
             initializeExecutor();

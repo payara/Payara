@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.jmx.monitoring.admin;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
@@ -56,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -167,12 +166,9 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         actionReport.setExtraProperties(extraProps);
 
         if (!monitoringConfig.getNotifierList().isEmpty()) {
-            List<Class<Notifier>> notifierClassList = Lists.transform(monitoringConfig.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
-                @Override
-                public Class<Notifier> apply(Notifier input) {
-                    return resolveNotifierClass(input);
-                }
-            });
+            List<Class<Notifier>> notifierClassList = monitoringConfig.getNotifierList().stream().map((input) -> {
+                return resolveNotifierClass(input);
+            }).collect(Collectors.toList());
 
             Properties notifierProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {

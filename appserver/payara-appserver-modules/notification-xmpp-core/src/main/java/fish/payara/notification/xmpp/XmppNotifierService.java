@@ -39,12 +39,10 @@
  */
 package fish.payara.notification.xmpp;
 
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.configuration.XmppNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.SmackException;
@@ -56,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
@@ -123,8 +122,7 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(XmppNotificationEvent event) {
+    public void handleNotification(@SubscribeTo XmppNotificationEvent event) {
         if (executionOptions != null && executionOptions.isEnabled()) {
             XmppMessage message = new XmppMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);

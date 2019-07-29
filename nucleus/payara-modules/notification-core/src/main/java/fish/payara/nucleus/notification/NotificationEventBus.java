@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,16 @@
  */
 package fish.payara.nucleus.notification;
 
-import com.google.common.eventbus.EventBus;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.Topic;
+import org.glassfish.hk2.extras.ExtrasUtilities;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -57,8 +60,14 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "notification-eventbus")
 @RunLevel(StartupRunLevel.VAL)
 public class NotificationEventBus {
-
-    private EventBus eventBus = new EventBus();
+    
+    @Inject
+    Topic<NotificationEvent> topiceventBus;
+    
+    public NotificationEventBus() {
+        // done in constructor to ensure that topics are valid for injection
+        ExtrasUtilities.enableTopicDistribution(Globals.getDefaultHabitat());
+    }
 
     public void register(BaseNotifierService notifier) {
         eventBus.register(notifier);
@@ -74,5 +83,6 @@ public class NotificationEventBus {
 
     void postEvent(NotificationEvent event) {
         eventBus.post(event);
+        topiceventBus.publish(event);
     }
 }

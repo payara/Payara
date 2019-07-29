@@ -39,15 +39,13 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.AnnotatedConstructor;
 import javax.enterprise.inject.spi.AnnotatedField;
@@ -74,8 +72,11 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
 
     @Override
     public Set<Annotation> getAnnotations() {
-        return FluentIterable.from(Iterables.filter(wrapped.getAnnotations(), Predicates.not(appScopedFilter)))
-                             .append(clusteredScopedLiteral).append(clusteredScopedInterceptorLiteral).toSet();
+        Set<Annotation> annotations = new HashSet(wrapped.getAnnotations());
+        annotations.removeIf(appScopedFilter);
+        annotations.add(clusteredScopedLiteral);
+        annotations.add(clusteredScopedInterceptorLiteral);
+        return annotations;
     }
     @Override
     public Type getBaseType() {
@@ -116,7 +117,7 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
     private static class ClusteredInterceptorAnnotationLiteral extends AnnotationLiteral<ClusterScopedIntercepted> implements ClusterScopedIntercepted {}
     private static class ApplicationScopedFilter implements Predicate<Annotation> {
         @Override
-        public boolean apply(Annotation input) {
+        public boolean test(Annotation input) {
             return input.annotationType().equals(ApplicationScoped.class);
         }
     }

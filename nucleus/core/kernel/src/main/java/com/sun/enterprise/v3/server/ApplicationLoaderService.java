@@ -41,9 +41,6 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
@@ -369,7 +366,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // lifecycle modules are loaded separately
         if (Boolean.valueOf(app.getDeployProperties().getProperty
             (ServerTags.IS_LIFECYCLE))) {
-            return ImmutableList.of();
+            return Collections.unmodifiableList(Collections.emptyList());
         }
 
         URI uri;
@@ -377,7 +374,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             uri = new URI(source);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.cantDetermineLocation, e.getLocalizedMessage());
-            return ImmutableList.of();
+            return Collections.unmodifiableList(Collections.emptyList());
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
@@ -442,7 +439,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         } else {
             logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
-        return FluentIterable.from(appDeployments).filter(Predicates.notNull()).toList();
+        appDeployments.removeIf((t) -> {
+            return t == null;
+        });
+        return appDeployments;
     }
 
 
@@ -557,7 +557,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     private List<Deployment.ApplicationDeployment> loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report) {
         if (app.getAppTenants() == null) {
-            return ImmutableList.of();
+            return Collections.unmodifiableList(Collections.emptyList());
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
@@ -603,7 +603,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 }
             }
         }
-        return ImmutableList.copyOf(appDeployments);
+        return Collections.unmodifiableList(appDeployments);
     }
 
     private boolean loadAppOnDAS(String appName) {

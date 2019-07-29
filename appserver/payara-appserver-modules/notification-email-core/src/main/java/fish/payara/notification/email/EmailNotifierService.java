@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,10 @@
  */
 package fish.payara.notification.email;
 
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.EmailNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -53,6 +51,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
@@ -73,8 +72,7 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(EmailNotificationEvent event) {
+    public void handleNotification(@SubscribeTo EmailNotificationEvent event) {
         if (executionOptions != null && executionOptions.isEnabled()) {
             EmailMessage message = new EmailMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
@@ -83,7 +81,7 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
 
     @Override
     public void bootstrap() {
-        register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
+        register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class);
 
         executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
         if(executionOptions != null && executionOptions.isEnabled()) {

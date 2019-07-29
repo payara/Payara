@@ -73,7 +73,6 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import com.google.common.net.MediaType;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
@@ -317,7 +316,7 @@ public final class ServerSynchronizer implements PostConstruct {
             if (logger.isLoggable(FINE))
                 logger.log(FINE, "ServerSynchronizer: sending file {0}{1}",
                         new Object[] { f, modTime.time == 0 ? " because it doesn't exist on the instance" : " because it was out of date" });
-            payload.requestFileReplacement(MediaType.OCTET_STREAM.toString(), root.relativize(f.toURI()), "configChange", null, f, true);
+            payload.requestFileReplacement("application/octet-stream", root.relativize(f.toURI()), "configChange", null, f, true);
         } catch (IOException ioex) {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "ServerSynchronizer: IOException attaching file: {0}", f);
