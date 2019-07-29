@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.MetricsConstants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import static java.util.Arrays.asList;
 import java.util.Map;
@@ -50,7 +49,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
@@ -83,8 +82,9 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
         reg.addMapping("/" + configuration.getEndpoint() + "/*");
         if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
-            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
-            ctx.declareRoles(DEFAULT_GROUP_NAME);
+            String[] roles = configuration.getRoles().split(",");
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
+            ctx.declareRoles(roles);
         }
     }
 }

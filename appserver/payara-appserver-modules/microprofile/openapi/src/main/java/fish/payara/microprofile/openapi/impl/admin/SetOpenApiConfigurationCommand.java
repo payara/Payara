@@ -91,9 +91,6 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "corsHeaders", optional = true, defaultValue = "false")
     private Boolean corsHeaders;
 
-    @Param(optional = true, alias = "securityenabled")
-    private Boolean securityEnabled;
-
     @Inject
     private Domain domain;
 
@@ -111,14 +108,17 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
         OpenApiServiceConfiguration config = targetUtil.getConfig(target)
                 .getExtensionByType(OpenApiServiceConfiguration.class);
 
-        ActionReport checkUserReport = actionReport.addSubActionsReport();
-        ActionReport createUserReport = actionReport.addSubActionsReport();
-        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
-            createDefaultMicroprofileUser(createUserReport, subject);
-        }
-        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+        if (Boolean.TRUE.equals(securityEnabled)
+                || Boolean.parseBoolean(config.getSecurityEnabled())) {
+            ActionReport checkUserReport = actionReport.addSubActionsReport();
+            ActionReport createUserReport = actionReport.addSubActionsReport();
+            if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+                createDefaultMicroprofileUser(createUserReport, subject);
+            }
+            if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
         }
 
         try {
@@ -134,6 +134,9 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
                 }
                 if (securityEnabled != null) {
                     configProxy.setSecurityEnabled(securityEnabled.toString());
+                }
+                if (roles != null) {
+                    configProxy.setRoles(roles);
                 }
                 return configProxy;
             }, config);

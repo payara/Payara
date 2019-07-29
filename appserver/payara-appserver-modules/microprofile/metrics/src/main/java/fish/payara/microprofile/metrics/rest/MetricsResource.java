@@ -89,11 +89,6 @@ public class MetricsResource extends HttpServlet {
             response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service is disabled");
             return;
         }
-        if (!request.isSecure() && (metricsService.isMetricsSecure()
-                || metricsService.isSecurityEnabled())) {
-            response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service security is enabled");
-            return;
-        }
         metricsService.reregisterMetadataConfig();
         MetricsRequest metricsRequest = new MetricsRequest(request);
         try {

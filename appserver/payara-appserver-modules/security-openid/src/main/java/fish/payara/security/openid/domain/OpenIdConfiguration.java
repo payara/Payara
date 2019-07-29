@@ -66,6 +66,8 @@ public class OpenIdConfiguration {
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
     private ClaimsConfiguration claimsConfiguration;
+    private boolean tokenAutoRefresh;
+    private int tokenMinValidity;
 
     private static final String BASE_URL_EXPRESSION = "${baseURL}";
 
@@ -222,6 +224,24 @@ public class OpenIdConfiguration {
         return this;
     }
 
+    public boolean isTokenAutoRefresh() {
+        return tokenAutoRefresh;
+    }
+
+    public OpenIdConfiguration setTokenAutoRefresh(boolean tokenAutoRefresh) {
+        this.tokenAutoRefresh = tokenAutoRefresh;
+        return this;
+    }
+
+    public int getTokenMinValidity() {
+        return tokenMinValidity;
+    }
+
+    public OpenIdConfiguration setTokenMinValidity(int tokenMinValidity) {
+        this.tokenMinValidity = tokenMinValidity;
+        return this;
+    }
+
     @Override
     public String toString() {
         return OpenIdConfiguration.class.getSimpleName()
@@ -240,6 +260,8 @@ public class OpenIdConfiguration {
                 + ", providerMetadata=" + providerMetadata
                 + ", claimsConfiguration=" + claimsConfiguration
                 + ", encryptionMetadata=" + encryptionMetadata
+                + ", tokenAutoRefresh=" + tokenAutoRefresh
+                + ", tokenMinValidity=" + tokenMinValidity
                 + '}';
     }
 

@@ -42,6 +42,7 @@
  */
 package fish.payara.microprofile.healthcheck.config;
 
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
@@ -88,5 +89,13 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     String getSecurityEnabled();
 
     void setSecurityEnabled(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the roles.
+     */
+    @Attribute(defaultValue = DEFAULT_GROUP_NAME, dataType = String.class)
+    String getRoles();
+
+    void setRoles(String value) throws PropertyVetoException;
 
 }

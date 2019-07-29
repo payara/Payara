@@ -206,7 +206,6 @@ public class MetricsResolver {
   public <T extends Annotation> Metadata getMetadata(String name, T annotation) {
         MetadataBuilder metadataBuilder = Metadata.builder();
         metadataBuilder = metadataBuilder.withName(name);
-        String[] tags;
         if (Counted.class.isInstance(annotation)) {
             Counted counted = (Counted) annotation;
             metadataBuilder = metadataBuilder.withDisplayName(counted.displayName())
@@ -218,7 +217,6 @@ public class MetricsResolver {
             } else {
                 metadataBuilder = metadataBuilder.notReusable();
             }
-            tags = counted.tags();
         } else if (ConcurrentGauge.class.isInstance(annotation)) {
             ConcurrentGauge gauge = (ConcurrentGauge) annotation;
             metadataBuilder = metadataBuilder.withDisplayName(gauge.displayName())
@@ -230,7 +228,6 @@ public class MetricsResolver {
             } else {
                 metadataBuilder = metadataBuilder.notReusable();
             }
-            tags = gauge.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;
             metadataBuilder = metadataBuilder.withDisplayName(gauge.displayName())
@@ -238,7 +235,6 @@ public class MetricsResolver {
                 .withType(GAUGE)
                 .withUnit(gauge.unit())
                 .notReusable();
-            tags = gauge.tags();
         } else if (Metered.class.isInstance(annotation)) {
             Metered metered = (Metered) annotation;
             metadataBuilder = metadataBuilder.withDisplayName(metered.displayName())
@@ -250,7 +246,6 @@ public class MetricsResolver {
             } else {
                 metadataBuilder = metadataBuilder.notReusable();
             }
-            tags = metered.tags();
         } else if (Timed.class.isInstance(annotation)) {
             Timed timed = (Timed) annotation;
             metadataBuilder.withDisplayName(timed.displayName())
@@ -262,7 +257,6 @@ public class MetricsResolver {
             } else {
                 metadataBuilder = metadataBuilder.notReusable();
             }
-            tags = timed.tags();
         } else {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotation.getClass().getName() + "]");
         }
