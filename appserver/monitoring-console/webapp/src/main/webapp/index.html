@@ -6,12 +6,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" rel="stylesheet" type="text/css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <!-- 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"</script>
+     -->
 
     <style>
     .canvas-holder {
 	    background-color: #FFFFFF;
 	    position: absolute;
-	    top: 200px;
+	    top: 250px;
 	    left: 20px;
 	    width: 600px;
 	    border: 2px solid #ccc;
@@ -25,6 +28,9 @@
 
 <input type="checkbox" id="zero" checked="checked" /> Begin at Zero</br>
 <input type="checkbox" id="labels" checked="checked" /> Automatic Labels</br>
+<input type="checkbox" id="curves" checked="checked" /> Use Bezier Curves </br>
+<input type="checkbox" id="animations" checked="checked" /> Use Animations</br>
+<input type="checkbox" id="rotation" checked="checked" /> Label X-Axis at 90°</br>
 Series: <select id="options"></select>
 <div class="canvas-holder">
     <canvas id="myChart" width="2" height="1"></canvas>
@@ -66,6 +72,39 @@ $("#labels").on('change', function() {
         chart.update();
     }
 });
+$("#curves").on('change', function() {
+	if (chart) {
+		chart.options.elements.line.tension = this.checked ? 0.4 : 0;
+		chart.update();
+	}
+});
+$('#animations').on('change', function() {
+	if (chart) {
+		var time = this.checked ? 1000 : 0;
+		chart.options.animation.duration = time;
+		chart.options.responsiveAnimationDuration = time;
+		chart.update();
+	}
+});
+$("#rotation").on('change', function() {
+    if (chart) {
+    	var rotation = this.checked ? 90 : undefined;
+    	chart.options.scales.xAxes[0].ticks.minRotation = rotation;
+    	chart.options.scales.xAxes[0].ticks.maxRotation = rotation;
+        chart.update();
+    }
+});
+
+function customTimeLables(value, index, values) {
+	if (values.length == 0 || index == 0)
+		return value;
+	var span = values[values.length -1].value - values[0].value;
+	if (span < 120000) { // less then two minite
+		var lastMinute = new Date(values[index-1].value).getMinutes();
+		return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+	}
+	return value;
+}
 
 options.on('change', function() {
 	var selectedSeries = this.value;
@@ -83,12 +122,8 @@ options.on('change', function() {
             datasets: [{ 
             	label: 'line 1', 
             	data: [],
-                backgroundColor: [
-                    'rgba(153, 102, 255, 0.2)',
-                ],
-                borderColor: [
-                    'rgba(153, 102, 255, 1)',
-                ],
+                backgroundColor: [ 'rgba(153, 102, 255, 0.2)' ],
+                borderColor: [ 'rgba(153, 102, 255, 1)' ],
                 borderWidth: 1
             }],
         },
@@ -97,7 +132,13 @@ options.on('change', function() {
                 xAxes: [{
                     type: 'time',
                     time: {
-                        unit: 'second'
+                    	minUnit: 'second',
+                    	round: 'second',
+                    },
+                    ticks: {
+                    	callback: customTimeLables,
+                        minRotation: 90,
+                    	maxRotation: 90,
                     }
                 }],
                 yAxes: [{
