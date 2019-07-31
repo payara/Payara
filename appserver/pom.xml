@@ -472,15 +472,15 @@
                         <!-- Common Annotations -->
                         <spec>
                             <artifact>
-                                <groupId>javax.annotation</groupId>
-                                <artifactId>javax.annotation-api</artifactId>
-                                <version>${javax.annotation-api.version}</version>
+                                <groupId>jakarta.annotation</groupId>
+                                <artifactId>jakarta.annotation-api</artifactId>
+                                <version>${jakarta.annotation-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.annotation-api.version}</specVersion>
-                            <specImplVersion>${javax.annotation-api.version}</specImplVersion>
-                            <apiPackage>javax.annotation</apiPackage>
+                            <specVersion>${jakarta.annotation-api.version}</specVersion>
+                            <specImplVersion>${jakarta.annotation-api.version}</specImplVersion>
+                            <apiPackage>jakarta.annotation</apiPackage>
                         </spec>
 
                         <!-- WebSocket -->

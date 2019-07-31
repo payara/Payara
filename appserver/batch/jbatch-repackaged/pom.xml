@@ -125,7 +125,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.ibm.websphere.asynchbeans;resolution:=optional,
-                            javax.annotation;version="[1.1,2)";resolution:=optional,
+                            jakarta.annotation;version="[1.1,2)";resolution:=optional,
                             javax.batch.api,
                             javax.batch.api.chunk,
                             javax.batch.api.chunk.listener,
