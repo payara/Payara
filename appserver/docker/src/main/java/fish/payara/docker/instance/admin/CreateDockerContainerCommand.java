@@ -5,6 +5,8 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import fish.payara.docker.DockerConstants;
 import fish.payara.docker.instance.JsonRequestConstructor;
@@ -20,6 +22,11 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -29,7 +36,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,6 +110,42 @@ public class CreateDockerContainerCommand implements AdminCommand {
             return;
         }
 
+        // Pull the image if it hasn't been downloaded or built yet
+        pullImage(adminCommandContext, actionReport, node);
+
+        createContainer(adminCommandContext, actionReport, node, server, dasHost, dasPort);
+    }
+
+    private void pullImage(AdminCommandContext adminCommandContext, ActionReport actionReport, Node node) {
+        // Create web target with query
+        WebTarget webTarget = createWebTarget(node);
+        webTarget = webTarget.queryParam(DockerConstants.DOCKER_FROM_IMAGE_KEY, node.getDockerImage());
+
+        // Send the POST request
+        Response response = null;
+        try {
+            response = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName)
+                    .request(MediaType.APPLICATION_JSON).post(Entity.entity(JsonObject.EMPTY_JSON_OBJECT,
+                            MediaType.APPLICATION_JSON));
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Encountered an exception sending request to Docker: \n", ex);
+        }
+
+        // Check status of response and act on result
+        if (response != null) {
+            Response.StatusType responseStatus = response.getStatusInfo();
+            if (!responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                // Log the failure
+                logger.fine("Failed to pull Docker Image: \n" + responseStatus.getReasonPhrase());
+            }
+        } else {
+            // If the response is null, clearly something has gone wrong, so treat is as a failure
+            logger.fine( "Failed to pull Docker Image");
+        }
+    }
+
+    private void createContainer(AdminCommandContext adminCommandContext, ActionReport actionReport, Node node,
+            Server server, String dasHost, String dasPort) {
         Properties containerConfig = new Properties();
 
         // Add all instance-level system properties, stripping the "Docker." prefix
@@ -127,6 +170,53 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 dasHost, dasPort);
 
         // Create web target with query
+        WebTarget webTarget = createWebTarget(node);
+        webTarget = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName);
+
+        // Send the POST request
+        Response response = null;
+        try {
+            response = webTarget.request(MediaType.APPLICATION_JSON).post(Entity.entity(jsonObject, MediaType.APPLICATION_JSON));
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Encountered an exception sending request to Docker: \n", ex);
+        }
+
+        // Check status of response and act on result
+        if (response != null) {
+            Response.StatusType responseStatus = response.getStatusInfo();
+            if (responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                // Read the container ID from the response
+                JsonObject jsonResponse = response.readEntity(JsonObject.class);
+
+                if (jsonResponse != null) {
+                    String dockerContainerId = jsonResponse.getString("Id");
+
+                    // Set the Docker container ID either to the ID of the container, or to the instance name if the the
+                    // ID can't be obtained
+                    if (dockerContainerId != null && !dockerContainerId.equals("")) {
+                        setDockerContainerId(actionReport, server, dockerContainerId);
+                    } else {
+                        setDockerContainerId(actionReport, server, instanceName);
+                    }
+                }
+            } else {
+                // Log the failure
+                actionReport.failure(logger, "Failed to create Docker Container: \n"
+                        + responseStatus.getReasonPhrase());
+
+                // Attempt to unregister the instance so we don't have an instance entry that can't be used
+                unregisterInstance(adminCommandContext, actionReport);
+            }
+        } else {
+            // If the response is null, clearly something has gone wrong, so treat is as a failure
+            actionReport.failure(logger, "Failed to create Docker Container");
+
+            // Attempt to unregister the instance so we don't have an instance entry that can't be used
+            unregisterInstance(adminCommandContext, actionReport);
+        }
+    }
+
+    private WebTarget createWebTarget(Node node) {
         Client client = ClientBuilder.newClient();
         WebTarget webTarget = null;
         if (Boolean.valueOf(node.getUseTls())) {
@@ -142,34 +232,21 @@ public class CreateDockerContainerCommand implements AdminCommand {
                     + node.getDockerPort()
                     + "/containers/create");
         }
-        webTarget = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName);
 
-        // Send the POST request
-        Response response = null;
+        return webTarget;
+    }
+
+    private void setDockerContainerId(ActionReport actionReport, Server server, String dockerContainerId) {
         try {
-            response = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName)
-                    .request(MediaType.APPLICATION_JSON).post(Entity.entity(jsonObject, MediaType.APPLICATION_JSON));
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Encountered an exception sending request to Docker: \n", ex);
-        }
-
-        // Check status of response and act on result
-        if (response != null) {
-            Response.StatusType responseStatus = response.getStatusInfo();
-            if (!responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-                // Log the failure
-                actionReport.failure(logger, "Failed to create Docker Container: \n"
-                        + responseStatus.getReasonPhrase());
-
-                // Attempt to unregister the instance so we don't have an instance entry that can't be used
-                unregisterInstance(adminCommandContext, actionReport);
-            }
-        } else {
-            // If the response is null, clearly something has gone wrong, so treat is as a failure
-            actionReport.failure(logger, "Failed to create Docker Container");
-
-            // Attempt to unregister the instance so we don't have an instance entry that can't be used
-            unregisterInstance(adminCommandContext, actionReport);
+            ConfigSupport.apply(new SingleConfigCode<Server>() {
+                @Override
+                public Object run(Server param) throws PropertyVetoException, TransactionFailure {
+                    param.setDockerContainerId(dockerContainerId);
+                    return param;
+                }
+            }, server);
+        } catch (TransactionFailure transactionFailure) {
+            actionReport.failure(logger, "Could not set Docker Container ID for instance", transactionFailure);
         }
     }
 

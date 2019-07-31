@@ -441,6 +441,16 @@ public class JsonRequestConstructorTest {
         }
 
         @Override
+        public String getDockerContainerId() {
+            return null;
+        }
+
+        @Override
+        public void setDockerContainerId(String dockerContainerId) throws PropertyVetoException {
+
+        }
+
+        @Override
         public List<SystemProperty> getSystemProperty() {
             return null;
         }

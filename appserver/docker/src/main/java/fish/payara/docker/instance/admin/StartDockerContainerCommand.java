@@ -3,6 +3,7 @@ package fish.payara.docker.instance.admin;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -45,6 +46,9 @@ public class StartDockerContainerCommand implements AdminCommand {
     @Inject
     private Nodes nodes;
 
+    @Inject
+    private Servers servers;
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values are the parameter values
@@ -54,6 +58,7 @@ public class StartDockerContainerCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
         Node node = nodes.getNode(nodeName);
+        Server server = servers.getServer(instanceName);
 
         Client client = ClientBuilder.newClient();
 
@@ -64,7 +69,7 @@ public class StartDockerContainerCommand implements AdminCommand {
                     + ":"
                     + node.getDockerPort()
                     + "/containers/"
-                    + instanceName
+                    + server.getDockerContainerId()
                     + "/start");
         } else {
             webTarget = client.target("http://"
@@ -72,7 +77,7 @@ public class StartDockerContainerCommand implements AdminCommand {
                     + ":"
                     + node.getDockerPort()
                     + "/containers/"
-                    + instanceName
+                    + server.getDockerContainerId()
                     + "/start");
         }
 

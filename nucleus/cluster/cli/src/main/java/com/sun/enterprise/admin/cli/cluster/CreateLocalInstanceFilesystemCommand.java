@@ -49,6 +49,8 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -78,10 +80,13 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     @Param(name = "dockerNode", defaultValue = "false", optional = true, alias = "dockernode")
     protected Boolean dockerNode;
 
-    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Add asadmin utility options so that they aren't mandated to be before the command on the command line
     // Technically deprecated syntax
     @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
     protected boolean extraTerse;
+
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    protected boolean autoName;
 
     String DASHost;
     int DASPort = -1;
@@ -97,6 +102,10 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     @Override
     protected void validate() throws CommandException {
+        if (programOpts.isAutoName() || autoName) {
+            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName0,
+                    NamingHelper.getAllNamesInUse(programOpts, env));
+        }
 
         if(ok(instanceName0)) {
             instanceName = instanceName0;
@@ -135,7 +144,6 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
         DASPort = programOpts.getPort();
         dasIsSecure = programOpts.isSecure();
         DASProtocol = "http";
-
     }
 
     @Override
