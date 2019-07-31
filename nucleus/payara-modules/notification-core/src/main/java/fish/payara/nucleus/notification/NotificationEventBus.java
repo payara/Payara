@@ -62,7 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 public class NotificationEventBus {
     
     @Inject
-    Topic<NotificationEvent> topiceventBus;
+    Topic<NotificationEvent> eventBus;
     
     public NotificationEventBus() {
         // done in constructor to ensure that topics are valid for injection
@@ -70,19 +70,19 @@ public class NotificationEventBus {
     }
 
     public void register(BaseNotifierService notifier) {
-        eventBus.register(notifier);
+        //eventBus.register(notifier);
     }
 
     public void unregister(BaseNotifierService notifier) {
-        try {
+        /*try {
             eventBus.unregister(notifier);
         } catch (IllegalArgumentException e){
             Logger.getLogger(NotificationEventBus.class.getCanonicalName()).log(Level.WARNING, "Tried to unregister" + notifier.toString() + ", it may not have been previously registered");
-        }
+        }*/
     }
 
     void postEvent(NotificationEvent event) {
-        eventBus.post(event);
-        topiceventBus.publish(event);
+        //eventBus.post(event);
+        eventBus.publish(event);
     }
 }

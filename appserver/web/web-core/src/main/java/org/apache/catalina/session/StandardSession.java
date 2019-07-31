@@ -60,8 +60,8 @@
 
 package org.apache.catalina.session;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
@@ -2425,9 +2425,8 @@ public class StandardSession
     }
 
     private static Cache<Object, Boolean> buildSerializableCache() {
-        return CacheBuilder.newBuilder().softValues()
-                .maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100))
-                .build();
+        return Caffeine.newBuilder().softValues().
+                 maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100)).build();
     }
 }
 
