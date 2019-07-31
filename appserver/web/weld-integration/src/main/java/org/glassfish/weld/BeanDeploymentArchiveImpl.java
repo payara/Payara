@@ -811,7 +811,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private static String makeBdaId(String friendlyId, BDAType bdaType, String jarArchiveName) {
         // Use war-name.war/WEB-INF/lib/jarName as BDA Id
         StringBuilder sb = new StringBuilder();
-        int delimiterIndex = friendlyId.lastIndexOf(":");
+        int delimiterIndex = friendlyId.lastIndexOf(':');
         if(delimiterIndex == -1) {
             sb.append(friendlyId);
         }

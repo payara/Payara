@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -64,6 +64,9 @@ import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -300,11 +303,8 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
         context.setPhase(ExtendedDeploymentContext.Phase.LOAD);
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(
-                DeploymentTracing.Mark.LOAD);
-        }
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.LOAD);
 
 
         super.load(context, tracker);
@@ -312,30 +312,20 @@ public class ApplicationInfo extends ModuleInfo {
         appClassLoader = context.getClassLoader();
 
         for (ModuleInfo module : modules) {
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.LOAD, module.getName());
-            }
             module.load(getSubContext(module,context), tracker);
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.LOADED, module.getName());
-            }
         }
         
         populateApplicationServiceLocator();
 
         isLoaded = true;
-
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOAD_EVENTS);
-        }
+        span.close();
 
         if (events!=null) {
+            span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.LOAD_EVENTS);
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_LOADED, this), false);
+            span.close();
         }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOADED);
-        }
-        
+
     }
 
 
@@ -343,35 +333,23 @@ public class ApplicationInfo extends ModuleInfo {
         ExtendedDeploymentContext context,
         ProgressTracker tracker) throws Exception {
 
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.START);
-        }
-        
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.START);
+
         super.start(context, tracker);
         // registers all deployed items.
         for (ModuleInfo module : getModuleInfos()) {
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.START, module.getName());
-            }
-            module.start(getSubContext(module, context), tracker);
-            if (tracing!=null) {
-                tracing.addModuleMark(
-                    DeploymentTracing.ModuleMark.STARTED, module.getName());
-            }
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.START);
 
-        }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.START_EVENTS);
+            module.start(getSubContext(module, context), tracker);
+            innerSpan.close();
         }
 
         if (events!=null) {
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.START, "Send events");
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_STARTED, this), false);
+            innerSpan.close();
         }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.STARTED);
-        }
-
     }
 
     public void initialize() {

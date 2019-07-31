@@ -46,8 +46,10 @@ import static java.util.logging.Level.FINEST;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -101,7 +103,30 @@ public final class CertificateRealm extends BaseRealm {
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
-    
+    public static final Map<String, String> OID_MAP;
+    static {
+        Map<String, String> oidMapInitialiser = new HashMap<>();
+        oidMapInitialiser.put(OIDs.UID, "UID");
+        oidMapInitialiser.put(OIDs.DC, "DC");
+        oidMapInitialiser.put(OIDs.EMAILADDRESS, "EMAILADDRESS");
+        oidMapInitialiser.put(OIDs.IP, "IP");
+        oidMapInitialiser.put(OIDs.CN, "CN");
+        oidMapInitialiser.put(OIDs.SURNAME, "SURNAME");
+        oidMapInitialiser.put(OIDs.SERIALNUMBER, "SERIALNUMBER");
+        oidMapInitialiser.put(OIDs.C, "C");
+        oidMapInitialiser.put(OIDs.L, "L");
+        oidMapInitialiser.put(OIDs.ST, "ST");
+        oidMapInitialiser.put(OIDs.STREET, "STREET");
+        oidMapInitialiser.put(OIDs.O, "O");
+        oidMapInitialiser.put(OIDs.OU, "OU");
+        oidMapInitialiser.put(OIDs.T, "T");
+        oidMapInitialiser.put(OIDs.GIVENNAME, "GIVENNAME");
+        oidMapInitialiser.put(OIDs.INITIALS, "INITIALS");
+        oidMapInitialiser.put(OIDs.GENERATION, "GENERATION");
+        oidMapInitialiser.put(OIDs.DNQUALIFIER, "DNQUALIFIER");
+        OID_MAP = Collections.unmodifiableMap(oidMapInitialiser);
+    }
+
     private List<String> defaultGroups = new LinkedList<>();
 
     /**
@@ -175,8 +200,8 @@ public final class CertificateRealm extends BaseRealm {
     public String authenticate(Subject subject, X500Principal callerPrincipal) {
         // It is important to use X500Principal.getName() as that will
         // return the LDAP name in RFC2253
-        String callerPrincipalName = callerPrincipal.getName();
-        
+        String callerPrincipalName = callerPrincipal.getName(X500Principal.RFC2253, OID_MAP);
+
         // Checks if the property for using common name is set
         if (Boolean.valueOf(getProperty("useCommonName"))) {
             callerPrincipalName = extractCN(callerPrincipalName);

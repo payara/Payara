@@ -897,7 +897,7 @@ public class Response
         // Ignore charset if getWriter() has already been called
         if (usingWriter) {
             if (type != null) {
-                int index = type.indexOf(";");
+                int index = type.indexOf(';');
                 if (index != -1) {
                     type = type.substring(0, index);
                 }
@@ -908,7 +908,7 @@ public class Response
 
         // Check to see if content type contains charset
         if (type != null) {
-            int index = type.indexOf(";");
+            int index = type.indexOf(';');
             if (index != -1) {
                 int len = type.length();
                 index++;

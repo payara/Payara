@@ -341,7 +341,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
                 // For entries with relative paths, Entity resolver always
                 // return file://<absolute path
                 if (mappedEntry.startsWith("file:")) {
-                    File f = new File(mappedEntry.substring(mappedEntry.indexOf(":") + 1));
+                    File f = new File(mappedEntry.substring(mappedEntry.indexOf(':') + 1));
                     if (!f.exists()) {
                         throw new DeploymentException(format(resourceBundle.getString(LogUtils.CATALOG_RESOLVER_ERROR), mappedEntry));
                     }

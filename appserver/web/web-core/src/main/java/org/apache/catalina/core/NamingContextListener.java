@@ -1118,7 +1118,7 @@ public class NamingContextListener
     protected String logName() {
 
         String className = this.getClass().getName();
-        int period = className.lastIndexOf(".");
+        int period = className.lastIndexOf('.');
         if (period >= 0)
             className = className.substring(period + 1);
         return (className + "[" + getName() + "]");

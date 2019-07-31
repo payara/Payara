@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import org.glassfish.j2ee.statistics.RangeStatistic;
+import javax.management.j2ee.statistics.RangeStatistic;
 
 /** An interface that Specifies standard measurements of the lowest and highest values an attribute has held 
  * as well as its current value.  Extending RangeStatistic, it also provides the average value.
@@ -48,11 +49,6 @@ import org.glassfish.j2ee.statistics.RangeStatistic;
  * @author Kedar Mhaswade
  * @since S1AS8.1
  * @version 1.0
- */
-
-/**
- *
- * @author  lwhite
  */
 public interface AverageRangeStatistic extends RangeStatistic {
     

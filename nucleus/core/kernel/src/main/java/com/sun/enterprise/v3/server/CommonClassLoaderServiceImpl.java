@@ -215,7 +215,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         }
         if (!derbyLib.exists()) {
             logger.info(KernelLoggerInfo.cantFindDerby);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return Arrays.asList(derbyLib.listFiles(new FilenameFilter(){
@@ -252,7 +252,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
         if (h2Lib==null || !h2Lib.exists()) {
             logger.info(KernelLoggerInfo.cantFindH2);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return Arrays.asList(h2Lib.listFiles((dir, name) -> name.startsWith("h2") && name.endsWith(".jar")));

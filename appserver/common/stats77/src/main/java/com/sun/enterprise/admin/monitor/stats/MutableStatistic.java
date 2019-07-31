@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliate
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.Statistic;
+
+import javax.management.j2ee.statistics.Statistic;
 import java.io.Serializable;
 
 /** An interface that gives a flexibility to set various values for a particular Statistic.

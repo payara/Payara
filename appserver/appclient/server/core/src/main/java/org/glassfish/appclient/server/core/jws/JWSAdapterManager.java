@@ -309,6 +309,16 @@ public class JWSAdapterManager implements PostConstruct {
         return new File(new File(installRootURI), "lib");
     }
 
+    static String publicExtensionHref(final ExtensionFileManager.Extension ext) {
+        return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
+    }
+
+    static String publicExtensionLookupURIText(final ExtensionFileManager.Extension ext) {
+        return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
+                ext.getExtDirectoryNumber() + "/" +
+                ext.getFile().getName();
+    }
+
     private AutoSignedContent systemJarSignedContent (
             final File unsignedFile,
             final String signingAlias) throws FileNotFoundException {

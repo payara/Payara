@@ -156,7 +156,7 @@ public class PayloadImpl implements Payload {
                 if (relativeURIPath.endsWith("/")) {
                     relativeURIPath = relativeURIPath.substring(0, relativeURIPath.length() - 1);
                 }
-                relativeURIPath = relativeURIPath.substring(0, relativeURIPath.lastIndexOf("/") + 1);
+                relativeURIPath = relativeURIPath.substring(0, relativeURIPath.lastIndexOf('/') + 1);
 
                 attachFilesRecursively(
                         file.getParentFile().toURI(),

@@ -170,7 +170,7 @@ public class GlassFishMain {
                             continue;
                         }
                         Deployer deployer = gf.getService(Deployer.class, null);
-                        String name = command.substring(command.indexOf(" ")).trim();
+                        String name = command.substring(command.indexOf(' ')).trim();
                         deployer.undeploy(name);
                         System.out.println("Undeployed = " + name);
                     } else if ("quit".equalsIgnoreCase(command)) {

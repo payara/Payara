@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,10 @@ import fish.payara.security.openid.api.AccessToken;
 import java.text.ParseException;
 import static java.util.Collections.emptyMap;
 import java.util.Map;
+import fish.payara.security.openid.api.Scope;
+import static fish.payara.security.openid.api.OpenIdConstant.EXPIRATION_IDENTIFIER;
+import java.util.Date;
+import static java.util.Objects.nonNull;
 
 /**
  *
@@ -61,19 +65,42 @@ public class AccessTokenImpl implements AccessToken {
 
     private Map<String, Object> claims;
 
-    public AccessTokenImpl(String token) {
+    private Long expiresIn;
+
+    private Scope scope;
+
+    private long createdAt;
+
+    private OpenIdConfiguration configuration;
+
+    public AccessTokenImpl(OpenIdConfiguration configuration, String tokenType, String token, Long expiresIn, String scopeValue) {
+        this.configuration = configuration;
         this.token = token;
         try {
             this.tokenJWT = JWTParser.parse(token);
             this.claims = tokenJWT.getJWTClaimsSet().getClaims();
-            this.type = Type.BEARER;
         } catch (ParseException ex) {
-            this.type = Type.MAC;
         }
+        this.type = Type.valueOf(tokenType.toUpperCase());
+        this.expiresIn = expiresIn;
+        this.createdAt = System.currentTimeMillis();
+        this.scope = Scope.parse(scopeValue);
     }
 
     public JWT getTokenJWT() {
         return tokenJWT;
+    }
+
+    @Override
+    public boolean isExpired() {
+        boolean expired = true;
+        Date exp;
+         if (nonNull(expiresIn)) {
+            expired = System.currentTimeMillis() + configuration.getTokenMinValidity() > createdAt + (expiresIn * 1000);
+        } else if(nonNull(exp = (Date) this.getClaim(EXPIRATION_IDENTIFIER))) {
+            expired = System.currentTimeMillis() + configuration.getTokenMinValidity() > exp.getTime();
+        }
+        return expired;
     }
 
     @Override
@@ -101,6 +128,16 @@ public class AccessTokenImpl implements AccessToken {
     @Override
     public Object getClaim(String key) {
         return getClaims().get(key);
+    }
+
+    @Override
+    public Long getExpirationTime() {
+        return expiresIn;
+    }
+
+    @Override
+    public Scope getScope() {
+        return scope;
     }
 
     public boolean isEncrypted() {

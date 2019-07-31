@@ -516,7 +516,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         // to decompile to figure out what is going on.  No need to make it even harder!
         clsName = clsName.replace('.', '/');
         clsName = clsName.replace('\\', '/'); // just in case Windows?  unlikely...
-        int index = clsName.lastIndexOf("/");
+        int index = clsName.lastIndexOf('/');
 
         if (index >= 0) {
             clsName = clsName.substring(index + 1);

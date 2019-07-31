@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -230,9 +231,10 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         String registrationId = getRegistrationID(layer, appContext);
 
         doWriteLocked(() -> {
-            for (String targetID : idToRegistrationListenersMap.keySet()) {
+            for (Entry<String, List<RegistrationListener>> entry : idToRegistrationListenersMap.entrySet()) {
+                String targetID = entry.getKey();
                 if (regIdImplies(registrationId, targetID)) {
-                    List<RegistrationListener> listeners = idToRegistrationListenersMap.get(targetID);
+                    List<RegistrationListener> listeners = entry.getValue();
                     if (listeners != null && listeners.remove(listener)) {
                         removedListenerIds.add(targetID);
                     }

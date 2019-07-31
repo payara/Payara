@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,10 @@ public interface OpenIdConstant {
     public static final String ERROR_DESCRIPTION_PARAM = "error_description";
 
     //claims
+    public static final String ISSUER_IDENTIFIER = "iss";
     public static final String SUBJECT_IDENTIFIER = "sub";
+    public static final String EXPIRATION_IDENTIFIER = "exp";
+    public static final String AUDIENCE = "aud";
     public static final String AUTHORIZED_PARTY = "azp";
     public static final String ACCESS_TOKEN_HASH = "at_hash";
 

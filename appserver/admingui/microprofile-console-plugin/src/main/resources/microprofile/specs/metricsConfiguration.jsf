@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,17 +58,17 @@
                 value="#{requestScope.resp.data.extraProperties.metricsConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "secureMetrics"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "securityenabled", "dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        
-        setPageSessionAttribute(key="dynamic", value="true");
-        
-        if (#{pageSession.valueMap['secureMetrics']}=true) {
-            setPageSessionAttribute(key="secureMetricsSelected", value="true");
+
+        if (#{pageSession.valueMap['securityenabled']}=true) {
+            setPageSessionAttribute(key="securityEnabled", value="true");
         }
-        
+
+        setPageSessionAttribute(key="dynamic", value="true");
+
     />
 </event>
     
@@ -85,8 +85,8 @@
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.securityEnabled}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamicSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="secureMetrics" value="#{pageSession.secureMetricsSelected}");
                     convertArrayToCommaString(array="#{pageSession.virtualServersSelected}"  commaString="#{requestScope.virtualServersText}");
                     mapPut(map="#{pageSession.valueMap}" key="virtualServers" value="#{requestScope.virtualServersText}");
                     prepareSuccessfulMsg();
@@ -106,16 +106,21 @@
             <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
                           selectedValue="true" />
         </sun:property>
+        <sun:property id="securityEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.metrics.configuration.securityEnabled}"
+                      helpText="$resource{i18n_microprofile.metrics.configuration.securityEnabledHelp}">
+            <sun:checkbox id="securityEnabled" selected="#{pageSession.securityEnabled}"
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="rolesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.metrics.configuration.roles}"
+                      helpText="$resource{i18n_microprofile.metrics.configuration.rolesHelp}">
+            <sun:textField id="roles" maxLength="250" text="#{pageSession.valueMap['roles']}"/>
+        </sun:property>
         <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.metrics.configuration.dynamic}"  
                       helpText="$resource{i18n_microprofile.metrics.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamicSelected}"
-                          selectedValue="true" />
-        </sun:property>
-        <sun:property id="secureMetricsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.metrics.configuration.secureMetrics}"  
-                      helpText="$resource{i18n_microprofile.metrics.configuration.secureMetricsHelp}">
-            <sun:checkbox id="secureMetrics" selected="#{pageSession.secureMetricsSelected}" 
                           selectedValue="true" />
         </sun:property>
         <sun:property id="endPointProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"

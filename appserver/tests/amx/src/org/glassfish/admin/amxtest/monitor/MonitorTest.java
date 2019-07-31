@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amxtest.monitor;
 
@@ -58,13 +59,13 @@ import com.sun.appserv.management.util.misc.GSetUtil;
 import com.sun.appserv.management.util.misc.StringUtil;
 
 import javax.management.ObjectName;
-import org.glassfish.j2ee.statistics.BoundaryStatistic;
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.RangeStatistic;
-import org.glassfish.j2ee.statistics.Statistic;
-import org.glassfish.j2ee.statistics.Stats;
-import org.glassfish.j2ee.statistics.TimeStatistic;
+import javax.management.j2ee.statistics.BoundaryStatistic;
+import javax.management.j2ee.statistics.BoundedRangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.RangeStatistic;
+import javax.management.j2ee.statistics.Statistic;
+import javax.management.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.TimeStatistic;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import java.lang.reflect.InvocationTargetException;

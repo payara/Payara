@@ -51,6 +51,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -120,11 +121,12 @@ public final class AMXConfigProxyTests extends AMXTestBase
 
         // test the Map keyed by XML attribute name
         final Map<String, String> defaultValuesXML = amxConfig.getDefaultValues(false);
-        for (final String attrName : defaultValuesXML.keySet())
+        for (final Entry<String, String> entry : defaultValuesXML.entrySet())
         {
+            String attrName = entry.getKey();
             // no default value should ever be null
 
-            assert defaultValuesXML.get(attrName) != null :
+            assert entry.getValue() != null :
             "null value for attribute " + attrName + " in " + objectName;
         }
 
@@ -132,11 +134,12 @@ public final class AMXConfigProxyTests extends AMXTestBase
         final Map<String, String> defaultValuesAMX = amxConfig.getDefaultValues(true);
 
         assert defaultValuesXML.size() == defaultValuesAMX.size();
-        for (final String attrName : defaultValuesAMX.keySet())
+        for (final Entry<String, String> entry : defaultValuesAMX.entrySet())
         {
+            String attrName = entry.getKey();
             // no default value should ever be null
 
-            assert defaultValuesAMX.get(attrName) != null :
+            assert entry.getValue() != null :
             "null value for attribute " + attrName + " in " + objectName;
         }
     }

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,10 @@ import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Map;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -57,7 +59,6 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.enterprise.inject.Typed;
-import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import net.minidev.json.JSONArray;
@@ -84,9 +85,16 @@ public class OpenIdIdentityStore implements IdentityStore {
         HttpMessageContext httpContext = credential.getHttpContext();
         OpenIdConfiguration configuration = credential.getConfiguration();
         IdentityTokenImpl idToken = (IdentityTokenImpl) credential.getIdentityToken();
-
+        
         Algorithm idTokenAlgorithm = idToken.getTokenJWT().getHeader().getAlgorithm();
-        Map<String, Object> idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
+        
+        Map<String, Object> idTokenClaims;
+        if (isNull(context.getIdentityToken())) {
+            idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
+        } else {
+            // If an ID Token is returned as a result of a token refresh request
+            idTokenClaims = tokenController.validateRefreshedIdToken(context.getIdentityToken(), idToken, httpContext, configuration);
+        }
         if (idToken.isEncrypted()) {
             idToken.setClaims(idTokenClaims);
         }
@@ -94,7 +102,9 @@ public class OpenIdIdentityStore implements IdentityStore {
 
         AccessTokenImpl accessToken = (AccessTokenImpl) credential.getAccessToken();
         if (nonNull(accessToken)) {
-            Map<String, Object> accesTokenClaims = tokenController.validateAccessToken(accessToken, idTokenAlgorithm, idTokenClaims, configuration);
+            Map<String, Object> accesTokenClaims = tokenController.validateAccessToken(
+                    accessToken, idTokenAlgorithm, context.getIdentityToken().getClaims(), configuration
+            );
             if (accessToken.isEncrypted()) {
                 accessToken.setClaims(accesTokenClaims);
             }

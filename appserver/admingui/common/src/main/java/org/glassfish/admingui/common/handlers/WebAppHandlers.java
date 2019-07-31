@@ -97,7 +97,7 @@ public class WebAppHandlers {
         if (GuiUtil.isEmpty(webModule))
             return;
         String appName = webModule;
-        int index = webModule.indexOf("#");
+        int index = webModule.indexOf('#');
         if (index != -1){
             appName=webModule.substring(0, index);
         }

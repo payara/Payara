@@ -45,6 +45,7 @@ import java.lang.reflect.Member;
 import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
@@ -56,10 +57,10 @@ public class TimedInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        String name = resolver.timed(bean.getBeanClass(), element).metricName();
-        Timer timer = (Timer) registry.getMetrics().get(name);
+        MetricID metricID = resolver.timed(bean.getBeanClass(), element).metricID();
+        Timer timer = registry.getTimers().get(metricID);
         if (timer == null) {
-            throw new IllegalStateException("No timer with name [" + name + "] found in registry [" + registry + "]");
+            throw new IllegalStateException("No timer with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }
 
         Timer.Context time = timer.time();

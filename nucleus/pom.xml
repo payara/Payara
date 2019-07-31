@@ -57,10 +57,11 @@
     <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
+    <url>https://github.com/payara/Payara</url>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>scm:git:git@github.com:payara/payara.git</url>
+        <url>https://github.com/payara/Payara/tree/master</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
         <tag>payara-server-5.193-SNAPSHOT</tag>
     </scm>
@@ -79,6 +80,15 @@
       </license>
     </licenses>
 
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
 
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
@@ -250,8 +260,9 @@
         <javaee.api.version>8.0</javaee.api.version>
 
         <!-- Servlet -->
-        <servlet-api.version>4.0.0</servlet-api.version>
+        <servlet-api.version>4.0.2</servlet-api.version>
         <grizzly.version>2.4.3.payara-p9</grizzly.version>
+
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
@@ -262,7 +273,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.payara-p2</jersey.version>
+        <jersey.version>2.29.payara-p4</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -326,6 +337,7 @@
         
         <opentracing.version>0.31.0</opentracing.version>
 
+        <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
         <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
@@ -709,8 +721,8 @@
                         <configuration>
                             <resolutionFuzziness>groupId</resolutionFuzziness>
                             <includes>
-                                <include>javax.ejb</include>
-                                <include>javax.transaction</include>
+                                <include>jakarta.ejb</include>
+                                <include>jakarta.transaction</include>
                                 <include>javax.resource</include>
                                 <include>javax.enterprise.concurrent</include>
                                 <include>javax.ws.rs</include>
@@ -964,8 +976,8 @@ Parent is ${project.parent}</echo>
 
             <!-- Servlet -->
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
                 <version>${servlet-api.version}</version>
             </dependency>
             <dependency>
@@ -1356,9 +1368,9 @@ Parent is ${project.parent}</echo>
             </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
             <dependency>
-                <groupId>jline</groupId>
+                <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>2.14.6</version>
+                <version>${jline.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
@@ -1482,6 +1494,27 @@ Parent is ${project.parent}</echo>
                 </pluginManagement>
             </build>
         </profile>
+        
+        <profile>
+            <id>embed-source</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <profile>
             <id>release-phase2</id>
             <build>

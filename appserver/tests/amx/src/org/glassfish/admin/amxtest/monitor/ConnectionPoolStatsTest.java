@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
 * $Header: /cvs/glassfish/admin/mbeanapi-impl/tests/org.glassfish.admin.amxtest/monitor/ConnectionPoolStatsTest.java,v 1.5 2007/05/05 05:24:05 tcfujii Exp $
@@ -48,8 +49,8 @@ package org.glassfish.admin.amxtest.monitor;
 import com.sun.appserv.management.monitor.MonitoringStats;
 import com.sun.appserv.management.monitor.statistics.ConnectionPoolStats;
 
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.RangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.RangeStatistic;
 import java.util.Iterator;
 import java.util.Set;
 
