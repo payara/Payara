@@ -19,24 +19,31 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
  * 
+ * The store uses two maps working like a doubled buffered image. While collection writes to the {@link #secondsWrite} map
+ * request are served from the {@link #secondsRead} map. This makes sure that a consistent overall snapshot over all series can
+ * be used to create a consistent visualisation that isn't halve updated while the response is composed. However this
+ * requires that callers are provided with a method that returns all the {@link SeriesSlidingWindow}s they need in a
+ * single method invocation.
+ * 
  * @author Jan Bernitt
  */
 @ApplicationScoped
 public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
 
     private ServiceLocator serviceLocator;
-    private Map<Series, SeriesSlidingWindow> slidingWindowsPerSeries = new ConcurrentHashMap<>();
-    private long time;
+    private volatile Map<Series, SeriesSlidingWindow> secondsWrite = new ConcurrentHashMap<>();
+    private volatile Map<Series, SeriesSlidingWindow> secondsRead = new ConcurrentHashMap<>();
+    private long collectedSecond;
 
     @PostConstruct
     public void init() {
         serviceLocator = Globals.getDefaultBaseServiceLocator();
-        serviceLocator.getService(PayaraExecutorService.class).scheduleAtFixedRate(this::collectAllSources, 0L, 5L, TimeUnit.SECONDS);
+        serviceLocator.getService(PayaraExecutorService.class).scheduleAtFixedRate(this::collectAllSources, 0L, 1L, TimeUnit.SECONDS);
     }
 
     private void collectAllSources() {
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
-        time = (System.currentTimeMillis() / 1000L) * 1000L;
+        collectedSecond = (System.currentTimeMillis() / 1000L) * 1000L;
         MonitoringDataCollector collector = new SinkDataCollector(this::addPoint);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
@@ -54,21 +61,32 @@ public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
             .collect("duration", System.currentTimeMillis() - collectionStart)
             .collectNonZero("sources", collectedSources)
             .collectNonZero("failed", failedSources);
+        swap();
+    }
+
+    private void swap() {
+        Map<Series, SeriesSlidingWindow> tmp = secondsRead;
+        secondsRead = secondsWrite;
+        secondsWrite = tmp;
     }
 
     private void addPoint(CharSequence key, long value) {
-        slidingWindowsPerSeries.computeIfAbsent(new Series(key.toString()), 
-                series -> new SeriesSlidingWindow(series, 24)).add(time, value);
+        Series s = new Series(key.toString());
+        SeriesSlidingWindow window = secondsRead.get(s);
+        if (window == null) {
+            window = new SeriesSlidingWindow(s, 60);
+        }
+        secondsWrite.put(s, window.add(collectedSecond, value));
     }
 
     @Override
     public SeriesSlidingWindow selectSlidingWindow(Series series) {
-        SeriesSlidingWindow res = slidingWindowsPerSeries.get(series);
+        SeriesSlidingWindow res = secondsRead.get(series);
         return res != null ? res : new SeriesSlidingWindow(series, 0);
     }
 
     @Override
     public Iterable<SeriesSlidingWindow> selectAllSeriesWindow() {
-        return slidingWindowsPerSeries.values();
+        return secondsRead.values();
     }
 }

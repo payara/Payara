@@ -41,9 +41,6 @@ package fish.payara.monitoring.web;
 
 import static java.util.stream.StreamSupport.stream;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -55,7 +52,7 @@ import javax.ws.rs.core.MediaType;
 import fish.payara.monitoring.store.MonitoringDataStore;
 import fish.payara.monitoring.store.Point;
 import fish.payara.monitoring.store.Series;
-import fish.payara.monitoring.store.SeriesSlidingWindow;
+import fish.payara.monitoring.store.SeriesStatistics;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -66,33 +63,19 @@ public class MonitoringConsoleResouce {
     private MonitoringDataStore data;
 
     @GET
-    @Path("/points/newest")
-    public Map<String, Long> getMostRecentPoints() {
-        Map<String, Long> res = new TreeMap<>();
-        for (SeriesSlidingWindow slidingWindow : data.selectAllSeriesWindow()) {
-            res.put(slidingWindow.getSeries().toString(), slidingWindow.last());
-        }
-        return res;
-    }
-
-    @GET
-    @Path("/points")
-    public Map<String, Point[]> getSlidingWindows() {
-        Map<String, Point[]> res = new TreeMap<>();
-        for (SeriesSlidingWindow slidingWindow : data.selectAllSeriesWindow()) {
-            res.put(slidingWindow.getSeries().toString(), slidingWindow.snapshot());
-        }
-        return res;
-    }
-
-    @GET
-    @Path("/points/series/{series}")
+    @Path("/series/{series}/points")
     public Point[] getSlidingWindow(@PathParam("series") String series) {
-        return data.selectSlidingWindow(new Series(series)).snapshot();
+        return data.selectSlidingWindow(new Series(series)).points(); 
     }
 
     @GET
-    @Path("/points/series/")
+    @Path("/series/{series}/statistics")
+    public SeriesStatistics getSlidingWindowStatistics(@PathParam("series") String series) {
+        return data.selectSlidingWindow(new Series(series)).statistics();
+    }
+
+    @GET
+    @Path("/series/")
     public String[] getSlidingWindowSeries() {
         return stream(data.selectAllSeriesWindow().spliterator(), false)
                 .map(window -> window.getSeries().toString()).sorted().toArray(String[]::new);
