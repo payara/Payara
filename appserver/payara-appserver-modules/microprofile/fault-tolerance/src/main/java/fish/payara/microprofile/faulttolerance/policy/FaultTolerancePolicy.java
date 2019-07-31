@@ -453,9 +453,11 @@ public final class FaultTolerancePolicy implements Serializable {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
                 state.recordClosedOutcome(true);
             } catch (Exception ex) {
-                invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 if (circuitBreaker.failOn(ex)) {
                     state.recordClosedOutcome(false);
+                    invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
+                } else {
+                    invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
                 }
                 failedOn = ex;
             }
