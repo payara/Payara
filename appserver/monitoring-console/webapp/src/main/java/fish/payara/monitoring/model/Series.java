@@ -1,4 +1,4 @@
-package fish.payara.monitoring.store;
+package fish.payara.monitoring.model;
 
 import java.io.Serializable;
 import java.util.Arrays;

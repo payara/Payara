@@ -12,7 +12,6 @@
 
     <style>
     .canvas-holder {
-	    background-color: #FFFFFF;
 	    position: absolute;
 	    top: 250px;
 	    left: 20px;
@@ -31,6 +30,7 @@
 <input type="checkbox" id="curves" checked="checked" /> Use Bezier Curves </br>
 <input type="checkbox" id="animations" checked="checked" /> Use Animations</br>
 <input type="checkbox" id="rotation" checked="checked" /> Label X-Axis at 90°</br>
+
 Series: <select id="options"></select>
 <div class="canvas-holder">
     <canvas id="myChart" width="2" height="1"></canvas>
@@ -164,11 +164,12 @@ options.on('change', function() {
 
 function updateSeries(series) {
 	$.getJSON('api/series/' + series + '/statistics', function(stats) {
-		var data = stats.points;
-		if (data) {
+		var points = stats.points;
+		var data = [];
+		if (points) {
+			data = new Array(points.length / 2);
 		    for (var i = 0; i < data.length; i++) {
-		        data[i].t = new Date(data[i].time);
-		        data[i].y = data[i].value;
+		        data[i] = { t: new Date(points[i*2]), y: points[i*2+1] };
 		    }
 		}
 		var avg = stats.observedSum / stats.observedValues;

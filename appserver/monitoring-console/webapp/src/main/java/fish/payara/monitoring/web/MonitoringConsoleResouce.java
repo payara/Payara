@@ -49,10 +49,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.store.MonitoringDataStore;
-import fish.payara.monitoring.store.Point;
-import fish.payara.monitoring.store.Series;
-import fish.payara.monitoring.store.SeriesStatistics;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -64,14 +62,14 @@ public class MonitoringConsoleResouce {
 
     @GET
     @Path("/series/{series}/points")
-    public Point[] getSlidingWindow(@PathParam("series") String series) {
+    public long[] getSlidingWindow(@PathParam("series") String series) {
         return data.selectSlidingWindow(new Series(series)).points(); 
     }
 
     @GET
     @Path("/series/{series}/statistics")
     public SeriesStatistics getSlidingWindowStatistics(@PathParam("series") String series) {
-        return data.selectSlidingWindow(new Series(series)).statistics();
+        return new SeriesStatistics(data.selectSlidingWindow(new Series(series)));
     }
 
     @GET

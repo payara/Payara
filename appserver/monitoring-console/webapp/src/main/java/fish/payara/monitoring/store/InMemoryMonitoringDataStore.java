@@ -14,6 +14,11 @@ import org.glassfish.internal.api.Globals;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.collect.SinkDataCollector;
+import fish.payara.monitoring.model.ConstantDataset;
+import fish.payara.monitoring.model.EmptyDataset;
+import fish.payara.monitoring.model.PartialDataset;
+import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 /**
@@ -22,17 +27,17 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
  * The store uses two maps working like a doubled buffered image. While collection writes to the {@link #secondsWrite} map
  * request are served from the {@link #secondsRead} map. This makes sure that a consistent overall snapshot over all series can
  * be used to create a consistent visualisation that isn't halve updated while the response is composed. However this
- * requires that callers are provided with a method that returns all the {@link SeriesSlidingWindow}s they need in a
+ * requires that callers are provided with a method that returns all the {@link PartialDataset}s they need in a
  * single method invocation.
  * 
  * @author Jan Bernitt
  */
 @ApplicationScoped
-public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
+public class InMemoryMonitoringDataStore implements MonitoringDataStore {
 
     private ServiceLocator serviceLocator;
-    private volatile Map<Series, SeriesSlidingWindow> secondsWrite = new ConcurrentHashMap<>();
-    private volatile Map<Series, SeriesSlidingWindow> secondsRead = new ConcurrentHashMap<>();
+    private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
+    private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private long collectedSecond;
 
     @PostConstruct
@@ -65,28 +70,30 @@ public class SlidingWindowMonitoringDataStore implements MonitoringDataStore {
     }
 
     private void swap() {
-        Map<Series, SeriesSlidingWindow> tmp = secondsRead;
+        Map<Series, SeriesDataset> tmp = secondsRead;
         secondsRead = secondsWrite;
         secondsWrite = tmp;
     }
 
     private void addPoint(CharSequence key, long value) {
-        Series s = new Series(key.toString());
-        SeriesSlidingWindow window = secondsRead.get(s);
-        if (window == null) {
-            window = new SeriesSlidingWindow(s, 60);
+        Series series = new Series(key.toString());
+        SeriesDataset dataset = secondsRead.get(series);
+        if (dataset == null) {
+            dataset = new ConstantDataset(series, 60, 1, collectedSecond, collectedSecond, value);
+        } else {
+            dataset = dataset.add(collectedSecond, value);
         }
-        secondsWrite.put(s, window.add(collectedSecond, value));
+        secondsWrite.put(series, dataset);
     }
 
     @Override
-    public SeriesSlidingWindow selectSlidingWindow(Series series) {
-        SeriesSlidingWindow res = secondsRead.get(series);
-        return res != null ? res : new SeriesSlidingWindow(series, 0);
+    public SeriesDataset selectSlidingWindow(Series series) {
+        SeriesDataset res = secondsRead.get(series);
+        return res != null ? res : new EmptyDataset(series, 0);
     }
 
     @Override
-    public Iterable<SeriesSlidingWindow> selectAllSeriesWindow() {
+    public Iterable<SeriesDataset> selectAllSeriesWindow() {
         return secondsRead.values();
     }
 }

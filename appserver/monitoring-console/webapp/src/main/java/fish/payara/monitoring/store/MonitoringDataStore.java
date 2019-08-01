@@ -1,8 +1,11 @@
 package fish.payara.monitoring.store;
 
+import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesDataset;
+
 public interface MonitoringDataStore {
 
-    Iterable<SeriesSlidingWindow> selectAllSeriesWindow();
+    Iterable<SeriesDataset> selectAllSeriesWindow();
 
-    SeriesSlidingWindow selectSlidingWindow(Series series);
+    SeriesDataset selectSlidingWindow(Series series);
 }
