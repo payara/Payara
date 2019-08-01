@@ -61,7 +61,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * There are over 14,000 different possible names.
  * @author Andrew Pielage
  */
-public class PayaraServerNameGenerator extends NameGenerator {
+public final class PayaraServerNameGenerator {
 
     public static String validateInstanceNameUnique(String instanceName, AdminCommandContext context) {
         List<String> namesInUse = getAllNamesInUse(context);
@@ -77,10 +77,10 @@ public class PayaraServerNameGenerator extends NameGenerator {
     }
 
     public static String generateNameNoHyphen() {
-        int adjectivesIndex = ThreadLocalRandom.current().nextInt(0, adjectives.length);
-        int fishIndex = ThreadLocalRandom.current().nextInt(0, fishes.length);
+        int adjectivesIndex = ThreadLocalRandom.current().nextInt(0, NameGenerator.adjectives.length);
+        int fishIndex = ThreadLocalRandom.current().nextInt(0, NameGenerator.fishes.length);
 
-        return adjectives[adjectivesIndex] + fishes[fishIndex];
+        return NameGenerator.adjectives[adjectivesIndex] + NameGenerator.fishes[fishIndex];
     }
 
     private static List<String> getAllNamesInUse(AdminCommandContext context) {

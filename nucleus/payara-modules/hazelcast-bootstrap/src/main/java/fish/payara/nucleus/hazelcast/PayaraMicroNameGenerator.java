@@ -53,12 +53,12 @@ import java.util.Map.Entry;
  * There are over 14,000 different possible names.
  * @author Andrew Pielage
  */
-public class PayaraMicroNameGenerator extends NameGenerator
-{
+public final class PayaraMicroNameGenerator {
+
     /**
      * Generates a unique name. If all names are already is use,
      * returns the UUID.
-     * This method is more computationally expensive then {@link #generateName()}
+     * This method is more computationally expensive then fish.payara.api.admin.config.NameGenerator.generateName()
      * @param takenNames a list of all names of instances that already exist
      * @param UUID The UUID of the instance
      * @return a unique name
@@ -68,8 +68,8 @@ public class PayaraMicroNameGenerator extends NameGenerator
         
         // Generate a Map of all available names
         Map<String, List<String>> names = new HashMap<>();
-        for (String adjective : adjectives) {
-            names.put(adjective, Arrays.asList(fishes));
+        for (String adjective : NameGenerator.adjectives) {
+            names.put(adjective, Arrays.asList(NameGenerator.fishes));
         }
         
         // Find a name not in use
