@@ -53,7 +53,8 @@ import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.common.XMLContentActionReporter;
+import com.sun.enterprise.admin.report.XMLContentActionReporter;
+import fish.payara.api.admin.config.NameGenerator;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -1004,6 +1005,7 @@ public class CommandRunnerImpl implements CommandRunner {
             final ParameterMap parameters) throws MultiException {
 
         ParameterMap adds = null; // renamed password parameters
+        boolean autoname = false;
 
         // loop through parameters and make sure they are
         // part of the Param declared field
@@ -1043,7 +1045,17 @@ public class CommandRunnerImpl implements CommandRunner {
             if (!validOption) {
                 throw new MultiException(new IllegalArgumentException(" Invalid option: " + key));
             }
+
+            if ((key.equals("autoname") || key.equals("a"))
+                    && entry.getValue().get(0).equalsIgnoreCase("true")) {
+                autoname = true;
+            }
         }
+
+        if (!parameters.containsKey("DEFAULT") && autoname) {
+            parameters.add("DEFAULT", NameGenerator.generateName());
+        }
+
         parameters.mergeAll(adds);
     }
 
@@ -1162,9 +1174,9 @@ public class CommandRunnerImpl implements CommandRunner {
                     "The GlassFish environment does not have any clusters or instances present; Replication is turned off"));
         }
         try {
-            //Get list of suplemental commands
-            Collection<SupplementalCommand> suplementalCommands =
-                    supplementalExecutor.listSuplementalCommands(model.getCommandName());
+            //Get list of supplemental commands
+            Collection<SupplementalCommand> supplementalCommands =
+                    supplementalExecutor.listSupplementalCommands(model.getCommandName());
             try {
                 /*
                  * Extract any uploaded files and build a map from parameter names
@@ -1435,7 +1447,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
                     //Set there progress statuses
                     if (!fromCheckpoint) {
-                        for (SupplementalCommand supplementalCommand : suplementalCommands) {
+                        for (SupplementalCommand supplementalCommand : supplementalCommands) {
                             progressHelper.addProgressStatusToSupplementalCommand(supplementalCommand);
                         }
                     }
@@ -1460,7 +1472,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     if (!fromCheckpoint) {
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.presupplemental",
                                 "Command execution stage 2 : Call pre supplemental commands for {0}", inv.name()));
-                        preSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
+                        preSupplementalReturn = supplementalExecutor.execute(supplementalCommands,
                                 Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
                         if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                             report.setActionExitCode(preSupplementalReturn);
@@ -1491,7 +1503,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         //Run Supplemental commands that have to be run after this command on this instance type
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.postsupplemental",
                                 "Command execution stage 4 : Call post supplemental commands for {0}", inv.name()));
-                        postSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
+                        postSupplementalReturn = supplementalExecutor.execute(supplementalCommands,
                                 Supplemental.Timing.After, context, parameters, ufm.optionNameToFileMap());
                         if (postSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                             report.setActionExitCode(postSupplementalReturn);
@@ -1599,7 +1611,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                 report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
                                     "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
-                            ActionReport.ExitCode afterReplicationSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
+                            ActionReport.ExitCode afterReplicationSupplementalReturn = supplementalExecutor.execute(supplementalCommands,
                                     Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
                             if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                                 report.setActionExitCode(afterReplicationSupplementalReturn);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -73,10 +73,15 @@ import com.sun.enterprise.util.net.NetUtils;
 public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true)
-    private String instanceName0;
+    protected String instanceName0;
 
     @Param(name = "dockerNode", defaultValue = "false", optional = true, alias = "dockernode")
-    private Boolean dockerNode;
+    protected Boolean dockerNode;
+
+    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Technically deprecated syntax
+    @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
+    protected boolean extraTerse;
 
     String DASHost;
     int DASPort = -1;
@@ -120,7 +125,9 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!setDasDefaultsOnly) {
                 String nodeDirChildName = nodeDirChild != null ? nodeDirChild.getName() : "";
                 String nodeName = node != null ? node : nodeDirChildName;
-                logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
+                if (!programOpts.isExtraTerse() || extraTerse) {
+                    logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
+                }
             }
         }
 

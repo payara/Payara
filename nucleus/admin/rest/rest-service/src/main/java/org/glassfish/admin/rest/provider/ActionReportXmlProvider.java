@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
+ * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
  */
 
 package org.glassfish.admin.rest.provider;
 
 import static java.util.Arrays.asList;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.lang.reflect.Type;
 import java.util.*;
 import javax.ws.rs.Produces;

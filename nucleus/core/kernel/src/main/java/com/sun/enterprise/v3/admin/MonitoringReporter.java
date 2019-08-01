@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -44,9 +47,9 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import static com.sun.enterprise.util.StringUtils.ok;
-import com.sun.enterprise.v3.common.ActionReporter;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import org.glassfish.api.ActionReport;

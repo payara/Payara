@@ -39,7 +39,7 @@
  */
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
-package com.sun.enterprise.v3.common;
+package com.sun.enterprise.admin.report;
 
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.util.StringUtils;

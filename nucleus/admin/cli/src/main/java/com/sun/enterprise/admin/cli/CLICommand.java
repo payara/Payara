@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Scope;
 import javax.inject.Singleton;
+
+import fish.payara.api.admin.config.NameGenerator;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel;
@@ -974,7 +976,16 @@ public abstract class CLICommand implements PostConstruct {
                 }
 
                 if (operands.size() < operandMin && lineReader != null) {
-                    String val = lineReader.readLine(strings.get("operandPrompt", operandParam.getName()));
+                    String val = null;
+                    if (programOpts.isAutoName()) {
+                        val = NameGenerator.generateName();
+                    }
+
+                    if (!ok(val)) {
+                        val = lineReader.readLine(strings.get("operandPrompt", operandParam.getName()));
+                    }
+
+
                     if (ok(val)) {
                         operands = new ArrayList<>();
                         operands.add(val);
@@ -1018,13 +1029,18 @@ public abstract class CLICommand implements PostConstruct {
         // "DEFAULT"
         options.set("DEFAULT", operands);
 
-        // if command has a "terse" option, set it from ProgramOptions
+        // if command has a "terse" or "extraterse" option, set it from ProgramOptions
         if (commandModel.getModelFor("terse") != null){
             options.set("terse", Boolean.toString(programOpts.isTerse()));
         }
+        if (commandModel.getModelFor("extraterse") != null){
+            options.set("extraterse", Boolean.toString(programOpts.isExtraTerse()));
+        }
+        if (commandModel.getModelFor("autoname") != null) {
+            options.set("autoname", Boolean.toString(programOpts.isAutoName()));
+        }
         // initialize the injector.
-        InjectionResolver<Param> injector =
-                    new MapInjectionResolver(commandModel, options);
+        InjectionResolver<Param> injector = new MapInjectionResolver(commandModel, options);
 
         // inject
         try {

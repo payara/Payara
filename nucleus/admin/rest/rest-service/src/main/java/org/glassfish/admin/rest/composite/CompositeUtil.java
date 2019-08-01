@@ -41,7 +41,7 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

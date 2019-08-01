@@ -86,7 +86,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
 
     private Map<String, List<ServiceHandle<?>>> supplementalCommandsMap = null;
     
-    public Collection<SupplementalCommand> listSuplementalCommands(String commandName) {
+    public Collection<SupplementalCommand> listSupplementalCommands(String commandName) {
         List<ServiceHandle<?>> supplementalList = getSupplementalCommandsList().get(commandName);
         if (supplementalList == null) {
             return Collections.emptyList();
@@ -105,15 +105,15 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     }
 
     @Override
-    public ActionReport.ExitCode execute(Collection<SupplementalCommand> suplementals, Supplemental.Timing time,
+    public ActionReport.ExitCode execute(Collection<SupplementalCommand> supplementals, Supplemental.Timing time,
                              AdminCommandContext context, ParameterMap parameters, 
                              MultiMap<String, File> optionFileMap) {
         //TODO : Use the executor service to parallelize this
         ActionReport.ExitCode finalResult = ActionReport.ExitCode.SUCCESS;
-        if (suplementals == null) {
+        if (supplementals == null) {
             return finalResult;
         }
-        for (SupplementalCommand aCmd : suplementals) {
+        for (SupplementalCommand aCmd : supplementals) {
             if ((time.equals(Supplemental.Timing.Before) && aCmd.toBeExecutedBefore()) ||
                 (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter())   ||
                 (time.equals(Supplemental.Timing.AfterReplication) && aCmd.toBeExecutedAfterReplication())) {
