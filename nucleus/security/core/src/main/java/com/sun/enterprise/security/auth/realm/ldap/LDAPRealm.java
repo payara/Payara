@@ -79,6 +79,7 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import java.util.logging.Logger;
 
 /**
  * Realm wrapper for supporting LDAP authentication.
@@ -117,6 +118,8 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
  */
 @Service
 public final class LDAPRealm extends BaseRealm {
+    // Child logger of javax.enterprise.system.core.security 
+    protected static final Logger _groupSearchLogger = Logger.getLogger(_logger.getName() + ".ldaprealm.groupsearch");
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "ldap";
@@ -391,7 +394,7 @@ public final class LDAPRealm extends BaseRealm {
             groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), dynMember, dynFilter, getProperty(PARAM_GRP_TARGET)));
             return groupsList;
         } catch (Exception e) {
-            _logger.log(WARNING, "ldaprealm.groupsearcherror", e);
+            _groupSearchLogger.log(WARNING, "ldaprealm.groupsearcherror", e);
         } finally {
             if (ctx != null) {
                 try {
