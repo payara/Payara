@@ -54,11 +54,17 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.Member;
 import com.hazelcast.kubernetes.KubernetesProperties;
+import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.Utility;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import java.beans.PropertyChangeEvent;
@@ -102,7 +108,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HazelcastCore implements EventListener, ConfigListener {
+public class HazelcastCore implements EventListener, ConfigListener, MonitoringDataSource {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
@@ -178,7 +184,21 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberGroup = nodeConfig.getMemberGroup();
         }
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector clusterCollector = collector.in("cluster")
+                .collect("booted", booted)
+                .collect("enabled", enabled);
+        for (Member member : getInstance().getCluster().getMembers()) {
+            clusterCollector.type("member").entity(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE))
+                .collect("local", member.localMember());
+        }
+        IExecutorService executor = getInstance().getExecutorService(HazelcastCore.CLUSTER_EXECUTOR_SERVICE_NAME);
+        clusterCollector.type("executor").entity(HazelcastCore.CLUSTER_EXECUTOR_SERVICE_NAME)
+            .collectObject(executor.getLocalExecutorStats(), LocalExecutorStats.class);
+    }
+
     /**
      * Returns the Hazelcast name of the instance
      * <p>

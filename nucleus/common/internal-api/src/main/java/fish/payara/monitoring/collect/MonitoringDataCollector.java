@@ -39,6 +39,7 @@
  */
 package fish.payara.monitoring.collect;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
@@ -174,6 +175,27 @@ public interface MonitoringDataCollector {
             collectNonZero("size", entries.size());
             for (Entry<K,V> entry : entries.entrySet()) {
                 collect.accept(entity(entry.getKey()), entry.getValue());
+            }
+        }
+        return this;
+    }
+
+    default <V> MonitoringDataCollector collectObject(V obj, Class<V> as) {
+        for (Method getter : as.getDeclaredMethods()) {
+            String name = getter.getName();
+            int offset = name.startsWith("get") ? 3 : name.startsWith("is") ? 2 : 0;
+            if (offset > 0) {
+                String property = Character.toLowerCase(name.charAt(offset)) + name.substring(offset+1);
+                Class<?> returnType = getter.getReturnType();
+                try {
+                    if (Boolean.class.isAssignableFrom(returnType) || returnType == boolean.class) {
+                        collect(property, (Boolean) getter.invoke(obj));
+                    } else if (Number.class.isAssignableFrom(returnType) || returnType.isPrimitive()) {
+                        collect(property, (Number) getter.invoke(obj));
+                    }
+                } catch (Exception e) {
+                    // try next
+                }
             }
         }
         return this;
