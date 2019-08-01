@@ -55,6 +55,10 @@ import java.util.Map.Entry;
  */
 public final class PayaraMicroNameGenerator {
 
+    public static String generateName() {
+        return NameGenerator.generateName();
+    }
+
     /**
      * Generates a unique name. If all names are already is use,
      * returns the UUID.
