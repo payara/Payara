@@ -60,6 +60,8 @@ import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.hazelcast.scheduledexecutor.IScheduledExecutorService;
+import com.hazelcast.scheduledexecutor.IScheduledFuture;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.Utility;
 
@@ -74,6 +76,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -194,9 +198,21 @@ public class HazelcastCore implements EventListener, ConfigListener, MonitoringD
             clusterCollector.type("member").entity(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE))
                 .collect("local", member.localMember());
         }
-        IExecutorService executor = getInstance().getExecutorService(HazelcastCore.CLUSTER_EXECUTOR_SERVICE_NAME);
         clusterCollector.type("executor").entity(HazelcastCore.CLUSTER_EXECUTOR_SERVICE_NAME)
-            .collectObject(executor.getLocalExecutorStats(), LocalExecutorStats.class);
+            .collectObject(getInstance().getExecutorService(HazelcastCore.CLUSTER_EXECUTOR_SERVICE_NAME).getLocalExecutorStats(), LocalExecutorStats.class);
+        Map<Member, List<IScheduledFuture<Object>>> scheduled = getInstance()
+                .getScheduledExecutorService(HazelcastCore.SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME)
+                .getAllScheduledFutures();
+        int total = 0;
+        MonitoringDataCollector scheduledCollector = clusterCollector
+            .type("executor").entity(HazelcastCore.SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
+        for (Entry<Member, List<IScheduledFuture<Object>>> entry : scheduled.entrySet()) {
+            total += entry.getValue().size();
+            scheduledCollector.tag("member", entry.getKey().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE))
+                .collect("scheduledFutureCount", entry.getValue().size());
+        }
+        scheduledCollector
+            .collect("totalScheduledFutureCount", total);
     }
 
     /**
