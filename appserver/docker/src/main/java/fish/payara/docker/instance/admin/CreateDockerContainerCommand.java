@@ -1,12 +1,9 @@
 package fish.payara.docker.instance.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import fish.payara.docker.DockerConstants;
 import fish.payara.docker.instance.JsonRequestConstructor;
@@ -22,10 +19,8 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
@@ -47,7 +42,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = Server.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "_create-docker-container",
                 description = "Create a Docker Container for the defined Instance on the specified nodeName")
@@ -238,12 +233,9 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
     private void setDockerContainerId(ActionReport actionReport, Server server, String dockerContainerId) {
         try {
-            ConfigSupport.apply(new SingleConfigCode<Server>() {
-                @Override
-                public Object run(Server param) throws PropertyVetoException, TransactionFailure {
-                    param.setDockerContainerId(dockerContainerId);
-                    return param;
-                }
+            ConfigSupport.apply(serverProxy -> {
+                serverProxy.setDockerContainerId(dockerContainerId);
+                return serverProxy;
             }, server);
         } catch (TransactionFailure transactionFailure) {
             actionReport.failure(logger, "Could not set Docker Container ID for instance", transactionFailure);

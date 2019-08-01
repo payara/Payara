@@ -108,6 +108,11 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
 
+    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Technically deprecated syntax
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
+
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
@@ -156,6 +161,11 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         }
         setDomainName();
         setDasDefaultsOnly = false;
+
+        if (programOpts.isAutoName() || autoName) {
+            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName0,
+                    NamingHelper.getAllNamesInUse(programOpts, env));
+        }
 
         super.validate();  // instanceName is validated and set in super.validate(), directories created
         INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
@@ -323,7 +333,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private boolean rendezvousWithDAS() {
         try {
             getUptime();
-            if (!programOpts.isExtraTerse() || extraTerse) {
+            if (!programOpts.isExtraTerse() || !extraTerse) {
                 logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
             }
             return true;

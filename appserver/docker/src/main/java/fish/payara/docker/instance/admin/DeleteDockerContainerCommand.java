@@ -1,8 +1,9 @@
 package fish.payara.docker.instance.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = Server.class,
                 opType = RestEndpoint.OpType.DELETE,
                 path = "_delete-docker-container",
                 description = "Deletes a Docker Container")
@@ -45,12 +46,16 @@ public class DeleteDockerContainerCommand implements AdminCommand {
     @Inject
     Nodes nodes;
 
+    @Inject
+    Servers servers;
+
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
         ActionReport actionReport = adminCommandContext.getActionReport();
 
         // Shouldn't need to check for presence of this nodeName, as its presence was checked for in DeleteInstanceCommand
         Node node = nodes.getNode(nodeName);
+        Server server = servers.getServer(instanceName);
 
         Client client = ClientBuilder.newClient();
         WebTarget webTarget = null;
@@ -60,14 +65,14 @@ public class DeleteDockerContainerCommand implements AdminCommand {
                     + ":"
                     + node.getDockerPort()
                     + "/containers/"
-                    + instanceName);
+                    + server.getDockerContainerId());
         } else {
             webTarget = client.target("http://"
                     + node.getNodeHost()
                     + ":"
                     + node.getDockerPort()
                     + "/containers/"
-                    + instanceName);
+                    + server.getDockerContainerId());
         }
 
         Response response = null;
