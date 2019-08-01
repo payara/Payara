@@ -41,6 +41,7 @@ package fish.payara.notification.email;
 
 import fish.payara.nucleus.notification.configuration.EmailNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -51,6 +52,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
@@ -58,6 +60,7 @@ import org.glassfish.hk2.api.messaging.SubscribeTo;
  */
 @Service(name = "service-email")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class EmailNotifierService extends QueueBasedNotifierService<EmailNotificationEvent,
         EmailNotifier,
         EmailNotifierConfiguration,
@@ -72,10 +75,12 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
     }
 
     @Override
-    public void handleNotification(@SubscribeTo EmailNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            EmailMessage message = new EmailMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof EmailNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                EmailMessage message = new EmailMessage((EmailNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 

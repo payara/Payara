@@ -41,6 +41,7 @@ package fish.payara.nucleus.notification.log;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -52,6 +53,7 @@ import javax.inject.Inject;
 import java.text.MessageFormat;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
@@ -59,6 +61,7 @@ import org.glassfish.hk2.api.messaging.SubscribeTo;
  */
 @Service(name = "service-log")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class LogNotifierService extends BaseNotifierService<LogNotificationEvent, LogNotifier, LogNotifierConfiguration> {
 
     @Inject
@@ -108,16 +111,20 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
         handler = null;
     }
 
+    //@Override
     @Override
-    public void handleNotification(@SubscribeTo LogNotificationEvent event) {
-        if (execOptions != null && execOptions.isEnabled()) {
-            if (event.getParameters() != null && event.getParameters().length > 0) {
-                String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
-                logger.log(event.getLevel(), event.getSubject() != null ?
-                        event.getSubject() + " - " + formattedText : formattedText);
-            } else {
-                logger.log(event.getLevel(), event.getSubject() != null ?
-                        event.getSubject() + " - " + event.getMessage() : event.getMessage());
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof LogNotificationEvent) {
+            LogNotificationEvent logEvent = (LogNotificationEvent) event;
+            if (execOptions != null && execOptions.isEnabled()) {
+                if (logEvent.getParameters() != null && logEvent.getParameters().length > 0) {
+                    String formattedText = MessageFormat.format(logEvent.getMessage(), logEvent.getParameters());
+                    logger.log(logEvent.getLevel(), logEvent.getSubject() != null
+                            ? logEvent.getSubject() + " - " + formattedText : formattedText);
+                } else {
+                    logger.log(logEvent.getLevel(), logEvent.getSubject() != null
+                            ? logEvent.getSubject() + " - " + logEvent.getMessage() : logEvent.getMessage());
+                }
             }
         }
     }

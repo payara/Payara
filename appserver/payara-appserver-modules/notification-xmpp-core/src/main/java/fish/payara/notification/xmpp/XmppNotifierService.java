@@ -41,6 +41,7 @@ package fish.payara.notification.xmpp;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.configuration.XmppNotifier;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -54,6 +55,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
@@ -61,6 +63,7 @@ import org.glassfish.hk2.api.messaging.SubscribeTo;
  */
 @Service(name = "service-xmpp")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificationEvent,
         XmppNotifier,
         XmppNotifierConfiguration,
@@ -76,7 +79,7 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
 
     @Override
     public void bootstrap() {
-        register(NotifierType.XMPP, XmppNotifier.class, XmppNotifierConfiguration.class, this);
+        register(NotifierType.XMPP, XmppNotifier.class, XmppNotifierConfiguration.class);
 
         try {
             executionOptions = (XmppNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
@@ -122,10 +125,12 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
     }
 
     @Override
-    public void handleNotification(@SubscribeTo XmppNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            XmppMessage message = new XmppMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof XmppNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                XmppMessage message = new XmppMessage((XmppNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 }

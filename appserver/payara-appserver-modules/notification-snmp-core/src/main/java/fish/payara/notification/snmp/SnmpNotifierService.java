@@ -42,6 +42,7 @@ package fish.payara.notification.snmp;
 import fish.payara.notification.snmp.exception.InvalidSnmpVersion;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.configuration.SnmpNotifier;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -56,6 +57,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
@@ -63,6 +65,7 @@ import org.glassfish.hk2.api.messaging.SubscribeTo;
  */
 @Service(name = "service-snmp")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificationEvent,
         SnmpNotifier,
         SnmpNotifierConfiguration,
@@ -81,16 +84,18 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
     }
 
     @Override
-    public void handleNotification(@SubscribeTo SnmpNotificationEvent event) {
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof SnmpNotificationEvent) {
         if (execOptions != null && execOptions.isEnabled()) {
-            SnmpMessage message = new SnmpMessage(event, event.getSubject(), event.getMessage());
+            SnmpMessage message = new SnmpMessage((SnmpNotificationEvent) event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
+        }
         }
     }
 
     @Override
     public void bootstrap() {
-        register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class, this);
+        register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class);
         execOptions = (SnmpNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
         if (execOptions != null && execOptions.isEnabled()) {

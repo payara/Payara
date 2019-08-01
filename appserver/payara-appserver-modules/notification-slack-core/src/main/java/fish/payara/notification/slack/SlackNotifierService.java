@@ -41,8 +41,10 @@ package fish.payara.notification.slack;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.configuration.SlackNotifier;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -52,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "service-slack")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class SlackNotifierService extends QueueBasedNotifierService<SlackNotificationEvent,
         SlackNotifier,
         SlackNotifierConfiguration,
@@ -64,16 +67,18 @@ public class SlackNotifierService extends QueueBasedNotifierService<SlackNotific
 }
 
     @Override
-    public void handleNotification(@SubscribeTo SlackNotificationEvent event) {
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof SlackNotificationEvent) {
         if (executionOptions != null && executionOptions.isEnabled()) {
-            SlackMessage message = new SlackMessage(event, event.getSubject(), event.getMessage());
+            SlackMessage message = new SlackMessage((SlackNotificationEvent) event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
+        }
         }
     }
 
     @Override
     public void bootstrap() {
-        register(NotifierType.SLACK, SlackNotifier.class, SlackNotifierConfiguration.class, this);
+        register(NotifierType.SLACK, SlackNotifier.class, SlackNotifierConfiguration.class);
         
         executionOptions = (SlackNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
         if (executionOptions != null && executionOptions.isEnabled()){

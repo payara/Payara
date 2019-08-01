@@ -41,8 +41,10 @@ package fish.payara.notification.hipchat;
 
 import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -52,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "service-hipchat")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNotificationEvent,
         HipchatNotifier,
         HipchatNotifierConfiguration,
@@ -64,10 +67,12 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
     }
 
     @Override
-    public void handleNotification(@SubscribeTo HipchatNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            HipchatMessage message = new HipchatMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof HipchatNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                HipchatMessage message = new HipchatMessage((HipchatNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 

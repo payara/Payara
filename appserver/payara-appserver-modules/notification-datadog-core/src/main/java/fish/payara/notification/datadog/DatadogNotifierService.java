@@ -41,8 +41,10 @@ package fish.payara.notification.datadog;
 
 import fish.payara.nucleus.notification.configuration.DatadogNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -52,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "service-datadog")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNotificationEvent,
         DatadogNotifier,
         DatadogNotifierConfiguration,
@@ -64,10 +67,12 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
 }
 
     @Override
-    public void handleNotification(@SubscribeTo DatadogNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            DatadogMessage message = new DatadogMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof DatadogNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                DatadogMessage message = new DatadogMessage((DatadogNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 

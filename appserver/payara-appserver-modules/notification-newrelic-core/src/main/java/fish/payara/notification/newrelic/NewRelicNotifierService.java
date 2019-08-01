@@ -41,8 +41,10 @@ package fish.payara.notification.newrelic;
 
 import fish.payara.nucleus.notification.configuration.NewRelicNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -52,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "service-newrelic")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class NewRelicNotifierService extends QueueBasedNotifierService<NewRelicNotificationEvent,
         NewRelicNotifier,
         NewRelicNotifierConfiguration,
@@ -64,16 +67,18 @@ public class NewRelicNotifierService extends QueueBasedNotifierService<NewRelicN
     }
 
     @Override
-    public void handleNotification(@SubscribeTo NewRelicNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            NewRelicEventMessage message = new NewRelicEventMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof NewRelicNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                NewRelicEventMessage message = new NewRelicEventMessage((NewRelicNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 
     @Override
     public void bootstrap() {
-        register(NotifierType.NEWRELIC, NewRelicNotifier.class, NewRelicNotifierConfiguration.class, this);
+        register(NotifierType.NEWRELIC, NewRelicNotifier.class, NewRelicNotifierConfiguration.class);
 
         executionOptions = (NewRelicNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
         if (executionOptions != null && executionOptions.isEnabled()) {

@@ -43,6 +43,7 @@ import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.nucleus.notification.configuration.CDIEventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -53,6 +54,7 @@ import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.logging.LogLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -61,6 +63,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
  */
 @Service(name = "service-cdieventbus")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusNotificationEvent,
         CDIEventbusNotifier,
         CDIEventbusNotifierConfiguration> {
@@ -70,9 +73,10 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
     private static final Logger log = Logger.getLogger(CDIEventbusNotifierService.class.getName());
 
     @Override
-    public void handleNotification(@SubscribeTo CDIEventbusNotificationEvent event) {
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof CDIEventbusNotificationEvent) {
         if (executionOptions != null && executionOptions.isEnabled()) {
-            CDIEventbusMessageImpl message = new CDIEventbusMessageImpl(event, event.getSubject(), event.getMessage());
+            CDIEventbusMessageImpl message = new CDIEventbusMessageImpl((CDIEventbusNotificationEvent) event, event.getSubject(), event.getMessage());
             for(String appName : appRegistry.getAllApplicationNames()) {
                 ClassLoader oldCL = null;
                 try {
@@ -80,7 +84,7 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
                     if(appCl != null) {
                         oldCL = Utility.setContextClassLoader(appCl);
                         CDI.current();
-                        doHandleNotification(event, message);
+                        doHandleNotification((CDIEventbusNotificationEvent) event, message);
                     }
                 }
                 catch(IllegalStateException e) {
@@ -90,6 +94,7 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
                     Utility.setContextClassLoader(oldCL);
                 }
             }
+        }
         }
     }
 

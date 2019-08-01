@@ -41,8 +41,6 @@ package fish.payara.nucleus.notification;
 
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.messaging.Topic;

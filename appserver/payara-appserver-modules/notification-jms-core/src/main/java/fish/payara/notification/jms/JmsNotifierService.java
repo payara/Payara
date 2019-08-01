@@ -38,8 +38,10 @@
  */
 package fish.payara.notification.jms;
 
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.configuration.JmsNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -55,12 +57,15 @@ import javax.naming.NoInitialContextException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
  */
 @Service(name = "service-jms")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificationEvent,
         JmsNotifier,
         JmsNotifierConfiguration,
@@ -122,10 +127,12 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
     }
 
     @Override
-    public void handleNotification(@SubscribeTo JmsNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            JmsMessage message = new JmsMessage(event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof JmsNotificationEvent) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
+                JmsMessage message = new JmsMessage((JmsNotificationEvent) event, event.getSubject(), event.getMessage());
+                queue.addMessage(message);
+            }
         }
     }
 }

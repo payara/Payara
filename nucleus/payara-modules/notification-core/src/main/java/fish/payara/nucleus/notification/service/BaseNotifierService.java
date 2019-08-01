@@ -106,7 +106,7 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         this.notifierConfigType = notifierConfigType;
     }
 
-    public abstract void handleNotification(E event);
+    public abstract void handleNotification(NotificationEvent event);
 
     public Class<C> getNotifierType() {
         return notifierType;
