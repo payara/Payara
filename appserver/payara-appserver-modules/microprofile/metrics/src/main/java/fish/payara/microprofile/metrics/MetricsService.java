@@ -161,10 +161,8 @@ public class MetricsService implements EventListener, MonitoringDataSource {
             appCollector.type("gauge")
                 .collectAll(registry.getValue().getGauges(), (collector, gauge) -> {
                     Object value = gauge.getValue();
-                    if (value instanceof Float || value instanceof Double) {
-                        collector.collect("value", ((Number) value).doubleValue());
-                    } else if (value instanceof Number) {
-                        collector.collect("value", ((Number) value).longValue());
+                    if (value instanceof Number) {
+                        collector.collect("value", ((Number) value));
                     }
             });
 

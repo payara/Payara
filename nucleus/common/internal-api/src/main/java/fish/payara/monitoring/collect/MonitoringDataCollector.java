@@ -169,12 +169,14 @@ public interface MonitoringDataCollector {
         return this;
     }
 
-    default <K extends CharSequence, V> MonitoringDataCollector collectAll(Map<K, V> entries,
+    default <K, V> MonitoringDataCollector collectAll(Map<K, V> entries,
             BiConsumer<MonitoringDataCollector, V> collect) {
         if (entries != null) {
             collectNonZero("size", entries.size());
             for (Entry<K,V> entry : entries.entrySet()) {
-                collect.accept(entity(entry.getKey()), entry.getValue());
+                K key = entry.getKey();
+                CharSequence tag = key instanceof CharSequence ? (CharSequence) key : key.toString();
+                collect.accept(entity(tag), entry.getValue());
             }
         }
         return this;
