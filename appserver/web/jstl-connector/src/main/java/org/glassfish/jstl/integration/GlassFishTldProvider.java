@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.jstl.integration;
 
@@ -66,7 +67,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.web.loader.LogFacade;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 
@@ -94,7 +95,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
     public void postConstruct() {
 
         URI[] uris = null;
-        Module module = registry.find(Version.class);
+        HK2Module module = registry.find(Version.class);
         
         if (module != null) {
             uris = module.getModuleDefinition().getLocations();

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.flashlight.impl.client;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -63,8 +63,8 @@ import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 
-import org.glassfish.hk2.external.org.objectweb.asm.*;
-import org.glassfish.hk2.external.org.objectweb.asm.commons.AdviceAdapter;
+import org.objectweb.asm.*;
+import org.objectweb.asm.commons.AdviceAdapter;
 
 /**
  * July 2012 Byron Nevins says: We no longer allow outsiders to create
@@ -383,7 +383,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             loadArgArray();
             invokeStatic(Type.getType(
                     ProbeRegistry.class),
-                    org.glassfish.hk2.external.org.objectweb.asm.commons.Method.getMethod(
+                    org.objectweb.asm.commons.Method.getMethod(
                     "Object invokeProbeBefore(int, Object[])"));
 
             // Store return to local
@@ -420,7 +420,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
                 // Push the state from the local
                 loadLocal(stateLocal);
                 invokeStatic(Type.getType(ProbeRegistry.class),
-                        org.glassfish.hk2.external.org.objectweb.asm.commons.Method.getMethod(
+                        org.objectweb.asm.commons.Method.getMethod(
                         "void invokeProbeOnException(Object, int, Object)"));
 
             } else {
@@ -452,7 +452,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
                 // Push the state from the local
                 loadLocal(stateLocal);
                 invokeStatic(Type.getType(ProbeRegistry.class),
-                        org.glassfish.hk2.external.org.objectweb.asm.commons.Method.getMethod(
+                        org.objectweb.asm.commons.Method.getMethod(
                         "void invokeProbeAfter(Object, int, Object)"));
             }
         }
@@ -464,7 +464,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             loadArgArray();
             invokeStatic(Type.getType(
                     ProbeRegistry.class),
-                    org.glassfish.hk2.external.org.objectweb.asm.commons.Method.getMethod("void invokeProbe(int, Object[])"));
+                    org.objectweb.asm.commons.Method.getMethod("void invokeProbe(int, Object[])"));
         }
 
     }
