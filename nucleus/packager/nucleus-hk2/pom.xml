@@ -103,6 +103,11 @@
             <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>aopalliance-repackaged</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>tiger-types</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <!-- Bean Validation -->
         <dependency>
