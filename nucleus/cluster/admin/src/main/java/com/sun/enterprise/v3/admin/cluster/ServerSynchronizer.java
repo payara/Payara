@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -316,7 +317,7 @@ public final class ServerSynchronizer implements PostConstruct {
             if (logger.isLoggable(FINE))
                 logger.log(FINE, "ServerSynchronizer: sending file {0}{1}",
                         new Object[] { f, modTime.time == 0 ? " because it doesn't exist on the instance" : " because it was out of date" });
-            payload.requestFileReplacement("application/octet-stream", root.relativize(f.toURI()), "configChange", null, f, true);
+            payload.requestFileReplacement(MediaType.APPLICATION_OCTET_STREAM, root.relativize(f.toURI()), "configChange", null, f, true);
         } catch (IOException ioex) {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "ServerSynchronizer: IOException attaching file: {0}", f);

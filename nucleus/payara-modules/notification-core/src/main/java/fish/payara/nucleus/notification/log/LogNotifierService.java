@@ -111,7 +111,6 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
         handler = null;
     }
 
-    //@Override
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
         if (event instanceof LogNotificationEvent) {

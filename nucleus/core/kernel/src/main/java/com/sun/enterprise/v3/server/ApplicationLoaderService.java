@@ -364,9 +364,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         final String appName = app.getName();
 
         // lifecycle modules are loaded separately
-        if (Boolean.valueOf(app.getDeployProperties().getProperty
-            (ServerTags.IS_LIFECYCLE))) {
-            return Collections.unmodifiableList(Collections.emptyList());
+        if (Boolean.valueOf(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
+            return Collections.emptyList();
         }
 
         URI uri;
@@ -374,7 +373,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             uri = new URI(source);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.cantDetermineLocation, e.getLocalizedMessage());
-            return Collections.unmodifiableList(Collections.emptyList());
+            return Collections.emptyList();
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
@@ -439,9 +438,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         } else {
             logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
-        appDeployments.removeIf((t) -> {
-            return t == null;
-        });
+        appDeployments.removeIf(t -> t == null);
         return appDeployments;
     }
 

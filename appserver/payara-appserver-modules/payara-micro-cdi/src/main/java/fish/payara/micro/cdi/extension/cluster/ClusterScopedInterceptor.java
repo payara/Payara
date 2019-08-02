@@ -134,7 +134,7 @@ public class ClusterScopedInterceptor implements Serializable {
     private void refresh(Class<?> beanClass) {
         Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
         if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         Bean<?> bean = managedBeans.iterator().next();
         String beanName = getBeanName(bean, getAnnotation(beanManager, bean));

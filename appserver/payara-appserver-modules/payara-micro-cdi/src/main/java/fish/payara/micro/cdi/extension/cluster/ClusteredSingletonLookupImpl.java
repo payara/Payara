@@ -70,7 +70,7 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
     void setClusteredSessionKey(Class<?> beanClass) {
         Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
         if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         if (managedBeans.size() == 1) {
             Bean<?> bean = managedBeans.iterator().next();

@@ -76,11 +76,9 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof EmailNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                EmailMessage message = new EmailMessage((EmailNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof EmailNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            EmailMessage message = new EmailMessage((EmailNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 

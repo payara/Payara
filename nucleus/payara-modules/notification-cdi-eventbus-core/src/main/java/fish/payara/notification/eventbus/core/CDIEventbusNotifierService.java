@@ -74,8 +74,7 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof CDIEventbusNotificationEvent) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
+        if (event instanceof CDIEventbusNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
             CDIEventbusMessageImpl message = new CDIEventbusMessageImpl((CDIEventbusNotificationEvent) event, event.getSubject(), event.getMessage());
             for(String appName : appRegistry.getAllApplicationNames()) {
                 ClassLoader oldCL = null;
@@ -94,7 +93,6 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
                     Utility.setContextClassLoader(oldCL);
                 }
             }
-        }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -126,11 +126,9 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof XmppNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                XmppMessage message = new XmppMessage((XmppNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof XmppNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            XmppMessage message = new XmppMessage((XmppNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 }

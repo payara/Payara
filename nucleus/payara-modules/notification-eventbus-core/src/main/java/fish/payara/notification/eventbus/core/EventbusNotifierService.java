@@ -70,11 +70,9 @@ public class EventbusNotifierService extends BaseNotifierService<EventbusNotific
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof EventbusNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                EventbusMessageImpl message = new EventbusMessageImpl((EventbusNotificationEvent) event, event.getSubject(), event.getMessage());
-                eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
-            }
+        if (event instanceof EventbusNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            EventbusMessageImpl message = new EventbusMessageImpl((EventbusNotificationEvent) event, event.getSubject(), event.getMessage());
+            eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
         }
     }
 

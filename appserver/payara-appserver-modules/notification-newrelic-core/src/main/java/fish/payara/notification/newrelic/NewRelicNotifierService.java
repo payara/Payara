@@ -68,11 +68,9 @@ public class NewRelicNotifierService extends QueueBasedNotifierService<NewRelicN
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof NewRelicNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                NewRelicEventMessage message = new NewRelicEventMessage((NewRelicNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof NewRelicNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            NewRelicEventMessage message = new NewRelicEventMessage((NewRelicNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 

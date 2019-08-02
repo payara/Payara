@@ -68,11 +68,9 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof HipchatNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                HipchatMessage message = new HipchatMessage((HipchatNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof HipchatNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            HipchatMessage message = new HipchatMessage((HipchatNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 

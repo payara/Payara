@@ -68,11 +68,9 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof DatadogNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                DatadogMessage message = new DatadogMessage((DatadogNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof DatadogNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            DatadogMessage message = new DatadogMessage((DatadogNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 

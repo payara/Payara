@@ -128,11 +128,9 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
 
     @Override
     public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof JmsNotificationEvent) {
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                JmsMessage message = new JmsMessage((JmsNotificationEvent) event, event.getSubject(), event.getMessage());
-                queue.addMessage(message);
-            }
+        if (event instanceof JmsNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            JmsMessage message = new JmsMessage((JmsNotificationEvent) event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
         }
     }
 }

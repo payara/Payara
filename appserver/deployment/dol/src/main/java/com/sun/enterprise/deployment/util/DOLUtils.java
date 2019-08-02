@@ -998,9 +998,12 @@ public class DOLUtils {
      * @return true if the class is white-listed
      */
     public static boolean isWhiteListed(Application application, String className) {
-        List<String> packages = Arrays.asList(SYSTEM_PACKAGES);
-        packages.addAll(application.getWhitelistPackages());
-        for (String packageName : packages) {
+        for (String packageName : SYSTEM_PACKAGES) {
+            if (className.startsWith(packageName)) {
+                return true;
+            }
+        }
+        for (String packageName : application.getWhitelistPackages()) {
             if (className.startsWith(packageName)) {
                 return true;
             }
