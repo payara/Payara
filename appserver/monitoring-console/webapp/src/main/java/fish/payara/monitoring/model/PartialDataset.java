@@ -193,4 +193,9 @@ public final class PartialDataset extends SeriesDataset {
         }
         return str.toString();
     }
+
+    @Override
+    public int estimatedBytesMemory() {
+        return 92 + (data.length * 8);
+    }
 }

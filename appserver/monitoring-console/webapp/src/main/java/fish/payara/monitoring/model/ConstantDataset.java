@@ -117,4 +117,9 @@ public class ConstantDataset extends SeriesDataset {
     public int capacity() {
         return capacity;
     }
+
+    @Override
+    public int estimatedBytesMemory() {
+        return 40;
+    }
 }

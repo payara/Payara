@@ -62,8 +62,16 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
                 // ignore and continue with next
             }
         }
+        long estimatedTotalBytesMemory = 0L;
+        for (SeriesDataset set : secondsWrite.values()) {
+            estimatedTotalBytesMemory += set.estimatedBytesMemory();
+        }
+        int seriesCount = secondsWrite.size();
         collector.in("collect")
             .collect("duration", System.currentTimeMillis() - collectionStart)
+            .collectNonZero("series", seriesCount)
+            .collectNonZero("estimatedTotalBytesMemory", estimatedTotalBytesMemory)
+            .collectNonZero("estimatedAverageBytesMemory", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
             .collectNonZero("sources", collectedSources)
             .collectNonZero("failed", failedSources);
         swap();

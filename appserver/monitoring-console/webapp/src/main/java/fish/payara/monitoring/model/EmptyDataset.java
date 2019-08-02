@@ -75,4 +75,9 @@ public final class EmptyDataset extends SeriesDataset {
     public int capacity() {
         return capacity;
     }
+
+    @Override
+    public int estimatedBytesMemory() {
+        return 16;
+    }
 }

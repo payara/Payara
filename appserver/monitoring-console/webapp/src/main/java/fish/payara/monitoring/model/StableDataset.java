@@ -59,4 +59,9 @@ public class StableDataset extends ConstantDataset {
     public SeriesDataset add(long time, long value) {
         return value == lastValue() ? new StableDataset(this, time) : new PartialDataset(this, time, value);
     }
+
+    @Override
+    public int estimatedBytesMemory() {
+        return 80;
+    }
 }

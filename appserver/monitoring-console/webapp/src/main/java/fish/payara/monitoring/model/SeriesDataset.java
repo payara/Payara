@@ -73,4 +73,6 @@ public abstract class SeriesDataset implements Serializable {
     public abstract long firstTime();
 
     public abstract int capacity();
+
+    public abstract int estimatedBytesMemory();
 }
