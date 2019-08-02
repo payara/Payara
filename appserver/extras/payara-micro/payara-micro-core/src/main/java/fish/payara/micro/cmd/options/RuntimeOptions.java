@@ -129,14 +129,7 @@ public class RuntimeOptions {
             }
         }
         if (invalidArgs.size() > 0) {
-            StringBuilder invalid = new StringBuilder();
-            for (String invalidArgument: invalidArgs) {
-                if (invalidArgument != null) {
-                    invalid.append(invalidArgument);
-                    invalid.append(',');
-                }
-            }
-            throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArguments"), invalid.toString()));
+            throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArguments"), String.join(",", invalidArgs)));
         }
     }
     

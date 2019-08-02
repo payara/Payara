@@ -67,20 +67,15 @@ public class NotificationEventBus {
         ExtrasUtilities.enableTopicDistribution(Globals.getDefaultHabitat());
     }
 
+    @Deprecated
     public void register(BaseNotifierService notifier) {
-        //eventBus.register(notifier);
     }
 
+    @Deprecated
     public void unregister(BaseNotifierService notifier) {
-        /*try {
-            eventBus.unregister(notifier);
-        } catch (IllegalArgumentException e){
-            Logger.getLogger(NotificationEventBus.class.getCanonicalName()).log(Level.WARNING, "Tried to unregister" + notifier.toString() + ", it may not have been previously registered");
-        }*/
     }
 
     void postEvent(NotificationEvent event) {
-        //eventBus.post(event);
         eventBus.publish(event);
     }
 }
