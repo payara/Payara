@@ -85,8 +85,23 @@ public class SinkDataCollector implements MonitoringDataCollector {
         } else if (tagged.length() > 0) {
             tagged.append(TAG_SEPARATOR);
         }
-        tagged.append(name).append(TAG_ASSIGN).append(value);
+        tagged.append(name).append(TAG_ASSIGN);
+        appendEscaped(value, tagged);
         return new SinkDataCollector(sink, tagged);
+    }
+
+    /**
+     * Makes sure that tag separating characters in values are replaced with underscore.
+     */
+    private static void appendEscaped(CharSequence value, StringBuilder tagged) {
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c != ',' && c != ';' && c != ' ') {
+                tagged.append(c);
+            } else {
+                tagged.append('_');
+            }
+        }
     }
 
     private int indexOf(CharSequence name) {
