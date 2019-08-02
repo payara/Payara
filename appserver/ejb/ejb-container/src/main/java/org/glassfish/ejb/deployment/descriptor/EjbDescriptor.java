@@ -983,9 +983,10 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
         List<EjbInterceptor> classOrMethodInterceptors = null;
 
-        for (MethodDescriptor methodDesc : methodInterceptorsMap.keySet()) {
+        for (Map.Entry<MethodDescriptor, List<EjbInterceptor>> entry : methodInterceptorsMap.entrySet()) {
+            MethodDescriptor methodDesc = entry.getKey();
             if (methodDesc.implies(businessMethod)) {
-                classOrMethodInterceptors = methodInterceptorsMap.get(methodDesc);
+                classOrMethodInterceptors = entry.getValue();
             }
         }
 

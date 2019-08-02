@@ -47,7 +47,7 @@ import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.enterprise.admin.report.HTMLActionReporter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

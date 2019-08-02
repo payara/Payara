@@ -40,8 +40,11 @@
 package fish.payara.microprofile;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.util.StringUtils;
 import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import static fish.payara.microprofile.Constants.DEFAULT_USER_NAME;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
@@ -64,6 +67,12 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
     
     @Inject
     private SecurityService securityService;
+
+    @Param(optional = true, defaultValue = DEFAULT_GROUP_NAME)
+    protected String roles;
+
+    @Param(optional = true, alias = "securityenabled")
+    protected Boolean securityEnabled;
 
     protected boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
         CommandRunner.CommandInvocation invocation
@@ -98,7 +107,7 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
                 );
 
         ParameterMap parameters = new ParameterMap();
-        parameters.add("groups", DEFAULT_GROUP_NAME);
+        parameters.add("groups", roles.replace(',', ':'));
         parameters.add("userpassword", "mp");
         parameters.add("target", target);
         parameters.add("authrealmname", securityService.getDefaultRealm());

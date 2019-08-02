@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
 * $Header: /cvs/glassfish/admin/mbeanapi-impl/tests/org.glassfish.admin.amxtest/ext/wsmgmt/WebServiceMonitorTest.java,v 1.7 2007/05/05 05:24:04 tcfujii Exp $
@@ -52,7 +53,7 @@ import com.sun.appserv.management.monitor.statistics.WebServiceEndpointAggregate
 import org.glassfish.admin.amxtest.AMXTestBase;
 import org.glassfish.admin.amxtest.Capabilities;
 
-import org.glassfish.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
 import java.io.IOException;
 import java.util.Set;
 

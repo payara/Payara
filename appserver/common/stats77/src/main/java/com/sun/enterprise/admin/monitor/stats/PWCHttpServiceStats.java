@@ -37,19 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
-/**
- *
- * @author  nsegura
- */
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.Stats;
 
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.Stats;
-import com.sun.enterprise.admin.monitor.stats.StringStatistic;
 /**
  * Contains Statistical Information for the HttpService
+ * @author  nsegura
  */
 public interface PWCHttpServiceStats extends Stats {
     

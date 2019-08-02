@@ -57,6 +57,7 @@ import org.glassfish.gmbal.ManagedObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,11 +126,12 @@ public class DeploymentLifecycleStatsProvider {
             // Set the headings for the tabular output
             int appNameLength = COLUMN_LENGTH;
             int moduleTypeLength = COLUMN_LENGTH;
-            for (String appName : appsInfoMap.keySet()) {
+            for (Entry<String, Map<String, String>> entry : appsInfoMap.entrySet()) {
+                String appName = entry.getKey();
                 if (appName.length() > appNameLength) {
                     appNameLength = appName.length() + 1;
                 }
-                String moduleType = appsInfoMap.get(appName).get(MODULE_TYPE);
+                String moduleType = entry.getValue().get(MODULE_TYPE);
                 if (moduleType.length() > moduleTypeLength) {
                     moduleTypeLength = moduleType.length() + 1;
                 }
@@ -141,9 +143,10 @@ public class DeploymentLifecycleStatsProvider {
             appendColumn(strBuf, "Loading_Time(ms)", COLUMN_LENGTH);
             strBuf.append(LINE_BREAK);
 
-            for (String appName : appsInfoMap.keySet()) {
+            for (Entry<String, Map<String, String>> entry : appsInfoMap.entrySet()) {
+                String appName = entry.getKey();
                 appendColumn(strBuf, appName, appNameLength);
-                Map<String, String> appInfoMap = appsInfoMap.get(appName);
+                Map<String, String> appInfoMap = entry.getValue();
                 String moduleType = appInfoMap.get(MODULE_TYPE);
                 String loadingTime = appInfoMap.get(LOADING_TIME);
 		appendColumn(strBuf, moduleType, COLUMN_LENGTH);

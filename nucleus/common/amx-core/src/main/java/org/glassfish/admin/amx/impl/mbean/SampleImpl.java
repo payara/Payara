@@ -51,6 +51,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -107,8 +108,9 @@ public final class SampleImpl extends AMXImplBase {
     private synchronized MBeanInfo createMBeanInfo(final MBeanInfo baseMBeanInfo) {
         final MBeanAttributeInfo[] dynamicAttrInfos = new MBeanAttributeInfo[mAttributes.keySet().size()];
         int i = 0;
-        for (final String name : mAttributes.keySet()) {
-            final Object value = mAttributes.get(name);
+        for (final Entry<String, Serializable> entry : mAttributes.entrySet()) {
+            String name = entry.getKey();
+            final Object value = entry.getValue();
             final String type = value == null ? String.class.getName() : value.getClass().getName();
 
             dynamicAttrInfos[i] = new MBeanAttributeInfo(name, type, "dynamically-added Attribute",

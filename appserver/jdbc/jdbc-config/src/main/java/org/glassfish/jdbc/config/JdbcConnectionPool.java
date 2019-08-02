@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
@@ -58,7 +58,6 @@ import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
@@ -175,8 +174,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="8")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getSteadyPoolSize();
 
     /**
@@ -190,14 +187,12 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the maxPoolSize property.
      *
-     * Maximum number of conections that can be created
+     * Maximum number of connections that can be created
      * 
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="32")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxPoolSize();
 
     /**
@@ -218,8 +213,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="60000")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxWaitTimeInMillis();
 
     /**
@@ -242,8 +235,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="2")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getPoolResizeQuantity();
 
     /**
@@ -260,7 +251,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * maximum time in seconds, that a connection can remain idle in the pool.
      * After this time, the pool implementation can close this connection.
      * Note that this does not control connection timeouts enforced at the
-     * database server side. Adminsitrators are advised to keep this timeout
+     * database server side. Administrators are advised to keep this timeout
      * shorter than the database server side timeout (if such timeouts are
      * configured on the specific vendor's database), to prevent accumulation of
      * unusable connection in Application Server.
@@ -269,8 +260,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="300")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getIdleTimeoutInSeconds();
 
     /**
@@ -507,8 +496,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getValidateAtmostOncePeriodInSeconds();
 
     /**
@@ -535,8 +522,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionLeakTimeoutInSeconds();
 
     /**
@@ -577,8 +562,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryAttempts();
 
     /**
@@ -600,8 +583,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="10")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryIntervalInSeconds();
 
     /**
@@ -753,8 +734,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementCacheSize();
 
     /**
@@ -792,8 +771,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementLeakTimeoutInSeconds();
 
     /**
@@ -821,7 +798,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *
      * Init sql is executed whenever a connection created from the pool. 
      * This is mostly useful when the state of a
-     * connection is to be initialized
+     * connection is to be initialised
      * 
      * @return possible object is
      *         {@link String }
@@ -871,8 +848,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxConnectionUsageCount();
 
     /**

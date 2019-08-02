@@ -106,9 +106,6 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
     @Inject
     UnprocessedConfigListener unprocessedListener;
 
-    @Param(optional = true, alias = "securityenabled")
-    private Boolean securityEnabled;
-
     @Inject
     private Domain domain;
 
@@ -119,14 +116,17 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
         Config targetConfig = targetUtil.getConfig(target);
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
-        ActionReport checkUserReport = actionReport.addSubActionsReport();
-        ActionReport createUserReport = actionReport.addSubActionsReport();
-        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
-            createDefaultMicroprofileUser(createUserReport, subject);
-        }
-        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+        if (Boolean.TRUE.equals(securityEnabled)
+                || Boolean.parseBoolean(config.getSecurityEnabled())) {
+            ActionReport checkUserReport = actionReport.addSubActionsReport();
+            ActionReport createUserReport = actionReport.addSubActionsReport();
+            if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+                createDefaultMicroprofileUser(createUserReport, subject);
+            }
+            if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
         }
 
         try {
@@ -142,6 +142,9 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
                 }
                 if (securityEnabled != null) {
                     configProxy.setSecurityEnabled(securityEnabled.toString());
+                }
+                if (roles != null) {
+                    configProxy.setRoles(roles);
                 }
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;

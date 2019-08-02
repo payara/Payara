@@ -238,18 +238,18 @@ public class StatusGenerator extends AbstractResource {
                 .append("<table border=\"1\" style=\"border-collapse: collapse\">\n")
                 .append("<tr><th>Command</th><th>Target</th><th>Resource</th></tr>\n");
 
-        for (String ss : commandsToResources.keySet()) {
-            status.append("<tr><td>").append(ss).append(TABLE_CELL_DIVIDER)
-                    .append(hasTargetParam(ss) ? "target" : "").append(TABLE_CELL_DIVIDER)
-                    .append(commandsToResources.get(ss)).append("</td></tr>\n");
+        for (Entry<String, String> entry : commandsToResources.entrySet()) {
+            status.append("<tr><td>").append(entry.getKey()).append(TABLE_CELL_DIVIDER)
+                    .append(hasTargetParam(entry.getKey()) ? "target" : "").append(TABLE_CELL_DIVIDER)
+                    .append(entry.getValue()).append("</td></tr>\n");
         }
         status.append("</table>\n<hr/>\n")
                 .append("<h4>Resources with Delete Commands in REST Admin (not counting RESTREDIRECT)</h4>\n")
                 .append("<table border=\"1\" style=\"border-collapse: collapse\">\n")
                 .append("<tr><th>Resource</th><th>Delete Command</th></tr>\n");
-        for (String ss : resourcesToDeleteCommands.keySet()) {
-            status.append("<tr><td>").append(ss)
-                    .append(TABLE_CELL_DIVIDER).append(resourcesToDeleteCommands.get(ss)).append("</td></tr>\n");
+        for (Entry<String, String> entry : resourcesToDeleteCommands.entrySet()) {
+            status.append("<tr><td>").append(entry.getKey())
+                    .append(TABLE_CELL_DIVIDER).append(entry.getValue()).append("</td></tr>\n");
         }
         status.append("</table>");
 

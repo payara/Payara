@@ -58,6 +58,7 @@
         setPageSessionAttribute(key="pageTitleHelp", value="$resource{i18ncs.clusterInstanceNew.PageTitleHelp}");
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/cluster/clusterInstances.jsf?clusterName=#{pageSession.encodedClusterName}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
+        setPageSessionAttribute(key="autoNameSelected" value="#{false}");
     />
     </event>
 #include "/cluster/shared/instanceNew.inc"

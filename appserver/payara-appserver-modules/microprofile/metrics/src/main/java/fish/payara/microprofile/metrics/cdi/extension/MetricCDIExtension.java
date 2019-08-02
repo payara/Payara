@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,7 @@ import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.cdi.MetricsResolver;
+import fish.payara.microprofile.metrics.cdi.interceptor.ConcurrentGuageInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.CountedInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MeteredInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MetricsInterceptor;
@@ -101,6 +102,7 @@ import javax.interceptor.InterceptorBinding;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
@@ -126,10 +128,12 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
         addInterceptorBinding(Counted.class, manager, beforeBeanDiscovery);
+        addInterceptorBinding(ConcurrentGauge.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Metered.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Timed.class, manager, beforeBeanDiscovery);
 
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(ConcurrentGuageInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MeteredInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(TimedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MetricsInterceptor.class, manager, beforeBeanDiscovery);
@@ -141,11 +145,11 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         addAnnotatedType(MetricsHelper.class, manager, beforeBeanDiscovery);
     }
 
-    private <T> void metricsAnnotations(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
+    private <T> void metricsAnnotations(@Observes @WithAnnotations({Counted.class, ConcurrentGauge.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
         processAnnotatedType.configureAnnotatedType().add(METRICS_ANNOTATION_BINDING);
     }
 
-    private <T> void validateMetrics(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
+    private <T> void validateMetrics(@Observes @WithAnnotations({Counted.class, ConcurrentGauge.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
         AnnotatedType<?> annotatedType = processAnnotatedType.getAnnotatedType();
         List<AnnotatedCallable<?>> annotatedCallables = new ArrayList<>(annotatedType.getConstructors());
         annotatedCallables.addAll(annotatedType.getMethods());
@@ -195,6 +199,11 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
             MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
             if (timed.isPresent()) {
                 validate.accept(timed);
+            }
+            
+            MetricsResolver.Of<ConcurrentGauge> concurrent = resolver.concurrentGauge(bean, element);
+            if (concurrent.isPresent()) {
+                validate.accept(concurrent);
             }
 
             if (element instanceof Method
@@ -254,6 +263,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
                 continue;
             }
             Metadata metadata = helper.metadataOf(annotatedMember);
+            
             registry.register(metadata, (Metric) prod.produce(manager.createCreationalContext(null)));
         }
         producerMetrics.clear();

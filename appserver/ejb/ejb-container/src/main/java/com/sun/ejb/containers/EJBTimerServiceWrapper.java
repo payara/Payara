@@ -82,19 +82,8 @@ public class EJBTimerServiceWrapper implements TimerService {
         ejbContext_   = ejbContext;
         BaseContainer container = (BaseContainer) ejbContext.getContainer();
         ejbDescriptor_ = container.getEjbDescriptor();
-        entity_       = false;
+        entity_       = ejbContext instanceof EntityContext;
         timedObjectPrimaryKey_   = null;
-    }
-
-    public EJBTimerServiceWrapper(
-            EJBTimerService persistentTimerService,
-            EJBTimerService nonPersistentTimerService,
-            EntityContext entityContext) {
-        this(persistentTimerService, nonPersistentTimerService, ((EJBContextImpl) entityContext));
-        entity_ = true;
-        // Delay access of primary key since this might have been called 
-        // from ejbCreate
-        timedObjectPrimaryKey_ = null;
     }
 
     @Override
@@ -273,7 +262,7 @@ public class EJBTimerServiceWrapper implements TimerService {
             Collection<TimerPrimaryKey> timerIds
                     = timerService_.getTimerIds(containerIds);
             for (TimerPrimaryKey timerId : timerIds) {
-                timerWrappers.add(new TimerWrapper(timerId, persistentTimerService_));
+                timerWrappers.add(new TimerWrapper(timerId, timerService_));
             }
         }
 

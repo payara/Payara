@@ -729,7 +729,7 @@ public class RemoteCLICommand extends CLICommand {
     @Override
     protected void inject() throws CommandException {
         try {
-            super.prevalidate();
+            super.inject();
         }
         catch (CommandValidationException ex) {
             reExecuteAfterMetadataUpdate();

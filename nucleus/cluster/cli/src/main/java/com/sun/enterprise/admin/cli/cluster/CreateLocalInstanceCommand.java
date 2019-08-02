@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -48,11 +48,12 @@ import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -107,6 +108,11 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
 
+    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Technically deprecated syntax
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
+
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
@@ -117,7 +123,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
     private ParamModelData masterPasswordOption;
     private static final String MASTER_PASSWORD_ALIAS="master-password";
-    
+
     @Override
     protected void validate() throws CommandException {
         echoCommand();
@@ -155,6 +161,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         }
         setDomainName();
         setDasDefaultsOnly = false;
+
+        if (programOpts.isAutoName() || autoName) {
+            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName,
+                    NamingHelper.getAllNamesInUse(programOpts, env));
+        }
+
         super.validate();  // instanceName is validated and set in super.validate(), directories created
         INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
         RENDEZVOUS_DOTTED_NAME = INSTANCE_DOTTED_NAME + ".property." + RENDEZVOUS_PROPERTY_NAME;
@@ -206,6 +218,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             exitCode = super.executeCommand();
             if (exitCode == SUCCESS) {
                 saveMasterPassword();
+
+                if (programOpts.isExtraTerse() || extraTerse) {
+                    logger.info(instanceName);
+                }
             }
         } catch (CommandException ce) {
             String msg = "Something went wrong in creating the local filesystem for instance " + instanceName;
@@ -317,7 +333,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private boolean rendezvousWithDAS() {
         try {
             getUptime();
-            logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
+            if (!programOpts.isExtraTerse() || extraTerse) {
+                logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
+            }
             return true;
         } catch (CommandException ex) {
             return false;

@@ -38,7 +38,7 @@
 # holder.
 #
 
-# Portions Copyright [2016] [Payara Foundation]
+# Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 -exportcontents: \
                         com.sun.enterprise.v3.admin; \
@@ -60,7 +60,7 @@ DynamicImport-Package: fish.payara.nucleus.requesttracing, \
                        fish.payara.nucleus.requesttracing.domain.execoptions, \
                        org.glassfish.flashlight.provider, \
                        com.sun.pkg.client, \
-		               org.glassfish.branding, \
+                       org.glassfish.branding, \
                        org.objectweb.asm;password=GlassFish, \
                        org.objectweb.asm.commons;password=GlassFish
 

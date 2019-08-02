@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,21 +84,22 @@ public class ListDeploymentGroupsCommand implements AdminCommand {
         DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
         List<DeploymentGroup> listOfDeploymentGroup = deploymentGroups.getDeploymentGroup();
 
+        ArrayList<String> deploymentGroupNames = new ArrayList<>();
         if (listOfDeploymentGroup.isEmpty()) {
             report.appendMessage("No Deployment Group has been created");
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("List of Deployment Groups" + ":\n");
-            Properties extrasProps = new Properties();
-            ArrayList<String> deploymentGroupNames = new ArrayList<>();
             for (DeploymentGroup deploymentGroup : listOfDeploymentGroup) {
                 sb.append("\t" + deploymentGroup.getName() + "\n");
                 deploymentGroupNames.add(deploymentGroup.getName());
             }
-            extrasProps.put("listOfDeploymentGroups", deploymentGroupNames);
             report.setMessage(sb.toString());
-            report.setExtraProperties(extrasProps);
         }
+
+        Properties extrasProps = new Properties();
+        extrasProps.put("listOfDeploymentGroups", deploymentGroupNames);
+        report.setExtraProperties(extrasProps);
     }
 
 }

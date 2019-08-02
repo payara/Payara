@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,34 @@ public interface AccessToken {
      */
     Object getClaim(String key);
 
+    /**
+     * Optional. Expiration time of the Access Token in seconds since the
+     * response was generated.
+     *
+     * @return
+     */
+    Long getExpirationTime();
+
+    /**
+     * Checks if the Access Token is expired, taking into account the min
+     * validity time configured by the user.
+     *
+     * @return {@code true}, if access token is expired or it will be expired in
+     * the next X milliseconds configured by user.
+     */
+    boolean isExpired();
+
+    /**
+     * Optional. Scope of the Access Token.
+     *
+     * @return
+     */
+    Scope getScope();
+
+    /**
+     * Type of the Access Token.
+     * @return
+     */
     public Type getType();
 
     enum Type {

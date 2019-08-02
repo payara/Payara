@@ -621,8 +621,8 @@ public class ApplicationValidator extends ComponentValidator
         Vector appVectorName = validNameSpaceDetails.get(APP_KEYS);
         Vector ebdVectorName = validNameSpaceDetails.get(EJBBUNDLE_KEYS);
 
-        for (String key : allResourceDescriptors.keySet()) {
-            CommonResourceValidator commonResourceValidator = allResourceDescriptors.get(key);
+        for (Map.Entry<String, CommonResourceValidator> entry : allResourceDescriptors.entrySet()) {
+            CommonResourceValidator commonResourceValidator = entry.getValue();
             Vector scopeVector = commonResourceValidator.getScope();
             String jndiName = commonResourceValidator.getJndiName();
 

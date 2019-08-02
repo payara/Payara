@@ -350,16 +350,18 @@ public class EjbSessionDescriptor extends EjbDescriptor
      */
     public EjbRemovalInfo getRemovalInfo(MethodDescriptor method) {
         // first try to find the exact match
-        for (MethodDescriptor methodDesc : removeMethods.keySet()) {
+        for (Map.Entry<MethodDescriptor, EjbRemovalInfo> entry : removeMethods.entrySet()) {
+            MethodDescriptor methodDesc = entry.getKey();
             if (methodDesc.equals(method)) {
-                return removeMethods.get(methodDesc);
+                return entry.getValue();
             }
         }
 
         // if nothing is found, try to find the loose match
-        for (MethodDescriptor methodDesc : removeMethods.keySet()) {
+        for (Map.Entry<MethodDescriptor, EjbRemovalInfo> entry : removeMethods.entrySet()) {
+            MethodDescriptor methodDesc = entry.getKey();
             if (methodDesc.implies(method)) {
-                return removeMethods.get(methodDesc);
+                return entry.getValue();
             }
         }
 

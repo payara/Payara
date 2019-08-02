@@ -52,7 +52,7 @@ import javax.inject.Inject;
 
 import javax.security.auth.Subject;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.audit.AdminAuditService;

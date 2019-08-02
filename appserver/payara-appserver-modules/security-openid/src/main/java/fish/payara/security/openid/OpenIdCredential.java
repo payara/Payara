@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -71,8 +71,14 @@ public class OpenIdCredential implements Credential {
 
         this.identityToken = new IdentityTokenImpl(tokensObject.getString(IDENTITY_TOKEN));
         String accessTokenString = tokensObject.getString(ACCESS_TOKEN, null);
+        Long expiresIn = null;
+        if(nonNull(tokensObject.getJsonNumber("expires_in"))){
+            expiresIn = tokensObject.getJsonNumber("expires_in").longValue();
+        }
+        String tokenType = tokensObject.getString("token_type", null);
+        String scopeString = tokensObject.getString("scope", null);
         if (nonNull(accessTokenString)) {
-            accessToken = new AccessTokenImpl(accessTokenString);
+            accessToken = new AccessTokenImpl(configuration, tokenType, accessTokenString, expiresIn, scopeString);
         }
     }
 
