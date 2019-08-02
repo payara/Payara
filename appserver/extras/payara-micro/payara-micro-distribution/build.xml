@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
