@@ -209,6 +209,8 @@
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
                 <attribute name="Start-Class" value="fish.payara.micro.impl.PayaraMicroImpl"/>
+                <attribute name="Add-Exports" value="java.base/jdk.internal.ref"/>
+                <attribute name="Add-Opens" value="java.base/jdk.internal.loader java.base/java.lang java.base/java.nio java.base/sun.nio.ch java.management/sun.management jdk.management/com.sun.management.internal java.base/sun.net.www.protocol.jrt"/>
         </manifest>
         </jar>    
     </target> 
