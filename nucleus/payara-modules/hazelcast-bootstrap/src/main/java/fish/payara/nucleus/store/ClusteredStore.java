@@ -38,8 +38,16 @@
  */
 package fish.payara.nucleus.store;
 
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.map.impl.MapService;
+import com.hazelcast.monitor.LocalMapStats;
+import com.hazelcast.topic.impl.TopicService;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
@@ -61,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster-store")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredStore implements EventListener {
+public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
     
     @Inject
@@ -74,7 +82,24 @@ public class ClusteredStore implements EventListener {
     public void postConstruct() {
         events.register(this);
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (hzCore.isEnabled()) {
+            HazelcastInstance hz = hzCore.getInstance();
+            for (DistributedObject obj : hz.getDistributedObjects()) {
+                if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
+                    IMap<Object, Object> map = hz.getMap(obj.getName());
+                    if (map != null) {
+                        collector.in("store").type("map").entity(map.getName())
+                            .collect("size", map.size())
+                            .collectObject(map.getLocalMapStats(), LocalMapStats.class);
+                    }
+                }
+            }
+        }
+    }
+
     public String getInstanceId() {
         return hzCore.getUUID();
     }

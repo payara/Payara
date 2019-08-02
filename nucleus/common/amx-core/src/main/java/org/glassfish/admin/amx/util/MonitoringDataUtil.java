@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,61 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.eventbus;
+package org.glassfish.admin.amx.util;
 
-import com.hazelcast.core.Message;
-import com.hazelcast.core.MessageListener;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map.Entry;
+
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeType;
+
+import org.glassfish.admin.amx.core.AMXProxy;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
 
 /**
+ * Utility to collect monitoring data from monitoring beans.
  *
- * @author steve
+ * @author Jan Bernitt
  */
-public class TopicListener implements MessageListener {
-    
-    private final String topicName;
-    private String registrationID;
-    private final Set<MessageReceiver> receivers;
+public class MonitoringDataUtil {
 
-    public TopicListener(String topicName) {
-        this.topicName = topicName;
-        receivers = ConcurrentHashMap.newKeySet(2);
-    }
-
-    public String getTopicName() {
-        return topicName;
-    }
-
-    public String getRegistrationID() {
-        return registrationID;
-    }
-
-    public void setRegistrationID(String registrationID) {
-        this.registrationID = registrationID;
-    }
-
-    int getReceiverCount() {
-        return receivers.size();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onMessage(Message msg) {
-        for (MessageReceiver receiver : receivers) {
-            receiver.receiveMessage((ClusterMessage)msg.getMessageObject());
+    public static void collectBean(MonitoringDataCollector collector, AMXProxy bean) {
+        for (Entry<String, Object> attrEntry : bean.attributesMap().entrySet()) {
+            String metric = attrEntry.getKey();
+            Object value = attrEntry.getValue();
+            if (value instanceof CompositeData) {
+                CompositeData data = (CompositeData) value;
+                CompositeType type = data.getCompositeType();
+                if ("CountStatistic".equals(type.getTypeName())) {
+                    Long count = (Long) data.get("count");
+                    String unit = (String) data.get("unit");
+                    String name = (String) data.get("name");
+                    name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                    metric = name.endsWith("Count") ? name
+                            : name + Character.toUpperCase(unit.charAt(0)) + unit.substring(1);
+                    collector.collect(metric, count);
+                }
+            } else if (value instanceof Number) {
+                collector.collect(metric, (Number) value);
+            } else if (value instanceof Boolean) {
+                collector.collect(metric, (Boolean) value);
+            }
         }
     }
-
-    void addMessageReceiver(MessageReceiver mr) {
-        receivers.add(mr);
-    }
-    
-    int removeMessageReceiver(MessageReceiver mr) {
-        receivers.remove(mr);
-        return receivers.size();
-    }
-    
-    
-    
 }

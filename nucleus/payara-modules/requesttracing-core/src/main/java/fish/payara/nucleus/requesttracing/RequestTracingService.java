@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,8 @@ import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
@@ -82,6 +84,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -96,7 +100,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
-public class RequestTracingService implements EventListener, ConfigListener {
+public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
     
@@ -548,4 +552,45 @@ public class RequestTracingService implements EventListener, ConfigListener {
         return requestTraceStore;
     }
 
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        MonitoringDataCollector tracingCollector = rootCollector.in("tracing");
+        if (requestEventStore != null) {
+            for (Entry<Thread, RequestTrace> entry : requestEventStore.getTraces()) {
+                collectTrace(tracingCollector, entry.getValue());
+            }
+        }
+        if (requestTraceStore != null) {
+            collectTraces(tracingCollector, requestTraceStore.getTraces());
+        }
+        if (historicRequestTraceStore != null) {
+            collectTraces(tracingCollector, historicRequestTraceStore.getTraces());
+        }
+    }
+
+    private static void collectTraces(MonitoringDataCollector collector, Collection<RequestTrace> traces) {
+        if (traces != null) {
+            for (RequestTrace trace : traces) {
+                collectTrace(collector, trace);
+            }
+        }
+    }
+
+    private static void collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace) {
+        UUID traceId = trace.getTraceId();
+        if (traceId != null) {
+            MonitoringDataCollector traceCollector = tracingCollector.tag("traceid", traceId.toString())
+                    .collect("start", trace.getStartTime())
+                    .collect("end", trace.getEndTime())
+                    .collectNonZero("elapsed", trace.getElapsedTime());
+            for (RequestTraceSpan span : trace.getTraceSpans()) {
+                traceCollector.entity(span.getId().toString()).tag("op", span.getEventName())
+                    .collect("start", span.getStartInstant())
+                    .collect("end", span.getTraceEndTime())
+                    .collectNonZero("duration", span.getSpanDuration())
+                    .collectNonZero("tags", span.getSpanTags().size())
+                    .collectNonZero("refs", span.getSpanReferences().size());
+            }
+        }
+    }
 }
