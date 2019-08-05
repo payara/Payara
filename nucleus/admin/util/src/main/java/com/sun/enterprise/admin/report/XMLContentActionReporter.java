@@ -38,7 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.common;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
+package com.sun.enterprise.admin.report;
 
 import java.io.OutputStream;
 import java.util.Map;

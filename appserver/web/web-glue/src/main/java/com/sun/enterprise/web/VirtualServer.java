@@ -164,7 +164,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.CatalinaLogger;

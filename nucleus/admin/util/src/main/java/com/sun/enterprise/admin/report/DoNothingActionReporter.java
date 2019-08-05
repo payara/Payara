@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,31 +36,24 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
-package com.sun.enterprise.v3.common;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
-import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+package com.sun.enterprise.admin.report;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- * Acts like a CountDownLatch except that it only requires a single signal to fire.
- * Because a latch is non-exclusive, it uses the shared acquire and release methods.
- *
- * @author Jerome Dochez
+ * PlainTextActionReporter is being used as a fake ActionReporter when one is
+ * required.  It is confusing since PTAR does special things.
+ * THis one does exactly what it advertises doing in its name!
+ * @author Byron Nevins
  */
-public class BooleanLatch extends AbstractQueuedSynchronizer {
-        public boolean isSignalled() { return getState() != 0; }
+public class DoNothingActionReporter extends ActionReporter{
 
-        @Override
-        public int tryAcquireShared(int ignore) {
-            return isSignalled()? 1 : -1;
-        }
-
-        @Override
-        public boolean tryReleaseShared(int ignore) {
-            setState(1);
-            return true;
-        }
+    @Override
+    public void writeReport(OutputStream os) throws IOException {
     }
+}

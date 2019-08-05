@@ -38,12 +38,14 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.universal.collections.ManifestUtils;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommand;

@@ -44,7 +44,7 @@ package org.glassfish.kernel.embedded;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;

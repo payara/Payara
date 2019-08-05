@@ -37,7 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.common;
+
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
+package com.sun.enterprise.admin.report;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import static com.sun.enterprise.util.StringUtils.ok;

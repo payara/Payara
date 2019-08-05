@@ -115,12 +115,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
-            <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>        
-        <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.server;
@@ -50,7 +50,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
