@@ -122,7 +122,7 @@ public class Parser {
 
             // is it an operand or option value?
             if (!arg.startsWith("-") || arg.length() <= 1) {
-                operands.add(arg);
+                operands.add(StringUtils.trimQuotes(arg));
                 if (ignoreUnknown) {
                     continue;
                 }
@@ -154,7 +154,7 @@ public class Parser {
                         throw new CommandValidationException(strings.get("parser.noValueAllowed", arg));
                     }
                     name = arg.substring(ns, ne);
-                    value = arg.substring(ne + 1);
+                    value = StringUtils.trimQuotes(arg.substring(ne + 1));
                 }
                 opt = lookupLongOption(name);
                 if (sawno && optionRequiresOperand(opt)) {
@@ -175,7 +175,7 @@ public class Parser {
                 } else {                        // one of the last two cases
                     if (arg.charAt(2) == '=') { // -f=value case
                         opt = lookupShortOption(arg.charAt(1));
-                        value = arg.substring(3);
+                        value = StringUtils.trimQuotes(arg.substring(3));
                     } else {                            // -fxyz case
                         for (int i = 1; i < arg.length(); i++) {
                             opt = lookupShortOption(arg.charAt(i));
