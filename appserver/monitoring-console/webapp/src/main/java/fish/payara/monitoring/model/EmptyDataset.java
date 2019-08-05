@@ -2,6 +2,16 @@ package fish.payara.monitoring.model;
 
 import java.math.BigInteger;
 
+/**
+ * The {@link EmptyDataset} is the starting point for any of the other {@link SeriesDataset} implementations.
+ *
+ * When first point is added to the {@link EmptyDataset} it becomes a {@link ConstantDataset}.
+ * 
+ * {@link EmptyDataset} are initialised with a {@link #capacity} so it can be passed on as the set eventually evolves
+ * into a {@link PartialDataset} which has a {@link #capacity()} limit.
+ *
+ * @author Jan Bernitt
+ */
 public final class EmptyDataset extends SeriesDataset {
 
     private final int capacity;

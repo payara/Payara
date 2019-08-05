@@ -22,7 +22,7 @@ public class StableDataset extends ConstantDataset {
 
     public StableDataset(SeriesDataset predecessor, long time) {
         super(predecessor.getSeries(), predecessor.capacity(), predecessor.getObservedValues() + 1,
-                predecessor.firstTime(), time, predecessor.lastValue());
+                predecessor.getStableSince(), time, predecessor.lastValue());
         this.observedValueChanges = predecessor.getObservedValueChanges();
         this.observedMax = predecessor.getObservedMax();
         this.observedMin = predecessor.getObservedMin();

@@ -8,7 +8,9 @@ import java.math.BigInteger;
  * 
  * @author Jan Bernitt
  * 
+ * @see EmptyDataset
  * @see ConstantDataset
+ * @see StableDataset
  * @see PartialDataset
  */
 public abstract class SeriesDataset implements Serializable {

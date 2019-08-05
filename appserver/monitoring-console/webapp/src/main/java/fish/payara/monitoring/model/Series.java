@@ -15,7 +15,7 @@ public final class Series implements Comparable<Series>, Serializable {
     private final String[] values;
 
     public Series(String key) {
-        String[] parts = key.split("\\s+|[,;]");
+        String[] parts = key.split("[ ,;]+");
         this.tags = new String[parts.length - 1];
         this.values = new String[tags.length];
         this.metric = parts[parts.length - 1].intern();
