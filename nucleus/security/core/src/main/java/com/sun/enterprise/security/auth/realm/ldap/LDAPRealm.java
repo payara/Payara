@@ -376,7 +376,6 @@ public final class LDAPRealm extends BaseRealm {
                 if (first != -1 && last != -1) {
                     _username = userDN.substring(first + 4, last);
                 }
-
             }
             StringBuilder sb = new StringBuilder(getProperty(PARAM_GRP_SEARCH_FILTER));
             StringBuilder dynSb = new StringBuilder(getProperty(PARAM_DYNAMIC_GRP_FILTER));
