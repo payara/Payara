@@ -186,15 +186,6 @@ public final class PartialDataset extends SeriesDataset {
     }
 
     @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < size; i++) {
-            str.append(time(i)).append(':').append(value(i)).append('\n');
-        }
-        return str.toString();
-    }
-
-    @Override
     public int estimatedBytesMemory() {
         return 92 + (data.length * 8);
     }

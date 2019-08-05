@@ -1,5 +1,6 @@
 package fish.payara.monitoring.model;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,19 @@ import fish.payara.monitoring.model.SeriesDataset;
 public class SeriesDatasetTest {
 
     private static final Series SERIES = new Series("test");
+
+    @Test
+    public void emptyDefaults() {
+        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        assertEquals(0, set.size());
+        assertEquals(Long.MAX_VALUE, set.getObservedMin());
+        assertEquals(Long.MIN_VALUE, set.getObservedMax());
+        assertEquals(BigInteger.ZERO, set.getObservedAvg());
+        assertEquals(0, set.getObservedValues());
+        assertEquals(0, set.getObservedValueChanges());
+        assertEquals(-1L, set.firstTime());
+        assertEquals(0L, set.lastValue());
+    }
 
     @Test
     public void fillToCapacity() {
@@ -89,6 +103,7 @@ public class SeriesDatasetTest {
         assertEquals(BigInteger.valueOf(49), set.getObservedAvg());
         assertEquals(99L, set.getObservedMax());
         assertEquals(0L, set.getObservedMin());
+        assertEquals(BigInteger.valueOf(50), set.add(100, 100).getObservedAvg());
     }
 
     @Test
@@ -181,6 +196,22 @@ public class SeriesDatasetTest {
         assertValues(set.add(8, 3), false, 3, 3);
         assertValues(set.add(8, 4), false, 3, 3, 4);
         assertEquals(3, set.add(8, 4).capacity());
+    }
+
+    @Test
+    public void perSecondDelta() {
+        SeriesDataset set = new EmptyDataset(SERIES, 10);
+        set = set.add(1000, 1);
+        set = set.add(2000, 2);
+        set = set.add(4000, 4);
+        set = set.add(5000, 4);
+        set = set.add(7000, 8);
+        set = set.add(8000, 10);
+        set = set.add(9500, 19);
+
+        long[] perSecond = SeriesDataset.perSecond(set.points());
+        assertEquals((set.size() - 1) * 2, perSecond.length);
+        assertArrayEquals(new long[] { 2000L, 1L, 4000L, 1L, 5000L, 0L, 7000L, 2L, 8000L, 2L, 9500L, 6L }, perSecond);
     }
 
     private static void assertValues(SeriesDataset set, long... values) {

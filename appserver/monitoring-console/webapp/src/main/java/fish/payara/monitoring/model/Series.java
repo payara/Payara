@@ -62,8 +62,9 @@ public final class Series implements Comparable<Series>, Serializable {
 
     private int indexOf(String tag) {
         for (int i = 0; i < tags.length; i++) {
-            if (tags[i].equals(tag))
+            if (tags[i].equals(tag)) {
                 return i;
+            }
         }
         return -1;
     }
