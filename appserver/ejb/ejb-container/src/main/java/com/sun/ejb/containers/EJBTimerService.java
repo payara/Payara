@@ -193,7 +193,7 @@ public abstract class EJBTimerService {
         if (isNull(persistentTimerService) && isNull(nonPersistentTimerService)) {
             if (!nonPersistentTimerServiceVerified) {
                 // this happens when timer service is injected into bean with no timeout methods.
-                // such constallation is useless, but very present in TCK test cases, so we give it a non-persistent
+                // such constellation is useless, but very present in TCK test cases, so we give it a non-persistent
                 // timer service
                 initNonPersistentTimerService(null, true);
             } else {
