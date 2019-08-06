@@ -136,13 +136,9 @@ public class MetricsService implements EventListener, MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector metricsCollector = rootCollector.in("metric");
-        if (metricsEnabled != null) {
-            metricsCollector.collect("enabled", metricsEnabled);
-        }
-        if (metricsSecure != null) {
-            metricsCollector.collect("secure", metricsSecure);
-        }
+        MonitoringDataCollector metricsCollector = rootCollector.in("metric")
+                .collect("enabled", metricsEnabled)
+                .collect("secure", isSecurityEnabled());
         for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
             MonitoringDataCollector appCollector = metricsCollector.app(registry.getKey());
 

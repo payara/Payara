@@ -54,23 +54,13 @@
     
     <dependencies>
         <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-            <version>${opentracing.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-mock</artifactId>
-            <version>${opentracing.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-            <version>${opentracing.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>opentracing-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

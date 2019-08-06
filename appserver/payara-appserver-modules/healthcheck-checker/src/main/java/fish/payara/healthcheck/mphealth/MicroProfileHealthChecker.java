@@ -168,10 +168,10 @@ public class MicroProfileHealthChecker
                     try {
                         result.add(pingHealthEndpoint(instanceName,  buildURI(server, metricsConfig.getEndpoint())));
                     } catch (URISyntaxException ex) {
-                        serverHttpStatus.put(instanceName, 420);
+                        serverHttpStatus.put(instanceName, HttpURLConnection.HTTP_INTERNAL_ERROR);
                         result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "INVALID ENDPOINT: " + ex.getInput()));
                     } catch (ProcessingException ex) {
-                        serverHttpStatus.put(instanceName, 420);
+                        serverHttpStatus.put(instanceName, HttpURLConnection.HTTP_INTERNAL_ERROR);
                         LOGGER.log(Level.FINE, "Error sending JAX-RS Request", ex);
                         result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.getMessage()));
                     }
