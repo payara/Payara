@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.collect;
+package fish.payara.monitoring.store;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
 
 /**
  * A {@link MonitoringDataCollector} that is used as an adapter to {@link MonitoringDataSink} abstraction.

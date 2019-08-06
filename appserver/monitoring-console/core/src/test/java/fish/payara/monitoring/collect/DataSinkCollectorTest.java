@@ -54,6 +54,9 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import fish.payara.monitoring.store.MonitoringDataSink;
+import fish.payara.monitoring.store.SinkDataCollector;
+
 /**
  * Component test testing the {@link SinkDataCollector} implementation semantics.
  * 

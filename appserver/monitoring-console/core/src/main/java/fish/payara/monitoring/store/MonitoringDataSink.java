@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.collect;
+package fish.payara.monitoring.store;
 
 /**
  * A {@link MonitoringDataSink} observes all monitoring data values as a sequence of key-value pairs where all values

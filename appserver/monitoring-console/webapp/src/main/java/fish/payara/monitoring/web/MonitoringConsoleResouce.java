@@ -45,13 +45,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import org.glassfish.internal.api.Globals;
 
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.store.MonitoringDataStore;
@@ -61,19 +62,20 @@ import fish.payara.monitoring.store.MonitoringDataStore;
 @RequestScoped
 public class MonitoringConsoleResouce {
 
-    @Inject
-    private MonitoringDataStore data;
+    private static MonitoringDataStore getDataStore() {
+        return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataStore.class);
+    }
 
     @GET
     @Path("/series/{series}/points")
     public long[] getSeriesPoints(@PathParam("series") String series) {
-        return data.selectSeries(new Series(series)).points();
+        return getDataStore().selectSeries(new Series(series)).points();
     }
 
     @GET
     @Path("/series/{series}/statistics")
     public SeriesStatistics getSeriesStatistics(@PathParam("series") String series) {
-        return new SeriesStatistics(data.selectSeries(new Series(series)));
+        return new SeriesStatistics(getDataStore().selectSeries(new Series(series)));
     }
 
     @GET
@@ -81,7 +83,7 @@ public class MonitoringConsoleResouce {
     public List<SeriesStatistics> querySeriesStatistics(@QueryParam("q") String query) {
         List<SeriesStatistics> matches = new ArrayList<>();
         for (String series : query.split("|")) {
-            matches.add(new SeriesStatistics(data.selectSeries(new Series(series))));
+            matches.add(new SeriesStatistics(getDataStore().selectSeries(new Series(series))));
         }
         return matches;
     }
@@ -89,7 +91,7 @@ public class MonitoringConsoleResouce {
     @GET
     @Path("/series/")
     public String[] getSeriesNames() {
-        return stream(data.selectAllSeries().spliterator(), false)
+        return stream(getDataStore().selectAllSeries().spliterator(), false)
                 .map(dataset -> dataset.getSeries().toString()).sorted().toArray(String[]::new);
     }
     

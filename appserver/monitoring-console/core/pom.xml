@@ -46,50 +46,19 @@
         <version>5.193-SNAPSHOT</version>
     </parent>
 
-    <artifactId>monitoring-console-webapp</artifactId>
-    <packaging>war</packaging>
+    <artifactId>monitoring-console-core</artifactId>
+    <packaging>glassfish-jar</packaging>
 
-    <name>Monitoring Console Webapp</name>
+    <name>Monitoring Console Core</name>
 
     <description>
-        This module contains the webapp part of the Monitoring Console.
+        This module contains the data collection and in memory store of the Monitoring Console.
     </description>
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>security-ee</artifactId>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

@@ -6,17 +6,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.SinkDataCollector;
 import fish.payara.monitoring.model.ConstantDataset;
 import fish.payara.monitoring.model.EmptyDataset;
-import fish.payara.monitoring.model.PartialDataset;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
@@ -24,17 +24,23 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
  * 
- * The store uses two maps working like a doubled buffered image. While collection writes to the {@link #secondsWrite} map
- * request are served from the {@link #secondsRead} map. This makes sure that a consistent overall snapshot over all series can
- * be used to create a consistent visualisation that isn't halve updated while the response is composed. However this
- * requires that callers are provided with a method that returns all the {@link PartialDataset}s they need in a
- * single method invocation.
+ * 
+ * <h3>Consistency Remarks</h3>
+ * 
+ * The store uses two maps working like a doubled buffered image. While collection writes to the {@link #secondsWrite}
+ * map request are served from the {@link #secondsRead} map. This makes sure that a consistent dataset across all series
+ * can be used to create a consistent visualisation that isn't halve updated while the response is composed. However
+ * this requires that callers are provided with a method that returns all the {@link SeriesDataset}s they need in a
+ * single method invocation. Making multiple calls to this stores methods does not guarantee a consistent dataset across
+ * all series since the {@link #swap()} can happen inbetween method calls.
  * 
  * @author Jan Bernitt
  */
-@ApplicationScoped
+@Service
+@RunLevel(StartupRunLevel.VAL)
 public class InMemoryMonitoringDataStore implements MonitoringDataStore {
 
+    @Inject
     private ServiceLocator serviceLocator;
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
@@ -42,7 +48,6 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
 
     @PostConstruct
     public void init() {
-        serviceLocator = Globals.getDefaultBaseServiceLocator();
         serviceLocator.getService(PayaraExecutorService.class).scheduleAtFixedRate(this::collectAllSources, 0L, 1L, TimeUnit.SECONDS);
     }
 
