@@ -157,13 +157,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-cluster</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common-full</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -304,7 +297,75 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>json</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>javadb</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <!-- hazelcast package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>metro</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>notification-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>payara-api-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>cdi-auth-roles</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <!-- Micro Service -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-micro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

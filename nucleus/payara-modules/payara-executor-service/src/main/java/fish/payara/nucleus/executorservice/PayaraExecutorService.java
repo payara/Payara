@@ -69,6 +69,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -129,7 +130,13 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
      */
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
+            // there is awkward point in embedded EJBContainer initialization, where same server
+            // instance is started twice. In such case, we need to reinitialize.
+            if (threadPoolExecutor.isShutdown()) {
+                initialiseThreadPools();
+            }
+        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             threadPoolExecutor.shutdown();
             scheduledThreadPoolExecutor.shutdown();
         }
