@@ -36,15 +36,19 @@ public class ConstantDataset extends SeriesDataset {
     private final int capacity;
 
     public ConstantDataset(ConstantDataset predecessor, long time) {
-        super(predecessor.getSeries(), predecessor.getObservedValues() + 1);
+        super(predecessor.getSeries(), predecessor.getObservedSince(), predecessor.getObservedValues() + 1);
         this.capacity = predecessor.capacity;
         this.stableSince = predecessor.stableSince;
         this.time = time;
         this.value = predecessor.value;
     }
 
-    public ConstantDataset(Series series, int capacity, int observedValues, long stableSince, long time, long value) {
-        super(series, observedValues);
+    public ConstantDataset(Series series, int capacity, long time, long value) {
+        this(series, capacity, time, 1, time, time, value);
+    }
+
+    ConstantDataset(Series series, int capacity, long observedSince, int observedValues, long stableSince, long time, long value) {
+        super(series, observedSince, observedValues);
         this.capacity = capacity;
         this.stableSince = stableSince;
         this.time = time;
@@ -120,6 +124,6 @@ public class ConstantDataset extends SeriesDataset {
 
     @Override
     public int estimatedBytesMemory() {
-        return 40;
+        return 48;
     }
 }

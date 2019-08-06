@@ -21,8 +21,8 @@ public class StableDataset extends ConstantDataset {
     private final int stableCount;
 
     public StableDataset(SeriesDataset predecessor, long time) {
-        super(predecessor.getSeries(), predecessor.capacity(), predecessor.getObservedValues() + 1,
-                predecessor.getStableSince(), time, predecessor.lastValue());
+        super(predecessor.getSeries(), predecessor.capacity(), predecessor.getObservedSince(),
+                predecessor.getObservedValues() + 1, predecessor.getStableSince(), time, predecessor.lastValue());
         this.observedValueChanges = predecessor.getObservedValueChanges();
         this.observedMax = predecessor.getObservedMax();
         this.observedMin = predecessor.getObservedMin();
@@ -62,6 +62,6 @@ public class StableDataset extends ConstantDataset {
 
     @Override
     public int estimatedBytesMemory() {
-        return 80;
+        return 88;
     }
 }

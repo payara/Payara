@@ -41,12 +41,16 @@ package fish.payara.monitoring.web;
 
 import static java.util.stream.StreamSupport.stream;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import fish.payara.monitoring.model.Series;
@@ -62,20 +66,32 @@ public class MonitoringConsoleResouce {
 
     @GET
     @Path("/series/{series}/points")
-    public long[] getSlidingWindow(@PathParam("series") String series) {
-        return data.selectSlidingWindow(new Series(series)).points(); 
+    public long[] getSeriesPoints(@PathParam("series") String series) {
+        return data.selectSeries(new Series(series)).points();
     }
 
     @GET
     @Path("/series/{series}/statistics")
-    public SeriesStatistics getSlidingWindowStatistics(@PathParam("series") String series) {
-        return new SeriesStatistics(data.selectSlidingWindow(new Series(series)));
+    public SeriesStatistics getSeriesStatistics(@PathParam("series") String series) {
+        return new SeriesStatistics(data.selectSeries(new Series(series)));
+    }
+
+    @GET
+    @Path("/series/statistics/")
+    public List<SeriesStatistics> querySeriesStatistics(@QueryParam("q") String query) {
+        List<SeriesStatistics> matches = new ArrayList<>();
+        for (String series : query.split("|")) {
+            matches.add(new SeriesStatistics(data.selectSeries(new Series(series))));
+        }
+        return matches;
     }
 
     @GET
     @Path("/series/")
-    public String[] getSlidingWindowSeries() {
-        return stream(data.selectAllSeriesWindow().spliterator(), false)
-                .map(window -> window.getSeries().toString()).sorted().toArray(String[]::new);
+    public String[] getSeriesNames() {
+        return stream(data.selectAllSeries().spliterator(), false)
+                .map(dataset -> dataset.getSeries().toString()).sorted().toArray(String[]::new);
     }
+    
+    //TODO add a method that returns the HTML needed to embedd one or more charts
 }

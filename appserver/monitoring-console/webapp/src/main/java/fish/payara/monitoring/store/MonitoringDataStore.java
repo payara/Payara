@@ -5,7 +5,7 @@ import fish.payara.monitoring.model.SeriesDataset;
 
 public interface MonitoringDataStore {
 
-    Iterable<SeriesDataset> selectAllSeriesWindow();
+    Iterable<SeriesDataset> selectAllSeries();
 
-    SeriesDataset selectSlidingWindow(Series series);
+    SeriesDataset selectSeries(Series series);
 }

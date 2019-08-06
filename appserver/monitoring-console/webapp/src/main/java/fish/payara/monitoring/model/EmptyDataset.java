@@ -17,7 +17,7 @@ public final class EmptyDataset extends SeriesDataset {
     private final int capacity;
 
     public EmptyDataset(Series series, int capacity) {
-        super(series, 0);
+        super(series, -1L, 0);
         this.capacity = capacity;
     }
 
@@ -33,7 +33,7 @@ public final class EmptyDataset extends SeriesDataset {
 
     @Override
     public SeriesDataset add(long time, long value) {
-        return new ConstantDataset(getSeries(), capacity, 1, time, time, value);
+        return new ConstantDataset(getSeries(), capacity, time, value);
     }
 
     @Override
@@ -88,6 +88,6 @@ public final class EmptyDataset extends SeriesDataset {
 
     @Override
     public int estimatedBytesMemory() {
-        return 16;
+        return 24;
     }
 }

@@ -25,7 +25,7 @@ public final class SeriesStatistics {
         this.observedSum = set.getObservedSum();
         this.observedValues = set.getObservedValues();
         this.observedValueChanges = set.getObservedValueChanges();
-        this.observedSince = set.firstTime(); // FIXME not quite the same
+        this.observedSince = set.getObservedSince();
         this.stableCount = set.getStableCount();
         this.stableSince = set.getStableSince();
     }

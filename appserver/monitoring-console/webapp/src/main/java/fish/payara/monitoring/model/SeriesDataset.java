@@ -16,10 +16,12 @@ import java.math.BigInteger;
 public abstract class SeriesDataset implements Serializable {
 
     private final Series series;
+    private final long observedSince;
     private final int observedValues;
 
-    public SeriesDataset(Series series, int observedValues) {
+    public SeriesDataset(Series series, long observedSince, int observedValues) {
         this.series = series;
+        this.observedSince = observedSince;
         this.observedValues = observedValues;
     }
 
@@ -29,6 +31,13 @@ public abstract class SeriesDataset implements Serializable {
 
     public final BigInteger getObservedAvg() {
         return observedValues == 0 ? BigInteger.ZERO : getObservedSum().divide(BigInteger.valueOf(observedValues));
+    }
+
+    /**
+     * @return the time of the first ever value observed by this dataset
+     */
+    public long getObservedSince() {
+        return observedSince;
     }
 
     /**

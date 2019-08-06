@@ -48,7 +48,7 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
 
     private void collectAllSources() {
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
-        collectedSecond = (System.currentTimeMillis() / 1000L) * 1000L;
+        tick();
         MonitoringDataCollector collector = new SinkDataCollector(this::addPoint);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
@@ -77,6 +77,13 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
         swap();
     }
 
+    /**
+     * Forwards the collection time to the current second (milliseconds are stripped)
+     */
+    private void tick() {
+        collectedSecond = (System.currentTimeMillis() / 1000L) * 1000L;
+    }
+
     private void swap() {
         Map<Series, SeriesDataset> tmp = secondsRead;
         secondsRead = secondsWrite;
@@ -87,7 +94,7 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
         Series series = new Series(key.toString());
         SeriesDataset dataset = secondsRead.get(series);
         if (dataset == null) {
-            dataset = new ConstantDataset(series, 60, 1, collectedSecond, collectedSecond, value);
+            dataset = new ConstantDataset(series, 60, collectedSecond, value);
         } else {
             dataset = dataset.add(collectedSecond, value);
         }
@@ -95,13 +102,13 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
     }
 
     @Override
-    public SeriesDataset selectSlidingWindow(Series series) {
+    public SeriesDataset selectSeries(Series series) {
         SeriesDataset res = secondsRead.get(series);
         return res != null ? res : new EmptyDataset(series, 0);
     }
 
     @Override
-    public Iterable<SeriesDataset> selectAllSeriesWindow() {
+    public Iterable<SeriesDataset> selectAllSeries() {
         return secondsRead.values();
     }
 }
