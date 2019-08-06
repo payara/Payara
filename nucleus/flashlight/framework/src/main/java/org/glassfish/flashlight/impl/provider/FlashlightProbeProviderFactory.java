@@ -45,6 +45,10 @@ import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.flashlight.xml.ProbeProviderStaxParser;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.ObjectAnalyzer;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -77,7 +81,7 @@ import javax.inject.Inject;
  */
 @Service
 public class FlashlightProbeProviderFactory
-        implements ProbeProviderFactory, PostConstruct {
+        implements ProbeProviderFactory, PostConstruct, MonitoringDataSource {
     @Inject
     //Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     MonitoringService monitoringServiceConfig;
@@ -107,6 +111,22 @@ public class FlashlightProbeProviderFactory
             put("void",Void.TYPE);
         }
     };
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector flashlightCollector = collector.in("flashlight");
+        flashlightCollector.collectNonZero("providers", allProbeProviders.size());
+        flashlightCollector.collectNonZero("listeners", listeners.size());
+        for (FlashlightProbeProvider provider : allProbeProviders) {
+            MonitoringDataCollector providerCollector = flashlightCollector.tag("provider", provider.getProbeProviderName());
+            providerCollector.collectNonZero("probes", provider.getProbes().size());
+            for (FlashlightProbe probe : provider.getProbes()) {
+                providerCollector.entity(probe.getProbeName())
+                    .collect("enabled", probe.isEnabled())
+                    .collect("invokers", probe.getInvokerCount());
+            }
+        }
+    }
 
     public void postConstruct() {
         FlashlightUtils.initialize(habitat, monitoringServiceConfig);
