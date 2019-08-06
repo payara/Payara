@@ -41,23 +41,25 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Properties;
 
-
-import fish.payara.admin.cli.cluster.NamingHelper;
-import fish.payara.util.cluster.PayaraServerNameGenerator;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-
-import static com.sun.enterprise.admin.cli.CLIConstants.*;
-import com.sun.enterprise.util.net.NetUtils;
+import static com.sun.enterprise.admin.cli.CLIConstants.DEFAULT_HOSTNAME;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_HOST;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_IS_SECURE;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_PORT;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_PROTOCOL;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DOCKER_NODE;
 
 /**
  *  This is a local command that creates a local instance.
