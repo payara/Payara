@@ -64,6 +64,11 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
+/**
+ * Asadmin command for creating a Docker Node.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "create-node-docker")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

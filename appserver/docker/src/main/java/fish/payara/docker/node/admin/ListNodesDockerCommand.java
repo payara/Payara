@@ -54,6 +54,11 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
+/**
+ * Asadmin command for listing Docker Nodes.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "list-nodes-docker")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

@@ -52,13 +52,17 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
-import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 
+/**
+ * Internal Asadmin command that sets the Docker container ID registered to an instance. This is used by the
+ * Docker entrypoint script to register a container ID against a newly created instance.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_set-docker-container-id")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

@@ -56,6 +56,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Helper class that constructs the JSON requests used for creating Docker Containers.
+ *
+ * @author Andrew Pielage
+ */
 public class JsonRequestConstructor {
 
     /**

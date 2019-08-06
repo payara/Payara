@@ -63,6 +63,11 @@ import java.util.logging.Logger;
 
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 
+/**
+ * Asadmin command for deleting a Docker Node.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "delete-node-docker")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

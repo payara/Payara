@@ -63,6 +63,11 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import java.util.logging.Logger;
 
+/**
+ * Asadmin command for updating the settings of a Docker Node.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "update-node-docker")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

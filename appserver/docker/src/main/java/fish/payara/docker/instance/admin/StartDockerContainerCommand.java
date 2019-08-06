@@ -63,6 +63,11 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * Internal Asadmin command that starts the Docker container of an instance. This is used by the start-instance command.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_start-docker-container")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup

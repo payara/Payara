@@ -60,7 +60,6 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
@@ -71,13 +70,17 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 
+/**
+ * Internal Asadmin command used to create a Docker container. This is called by the create-instance command.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_create-docker-container")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

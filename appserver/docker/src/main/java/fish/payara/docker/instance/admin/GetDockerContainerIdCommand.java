@@ -55,6 +55,12 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import java.util.logging.Logger;
 
+/**
+ * Internal Asadmin command that retrieves the Docker container ID registered to an instance. This is used by the
+ * Docker entrypoint script to check whether it needs to create a new instance or not due to a naming conflict.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_get-docker-container-id")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

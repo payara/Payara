@@ -64,6 +64,11 @@ import javax.ws.rs.core.Response;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Internal Asadmin command to delete a Docker container. This is used by the delete-instance command.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_delete-docker-container")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})

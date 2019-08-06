@@ -40,6 +40,11 @@
 
 package fish.payara.docker;
 
+/**
+ * Constants related to the management of Docker Instances and Nodes.
+ *
+ * @author Andrew Pielage
+ */
 public class DockerConstants {
 
     public static final String DOCKER_IMAGE_KEY = "Image";
