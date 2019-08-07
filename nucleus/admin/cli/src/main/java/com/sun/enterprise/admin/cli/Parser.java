@@ -154,7 +154,7 @@ public class Parser {
                         throw new CommandValidationException(strings.get("parser.noValueAllowed", arg));
                     }
                     name = arg.substring(ns, ne);
-                    value = StringUtils.trimQuotes(arg.substring(ne + 1));
+                    value = arg.substring(ne + 1);
                 }
                 opt = lookupLongOption(name);
                 if (sawno && optionRequiresOperand(opt)) {
@@ -175,7 +175,7 @@ public class Parser {
                 } else {                        // one of the last two cases
                     if (arg.charAt(2) == '=') { // -f=value case
                         opt = lookupShortOption(arg.charAt(1));
-                        value = StringUtils.trimQuotes(arg.substring(3));
+                        value = arg.substring(3);
                     } else {                            // -fxyz case
                         for (int i = 1; i < arg.length(); i++) {
                             opt = lookupShortOption(arg.charAt(i));
@@ -339,7 +339,7 @@ public class Parser {
             throw new NullPointerException("null option name");
         }
         if (value != null) {
-            value = value.trim();
+            value = StringUtils.trimQuotes(value.trim());
         }
 
         String name = opt.getName();
