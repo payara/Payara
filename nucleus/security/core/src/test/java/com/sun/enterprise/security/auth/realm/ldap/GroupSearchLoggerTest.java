@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,31 +53,21 @@ import static java.util.logging.Level.WARNING;
  * @author Alan Roth
  */
 public class GroupSearchLoggerTest{
-    LogAppender logAppender;
     Logger logger;
     
     @Before
     public void setUp(){
-        logAppender = new LogAppender();
-        logger = LDAPRealm._groupSearchLogger;
-        logger.addHandler(logAppender);
+        logger = LDAPRealm.groupSearchLogger;
     }
     
     @Test
-    public void groupSearchErrorLoggingTest() {
-        logger.log(INFO, "ldaprealm.groupsearcherror");
-        assertNotNull(logAppender.getLogs());
-        assertEquals(1, logAppender.getLogs().size());
-        assertEquals("ldaprealm.groupsearcherror", logAppender.getLogs().get(0).getMessage());
+    public void groupSearchErrorLoggerNotNullTest() {
+        assertNotNull(logger);
     }
     
-    @After
-    public void tearDown(){
-        logAppender.clearLogs();
-        assertEquals(0, logAppender.getLogs().size());
-        logger.removeHandler(logAppender);
-        if(logger.getHandlers().length != 0){
-            logger.getParent().log(WARNING, "Failed to remove handler: logAppender from GroupSearchError Logger");
-        }
+    public void groupSearchErrorLoggerNameTest() {
+        String loggerName = logger.getName();
+        assertNotNull(Logger.getLogger(loggerName));
+        assertEquals("javax.enterprise.system.core.security.ldaprealm.groupsearch", loggerName);
     }
 }

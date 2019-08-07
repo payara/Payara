@@ -119,7 +119,7 @@ import java.util.logging.Logger;
 @Service
 public final class LDAPRealm extends BaseRealm {
     // Child logger of javax.enterprise.system.core.security 
-    protected static final Logger _groupSearchLogger = Logger.getLogger(_logger.getName() + ".ldaprealm.groupsearch");
+    protected static final Logger groupSearchLogger = Logger.getLogger(_logger.getName() + ".ldaprealm.groupsearch");
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "ldap";
@@ -393,7 +393,7 @@ public final class LDAPRealm extends BaseRealm {
             groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), dynMember, dynFilter, getProperty(PARAM_GRP_TARGET)));
             return groupsList;
         } catch (Exception e) {
-            _groupSearchLogger.log(WARNING, "ldaprealm.groupsearcherror", e);
+            groupSearchLogger.log(WARNING, "ldaprealm.groupsearcherror", e);
         } finally {
             if (ctx != null) {
                 try {
