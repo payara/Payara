@@ -40,14 +40,9 @@
 package com.sun.enterprise.security.auth.realm.ldap;
 
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import com.sun.enterprise.security.util.LogAppender;
-import java.util.logging.Level;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
 /**
  *
  * @author Alan Roth
