@@ -1,17 +1,24 @@
 package fish.payara.monitoring.store;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -20,6 +27,8 @@ import fish.payara.monitoring.model.EmptyDataset;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.store.ClusteredStore;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -38,17 +47,33 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryMonitoringDataStore implements MonitoringDataStore {
+public class InMemoryMonitoringDataRepository implements MonitoringDataRepository, MessageListener<SeriesDataset[]> {
 
-    @Inject
+    private static final Logger LOGGER = Logger.getLogger(InMemoryMonitoringDataRepository.class.getName());
+
     private ServiceLocator serviceLocator;
-    private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
-    private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
+    private ServerEnvironment serverEnv;
+    private ITopic<SeriesDataset[]> exchange;
+
+    private volatile ConcurrentHashMap<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
+    private volatile ConcurrentHashMap<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private long collectedSecond;
 
     @PostConstruct
     public void init() {
+        serviceLocator = Globals.getDefaultBaseServiceLocator();
+        serverEnv = serviceLocator.getService(ServerEnvironment.class);
+        HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
+        exchange = hz.getInstance().getTopic(MONITORING_DATA_CLUSTER_STORE_NAME);
+        if (serverEnv.isDas()) {
+            exchange.addMessageListener(this);
+        }
         serviceLocator.getService(PayaraExecutorService.class).scheduleAtFixedRate(this::collectAllSources, 0L, 1L, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void onMessage(Message<SeriesDataset[]> message) {
+        LOGGER.info("received "+message.getMessageObject().length);
     }
 
     private void collectAllSources() {
@@ -80,6 +105,23 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
             .collectNonZero("sources", collectedSources)
             .collectNonZero("failed", failedSources);
         swap();
+        aggregateCluster();
+    }
+
+    /**
+     * The DAS fetches the data shared by other instances while other instances share their data with the DAS using the
+     * clustered store.
+     */
+    private void aggregateCluster() {
+        if (!serverEnv.isDas()) {
+            SeriesDataset[] msg = new SeriesDataset[secondsRead.size()];
+            int i = 0;
+            for (SeriesDataset set : secondsRead.values()) {
+                msg[i++] = set;
+            }
+            exchange.publish(msg);
+        } else {
+        }
     }
 
     /**
@@ -90,7 +132,7 @@ public class InMemoryMonitoringDataStore implements MonitoringDataStore {
     }
 
     private void swap() {
-        Map<Series, SeriesDataset> tmp = secondsRead;
+        ConcurrentHashMap<Series, SeriesDataset> tmp = secondsRead;
         secondsRead = secondsWrite;
         secondsWrite = tmp;
     }

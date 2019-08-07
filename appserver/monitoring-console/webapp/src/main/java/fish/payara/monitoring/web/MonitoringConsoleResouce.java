@@ -55,15 +55,15 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.monitoring.model.Series;
-import fish.payara.monitoring.store.MonitoringDataStore;
+import fish.payara.monitoring.store.MonitoringDataRepository;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @RequestScoped
 public class MonitoringConsoleResouce {
 
-    private static MonitoringDataStore getDataStore() {
-        return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataStore.class);
+    private static MonitoringDataRepository getDataStore() {
+        return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
     }
 
     @GET
