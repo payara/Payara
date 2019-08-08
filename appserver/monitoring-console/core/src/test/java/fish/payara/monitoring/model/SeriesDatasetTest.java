@@ -21,11 +21,12 @@ import fish.payara.monitoring.model.SeriesDataset;
  */
 public class SeriesDatasetTest {
 
+    private static final String INSTANCE = "server";
     private static final Series SERIES = new Series("test");
 
     @Test
     public void emptyDefaults() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         assertEquals(0, set.size());
         assertEquals(Long.MAX_VALUE, set.getObservedMin());
         assertEquals(Long.MIN_VALUE, set.getObservedMax());
@@ -39,7 +40,7 @@ public class SeriesDatasetTest {
     @Test
     public void fillToCapacity() {
         int capacity = 3;
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         assertEquals(capacity, set.capacity());
         assertEquals(0, set.size());
         set = set.add(1, 1);
@@ -52,7 +53,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void fillAndSlideByCapacity() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         set = set.add(1, 1);
         set = set.add(2, 2);
         set = set.add(3, 3);
@@ -68,7 +69,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void fillAndSlideOverCapacity() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         set = set.add(1, 1);
         SeriesDataset set1 = set;
         set = set.add(2, 2);
@@ -93,7 +94,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void fillAndSlideManyTimesOverCapacity() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         for (int i = 0; i < 100; i++) {
             set = set.add(i, i);
         }
@@ -108,7 +109,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void constantToPartialDataset() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         assertEquals(0, set.size());
         long t = 0;
         set = set.add(t++, 5);
@@ -136,7 +137,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void constantDataset() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         assertEquals(0, set.size());
         long t = 0;
         set = set.add(t++, 5);
@@ -161,7 +162,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void partialToStableDataset() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         set = set.add(1, 1);
         set = set.add(2, 2);
         set = set.add(3, 3);
@@ -181,7 +182,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void stableToPartialDataset() {
-        SeriesDataset set = new EmptyDataset(SERIES, 3);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
         set = set.add(1, 1);
         set = set.add(2, 2);
         // at this point we are partial
@@ -200,7 +201,7 @@ public class SeriesDatasetTest {
 
     @Test
     public void perSecondDelta() {
-        SeriesDataset set = new EmptyDataset(SERIES, 10);
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 10);
         set = set.add(1000, 1);
         set = set.add(2000, 2);
         set = set.add(4000, 4);

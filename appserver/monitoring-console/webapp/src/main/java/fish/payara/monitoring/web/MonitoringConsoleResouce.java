@@ -67,23 +67,17 @@ public class MonitoringConsoleResouce {
     }
 
     @GET
-    @Path("/series/{series}/points")
-    public long[] getSeriesPoints(@PathParam("series") String series) {
-        return getDataStore().selectSeries(new Series(series)).points();
-    }
-
-    @GET
     @Path("/series/{series}/statistics")
-    public SeriesStatistics getSeriesStatistics(@PathParam("series") String series) {
-        return new SeriesStatistics(getDataStore().selectSeries(new Series(series)));
+    public SeriesStatistics[] getSeriesStatistics(@PathParam("series") String series) {
+        return SeriesStatistics.from(getDataStore().selectSeries(new Series(series)));
     }
 
     @GET
     @Path("/series/statistics/")
-    public List<SeriesStatistics> querySeriesStatistics(@QueryParam("q") String query) {
-        List<SeriesStatistics> matches = new ArrayList<>();
+    public List<SeriesStatistics[]> querySeriesStatistics(@QueryParam("q") String query) {
+        List<SeriesStatistics[]> matches = new ArrayList<>();
         for (String series : query.split("|")) {
-            matches.add(new SeriesStatistics(getDataStore().selectSeries(new Series(series))));
+            matches.add(SeriesStatistics.from(getDataStore().selectSeries(new Series(series))));
         }
         return matches;
     }

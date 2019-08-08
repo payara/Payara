@@ -16,17 +16,30 @@ import java.math.BigInteger;
 public abstract class SeriesDataset implements Serializable {
 
     private final Series series;
+    private final String instance;
     private final long observedSince;
     private final int observedValues;
 
-    public SeriesDataset(Series series, long observedSince, int observedValues) {
+    public SeriesDataset(SeriesDataset predecessor) {
+        this.series = predecessor.series;
+        this.instance = predecessor.instance;
+        this.observedSince = predecessor.observedSince;
+        this.observedValues = predecessor.observedValues + 1;
+    }
+
+    public SeriesDataset(Series series, String instance, long observedSince, int observedValues) {
         this.series = series;
+        this.instance = instance;
         this.observedSince = observedSince;
         this.observedValues = observedValues;
     }
 
     public final Series getSeries() {
         return series;
+    }
+
+    public String getInstance() {
+        return instance;
     }
 
     public final BigInteger getObservedAvg() {
@@ -107,15 +120,20 @@ public abstract class SeriesDataset implements Serializable {
     public abstract int size();
 
     /**
-     * @return the value of the last {@link #points()}
+     * @return the value of the last of the {@link #points()}
      */
     public abstract long lastValue();
 
     /**
-     * @return the time value of the first {@link #points()}
+     * @return the time value of the first of the {@link #points()}
      */
     public abstract long firstTime();
 
+    /**
+     * @return the time value of the last of the {@link #points()}
+     */
+    public abstract long lastTime();
+    
     /**
      * @return the maximum number of points in a dataset before adding a new point does remove the oldest point
      */
@@ -128,16 +146,42 @@ public abstract class SeriesDataset implements Serializable {
      */
     public abstract int estimatedBytesMemory();
 
+    public boolean isStable() {
+        return true;
+    }
+
+    public boolean isStableZero() {
+        return isStable() && lastValue() == 0L;
+    }
+
     @Override
     public final String toString() {
         StringBuilder str = new StringBuilder();
         long[] points = points();
+        str.append(getSeries()).append('@').append(getInstance());
         str.append("[\n");
         for (int i = 0; i < points.length; i+=2) {
             str.append('\t').append(points[i]).append('@').append(points[i+1]).append('\n');
         }
         str.append(']');
         return str.toString();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof SeriesDataset)) {
+            return false;
+        }
+        SeriesDataset other = (SeriesDataset) obj;
+        return instance.equals(other.instance) && series.equals(other.series);
+    }
+
+    @Override
+    public final int hashCode() {
+        return instance.hashCode() ^ series.hashCode();
     }
 
     /**

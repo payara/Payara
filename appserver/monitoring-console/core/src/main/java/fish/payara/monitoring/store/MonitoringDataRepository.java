@@ -1,5 +1,7 @@
 package fish.payara.monitoring.store;
 
+import java.util.List;
+
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.monitoring.model.Series;
@@ -15,5 +17,5 @@ public interface MonitoringDataRepository {
 
     Iterable<SeriesDataset> selectAllSeries();
 
-    SeriesDataset selectSeries(Series series);
+    List<SeriesDataset> selectSeries(Series series);
 }

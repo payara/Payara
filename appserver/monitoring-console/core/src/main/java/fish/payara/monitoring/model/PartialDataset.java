@@ -45,7 +45,7 @@ public final class PartialDataset extends SeriesDataset {
     private final long stableSince;
 
     PartialDataset(ConstantDataset predecessor, long time, long value) {
-        super(predecessor.getSeries(), predecessor.getObservedSince(), predecessor.getObservedValues() + 1);
+        super(predecessor);
         this.size = predecessor.size() + 1;
         this.offset = 0;
         this.data = new long[predecessor.capacity() * 4];
@@ -68,7 +68,7 @@ public final class PartialDataset extends SeriesDataset {
     }
 
     private PartialDataset(PartialDataset predecessor, int size, int offset, long time, long value) {
-        super(predecessor.getSeries(), predecessor.getObservedSince(), predecessor.getObservedValues() + 1);
+        super(predecessor);
         this.size = size;
         this.offset = offset;
         this.data = predecessor.data;
@@ -146,6 +146,11 @@ public final class PartialDataset extends SeriesDataset {
     }
 
     @Override
+    public long lastTime() {
+        return size == 0 ? -1 : time(size - 1);
+    }
+
+    @Override
     public long[] points() {
         return Arrays.copyOfRange(data, 2 * offset, 2 * (offset + size));
     }
@@ -187,6 +192,11 @@ public final class PartialDataset extends SeriesDataset {
 
     @Override
     public int estimatedBytesMemory() {
-        return 100 + (data.length * 8);
+        return 108 + (data.length * 8);
+    }
+
+    @Override
+    public boolean isStable() {
+        return false;
     }
 }

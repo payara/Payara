@@ -12,7 +12,7 @@ import java.math.BigInteger;
  * 
  * @author Jan Bernitt
  */
-public class StableDataset extends ConstantDataset {
+public final class StableDataset extends ConstantDataset {
 
     private final int observedValueChanges;
     private final long observedMax;
@@ -21,8 +21,7 @@ public class StableDataset extends ConstantDataset {
     private final int stableCount;
 
     public StableDataset(SeriesDataset predecessor, long time) {
-        super(predecessor.getSeries(), predecessor.capacity(), predecessor.getObservedSince(),
-                predecessor.getObservedValues() + 1, predecessor.getStableSince(), time, predecessor.lastValue());
+        super(predecessor, time);
         this.observedValueChanges = predecessor.getObservedValueChanges();
         this.observedMax = predecessor.getObservedMax();
         this.observedMin = predecessor.getObservedMin();
@@ -62,6 +61,6 @@ public class StableDataset extends ConstantDataset {
 
     @Override
     public int estimatedBytesMemory() {
-        return 88;
+        return 100;
     }
 }

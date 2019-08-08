@@ -35,22 +35,18 @@ public class ConstantDataset extends SeriesDataset {
 
     private final int capacity;
 
-    public ConstantDataset(ConstantDataset predecessor, long time) {
-        super(predecessor.getSeries(), predecessor.getObservedSince(), predecessor.getObservedValues() + 1);
-        this.capacity = predecessor.capacity;
-        this.stableSince = predecessor.stableSince;
+    public ConstantDataset(SeriesDataset predecessor, long time) {
+        super(predecessor);
+        this.capacity = predecessor.capacity();
+        this.stableSince = predecessor.getStableSince();
         this.time = time;
-        this.value = predecessor.value;
+        this.value = predecessor.lastValue();
     }
 
-    public ConstantDataset(Series series, int capacity, long time, long value) {
-        this(series, capacity, time, 1, time, time, value);
-    }
-
-    ConstantDataset(Series series, int capacity, long observedSince, int observedValues, long stableSince, long time, long value) {
-        super(series, observedSince, observedValues);
-        this.capacity = capacity;
-        this.stableSince = stableSince;
+    public ConstantDataset(EmptyDataset predecessor, long time, long value) {
+        super(predecessor.getSeries(), predecessor.getInstance(), time, 1);
+        this.capacity = predecessor.capacity();
+        this.stableSince = time;
         this.time = time;
         this.value = value;
     }
@@ -113,17 +109,22 @@ public class ConstantDataset extends SeriesDataset {
     }
 
     @Override
+    public final long lastTime() {
+        return time;
+    }
+
+    @Override
     public final long lastValue() {
         return value;
     }
 
     @Override
-    public int capacity() {
+    public final int capacity() {
         return capacity;
     }
 
     @Override
     public int estimatedBytesMemory() {
-        return 48;
+        return 56;
     }
 }
