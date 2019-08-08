@@ -1027,7 +1027,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
     protected Serializable getInfo(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             return super.getInfo(timerId);
         }
 
@@ -1043,7 +1043,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
     protected boolean isPersistent(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             // Found and active
             return false;
         }
@@ -1083,7 +1083,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
 
         // Check non-persistent timers first
         EJBTimerSchedule ts = null;
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             ts = super.getTimerSchedule(timerId);
         } else {
 
