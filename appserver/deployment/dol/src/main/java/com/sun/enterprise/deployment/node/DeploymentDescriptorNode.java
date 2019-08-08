@@ -330,7 +330,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
                     DOLUtils.getDefaultLogger().finer("With value " + attributes.getValue(i));
                 }
                 // we try the setAttributeValue first, if not processed then the setElement
-                String attrValue = (String) TranslatedConfigView.getTranslatedValue(attributes.getValue(i));
+                String attrValue = TranslatedConfigView.expandValue(attributes.getValue(i));
                 if (!setAttributeValue(element, new XMLElement(attributes.getQName(i)), attrValue)) {
                     setElementValue(new XMLElement(attributes.getQName(i)), attrValue);
                 }

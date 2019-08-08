@@ -85,7 +85,7 @@ public class BootCommands {
                 commandStr = commandStr.trim();
                 // # is a comment
                 if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
-                    commandStr = (String) TranslatedConfigView.getTranslatedValue(commandStr);
+                    commandStr = TranslatedConfigView.expandValue(commandStr);
                     String command[] = commandStr.split(" ");
                     if (command.length > 1) {
                         commands.add(new BootCommand(command[0], Arrays.copyOfRange(command, 1, command.length)));
