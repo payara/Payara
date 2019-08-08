@@ -38,23 +38,24 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.KeyStore;
+import java.util.List;
+import java.util.logging.Level;
+
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.security.KeyStore;
-import org.glassfish.api.ActionReport;
-
-import org.glassfish.api.admin.CommandException;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -63,8 +64,11 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
-import java.util.logging.Level;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandException;
 
 /**
  * A class that's supposed to capture all the behavior common to operation

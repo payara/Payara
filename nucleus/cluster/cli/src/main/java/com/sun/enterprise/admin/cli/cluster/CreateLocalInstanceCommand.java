@@ -45,6 +45,12 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
@@ -54,23 +60,18 @@ import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-import fish.payara.admin.cli.cluster.NamingHelper;
-import fish.payara.util.cluster.PayaraServerNameGenerator;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.logging.Level;
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 
 
 /**

@@ -37,18 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
+import java.io.File;
+
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.security.common.FileProtectionUtility;
 
-import java.io.File;
+import org.glassfish.security.common.FileProtectionUtility;
 
 
 /**
