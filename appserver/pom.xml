@@ -90,7 +90,7 @@
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0.4.payara-p1</yasson.version>
+        <yasson.version>1.0.4.payara-p2</yasson.version>
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.2</javax-persistence-api.version>
