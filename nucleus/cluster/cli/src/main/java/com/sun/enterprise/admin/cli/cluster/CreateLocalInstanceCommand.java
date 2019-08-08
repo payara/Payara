@@ -43,6 +43,8 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
@@ -122,8 +124,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private String _node;
     private static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
     private ParamModelData masterPasswordOption;
-    private static final String MASTER_PASSWORD_ALIAS="master-password";
-
+    
     @Override
     protected void validate() throws CommandException {
         echoCommand();
@@ -318,10 +319,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
      * @throws CommandException
      */
     protected void createMasterPasswordFile(String masterPassword) throws CommandException {
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTER_PASSWORD_ALIAS);
+        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
         try {
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTER_PASSWORD_ALIAS.toCharArray());
-            p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
+            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
+            p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
             throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile),

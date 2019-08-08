@@ -41,6 +41,8 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.cli.LocalServerCommand;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -671,7 +673,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         if (nodeDirChild == null)
             return null;
 
-        File mp = new File(new File(nodeDirChild,"agent"), "master-password");
+        File mp = new File(new File(nodeDirChild,"agent"), MASTERPASSWORD_FILE);
         if (!mp.canRead()) {
             return null;
         }

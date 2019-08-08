@@ -42,6 +42,7 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
@@ -82,6 +83,7 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     private ServerDirs serverDirs;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(LocalDomainCommand.class);
+    private static final String DEFAULT_MASTER_PASSWORD = "changeit";
     
     ////////////////////////////////////////////////////////////////
     /// Section:  protected methods that are OK to override
@@ -205,8 +207,8 @@ public abstract class LocalServerCommand extends CLICommand {
             return null;   // no master password  saved
         try {
             PasswordAdapter pw = new PasswordAdapter(mpf.getAbsolutePath(),
-                    "master-password".toCharArray()); // fixed key
-            return pw.getPasswordForAlias("master-password");
+                    MASTERPASSWORD_FILE.toCharArray()); // fixed key
+            return pw.getPasswordForAlias(MASTERPASSWORD_FILE);
         }
         catch (Exception e) {
             logger.log(Level.FINER, "master password file reading error: {0}", e.getMessage());
@@ -260,7 +262,7 @@ public abstract class LocalServerCommand extends CLICommand {
         long t0 = now();
         String mpv = passwords.get(CLIConstants.MASTER_PASSWORD);
         if (mpv == null) { //not specified in the password file
-            mpv = "changeit";  //optimization for the default case -- see 9592
+            mpv = DEFAULT_MASTER_PASSWORD;  //optimization for the default case -- see 9592
             if (!verifyMasterPassword(mpv)) {
                 mpv = readFromMasterPasswordFile();
                 if (!verifyMasterPassword(mpv)) {
@@ -553,7 +555,7 @@ public abstract class LocalServerCommand extends CLICommand {
         if (serverDirs == null)
             return null;
 
-        File mp = new File(serverDirs.getConfigDir(), "master-password");
+        File mp = new File(serverDirs.getConfigDir(), MASTERPASSWORD_FILE);
         if (!mp.canRead())
             return null;
 

@@ -42,6 +42,8 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.io.File;
@@ -764,7 +766,6 @@ public class PEFileLayout
         return new File(getConfigRoot(), TRUSTSTORE);
     }
 
-    public static final String MASTERPASSWORD_FILE = "master-password";
     public File getMasterPasswordFile()
     {
         return new File(getConfigRoot(), MASTERPASSWORD_FILE);
