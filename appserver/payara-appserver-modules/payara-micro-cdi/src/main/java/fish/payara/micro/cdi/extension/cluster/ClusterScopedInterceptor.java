@@ -39,7 +39,6 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.google.common.collect.Iterables;
 import com.hazelcast.core.IAtomicLong;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
@@ -50,6 +49,7 @@ import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercep
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Priority;
@@ -132,7 +132,11 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     private void refresh(Class<?> beanClass) {
-        Bean<?> bean = Iterables.getOnlyElement(beanManager.getBeans(beanClass));
+        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
+        if (managedBeans.size() > 1) {
+            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
+        }
+        Bean<?> bean = managedBeans.iterator().next();
         String beanName = getBeanName(bean, getAnnotation(beanManager, bean));
         Context ctx = beanManager.getContext(ClusterScoped.class);
         clusteredLookup.getClusteredSingletonMap().put(beanName, ctx.get(bean));

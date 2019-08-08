@@ -253,6 +253,12 @@
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>webservices.security</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.hk2</groupId>
+                    <artifactId>hk2-metadata-generator</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -272,7 +278,7 @@
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
         
         <dependency>
             <groupId>org.glassfish.main.orb</groupId>

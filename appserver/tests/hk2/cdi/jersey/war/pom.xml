@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -119,12 +119,6 @@
           <version>${jersey.version}</version>
           <scope>test</scope>
         </dependency>
-         <dependency>
-             <groupId>com.google.guava</groupId>
-             <artifactId>guava</artifactId>
-             <version>18.0</version>
-             <scope>test</scope>
-         </dependency>
     </dependencies>
     <build>
         <finalName>jersey-cdi</finalName>
