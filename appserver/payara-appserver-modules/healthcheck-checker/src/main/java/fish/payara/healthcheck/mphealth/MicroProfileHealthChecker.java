@@ -259,7 +259,7 @@ public class MicroProfileHealthChecker
             String sysPropsPort = configProps.getPropertyValue(basePort);
             truePort = Integer.parseInt(sysPropsPort);
         }
-        return new URI(protocol, null, (String) TranslatedConfigView.getTranslatedValue(listener.getAddress()), truePort, "/" + endpoint, null, null);
+        return new URI(protocol, null, TranslatedConfigView.expandValue(listener.getAddress()), truePort, "/" + endpoint, null, null);
     }
 
     //send request to remote healthcheck endpoint to get the status
