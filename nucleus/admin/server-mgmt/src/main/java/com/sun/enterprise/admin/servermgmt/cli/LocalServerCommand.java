@@ -83,7 +83,11 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     private ServerDirs serverDirs;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(LocalDomainCommand.class);
-    private static final String DEFAULT_MASTER_PASSWORD = "changeit";
+    
+    ////////////////////////////////////////////////////////////////
+    /// Section:  protected variables
+    ////////////////////////////////////////////////////////////////
+    protected static final String DEFAULT_MASTER_PASSWORD = "changeit";
     
     ////////////////////////////////////////////////////////////////
     /// Section:  protected methods that are OK to override
