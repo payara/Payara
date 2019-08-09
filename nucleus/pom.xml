@@ -46,15 +46,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>5</version>
-        <relativePath />
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>glassfish-main-aggregator</artifactId>
+        <version>5.193-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
     <url>https://github.com/payara/Payara</url>
