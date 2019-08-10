@@ -39,99 +39,81 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2019] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main</groupId>
-    <artifactId>glassfish-main-aggregator</artifactId>
+    <groupId>fish.payara</groupId>
+    <artifactId>payara-aggregator</artifactId>
     <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <name>Payara Project</name>
-    
+
+    <modules>
+        <module>nucleus</module>
+        <module>appserver</module>
+        <module>api</module>
+    </modules>
+
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
         <tag>payara-server-5.193-SNAPSHOT</tag>
     </scm>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/payara/Payara/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
+
     <properties>
+        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
+        <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+        <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>3.1.0</maven.javadoc.plugin.version>
-        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
+        <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
+        <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
+        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <profiles>
         <profile>
-            <id>release-phase2</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
-        </profile>
-        <profile>
-            <!--
-                RE profile for release purposes. 
-            -->
-            <id>ips</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
-        </profile>
-        
-        <profile>
             <id>source</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>source</name>
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
-            <properties>
-                <maven.test.skip>true</maven.test.skip>
-                <project>payara</project> 
-            </properties>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>${maven.source.plugin.version}</version>
                         <configuration>
                             <excludeResources>true</excludeResources>
                             <excludes>**/*.properties</excludes>
@@ -139,81 +121,63 @@
                             <excludes>**/*.class</excludes>
                             <excludes>**/*.html</excludes>
                             <includePom>false</includePom>
+                            <finalName>payara-${project.version}</finalName>
+                            <includePom>false</includePom>
                         </configuration>
                         <executions>
                             <execution>
+                                <id>attach-sources-aggregate</id>
                                 <phase>pre-site</phase>
-                                <id>attach-sources</id>
+                                <inherited>false</inherited>
                                 <goals>
-                                    <goal>jar-no-fork</goal>
                                     <goal>aggregate</goal>
                                 </goals>
-                                <configuration>
-                                    <finalName>payara-5.193-SNAPSHOT</finalName>    
-                                    <includePom>false</includePom>                            
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-             
+
         <profile>
             <id>javadoc</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>javadoc</name>
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
-            <properties>
-                <maven.test.skip>true</maven.test.skip>
-            </properties>
             <build>
+                <finalName>payara-${project.version}</finalName>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
-                            <!-- Default configuration for all reports -->
                             <docencoding>UTF-8</docencoding>
                             <includeDependencySources>false</includeDependencySources>
                             <!-- This parameter is to be added when using JDK8 -->
                             <additionalOptions>
                                 <additionalOption>-Xdoclint:none</additionalOption>
                             </additionalOptions>
+                            <finalName>payara-${project.version}</finalName>
+                            <minmemory>512m</minmemory>
+                            <maxmemory>2g</maxmemory>
                         </configuration>
                         <executions>
                             <execution>
-                                <id>aggregate</id>
+                                <id>attach-javadoc-aggregate</id>
+                                <phase>pre-site</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <verbose>true</verbose>
+                                </configuration>
                                 <goals>
                                     <goal>aggregate-no-fork</goal>
-                                    <!--
-                                        until no-fork variant of jar is available, we'll package
-                                        directly with jar plugin
-                                    -->
-                                    <!--<goal>aggregate-jar</goal>-->
                                 </goals>
-                                <phase>pre-site</phase>
-                                <configuration>
-                                    <!-- Specific configuration for the aggregate report -->
-                                    <finalName>payara-5.193-SNAPSHOT</finalName>
-                                    <minmemory>512m</minmemory>
-                                    <maxmemory>2g</maxmemory>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
                         <executions>
                             <execution>
@@ -222,22 +186,24 @@
                                    <goal>jar</goal>
                                 </goals>
                                 <phase>pre-site</phase>
+                                <inherited>false</inherited>
                                 <configuration>
                                     <classesDirectory>${project.build.directory}/site/apidocs</classesDirectory>
                                     <classifier>javadoc</classifier>
+                                    <archive>
+                                        <manifestFile />
+                                    </archive>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
-                <finalName>payara-${project.version}</finalName>
             </build>
         </profile>
 
         <profile>
             <id>gpgsign</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>gpgsign</name>
                     <value>true</value>
@@ -246,9 +212,7 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -262,34 +226,47 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
-   
-    <!--
-        Skip deploy and install as this is an aggregator POM
-    -->
+
     <build>
         <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven.source.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven.javadoc.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven.gpg.plugin.version}</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-install-plugin</artifactId>
                     <version>${maven.install.plugin.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>${maven.release.plugin.version}</version>
                 </plugin>
