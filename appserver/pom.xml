@@ -60,11 +60,6 @@
 
     <properties>
 
-        <!-- Java EE -->
-        <javaee.major_version>8</javaee.major_version>
-        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
-        <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
-
         <!-- EJB -->
         <jakarta.ejb-api.version>3.2.5</jakarta.ejb-api.version>
 
@@ -1179,28 +1174,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-        </profile>
-        <profile>
-            <id>javaee-api</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>javaee-api</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>
