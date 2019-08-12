@@ -579,8 +579,12 @@ public abstract class LocalServerCommand extends CLICommand {
             try {
                 char[] mpvArr = super.readPassword(prompt);
                 mpv = mpvArr != null ? new String(mpvArr) : null;
-            } catch (Throwable t) {
-                throw new CommandException(STRINGS.get("no.console"), t);
+            } catch (Exception ex) {
+                // JLine sneaky throws IOException, so check for it here
+                if (ex instanceof IOException) {
+                    throw new CommandException(STRINGS.get("no.console"), ex);
+                }
+                throw ex;
             }
             if (mpv == null)
                 throw new CommandException(STRINGS.get("no.console"));
