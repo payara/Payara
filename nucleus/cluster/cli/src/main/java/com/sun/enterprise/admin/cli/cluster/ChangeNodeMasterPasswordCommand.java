@@ -144,17 +144,6 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         }
     }
 
-    /**
-     * Create the master password keystore. This routine can also modify the master
-     * password if the keystore already exists
-     *
-     * @throws CommandException if an error occurred while writing the master
-     *                          password file
-     */
-    protected void createMasterPasswordFile() throws CommandException {
-
-    }
-
     @Override
     public int execute(String... argv) throws CommandException {
         // We iterate through all the instances and so it should relax this requirement
