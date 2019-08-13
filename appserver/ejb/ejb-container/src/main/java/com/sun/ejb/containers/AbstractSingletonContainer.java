@@ -554,7 +554,9 @@ public abstract class AbstractSingletonContainer
             if (doPostConstruct) {
                 intercept(CallbackType.POST_CONSTRUCT, context);
                 // Make sure to update Object stored in Map
-                clusteredLookup.getClusteredSingletonMap().set(sessionKey, context.getEJB());
+                if (clusteredLookup.isClusteredEnabled()) {
+                    clusteredLookup.getClusteredSingletonMap().set(sessionKey, context.getEJB());
+                }
             }
 
         } catch ( Throwable th ) {
