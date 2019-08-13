@@ -136,7 +136,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
             }
         }
 
-        if (dasHost == null || dasHost.equals("") || dasPort.equals("")) {
+        if (dasHost == null || dasHost.trim().isEmpty() || dasPort.trim().isEmpty()) {
             actionReport.failure(logger, "Could not retrieve DAS host address or port");
             return;
         }
@@ -149,14 +149,14 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
 
         // Pull the image if it hasn't been downloaded or built yet
-        pullImage(adminCommandContext, actionReport, node);
+        pullImage(node);
 
         createContainer(adminCommandContext, actionReport, node, server, dasHost, dasPort);
     }
 
-    private void pullImage(AdminCommandContext adminCommandContext, ActionReport actionReport, Node node) {
+    private void pullImage(Node node) {
         // Create web target with query
-        WebTarget webTarget = createWebTarget(node);
+        WebTarget webTarget = createWebTarget(node, "/images/create");
         webTarget = webTarget.queryParam(DockerConstants.DOCKER_FROM_IMAGE_KEY, node.getDockerImage());
 
         // Send the POST request
@@ -208,7 +208,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 dasHost, dasPort);
 
         // Create web target with query
-        WebTarget webTarget = createWebTarget(node);
+        WebTarget webTarget = createWebTarget(node, "/containers/create");
         webTarget = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName);
 
         // Send the POST request
@@ -231,7 +231,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
                     // Set the Docker container ID either to the ID of the container, or to the instance name if the the
                     // ID can't be obtained
-                    if (dockerContainerId != null && !dockerContainerId.equals("")) {
+                    if (dockerContainerId != null && !dockerContainerId.trim().isEmpty()) {
                         setDockerContainerId(actionReport, server, dockerContainerId);
                     } else {
                         setDockerContainerId(actionReport, server, instanceName);
@@ -254,21 +254,39 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
     }
 
-    private WebTarget createWebTarget(Node node) {
+    private WebTarget createWebTarget(Node node, String endpoint) {
         Client client = ClientBuilder.newClient();
         WebTarget webTarget = null;
-        if (Boolean.valueOf(node.getUseTls())) {
-            webTarget = client.target("https://"
-                    + node.getNodeHost()
-                    + ":"
-                    + node.getDockerPort()
-                    + "/containers/create");
+        if (Boolean.parseBoolean(node.getUseTls())) {
+            if (endpoint.startsWith("/")) {
+                webTarget = client.target("https://"
+                        + node.getNodeHost()
+                        + ":"
+                        + node.getDockerPort()
+                        + endpoint);
+            } else {
+                webTarget = client.target("https://"
+                        + node.getNodeHost()
+                        + ":"
+                        + node.getDockerPort()
+                        + "/"
+                        + endpoint);
+            }
         } else {
-            webTarget = client.target("http://"
-                    + node.getNodeHost()
-                    + ":"
-                    + node.getDockerPort()
-                    + "/containers/create");
+            if (endpoint.startsWith("/")) {
+                webTarget = client.target("http://"
+                        + node.getNodeHost()
+                        + ":"
+                        + node.getDockerPort()
+                        + endpoint);
+            } else {
+                webTarget = client.target("http://"
+                        + node.getNodeHost()
+                        + ":"
+                        + node.getDockerPort()
+                        + "/"
+                        + endpoint);
+            }
         }
 
         return webTarget;
