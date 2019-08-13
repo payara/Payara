@@ -40,16 +40,12 @@
 // Portions Copyright [2019] Payara Foundation and/or its affiliates
 package org.glassfish.internal.deployment;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringBufferInputStream;
-import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -166,33 +162,33 @@ public class DeploymentTracing {
         StringBuilder sb = new StringBuilder("Module Status Report Begins\n");
         // first started :
 
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()== ModuleState.READY) {
                 sb.append(m).append("\n");
                 counter++;
             }
         }
-        sb.append("there were " + counter + " modules in ACTIVE state");
+        sb.append("there were ").append(counter).append(" modules in ACTIVE state");
         sb.append("\n");
         counter=0;
         // then resolved
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()== ModuleState.RESOLVED) {
                 sb.append(m).append("\n");
                 counter++;
             }
         }
-        sb.append("there were " + counter + " modules in RESOLVED state");
+        sb.append("there were ").append(counter).append(" modules in RESOLVED state");
         sb.append("\n");
         counter=0;
         // finally installed
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()!= ModuleState.READY && m.getState()!=ModuleState.RESOLVED) {
                 sb.append(m).append("\n");
                 counter++;
             }
         }
-        sb.append("there were " + counter + " modules in INSTALLED state");
+        sb.append("there were ").append(counter).append(" modules in INSTALLED state");
         sb.append("Module Status Report Ends");
         logger.log(level, sb.toString());
     }    

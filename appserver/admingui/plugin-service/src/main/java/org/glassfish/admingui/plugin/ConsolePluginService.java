@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.plugin;
 
@@ -58,9 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.Module;
 
 import org.glassfish.admingui.connector.TOC;
 import org.glassfish.admingui.connector.TOCItem;

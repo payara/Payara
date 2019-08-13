@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -45,7 +46,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.data.ContainerRegistry;
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
@@ -117,7 +118,7 @@ public class ListContainersCommand implements AdminCommand {
                     container.addProperty(
                             localStrings.getLocalString("status", "Status"),
                             localStrings.getLocalString("started", "Started"));
-                    Module connectorModule = modulesRegistry.find(engineInfo.getSniffer().getClass());
+                    HK2Module connectorModule = modulesRegistry.find(engineInfo.getSniffer().getClass());
                     container.addProperty(localStrings.getLocalString("connector", "Connector"),
                             connectorModule.getModuleDefinition().getName() +
                             ":" + connectorModule.getModuleDefinition().getVersion());
