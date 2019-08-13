@@ -139,8 +139,8 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             p.setPasswordForAlias(MASTERPASSWORD_FILE, newPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
             return 0;
-        } catch (Throwable t) {
-            throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", pwdFile), t);
+        } catch (Exception ex) {
+            throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", pwdFile), ex);
         }
     }
 
