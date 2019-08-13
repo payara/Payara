@@ -615,7 +615,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         path.getAbsolutePath()), e);
             }
 
-            structuredTracing.print(System.out);
+            if (structuredTracing.isEnabled()) {
+                structuredTracing.print(System.out);
+            }
 
             if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                 // Set the app name in the result so that embedded deployer can retrieve it.
