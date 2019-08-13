@@ -103,19 +103,16 @@
             <artifactId>requesttracing-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>jaxrs-client-tracing</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>opentracing-cdi</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

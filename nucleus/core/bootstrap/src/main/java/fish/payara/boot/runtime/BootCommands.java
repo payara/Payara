@@ -108,8 +108,8 @@ public class BootCommands {
             commandStr = commandStr.trim();
             // # is a comment
             if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
-                commandStr = (String) TranslatedConfigView.getTranslatedValue(commandStr);
-                String command[];
+                commandStr = TranslatedConfigView.expandValue(commandStr);
+                String[] command;
                 List<String> elements = new ArrayList<>();
                 Matcher flagMatcher = COMMAND_FLAG_PATTERN.matcher(commandStr);
                 while (flagMatcher.find()) {

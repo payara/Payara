@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  */
 package fish.payara.notification.slack;
 
-import com.google.common.base.Strings;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
@@ -75,6 +75,7 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
     @Param(name = "token3")
     private String token3;
 
+    @Override
     protected void applyValues(SlackNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -82,13 +83,13 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(token1)) {
+        if(StringUtils.ok(token1)) {
             configuration.setToken1(token1);
         }
-        if(!Strings.isNullOrEmpty(token2)) {
+        if(StringUtils.ok(token2)) {
             configuration.setToken2(token2);
         }
-        if(!Strings.isNullOrEmpty(token3)) {
+        if(StringUtils.ok(token3)) {
             configuration.setToken3(token3);
         }
     }

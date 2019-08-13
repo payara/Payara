@@ -48,7 +48,6 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
-import com.google.common.base.Optional;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
@@ -57,6 +56,7 @@ import org.glassfish.soteria.cdi.CdiUtils;
 
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
+import java.util.Optional;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -102,7 +102,7 @@ class ClusterScopeContext implements Context {
         String beanName = getBeanName(bean, clusteredAnnotation);
         TT beanInstance = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
         if (clusteredAnnotation.callPostConstructOnAttach() && beanInstance != null &&
-                getFromApplicationScoped(contextual, Optional.<CreationalContext<TT>>absent()) == null) {
+                getFromApplicationScoped(contextual, Optional.empty()) == null ) {
             beanManager.getContext(ApplicationScoped.class).get(contextual, beanManager.createCreationalContext(contextual));
         }
         return beanInstance;

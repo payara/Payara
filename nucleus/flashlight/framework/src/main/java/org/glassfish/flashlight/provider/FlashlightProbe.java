@@ -406,7 +406,11 @@ public class FlashlightProbe
         /* package */ final Object getState() { return state; }
         /* package */ final int getInvokerId() { return invokerId; }
     }
-    
+
+    public int getInvokerCount() {
+        return invokers.size();
+    }
+
     private Method probeMethod;
     public static final String SELF = "@SELF";
     private int id;

@@ -174,13 +174,13 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                             jarSubArchive.close();
                         }
                     } catch (Exception ioe) {
-                        Object args[] = { entryName, ioe.getMessage() };
+                        Object args[] = { entryName, ioe };
                         deplLogger.log(Level.WARNING, JAR_ENTRY_ERROR, args);
                     }
                 }
             }
         } catch (Exception e) {
-          deplLogger.log(Level.WARNING, FAILED_ANNOTATION_SCAN, e.getMessage());
+          deplLogger.log(Level.WARNING, FAILED_ANNOTATION_SCAN, e);
         }
     }
 }

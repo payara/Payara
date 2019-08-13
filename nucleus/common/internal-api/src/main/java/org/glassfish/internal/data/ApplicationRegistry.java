@@ -37,12 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
 
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import javax.inject.Singleton;
 
 import java.util.HashMap;
@@ -60,9 +64,9 @@ import org.glassfish.internal.deployment.Deployment;
  */
 @Service
 @Singleton
-public class ApplicationRegistry {
+public class ApplicationRegistry implements MonitoringDataSource {
 
-    private Map<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
+    private Map<String, ApplicationInfo> apps = new HashMap<>();
     private final Map<String, Deployment.ApplicationDeployment> transientDeployments = new HashMap<>();
 
     public synchronized void add(String name, ApplicationInfo info) {
@@ -99,5 +103,23 @@ public class ApplicationRegistry {
 
     public Deployment.ApplicationDeployment getTransient(String appName) {
         return transientDeployments.get(appName);
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        rootCollector.in("application")
+            .collectAll(apps, (collector, app) -> collector
+                .collectNonZero("sniffers", app.getSniffers().size())
+                .collectNonZero("engines", app.getEngineRefs().size())
+                .collectNonZero("properties", app.getModuleProps().size())
+                .collectNonZero("modules", app.getModuleInfos().size())
+                .collectObjects(app.getModuleInfos(), ApplicationRegistry::collectModule));
+    }
+
+    private static void collectModule(MonitoringDataCollector collector, ModuleInfo module) {
+        collector.tag("module", module.getName())
+            .collectNonZero("sniffers", module.getSniffers().size())
+            .collectNonZero("engines", module.getEngineRefs().size())
+            .collectNonZero("properties", module.getModuleProps().size());
     }
 }
