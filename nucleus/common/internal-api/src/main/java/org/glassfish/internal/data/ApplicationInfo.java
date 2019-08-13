@@ -346,7 +346,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
         if (events!=null) {
-            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.START, "Send events");
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_STARTED.type());
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_STARTED, this), false);
             innerSpan.close();
         }

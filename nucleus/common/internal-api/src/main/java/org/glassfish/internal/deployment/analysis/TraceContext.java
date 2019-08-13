@@ -99,11 +99,11 @@ public class TraceContext {
     public String getLevelName(Level level) {
         if (level == this.level) {
             return name;
-        } else if (parent != null) {
-            return parent.getLevelName(level);
-        } else {
-            return "";
         }
+        if (parent != null) {
+            return parent.getLevelName(level);
+        }
+        return "";
     }
 
     void close() {
