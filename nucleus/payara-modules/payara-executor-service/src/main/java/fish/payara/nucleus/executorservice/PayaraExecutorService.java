@@ -131,15 +131,36 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     @Override
     public void event(Event event) {
         if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
-            // there is awkward point in embedded EJBContainer initialization, where same server
-            // instance is started twice. In such case, we need to reinitialize.
-            if (threadPoolExecutor.isShutdown()) {
+            // Embedded containers can be started and stopped multiple times.
+            // Thus we need to initialize anytime the server instance is started.
+            if (null == threadPoolExecutor) {
                 initialiseThreadPools();
             }
         } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            threadPoolExecutor.shutdown();
-            scheduledThreadPoolExecutor.shutdown();
+            terminateThreadPools();
         }
+    }
+
+    private void terminateThreadPools() {
+        threadPoolExecutor.shutdown();
+        scheduledThreadPoolExecutor.shutdown();
+
+        // Wait until the schedulers actually terminate
+        try {
+          threadPoolExecutor.awaitTermination(5, TimeUnit.SECONDS);
+          scheduledThreadPoolExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException ignored) {
+        }
+
+        // If they do not terminate in the alloted time then just forcefully terminate
+        if (!threadPoolExecutor.isShutdown()) {
+          threadPoolExecutor.shutdownNow();
+        }
+        if (!scheduledThreadPoolExecutor.isShutdown()) {
+          scheduledThreadPoolExecutor.shutdownNow();
+        }
+        threadPoolExecutor = null;
+        scheduledThreadPoolExecutor = null;
     }
 
     private void initialiseThreadPools() {
