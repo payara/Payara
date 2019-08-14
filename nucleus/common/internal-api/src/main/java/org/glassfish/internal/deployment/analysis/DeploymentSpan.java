@@ -45,6 +45,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 
 /**
  * Span is a duration of time an event took place.
@@ -59,6 +60,7 @@ public class DeploymentSpan implements AutoCloseable {
     private final Enum<?> action;
     private final Instant start;
     private Instant finish;
+    int nestLevel = 0;
 
     private DeploymentSpan(Clock clock, TraceContext context, String componentName, Enum<?> action) {
         this.start = clock.instant();
@@ -115,9 +117,15 @@ public class DeploymentSpan implements AutoCloseable {
         if (f != null) {
             NS_FORMATTER.formatTo(f, sb);
         }
-        sb.append('\t');
+        sb.append('\t')
+            .append(getNestLevel())
+            .append('\t');
         if (context != null) {
-            sb.append(context);
+            sb.append(context.getLevelName(TraceContext.Level.CONTAINER))
+                .append('\t')
+                .append(context);
+        } else {
+            sb.append('\t');
         }
         sb.append('\t').append(action).append('\t');
         if (componentName != null) {
@@ -144,6 +152,22 @@ public class DeploymentSpan implements AutoCloseable {
             return; // we're already closed, that's ok
         }
         this.finish = clock.instant();
+    }
+
+    /**
+     * Determined level of nesting.
+     * @return
+     */
+    public int getNestLevel() {
+        return nestLevel;
+    }
+
+    /**
+     * Set determined level of nesting. Post-processing will set the level from inspection of all of the spans
+     * @param nestLevel
+     */
+    void setNestLevel(int nestLevel) {
+        this.nestLevel = nestLevel;
     }
 
     /**
