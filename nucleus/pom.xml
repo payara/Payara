@@ -336,7 +336,7 @@
 
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
