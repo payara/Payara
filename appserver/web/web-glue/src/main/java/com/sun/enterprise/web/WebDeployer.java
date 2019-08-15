@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
-import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -130,7 +130,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 contextRoot = params.previousContextRoot;
             }
             // default should be application name, if available
-            if (contextRoot == null && !Strings.isNullOrEmpty(params.name())) {
+            if (contextRoot == null && StringUtils.ok(params.name())) {
                 contextRoot = params.name();
             }
             if (contextRoot == null)

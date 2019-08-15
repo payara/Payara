@@ -232,10 +232,11 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
                 Matcher m = p.matcher(jvmOption);
 
                 if (m.matches()) {
-                    setSystemProperty(m.group(1), TranslatedConfigView.getTranslatedValue(m.group(2)).toString());
+                    String value = TranslatedConfigView.expandConfigValue(m.group(2));
+                    setSystemProperty(m.group(1), value);
 
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("Setting " + m.group(1) + " = " + TranslatedConfigView.getTranslatedValue(m.group(2)));
+                        _logger.fine("Setting " + m.group(1) + " = " + value);
                     }
                 }
             }

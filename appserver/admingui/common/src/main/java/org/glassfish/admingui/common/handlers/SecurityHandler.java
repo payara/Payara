@@ -41,7 +41,6 @@
 
 package org.glassfish.admingui.common.handlers;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.jsftemplating.annotation.Handler;  
 import com.sun.jsftemplating.annotation.HandlerInput; 
@@ -792,15 +791,17 @@ public class SecurityHandler {
                 for (Map<String, String> origOption : list){
                     newOptions.add(origOption);
                 }
-                newOptions.add(ImmutableMap.of(JVM_OPTION, JVM_OPTION_SECURITY_MANAGER));
+                newOptions.add(Collections.singletonMap(JVM_OPTION, JVM_OPTION_SECURITY_MANAGER));
             } else {
                 for (Map<String, String> origOption : list){
                     String str = origOption.get(JVM_OPTION);
                     if (! (str.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                             str.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL))){
-                       newOptions.add(ImmutableMap.of(JVM_OPTION, str,
-                               MIN_VERSION, origOption.get(MIN_VERSION),
-                               MAX_VERSION, origOption.get(MAX_VERSION)));
+                        Map<String, String> jvmOptions = new HashMap<>(3);
+                        jvmOptions.put(JVM_OPTION, str);
+                        jvmOptions.put(MIN_VERSION, origOption.get(MIN_VERSION));
+                        jvmOptions.put(MAX_VERSION, origOption.get(MAX_VERSION));
+                        newOptions.add(Collections.unmodifiableMap(jvmOptions));
                     }
                 }
             }

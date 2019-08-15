@@ -192,7 +192,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             elementName = ejbClass.getSimpleName();            
         }
         else {
-            elementName = (String)TranslatedConfigView.getTranslatedValue(elementName);
+            elementName = TranslatedConfigView.expandValue(elementName);
         }
 
         EjbBundleDescriptorImpl currentBundle = (EjbBundleDescriptorImpl) ctx.getDescriptor();

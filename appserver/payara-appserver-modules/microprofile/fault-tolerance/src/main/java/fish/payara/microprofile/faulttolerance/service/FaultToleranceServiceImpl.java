@@ -47,6 +47,8 @@ import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
@@ -54,12 +56,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -98,7 +102,7 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided(FaultToleranceService.class)
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
-public class FaultToleranceServiceImpl implements EventListener, FaultToleranceService {
+public class FaultToleranceServiceImpl implements EventListener, FaultToleranceService, MonitoringDataSource {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
 
@@ -141,6 +145,46 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
             deregisterApplication(info.getName());
             FaultTolerancePolicy.clean();
         }
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector ftCollector = collector.in("fault-tolerance");
+        for (Entry<String, FaultToleranceApplicationState> appStateEntry : stateByApplication.entrySet()) {
+            String appName = appStateEntry.getKey();
+            FaultToleranceApplicationState appState = appStateEntry.getValue();
+            collectMethodState(ftCollector, appName, "execution-semaphore",
+                    appState.getBulkheadExecutionSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
+            collectMethodState(ftCollector, appName, "queue-semaphore",
+                    appState.getBulkheadExecutionQueueSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
+            collectMethodState(ftCollector, appName, "circuit-breaker",
+                    appState.getCircuitBreakerStates(), FaultToleranceServiceImpl::collectCircuitBreakerState);
+
+        }
+    }
+
+    private static <V> void collectMethodState(MonitoringDataCollector collector, String appName, String type,
+            Map<Object, Map<String, V>> semaphores, BiConsumer<MonitoringDataCollector, V> collect) {
+        for (Entry<Object, Map<String, V>> targetExecutionSemaphores : semaphores.entrySet()) {
+            Object target = targetExecutionSemaphores.getKey();
+            String targetValue = System.identityHashCode(target) + "@" + target.getClass().getSimpleName();
+            for (Entry<String, V> methodValue : targetExecutionSemaphores.getValue().entrySet()) {
+                collect.accept(collector.app(appName).type(type).tag("target", targetValue)
+                        .entity(methodValue.getKey()), methodValue.getValue());
+            }
+        }
+    }
+
+    private static void collectBulkheadSemaphores(MonitoringDataCollector collector, BulkheadSemaphore semaphore) {
+        collector
+            .collect("availablePermits", semaphore.availablePermits())
+            .collect("acquiredPermits", semaphore.acquiredPermits());
+    }
+
+    private static void collectCircuitBreakerState(MonitoringDataCollector collector, CircuitBreakerState state) {
+        collector
+            .collect("halfOpenSuccessFul", state.getHalfOpenSuccessFulResultCounter())
+            .collect("state", state.getCircuitState().name().charAt(0));
     }
 
     @Override

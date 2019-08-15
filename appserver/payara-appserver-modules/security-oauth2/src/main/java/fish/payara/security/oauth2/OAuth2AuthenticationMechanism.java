@@ -278,7 +278,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         if (configResult.isPresent()) {
             return configResult.get();
         }
-        result = (String) TranslatedConfigView.getTranslatedValue(result);
+        result = TranslatedConfigView.expandValue(result);
         if (isELExpression(value)){
             result = (String) elProcessor.getValue(toRawExpression(result), String.class);
         }

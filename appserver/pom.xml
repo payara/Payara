@@ -60,11 +60,6 @@
 
     <properties>
 
-        <!-- Java EE -->
-        <javaee.major_version>8</javaee.major_version>
-        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
-        <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
-
         <!-- EJB -->
         <jakarta.ejb-api.version>3.2.5</jakarta.ejb-api.version>
 
@@ -79,7 +74,7 @@
         <!-- JSF -->
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
         <jakarta.faces-api.version>2.3.1</jakarta.faces-api.version>
-        <mojarra.version>2.3.9.payara-p2</mojarra.version>
+        <mojarra.version>2.3.9.payara-p3</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -90,7 +85,7 @@
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0.4.payara-p1</yasson.version>
+        <yasson.version>1.0.4.payara-p2</yasson.version>
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.2</javax-persistence-api.version>
@@ -1179,28 +1174,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-        </profile>
-        <profile>
-            <id>javaee-api</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>javaee-api</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

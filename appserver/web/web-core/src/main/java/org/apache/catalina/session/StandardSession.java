@@ -56,12 +56,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import org.glassfish.jersey.internal.guava.Cache;
+import org.glassfish.jersey.internal.guava.CacheBuilder;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
@@ -2425,7 +2425,7 @@ public class StandardSession
     }
 
     private static Cache<Object, Boolean> buildSerializableCache() {
-        return CacheBuilder.newBuilder().softValues()
+        return CacheBuilder.newBuilder()
                 .maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100))
                 .build();
     }

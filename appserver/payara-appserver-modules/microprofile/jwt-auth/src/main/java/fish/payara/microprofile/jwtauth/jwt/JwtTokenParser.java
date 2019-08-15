@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
@@ -97,7 +96,9 @@ public class JwtTokenParser {
     }
     
     public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
-        checkState(signedJWT != null, "No parsed SignedJWT.");
+        if (signedJWT == null) {
+            throw new IllegalStateException("No parsed SignedJWT.");
+        }
         
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
         if (!signedJWT.getHeader().getAlgorithm().equals(RS256)) {
@@ -144,7 +145,9 @@ public class JwtTokenParser {
     }
     
     public String getKeyID() {
-        checkState(signedJWT != null, "No parsed SignedJWT.");
+        if (signedJWT == null) {
+            throw new IllegalStateException("No parsed SignedJWT.");
+        }
         return signedJWT.getHeader().getKeyID();
     }
     

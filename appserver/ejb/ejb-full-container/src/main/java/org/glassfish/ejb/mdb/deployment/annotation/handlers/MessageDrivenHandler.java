@@ -137,7 +137,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
         for (ActivationConfigProperty acProp : mdAn.activationConfig()) {
             EnvironmentProperty envProp = new EnvironmentProperty(
                     acProp.propertyName(), 
-                    (String) TranslatedConfigView.getTranslatedValue(acProp.propertyValue()), "");
+                    TranslatedConfigView.expandValue(acProp.propertyValue()), "");
                                                 // with empty description
             // xml override
             if (acProp.propertyName().equals("resourceAdapter")) {

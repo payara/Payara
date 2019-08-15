@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.micro.impl;
 
-import com.google.common.io.Files;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -235,7 +235,7 @@ public class UberJarCreator {
                         }
                         libEntry.setCrc(check.getChecksum().getValue());
                         jos.putNextEntry(libEntry);
-                        Files.copy(lib, jos);
+                        Files.copy(lib.toPath(), jos);
                         jos.flush();
                         jos.closeEntry();
                     }
@@ -246,7 +246,7 @@ public class UberJarCreator {
                 for (File deployment : deployments) {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                     jos.putNextEntry(deploymentEntry);
-                    Files.copy(deployment, jos);
+                    Files.copy(deployment.toPath(), jos);
                     jos.flush();
                     jos.closeEntry();
                 }
@@ -257,7 +257,7 @@ public class UberJarCreator {
                     if (deployment.isFile()) {
                         JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                         jos.putNextEntry(deploymentEntry);
-                        Files.copy(deployment, jos);
+                        Files.copy(deployment.toPath(), jos);
                         jos.flush();
                         jos.closeEntry();
 
@@ -272,7 +272,7 @@ public class UberJarCreator {
 
                         JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
-                        Files.copy(file, jos);
+                        Files.copy(file.toPath(), jos);
                         jos.flush();
                         jos.closeEntry();
                 }
@@ -317,7 +317,7 @@ public class UberJarCreator {
             if (alternateHZConfigFile != null) {
                 JarEntry hzXml = new JarEntry("MICRO-INF/domain/hzconfig.xml");
                 jos.putNextEntry(hzXml);
-                Files.copy(alternateHZConfigFile, jos);
+                Files.copy(alternateHZConfigFile.toPath(), jos);
                 jos.flush();
                 jos.closeEntry();
 
@@ -342,7 +342,7 @@ public class UberJarCreator {
                         } else if (domainFile.getName().equals("logging.properties") && (loggingPropertiesFile != null)) {
                             domainFile = loggingPropertiesFile;
                         }
-                        Files.copy(domainFile, jos);
+                        Files.copy(domainFile.toPath(), jos);
                         jos.flush();
                         jos.closeEntry();
                     } else if (domainFile.isDirectory() && domainFile.getName().equals("branding")) {
@@ -351,7 +351,7 @@ public class UberJarCreator {
                         for (File brandingFile : domainFile.listFiles()) {
                             JarEntry brandingFileEntry = new JarEntry("MICRO-INF/domain/branding/" + brandingFile.getName());
                             jos.putNextEntry(brandingFileEntry);
-                            Files.copy(brandingFile, jos);
+                            Files.copy(brandingFile.toPath(), jos);
                             jos.flush();
                             jos.closeEntry();
                         }
@@ -373,7 +373,7 @@ public class UberJarCreator {
                                 }
                                 appEntry.setCrc(check.getChecksum().getValue());
                                 jos.putNextEntry(appEntry);
-                                Files.copy(app, jos);
+                                Files.copy(app.toPath(), jos);
                                 jos.flush();
                                 jos.closeEntry();
                             }

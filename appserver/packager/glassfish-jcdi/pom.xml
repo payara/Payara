@@ -148,10 +148,6 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
         
         <!-- CDI extension to activate Bean Validation -->
         <dependency>

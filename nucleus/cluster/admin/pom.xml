@@ -123,6 +123,10 @@
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
 

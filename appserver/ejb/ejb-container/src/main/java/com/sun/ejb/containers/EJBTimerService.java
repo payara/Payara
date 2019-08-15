@@ -191,7 +191,14 @@ public abstract class EJBTimerService {
 
     public static EJBTimerServiceWrapper getEJBTimerServiceWrapper(EJBContextImpl ejbContext) {
         if (isNull(persistentTimerService) && isNull(nonPersistentTimerService)) {
-            throw new IllegalStateException("EJB Timer Service not available");
+            if (!nonPersistentTimerServiceVerified) {
+                // this happens when timer service is injected into bean with no timeout methods.
+                // such constellation is useless, but very present in TCK test cases, so we give it a non-persistent
+                // timer service
+                initNonPersistentTimerService(null, true);
+            } else {
+                throw new IllegalStateException("EJB Timer Service not available");
+            }
         }
         return new EJBTimerServiceWrapper(
                 persistentTimerService,

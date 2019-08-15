@@ -37,13 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.MetaData;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import javax.inject.Singleton;
 
 import javax.inject.Inject;
@@ -56,7 +62,7 @@ import java.util.*;
  */
 @Service
 @Singleton
-public class ContainerRegistry {
+public class ContainerRegistry implements MonitoringDataSource {
 
     @Inject
     ServiceLocator habitat;
@@ -97,5 +103,17 @@ public class ContainerRegistry {
         copy.addAll(containers.values());
         return copy;
     }
-        
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        collector.in("container")
+            .collectAll(containers, ContainerRegistry::collectContainer);
+    }
+
+    private static void collectContainer(MonitoringDataCollector collector, EngineInfo<?, ?> container) {
+        MetaData metaData = container.getDeployer().getMetaData();
+        collector
+            .collectNonZero("provides", metaData.provides().length)
+            .collectNonZero("requires", metaData.requires().length);
+    }
 }

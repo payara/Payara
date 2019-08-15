@@ -73,7 +73,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
      * @param percentage
      * @return 
      */
-    protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
+    protected HealthCheckResultStatus decideOnStatusWithRatio(double percentage) {
         if (percentage > options.getThresholdCritical()) {
             return HealthCheckResultStatus.CRITICAL;
         }

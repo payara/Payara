@@ -41,7 +41,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
