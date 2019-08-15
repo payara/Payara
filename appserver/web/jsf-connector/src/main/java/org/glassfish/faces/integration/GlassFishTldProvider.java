@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.faces.integration;
 
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 import org.jvnet.hk2.annotations.Service;
@@ -128,7 +127,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
         }
 
         URI[] uris = null;
-        HK2Module m = null;
+        Module m = null;
         if (jsfImplClass != null) {
             m = registry.find(jsfImplClass);
         }

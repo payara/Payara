@@ -64,7 +64,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -141,7 +141,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     @Inject
     Transactions transactions;
 
-    Map<String,HK2Module> map = Collections.synchronizedMap(new WeakHashMap<String,HK2Module>());
+    Map<String,Module> map = Collections.synchronizedMap(new WeakHashMap<String,Module>());
     List<String> appList = Collections.synchronizedList(new ArrayList<String>());
 
     private static final String INSTALL_ROOT_URI_PROPERTY_NAME = "com.sun.aas.installRootURI";
@@ -188,7 +188,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         // Iterate thru existing modules
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.log(Level.FINE, "Discovering the ProbeProviders");
-        for (HK2Module m : registry.getModules()) {
+        for (Module m : registry.getModules()) {
             if ((m.getState() == ModuleState.READY) || (m.getState() == ModuleState.RESOLVED)) {
                 if (LOGGER.isLoggable(Level.FINE))
                     LOGGER.log(Level.FINE, " In (discoverProbeProviders) ModuleState - {0} : {1}", new Object[]{m.getState(), m.getName()});
@@ -239,17 +239,17 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     }
 
     @Override
-    public void moduleResolved(HK2Module module) {
+    public void moduleResolved(Module module) {
         if (module == null) return;
         verifyModule(module);
     }
 
     @Override
-    public synchronized void moduleStarted(HK2Module module) {
+    public synchronized void moduleStarted(Module module) {
         moduleResolved(module);
     }
 
-    private synchronized void verifyModule(HK2Module module) {
+    private synchronized void verifyModule(Module module) {
         if (module == null) return;
         String str = module.getName();
         if (!map.containsKey(str)) {
@@ -280,23 +280,23 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
     
     @Override
-    public synchronized void moduleStopped(HK2Module module) {
+    public synchronized void moduleStopped(Module module) {
         // noop to satisfy interface
     }
 
     
     @Override
-    public void moduleInstalled(HK2Module module) {
+    public void moduleInstalled(Module module) {
         // noop to satisfy interface
     }
 
     
     @Override
-    public void moduleUpdated(HK2Module module) {
+    public void moduleUpdated(Module module) {
         // noop to satisfy interface
     }
 
-    private void addProvider(HK2Module module) {
+    private void addProvider(Module module) {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine(" Adding the Provider - verified the module");
         ClassLoader mcl = module.getClassLoader();
@@ -443,7 +443,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 }
                 if (LOGGER.isLoggable(Level.FINE))
                     LOGGER.fine (" Module found (containsKey)");
-                HK2Module module = map.get(moduleName);
+                Module module = map.get(moduleName);
 
                 if (module == null) {
                     LOGGER.log(Level.SEVERE,

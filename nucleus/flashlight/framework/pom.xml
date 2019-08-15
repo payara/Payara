@@ -110,6 +110,10 @@
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>asm-repackaged</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <resources>

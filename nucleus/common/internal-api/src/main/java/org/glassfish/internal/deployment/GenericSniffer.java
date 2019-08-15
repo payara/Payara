@@ -43,7 +43,7 @@ package org.glassfish.internal.deployment;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import java.io.ByteArrayOutputStream;
 import javax.inject.Inject;
 import javax.xml.stream.XMLEventReader;
@@ -83,7 +83,7 @@ public abstract class GenericSniffer implements Sniffer {
     final private String urlPattern;
 
     final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-    private HK2Module[] modules;
+    private Module[] modules;
 
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {
         this.containerName = containerName;
@@ -191,23 +191,23 @@ public abstract class GenericSniffer implements Sniffer {
      * @throws java.io.IOException exception if something goes sour
      */
     @Override
-    public synchronized HK2Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
+    public synchronized Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
         if (modules != null) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.logp(Level.FINE, "GenericSniffer", "setup", "{0} has already setup {1} container, so just returning.", new Object[]{this, containerName});
             }
             return modules;
         }
-        List<HK2Module> tmp = new ArrayList<HK2Module>();
+        List<Module> tmp = new ArrayList<Module>();
         for (String moduleName : getContainerModuleNames()) {
-            HK2Module m = modulesRegistry.makeModuleFor(moduleName, null);
+            Module m = modulesRegistry.makeModuleFor(moduleName, null);
             if (m != null) {
                 tmp.add(m);
             } else {
                 throw new RuntimeException("Unable to set up module " + moduleName);
             }
         }
-        modules = tmp.toArray(new HK2Module[tmp.size()]);
+        modules = tmp.toArray(new Module[tmp.size()]);
         return modules;
     }
 

@@ -40,7 +40,6 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!--
   External repackaging modules.
@@ -73,7 +72,6 @@
         <module>j-interop</module>
 	<module>antlr</module>
         <module>opentracing-repackaged</module>
-        <module>tiger-types</module>
     </modules>
     <build>
         <plugins>

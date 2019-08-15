@@ -110,8 +110,8 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            javax.validation.*;resolution:=optional;version="${range;[==,${javax.validation.version.upperbound});${javax.validation.version}}",
-                            org.jvnet.tiger_types;version="${hk2.version}",
+                            javax.validation.*;resolution:=optional;version="${range;[==,${javax.validation.version.upperbound});${javax.validation.version}}
+",
                             org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
                             *
                         </Import-Package>
@@ -141,7 +141,7 @@
         <dependency>
             <groupId>org.jvnet</groupId>
             <artifactId>tiger-types</artifactId>
-            <version>${tiger.types.version}</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>

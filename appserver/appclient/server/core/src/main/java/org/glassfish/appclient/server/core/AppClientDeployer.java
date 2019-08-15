@@ -37,19 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import java.io.IOException;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.logging.LogDomains;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -211,7 +211,7 @@ public class AppClientDeployer
     public void postConstruct() {
         logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
                 JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
-        for (HK2Module module : modulesRegistry.getModules(GF_CLIENT_MODULE_NAME)) {
+        for (Module module : modulesRegistry.getModules(GF_CLIENT_MODULE_NAME)) {
             gfClientModuleClassLoader = module.getClassLoader();
         }
     }

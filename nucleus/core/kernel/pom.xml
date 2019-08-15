@@ -258,11 +258,6 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.external</groupId>
-            <artifactId>tiger-types</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         
     </dependencies>
     
