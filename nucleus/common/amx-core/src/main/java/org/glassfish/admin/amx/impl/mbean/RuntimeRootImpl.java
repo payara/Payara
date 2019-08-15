@@ -52,7 +52,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 
 import com.sun.enterprise.security.ssl.SSLUtils;
 import javax.management.JMException;
@@ -128,10 +128,10 @@ public final class RuntimeRootImpl extends AMXImplBase
     public void stopDomain()
     {
         final ModulesRegistry registry = InjectedValues.getInstance().getModulesRegistry();
-        final Collection<HK2Module> modules = registry.getModules("com.sun.enterprise.osgi-adapter");
+        final Collection<Module> modules = registry.getModules("com.sun.enterprise.osgi-adapter");
         if (modules.size() == 1)
         {
-            final HK2Module mgmtAgentModule = modules.iterator().next();
+            final Module mgmtAgentModule = modules.iterator().next();
             mgmtAgentModule.stop();
         }
         else

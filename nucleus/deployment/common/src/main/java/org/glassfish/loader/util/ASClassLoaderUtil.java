@@ -41,7 +41,7 @@
 
 package org.glassfish.loader.util;
 
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -250,7 +250,7 @@ public class ASClassLoaderUtil {
                 final StringBuilder tmpString = new StringBuilder();
                 ModulesRegistry mr = habitat.getService(ModulesRegistry.class);
                 if (mr != null) {
-                    for (HK2Module module : mr.getModules()) {
+                    for (Module module : mr.getModules()) {
                         for (URI uri : module.getModuleDefinition().getLocations()) {
                             if (uri.toString().startsWith("reference:")) {
                                 try {

@@ -219,6 +219,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>asm-repackaged</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.pfl</groupId>
             <artifactId>pfl-dynamic</artifactId>
 	    <optional>true</optional>

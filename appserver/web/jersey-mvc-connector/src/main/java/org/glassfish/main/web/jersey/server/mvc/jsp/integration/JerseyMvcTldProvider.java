@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.main.web.jersey.server.mvc.jsp.integration;
 
@@ -64,7 +63,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.web.loader.LogFacade;
 
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 
@@ -105,7 +104,7 @@ public class JerseyMvcTldProvider implements TldProvider, PostConstruct {
         final Class jerseyIncludeClass = org.glassfish.jersey.server.mvc.jsp.Include.class;
 
         URI[] uris = null;
-        HK2Module m = null;
+        Module m = null;
         if (jerseyIncludeClass != null) {
             m = registry.find(jerseyIncludeClass);
         }

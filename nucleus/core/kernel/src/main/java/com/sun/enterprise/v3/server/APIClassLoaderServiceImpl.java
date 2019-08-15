@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleLifecycleListener;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -125,7 +125,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         }
     };
     final static Logger logger = KernelLoggerInfo.getLogger();
-    private HK2Module APIModule;
+    private Module APIModule;
 
     @Override
     public void postConstruct() {
@@ -208,24 +208,24 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             // add a listener to manage blacklist in APIClassLoader
             mr.register(new ModuleLifecycleListener() {
                 @Override
-                public void moduleInstalled(HK2Module module) {
+                public void moduleInstalled(Module module) {
                     clearBlackList();
                 }
 
                 @Override
-                public void moduleResolved(HK2Module module) {
+                public void moduleResolved(Module module) {
                 }
 
                 @Override
-                public void moduleStarted(HK2Module module) {
+                public void moduleStarted(Module module) {
                 }
 
                 @Override
-                public void moduleStopped(HK2Module module) {
+                public void moduleStopped(Module module) {
                 }
 
                 @Override
-                public void moduleUpdated(HK2Module module) {
+                public void moduleUpdated(Module module) {
                     clearBlackList();
                 }
             });
@@ -253,7 +253,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                         c = apiModuleLoader.loadClass(name); // we ignore the resolution flag
                     } catch (ClassNotFoundException cnfe) {
                         // punch in. find the provider class, no matter where we are.
-                        HK2Module m = mr.getProvidingModule(name);
+                        Module m = mr.getProvidingModule(name);
                         if (m != null) {
                             if(select(m)) {
                                 try {
@@ -296,7 +296,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
          * @param m
          * @return
          */
-        private boolean select(HK2Module m) {
+        private boolean select(Module m) {
             ModuleState state = m.getState();
             return state.compareTo(punchInModuleState) >= 0 && state != ModuleState.ERROR;
         }
@@ -315,7 +315,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                 if (name.equals(MAILCAP)) {
                     // punch in for META-INF/mailcap files.
                     // see issue #8426
-                    for (HK2Module m : mr.getModules()) {
+                    for (Module m : mr.getModules()) {
                         if (!select(m)) continue;
                         if ((url = m.getClassLoader().getResource(name)) != null) {
                             return url;
@@ -328,7 +328,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     String serviceName = name.substring(
                             META_INF_SERVICES.length());
 
-                    for( HK2Module m : mr.getModules() ) {
+                    for( Module m : mr.getModules() ) {
                         if (!select(m)) continue;
                         List<URL> list = m.getMetadata().getDescriptors(
                                 serviceName);
@@ -389,7 +389,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                 // now punch-ins for various cases that require special handling
                 if (name.equals(MAILCAP)) {
                      // punch in for META-INF/mailcap files. see issue #8426
-                    for (HK2Module m : mr.getModules()) {
+                    for (Module m : mr.getModules()) {
                         if (!select(m)) continue; // We don't look in unresolved modules
                         if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
                         enumerations.add(m.getClassLoader().getResources(name));
@@ -398,7 +398,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     // punch in. find the service loader from any module
                     String serviceName = name.substring(META_INF_SERVICES.length());
                     List<URL> punchedInURLs = new ArrayList<URL>();
-                    for (HK2Module m : mr.getModules()) {
+                    for (Module m : mr.getModules()) {
                         if (!select(m)) continue; // We don't look in modules that don't meet punch in criteria
                         if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
                         punchedInURLs.addAll(m.getMetadata().getDescriptors(serviceName));

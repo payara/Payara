@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.deployment.common;
 
-import org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.io.InputStream;
 
 
 /**
@@ -54,7 +55,8 @@ import java.util.HashSet;
  * @author Mahesh Kannan
  * 
  */
-class NodeInfo extends ClassVisitor {
+class NodeInfo
+        extends ClassVisitor {
 
     private int nodeId;
 
