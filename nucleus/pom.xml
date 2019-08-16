@@ -237,7 +237,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.payara-p5-SNAPSHOT</jersey.version>
+        <jersey.version>2.29.payara-p5</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
