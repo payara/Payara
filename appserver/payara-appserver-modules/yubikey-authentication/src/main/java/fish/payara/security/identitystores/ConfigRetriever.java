@@ -74,7 +74,7 @@ public class ConfigRetriever {
            return microProfileConfigValue.get();
         }
         if(isPayaraConfigFormat(expression)) {
-            String translatedValue = (String)TranslatedConfigView.getTranslatedValue(expression);
+            String translatedValue = TranslatedConfigView.expandValue(expression);
             if(translatedValue.equals(expression) && isELImmediateFormat(expression)) {
                 return AnnotationELPProcessor.evalImmediate(expression);
             }

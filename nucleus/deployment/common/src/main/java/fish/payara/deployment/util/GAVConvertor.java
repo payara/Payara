@@ -99,7 +99,7 @@ public class GAVConvertor {
     public Map.Entry<String, URL> getArtefactMapEntry(String GAV, Collection<String> repositoryURLs) throws MalformedURLException {
         List<URL> repoURLs = new LinkedList<URL>();
         for (String url: repositoryURLs) {
-            String convertedURL = (String) TranslatedConfigView.getTranslatedValue(url);
+            String convertedURL = TranslatedConfigView.expandValue(url);
             if (!convertedURL.endsWith("/")) {
               convertedURL += "/";
             }

@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -40,37 +40,50 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
+import fish.payara.cdi.auth.roles.CallerAccessException;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
-import static java.util.Arrays.asList;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
-
+import fish.payara.cdi.auth.roles.RolesPermitted;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-
 import javax.annotation.Priority;
+import javax.el.ELProcessor;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.security.enterprise.AuthenticationStatus;
+import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import javax.security.enterprise.SecurityContext;
-
-import fish.payara.cdi.auth.roles.CallerAccessException;
-import fish.payara.cdi.auth.roles.RolesPermitted;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.core.Context;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 /**
- * The Roles CDI Interceptor authenticates requests to methods and classes annotated with the @Roles annotation. If the
- * security context cannot find a role within the requestor which matches either all (if using the AND semantic within
- * the Roles annotation) or one of (if using the OR semantic within the Roles annotation), then a NotAuthorizedException
+ * The RolesPermitted Interceptor authenticates requests to methods and classes
+ * annotated with the @RolesPermitted annotation. If the security context cannot
+ * find a role within the requestor which matches either all (if using the AND
+ * semantic within the RolesPermitted annotation) or one of (if using the OR
+ * semantic within the RolesPermitted annotation), then a CallerAccessException
  * is thrown.
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
@@ -78,8 +91,8 @@ import fish.payara.cdi.auth.roles.RolesPermitted;
  */
 @Interceptor
 @RolesPermitted
-@Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class RolesCDIInterceptor {
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 1000)
+public class RolesPermittedInterceptor {
 
     private final SecurityContext securityContext;
 
@@ -87,26 +100,32 @@ public class RolesCDIInterceptor {
 
     private Bean<?> interceptedBean;
 
+    @Context
+    private HttpServletRequest request;
+
+    @Context
+    private HttpServletResponse response;
+
     @Inject
-    public RolesCDIInterceptor(@Intercepted Bean<?> interceptedBean, BeanManager beanManager) {
+    public RolesPermittedInterceptor(@Intercepted Bean<?> interceptedBean, BeanManager beanManager) {
         this.securityContext = CDI.current().select(SecurityContext.class).get();
         this.interceptedBean = interceptedBean;
         this.beanManager = beanManager;
     }
 
     /**
-     * Method invoked whenever a method annotated with @Roles, or a method within a class annotated with @Roles is
-     * called.
+     * Method invoked whenever a method annotated with @Roles, or a method
+     * within a class annotated with @Roles is called.
      *
      * @param invocationContext Context provided by Weld.
      * @return Proceed to next interceptor in chain.
+     * @throws java.lang.Exception
      */
     @AroundInvoke
     public Object method(InvocationContext invocationContext) throws Exception {
         RolesPermitted roles = getRolesPermitted(invocationContext);
 
-        boolean isAccessPermitted = checkAccessPermitted(roles);
-
+        boolean isAccessPermitted = checkAccessPermitted(roles, invocationContext);
         if (!isAccessPermitted) {
             throw new CallerAccessException("Caller was not permitted access to a protected resource");
         }
@@ -115,22 +134,37 @@ public class RolesCDIInterceptor {
     }
 
     /**
-     * Check that the roles allowed by the class or method match the roles currently granted to the caller.
+     * Check that the roles allowed by the class or method match the roles
+     * currently granted to the caller.
      *
      * @param roles The roles declared within the @Roles annotation.
+     * @param invocationContext
      * @return True if access is allowed, false otherwise
      */
-    public boolean checkAccessPermitted(RolesPermitted roles) {
+    public boolean checkAccessPermitted(RolesPermitted roles, InvocationContext invocationContext) {
         List<String> permittedRoles = asList(roles.value());
+
+        authenticate(roles.value());
+
+        ELProcessor eLProcessor = null;
+        if (hasAnyELExpression(roles.value())) {
+            eLProcessor = getElProcessor(invocationContext);
+        }
 
         if (roles.semantics().equals(OR)) {
             for (String role : permittedRoles) {
+                if (eLProcessor != null && hasAnyELExpression(role)) {
+                    role = evalELExpression(eLProcessor, role);
+                }
                 if (securityContext.isCallerInRole(role)) {
                     return true;
                 }
             }
         } else if (roles.semantics().equals(AND)) {
             for (String role : permittedRoles) {
+                if (eLProcessor != null && hasAnyELExpression(role)) {
+                    role = evalELExpression(eLProcessor, role);
+                }
                 if (!securityContext.isCallerInRole(role)) {
                     return false;
                 }
@@ -193,13 +227,59 @@ public class RolesCDIInterceptor {
 
             if (beanManager.isStereotype(annotation.annotationType())) {
                 annotations.addAll(
-                    beanManager.getStereotypeDefinition(
-                        annotation.annotationType()
-                    )
+                        beanManager.getStereotypeDefinition(
+                                annotation.annotationType()
+                        )
                 );
             }
         }
 
         return Optional.empty();
+    }
+
+    private ELProcessor getElProcessor(InvocationContext invocationContext) {
+        ELProcessor elProcessor = new ELProcessor();
+        elProcessor.getELManager().addELResolver(beanManager.getELResolver());
+        elProcessor.defineBean("self", invocationContext.getTarget());
+
+        Parameter[] parameters = invocationContext.getMethod().getParameters();
+        Object[] values = invocationContext.getParameters();
+        boolean paramAdded = false;
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter param = parameters[i];
+            Named named = param.getAnnotation(Named.class);
+            String key = null;
+            if (named != null && !(key = named.value().trim()).isEmpty()) {
+                elProcessor.defineBean(key, values[i]);
+                paramAdded = true;
+            }
+        }
+        if (!paramAdded && parameters.length == 1) {
+            elProcessor.defineBean("param", values[0]);
+        }
+
+        return elProcessor;
+    }
+
+    private void authenticate(String[] roles) {
+        if (request != null && response != null
+                && roles.length > 0 && !isAuthenticated()) {
+            AuthenticationStatus status = securityContext.authenticate(request, response, withParams());
+
+            // Authentication was not done at all (i.e. no credentials present) or
+            // authentication failed (i.e. wrong credentials, credentials expired, etc)
+            if (status == NOT_DONE || status == SEND_FAILURE) {
+                throw new NotAuthorizedException("Authentication resulted in " + status);
+            }
+
+            // compensate for possible Soteria bug, need to investigate
+            if (status == SUCCESS && !isAuthenticated()) {
+                throw new NotAuthorizedException("Authentication not done (i.e. no credential found)");
+            }
+        }
+    }
+
+    private boolean isAuthenticated() {
+        return securityContext.getCallerPrincipal() != null;
     }
 }

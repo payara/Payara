@@ -292,11 +292,11 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         mailResource.setStoreProtocolClass(mailResourceConfig.getStoreProtocolClass());
         mailResource.setTransportProtocol(mailResourceConfig.getTransportProtocol());
         mailResource.setTransportProtocolClass(mailResourceConfig.getTransportProtocolClass());
-        mailResource.setMailHost((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getHost()));
-        mailResource.setUsername((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getUser()));
-        mailResource.setPassword((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getPassword()));
+        mailResource.setMailHost(TranslatedConfigView.expandValue(mailResourceConfig.getHost()));
+        mailResource.setUsername(TranslatedConfigView.expandValue(mailResourceConfig.getUser()));
+        mailResource.setPassword(TranslatedConfigView.expandValue(mailResourceConfig.getPassword()));
         mailResource.setAuth(Boolean.valueOf(mailResourceConfig.getAuth()));
-        mailResource.setMailFrom((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getFrom()));
+        mailResource.setMailFrom(TranslatedConfigView.expandValue(mailResourceConfig.getFrom()));
         mailResource.setDebug(Boolean.valueOf(mailResourceConfig.getDebug()));
 
         // sets the properties

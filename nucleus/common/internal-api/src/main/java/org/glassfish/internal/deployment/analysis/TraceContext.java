@@ -96,6 +96,16 @@ public class TraceContext {
         return name;
     }
 
+    public String getLevelName(Level level) {
+        if (level == this.level) {
+            return name;
+        }
+        if (parent != null) {
+            return parent.getLevelName(level);
+        }
+        return "";
+    }
+
     void close() {
         if (this.finish == null) {
             this.finish = clock.instant();

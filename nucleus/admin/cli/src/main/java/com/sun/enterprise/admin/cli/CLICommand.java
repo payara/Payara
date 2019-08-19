@@ -1244,6 +1244,9 @@ public abstract class CLICommand implements PostConstruct {
      * @return 
      */
     protected char[] readPassword(String prompt) {
+        if (!programOpts.isInteractive()) {
+            return null;
+        }
         try {
             buildTerminal();
             buildLineReader();

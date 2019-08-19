@@ -213,7 +213,7 @@ public abstract class AbstractSingletonContainer
             try {
                 invocationManager.preInvoke(inv);
                 if (clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
-                    clusteredLookup.getClusteredSingletonMap().put(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
+                    clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
             }
             finally {
@@ -553,6 +553,10 @@ public abstract class AbstractSingletonContainer
 
             if (doPostConstruct) {
                 intercept(CallbackType.POST_CONSTRUCT, context);
+                // Make sure to update Object stored in Map
+                if (clusteredLookup.isClusteredEnabled()) {
+                    clusteredLookup.getClusteredSingletonMap().set(sessionKey, context.getEJB());
+                }
             }
 
         } catch ( Throwable th ) {

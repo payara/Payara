@@ -255,7 +255,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
         Application application = null;
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.READ_DESCRIPTORS)) {
+        try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.DETERMINE_APP_NAME, "DeploymentDescriptors")) {
             // for these cases, the standard DD could contain the application
             // name for ear and module name for standalone module
             if (params.altdd != null || 

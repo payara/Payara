@@ -41,7 +41,6 @@
 
 package org.glassfish.admin.rest.resources;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
@@ -71,6 +70,8 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -92,6 +93,10 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected boolean isJvmOptions = false;
 
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    
+    private static final String MIN_VERSION = "minVersion";
+    private static final String MAX_VERISON = "maxVersion";
+    private static final String JVM_OPTION = "jvmOption";
 
     /** Creates a new instance of xxxResource */
     public CollectionLeafResource() {
@@ -230,9 +235,13 @@ public abstract class CollectionLeafResource extends AbstractResource {
         final String typeKey = upperCaseFirstLetter((decode(getName())));
         ar.setActionDescription(typeKey);
         if (isJvmOptions) {
-            ar.getExtraProperties().put("leafList", getEntity().stream().map(JvmOption::new)
-                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent() ? option.minVersion.get().toString() : "",
-                            "maxVersion", option.maxVersion.isPresent()? option.maxVersion.get().toString(): "", "jvmOption", option.option)).toArray());
+            List<String> optionsEntity = getEntity();
+            List<Map> optionsList = new ArrayList<>(optionsEntity.size());
+            for (String option: optionsEntity) {
+                JvmOption jvmOption = new JvmOption(option);
+                optionsList.add(optionToMap(jvmOption));
+            }
+            ar.getExtraProperties().put("leafList", optionsList);
         }
         else {
             ar.getExtraProperties().put("leafList", getEntity());
@@ -245,6 +254,23 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
         ResourceUtil.addMethodMetaData(ar, mmd);
         return new ActionReportResult(ar, optionsResult);
+    }
+    
+    private Map<String, String> optionToMap(JvmOption option){
+        Map baseMap = new HashMap<>();
+        if (option.minVersion.isPresent()) {
+            baseMap.put(MIN_VERSION, option.minVersion.get());
+        } else {
+            baseMap.put(MIN_VERSION, "");
+        }
+        if (option.maxVersion.isPresent()) {
+            baseMap.put(MAX_VERISON, option.maxVersion.get());
+        } else {
+            baseMap.put(MAX_VERISON, "");
+        }
+        baseMap.put(JVM_OPTION, option.option);
+        
+        return Collections.unmodifiableMap(baseMap);
     }
 
     protected Map<String, MethodMetaData> getMethodMetaData() {

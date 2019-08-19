@@ -199,7 +199,7 @@ public class WebServletHandler extends AbstractWebHandler {
                         validUrlPatterns = false;
                         break;
                     }
-                    webCompDesc.addUrlPattern((String)TranslatedConfigView.getTranslatedValue(up));
+                    webCompDesc.addUrlPattern(TranslatedConfigView.expandValue(up));
                 }
             }
 
@@ -223,7 +223,7 @@ public class WebServletHandler extends AbstractWebHandler {
             for (WebInitParam initParam : initParams) {
                 webCompDesc.addInitializationParameter(
                         new EnvironmentProperty(
-                            initParam.name(), (String)TranslatedConfigView.getTranslatedValue(initParam.value()),
+                            initParam.name(), TranslatedConfigView.expandValue(initParam.value()),
                             initParam.description()));
             }
         }
@@ -258,7 +258,7 @@ public class WebServletHandler extends AbstractWebHandler {
             servletName = webCompClass.getName();
         }
         else {
-            servletName = (String)TranslatedConfigView.getTranslatedValue(servletName);
+            servletName = TranslatedConfigView.expandValue(servletName);
         }
         return servletName;
     }
