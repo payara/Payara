@@ -54,6 +54,7 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
@@ -93,8 +94,13 @@ public class MBeanMetadataHelper {
 
         List<MBeanMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
         for (MBeanMetadata beanMetadata : metadataList) {
+            List<Tag> tags = new ArrayList<>();
+            for (XmlTag tag : beanMetadata.getTags()) {
+                tags.add(new Tag(tag.getName(), tag.getValue()));
+            }
             try {
-                if (metricRegistry.getNames().contains(beanMetadata.getName())) {
+                if (metricRegistry.getNames().contains(beanMetadata.getName()) && 
+                        metricRegistry.getMetricIDs().contains(new MetricID(beanMetadata.getName(), tags.toArray(new Tag[tags.size()])))) {
                     continue;
                 }
                 Metric type;
@@ -108,10 +114,6 @@ public class MBeanMetadataHelper {
                         break;
                     default:
                         throw new IllegalStateException("Unsupported type : " + beanMetadata);
-                }
-                List<Tag> tags = new ArrayList<>();
-                for (fish.payara.microprofile.metrics.jmx.XmlTag tag : beanMetadata.getTags()){
-                    tags.add(new Tag(tag.getName(), tag.getValue()));
                 }
                 metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
             } catch (IllegalArgumentException ex) {
@@ -256,12 +258,8 @@ public class MBeanMetadataHelper {
                             newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && MetricUnits.NONE.equals(metadata.getUnit().get())) {
+                                && MetricUnits.NONE.equals(metadata.getUnit().orElse("none"))) {
                             newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
-                        }
-                        if (compositeData.get(subAttribute) != null
-                                && !(compositeData.get(subAttribute) instanceof Number)) {
-                            continue;
                         }
                     }
                     MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadataBuilder.build());
@@ -321,8 +319,8 @@ public class MBeanMetadataHelper {
                 metadata.getTypeRaw(),
                 metadata.getUnit().orElse(null)
         );
-        for (fish.payara.microprofile.metrics.jmx.XmlTag oldTag: metadata.getTags()) {
-            fish.payara.microprofile.metrics.jmx.XmlTag newTag = new fish.payara.microprofile.metrics.jmx.XmlTag();
+        for (XmlTag oldTag: metadata.getTags()) {
+            XmlTag newTag = new XmlTag();
             newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute));
             newTag.setValue(formatMetadata(oldTag.getValue(), key, attribute, subAttribute));
             newMetaData.getTags().add(newTag);

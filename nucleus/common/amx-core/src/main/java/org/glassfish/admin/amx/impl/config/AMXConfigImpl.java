@@ -401,7 +401,7 @@ public class AMXConfigImpl extends AMXImplBase {
                 for (final CreateParams child : mChildren) {
                     buf.append(child.toString("    " + prefix)).append(NL);
                 }
-                buf.append("]").append(prefix);
+                buf.append(prefix).append(']');
             }
 
             return buf.toString();
@@ -1121,21 +1121,10 @@ public class AMXConfigImpl extends AMXImplBase {
         }
 
         @Override
-        protected void makeChanges()
-<<<<<<< HEAD
-                throws TransactionFailure {
+        protected void makeChanges() throws TransactionFailure {
             for (Map.Entry<String, Object> xmlEntry : mChanges.entrySet()) {
                 final Object value = xmlEntry.getValue();
                 final ConfigModel.Property prop = getConfigModel_Property(xmlEntry.getKey());
-=======
-                throws TransactionFailure
-        {
-            for (final Map.Entry<String, Object> entry : mChanges.entrySet())
-            {
-                String xmlName = entry.getKey();
-                final Object value = entry.getValue();
-                final ConfigModel.Property prop = getConfigModel_Property(xmlName);
->>>>>>> cbd8ee76a15a945e8b1d91ac9407b335068e2f8f
 
                 if (prop.isCollection()) {
                     handleCollection(mWriteable, prop, ListUtil.asStringList(value));

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
 * $Header: /cvs/glassfish/admin/mbeanapi-impl/tests/org.glassfish.admin.amxtest/monitor/BeanCacheMonitorTest.java,v 1.5 2007/05/05 05:24:05 tcfujii Exp $
@@ -50,8 +51,8 @@ import com.sun.appserv.management.base.XTypes;
 import com.sun.appserv.management.monitor.BeanCacheMonitor;
 import com.sun.appserv.management.monitor.statistics.EJBCacheStats;
 
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
-import org.glassfish.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.BoundedRangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
 import java.util.Iterator;
 import java.util.Set;
 

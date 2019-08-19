@@ -57,6 +57,9 @@ import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import static java.util.logging.Level.WARNING;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
@@ -80,14 +83,14 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service(name = "healthcheck-service")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener, ConfigListener {
+public class HealthCheckService implements EventListener, ConfigListener, MonitoringDataSource {
 
     @Inject
     Events events;
 
     @Inject
     ApplicationRegistry applicationRegistry;
-    
+
     @Inject
     MetricsHealthCheckConfiguration configuration;
 
@@ -97,12 +100,22 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
     private final List<String> applicationsLoaded = new CopyOnWriteArrayList<>();
 
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector nsCollector = collector.in("health-check").type("check")
+                .collect("size", healthChecks.size())
+                .collect("enabled", isEnabled())
+                .collect("securityEnabled", isSecurityEnabled());
+        for (java.util.Map.Entry<String, Set<HealthCheck>> entry : healthChecks.entrySet()) {
+            nsCollector.app(entry.getKey()).collect("size", entry.getValue().size());
+        }
+    }
+
     @PostConstruct
     public void postConstruct() {
         if (events == null) {
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
-
         events.register(this);
     }
 

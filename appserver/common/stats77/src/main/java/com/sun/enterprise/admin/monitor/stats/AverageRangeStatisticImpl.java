@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
 
 /** An implementation of a AverageRangeStatistic. All instances of this class are
  * immutable. Provides all the necessary accessors for properties.
@@ -48,11 +47,6 @@ import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
  * @author Kedar Mhaswade
  * @since S1AS8.1
  * @version 1.0
- */
-
-/**
- *
- * @author  lwhite
  */
 public class AverageRangeStatisticImpl implements 
 	AverageRangeStatistic /*BoundedRangeStatistic*/ {
@@ -107,48 +101,47 @@ public class AverageRangeStatisticImpl implements
         this.runningTotal = runningTotal;
     }         
    
+    @Override
     public long getCurrent() {
         return boundedRangeStatistic.getCurrent();
     }
 
+    @Override
     public String getDescription() {
         return boundedRangeStatistic.getDescription();
     }
 
+    @Override
     public long getHighWaterMark() {
         return boundedRangeStatistic.getHighWaterMark();
     }
 
+    @Override
     public long getLastSampleTime() {
         return boundedRangeStatistic.getLastSampleTime();
     }
 
+    @Override
     public long getLowWaterMark() {
         return boundedRangeStatistic.getLowWaterMark();
     }
-/*
-    public long getLowerBound() {
-        return boundedRangeStatistic.getLowerBound();
-    }
-     */
 
+    @Override
     public String getName() {
         return boundedRangeStatistic.getName();
     }
 
+    @Override
     public long getStartTime() {
         return boundedRangeStatistic.getStartTime();
     }
 
+    @Override
     public String getUnit() {
         return boundedRangeStatistic.getUnit();
     }
-/*
-    public long getUpperBound() {
-        return boundedRangeStatistic.getUpperBound();
-    }
-     */
         
+    @Override
     public long getAverage() {
         if(numberOfSamples == 0) {
             return -1;

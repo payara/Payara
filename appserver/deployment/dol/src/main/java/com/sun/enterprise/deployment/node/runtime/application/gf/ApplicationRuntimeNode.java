@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
-import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ResourcePropertyDescriptor;
@@ -56,6 +55,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.glassfish.deployment.common.ModuleDescriptor;
@@ -193,10 +193,10 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
             // ignore, handled in EarHandler.java
 	} else 
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_EXCLUDE)) {
-            descriptor.addScanningExclusions(ImmutableList.of(value));
+            descriptor.addScanningExclusions(Collections.singletonList(value));
 	} else
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
-            descriptor.addScanningInclusions(ImmutableList.of(value));
+            descriptor.addScanningInclusions(Collections.singletonList(value));
 	} else
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_WHITELIST_PACKAGE)) {
             descriptor.addWhitelistPackage(value);

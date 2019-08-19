@@ -39,6 +39,8 @@
  */
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import javax.management.ObjectName;
@@ -73,7 +75,7 @@ import org.glassfish.external.amx.AMXGlassfish;
 
 import org.glassfish.api.admin.AdminCommandContext;
 import com.sun.enterprise.v3.admin.RestartDomainCommand;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import org.glassfish.api.admin.AdminCommand;
 import com.sun.enterprise.v3.admin.commands.JVMInformation;
 import java.util.Locale;

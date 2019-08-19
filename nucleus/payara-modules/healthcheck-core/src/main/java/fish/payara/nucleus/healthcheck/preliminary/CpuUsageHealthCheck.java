@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
@@ -54,7 +56,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
@@ -64,11 +67,23 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-cpu")
 @RunLevel(StartupRunLevel.VAL)
-public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> {
+public class CpuUsageHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker>
+        implements MonitoringDataSource {
 
-    private long timeBefore = 0;
-    private long totalTimeBefore = 0;
-    private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
+    private volatile long timeBefore = 0;
+    private volatile long totalTimeBefore = 0;
+    private final Map<Long, ThreadTimes> threadTimes = new ConcurrentHashMap<>();
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (isReady()) {
+            collector.in("health-check").type("checker").entity("CPUC")
+                .collect("checksDone", getChecksDone())
+                .collectNonZero("checksFailed", getChecksFailed())
+                .collectNonZero("totalCpuTime", TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime()));
+        }
+    }
 
     @PostConstruct
     void postConstruct() {
@@ -86,10 +101,7 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
     }
 
     @Override
-    public HealthCheckResult doCheck() {
-        if (!getOptions().isEnabled()) {
-            return null;
-        }
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
@@ -128,8 +140,8 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
         long time = System.nanoTime();
         double percentage = ((double)(totalCpuTime - totalTimeBefore) / (double)(time - timeBefore)) * 100;
 
-            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
-                    + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime() - totalTimeBefore))));
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
+                + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime() - totalTimeBefore))));
 
         totalTimeBefore = totalCpuTime;
         timeBefore = time;

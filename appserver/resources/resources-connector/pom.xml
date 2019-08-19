@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -99,30 +100,31 @@
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.glassfish.main.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
-            <groupId>org.glassfish.main.core</groupId>
-            <artifactId>kernel</artifactId>
+	    <dependency>
+            <groupId>org.glassfish.main.tests</groupId>
+            <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-	<dependency>
-            <groupId>org.glassfish.main.tests</groupId>
-            <artifactId>utils</artifactId>
+        <!-- Even though nothing from Kernel is used, we need it to get an instance of CommandRunner -->
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>kernel</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

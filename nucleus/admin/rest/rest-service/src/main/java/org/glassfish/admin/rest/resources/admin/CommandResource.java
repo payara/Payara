@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
+ * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
  */
 package org.glassfish.admin.rest.resources.admin;
 
@@ -51,9 +51,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;

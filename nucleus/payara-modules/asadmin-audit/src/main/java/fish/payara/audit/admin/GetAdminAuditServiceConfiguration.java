@@ -42,8 +42,6 @@
  */
 package fish.payara.audit.admin;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -55,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -133,12 +132,9 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         
         Properties notifierProps = new Properties();
         if (!config.getNotifierList().isEmpty()) {
-            List<Class<Notifier>> notifierClassList = Lists.transform(config.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
-                @Override
-                public Class<Notifier> apply(Notifier input) {
-                    return resolveNotifierClass(input);
-                }
-            });
+            List<Class<Notifier>> notifierClassList = config.getNotifierList().stream().map((input) -> {
+                return resolveNotifierClass(input);
+            }).collect(Collectors.toList());
 
             for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
                 Notifier notifier = config.getNotifierByType(serviceHandle.getService().getNotifierType());

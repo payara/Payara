@@ -38,7 +38,7 @@
  * holder.
  */
 
-/*  Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] */
+/*  Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] */
 
 /* CSS Document */
 
@@ -1300,12 +1300,10 @@ div.MstDivTtl_sun4 {
     margin-top: 15px;
 }
 .MstDivTtl_sun4 img {
-    width: 301px;
-    height: 35px;
-    padding-left: 301px;
+    width: 191px;
+    height: 91px;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background: url(../images/commontaskssection/payara_logo.png) no-repeat left top;
 }
 
 

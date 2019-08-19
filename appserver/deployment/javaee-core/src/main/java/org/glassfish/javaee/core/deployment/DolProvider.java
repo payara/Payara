@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.core.deployment;
 
@@ -53,7 +53,7 @@ import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.enterprise.admin.report.HTMLActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.ApplicationMetaDataProvider;
@@ -255,7 +255,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
         Application application = null;
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.READ_DESCRIPTORS)) {
+        try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.DETERMINE_APP_NAME, "DeploymentDescriptors")) {
             // for these cases, the standard DD could contain the application
             // name for ear and module name for standalone module
             if (params.altdd != null || 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
@@ -45,13 +46,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.glassfish.j2ee.statistics.Stats;
-import org.glassfish.j2ee.statistics.Statistic;
+import javax.management.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.Statistic;
 
 /** Provides for generic implementation of any Stats interface. This class facilitates
  * composition over inheritance for all the classes that implement their
  * specific Stats interfaces. None of them has to implement the methods defined
- * by the {@link org.glassfish.j2ee.statistics.Stats} interface. This class
+ * by the {@link javax.management.j2ee.statistics.Stats} interface. This class
  * implements the same interface and does that job. All that implementing classes
  * have to do is implement the specific accessing methods in their Stats interfaces
  * and delegate the rest to this class. <b> This class invokes all these methods in
@@ -104,6 +105,7 @@ public class GenericStatsImpl implements Stats {
         populateGetterMap();
     }
     
+    @Override
     public Statistic getStatistic(String statisticName) {
         final Method getter = (Method) getters.get(statisticName);
         assert (getter != null) : ("Getter not initialized properly: " + statisticName);
@@ -119,12 +121,14 @@ public class GenericStatsImpl implements Stats {
         return ( (Statistic)result );
     }
     
+    @Override
     public String[] getStatisticNames() {
         /* The return array is fixed at the construction time */
         final String[] names = new String[getters.size()];
         return ( (String[])getters.keySet().toArray(names) ); //TODOOOOOOO
     }
     
+    @Override
     public Statistic[] getStatistics() {
         return ( getStatisticsOneByOne() );         //invokes sequentially
     }
@@ -154,7 +158,7 @@ public class GenericStatsImpl implements Stats {
     }
     
     private boolean extendsStatsInterface(Class i) {
-        final Class statsInterface = org.glassfish.j2ee.statistics.Stats.class;
+        final Class statsInterface = javax.management.j2ee.statistics.Stats.class;
         return ( statsInterface.isAssignableFrom(i) );
     }
     
@@ -205,7 +209,7 @@ public class GenericStatsImpl implements Stats {
     }
     
     private boolean isStatsInterfaceMethod(String name) {
-        final Method[] methods = org.glassfish.j2ee.statistics.Stats.class.getMethods();
+        final Method[] methods = javax.management.j2ee.statistics.Stats.class.getMethods();
         boolean isInterfaceMethod = false;
         for (int i = 0 ; i < methods.length ; i++) {
             if (methods[i].getName().equals(name)) {

@@ -47,10 +47,23 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Counting;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Sampling;
+import org.eclipse.microprofile.metrics.Snapshot;
+import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -72,6 +85,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.MetricID;
@@ -81,7 +95,7 @@ import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsService implements EventListener {
+public class MetricsService implements EventListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
@@ -124,6 +138,76 @@ public class MetricsService implements EventListener {
                 bootstrap();
             });
         }
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        MonitoringDataCollector metricsCollector = rootCollector.in("metric")
+                .collect("enabled", metricsEnabled)
+                .collect("secure", isSecurityEnabled());
+        for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
+            MonitoringDataCollector appCollector = metricsCollector.app(registry.getKey());
+
+            // counters
+            appCollector.type("counter")
+                .collectAll(registry.getValue().getCounters(), (collector, counter) -> collector
+                    .collectObject(counter, MetricsService::collectCounting));
+
+            // gauges
+            appCollector.type("gauge")
+                .collectAll(registry.getValue().getGauges(), (collector, gauge) -> {
+                    Object value = gauge.getValue();
+                    if (value instanceof Number) {
+                        collector.collect("value", ((Number) value));
+                    }
+            });
+
+            // histograms
+            appCollector.type("histogram")
+                .collectAll(registry.getValue().getHistograms(), (collector, histogram) -> collector
+                    .collectObject(histogram, MetricsService::collectSampling)
+                    .collectObject(histogram, MetricsService::collectCounting));
+
+            // meters
+            appCollector.type("meter")
+                .collectAll(registry.getValue().getMeters(), MetricsService::collectMetered);
+
+            // timers
+            appCollector.type("timer")
+                .collectAll(registry.getValue().getTimers(), (collector, timer) -> collector
+                    .collectObject(timer, MetricsService::collectMetered)
+                    .collectObject(timer, MetricsService::collectSampling));
+        }
+    }
+
+    private static void collectCounting(MonitoringDataCollector collector, Counting obj) {
+        collector.collect("count", obj.getCount());
+    }
+
+    private static void collectSampling(MonitoringDataCollector collector, Sampling obj) {
+        Snapshot snapshot = obj.getSnapshot();
+        collector
+            .collect("min", snapshot.getMin())
+            .collect("max", snapshot.getMax())
+            .collect("mean", snapshot.getMean())
+            .collect("median", snapshot.getMedian())
+            .collect("stdDev", snapshot.getStdDev())
+            .collect("75thPercentile", snapshot.get75thPercentile())
+            .collect("95thPercentile", snapshot.get95thPercentile())
+            .collect("95thPercentile", snapshot.get95thPercentile())
+            .collect("98thPercentile", snapshot.get98thPercentile())
+            .collect("99thPercentile", snapshot.get99thPercentile())
+            .collect("999thPercentile", snapshot.get999thPercentile());
+    }
+
+    private static void collectMetered(MonitoringDataCollector collector, Metered obj) {
+        collectCounting(collector, obj);
+        collector
+            .collect("count", obj.getCount())
+            .collect("fifteenMinuteRate", obj.getFifteenMinuteRate())
+            .collect("fiveMinuteRate", obj.getFiveMinuteRate())
+            .collect("oneMinuteRate", obj.getOneMinuteRate())
+            .collect("meanRate", obj.getMeanRate());
     }
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
