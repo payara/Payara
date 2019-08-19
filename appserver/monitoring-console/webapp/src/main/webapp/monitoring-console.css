@@ -1,0 +1,37 @@
+body {
+    background-color: #002433;
+    font: 13px/1.231 arial,helvetica,clean,sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+	font-size: 21px;
+    font-weight: bold;
+}
+#header {
+    background-color: #002C3E;
+    padding: 20px;
+    padding-left: 430px;
+    min-height: 200px;
+    background-image: url("payara-server-logo.png");
+    background-repeat: no-repeat;
+    background-position: 20px;
+}
+#console {
+    position: relative;
+    padding: 20px;
+}
+#canvas-container {
+    position: relative;
+}
+.chart-box {
+    width: 600px;
+    float: left;
+    padding: 10px;
+	margin: 10px;
+    border: 1px solid #F0981B;
+}
+canvas {
+    position: relative;
+}
