@@ -40,39 +40,35 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
+import fish.payara.cdi.auth.roles.CallerAccessException;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
-import static java.util.Arrays.asList;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
-
+import fish.payara.cdi.auth.roles.RolesPermitted;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-
 import javax.annotation.Priority;
+import javax.el.ELProcessor;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.security.enterprise.SecurityContext;
-
-import fish.payara.cdi.auth.roles.CallerAccessException;
-import fish.payara.cdi.auth.roles.RolesPermitted;
-import java.lang.reflect.Parameter;
-import javax.el.ELProcessor;
-import javax.inject.Named;
 import javax.security.enterprise.AuthenticationStatus;
 import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
 import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
 import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+import javax.security.enterprise.SecurityContext;
 import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -80,6 +76,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Context;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 /**
  * The RolesPermitted Interceptor authenticates requests to methods and classes
@@ -263,7 +260,7 @@ public class RolesPermittedInterceptor {
 
         return elProcessor;
     }
-    
+
     private void authenticate(String[] roles) {
         if (request != null && response != null
                 && roles.length > 0 && !isAuthenticated()) {
@@ -275,7 +272,8 @@ public class RolesPermittedInterceptor {
                 throw new NotAuthorizedException("Authentication resulted in " + status);
             }
 
-            if (status == SUCCESS && !isAuthenticated()) { // compensate for possible Soteria bug, need to investigate
+            // compensate for possible Soteria bug, need to investigate
+            if (status == SUCCESS && !isAuthenticated()) {
                 throw new NotAuthorizedException("Authentication not done (i.e. no credential found)");
             }
         }

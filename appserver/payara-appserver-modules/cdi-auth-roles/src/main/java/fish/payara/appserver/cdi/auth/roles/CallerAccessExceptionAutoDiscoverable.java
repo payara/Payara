@@ -40,15 +40,13 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
-import static javax.ws.rs.RuntimeType.SERVER;
-import static org.glassfish.internal.api.Globals.getDefaultHabitat;
-import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
-
 import javax.annotation.Priority;
 import javax.ws.rs.ConstrainedTo;
+import static javax.ws.rs.RuntimeType.SERVER;
 import javax.ws.rs.core.FeatureContext;
-
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 import org.glassfish.internal.deployment.Deployment;
+import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
 @ConstrainedTo(SERVER)

@@ -40,13 +40,12 @@
  */
 package fish.payara.appserver.cdi.auth.roles.extension;
 
+import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
+import fish.payara.cdi.auth.roles.RolesPermitted;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
-
-import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
-import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
  * Extension to get the runtime to find the Roles Interceptor.
