@@ -158,24 +158,20 @@ public final class ArrayConversion
         return (result);
     }
 
-    public static <T> Set<T> toSet(T[] array)
-    {
-        Set<T> theSet;
+    public static <T> Set<T> toSet(T[] array) {
         switch (array.length) {
             case 0:
-                theSet = Collections.emptySet();
-                break;
+                return Collections.emptySet();
             case 1:
-                theSet = Collections.singleton(array[ 0]);
-                break;
+                return Collections.singleton(array[ 0]);
             default:
-                theSet = new HashSet<T>();
+                Set<T> theSet = new HashSet<T>();
                 for (int i = 0; i < array.length; ++i)
                 {
                     theSet.add(array[i]);
-                }   break;
+                }
+                return theSet;
         }
-        return (theSet);
     }
 
     /*

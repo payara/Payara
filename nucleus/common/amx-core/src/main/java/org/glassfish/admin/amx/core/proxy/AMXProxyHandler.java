@@ -321,50 +321,7 @@ public final class AMXProxyHandler extends MBeanProxyHandler implements AMXProxy
         switch (numArgs) {
             case 0:
                 handled = true;
-                switch (methodName) {
-                    case METHOD_PARENT:
-                        result = parent();
-                        break;
-                    case GET_PARENT:
-                        result = parent() == null ? null : parent().extra().objectName();
-                        break;
-                    case METHOD_CHILDREN_SET:
-                        result = childrenSet();
-                        break;
-                    case METHOD_CHILDREN_MAPS:
-                        result = childrenMaps();
-                        break;
-                    case METHOD_EXTRA:
-                        result = this;
-                        break;
-                    case METHOD_OBJECTNAME:
-                        result = getObjectName();
-                        break;
-                    case METHOD_NAME_PROP:
-                        result = getObjectName().getKeyProperty(NAME_KEY);
-                        break;
-                    case METHOD_TYPE:
-                        result = type();
-                        break;
-                    case METHOD_PARENT_PATH:
-                        result = parentPath();
-                        break;
-                    case METHOD_ATTRIBUTES_MAP:
-                        result = attributesMap();
-                        break;
-                    case METHOD_ATTRIBUTE_NAMES:
-                        result = attributeNames();
-                        break;
-                    case METHOD_VALID:
-                        result = valid();
-                        break;
-                    case METHOD_PATHNAME:
-                        result = path();
-                        break;
-                    default:
-                        handled = false;
-                        break;
-                }
+                result = objectFromMethodName(methodName);
                 break;
             case 1:
                 handled = true;
@@ -419,7 +376,40 @@ public final class AMXProxyHandler extends MBeanProxyHandler implements AMXProxy
 
         return (result);
     }
-
+    
+    private Object objectFromMethodName(String methodName) {
+         switch (methodName) {
+                    case METHOD_PARENT:
+                        return parent();
+                    case GET_PARENT:
+                        return parent() == null ? null : parent().extra().objectName();
+                    case METHOD_CHILDREN_SET:
+                        return childrenSet();
+                    case METHOD_CHILDREN_MAPS:
+                        return childrenMaps();
+                    case METHOD_EXTRA:
+                        return this;
+                    case METHOD_OBJECTNAME:
+                        return getObjectName();
+                    case METHOD_NAME_PROP:
+                        return getObjectName().getKeyProperty(NAME_KEY);
+                    case METHOD_TYPE:
+                        return type();
+                    case METHOD_PARENT_PATH:
+                        return parentPath();
+                    case METHOD_ATTRIBUTES_MAP:
+                        return attributesMap();
+                    case METHOD_ATTRIBUTE_NAMES:
+                        return attributeNames();
+                    case METHOD_VALID:
+                        return valid();
+                    case METHOD_PATHNAME:
+                        return path();
+                    default:
+                        throw new UnknownMethodException(methodName);
+         }
+    }
+    
     @Override
     public final Object invoke(final Object myProxy, final Method method, final Object[] args) throws Throwable {
         try {
@@ -1070,5 +1060,13 @@ public final class AMXProxyHandler extends MBeanProxyHandler implements AMXProxy
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+    
+    class UnknownMethodException extends RuntimeException {
+        
+    public UnknownMethodException(String method) {
+        super("Unknown method: " + method);
+    }    
+        
     }
 }

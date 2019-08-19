@@ -758,7 +758,7 @@ class ConfigBeanJMXSupport
                     continue;
                 }
 
-                if (m.getParameterTypes().length == 0) {
+                if (m.getParameterCount() == 0) {
                     try
                     {
                         final Object fieldValue = m.invoke(a);

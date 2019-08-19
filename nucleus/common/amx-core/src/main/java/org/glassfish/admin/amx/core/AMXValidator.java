@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyrigh t[2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.core;
 
@@ -70,11 +70,11 @@ import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
 
 /**
- * Validation of key behavioral requirements of AMX MBeans. These tests do not validate any MBean-specific semantics, only general requirements for all AMX
- * MBeans.
+ * Validation of key behavioral requirements of AMX MBeans.
+ * These tests do not validate any MBean-specific semantics, only general requirements for all AMX MBeans.
  * <p>
- * Note that all tests have to account for the possibility that an MBean can be unregistered while the validation is in progress— that is not a test failure,
- * since it is perfectly legal.
+ * Note that all tests have to account for the possibility that an MBean can be unregistered while
+ * the validation is in progress— that is not a test failure, since it is perfectly legal.
  */
 @Taxonomy(stability = Stability.UNCOMMITTED)
 public final class AMXValidator {

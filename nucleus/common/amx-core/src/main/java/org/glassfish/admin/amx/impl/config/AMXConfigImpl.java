@@ -352,21 +352,10 @@ public class AMXConfigImpl extends AMXImplBase {
             }
         }
 
-        public String type() {
-            return mType;
-        }
-
-        public String name() {
-            return (String) mAttrs.get("name");
-        }
-
-        public Map<String, Object> attrs() {
-            return Collections.unmodifiableMap(mAttrs);
-        }
-
-        public List<CreateParams> children() {
-            return Collections.unmodifiableList(mChildren);
-        }
+        public String              type()     { return mType; }
+        public String              name()     { return (String)mAttrs.get("name"); }
+        public Map<String,Object>  attrs()    { return Collections.unmodifiableMap(mAttrs); }
+        public List<CreateParams>  children() { return Collections.unmodifiableList(mChildren); }
 
         /**
          * Convert incoming attributes to HK2 requirements.

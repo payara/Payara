@@ -47,7 +47,6 @@ import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.util.AMXDebugHelper;
 import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.admin.amx.util.StringUtil;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.external.arc.Stability;
@@ -155,12 +154,11 @@ public final class ProxyFactory implements NotificationListener {
 
         try {
             getMBeanServerConnection().isRegistered(JMXUtil.getMBeanServerDelegateObjectName());
+            return true;
         } catch (Exception e) {
             connectionBad();
-            connectionGood = false;
+            return false;
         }
-
-        return (connectionGood);
     }
 
     void notifsLost() {

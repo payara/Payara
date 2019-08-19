@@ -184,10 +184,10 @@ public final class AMXDebug
 
     private final Set<Character> ILLEGAL_CHARS;
 
-    private static final char[] ILLEGAL_CHARS_ARRAY =
+    private final char[] ILLEGAL_CHARS_ARRAY =
     {
         '\u0000',
-        '?', '*', '|', '\'', '|', '\\', '/', ':',
+        '?', '*', '|', '\'', '|', '\\', '/', ':'
     };
 
     private AMXDebug()
@@ -198,7 +198,7 @@ public final class AMXDebug
             ILLEGAL_CHARS.add(c);
         }
 
-        NEWLINE = System.getProperty("line.separator");
+        NEWLINE = System.lineSeparator();
         assert (NEWLINE != null);
 
         String value = System.getProperty(AMX_DEBUG_ENABLED_SPROP);

@@ -18,7 +18,7 @@
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accomthis code.
+ * file that accompanied this code.
  *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
@@ -51,7 +51,6 @@ import javax.management.openmbean.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.List;
 import java.util.HashMap;
 
