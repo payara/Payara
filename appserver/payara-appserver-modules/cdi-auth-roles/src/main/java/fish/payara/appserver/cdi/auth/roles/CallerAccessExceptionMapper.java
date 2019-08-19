@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2019] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -38,26 +38,26 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-package fish.payara.appserver.cdi.auth.roles.extension;
+package fish.payara.appserver.cdi.auth.roles;
 
-import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
-import fish.payara.cdi.auth.roles.RolesPermitted;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import fish.payara.cdi.auth.roles.CallerAccessException;
+import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 /**
- * Extension to get the runtime to find the Roles Interceptor.
  *
- * @author Michael Ranaldo <michael@ranaldo.co.uk>
+ * @author jGauravGupta
  */
-public class RolesCDIExtension implements Extension {
+@Provider
+public class CallerAccessExceptionMapper implements ExceptionMapper<CallerAccessException> {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addInterceptorBinding(RolesPermitted.class);
-
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(RolesPermittedInterceptor.class),
-            "RolesCDIExtension " + RolesPermittedInterceptor.class.getName());
+    @Override
+    public Response toResponse(CallerAccessException cae) {
+         return Response.status(FORBIDDEN)
+                 .entity(cae.getMessage())
+                 .build();
     }
+
 }

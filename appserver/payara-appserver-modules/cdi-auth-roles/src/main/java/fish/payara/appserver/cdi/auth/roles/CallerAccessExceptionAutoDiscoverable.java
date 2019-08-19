@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2019] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -38,26 +38,32 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-package fish.payara.appserver.cdi.auth.roles.extension;
+package fish.payara.appserver.cdi.auth.roles;
 
-import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
-import fish.payara.cdi.auth.roles.RolesPermitted;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import javax.annotation.Priority;
+import javax.ws.rs.ConstrainedTo;
+import static javax.ws.rs.RuntimeType.SERVER;
+import javax.ws.rs.core.FeatureContext;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
+import org.glassfish.internal.deployment.Deployment;
+import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
+import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
-/**
- * Extension to get the runtime to find the Roles Interceptor.
- *
- * @author Michael Ranaldo <michael@ranaldo.co.uk>
- */
-public class RolesCDIExtension implements Extension {
+@ConstrainedTo(SERVER)
+@Priority(DEFAULT_PRIORITY)
+public final class CallerAccessExceptionAutoDiscoverable implements ForcedAutoDiscoverable {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addInterceptorBinding(RolesPermitted.class);
+    @Override
+    public void configure(FeatureContext context) {
+        
+        Deployment deployment = getDefaultHabitat().getService(Deployment.class);
+        // Only register for application deployments (not the admin console)
+        if (deployment.getCurrentDeploymentContext() == null) {
+            return;
+        }
 
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(RolesPermittedInterceptor.class),
-            "RolesCDIExtension " + RolesPermittedInterceptor.class.getName());
+        if (!context.getConfiguration().isRegistered(CallerAccessExceptionMapper.class)) {
+            context.register(CallerAccessExceptionMapper.class);
+        }
     }
 }
