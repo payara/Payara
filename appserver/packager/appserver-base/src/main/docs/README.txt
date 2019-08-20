@@ -65,7 +65,17 @@ Payara Server GitHub Project: https://github.com/payara/Payara
 Payara Community: http://www.payara.fish/community 
 
 
-6. Follow us
+6. Need support?
+============
+
+Migrating to Payara Server or Payara Micro? Our Migration & Project Support is offered through a flat fee per year regardless of the size of your environment and supports an unlimited number of units in development. 
+
+Need help with the Payara Platform in production? Payara Enterprise offers software, security, stability, and support directly from Engineers.
+
+Learn more about Payara support options: https://www.payara.fish/support/
+
+
+7. Follow us
 ============
 
 Make sure to follow @Payara_Fish on Twitter and read The Payara Blog (http://blog.payara.fish/) to get the latest news on Payara.
