@@ -38,7 +38,6 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.google.common.base.Strings;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;

@@ -37,12 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation]
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.admin.amx.core;
 
 import java.util.ArrayList;
@@ -55,6 +51,7 @@ import static org.glassfish.admin.amx.core.PathnameConstants.*;
 import static org.glassfish.external.amx.AMX.*;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
+
 /**
 Parses a pathname into parts.
 <p>
@@ -62,12 +59,7 @@ The root part (leading "/") is not included in the parts list returned
 by {@link #parts}.
  */
 @Taxonomy(stability = Stability.UNCOMMITTED)
-public final class PathnameParser
-{
-    private static void debug(final Object o)
-    {
-        System.out.println("" + o);
-    }
+public final class PathnameParser {
 
     private final char mDelim;
 
@@ -83,7 +75,8 @@ public final class PathnameParser
 
     public static final class PathPart
     {
-        private final String mType,  mName;
+        private final String mType;
+        private final String mName;
 
         public PathPart(final String type, final String name)
         {
@@ -228,11 +221,6 @@ public final class PathnameParser
      */
     private static final Pattern TYPE_SEARCH_PATTERN = Pattern.compile(LEGAL_TYPE_PATTERN + ".*");
 
-    /**
-        This pattern finds a name up to the terminating SUBSCRIPT_RIGHT.
-     */
-    private static final Pattern NAME_SEARCH_PATTERN = Pattern.compile("(" + LEGAL_NAME_PATTERN + ")" + SUBSCRIPT_RIGHT + ".*");
-
     /* a legal type, by itself */
     private static final Pattern LEGAL_TYPE_PATTERN_COMPILED = Pattern.compile( LEGAL_TYPE_PATTERN );
 
@@ -252,11 +240,8 @@ public final class PathnameParser
 
     /**
      */
-    private void parse(final String path, final List<PathPart> parts)
-    {
-        //debug( "PathnameParser: parsing: " + path );
-        if (path == null || path.length() == 0)
-        {
+    private void parse(final String path, final List<PathPart> parts) {
+        if (path == null || path.length() == 0) {
             throw new IllegalArgumentException(path);
         }
         String remaining = path;
@@ -280,7 +265,6 @@ public final class PathnameParser
             }
 
             final String type = matcher.group(1);
-            //debug( "PathnameParser, matched type: \"" + type + "\"" );
 
             char matchChar;
             if (type.length() < remaining.length())
@@ -294,8 +278,6 @@ public final class PathnameParser
                 parts.add(part);
                 break;
             }
-            //debug( "PathnameParser, match char: \"" + matchChar + "\"" );
-            //debug( "PathnameParser, remaining: \"" + remaining + "\"" );
 
             String name = null;
             if (matchChar == mNameLeft)
@@ -318,16 +300,8 @@ public final class PathnameParser
             final PathPart part = new PathPart(type, name);
             parts.add(part);
 
-        //debug( "PathnameParser, matched part: \"" + part + "\"" );
         }
-
-    /*
-    String s = "";
-    for( final PathPart part : parts ){
-    s = s + "{" + part + "}";
-    }
-    debug( "FINAL PARSE for : " + path + " = " + s);
-     */
+        
     }
 
     private List<PathPart> parse()
@@ -371,8 +345,7 @@ public final class PathnameParser
 
         final String namePart = (name == null) ? "" : SUBSCRIPT_LEFT + name + SUBSCRIPT_RIGHT;
 
-        final String part = pathPart(type) + namePart;
-        return part;
+        return pathPart(type) + namePart;
     }
 
     public static String pathPart(final String type)

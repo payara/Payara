@@ -104,19 +104,4 @@ public class InjectedValues {
         return getDefaultServices().getService(InjectedValues.class);
     }
 
-    public InjectedValues() {
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

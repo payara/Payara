@@ -58,21 +58,22 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
 
 /**
- * This JAX-RS filter makes sure only callers with the given roles can access the 
+ * This JAX-RS filter makes sure only callers with the given roles can access the
  * resource method(s) to which this filter is applied.
- * 
+ *
  * <p>
- * Note that if pre-emptive authentication is not active and the caller is found to be 
+ * Note that if pre-emptive authentication is not active and the caller is found to be
  * unauthenticated when reaching this filter, the installed authentication mechanism
  * will be invoked.
- * 
+ *
  * @author Arjan Tijms
  */
 @Priority(AUTHORIZATION)
 public class RolesAllowedRequestFilter implements ContainerRequestFilter {
-    
+
     private final SecurityContext securityContext;
 
     private final String[] rolesAllowed;
@@ -89,17 +90,23 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
         if (rolesAllowed.length > 0 && !isAuthenticated()) {
-                
+
             AuthenticationStatus status =  securityContext.authenticate(request, response, withParams());
-            
+
             // Authentication was not done at all (i.e. no credentials present) or
             // authentication failed (i.e. wrong credentials, credentials expired, etc)
             if (status == NOT_DONE || status == SEND_FAILURE) {
-                throw new NotAuthorizedException("Authentication resulted in " + status);
+                throw new NotAuthorizedException(
+                    "Authentication resulted in " + status,
+                    Response.status(Response.Status.UNAUTHORIZED).build()
+                );
             }
-            
+
             if (status == SUCCESS && !isAuthenticated()) { // compensate for possible Soteria bug, need to investigate
-                throw new NotAuthorizedException("Authentication not done (i.e. no JWT credential found)");
+                throw new NotAuthorizedException(
+                    "Authentication not done (i.e. no JWT credential found)",
+                    Response.status(Response.Status.UNAUTHORIZED).build()
+                );
             }
 
         }

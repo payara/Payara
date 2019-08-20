@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -56,16 +56,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-Stringifier for an ObjectName which sorts the properties in the ObjectName
-for more consistent and readable output.
+ * Stringifier for an {@link ObjectName} which sorts the properties in the ObjectName
+ * for more consistent and readable output.
  */
-public final class ObjectNameStringifier implements Stringifier
-{
-    public final static ObjectNameStringifier DEFAULT = new ObjectNameStringifier();
+public final class ObjectNameStringifier implements Stringifier {
+    public static final ObjectNameStringifier DEFAULT = new ObjectNameStringifier();
 
     private static List<String> PROPS = null;
 
-    private synchronized static List<String> getPROPS()
+    private static synchronized List<String> getPROPS()
     {
         if (PROPS == null)
         {
@@ -127,9 +126,9 @@ public final class ObjectNameStringifier implements Stringifier
     {
         return (name + "=" + value);
     }
-
-    public String stringify(Object o)
-    {
+    
+    @Override
+    public String stringify(Object o) {
         if (o == null)
         {
             return ("null");
@@ -199,27 +198,3 @@ public final class ObjectNameStringifier implements Stringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

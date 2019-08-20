@@ -38,22 +38,24 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.KeyStore;
+import java.util.List;
+import java.util.logging.Level;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.security.KeyStore;
-import org.glassfish.api.ActionReport;
-
-import org.glassfish.api.admin.CommandException;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -62,8 +64,11 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
-import java.util.logging.Level;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandException;
 
 /**
  * A class that's supposed to capture all the behavior common to operation
@@ -82,6 +87,11 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     private ServerDirs serverDirs;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(LocalDomainCommand.class);
+    
+    ////////////////////////////////////////////////////////////////
+    /// Section:  protected variables
+    ////////////////////////////////////////////////////////////////
+    protected static final String DEFAULT_MASTER_PASSWORD = "changeit";
     
     ////////////////////////////////////////////////////////////////
     /// Section:  protected methods that are OK to override
@@ -205,8 +215,8 @@ public abstract class LocalServerCommand extends CLICommand {
             return null;   // no master password  saved
         try {
             PasswordAdapter pw = new PasswordAdapter(mpf.getAbsolutePath(),
-                    "master-password".toCharArray()); // fixed key
-            return pw.getPasswordForAlias("master-password");
+                    MASTERPASSWORD_FILE.toCharArray()); // fixed key
+            return pw.getPasswordForAlias(MASTERPASSWORD_FILE);
         }
         catch (Exception e) {
             logger.log(Level.FINER, "master password file reading error: {0}", e.getMessage());
@@ -260,7 +270,7 @@ public abstract class LocalServerCommand extends CLICommand {
         long t0 = now();
         String mpv = passwords.get(CLIConstants.MASTER_PASSWORD);
         if (mpv == null) { //not specified in the password file
-            mpv = "changeit";  //optimization for the default case -- see 9592
+            mpv = DEFAULT_MASTER_PASSWORD;  //optimization for the default case -- see 9592
             if (!verifyMasterPassword(mpv)) {
                 mpv = readFromMasterPasswordFile();
                 if (!verifyMasterPassword(mpv)) {
@@ -553,7 +563,7 @@ public abstract class LocalServerCommand extends CLICommand {
         if (serverDirs == null)
             return null;
 
-        File mp = new File(serverDirs.getConfigDir(), "master-password");
+        File mp = new File(serverDirs.getConfigDir(), MASTERPASSWORD_FILE);
         if (!mp.canRead())
             return null;
 

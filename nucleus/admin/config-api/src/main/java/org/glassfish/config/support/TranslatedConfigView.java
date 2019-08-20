@@ -80,6 +80,9 @@ public class TranslatedConfigView implements ConfigView {
 
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
+
+    private static final boolean SUBSTITUTION_DISABLED = Boolean.valueOf(System.getProperty("fish.payara.substitution.disable", "false"));
+
     public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -87,8 +90,31 @@ public class TranslatedConfigView implements ConfigView {
         }
     };
 
+    /**
+     * Expand variables in string value (non-config usage).
+     * This expansion can be disabled by system property {@code fish.payara.substitution.disable}, and should be used by any code that handles
+     * deployment descriptors, where this constitutes a non-standard behavior.
+     * @param value value to be expanded
+     * @return expanded value or {@code null} when value is null. Original value when substitution is disabled.
+     */
+    public static String expandValue(String value) {
+        if (value == null || SUBSTITUTION_DISABLED) {
+            return value;
+        }
+        return (String) getTranslatedValue(value);
+    }
 
-    public static Object getTranslatedValue(Object value) {
+    /**
+     * Expand variables in string value (config usage).
+     * This method should be called when expanding values from config, where substitution is necessary at all times.
+     * @param value value to be expanded
+     * @return expanded value or {@code null} when value is null.     
+     */
+    public static String expandConfigValue(String value) {
+        return (String) getTranslatedValue(value);
+    }
+
+    private static Object getTranslatedValue(Object value) {
         if (value!=null && value instanceof String) {
             String stringValue = value.toString();
             if (stringValue.indexOf('$')==-1) {

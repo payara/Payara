@@ -68,9 +68,3 @@ public interface LogQueryResult
      */
     public LogQueryEntry[]  getEntries();
 }
-
-
-
-
-
-

@@ -568,11 +568,11 @@ public class SaxParserHandler extends DefaultHandler {
             }
             if (doReplace) {
                 element = new XMLElement(replacementName, namespaces);
-                topNode.setElementValue(element, (String) TranslatedConfigView.getTranslatedValue(replacementValue));
+                topNode.setElementValue(element, TranslatedConfigView.expandValue(replacementValue));
             } else if (doDelete) {
                 // don't set a value so that the element is not written out
             } else if (getElementsPreservingWhiteSpace().contains(element.getQName())) {
-                topNode.setElementValue(element, (String) TranslatedConfigView.getTranslatedValue(elementData.toString()));
+                topNode.setElementValue(element, TranslatedConfigView.expandValue(elementData.toString()));
             } else if (element.getQName().equals(TagNames.ENVIRONMENT_PROPERTY_VALUE)) {
                 Object envEntryDesc = topNode.getDescriptor();
                 if (envEntryDesc != null && envEntryDesc instanceof EnvironmentProperty) {
@@ -581,18 +581,18 @@ public class SaxParserHandler extends DefaultHandler {
                     // if the env-entry-type is java.lang.String or
                     // java.lang.Character
                     if (envProp.getType() != null && (envProp.getType().equals("java.lang.String") || envProp.getType().equals("java.lang.Character"))) {
-                        topNode.setElementValue(element, (String) TranslatedConfigView.getTranslatedValue(elementData.toString()));
+                        topNode.setElementValue(element, TranslatedConfigView.expandValue(elementData.toString()));
                     } else {
-                        topNode.setElementValue(element, (String) TranslatedConfigView.getTranslatedValue(elementData.toString().trim()));
+                        topNode.setElementValue(element, TranslatedConfigView.expandValue(elementData.toString().trim()));
                     }
                 } else {
-                    topNode.setElementValue(element, (String) TranslatedConfigView.getTranslatedValue(elementData.toString().trim()));
+                    topNode.setElementValue(element, TranslatedConfigView.expandValue(elementData.toString().trim()));
                 }
             } else {
                 /*
                  * Allow any case for true/false & convert to lower case
                  */
-                String val = (String) TranslatedConfigView.getTranslatedValue(elementData.toString().trim());
+                String val = TranslatedConfigView.expandValue(elementData.toString().trim());
                 if (TRUE_STR.equalsIgnoreCase(val)) {
                     topNode.setElementValue(element, val.toLowerCase(Locale.US));
                 } else if (FALSE_STR.equalsIgnoreCase(val)) {

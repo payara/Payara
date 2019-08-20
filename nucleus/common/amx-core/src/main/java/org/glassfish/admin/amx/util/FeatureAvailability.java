@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
-import org.glassfish.admin.amx.util.ExceptionUtil;
-
-import javax.management.MBeanServer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -85,21 +83,9 @@ public final class FeatureAvailability
 
     private final Map<String, CountDownLatch> mLatches;
 
-    // private final AMXDebugHelper                mDebug;
-    /** feature stating that the AdminContext is available.  Result data is the AdminContext */
-    //public static final String  ADMIN_CONTEXT_FEATURE    = "AdminContext";
-    /** feature stating that the MBeanServer is available.  Result data is the MBeanServer */
-    //public static final String  MBEAN_SERVER_FEATURE    = "MBeanServer";
-    /** feature stating that the SunoneInterceptor is active.  Associated data should be ignored. */
-    //public static final String  SUN_ONE_INTERCEPTOR_FEATURE    = "SunoneInterceptor";
-    /** feature stating that the com.sun.appserv:category=config MBeans are available. 
-    Result data should not be used */
-    //public static final String COM_SUN_APPSERV_CONFIG_MBEANS_FEATURE    = "com.sun.appserv:category=config";
     /** feature stating that the AMX MBean Loader is available (but not AMX).  Data should not be used */
     public static final String AMX_LOADER_FEATURE = "AMXLoader";
 
-    /** feature stating that the AMX BootUtil class is available.  Data should not be used */
-    //public static final String AMX_BOOT_UTIL_FEATURE   = "AMXBootUtil";
     /** feature stating that the AMX core is ready for use after having been started.  Data should not be used.
     Other AMX subystems might still be in the process of initializing */
     public static final String AMX_CORE_READY_FEATURE = "AMXCoreReady";
@@ -107,20 +93,10 @@ public final class FeatureAvailability
     /** feature stating that the AMX and all its subsystems are ready for use.  Data is the ObjectName of the DomainRoot */
     public static final String AMX_READY_FEATURE = "AMXReady";
 
-    /** feature stating that the CallFlow feature is available.  Data should not be used
-    Data is of type com.sun.enterprise.admin.monitor.callflow.Agent */
-    //public static final String CALL_FLOW_FEATURE   = "CallFlow";
-    /** Feature stating that the server has started, meaning that the main initialization
-    code has been run; specific features could be initializing on separate threads, or
-    could be initialized lazily.  No data is associated with this feature. */
-    //public static final String SERVER_STARTED_FEATURE   = "ServerStarted";
-    private FeatureAvailability()
-    {
+    private FeatureAvailability() {
         mFeatures = new HashMap<String, Object>();
         mLatches = new HashMap<String, CountDownLatch>();
 
-        //mDebug      = new AMXDebugHelper( "--FeatureAvailability--" );
-        //mDebug.setEchoToStdOut( true );
     }
 
     public static FeatureAvailability getInstance()
@@ -129,6 +105,8 @@ public final class FeatureAvailability
     }
 
     private static final boolean DEBUG_ENABLED = false;
+    
+    private static final AMXDebugHelper DEBUG_HELPER = new AMXDebugHelper();
 
     /**
     Internal use, should be replaced with use of
@@ -140,48 +118,17 @@ public final class FeatureAvailability
         if (DEBUG_ENABLED)
         {
             String msg = "";
+            StringBuilder builder = new StringBuilder();
             for (int i = 0; i < args.length - 1; ++i)
             {
-                msg = msg + args[i] + " ";
+                builder.append(args[i]).append(" ");
             }
             msg = msg + args[args.length - 1];
 
-            System.out.println(msg);
+            DEBUG_HELPER.println(msg);
         }
     }
 
-    /**
-    MBeanServer is created very early and is available via this method exept for code
-    that executes prior to the JVM calling main().  As it is of interest in many areas,
-    an explicit method call is provided.
-    <p>
-    <b>NON-BLOCKING--returns current value, can be null</b>
-    @return the MBeanServer used by all AppServer MBeans
-    public MBeanServer
-    getMBeanServer()
-    {
-    return (MBeanServer)mFeatures.get( MBEAN_SERVER_FEATURE );
-    }
-     */
-    /**
-    MBeanServer is created very early and is available via this method exept for code
-    that executes prior to the JVM calling main().  As it is of interest in many areas,
-    an explicit method call is provided.
-    <b>BLOCKING--returns onlyl when MBeansServer becomes available.</b>
-    @return the MBeanServer used by all AppServer MBeans
-    public MBeanServer
-    waitForMBeanServer()
-    {
-    MBeanServer server = getMBeanServer();
-
-    if ( server == null )
-    {
-    server = (MBeanServer)waitForFeature( MBEAN_SERVER_FEATURE,
-    "waitForMBeanServer from " +  ExceptionUtil.getStackTrace() );
-    }
-    return server;
-    }
-     */
     /**
     Register a named feature as being ready for use.  The data value can be a
     dummy value, or can be something useful to the caller of waitForFeature().
@@ -196,9 +143,7 @@ public final class FeatureAvailability
     @param featureName  arbitrary name for the feature, to be used by clients in {@link #waitForFeature}
     @param data         arbitrary data of possible interest to clients
      */
-    public synchronized void registerFeature(final String featureName, final Object data)
-    {
-        //debug( "FeatureAvailability.registerFeature: " + featureName + " in instance " + this);
+    public synchronized void registerFeature(final String featureName, final Object data) {
         if (mFeatures.get(featureName) != null)
         {
             throw new IllegalStateException("FeatureAvailability.addFeature: already added: " + featureName);
@@ -208,13 +153,11 @@ public final class FeatureAvailability
             throw new IllegalArgumentException("FeatureAvailability.addFeature(): data is null for: " + featureName);
         }
         mFeatures.put(featureName, data);
-        //debug( "********** FeatureAvailability.addFeature: " + featureName + ", data = " + data + "**********");
 
         if (mLatches.containsKey(featureName))
         {
             final CountDownLatch latch = mLatches.remove(featureName);
             latch.countDown();  // let all blocked threads proceed
-            //debug( "addFeature: released latch for: " + featureName );
         }
     }
 
@@ -223,9 +166,7 @@ public final class FeatureAvailability
     @param featureName the name of the desired feature
     @param callerInfo arbitrary caller info for debugging purposes
      */
-    public Object waitForFeature(final String featureName, final String callerInfo)
-    {
-        //debug( "FeatureAvailability.waitForFeature: " + featureName + " by " + callerInfo + " in instance " + this);
+    public Object waitForFeature(final String featureName, final String callerInfo) {
         CountDownLatch latch = null;
         Object data = null;
 
@@ -248,13 +189,9 @@ public final class FeatureAvailability
         assert ((data == null && latch != null) || (data != null && latch == null));
 
         // if we had to create a CountDownLatch, calling thread must now await()
-        if (latch != null)
-        {
-            final long start = System.currentTimeMillis();
+        if (latch != null) {
 
-            try
-            {
-                //debug( "waitForFeature: \"" + featureName + "\" by " + callerInfo );
+            try {
                 final long startNanos = System.nanoTime();
 
                 latch.await();
@@ -285,36 +222,3 @@ public final class FeatureAvailability
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

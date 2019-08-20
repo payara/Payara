@@ -37,16 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -109,7 +103,10 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -166,18 +163,9 @@ public class DOLUtils {
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
-    private static final Set<String> SYSTEM_PACKAGES_ =
-            ImmutableSet.of("com.sun", "org.glassfish", "org.apache.jasper", "fish.payara", "com.ibm.jbatch",
-                            "org.hibernate.validator", "org.jboss.weld", "com.ctc.wstx",
-                            "java", "javax");
-    private static final Set<String> SYSTEM_PACKAGES = ImmutableSet.copyOf(Collections2.transform(SYSTEM_PACKAGES_,
-            new Function<String, String>() {
-        @Override
-        public String apply(String input) {
-            return input + ".";
-        }
-    }));
-
+    private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.apache.jasper.", "fish.payara.", "com.ibm.jbatch.",
+                            "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax."};
+    
     /** no need to creates new DOLUtils */
     private DOLUtils() {
     }
@@ -224,8 +212,9 @@ public class DOLUtils {
      * @return 
      */
     public static boolean isScanningAllowed(Application app, String entryName) {
-        boolean included = !FluentIterable.from(app.getScanningExclusions()).anyMatch(new MatchingPredicate(entryName));
-        return included |= FluentIterable.from(app.getScanningInclusions()).anyMatch(new MatchingPredicate(entryName));
+        
+        boolean included = !app.getScanningExclusions().stream().anyMatch(new MatchingPredicate(entryName));
+        return included |= app.getScanningInclusions().stream().anyMatch(new MatchingPredicate(entryName));
     }
 
     private static class MatchingPredicate implements Predicate<Pattern> {
@@ -236,7 +225,7 @@ public class DOLUtils {
         }
 
         @Override
-        public boolean apply(Pattern input) {
+        public boolean test(Pattern input) {
             return input.matcher(entryName).matches();
         }
     }
@@ -1009,7 +998,12 @@ public class DOLUtils {
      * @return true if the class is white-listed
      */
     public static boolean isWhiteListed(Application application, String className) {
-        for (String packageName : Iterables.concat(application.getWhitelistPackages(), SYSTEM_PACKAGES)) {
+        for (String packageName : SYSTEM_PACKAGES) {
+            if (className.startsWith(packageName)) {
+                return true;
+            }
+        }
+        for (String packageName : application.getWhitelistPackages()) {
             if (className.startsWith(packageName)) {
                 return true;
             }

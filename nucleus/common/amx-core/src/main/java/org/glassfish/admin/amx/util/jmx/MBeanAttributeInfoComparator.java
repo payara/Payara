@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -76,8 +77,7 @@ public final class MBeanAttributeInfoComparator implements java.util.Comparator<
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        return hash;
+        return 7;
     }
 
 }

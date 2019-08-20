@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.node.runtime.gf;
 
 import static com.sun.enterprise.deployment.xml.RuntimeTagNames.PAYARA_JAXRS_ROLES_ALLOWED_ENABLED;
@@ -65,7 +65,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
-import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
@@ -90,6 +89,7 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.Collections;
 
 /**
  * This node is responsible for handling all runtime information for web bundle.
@@ -335,11 +335,11 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         } else if (element.getQName().equals(RuntimeTagNames.VERSION_IDENTIFIER)) {
         } else if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
             if (descriptor.getApplication() != null) {
-                descriptor.getApplication().addScanningInclusions(ImmutableList.of(value), "WEB-INF/lib");
+                descriptor.getApplication().addScanningInclusions(Collections.singletonList(value), "WEB-INF/lib");
             }
         } else if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_EXCLUDE)) {
             if (descriptor.getApplication() != null) {
-                descriptor.getApplication().addScanningExclusions(ImmutableList.of(value), "WEB-INF/lib");
+                descriptor.getApplication().addScanningExclusions(Collections.singletonList(value), "WEB-INF/lib");
             }
         } else if (element.getQName().equals(PAYARA_JAXRS_ROLES_ALLOWED_ENABLED)) {
             descriptor.setJaxrsRolesAllowedEnabled(Boolean.parseBoolean(value));

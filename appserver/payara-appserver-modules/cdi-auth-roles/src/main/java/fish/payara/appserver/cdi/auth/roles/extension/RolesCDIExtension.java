@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -40,13 +40,12 @@
  */
 package fish.payara.appserver.cdi.auth.roles.extension;
 
+import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
+import fish.payara.cdi.auth.roles.RolesPermitted;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
-
-import fish.payara.appserver.cdi.auth.roles.RolesCDIInterceptor;
-import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
  * Extension to get the runtime to find the Roles Interceptor.
@@ -58,8 +57,7 @@ public class RolesCDIExtension implements Extension {
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addInterceptorBinding(RolesPermitted.class);
 
-        beforeBeanDiscovery.addAnnotatedType(
-            beanManager.createAnnotatedType(RolesCDIInterceptor.class),
-            "RolesCDIExtension " + RolesCDIInterceptor.class.getName());
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(RolesPermittedInterceptor.class),
+            "RolesCDIExtension " + RolesPermittedInterceptor.class.getName());
     }
 }

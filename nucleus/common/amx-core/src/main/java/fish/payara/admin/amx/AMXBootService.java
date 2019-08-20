@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ package fish.payara.admin.amx;
 
 import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyChangeEvent;
-import java.util.Collections;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.admin.mbeanserver.BootAMX;
@@ -58,8 +57,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
- *
- * @author jonathan
+ * Service to boot AMX if it is enabled
+ * @author jonathan coustick
  * @since 4.1.2.172
  */
 @Service(name="amx-boot-service")
@@ -73,7 +72,6 @@ public class AMXBootService implements ConfigListener {
     ServiceLocator habitat;
     
     private boolean enabled;
-    private BootAMX bootAMX;
     
     @PostConstruct
     public void postConstruct(){
@@ -85,7 +83,7 @@ public class AMXBootService implements ConfigListener {
     }
     
     private void startup(){
-        bootAMX = habitat.getService(BootAMX.class);
+        BootAMX bootAMX = habitat.getService(BootAMX.class);
         bootAMX.bootAMX();
     }
     

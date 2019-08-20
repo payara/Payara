@@ -273,17 +273,3 @@ public interface DomainRoot extends AMXProxy
     @Description("Return a Map of all non-compliant MBeans (MBeans might no longer be registered).  The List&lt;String> contains all issues with that MBean")
     public Map<ObjectName, List<String>> getComplianceFailures();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

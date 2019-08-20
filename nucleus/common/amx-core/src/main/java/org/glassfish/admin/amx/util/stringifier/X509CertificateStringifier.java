@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
-
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.amx.util.stringifier;
 
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
@@ -49,76 +48,57 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
-
 /**
-	Stringifies an X509CertificateStringifier.
+ * Stringifies an {@link X509Certificate}.
  */
+public final class X509CertificateStringifier implements Stringifier {
 
-public final class X509CertificateStringifier implements Stringifier
-{
-	public final static X509CertificateStringifier	DEFAULT	= new X509CertificateStringifier();
+    public final static X509CertificateStringifier DEFAULT = new X509CertificateStringifier();
 
-		public
-	X509CertificateStringifier()
-	{
-	}
+    private static byte[] getFingerprint(byte[] signature, String alg) {
+        byte[] result = null;
 
+        try {
+            final MessageDigest md = MessageDigest.getInstance(alg);
 
-		private static byte[]
-	getFingerprint( byte[] signature, String alg )
-	{
-		byte[]	result	= null;
+            result = md.digest(signature);
+        } catch (NoSuchAlgorithmException e) {
+            result = signature;
+            e.printStackTrace();
+        }
 
-		try
-		{
-			final MessageDigest md = MessageDigest.getInstance( alg );
+        return (result);
+    }
 
-			result	= md.digest( signature );
-		}
-		catch ( NoSuchAlgorithmException e )
-		{
-			result	= signature;
-			e.printStackTrace();
-		}
+    /**
+     * Static variant when direct call will suffice.
+     */
+    public static String stringify(final X509Certificate cert) {
+        final StringBuilder buf = new StringBuilder();
+        final String NL = "\n";
 
-		return( result );
-	}
+        buf.append("Issuer: ").append(cert.getIssuerDN().getName()).append(NL);
+        buf.append("Issued to: ").append(cert.getSubjectDN().getName()).append(NL);
+        buf.append("Version: ").append(cert.getVersion()).append(NL);
+        buf.append("Not valid before: ").append(cert.getNotBefore()).append(NL);
+        buf.append("Not valid after: ").append(cert.getNotAfter()).append(NL);
+        buf.append("Serial number: ").append(cert.getSerialNumber()).append(NL);
+        buf.append("Signature algorithm: ").append(cert.getSigAlgName()).append(NL);
+        buf.append("Signature algorithm OID: ").append(cert.getSigAlgOID()).append(NL);
 
-	/**
-		Static variant when direct call will suffice.
-	 */
-		public static String
-	stringify( final X509Certificate cert )
-	{
-		final StringBuilder	buf	= new StringBuilder();
-		final String		NL	= "\n";
+        buf.append("Signature fingerprint (MD5): ");
+        byte[] fingerprint = getFingerprint(cert.getSignature(), "MD5");
+        buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
 
-		buf.append("Issuer: ").append(cert.getIssuerX500Principal()
-				.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP)).append(NL);
-		buf.append("Issued to: ").append(cert.getSubjectX500Principal()
-				.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP)).append(NL);
-		buf.append("Version: ").append(cert.getVersion()).append(NL);
-		buf.append("Not valid before: ").append(cert.getNotBefore()).append(NL);
-		buf.append("Not valid after: ").append(cert.getNotAfter()).append(NL);
-		buf.append("Serial number: ").append(cert.getSerialNumber()).append(NL);
-		buf.append("Signature algorithm: ").append(cert.getSigAlgName()).append(NL);
-		buf.append("Signature algorithm OID: ").append(cert.getSigAlgOID()).append(NL);
+        buf.append("Signature fingerprint (SHA1): ");
+        fingerprint = getFingerprint(cert.getSignature(), "SHA1");
+        buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
 
-		buf.append( "Signature fingerprint (MD5): " );
-		byte[]	fingerprint	= getFingerprint( cert.getSignature(), "MD5" );
-		buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
+        return (buf.toString());
+    }
 
-		buf.append( "Signature fingerprint (SHA1): " );
-		fingerprint	= getFingerprint( cert.getSignature(), "SHA1" );
-		buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
-
-		return( buf.toString() );
-	}
-
-		public String
-	stringify( Object object )
-	{
-		return( stringify( (X509Certificate)object ) );
-	}
+    @Override
+    public String stringify(Object object) {
+        return (stringify((X509Certificate) object));
+    }
 }
-
