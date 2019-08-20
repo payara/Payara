@@ -60,7 +60,7 @@ import fish.payara.monitoring.store.MonitoringDataRepository;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @RequestScoped
-public class MonitoringConsoleResouce {
+public class MonitoringConsoleResource {
 
     private static MonitoringDataRepository getDataStore() {
         return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
