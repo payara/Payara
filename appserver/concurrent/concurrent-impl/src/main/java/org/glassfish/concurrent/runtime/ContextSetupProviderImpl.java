@@ -112,24 +112,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.applications = applications;
         this.transactionManager = transactionManager;
 
-        try {
-            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving OpenTracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
+        initialiseServices();
 
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
@@ -387,24 +370,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (!nullTransactionManager) {
             transactionManager = concurrentRuntime.getTransactionManager();
         }
-        try {
-            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving OpenTracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
+        initialiseServices();
     }
 
     private static class PairKey {
@@ -453,6 +419,28 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
             return eq;
         }
+    }
+    
+    private void initialiseServices() {
+        try {
+            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        try {
+            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        try {
+            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving OpenTracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        
     }
 }
 
