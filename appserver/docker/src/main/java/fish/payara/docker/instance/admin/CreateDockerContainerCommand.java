@@ -256,38 +256,12 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
     private WebTarget createWebTarget(Node node, String endpoint) {
         Client client = ClientBuilder.newClient();
-        WebTarget webTarget = null;
-        if (Boolean.parseBoolean(node.getUseTls())) {
-            if (endpoint.startsWith("/")) {
-                webTarget = client.target("https://"
-                        + node.getNodeHost()
-                        + ":"
-                        + node.getDockerPort()
-                        + endpoint);
-            } else {
-                webTarget = client.target("https://"
-                        + node.getNodeHost()
-                        + ":"
-                        + node.getDockerPort()
-                        + "/"
-                        + endpoint);
-            }
-        } else {
-            if (endpoint.startsWith("/")) {
-                webTarget = client.target("http://"
-                        + node.getNodeHost()
-                        + ":"
-                        + node.getDockerPort()
-                        + endpoint);
-            } else {
-                webTarget = client.target("http://"
-                        + node.getNodeHost()
-                        + ":"
-                        + node.getDockerPort()
-                        + "/"
-                        + endpoint);
-            }
-        }
+
+        WebTarget webTarget = client.target((Boolean.parseBoolean(node.getUseTls()) ? "https://" : "http://")
+                + node.getNodeHost()
+                + ":"
+                + node.getDockerPort()
+                + (endpoint.startsWith("/") ? endpoint : "/" + endpoint));
 
         return webTarget;
     }
