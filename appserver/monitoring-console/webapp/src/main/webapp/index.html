@@ -109,37 +109,46 @@ $("#rotation").on('change', function() {
     });
 });
 
+var localStorage = window.localStorage;
 var charts = [];
+var configData = localStorage.getItem('chart-configs');
+if (configData) {
+	charts = JSON.parse(configData);
+    charts.forEach(addChartBox);
+	MonitoringConsole.show(charts);
+}
+
+function addChartBox(config) {
+    var boxId = config.target + '-box';
+    var newCanvas = $('<canvas/>',{ id: config.target }).prop({ width: 2, height: 1 });
+    var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
+    var newCloseButton = $('<a/>', { href: '#', text: '[ x ]', "class": "closeBtn" });
+    newCloseButton.click(function() {
+        config.closed = true;
+        MonitoringConsole.show(charts);
+        $('#'+boxId).remove();
+    });
+    newDiv.append(newCloseButton);
+    newDiv.append(newCanvas);
+    $('#canvas-container').append(newDiv);
+}
 
 $('#add').click(function() {
 	$("#options option:selected").each(function() {
-		var id = 'chartno' + charts.length;
-	    var newCanvas = $('<canvas/>',{
-	         id: id
-	     }).prop({
-	         width: 2,
-	         height: 1
-	     });
-	    var boxId = id + 'box';
-	    var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
+		var series = this.value;
+		var title = $( this ).text();
+	    var id = 'chart-' + series.replace(/[+,:"'?!#%&=]/g, '_');
 	    var config = { 
-	            target: newCanvas,
-	            series: this.value,
-	            title: $( this ).text(),
-	            beginAtZero: $('#zero')[0].checked,
-	        };
-	    var newCloseButton = $('<a/>', { href: '#', text: '[-]', "class": "closeBtn" });
-	    newCloseButton.click(function() {
-	    	config.closed = true;
-	    	MonitoringConsole.show(charts);
-	    	$('#'+boxId).remove();
-	    });
-	    newDiv.append(newCloseButton);
-	    newDiv.append(newCanvas);
-	    $('#canvas-container').append(newDiv);
+	        target: id,
+	        series: series,
+	        title: title,
+	        beginAtZero: $('#zero')[0].checked,
+	    };
+	    addChartBox(config);
 	    charts.push(config);
 	});
     MonitoringConsole.show(charts);
+    localStorage.setItem('chart-configs', JSON.stringify(charts));
 });
 
 MonitoringConsole.loadAllSeries(function(names) {

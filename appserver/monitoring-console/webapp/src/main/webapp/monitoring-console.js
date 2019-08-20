@@ -90,6 +90,13 @@ var MonitoringConsole = (function() {
 	function updateChart(mcChart) {
 		var config = mcChart.config;
 		var chart = mcChart.canvas;
+		if (config.closed) {
+			if (chart) {
+				chart.destroy();
+				mcChart.canvas = null;
+			}
+			return;
+		}
 		$.getJSON('api/series/' + config.series + '/statistics', function(stats) {
 			var localStats = stats[0];
 			var datasets = [];
@@ -138,7 +145,7 @@ var MonitoringConsole = (function() {
 			clearInterval(updater);
 		}
 		Object.values(charts).forEach(chart => chart.canvas.destroy());
-		charts = [];
+		charts = {};
 	}
 	
 	/**
@@ -161,8 +168,10 @@ var MonitoringConsole = (function() {
 		 */
 		configure: function(update) {
 			Object.values(charts).forEach(function(chart) {
-				update.call(window, chart.canvas.options);
-				chart.canvas.update();
+				if (!chart.config.closed) {
+					update.call(window, chart.canvas.options);
+					chart.canvas.update();
+				}
 			});
 		},
 		
@@ -177,8 +186,20 @@ var MonitoringConsole = (function() {
 		 * @param {boolean} configs[i].beginAtZero - true to force y-axis to start at zero
 		 */
 		show: function(configs) {
-			resetAllCharts();
-			configs.forEach(initChart);
+			for (var i = 0; i < configs.length; i++) {
+				var config = configs[i];
+				var chart = charts[config.series];
+				if (chart && chart.canvas) {
+					if (config.closed) {
+						chart.canvas.destroy();
+						chart.canvas = null;
+					} else if (JSON.stringify(chart.config) !== JSON.stringify(config)) {
+						initChart(config);
+					}
+				} else {
+					initChart(config);
+				}
+			}
 			updater = setInterval(updateAllCharts, 1000);
 		},
 		

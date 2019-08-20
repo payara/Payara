@@ -40,4 +40,6 @@ canvas {
 }
 a.closeBtn, a.closeBtn:visited {
 	color: white;
+	text-decoration: none;
+	font-weight: bold;
 }
