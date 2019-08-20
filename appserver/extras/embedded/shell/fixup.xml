@@ -69,7 +69,7 @@
             manifest file, so we need to explicitly touch it after updating
             the manifest.
         -->
-        <sleep seconds="3"/>
+        <sleep seconds="4"/>
         <manifest mode="update" file="${stage.dir}/META-INF/MANIFEST.MF">
             <attribute name="Class-Path" value="${classpath} ${classpath.additions}"/>
 	    <attribute name="Bundle-SymbolicName" value="${bundlename}"/>

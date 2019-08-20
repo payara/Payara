@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.admin.amx.impl.config;
 
 import java.lang.annotation.Annotation;
@@ -61,7 +58,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.management.Descriptor;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.AttributeChangeNotification;
@@ -83,7 +79,6 @@ import static org.glassfish.external.amx.AMX.*;
 import org.glassfish.admin.amx.core.Util;
 import static org.glassfish.admin.amx.config.AMXConfigConstants.*;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.util.ClassUtil;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.MapUtil;
@@ -108,6 +103,7 @@ import org.jvnet.hk2.config.DomDocument;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 
@@ -132,6 +128,8 @@ class ConfigBeanJMXSupport
     private final MBeanInfo mMBeanInfo;
 
     private final String mKey;    // xml name
+    
+    private static final Logger LOGGER = AMXLoggerInfo.getLogger();
 
     private static String nameFromKey(final String key)
     {
@@ -156,10 +154,6 @@ class ConfigBeanJMXSupport
     ConfigBeanJMXSupport(final ConfigBean configBean)
     {
         this(configBean.getProxyType(), nameFromKey(configBean.model.key));
-
-        //debug( "ConfigBeanJMXSupport: " + configBean.getProxyType().getName() + ": key=" +  configBean.model.key + ", keyedAs=" + configBean.model.keyedAs);
-
-        //debug( toString() );
     }
 
     /**
@@ -179,50 +173,44 @@ class ConfigBeanJMXSupport
         mMBeanInfo = _getMBeanInfo();
         sanityCheckMBeanInfo();
         mNameHint = findNameHint();
-
-        /**
-        if (hasConfiguredBug() && key == null) {
-        ImplUtil.getLogger().warning("ConfigBeanJMXSupport (AMX): working around @Configured bug for " + mIntf.getName() +
-        ", using \"" + configuredBugKey() + "\" as the key attribute");
-        }
-         */
     }
 
     public Class<? extends ConfigBeanProxy> getIntf() { return mIntf; }
     
+    @Override
     public String toString()
     {
         final StringBuilder buf = new StringBuilder();
 
         final String DELIM = ", ";
 
-        final String NL = StringUtil.NEWLINE();
+        final String NL = StringUtil.LS;
 
-        buf.append(mIntf.getName() + " = ");
-        buf.append(NL + "Attributes: {" + NL);
+        buf.append(mIntf.getName()).append(" = ");
+        buf.append(NL).append("Attributes: {").append(NL);
         for (final AttributeMethodInfo info : mAttrInfos)
         {
-            buf.append(info.attrName() + "/" + info.xmlName() + DELIM);
+            buf.append(info.attrName()).append("/").append(info.xmlName()).append(DELIM);
         }
-        buf.append(NL + "}" + NL + "Elements: {" + NL);
+        buf.append(NL).append("}").append(NL).append("Elements: {").append(NL);
         for (final ElementMethodInfo info : mElementInfos)
         {
-            buf.append(info.attrName() + "/" + info.xmlName() + DELIM);
+            buf.append(info.attrName()).append("/").append(info.xmlName()).append(DELIM);
         }
 
         final Set<String> childTypes = childTypes().keySet();
-        buf.append(NL + "}" + NL + "Child types: {" + NL);
+        buf.append(NL).append("}").append(NL).append("Child types: {").append(NL);
         for (final String type : childTypes)
         {
-            buf.append(type + DELIM);
+            buf.append(type).append(DELIM);
         }
 
-        buf.append(NL + "}" + NL + "DuckTyped: {" + NL);
+        buf.append(NL).append("}").append(NL).append("DuckTyped: {").append(NL);
         for (final DuckTypedInfo info : mDuckTypedInfos)
         {
-            buf.append(info + NL);
+            buf.append(info).append(NL);
         }
-        buf.append(NL + "}" + NL);
+        buf.append(NL).append("}").append(NL);
 
         return buf.toString();
     }
@@ -258,11 +246,9 @@ class ConfigBeanJMXSupport
         final int numTypes = types == null ? 0 : types.length;
         for (final DuckTypedInfo candidate : mDuckTypedInfos)
         {
-            // debug( "Match " + name + "=" + numTypes + " against " + candidate.name()  + "=" + candidate.signature().length );
             final Class<?>[] sig = candidate.signature();
             if (candidate.name().equals(name) && numTypes == sig.length)
             {
-                //debug( "Matched DuckTyped method: " + name );
                 if (isPerfectMatch(types, sig))
                 {
                     info = candidate;
@@ -348,16 +334,7 @@ class ConfigBeanJMXSupport
         final Descriptor descriptor = descriptor();
         final MBeanNotificationInfo[] notifications = new MBeanNotificationInfo[] {ATTRIBUTE_CHANGE_NOTIF_INFO};
 
-        final MBeanInfo info = new MBeanInfo(
-                classname,
-                description,
-                attrs,
-                null,
-                operations,
-                notifications,
-                descriptor);
-
-        return info;
+        return new MBeanInfo(classname, description, attrs, null, operations, notifications, descriptor);
     }
 
     private boolean hasNameAttribute()
@@ -376,14 +353,11 @@ class ConfigBeanJMXSupport
     {
         // verify that we don't have an item with getName() that's marked as a singleton
         // another ID could be used too (eg 'thread-pool-id'), no way to tell.
-        if (isSingleton())
+        if (isSingleton() && hasNameAttribute())
         {
-            if (hasNameAttribute())
-            {
                 AMXLoggerInfo.getLogger().log(Level.FINE, 
                         "ConfigBeanJMXSupport (AMX): @Configured interface {0} has getName() which is not a key value.  Remove getName() or use @Attribute(key=true)",
                         mIntf.getName());
-            }
         }
     }
 
@@ -394,11 +368,6 @@ class ConfigBeanJMXSupport
         {
             return false;
         }
-        /*
-        if (hasConfiguredBug()) {
-        return false;
-        }
-         */
 
         for (final AttributeMethodInfo info : mAttrInfos)
         {
@@ -423,7 +392,7 @@ class ConfigBeanJMXSupport
     // Tricky case FIXME:  what if there are List<String> elements.
     boolean isLeaf()
     {
-        return mElementInfos.size() == 0;
+        return mElementInfos.isEmpty();
     }
 
     /** partial list (quick check) of legal remoteable types */
@@ -483,7 +452,6 @@ class ConfigBeanJMXSupport
 
     private static boolean isRemoteableDuckTyped(final Method m, final DuckTyped duckTyped)
     {
-        boolean isRemotable = true;
 
         final Class<?> returnType = m.getReturnType();
         if (!isRemoteableType(returnType))
@@ -526,32 +494,31 @@ class ConfigBeanJMXSupport
             final List<DuckTypedInfo> duckTyped)
     {
 
-        for (final Method m : intf.getMethods())
+        for (final Method method : intf.getMethods())
         {
             AttributeMethodInfo a;
-            //debug( "Method: " + m.getName() + " on " + m.getDeclaringClass() );
-            if ((a = AttributeMethodInfo.get(m)) != null)
+            if ((a = AttributeMethodInfo.get(method)) != null)
             {
                 attrs.add(a);
                 if ( a.returnType() != String.class )
                 {
                     AMXLoggerInfo.getLogger().log(Level.INFO, AMXLoggerInfo.illegalNonstring, 
-                            new Object[]{intf.getName(), m.getName(), a.returnType().getName()});
+                            new Object[]{intf.getName(), method.getName(), a.returnType().getName()});
                 }
                 continue;
             }
 
-            ElementMethodInfo e;
-            if ((e = ElementMethodInfo.get(m)) != null)
+            ElementMethodInfo element;
+            if ((element = ElementMethodInfo.get(method)) != null)
             {
-                elements.add(e);
+                elements.add(element);
                 continue;
             }
 
-            final DuckTyped dt = m.getAnnotation(DuckTyped.class);
-            if (dt != null && isRemoteableDuckTyped(m, dt))
+            final DuckTyped dt = method.getAnnotation(DuckTyped.class);
+            if (dt != null && isRemoteableDuckTyped(method, dt))
             {
-                duckTyped.add(new DuckTypedInfo(m, dt));
+                duckTyped.add(new DuckTypedInfo(method, dt));
             }
         }
     }
@@ -568,9 +535,9 @@ class ConfigBeanJMXSupport
                 problems.add( "Missing defaultValue for Boolean @Configured " + mIntf.getName() + ".get" + info.attrName() + "()" );
             }
         }
-        if ( problems.size() != 0 )
+        if (!problems.isEmpty())
         {
-            System.out.println( CollectionUtil.toString( problems, "\n" ) );
+             LOGGER.log(Level.SEVERE, CollectionUtil.toString(problems, "\n" ));
         }
         return problems;
     }
@@ -754,9 +721,7 @@ class ConfigBeanJMXSupport
         }
 
         final MBeanParameterInfo[] paramInfosArray = CollectionUtil.toArray(paramInfos, MBeanParameterInfo.class);
-        final MBeanOperationInfo opInfo = new MBeanOperationInfo(name, description,
-                paramInfosArray, type.getName(), impact, descriptor);
-        return opInfo;
+        return new MBeanOperationInfo(name, description, paramInfosArray, type.getName(), impact, descriptor);
     }
 
     public MBeanOperationInfo[] toMBeanOperationInfos()
@@ -793,9 +758,7 @@ class ConfigBeanJMXSupport
                     continue;
                 }
 
-                //debug( "INVOKING: " + fieldName + ", returnType = " +  m.getReturnType() );
-                if (m.getParameterTypes().length == 0)
-                {
+                if (m.getParameterCount() == 0) {
                     try
                     {
                         final Object fieldValue = m.invoke(a);
@@ -824,7 +787,6 @@ class ConfigBeanJMXSupport
         final String name = info.attrName();
         final String xmlName = info.xmlName();
         descriptor.setField(DESC_XML_NAME, xmlName);
-        //debug( m.getName() + " => " + name + " => " + xmlName );
 
         if (info.pattern() != null)
         {
@@ -856,15 +818,13 @@ class ConfigBeanJMXSupport
         // we assume that all getters are writeable for now
         final boolean isWriteable = true;
         final boolean isIs = false;
-        final MBeanAttributeInfo attrInfo =
-                new MBeanAttributeInfo(name, type.getName(), description, isReadable, isWriteable, isIs, descriptor);
-        return attrInfo;
+        return new MBeanAttributeInfo(name, type.getName(), description, isReadable, isWriteable, isIs, descriptor);
     }
 
     /** An  @Element("*") is anonymous, no specified type, could be anything */
     public static final String ANONYMOUS_SUB_ELEMENT = "*";
 
-    private static abstract class MethodInfo
+    private abstract static class MethodInfo
     {
         protected final Method mMethod;
 
@@ -955,7 +915,6 @@ class ConfigBeanJMXSupport
             {
                 return null;
             }
-            //System.out.println( "ANONYMOUS ELEMENT LIST: " + anon );
             final Class[] interfaces = getTypesImplementing(anon);
 
             final List<Class<? extends ConfigBeanProxy>> types = ListUtil.newList();
@@ -967,11 +926,13 @@ class ConfigBeanJMXSupport
             return types;
         }
 
+        @Override
         public boolean required()
         {
             return mElement.required();
         }
 
+        @Override
         public boolean key()
         {
             return mElement.key();
@@ -996,7 +957,6 @@ class ConfigBeanJMXSupport
                     final String classname = model.targetTypeName;
                     final Class<?> intf = model.classLoaderHolder.loadClass(classname);
                     interfaces[i] = intf;
-                    //System.out.println( "Loaded: " + intf + " with tagName of " + model.getTagName() );
                     ++i;
                 }
             }
@@ -1005,8 +965,7 @@ class ConfigBeanJMXSupport
         }
         catch (final Exception e)
         {
-            AMXLoggerInfo.getLogger().log( Level.INFO, AMXLoggerInfo.cantGetTypesImplementing, 
-                    new Object[] {clazz, e.getLocalizedMessage()} );
+            AMXLoggerInfo.getLogger().log( Level.INFO, AMXLoggerInfo.cantGetTypesImplementing, new Object[] {clazz, e.getLocalizedMessage()} );
             throw new RuntimeException(e);
         }
     }
@@ -1042,43 +1001,37 @@ class ConfigBeanJMXSupport
     /** Create the default min/max values for primitive types */
     private static Map<Class<?>, long[]> makeMIN_MAX()
     {
-        final Map<Class<?>, long[]> m = new HashMap<Class<?>, long[]>();
+        final Map<Class<?>, long[]> minMaxPairs = new HashMap<Class<?>, long[]>();
 
-        long[] mm = new long[]
+        long[] minMaxPair = new long[]
         {
             Byte.MIN_VALUE, Byte.MAX_VALUE
         };
-        m.put(byte.class, mm);
-        m.put(Byte.class, mm);
+        minMaxPairs.put(byte.class, minMaxPair);
+        minMaxPairs.put(Byte.class, minMaxPair);
 
-        mm = new long[]
+        minMaxPair = new long[]
                 {
                     Short.MIN_VALUE, Short.MAX_VALUE
                 };
-        m.put(short.class, mm);
-        m.put(Short.class, mm);
+        minMaxPairs.put(short.class, minMaxPair);
+        minMaxPairs.put(Short.class, minMaxPair);
 
-        mm = new long[]
+        minMaxPair = new long[]
                 {
                     Integer.MIN_VALUE, Integer.MAX_VALUE
                 };
-        m.put(int.class, mm);
-        m.put(Integer.class, mm);
+        minMaxPairs.put(int.class, minMaxPair);
+        minMaxPairs.put(Integer.class, minMaxPair);
 
-        mm = new long[]
+        minMaxPair = new long[]
                 {
                     Long.MIN_VALUE, Long.MAX_VALUE
                 };
-        m.put(long.class, mm);
-        m.put(Long.class, mm);
+        minMaxPairs.put(long.class, minMaxPair);
+        minMaxPairs.put(Long.class, minMaxPair);
 
-        /*
-        m.put(PositiveInteger.class, new long[] { 1, Integer.MAX_VALUE } );
-        m.put(NonNegativeInteger.class, new long[] { 0, Integer.MAX_VALUE } );
-        m.put(Port.class, new long[] { 0, 65535 } );
-         */
-
-        return m;
+        return minMaxPairs;
     }
 
     private static final Map<Class<?>, long[]> MIN_MAX = makeMIN_MAX();
@@ -1109,11 +1062,13 @@ class ConfigBeanJMXSupport
             return mAttribute;
         }
 
+        @Override
         public boolean required()
         {
             return mAttribute.required();
         }
 
+        @Override
         public boolean key()
         {
             return mAttribute.key();
@@ -1278,6 +1233,7 @@ class ConfigBeanJMXSupport
             return method().getParameterTypes();
         }
 
+        @Override
         public String toString()
         {
             String paramsString = "";
@@ -1288,7 +1244,7 @@ class ConfigBeanJMXSupport
                 final String delim = ", ";
                 for (final Class<?> paramClass : method().getParameterTypes())
                 {
-                    builder.append(ClassUtil.stripPackageName(paramClass.getName()) + delim);
+                    builder.append(ClassUtil.stripPackageName(paramClass.getName())).append(delim);
                 }
                 builder.setLength(builder.length() - delim.length());
                 paramsString = builder.toString();
@@ -1305,8 +1261,7 @@ class ConfigBeanJMXSupport
      */
     public Set<Class<? extends ConfigBeanProxy>> childInterfaces()
     {
-        final Set<Class<? extends ConfigBeanProxy>> intfs = childInterfaces(mElementInfos);
-        return intfs;
+        return childInterfaces(mElementInfos);
     }
 
     private static Class<?> internalReturnType(final Method method)
@@ -1339,8 +1294,8 @@ class ConfigBeanJMXSupport
         }
         catch (final Exception e)
         {
-            System.out.println("AMX ConfigBeanAMXSupport: can't get generic return type for method " +
-                               method.getDeclaringClass().getName() + "." + method.getName() + "(): " + e.getClass().getName() + " = " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "AMX ConfigBeanAMXSupport: can''t get generic return type for method {0}.{1}(): {2} = {3}",
+                    new Object[]{method.getDeclaringClass().getName(), method.getName(), e.getClass().getName(), e.getMessage()});
         }
 
         return returnType;
@@ -1462,7 +1417,6 @@ class ConfigBeanJMXSupport
 
         final String name = info.attrName();    // eg strip the "get"
         final String xmlName = info.xmlName();
-        //debug( m.getName() + " => " + name + " => " + xmlName );
 
         final Class methodReturnType = info.returnType();
         Class<?> returnType = null;
@@ -1549,7 +1503,7 @@ class ConfigBeanJMXSupport
         return name == null ? name : Dom.convertName(name);
     }
 
-    private final static String DEFAULT_NAME_HINT = "name";
+    private static final String DEFAULT_NAME_HINT = "name";
 
     private static final class NameHint
     {
@@ -1590,39 +1544,20 @@ class ConfigBeanJMXSupport
             return new NameHint(mKey);
         }
 
-        // final String configuredBugKey = configuredBugKey();
-
         for (final AttributeMethodInfo info : mAttrInfos)
         {
 
             if (info.key())
             {
-                //debug( "findNameHint: mKey = " + mKey + ", info says " + info.xmlName() );
                 return new NameHint(info.xmlName());
             }
-            /*
-            else if (configuredBugKey != null && info.attrName().equalsIgnoreCase(configuredBugKey)) {
-            //debug( "findNameHint: mKey = " + mKey + ", workaround says " + configuredBugKey );
-            return new NameHint(configuredBugKey);
-            }
-             */
         }
-
-        /**
-        Is this possible?
-        for (final ElementMethodInfo info : mElements.values()) {
-        if (info.getElement().key()) {
-        return new NameHint(info.getName(), true);
-        }
-
-        }
-         */
         return NameHint.NAME;
     }
 
     public Map<String, String> getDefaultValues(final boolean useAttributeNames)
     {
-        final Map<String, String> m = new HashMap<String, String>();
+        final Map<String, String> defaultValueMap = new HashMap<String, String>();
 
         final MBeanInfo info = getMBeanInfo();
         for (final MBeanAttributeInfo attrInfo : info.getAttributes())
@@ -1634,40 +1569,10 @@ class ConfigBeanJMXSupport
             {
                 final String attrName = attrInfo.getName();
                 final String name = useAttributeNames ? attrName : xmlName(attrInfo, attrName);
-                m.put(name, defaultValue);
+                defaultValueMap.put(name, defaultValue);
             }
         }
-        return m;
-    }
-
-    private static void debug(final String s)
-    {
-        System.out.println("### " + s);
+        return defaultValueMap;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

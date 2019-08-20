@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -55,16 +56,19 @@ public final class EnumerationIterator implements Iterator
         mEnum = enumIn;
     }
 
+    @Override
     public boolean hasNext()
     {
         return (mEnum.hasMoreElements());
     }
 
+    @Override
     public Object next()
     {
         return (mEnum.nextElement());
     }
 
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException("");

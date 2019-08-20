@@ -1,3 +1,43 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
 package fish.payara.monitoring.store;
 
 import static java.util.Arrays.copyOf;
@@ -41,7 +81,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
  * 
  * The store uses two maps working like a doubled buffered image. While collection writes to the {@link #secondsWrite}
  * map request are served from the {@link #secondsRead} map. This makes sure that a consistent dataset across all series
- * can be used to create a consistent visualisation that isn't halve updated while the response is composed. However
+ * can be used to create a consistent visualisation that isn't half updated while the response is composed. However
  * this requires that callers are provided with a method that returns all the {@link SeriesDataset}s they need in a
  * single method invocation. Making multiple calls to this stores methods does not guarantee a consistent dataset across
  * all series since the {@link #swapLocalBuffer()} can happen inbetween method calls.
@@ -51,6 +91,10 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 public class InMemoryMonitoringDataRepository implements MonitoringDataRepository {
+    /**
+     * The topic name used to share data of instances with the DAS.
+     */
+    private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
 
     private ServiceLocator serviceLocator;
     private ServerEnvironment serverEnv;
@@ -70,7 +114,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
         HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
         instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
-        exchange = hz.getInstance().getTopic(MONITORING_DATA_CLUSTER_STORE_NAME);
+        exchange = hz.getInstance().getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
         isDas = serverEnv.isDas();
         PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
         if (isDas) {

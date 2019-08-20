@@ -37,95 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
-
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.amx.util.stringifier;
 
 import java.util.Iterator;
 
-
 /**
-	Stringifies an Iterator, using an optional element Stringifier.
-
-	Must be subclassed to provide Stringification of an element.
+ * Stringifies an {@link Iterator}, using an optional element Stringifier.
+ *
+ * Must be subclassed to provide Stringification of an element.
  */
+public abstract class IteratorStringifierBase implements Stringifier {
 
-public abstract class IteratorStringifierBase implements Stringifier
-{
-	public final String			mDelim;
-	public final Stringifier	mElementStringifier;
+    public static final IteratorStringifier DEFAULT = new IteratorStringifier(",");
+    
+    public final String mDelim;
+    public final Stringifier mElementStringifier;
 
-		public
-	IteratorStringifierBase()
-	{
-		this( ObjectStringifier.DEFAULT );
-	}
+    public IteratorStringifierBase() {
+        this(ObjectStringifier.DEFAULT);
+    }
 
-		public
-	IteratorStringifierBase( String delim )
-	{
-		this( delim, new SmartStringifier( delim ) );
-	}
+    public IteratorStringifierBase(String delim) {
+        this(delim, new SmartStringifier(delim));
+    }
 
-		public
-	IteratorStringifierBase( Stringifier elementStringifier )
-	{
-		this( ",", elementStringifier );
-	}
+    public IteratorStringifierBase(Stringifier elementStringifier) {
+        this(",", elementStringifier);
+    }
 
-		public
-	IteratorStringifierBase( String delim, Stringifier elementStringifier )
-	{
-		mDelim				= delim;
-		mElementStringifier	= elementStringifier;
-	}
+    public IteratorStringifierBase(String delim, Stringifier elementStringifier) {
+        mDelim = delim;
+        mElementStringifier = elementStringifier;
+    }
 
-		public String
-	stringify( Object o )
-	{
-		assert( o != null );
-		Iterator	iter	= (Iterator)o;
+    @Override
+    public String stringify(Object o) {
+        assert (o != null);
+        Iterator iter = (Iterator) o;
 
-		return( this.stringify( iter, mDelim, mElementStringifier ) );
-	}
+        return (this.stringify(iter, mDelim, mElementStringifier));
+    }
 
 
-	/*
-		Subclass may choose to override this.
-	 */
-		protected abstract void
-	stringifyElement(
-		Object			elem,
-		String			delim,
-		StringBuilder	buf);
+    /*
+     * Subclass may choose to override this.
+     */
+    protected abstract void stringifyElement(Object elem, String delim, StringBuilder buf);
 
+    public String stringify(Iterator iter, String delim, Stringifier stringifier) {
+        assert (iter != null);
 
+        StringBuilder buf = new StringBuilder();
 
-		public String
-	stringify( Iterator iter, String delim, Stringifier stringifier )
-	{
-		assert( iter != null );
+        while (iter.hasNext()) {
+            final Object elem = iter.next();
 
-		StringBuilder	buf	= new StringBuilder();
+            stringifyElement(elem, delim, buf);
+            buf.append(delim);
+        }
 
-		while ( iter.hasNext() )
-		{
-			final Object	elem	= iter.next();
+        // strip trailing delimiter
+        final int length = buf.length();
+        if (length != 0) {
+            buf.setLength(length - delim.length());
+        }
 
-			stringifyElement( elem, delim, buf );
-			buf.append( delim );
-		}
-
-		// strip trailing delimiter
-		final int	length	= buf.length();
-		if ( length != 0 )
-		{
-			buf.setLength( length - delim.length() );
-		}
-
-		return( buf.toString() );
-	}
-
-	public final static IteratorStringifier DEFAULT = new IteratorStringifier( "," );
+        return (buf.toString());
+    }
 }
-

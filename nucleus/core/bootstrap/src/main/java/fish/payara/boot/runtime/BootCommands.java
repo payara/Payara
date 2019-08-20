@@ -44,12 +44,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.embeddable.CommandRunner;
 
@@ -60,6 +64,14 @@ import org.glassfish.embeddable.CommandRunner;
  */
 public class BootCommands {
 
+    /**
+     * Command flag pattern include 3 groups to parse the command-line flag
+     * [^\"']\\S+=[\"'].+?[\"'] e.g --description="results in error"
+     * [^\"']\\S+ e.g --enabled=true, --enabled true
+     * [\"'].+?[\"'] e.g --description "results in error"
+     *
+     */
+    private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'].+?[\"']|[^\"']\\S+|[\"'].+?[\"'])\\s*");
     private final List<BootCommand> commands;
 
     private static final Logger LOGGER = Logger.getLogger(BootCommands.class.getName());
@@ -71,32 +83,46 @@ public class BootCommands {
     public void add(BootCommand command) {
         commands.add(command);
     }
-    
+
+    public List<BootCommand> getCommands() {
+        return commands;
+    }
+
     public void parseCommandScript(File file) throws IOException {
         parseCommandScript(file.toURI().toURL());
     }
 
     public void parseCommandScript(URL scriptURL) throws IOException {
         try (InputStream scriptStream = scriptURL.openStream()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream));
-
-            String commandStr = reader.readLine();
-            while (commandStr != null) {
-                commandStr = commandStr.trim();
-                // # is a comment
-                if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
-                    commandStr = (String) TranslatedConfigView.getTranslatedValue(commandStr);
-                    String command[] = commandStr.split(" ");
-                    if (command.length > 1) {
-                        commands.add(new BootCommand(command[0], Arrays.copyOfRange(command, 1, command.length)));
-                    } else if (command.length == 1) {
-                        commands.add(new BootCommand(command[0]));
-                    }
-                }
-                commandStr = reader.readLine();
-            }
+            Reader reader = new InputStreamReader(scriptStream);
+            parseCommandScript(reader);
         } catch (IOException ex) {
             LOGGER.log(SEVERE, null, ex);
+        }
+    }
+
+    void parseCommandScript(Reader reader) throws IOException {
+        BufferedReader bufferReader = new BufferedReader(reader);
+        String commandStr = bufferReader.readLine();
+        while (commandStr != null) {
+            commandStr = commandStr.trim();
+            // # is a comment
+            if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
+                commandStr = TranslatedConfigView.expandValue(commandStr);
+                String[] command;
+                List<String> elements = new ArrayList<>();
+                Matcher flagMatcher = COMMAND_FLAG_PATTERN.matcher(commandStr);
+                while (flagMatcher.find()) {
+                    elements.add(flagMatcher.group(1));
+                }
+                command = elements.toArray(new String[elements.size()]);
+                if (command.length > 1) {
+                    commands.add(new BootCommand(command[0], Arrays.copyOfRange(command, 1, command.length)));
+                } else if (command.length == 1) {
+                    commands.add(new BootCommand(command[0]));
+                }
+            }
+            commandStr = bufferReader.readLine();
         }
     }
 

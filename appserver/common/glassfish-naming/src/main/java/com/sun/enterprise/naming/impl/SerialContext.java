@@ -467,7 +467,7 @@ public class SerialContext implements Context {
                 return (new SerialContext(myName, myEnv, services));
             }
 
-            name = (String)TranslatedConfigView.getTranslatedValue(name);
+            name = TranslatedConfigView.expandValue(name);
             name = getRelativeName(name);
 
             if (isjavaURL(name)) {

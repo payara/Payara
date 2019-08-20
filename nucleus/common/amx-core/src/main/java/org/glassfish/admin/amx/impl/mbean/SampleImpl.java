@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import javax.management.Attribute;
@@ -45,16 +47,11 @@ import javax.management.AttributeNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.*;
-import javax.management.remote.JMXServiceURL;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.HashMap;
 
 import org.glassfish.admin.amx.base.Sample;
@@ -63,7 +60,6 @@ import org.glassfish.admin.amx.util.jmx.OpenMBeanUtil;
 import org.glassfish.admin.amx.util.MapUtil;
 import org.glassfish.admin.amx.util.ListUtil;
 import org.glassfish.admin.amx.util.SetUtil;
-import org.glassfish.admin.amx.util.StringUtil;
 
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.core.Util;
@@ -97,7 +93,6 @@ public final class SampleImpl extends AMXImplBase {
         }
 
         mAttributes.put(name, value);
-        //mExtendedMBeanInfo	= null;
     }
 
     public void removeAttribute(final String name) {
@@ -108,22 +103,21 @@ public final class SampleImpl extends AMXImplBase {
     private synchronized MBeanInfo createMBeanInfo(final MBeanInfo baseMBeanInfo) {
         final MBeanAttributeInfo[] dynamicAttrInfos = new MBeanAttributeInfo[mAttributes.keySet().size()];
         int i = 0;
-        for (final Entry<String, Serializable> entry : mAttributes.entrySet()) {
-            String name = entry.getKey();
-            final Object value = entry.getValue();
+        for (Map.Entry<String, Serializable> entry : mAttributes.entrySet()) {
+            final Serializable value = entry.getValue();
             final String type = value == null ? String.class.getName() : value.getClass().getName();
 
-            dynamicAttrInfos[i] = new MBeanAttributeInfo(name, type, "dynamically-added Attribute",
+            dynamicAttrInfos[i] = new MBeanAttributeInfo(entry.getKey(), type, "dynamically-added Attribute",
                     true, true, false);
             ++i;
         }
 
-        final MBeanAttributeInfo[] attrInfos =
-                JMXUtil.mergeMBeanAttributeInfos(dynamicAttrInfos, baseMBeanInfo.getAttributes());
+        final MBeanAttributeInfo[] attrInfos = JMXUtil.mergeMBeanAttributeInfos(dynamicAttrInfos, baseMBeanInfo.getAttributes());
 
         return (JMXUtil.newMBeanInfo(baseMBeanInfo, attrInfos));
     }
 
+    @Override
     public synchronized MBeanInfo getMBeanInfo() {
         if (mExtendedMBeanInfo == null) {
             mExtendedMBeanInfo = createMBeanInfo(super.getMBeanInfo());
@@ -132,6 +126,7 @@ public final class SampleImpl extends AMXImplBase {
         return (mExtendedMBeanInfo);
     }
 
+    @Override
     protected Serializable getAttributeManually(final String name) {
         if (!mAttributes.containsKey(name)) {
             throw new RuntimeException(new AttributeNotFoundException(name));
@@ -139,6 +134,7 @@ public final class SampleImpl extends AMXImplBase {
         return mAttributes.get(name);
     }
 
+    @Override
     protected void setAttributeManually(final Attribute attr) {
         mAttributes.put(attr.getName(), Serializable.class.cast(attr.getValue()));
     }
@@ -155,6 +151,7 @@ public final class SampleImpl extends AMXImplBase {
             mIntervalMillis = intervalMillis;
         }
 
+        @Override
         public void run() {
             for (int i = 0; i < mNumNotifs; ++i) {
                 sendNotification(Sample.SAMPLE_NOTIFICATION_TYPE, Sample.USER_DATA_KEY, mData);
@@ -171,7 +168,7 @@ public final class SampleImpl extends AMXImplBase {
     public void uploadBytes(final byte[] bytes) {
         // do nothing; just a bandwidth test
     }
-    private final static int MEGABYTE = 1024 * 1024;
+    private static final int MEGABYTE = 1024 * 1024;
 
     public byte[] downloadBytes(final int numBytes) {
         if (numBytes < 0 || numBytes > 10 * MEGABYTE) {
@@ -237,19 +234,6 @@ public final class SampleImpl extends AMXImplBase {
         }
         stuff.add(table);
 
-        final Object[] result = CollectionUtil.toArray(stuff, Object.class);
-
-        return result;
+        return CollectionUtil.toArray(stuff, Object.class);
     }
 }
-
-
-
-
-
-
-
-
-
-
-

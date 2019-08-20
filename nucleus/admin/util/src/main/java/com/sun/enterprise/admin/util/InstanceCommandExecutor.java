@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
+import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
@@ -58,7 +58,7 @@ import org.glassfish.hk2.api.ServiceLocator;
  * 
  * @author Vijay Ramachandran
  */
-public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements Runnable, InstanceCommand {
+public class InstanceCommandExecutor extends ServerRemoteRestAdminCommand implements Runnable, InstanceCommand {
 
     private final Server server;
     private final ParameterMap params;

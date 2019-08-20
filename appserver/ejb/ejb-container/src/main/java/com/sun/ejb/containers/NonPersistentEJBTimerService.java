@@ -41,7 +41,6 @@
 
 package com.sun.ejb.containers;
 
-import static com.sun.ejb.containers.EJBTimerService.logger;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -61,6 +60,25 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
         return false;
     }
 
+    /**
+     * Check if timerId represents nonpersistent timer.
+     * Used by subclasses to determine whether this class would handle the actions on
+     * this timer.
+     * @param timerId id of the timer
+     * @return true if timerId represents valid active timer
+     * @throws FinderException if timerId represents expired nonpersistent timer
+     */
+    protected boolean isNonpersistent(TimerPrimaryKey timerId) throws FinderException {
+        RuntimeTimerState rt = getNonPersistentTimer(timerId);
+        if (rt == null) {
+            // not found, probably persistent
+            return false;
+        }
+        checkNonpersistentTimerValid(rt);
+        // valid non-persistent timer
+        return true;
+    }   
+
     @Override
     public int migrateTimers(String fromOwnerId) {
         throw new IllegalStateException("Non-persistent timers cannot be migrated");
@@ -69,7 +87,10 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
     @Override
     protected void cancelTimer(TimerPrimaryKey timerId)
             throws FinderException, Exception {
-        cancelNonPersistentTimer(timerId);
+        if (!cancelNonPersistentTimer(timerId)) {
+            // timer was not found, but this is the primary timer store, therefore it is an error
+            checkNonpersistentTimerValid(null);
+        }
     }
 
     @Override
@@ -106,17 +127,20 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
             throws FinderException, Exception {
 
         RuntimeTimerState rt = getNonPersistentTimerState(timerId);
-        if (rt != null) {
-            if (rt.isCancelled()) {
-                // already cancelled or removed
-                return true;
-            }
-
-            cancelTimerSynchronization(null, timerId,
-                    rt.getContainerId(), ownerIdOfThisServer_, false);
+        if (rt == null) {
+            return false;
         }
+        checkNonpersistentTimerValid(rt);
+        cancelTimerSynchronization(null, timerId,
+            rt.getContainerId(), ownerIdOfThisServer_, false);
+        return true;
+    }
 
-        return (rt != null);
+    private static void checkNonpersistentTimerValid(RuntimeTimerState st) throws FinderException {
+        if (st == null || st.isCancelled() || st.isExpired()) {
+            String id = st == null ? "" : (st.getTimerId()+" ");
+            throw new FinderException("Timer " + id + "is no longer active");
+        }
     }
 
 
@@ -151,9 +175,8 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
         EJBTimerSchedule ts = null;
 
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
-        if (rt != null) {
-            ts = rt.getTimerSchedule();
-        }
+        checkNonpersistentTimerValid(rt);
+        ts = rt.getTimerSchedule();
 
         return ts;
     }
@@ -163,7 +186,8 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
 
         // Check non-persistent timers only
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
-        return rt == null;
+        checkNonpersistentTimerValid(rt);
+        return false;
     }
 
     @Override
@@ -180,15 +204,12 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
     }
 
     @Override
-       protected Serializable getInfo(TimerPrimaryKey timerId) throws FinderException {
-
+    protected Serializable getInfo(TimerPrimaryKey timerId) throws FinderException {
+        
         // Check non-persistent timers only
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
-        if (rt != null) {
-            return rt.getInfo();
-        }
-
-        return null;
+        checkNonpersistentTimerValid(rt);
+        return rt.getInfo();
     }
 
     @Override

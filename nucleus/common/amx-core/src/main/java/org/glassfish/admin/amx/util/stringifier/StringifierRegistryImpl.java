@@ -37,75 +37,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.stringifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 /**
-	Holds a lookup table for Stringifiers.   Certain Stringifier classes
-	may use this registry to aid them in producing suitable output.
+ * Holds a lookup table for Stringifiers. Certain Stringifier classes may use this registry to aid them in producing suitable output.
  */
-public class StringifierRegistryImpl implements StringifierRegistry
-{
-	public static final StringifierRegistry	DEFAULT	= new StringifierRegistryImpl();
-	
-	private final Map<Class<?>,Stringifier>		mLookup;
-	private final StringifierRegistry			mNextRegistry;
-	
-	/**
-		Create a new registry with no next registry.
-	 */
-		public
-	StringifierRegistryImpl()
-	{
-		this( null );
-	}
-	
-	/**
-		Create a new registry which is chained to an existing registry.
-		
-		When lookup() is called, if it cannot be found in this registry, then
-		the chainee is used.
-		
-		@param registry	the registry to use if this registry fails to find a Stringifier
-	 */
-		public
-	StringifierRegistryImpl( final StringifierRegistry registry )
-	{
-		mLookup			= new HashMap<Class<?>,Stringifier>();
-		mNextRegistry	= registry;
-	}
-	
-		public void
-	add( final Class<?> theClass, final Stringifier stringifier )
-	{
-		if ( lookup( theClass ) != null )
-		{
-			throw new IllegalArgumentException( "Stringifier already registered for: " + theClass.getName() );
-		}
-		
-		mLookup.remove( theClass );
-		mLookup.put( theClass, stringifier );
-	}
-	
-	
-		public Stringifier
-	lookup( final Class<?> theClass )
-	{
-		Stringifier		stringifier	= mLookup.get( theClass );
-		
-		if ( stringifier == null && mNextRegistry != null )
-		{
-			stringifier	= mNextRegistry.lookup( theClass );
-		}
-		
-		return( stringifier );
-	}
+public class StringifierRegistryImpl implements StringifierRegistry {
+
+    public static final StringifierRegistry DEFAULT = new StringifierRegistryImpl();
+
+    private final Map<Class<?>, Stringifier> mLookup;
+    private final StringifierRegistry mNextRegistry;
+
+    /**
+     * Create a new registry with no next registry.
+     */
+    public StringifierRegistryImpl() {
+        this(null);
+    }
+
+    /**
+     * Create a new registry which is chained to an existing registry.
+     *
+     * When lookup() is called, if it cannot be found in this registry, then the chainee is used.
+     *
+     * @param registry	the registry to use if this registry fails to find a Stringifier
+     */
+    public StringifierRegistryImpl(final StringifierRegistry registry) {
+        mLookup = new HashMap<Class<?>, Stringifier>();
+        mNextRegistry = registry;
+    }
+
+    @Override
+    public void add(final Class<?> theClass, final Stringifier stringifier) {
+        if (lookup(theClass) != null) {
+            throw new IllegalArgumentException("Stringifier already registered for: " + theClass.getName());
+        }
+
+        mLookup.remove(theClass);
+        mLookup.put(theClass, stringifier);
+    }
+
+    @Override
+    public Stringifier lookup(final Class<?> theClass) {
+        Stringifier stringifier = mLookup.get(theClass);
+
+        if (stringifier == null && mNextRegistry != null) {
+            stringifier = mNextRegistry.lookup(theClass);
+        }
+
+        return (stringifier);
+    }
 }
-
-
-

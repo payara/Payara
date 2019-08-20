@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import com.sun.appserv.server.util.Version;
@@ -105,19 +107,21 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         return child(BulkAccess.class);
     }
 
+    @Override
     protected ObjectName preRegisterHook(final MBeanServer server,
             final ObjectName selfObjectName)
             throws Exception {
         // DomainRoot has not yet been registered; any MBeans that exist are non-compliant
         // because they cannot have a Parent.
         final Set<ObjectName> existing = JMXUtil.queryAllInDomain(server, selfObjectName.getDomain());
-        if (existing.size() != 0) {
+        if (!existing.isEmpty()) {
             logger.log(Level.INFO, AMXLoggerInfo.mbeanExist, CollectionUtil.toString(existing, ", "));
         }
 
         return selfObjectName;
     }
 
+    @Override
     public void preRegisterDone()
             throws Exception {
         super.preRegisterDone();
@@ -129,7 +133,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
 
         // Start compliance after everything else; it uses key MBeans like Paths
         //turning off ComplianceMonitor for now to help embedded runs.
-        if (registrationSucceeded.booleanValue()) {
+        if (registrationSucceeded) {
             // start compliance monitoring immediately, even before children are registered
             mCompliance = ComplianceMonitor.getInstance(getDomainRootProxy());
             mCompliance.start();
@@ -158,10 +162,8 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
     @Override
     protected final void registerChildren() {
         super.registerChildren();
-        //System.out.println("Registering children of DomainRoot");
         final ObjectName self = getObjectName();
-        final ObjectNameBuilder objectNames =
-                new ObjectNameBuilder(getMBeanServer(), self);
+        final ObjectNameBuilder objectNames = new ObjectNameBuilder(getMBeanServer(), self);
 
         ObjectName childObjectName = null;
         Object mbean = null;
@@ -204,7 +206,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         mbean = new ExtImpl(self);
         registerChild(mbean, childObjectName);
 
-        childObjectName = objectNames.buildChildObjectName(server, extObjectName, Realms.class);
+        childObjectName = ObjectNameBuilder.buildChildObjectName(server, extObjectName, Realms.class);
         mbean = new RealmsImpl(extObjectName);
         registerChild(mbean, childObjectName);
         
@@ -255,20 +257,6 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         final long elapsed = System.currentTimeMillis() - env.getStartupContext().getCreationTime();
         final Duration duration = new Duration(elapsed);
 
-        return new Object[]{
-                    elapsed, duration.toString()
-                };
+        return new Object[]{elapsed, duration.toString()};
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

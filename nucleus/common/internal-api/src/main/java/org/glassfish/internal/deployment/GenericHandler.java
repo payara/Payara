@@ -136,7 +136,7 @@ public abstract class GenericHandler implements ArchiveHandler {
         DeploymentContext context) {
 
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.PROVIDE_APPINFO);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.DETERMINE_APP_NAME, "ApplicationInfoProvider");
 
         // first try to get the name from ApplicationInfoProvider if 
         // we can find an implementation of this service

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.test;
 
@@ -48,8 +49,7 @@ import org.junit.Before;
 import java.lang.management.ManagementFactory;
 
 
-public final class ObjectNamesTest extends TestBase
-{
+public final class ObjectNamesTest extends TestBase {
     
     public ObjectNamesTest() {
     }
@@ -59,6 +59,7 @@ public final class ObjectNamesTest extends TestBase
     }
     
     @Before
+    @Override
     public void setUp() {
         initBootUtil();
     }
@@ -78,9 +79,3 @@ public final class ObjectNamesTest extends TestBase
         get().getJMXDomain();
     }
 }
-
-
-
-
-
-

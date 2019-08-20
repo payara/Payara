@@ -169,10 +169,3 @@ public interface AMXConfigProxy extends AMXProxy, AttributeResolver
 								throws Exception;
 
 }
-
-
-
-
-
-
-

@@ -498,7 +498,7 @@ public class GFFileHandler extends StreamHandler implements
                     LOG_FILE_NAME;
         }
 
-        return TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
+        return TranslatedConfigView.expandConfigValue(logFileProperty);
     }
 
     Formatter findFormatterService(String formatterName) {
@@ -1109,7 +1109,7 @@ public class GFFileHandler extends StreamHandler implements
     }
     
     public synchronized void setLogFile(String fileName) {
-        String logFileName = TranslatedConfigView.getTranslatedValue(fileName).toString();
+        String logFileName = TranslatedConfigView.expandConfigValue(fileName);
         File logFile = new File(logFileName);
          if (!logFile.isAbsolute()) {
             logFile = new File(env.getInstanceRoot(), logFileName);

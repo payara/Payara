@@ -110,10 +110,3 @@ public interface AttributeResolver
     public AttributeList resolveAttributes(@Param(name = "attributeNames") String[] attributeNames);
 
 }
-
-
-
-
-
-
-

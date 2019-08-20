@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util;
 
@@ -57,9 +57,8 @@ public class LineReaderImpl implements LineReader
         mInputStreamReader = new InputStreamReader(inputStream);
     }
 
-    public String readLine(String prompt)
-            throws java.io.IOException
-    {
+    @Override
+    public String readLine(String prompt) throws java.io.IOException {
         final StringBuilder line = new StringBuilder();
 
         if (prompt != null)
@@ -93,7 +92,3 @@ public class LineReaderImpl implements LineReader
     }
 
 }
-
-
-
-

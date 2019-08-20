@@ -223,7 +223,10 @@ public class ModuleInfo {
             reversedEngines = filteredReversedEngines;
 
             if (events!=null) {
-                events.send(new Event<ModuleInfo>(Deployment.MODULE_LOADED, this), false);
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, name,
+                        DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_LOADED.type())) {
+                    events.send(new Event<ModuleInfo>(Deployment.MODULE_LOADED, this), false);
+                }
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
@@ -290,7 +293,7 @@ public class ModuleInfo {
             }
             started=true;
             if (events!=null) {
-                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.START_EVENTS, "Module");
+                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_STARTED.type());
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
                 innerSpan.close();
             }

@@ -61,12 +61,8 @@ import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bean.InterceptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.contexts.CreationalContextImpl;
 import org.jboss.weld.contexts.WeldCreationalContext;
-import org.jboss.weld.interceptor.proxy.InterceptionContext;
-import org.jboss.weld.interceptor.spi.metadata.InterceptorClassMetadata;
 import org.jboss.weld.manager.api.WeldManager;
-import org.jboss.weld.util.reflection.Reflections;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
@@ -244,7 +240,7 @@ public class JCDIServiceImpl implements JCDIService {
 
         // JJS: 7/20/17 We must perform the around_construct interception because Weld does not know about
         // interceptors defined by descriptors.
-        WeldCreationalContext<T> weldCreationalContext = (WeldCreationalContext) creationalContext;
+        WeldCreationalContext<T> weldCreationalContext = (WeldCreationalContext<T>) creationalContext;
         weldCreationalContext.setConstructorInterceptionSuppressed(true);
 
         JCDIAroundConstructCallback<T> aroundConstructCallback =
@@ -255,10 +251,6 @@ public class JCDIServiceImpl implements JCDIService {
         }
         T beanInstance = instance;
 
-        if( beanInstance == null ) {
-            // Create instance , perform constructor injection.
-            beanInstance = it.produce(creationalContext);
-        }
         if (null != jcdiCtx) {
             jcdiCtx.setInstance( beanInstance );
         }
@@ -305,13 +297,12 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
     	JCDIInjectionContextImpl<T> injectionCtxImpl = (JCDIInjectionContextImpl<T>) injectionCtx;
 
     	// Perform injection and call initializers
-    	injectionCtxImpl.it.inject(injectionCtxImpl.instance, injectionCtxImpl.cc);
+    	injectionCtxImpl.inject();
 
     	// NOTE : PostConstruct is handled by ejb container
     }
@@ -357,21 +348,6 @@ public class JCDIServiceImpl implements JCDIService {
         }
 
         return null;
-    }
-
-    private <T> T getAroundConstructInterceptorInstance(Interceptor<T> interceptor, CreationalContext<T> creationalContext) {
-        T instance = null;
-
-        if (creationalContext instanceof CreationalContextImpl<?>) {
-            CreationalContextImpl<T> weldContext = Reflections.cast(creationalContext);
-            @SuppressWarnings("unchecked")
-            InterceptorImpl<T> interceptorImpl = (InterceptorImpl) interceptor;
-            InterceptorClassMetadata<T> interceptorClassMetadata = interceptorImpl.getInterceptorMetadata();
-            InterceptionContext interceptionContext = weldContext.getAroundConstructInterceptionContext();
-            instance = interceptionContext.getInterceptorInstance(interceptorClassMetadata);
-        }
-
-        return instance;
     }
 
     /**
@@ -564,7 +540,7 @@ public class JCDIServiceImpl implements JCDIService {
     private static class JCDIInjectionContextImpl<T> implements JCDIInjectionContext<T> {
         InjectionTarget<T> it;
         CreationalContext<T> cc;
-        T instance;
+        private T instance;
 
         private final List<JCDIInjectionContext<T>> dependentContexts = new ArrayList<>();
         private JCDIAroundConstructCallback jcdiAroundConstructCallback;
@@ -578,9 +554,18 @@ public class JCDIServiceImpl implements JCDIService {
             this.instance = i;
         }
 
+        void inject() {
+            it.inject(getInstance(), cc);
+        }
 
         @Override
         public T getInstance() {
+            if (instance == null) {
+                if (it == null || cc == null) {
+                    throw new IllegalStateException("Incomplete injection context: it="+it+" cc="+cc);
+                }
+                instance = it.produce(cc);
+            }
             return instance;
         }
 
@@ -646,7 +631,7 @@ public class JCDIServiceImpl implements JCDIService {
             if( null != jcdiAroundConstructCallback) {
                 setInstance( (T) jcdiAroundConstructCallback.createEjb() );
             }
-            return instance;
+            return getInstance();
         }
 
         public void setJCDIAroundConstructCallback( JCDIAroundConstructCallback jcdiAroundConstructCallback ) {

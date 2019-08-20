@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,35 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.security.auth.realm.ldap;
 
-package org.glassfish.admin.amx.logging;
-
-import javax.management.openmbean.CompositeData;
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
-
-
+import java.util.logging.Logger;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 /**
-	@since AS 9.0
+ *
+ * @author Alan Roth
  */
-@Taxonomy(stability = Stability.EXPERIMENTAL)
-public final class LogUtil
-{
-    private LogUtil()   {}
+public class GroupSearchLoggerTest{
+    Logger logger;
     
-    /**
-        Instantiate a {@link LogQueryResult}
-        using a CompositeData as returned from
-        {@link LogQuery#queryServerLog}.
-     */
-        public static final LogQueryResult
-    createLogQueryResult( final CompositeData data )
-    {
-        return null;
+    @Before
+    public void setUp(){
+        logger = LDAPRealm.groupSearchLogger;
+    }
+    
+    @Test
+    public void groupSearchErrorLoggerNotNullTest() {
+        assertNotNull(logger);
+    }
+    
+    public void groupSearchErrorLoggerNameTest() {
+        String loggerName = logger.getName();
+        assertEquals("javax.enterprise.system.core.security.ldaprealm.groupsearch", loggerName);
     }
 }
-
-
-
-
-

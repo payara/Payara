@@ -46,7 +46,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.glassfish.internal.deployment.analysis.TraceContext.Level.APPLICATION;
@@ -225,6 +230,27 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
     public void close() {
         while (this.currentContext != null) {
             popContext();
+        }
+        postProcess();
+    }
+
+    private void postProcess() {
+
+        Deque<Instant> levelEnds = new ArrayDeque<>();
+        for (DeploymentSpan span : spans) {
+            // remove any levels this span breaches.
+            for(Iterator<Instant> ends = levelEnds.descendingIterator(); ends.hasNext();) {
+                Instant end = ends.next();
+                // using "not is before" to also eliminate equal timestamps.
+                if (!span.getStart().isBefore(end)) {
+                    ends.remove();
+                } else {
+                    // no need to continue, other level marks are surely later than the current one.
+                    break;
+                }
+            }
+            levelEnds.add(span.getFinish());
+            span.setNestLevel(levelEnds.size());
         }
     }
 
