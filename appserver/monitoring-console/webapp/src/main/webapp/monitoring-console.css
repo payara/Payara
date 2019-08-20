@@ -32,6 +32,12 @@ h1 {
 	margin: 10px;
     border: 1px solid #F0981B;
 }
+.closeBtn {
+	float: right;
+}
 canvas {
     position: relative;
+}
+a.closeBtn, a.closeBtn:visited {
+	color: white;
 }

@@ -42,6 +42,8 @@ var MonitoringConsole = (function() {
 	 * Adds a new Chart.js chart object initialised for the given MC level configuration to the charts object
 	 */
 	function initChart(config) {
+		if (config.closed)
+			return;
 		charts[config.series] = {
 				config: config,
 				canvas: new Chart(config.target, {

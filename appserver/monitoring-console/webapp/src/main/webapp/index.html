@@ -81,15 +81,24 @@ $('#add').click(function() {
 	         width: 2,
 	         height: 1
 	     });
-	    var newDiv = $('<div/>', { "class": "chart-box" });
+	    var boxId = id + 'box';
+	    var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
+	    var config = { 
+	            target: newCanvas,
+	            series: this.value,
+	            title: $( this ).text(),
+	            beginAtZero: $('#zero')[0].checked,
+	        };
+	    var newCloseButton = $('<a/>', { href: '#', text: '[-]', "class": "closeBtn" });
+	    newCloseButton.click(function() {
+	    	config.closed = true;
+	    	MonitoringConsole.show(charts);
+	    	$('#'+boxId).remove();
+	    });
+	    newDiv.append(newCloseButton);
 	    newDiv.append(newCanvas);
 	    $('#canvas-container').append(newDiv);
-	    charts.push({ 
-	        target: newCanvas,
-	        series: this.value,
-	        title: $( this ).text(),
-	        beginAtZero: $('#zero')[0].checked,
-	    });
+	    charts.push(config);
 	});
     MonitoringConsole.show(charts);
 });
