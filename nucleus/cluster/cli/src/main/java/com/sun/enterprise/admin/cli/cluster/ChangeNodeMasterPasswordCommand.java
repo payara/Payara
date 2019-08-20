@@ -107,7 +107,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         }
 
         // Check node exists
-        if (!selectedNodeDir.isDirectory()) {
+        if (!selectedNodeDir.isDirectory() || !getServerDirs().getAgentDir().exists()) {
             throw new CommandException(STRINGS.get("bad.node.dir", selectedNodeDir));
         }
 
