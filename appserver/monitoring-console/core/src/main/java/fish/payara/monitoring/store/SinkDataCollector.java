@@ -65,13 +65,13 @@ public class SinkDataCollector implements MonitoringDataCollector {
 
     @Override
     public MonitoringDataCollector collect(CharSequence key, long value) {
-        int len = tags.length();
+        int length = tags.length();
         if (tags.length() > 0) {
             tags.append(TAG_SEPARATOR);
         }
         tags.append(key);
         accept(value);
-        tags.setLength(len);
+        tags.setLength(length);
         return this;
     }
 
