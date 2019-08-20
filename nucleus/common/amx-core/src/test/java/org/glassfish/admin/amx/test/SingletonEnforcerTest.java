@@ -37,19 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.test;
 
 import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 
-public final class SingletonEnforcerTest extends TestBase
-{
-    public SingletonEnforcerTest() {
-    }
+public final class SingletonEnforcerTest extends TestBase {
 
     private static final class Dummy {}
     
@@ -69,14 +66,6 @@ public final class SingletonEnforcerTest extends TestBase
         SingletonEnforcer.register( Integer.class, new Integer(0) );
         assertNotNull( SingletonEnforcer.get( Integer.class ) );
     }
-    
-    /*
-    @Test(expected=IllegalArgumentException.class)
-    public void testForBrokenJUnit() {
-        throw new IllegalArgumentException( "expected" );
-    }
-    */
-
 
     private static final class Dummy2 {}
     @Test
@@ -89,9 +78,3 @@ public final class SingletonEnforcerTest extends TestBase
         catch( IllegalArgumentException e) { /*OK*/ }
     }
 }
-
-
-
-
-
-

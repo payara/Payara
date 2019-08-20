@@ -45,13 +45,3 @@ MBeans for AMX.
  */
 public interface AMXSupport {
 }
-
-
-
-
-
-
-
-
-
-

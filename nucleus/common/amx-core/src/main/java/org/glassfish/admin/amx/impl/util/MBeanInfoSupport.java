@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.admin.amx.impl.util;
 
 import java.lang.annotation.Annotation;
@@ -57,9 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.management.Descriptor;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanInfo;
-import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.ObjectName;
@@ -85,9 +80,6 @@ public final class MBeanInfoSupport {
     private MBeanInfoSupport() {
     }
 
-    private static void debug(final Object o) {
-        System.out.println(o.toString());
-    }
     private static MBeanInfo amxspiMBeanInfo = null;
 
     public static synchronized MBeanInfo getAMX_SPIMBeanInfo() {
@@ -151,7 +143,6 @@ public final class MBeanInfoSupport {
                 operationInfos,
                 null,
                 d);
-        //debug( "MBeanInfoSupport.getMBeanInfo(): " + mbeanInfo );
 
         return (mbeanInfo);
     }
@@ -176,11 +167,9 @@ public final class MBeanInfoSupport {
                 } else if (numArgs == 0 && JMXUtil.isIsOrGetter(method)) {
                     attrName = JMXUtil.getAttributeName(method);
                     getters.put(attrName, method);
-                    //debug( "findInterfaceMethods: getter: " + attrName );
                 } else if (numArgs == 1 && JMXUtil.isSetter(method)) {
                     attrName = JMXUtil.getAttributeName(method);
                     setters.put(attrName, method);
-                    //debug( "findInterfaceMethods: setter: " + attrName );
                 } else {
                     AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.attributeNotGetterSetter, 
                             new Object[]{intf.getName(), method.getName()});
@@ -210,27 +199,6 @@ public final class MBeanInfoSupport {
             }
         }
 
-        /*
-        java.util.Iterator	iter	= null;
-        trace( "-------------------- getterSetters -------------------" );
-        iter	= getterSetters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getNameProp() + ", " );
-        }
-        trace( "-------------------- getters -------------------" );
-        iter	= getters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getNameProp() + ", " );
-        }
-        trace( "-------------------- setters -------------------" );
-        iter	= setters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getNameProp() + ", " );
-        }
-         */
     }
 
     /**
@@ -289,7 +257,6 @@ public final class MBeanInfoSupport {
                     write,
                     JMXUtil.isIs(m));
             infos.add(info);
-            //debug( "Added MBeanAttributeInfo for: " + attrName );
         }
 
         return (infos);

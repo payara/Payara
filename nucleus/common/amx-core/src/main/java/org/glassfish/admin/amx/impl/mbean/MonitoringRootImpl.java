@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payra Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.logging.Level;
@@ -50,7 +52,7 @@ import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 public class MonitoringRootImpl extends AMXImplBase // implements MonitoringRoot
 {
-    private final Logger mLogger = AMXLoggerInfo.getLogger();
+    private static final Logger MLOGGER = AMXLoggerInfo.getLogger();
 
     public MonitoringRootImpl(final ObjectName parent) {
         super(parent, MonitoringRoot.class);
@@ -66,10 +68,9 @@ public class MonitoringRootImpl extends AMXImplBase // implements MonitoringRoot
 
         ObjectName childObjectName = null;
         Object mbean = null;
-        mLogger.log(Level.INFO, AMXLoggerInfo.registerChild, System.getProperty("com.sun.aas.instanceName"));
+        MLOGGER.log(Level.INFO, AMXLoggerInfo.registerChild, System.getProperty("com.sun.aas.instanceName"));
         // when clustering comes along, some other party will need to register MBeans
         // for each non-DAS instance
-        // childObjectName = objectNames.buildChildObjectName(ServerMon.class, AMXGlassfish.DEFAULT.dasName());
         childObjectName = objectNames.buildChildObjectName(ServerMon.class, System.getProperty("com.sun.aas.instanceName"));
         mbean = new ServerMonitoringImpl(self);
         registerChild(mbean, childObjectName);
@@ -79,46 +80,3 @@ public class MonitoringRootImpl extends AMXImplBase // implements MonitoringRoot
         return getChildren(ServerMon.class);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

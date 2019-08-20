@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -46,11 +47,15 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 import javax.management.AttributeList;
 import java.util.Iterator;
 
+/**
+ * Creates a String representation of an {@link AttributeList}
+ * @see Object#toString() 
+ */
 public final class AttributeListStringifier implements Stringifier
 {
     final String mDelim;
 
-    public final static AttributeListStringifier DEFAULT = new AttributeListStringifier();
+    public static final AttributeListStringifier DEFAULT = new AttributeListStringifier();
 
     public AttributeListStringifier()
     {
@@ -63,8 +68,8 @@ public final class AttributeListStringifier implements Stringifier
 
     }
 
-    public String stringify(Object o)
-    {
+    @Override
+    public String stringify(Object o) {
         final AttributeList attrList = (AttributeList) o;
         final Iterator iter = attrList.iterator();
 

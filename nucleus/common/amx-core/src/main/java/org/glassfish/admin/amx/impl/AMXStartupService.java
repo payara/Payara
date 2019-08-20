@@ -163,7 +163,6 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
 
             mMBeanTracker.setEmitMBeanStatus(false);
 
-            //final StandardMBean supportMBean = new StandardMBean(mMBeanTracker, MBeanTrackerMBean.class);
             mMBeanServer.registerMBean(mMBeanTracker, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME);
         } catch (final Exception e) {
             logger.log(Level.WARNING, "AMX Startup Service: Initialisation error.", e);
@@ -327,16 +326,16 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
         // loads the high-level AMX MBeans, like DomainRoot, QueryMgr, etc
         loadDomainRoot();
         FeatureAvailability.getInstance().registerFeature(FeatureAvailability.AMX_CORE_READY_FEATURE, getDomainRoot());
-        logger.fine("AMXStartupServiceNew: AMX core MBeans are ready for use, DomainRoot = " + getDomainRoot());
+        logger.log(Level.FINE, "AMXStartupServiceNew: AMX core MBeans are ready for use, DomainRoot = {0}", getDomainRoot());
 
         try {
             // Find and load any additional AMX subsystems
             final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
-            logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loaders.size());
+            logger.log(Level.FINE, "AMXStartupService._loadAMXMBeans(): found this many loaders: {0}", loaders.size());
             final AMXLoaderThread[] threads = new AMXLoaderThread[loaders.size()];
             int i = 0;
             for (final AMXLoader loader : loaders) {
-                logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loader);
+                logger.log(Level.FINE, "AMXStartupService._loadAMXMBeans(): found this many loaders: {0}", loader);
                 threads[i] = new AMXLoaderThread(loader);
                 threads[i].start();
                 ++i;

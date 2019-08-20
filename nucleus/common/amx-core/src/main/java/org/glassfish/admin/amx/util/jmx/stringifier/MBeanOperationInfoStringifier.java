@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -44,18 +45,18 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 import javax.management.MBeanOperationInfo;
 
-public class MBeanOperationInfoStringifier
-        extends MBeanFeatureInfoStringifier implements Stringifier
-{
+/**
+ * Creates a String representation of an {@link MBeanOperationInfo}
+ * @see Object#toString() 
+ */
+public class MBeanOperationInfoStringifier extends MBeanFeatureInfoStringifier implements Stringifier {
     public static final MBeanOperationInfoStringifier DEFAULT = new MBeanOperationInfoStringifier();
 
-    public MBeanOperationInfoStringifier()
-    {
+    public MBeanOperationInfoStringifier() {
         super();
     }
 
-    public MBeanOperationInfoStringifier(MBeanFeatureInfoStringifierOptions options)
-    {
+    public MBeanOperationInfoStringifier(MBeanFeatureInfoStringifierOptions options) {
         super(options);
     }
 
@@ -94,9 +95,10 @@ public class MBeanOperationInfoStringifier
 
     public static String getDescription(MBeanOperationInfo info)
     {
-        return (sOperationDelimiter + "\"" + info.getDescription() + "\"");
+        return (OPERATION_DELIMITER + "\"" + info.getDescription() + "\"");
     }
 
+    @Override
     public String stringify(Object o)
     {
         assert (o != null);
@@ -109,7 +111,7 @@ public class MBeanOperationInfoStringifier
 
         String impactStr = getImpact(op);
 
-        result = result + sOperationDelimiter + "impact=" + impactStr;
+        result = result + OPERATION_DELIMITER + "impact=" + impactStr;
 
         if (mOptions.mIncludeDescription)
         {

@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.core;
 
 import java.util.regex.Pattern;
 
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.admin.amx.util.SetUtil;
 import org.glassfish.admin.amx.util.ClassUtil;
-import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 
 import static org.glassfish.external.amx.AMX.*;
 
@@ -63,10 +63,6 @@ Utility routines pertinent to the MBean API.
 public final class Util {
 
     private static final String QUOTE_CHAR = "\"";
-
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
 
     public static String quoteIfNeeded(String name) {
         if(name.indexOf(':') > 1) {
@@ -362,13 +358,6 @@ public final class Util {
         final Serializable value = getAMXNotificationValue(notif, key);
 
         return theClass.cast(value);
-    }
-
-    public static void sleep(final long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-        }
     }
 
     /**

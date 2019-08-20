@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.base;
 
 import java.util.Collections;
@@ -44,7 +46,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.*;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
@@ -53,17 +58,16 @@ import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
 
 /**
- * Tracks the entire MBean parent/child hierarachy so that individual MBeans
+ * Tracks the entire MBean parent/child hierarchy so that individual MBeans
  * need not do so. Can supply parents and children of any MBean, used by all AMX
  * implementations.
  */
 @Taxonomy(stability = Stability.NOT_AN_INTERFACE)
 @AMXMBeanMetadata(singleton = true, globalSingleton = true, leaf = true)
 public final class MBeanTracker implements NotificationListener, MBeanRegistration, MBeanTrackerMBean {
+    
+    private static final Logger LOGGER = AMXLoggerInfo.getLogger();
 
-    private static void debug(final Object o) {
-        System.out.println("" + o);
-    }
     /**
      * maps a parent ObjectName to a Set of children
      */
@@ -112,12 +116,12 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
                 // first and there's nothing we could do about it.
                 if (type.equals(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
                     if (mEmitMBeanStatus) {
-                        System.out.println("AMX MBean registered: " + objectName);
+                        LOGGER.log(Level.INFO, "AMX MBean registered: {0}", objectName);
                     }
                     addChild(objectName);
                 } else if (type.equals(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
                     if (mEmitMBeanStatus) {
-                        System.out.println("AMX MBean UNregistered: " + objectName);
+                        LOGGER.log(Level.INFO, "AMX MBean UNregistered: {0}", objectName);
                     }
                     removeChild(objectName);
                 }
@@ -140,18 +144,16 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
         if (mServer == null) {
             return;
         }
-        if (registrationSucceeded.booleanValue()) {
+        if (registrationSucceeded) {
             try {
                 mServer.addNotificationListener(JMXUtil.getMBeanServerDelegateObjectName(), this, null, null);
             } catch (Exception e) {
                 throw new RuntimeException("Could not register with MBeanServerDelegate", e);
             }
-            //debug( "MBeanTracker: registered as " + mObjectName );
         }
         // populate our list
         final ObjectName pattern = Util.newObjectNamePattern(mDomain, "");
         final Set<ObjectName> names = JMXUtil.queryNames(mServer, pattern, null);
-        //debug( "MBeanTracker: found MBeans: " + names.size() );
         for (final ObjectName o : names) {
             addChild(o);
         }
@@ -166,6 +168,7 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
 
     @Override
     public final void postDeregister() {
+        //nothing needed here, see preDeregister
     }
 
     private boolean isRelevantMBean(final ObjectName child) {
@@ -181,7 +184,7 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
             parent = (ObjectName) mServer.getAttribute(child, AMX.ATTR_PARENT);
         } catch (final Exception e) {
             // nothing to be done, MBean gone missing, badly implemented, etc.
-            //System.out.println( "No Parent for: " + child );
+            LOGGER.log(Level.FINE, "No Parent for: {0}", child);
         }
 
         if (parent != null) {
@@ -193,7 +196,6 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
                     mParentChildren.put(parent, children);
                 }
                 children.add(child);
-                //debug( "MBeanTracker: ADDED " + child + " with parent " + parent );
             }
         }
     }
@@ -209,7 +211,6 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
                 children.remove(child);
                 if (children.isEmpty()) {
                     mParentChildren.remove(parent);
-                    //debug( "MBeanTracker: REMOVED " + child + " from parent " + parent );
                 }
             }
         }

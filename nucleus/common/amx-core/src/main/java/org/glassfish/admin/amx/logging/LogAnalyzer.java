@@ -174,9 +174,3 @@ for( int i = 0; i < infos.length; ++i ) {<br>
     @ManagedAttribute
     public long getErrorStatisticsIntervalMinutes(); 
 }
-
-
-
-
-
-

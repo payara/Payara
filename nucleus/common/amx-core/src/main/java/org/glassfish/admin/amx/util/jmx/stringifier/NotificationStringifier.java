@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -49,13 +49,16 @@ import javax.management.MBeanServerNotification;
 import javax.management.Notification;
 import java.util.Date;
 
-public class NotificationStringifier implements Stringifier
-{
+/**
+ * Creates a String representation of an {@link Notification}
+ * @see Object#toString() 
+ */
+public class NotificationStringifier implements Stringifier {
     public static final NotificationStringifier DEFAULT = new NotificationStringifier();
 
     protected Options mOptions;
 
-    public final static class Options
+    public static final class Options
     {
         // don't make 'final' fields; allow changes after instantiation
         public boolean mIncludeObjectName;
@@ -102,8 +105,8 @@ public class NotificationStringifier implements Stringifier
         b.append(SmartStringifier.toString(o));
     }
 
-    public String stringify(Object o)
-    {
+    @Override
+    public String stringify(Object o) {
         final Notification notif = (Notification) o;
 
         return (_stringify(notif).toString());
@@ -155,22 +158,3 @@ public class NotificationStringifier implements Stringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
