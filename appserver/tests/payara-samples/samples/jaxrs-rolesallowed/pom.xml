@@ -7,7 +7,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>samples-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
 
     <artifactId>jaxrs-rolesallowed-EE</artifactId>

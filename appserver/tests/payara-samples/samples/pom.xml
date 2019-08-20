@@ -6,7 +6,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>parent-aggregator</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
 
     <artifactId>samples-parent</artifactId>
@@ -169,7 +169,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <excludes>
@@ -200,6 +199,14 @@
 
             <dependencies>
 
+                <!-- Rely on the distribution to make sure it builds after the distributions -->
+                <dependency>
+                    <groupId>fish.payara.distributions</groupId>
+                    <artifactId>payara</artifactId>
+                    <version>${payara.version}</version>
+                    <type>zip</type>
+                </dependency>
+
                 <!-- The actual Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
@@ -212,7 +219,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
@@ -239,7 +245,6 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <dependencies>
@@ -299,7 +304,6 @@
                 <plugins>
                     <!-- Download Payara Micro and copy to target directory -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
@@ -393,9 +397,7 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
-                        <version>2.4</version>
                         <executions>
                             <execution>
                                 <id>sources</id>

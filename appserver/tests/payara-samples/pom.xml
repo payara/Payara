@@ -6,9 +6,15 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-aggregator</artifactId>
+        <version>5.193-SNAPSHOT</version>
+        <relativePath>../../../</relativePath>
+    </parent>
+
     <groupId>fish.payara.samples</groupId>
     <artifactId>parent-aggregator</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Samples - root</name>
@@ -16,8 +22,6 @@
     <properties>
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>false</skipTests>
@@ -29,7 +33,7 @@
 
         <!-- Micro implementation versions (these are downloaded and installed
             in these versions by Maven for the CI profiles) -->
-        <payara.version>5.193-SNAPSHOT</payara.version>
+        <payara.version>${project.version}</payara.version>
         <payara.container.version>1.0.Beta3</payara.container.version>
         <payara.micro.container.version>5.Beta3-m3</payara.micro.container.version>
         <payara_domain>domain1</payara_domain>
