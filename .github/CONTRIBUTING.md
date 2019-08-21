@@ -10,6 +10,7 @@ As we must also comply with the upstream Oracle Common Development and Distribut
 ```
 Portions Copyright [2019] Payara Foundation and/or its affiliates
 ```
+You can also follow along with the steps in this video: [https://youtu.be/gkH-wu-bWkE](https://youtu.be/gkH-wu-bWkE)
 
 ## Getting Payara
 You will need to create a personal Github account and fork the repository.
