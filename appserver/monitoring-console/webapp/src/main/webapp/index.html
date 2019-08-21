@@ -109,23 +109,17 @@ $("#rotation").on('change', function() {
     });
 });
 
-var localStorage = window.localStorage;
-var charts = [];
-var configData = localStorage.getItem('chart-configs');
-if (configData) {
-	charts = JSON.parse(configData);
-    charts.forEach(addChartBox);
-	MonitoringConsole.show(charts);
-}
+MonitoringConsole.init(addChartBox);
 
 function addChartBox(config) {
     var boxId = config.target + '-box';
+    if ($('#'+boxId).length)
+    	return;
     var newCanvas = $('<canvas/>',{ id: config.target }).prop({ width: 2, height: 1 });
     var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
     var newCloseButton = $('<a/>', { href: '#', text: '[ x ]', "class": "closeBtn" });
     newCloseButton.click(function() {
-        config.closed = true;
-        MonitoringConsole.show(charts);
+        MonitoringConsole.dispose(config);
         $('#'+boxId).remove();
     });
     newDiv.append(newCloseButton);
@@ -137,18 +131,17 @@ $('#add').click(function() {
 	$("#options option:selected").each(function() {
 		var series = this.value;
 		var title = $( this ).text();
-	    var id = 'chart-' + series.replace(/[+,:"'?!#%&=]/g, '_');
+	    var target = 'chart-' + series.replace(/[+,:"'?!#%&=]/g, '_');
 	    var config = { 
-	        target: id,
+	        target: target,
 	        series: series,
 	        title: title,
 	        beginAtZero: $('#zero')[0].checked,
 	    };
 	    addChartBox(config);
-	    charts.push(config);
+	    MonitoringConsole.add(config);
 	});
-    MonitoringConsole.show(charts);
-    localStorage.setItem('chart-configs', JSON.stringify(charts));
+	MonitoringConsole.update();
 });
 
 MonitoringConsole.loadAllSeries(function(names) {

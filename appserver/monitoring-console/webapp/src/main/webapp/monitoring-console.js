@@ -1,6 +1,11 @@
 Chart.defaults.global.defaultFontColor = "#fff";
 
 var MonitoringConsole = (function() {
+	/**
+	 * Key used in local stage for the default page configuration
+	 */
+	const defaultConfigKey = 'fish.payara.monitoring-console.defaultConfigs';
+	
 	const defaultBackgroundColors = [
         'rgba(153, 102, 255, 0.2)',
         'rgba(255, 99, 132, 0.2)',
@@ -27,77 +32,114 @@ var MonitoringConsole = (function() {
 	 */
 	var charts = {};
 	
+	/**
+	 * {object} - map of the chart configurations. 
+	 * 
+	 * All configuration properties must not be complex objects (values).
+	 */
+	var configs = {};
+	
+	/**
+	 * Loads and returns the configuration from the local storage
+	 */
+	function loadLocalDefaultConfigs(preConstructionFn) {
+		var localStorage = window.localStorage;
+		var item = localStorage.getItem(defaultConfigKey);
+		if (item) {
+			var defaultConfigs = JSON.parse(item);
+			if (preConstructionFn) {
+				Object.values(defaultConfigs).forEach(preConstructionFn);
+			}
+			configs = defaultConfigs;
+			updateAllCharts();
+		}
+	}
+	
+	/**
+	 * Updates the current configuration in the local storage
+	 */
+	function storeLocalDefaultConfig() {
+		window.localStorage.setItem(defaultConfigKey, JSON.stringify(configs));
+	}
+	
 	function customTimeLables(value, index, values) {
 		if (values.length == 0 || index == 0)
 			return value;
 		var span = values[values.length -1].value - values[0].value;
-		if (span < 120000) { // less then two minite
+		if (span < 120000) { // less then two minutes
 			var lastMinute = new Date(values[index-1].value).getMinutes();
 			return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
 		}
 		return value;
 	}
 	
-	/**
-	 * Adds a new Chart.js chart object initialised for the given MC level configuration to the charts object
-	 */
-	function initChart(config) {
-		if (config.closed)
-			return;
-		charts[config.series] = {
-				config: config,
-				canvas: new Chart(config.target, {
-					type: 'line',
-					data: {
-						datasets: [],
-					},
-					options: {
-						scales: {
-							xAxes: [{
-								type: 'time',
-								gridLines: {
-									color: 'rgb(120,120,120)',
-								},
-								time: {
-									minUnit: 'second',
-									round: 'second',
-								},
-								ticks: {
-									callback: customTimeLables,
-									minRotation: 90,
-									maxRotation: 90,
-								}
-							}],
-							yAxes: [{
-								display: true,
-								gridLines: {
-									color: 'rgb(120,120,120)',
-								},
-								ticks: {
-									beginAtZero: config.beginAtZero,
-									precision:0, // no decimal places in labels
-								},
-							}],
-						}
-					}
-				}),
-		};
+	function seriesName(configOrSeries) {
+		var type = typeof configOrSeries;
+		if (type === 'string') {
+			return configOrSeries;
+		} 
+		if (type === 'object') {
+			return configOrSeries.series;
+		}
+		return undefined;
 	}
 	
 	/**
-	 * Updates a single chart by fetching the newest data from the server and applying it to the given chart.
+	 * Adds a new Chart.js chart object initialised for the given MC level configuration to the charts object
 	 */
-	function updateChart(mcChart) {
-		var config = mcChart.config;
-		var chart = mcChart.canvas;
-		if (config.closed) {
-			if (chart) {
-				chart.destroy();
-				mcChart.canvas = null;
-			}
+	function createChart(config) {
+		return new Chart(config.target, {
+			type: 'line',
+			data: {
+				datasets: [],
+			},
+			options: {
+				scales: {
+					xAxes: [{
+						type: 'time',
+						gridLines: {
+							color: 'rgb(120,120,120)',
+						},
+						time: {
+							minUnit: 'second',
+							round: 'second',
+						},
+						ticks: {
+							callback: customTimeLables,
+							minRotation: 90,
+							maxRotation: 90,
+						}
+					}],
+					yAxes: [{
+						display: true,
+						gridLines: {
+							color: 'rgb(120,120,120)',
+						},
+						ticks: {
+							beginAtZero: config.beginAtZero,
+							precision:0, // no decimal places in labels
+						},
+					}],
+				}
+			},
+		});
+	}
+	
+	/**
+	 * Updates the referenced chart by fetching the newest data from the server and applying it to the given chart.
+	 * Should no chart exist (but a config) a new chart is created.
+	 */
+	function updateChart(configOrSeries) {
+		var series = seriesName(configOrSeries);
+		if (!series)
 			return;
+		var config = configs[series];
+		var chart = charts[series];
+		if (!chart) { // might be one newly added
+			chart = createChart(config);
+			charts[series] = chart;
 		}
-		$.getJSON('api/series/' + config.series + '/statistics', function(stats) {
+		$.getJSON('api/series/' + series + '/statistics', function(stats) {
 			var localStats = stats[0];
 			var datasets = [];
 			for (var j = 0; j < stats.length; j++) {
@@ -140,19 +182,54 @@ var MonitoringConsole = (function() {
 		});
 	}
 	
-	function resetAllCharts() {
+	function removeChart(configOrSeries) {
+		var series = seriesName(configOrSeries);
+		if (series) {
+			delete configs[series];
+			var chart = charts[series];
+			delete charts[series];
+			if (chart) {
+				chart.destroy();
+			}
+		}
+	}
+	
+	function addChart(config) {
+		if (typeof config === 'object') {
+			if (typeof config.series !== 'string')
+				throw 'configuration object requires string property `series`';
+			if (typeof config.target !== 'string')
+				throw 'configuration object requires string property `target`';
+			configs[config.series] = config;
+		} else {
+			throw 'configuration was no object but: ' + config;
+		}
+	}
+	
+	function removeAllCharts() {
 		if (updater) {
 			clearInterval(updater);
 		}
-		Object.values(charts).forEach(chart => chart.canvas.destroy());
-		charts = {};
+		applyToAllCharts(removeChart);
 	}
 	
 	/**
 	 * Updates the charts of the current configuration.
 	 */
 	function updateAllCharts() {
-		Object.values(charts).forEach(updateChart);
+		applyToAllCharts(updateChart);
+		if (!updater) {
+			updater = setInterval(updateAllCharts, 1000);
+		}
+	}
+	
+	/**
+	 * Applies a function to all charts.
+	 * 
+	 * @param {function} fn - a function that accepts a single argument of the string series name
+	 */
+	function applyToAllCharts(fn) {
+		Object.keys(configs).forEach(fn);
 	}
 	
 	return {
@@ -163,51 +240,42 @@ var MonitoringConsole = (function() {
 			$.getJSON("api/series/", consumer);
 		},
 		
+		init: function(preConstructionFn) {
+			loadLocalDefaultConfigs(preConstructionFn);
+		},
+		
 		/**
-		 * @param {function} update - function applied to all chart options
+		 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
 		 */
-		configure: function(update) {
+		configure: function(optionsUpdate) {
 			Object.values(charts).forEach(function(chart) {
-				if (!chart.config.closed) {
-					update.call(window, chart.canvas.options);
-					chart.canvas.update();
-				}
+				optionsUpdate.call(window, chart.options);
+				chart.update();
 			});
+		},
+		
+		add: function(config) {
+			addChart(config);
+			storeLocalDefaultConfig();
 		},
 		
 		/**
 		 * Changes the active charts to those of the passed configuration.
-		 * 
-		 * @param {array} configs - array of chart configurations
-		 * @param {object} configs[i] - MC level chart configuration for a single chart
-		 * @param {string} configs[i].target - id of the DOM element to contain the chart
-		 * @param {string} configs[i].series - name of the series to display
-		 * @param {string} configs[i].title - title text of the chart
-		 * @param {boolean} configs[i].beginAtZero - true to force y-axis to start at zero
 		 */
-		show: function(configs) {
-			for (var i = 0; i < configs.length; i++) {
-				var config = configs[i];
-				var chart = charts[config.series];
-				if (chart && chart.canvas) {
-					if (config.closed) {
-						chart.canvas.destroy();
-						chart.canvas = null;
-					} else if (JSON.stringify(chart.config) !== JSON.stringify(config)) {
-						initChart(config);
-					}
-				} else {
-					initChart(config);
-				}
-			}
-			updater = setInterval(updateAllCharts, 1000);
+		update: function() {
+			updateAllCharts();
+		},
+		
+		dispose: function(configOrSeries) {
+			removeChart(configOrSeries);
+			storeLocalDefaultConfig();
 		},
 		
 		/**
 		 * Destroys all chart objects
 		 */
 		reset: function() {
-			resetAllCharts();
+			removeAllCharts();
 		},
 	};
 })();
