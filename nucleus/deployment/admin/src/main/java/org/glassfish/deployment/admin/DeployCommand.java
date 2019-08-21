@@ -537,11 +537,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             Transaction t = deployment.prepareAppConfigChanges(deploymentContext);
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
-            if(!loadOnly) {
+            if(deplResult != null && !loadOnly) {
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
-            ApplicationInfo appInfo = deplResult.appInfo;
+            ApplicationInfo appInfo = deplResult != null ? deplResult.appInfo : null;
 
             /*
              * Various deployers might have added to the downloadable or
