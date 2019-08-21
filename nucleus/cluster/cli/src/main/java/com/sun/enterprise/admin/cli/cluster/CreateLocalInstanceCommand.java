@@ -165,7 +165,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         setDasDefaultsOnly = false;
 
         if (programOpts.isAutoName() || autoName) {
-            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName,
+            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName0,
                     NamingHelper.getAllNamesInUse(programOpts, env));
         }
 
@@ -335,7 +335,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private boolean rendezvousWithDAS() {
         try {
             getUptime();
-            if (!programOpts.isExtraTerse() || extraTerse) {
+            if (!programOpts.isExtraTerse() || !extraTerse) {
                 logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
             }
             return true;

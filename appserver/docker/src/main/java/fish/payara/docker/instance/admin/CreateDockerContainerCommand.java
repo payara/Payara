@@ -1,6 +1,45 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
 package fish.payara.docker.instance.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -20,6 +59,8 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -29,18 +70,22 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 
+/**
+ * Internal Asadmin command used to create a Docker container. This is called by the create-instance command.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "_create-docker-container")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = Server.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "_create-docker-container",
                 description = "Create a Docker Container for the defined Instance on the specified nodeName")
@@ -91,7 +136,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
             }
         }
 
-        if (dasHost == null || dasHost.equals("") || dasPort.equals("")) {
+        if (dasHost == null || dasHost.trim().isEmpty() || dasPort.trim().isEmpty()) {
             actionReport.failure(logger, "Could not retrieve DAS host address or port");
             return;
         }
@@ -103,6 +148,42 @@ public class CreateDockerContainerCommand implements AdminCommand {
             return;
         }
 
+        // Pull the image if it hasn't been downloaded or built yet
+        pullImage(node);
+
+        createContainer(adminCommandContext, actionReport, node, server, dasHost, dasPort);
+    }
+
+    private void pullImage(Node node) {
+        // Create web target with query
+        WebTarget webTarget = createWebTarget(node, "/images/create");
+        webTarget = webTarget.queryParam(DockerConstants.DOCKER_FROM_IMAGE_KEY, node.getDockerImage());
+
+        // Send the POST request
+        Response response = null;
+        try {
+            response = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName)
+                    .request(MediaType.APPLICATION_JSON).post(Entity.entity(JsonObject.EMPTY_JSON_OBJECT,
+                            MediaType.APPLICATION_JSON));
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Encountered an exception sending request to Docker: \n", ex);
+        }
+
+        // Check status of response and act on result
+        if (response != null) {
+            Response.StatusType responseStatus = response.getStatusInfo();
+            if (!responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                // Log the failure
+                logger.fine("Failed to pull Docker Image: \n" + responseStatus.getReasonPhrase());
+            }
+        } else {
+            // If the response is null, clearly something has gone wrong, so treat is as a failure
+            logger.fine( "Failed to pull Docker Image");
+        }
+    }
+
+    private void createContainer(AdminCommandContext adminCommandContext, ActionReport actionReport, Node node,
+            Server server, String dasHost, String dasPort) {
         Properties containerConfig = new Properties();
 
         // Add all instance-level system properties, stripping the "Docker." prefix
@@ -127,28 +208,13 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 dasHost, dasPort);
 
         // Create web target with query
-        Client client = ClientBuilder.newClient();
-        WebTarget webTarget = null;
-        if (Boolean.valueOf(node.getUseTls())) {
-            webTarget = client.target("https://"
-                    + node.getNodeHost()
-                    + ":"
-                    + node.getDockerPort()
-                    + "/containers/create");
-        } else {
-            webTarget = client.target("http://"
-                    + node.getNodeHost()
-                    + ":"
-                    + node.getDockerPort()
-                    + "/containers/create");
-        }
+        WebTarget webTarget = createWebTarget(node, "/containers/create");
         webTarget = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName);
 
         // Send the POST request
         Response response = null;
         try {
-            response = webTarget.queryParam(DockerConstants.DOCKER_NAME_KEY, instanceName)
-                    .request(MediaType.APPLICATION_JSON).post(Entity.entity(jsonObject, MediaType.APPLICATION_JSON));
+            response = webTarget.request(MediaType.APPLICATION_JSON).post(Entity.entity(jsonObject, MediaType.APPLICATION_JSON));
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Encountered an exception sending request to Docker: \n", ex);
         }
@@ -156,7 +222,22 @@ public class CreateDockerContainerCommand implements AdminCommand {
         // Check status of response and act on result
         if (response != null) {
             Response.StatusType responseStatus = response.getStatusInfo();
-            if (!responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+            if (responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                // Read the container ID from the response
+                JsonObject jsonResponse = response.readEntity(JsonObject.class);
+
+                if (jsonResponse != null) {
+                    String dockerContainerId = jsonResponse.getString("Id");
+
+                    // Set the Docker container ID either to the ID of the container, or to the instance name if the the
+                    // ID can't be obtained
+                    if (dockerContainerId != null && !dockerContainerId.trim().isEmpty()) {
+                        setDockerContainerId(actionReport, server, dockerContainerId);
+                    } else {
+                        setDockerContainerId(actionReport, server, instanceName);
+                    }
+                }
+            } else {
                 // Log the failure
                 actionReport.failure(logger, "Failed to create Docker Container: \n"
                         + responseStatus.getReasonPhrase());
@@ -170,6 +251,29 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
             // Attempt to unregister the instance so we don't have an instance entry that can't be used
             unregisterInstance(adminCommandContext, actionReport);
+        }
+    }
+
+    private WebTarget createWebTarget(Node node, String endpoint) {
+        Client client = ClientBuilder.newClient();
+
+        WebTarget webTarget = client.target((Boolean.parseBoolean(node.getUseTls()) ? "https://" : "http://")
+                + node.getNodeHost()
+                + ":"
+                + node.getDockerPort()
+                + (endpoint.startsWith("/") ? endpoint : "/" + endpoint));
+
+        return webTarget;
+    }
+
+    private void setDockerContainerId(ActionReport actionReport, Server server, String dockerContainerId) {
+        try {
+            ConfigSupport.apply(serverProxy -> {
+                serverProxy.setDockerContainerId(dockerContainerId);
+                return serverProxy;
+            }, server);
+        } catch (TransactionFailure transactionFailure) {
+            actionReport.failure(logger, "Could not set Docker Container ID for instance", transactionFailure);
         }
     }
 

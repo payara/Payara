@@ -41,21 +41,25 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Properties;
 
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-
-import static com.sun.enterprise.admin.cli.CLIConstants.*;
-import com.sun.enterprise.util.net.NetUtils;
+import static com.sun.enterprise.admin.cli.CLIConstants.DEFAULT_HOSTNAME;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_HOST;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_IS_SECURE;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_PORT;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DAS_PROTOCOL;
+import static com.sun.enterprise.admin.cli.CLIConstants.K_DOCKER_NODE;
 
 /**
  *  This is a local command that creates a local instance.
@@ -97,7 +101,6 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     @Override
     protected void validate() throws CommandException {
-
         if(ok(instanceName0)) {
             instanceName = instanceName0;
         } else {
@@ -125,7 +128,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!setDasDefaultsOnly) {
                 String nodeDirChildName = nodeDirChild != null ? nodeDirChild.getName() : "";
                 String nodeName = node != null ? node : nodeDirChildName;
-                if (!programOpts.isExtraTerse() || extraTerse) {
+                if (!programOpts.isTerse()) {
                     logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
                 }
             }
@@ -135,7 +138,6 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
         DASPort = programOpts.getPort();
         dasIsSecure = programOpts.isSecure();
         DASProtocol = "http";
-
     }
 
     @Override
