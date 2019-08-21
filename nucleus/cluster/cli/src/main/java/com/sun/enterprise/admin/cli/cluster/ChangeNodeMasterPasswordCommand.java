@@ -107,7 +107,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         }
 
         // Check node exists
-        if (!selectedNodeDir.isDirectory()) {
+        if (!selectedNodeDir.isDirectory() || !getServerDirs().getAgentDir().exists()) {
             throw new CommandException(STRINGS.get("bad.node.dir", selectedNodeDir));
         }
 
@@ -159,8 +159,13 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
      * @throws CommandException if the password is null
      */
     protected String findOldPassword() throws CommandException {
-        // Fetch from password file
-        String oldPassword = passwords.get(OLD_PASSWORD_ALIAS);
+        // Fetch from master password file
+        String oldPassword = super.readFromMasterPasswordFile();
+
+        // Fetch from provided password file
+        if (oldPassword == null) {
+            oldPassword = passwords.get(OLD_PASSWORD_ALIAS);
+        }
 
         // Prompt user
         if (oldPassword == null) {

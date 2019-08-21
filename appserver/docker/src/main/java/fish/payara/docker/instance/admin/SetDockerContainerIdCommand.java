@@ -38,91 +38,80 @@
  * holder.
  */
 
-package fish.payara.docker.node.admin;
+package fish.payara.docker.instance.admin;
 
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import org.glassfish.api.ActionReport;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.util.logging.Logger;
 
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
-
 /**
- * Asadmin command for deleting a Docker Node.
+ * Internal Asadmin command that sets the Docker container ID registered to an instance. This is used by the
+ * Docker entrypoint script to register a container ID against a newly created instance.
  *
  * @author Andrew Pielage
  */
-@Service(name = "delete-node-docker")
+@Service(name = "_set-docker-container-id")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
-@CommandLock(CommandLock.LockType.NONE)
-@TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({
-        @RestEndpoint(configBean= Nodes.class,
-                opType=RestEndpoint.OpType.DELETE,
-                path="delete-node-docker",
-                description="Deletes a Docker Node")
+        @RestEndpoint(configBean = Server.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "_set-docker-container-id",
+                description = "Sets the Docker Container ID for an Instance")
 })
-public class DeleteNodeDockerCommand implements AdminCommand {
+public class SetDockerContainerIdCommand implements AdminCommand {
 
-    @Param(name = "name", primary = true)
-    private String name;
+    private static final Logger logger = Logger.getLogger(SetDockerContainerIdCommand.class.getName());
+
+    @Param(name = "instanceName", alias = "instance")
+    private String instanceName;
+
+    @Param(name = "containerId", alias = "id")
+    private String containerId;
 
     @Inject
-    private Nodes nodes;
+    Servers servers;
 
-    @Inject
-    private CommandRunner commandRunner;
-
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the parameter names and the values are the parameter values
-     *
-     * @param context information
-     */
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
-        Logger logger = context.getLogger();
-        Node node = nodes.getNode(name);
-
-        if (node == null) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("No node found with given name: " + name);
+    public void execute(AdminCommandContext adminCommandContext) {
+        // Validate
+        if (servers == null) {
+            adminCommandContext.getActionReport().failure(logger, "Could not retrieve Servers");
+            return;
+        }
+        if (instanceName == null || instanceName.isEmpty() || containerId == null || containerId.isEmpty()) {
+            adminCommandContext.getActionReport().failure(logger, "Instance Name or Container ID empty");
+            return;
+        }
+        Server server = servers.getServer(instanceName);
+        if (server == null) {
+            adminCommandContext.getActionReport().failure(logger, "Could not find instance with name: "
+                    + instanceName);
             return;
         }
 
-        if (!(node.getType().equals("DOCKER"))) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("Node with given name is not a docker node: " + name);
-            return;
-
+        // Attempt to set container ID
+        try {
+            ConfigSupport.apply(serverProxy -> {
+                serverProxy.setDockerContainerId(containerId);
+                return serverProxy;
+            }, server);
+        } catch (TransactionFailure transactionFailure) {
+            adminCommandContext.getActionReport().failure(logger, "Could not set Docker Container ID",
+                    transactionFailure);
         }
-
-        CommandRunner.CommandInvocation commandInvocation = commandRunner.getCommandInvocation(
-                "_delete-node", actionReport, context.getSubject());
-        ParameterMap commandParameters = new ParameterMap();
-        commandParameters.add("DEFAULT", name);
-        commandInvocation.parameters(commandParameters);
-
-        commandInvocation.execute();
     }
 }

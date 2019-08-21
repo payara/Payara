@@ -64,23 +64,24 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Internal Asadmin command that starts the Docker container of an instance. This is used by the start-instance command.
+ * Internal Asadmin command that stops the Docker container of an instance. This is used by the
+ * stop-instance command.
  *
  * @author Andrew Pielage
  */
-@Service(name = "_start-docker-container")
+@Service(name = "_stop-docker-container")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @RestEndpoints({
         @RestEndpoint(configBean= Server.class,
                 opType=RestEndpoint.OpType.POST,
-                path="_start-docker-container",
-                description="Starts the Docker contain that this instance exists on",
+                path="_stop-docker-container",
+                description="Stops the Docker contain that this instance exists on",
                 params={
                         @RestParam(name="id", value="$parent")
                 })
 })
-public class StartDockerContainerCommand implements AdminCommand {
+public class StopDockerContainerCommand implements AdminCommand {
 
     @Param(name = "nodeName", alias = "node")
     String nodeName;
@@ -94,12 +95,6 @@ public class StartDockerContainerCommand implements AdminCommand {
     @Inject
     private Servers servers;
 
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the parameter names and the values are the parameter values
-     *
-     * @param adminCommandContext information
-     */
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
         Node node = nodes.getNode(nodeName);
@@ -115,7 +110,7 @@ public class StartDockerContainerCommand implements AdminCommand {
                     + node.getDockerPort()
                     + "/containers/"
                     + server.getDockerContainerId()
-                    + "/start");
+                    + "/stop");
         } else {
             webTarget = client.target("http://"
                     + node.getNodeHost()
@@ -123,7 +118,7 @@ public class StartDockerContainerCommand implements AdminCommand {
                     + node.getDockerPort()
                     + "/containers/"
                     + server.getDockerContainerId()
-                    + "/start");
+                    + "/stop");
         }
 
         // Send the POST request
@@ -135,7 +130,7 @@ public class StartDockerContainerCommand implements AdminCommand {
         if (!responseStatus.getFamily().equals(Response.Status.Family.SUCCESSFUL)
                 && responseStatus.getStatusCode() != Response.Status.NOT_MODIFIED.getStatusCode()) {
             adminCommandContext.getActionReport().failure(adminCommandContext.getLogger(),
-                    "Failed to start Docker Container: \n" + responseStatus.getReasonPhrase());
+                    "Failed to stop Docker Container: \n" + responseStatus.getReasonPhrase());
         }
     }
 }
