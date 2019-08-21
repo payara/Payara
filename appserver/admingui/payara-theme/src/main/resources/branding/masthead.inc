@@ -41,7 +41,7 @@
    Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] 
 -->
 
-<sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open.png" 
+<sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open-new.png" 
               style="border-width: 0px"
               productImageDescription="$resource{theme.productName}"
               productImageWidth="191"
