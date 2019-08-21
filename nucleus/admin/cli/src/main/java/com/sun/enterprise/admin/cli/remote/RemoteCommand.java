@@ -120,7 +120,7 @@ public class RemoteCommand extends CLICommand {
                 String authToken)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
-                    authToken, true, true);
+                    authToken, true, false);
 
             StringBuilder sessionFilePath = new StringBuilder();
 
