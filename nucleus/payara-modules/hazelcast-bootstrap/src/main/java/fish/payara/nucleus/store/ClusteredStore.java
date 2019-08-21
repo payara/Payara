@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,13 +38,13 @@
  */
 package fish.payara.nucleus.store;
 
+import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.monitor.LocalMapStats;
-import com.hazelcast.topic.impl.TopicService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -89,11 +89,14 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
             HazelcastInstance hz = hzCore.getInstance();
             for (DistributedObject obj : hz.getDistributedObjects()) {
                 if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
-                    IMap<Object, Object> map = hz.getMap(obj.getName());
-                    if (map != null) {
-                        collector.in("store").type("map").entity(map.getName())
-                            .collect("size", map.size())
-                            .collectObject(map.getLocalMapStats(), LocalMapStats.class);
+                    MapConfig config = hz.getConfig().getMapConfig(obj.getName());
+                    if (config.isStatisticsEnabled()) {
+                        IMap<Object, Object> map = hz.getMap(obj.getName());
+                        if (map != null) {
+                            collector.in("store").type("map").entity(map.getName())
+                                .collect("size", map.size())
+                                .collectObject(map.getLocalMapStats(), LocalMapStats.class);
+                        }
                     }
                 }
             }

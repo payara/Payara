@@ -255,6 +255,7 @@
         <module>ant-tasks</module>
         <module>payara-appserver-modules</module>
         <module>docker</module>
+        <module>monitoring-console</module>
     </modules>
 
 

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+     -->
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+
+    <title>Payara Monitoring Console</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <!-- 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"</script>
+     -->
+
+    <style>
+    .canvas-holder {
+	    position: absolute;
+	    top: 250px;
+	    left: 20px;
+	    width: 600px;
+	    border: 2px solid #ccc;
+    }
+    body { margin: 2em; }
+    </style>
+</head>
+<body>
+
+<h1>Monitoring Console (Alpha)</h1>
+
+<input type="checkbox" id="zero" checked="checked" /> Begin at Zero</br>
+<input type="checkbox" id="labels" checked="checked" /> Automatic Labels</br>
+<input type="checkbox" id="curves" checked="checked" /> Use Bezier Curves </br>
+<input type="checkbox" id="animations" checked="checked" /> Use Animations</br>
+<input type="checkbox" id="rotation" checked="checked" /> Label X-Axis at 90°</br>
+
+Series: <select id="options"></select>
+<div class="canvas-holder">
+    <canvas id="myChart" width="2" height="1"></canvas>
+</div>
+
+<script>
+var lastNs;
+var options = $("#options");
+$.getJSON("api/series/", function(response) {
+    $.each(response, function() {
+    	var key = this.replace(/ /g, ',');
+        var ns =  this.substring(3, this.indexOf(' '));
+        var $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
+        if (ns == lastNs) {
+        	options.find('optgroup').last().append($option);
+        } else {
+        	var group = $('<optgroup/>').attr('label', ns);
+        	group.append($option);
+        	options.append(group);
+        }
+        lastNs = ns;
+    });
+});
+
+
+var refresher;
+var chart;
+
+$("#zero").on('change', function() {
+	if (chart) {
+		chart.options.scales.yAxes[0].ticks.beginAtZero = this.checked;
+		chart.update();
+	}
+});
+
+$("#labels").on('change', function() {
+    if (chart) {
+        chart.options.scales.xAxes[0].ticks.source = this.checked ? 'auto' : 'data';
+        chart.update();
+    }
+});
+$("#curves").on('change', function() {
+	if (chart) {
+		chart.options.elements.line.tension = this.checked ? 0.4 : 0;
+		chart.update();
+	}
+});
+$('#animations').on('change', function() {
+	if (chart) {
+		var time = this.checked ? 1000 : 0;
+		chart.options.animation.duration = time;
+		chart.options.responsiveAnimationDuration = time;
+		chart.update();
+	}
+});
+$("#rotation").on('change', function() {
+    if (chart) {
+    	var rotation = this.checked ? 90 : undefined;
+    	chart.options.scales.xAxes[0].ticks.minRotation = rotation;
+    	chart.options.scales.xAxes[0].ticks.maxRotation = rotation;
+        chart.update();
+    }
+});
+
+function customTimeLables(value, index, values) {
+	if (values.length == 0 || index == 0)
+		return value;
+	var span = values[values.length -1].value - values[0].value;
+	if (span < 120000) { // less then two minite
+		var lastMinute = new Date(values[index-1].value).getMinutes();
+		return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+	}
+	return value;
+}
+
+options.on('change', function() {
+	var selectedSeries = this.value;
+	var label = this.textContent;
+	if (refresher) {
+		clearInterval(refresher);
+	}
+    var ctx = $('#myChart');
+    if (chart) {
+    	chart.destroy();
+    }
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [],
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                    	minUnit: 'second',
+                    	round: 'second',
+                    },
+                    ticks: {
+                    	callback: customTimeLables,
+                        minRotation: 90,
+                    	maxRotation: 90,
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        beginAtZero: $('#zero')[0].checked,
+                        precision:0, // no decimal places in labels
+                    },
+                }],
+            }
+        }
+    });
+	
+	refresher = setInterval(updateSeries, 1000, selectedSeries);
+});
+
+function updateSeries(series) {
+	var backgroundColors = [
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(255, 159, 64, 0.2)'
+    ];
+    var borderColors = [
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 159, 64, 1)'
+    ];
+	$.getJSON('api/series/' + series + '/statistics', function(stats) {
+		var localStats = stats[0];
+		var datasets = [];
+		for (var j = 0; j < stats.length; j++) {
+			var instanceStats = stats[j];
+			var points = instanceStats.points;
+			var data = [];
+			if (points) {
+				data = new Array(points.length / 2);
+			    for (var i = 0; i < data.length; i++) {
+			        data[i] = { t: new Date(points[i*2]), y: points[i*2+1] };
+			    }
+			}
+			datasets.push({
+				data: data,
+				label: instanceStats.instance,
+	            backgroundColor: backgroundColors[j],
+	            borderColor: borderColors[j],
+	            borderWidth: 1
+			});
+		}
+		if (datasets.length > 0) {
+			var avg = localStats.observedSum / localStats.observedValues;
+			var data = datasets[0].data;
+			var avgData = [{t:data[0].t, y:avg}, {t:data[data.length-1].t, y:avg}];
+			
+		    datasets.push({
+	            data: avgData,
+	            label: 'avg',
+	            fill:  false,
+	            borderColor: [ 'rgba(75, 192, 192, 1)' ],
+	            borderWidth: 1,
+	            pointRadius: 0
+	        });
+		}
+
+	    chart.data.datasets = datasets;
+	    chart.options.title.display = true;
+	    chart.options.title.text = series;
+	    chart.update(0);
+	});
+} 
+</script>
+
+</body>
+</html>
