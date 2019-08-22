@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-   Portions Copyright [2016] [Payara Foundation] 
+   Portions Copyright [2016-2019] [Payara Foundation] 
 -->
 
 <f:verbatim>
@@ -55,11 +55,11 @@
         <form method="POST" class="form" name="loginform" action="j_security_check">
         <table role="presentation">
         <tr>
-            <td><label for="Login.username" style="font-weight: bold;">$resource{i18n.common.username}</label></td>
+            <td><label for="Login.username" style="font-weight: bold; color: #002C3E;">$resource{i18n.common.username}</label></td>
             <td><input type="text" name="j_username" id="Login.username" tabindex="1" value="#{byPassLogin ? pageSession.loginUser : ''}"></td>
         </tr>
         <tr>
-            <td><label for="Login.password" style="font-weight: bold;">$resource{i18n.common.password}</label>
+            <td><label for="Login.password" style="font-weight: bold; color: #002C3E;">$resource{i18n.common.password}</label>
             <td><input type="password" name="j_password" id="Login.password" tabindex="2">
         <tr>
             <td colspan="2" align="center">

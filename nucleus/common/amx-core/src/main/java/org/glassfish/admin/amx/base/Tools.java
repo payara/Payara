@@ -129,19 +129,3 @@ public interface Tools extends AMXProxy, Utility, Singleton
     public String getHierarchy();
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

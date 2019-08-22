@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -44,11 +45,13 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 import javax.management.MBeanParameterInfo;
 
-public final class MBeanParameterInfoStringifier
-        extends MBeanFeatureInfoStringifier implements Stringifier
-{
-    public static final MBeanParameterInfoStringifier DEFAULT =
-            new MBeanParameterInfoStringifier();
+/**
+ * Creates a String representation of an {@link MBeanParameterInfo}
+ * @see Object#toString() 
+ */
+public final class MBeanParameterInfoStringifier extends MBeanFeatureInfoStringifier implements Stringifier {
+    
+    public static final MBeanParameterInfoStringifier DEFAULT = new MBeanParameterInfoStringifier();
 
     public MBeanParameterInfoStringifier()
     {
@@ -60,6 +63,7 @@ public final class MBeanParameterInfoStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final MBeanParameterInfo info = (MBeanParameterInfo) o;

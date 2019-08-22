@@ -45,7 +45,6 @@ import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.base.MBeanTracker;
 import org.glassfish.admin.amx.base.MBeanTrackerMBean;
 import org.glassfish.admin.amx.base.SystemInfo;
-import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.impl.mbean.ComplianceMonitor;
 import org.glassfish.admin.amx.impl.mbean.DomainRootImpl;
@@ -55,10 +54,8 @@ import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
-import org.glassfish.admin.amx.monitoring.ServerMon;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.admin.amx.util.FeatureAvailability;
-import org.glassfish.admin.amx.util.MonitoringDataUtil;
 import org.glassfish.admin.amx.util.TimingDelta;
 import org.glassfish.admin.amx.util.jmx.stringifier.StringifierRegistryIniter;
 import org.glassfish.admin.amx.util.stringifier.StringifierRegistryImpl;
@@ -74,14 +71,10 @@ import org.glassfish.external.amx.MBeanListener;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-
 import javax.inject.Inject;
 import javax.management.*;
 import javax.management.remote.JMXServiceURL;
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -94,7 +87,7 @@ import org.glassfish.hk2.api.PreDestroy;
  * An {@link AMXLoader} responsible for loading core AMX MBeans
  */
 @Service
-public final class AMXStartupService implements PostConstruct, PreDestroy, AMXStartupServiceMBean, MonitoringDataSource {
+public final class AMXStartupService implements PostConstruct, PreDestroy, AMXStartupServiceMBean {
 
     @Inject
     ServiceLocator mHabitat;
@@ -163,7 +156,6 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
 
             mMBeanTracker.setEmitMBeanStatus(false);
 
-            //final StandardMBean supportMBean = new StandardMBean(mMBeanTracker, MBeanTrackerMBean.class);
             mMBeanServer.registerMBean(mMBeanTracker, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME);
         } catch (final Exception e) {
             logger.log(Level.WARNING, "AMX Startup Service: Initialisation error.", e);
@@ -327,16 +319,16 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
         // loads the high-level AMX MBeans, like DomainRoot, QueryMgr, etc
         loadDomainRoot();
         FeatureAvailability.getInstance().registerFeature(FeatureAvailability.AMX_CORE_READY_FEATURE, getDomainRoot());
-        logger.fine("AMXStartupServiceNew: AMX core MBeans are ready for use, DomainRoot = " + getDomainRoot());
+        logger.log(Level.FINE, "AMXStartupServiceNew: AMX core MBeans are ready for use, DomainRoot = {0}", getDomainRoot());
 
         try {
             // Find and load any additional AMX subsystems
             final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
-            logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loaders.size());
+            logger.log(Level.FINE, "AMXStartupService._loadAMXMBeans(): found this many loaders: {0}", loaders.size());
             final AMXLoaderThread[] threads = new AMXLoaderThread[loaders.size()];
             int i = 0;
             for (final AMXLoader loader : loaders) {
-                logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loader);
+                logger.log(Level.FINE, "AMXStartupService._loadAMXMBeans(): found this many loaders: {0}", loader);
                 threads[i] = new AMXLoaderThread(loader);
                 threads[i].start();
                 ++i;
@@ -389,17 +381,4 @@ public final class AMXStartupService implements PostConstruct, PreDestroy, AMXSt
     }
     // public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.SERVER; }
 
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        DomainRoot domainRoot = getDomainRootProxy();
-        if (domainRoot != null) {
-            MonitoringDataCollector amxCollector = collector.in("amx");
-            for (AMXProxy proxy : domainRoot.getQueryMgr().queryAll()) {
-                if ("monitoring".equals(proxy.extra().group())) {
-                    amxCollector.entity(proxy.getName().replaceAll("\\s|[=/]", "."))
-                        .collectObject(proxy, MonitoringDataUtil::collectBean);
-                }
-            }
-        }
-    }
 }

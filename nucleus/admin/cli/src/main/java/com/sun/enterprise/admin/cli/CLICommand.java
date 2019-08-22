@@ -928,7 +928,14 @@ public abstract class CLICommand implements PostConstruct {
         /*
          * Check for missing options and operands.
          */
-      
+        int operandMin = 0;
+        int operandMax = 0;
+        ParamModel operandParam = getOperandModel();
+        if (operandParam != null) {
+            operandMin = operandParam.getParam().optional() ? 0 : 1;
+            operandMax = operandParam.getParam().multiple() ? Integer.MAX_VALUE : 1;
+        }
+
         if (programOpts.isInteractive()) {
             try {
                 buildTerminal();   
@@ -967,14 +974,6 @@ public abstract class CLICommand implements PostConstruct {
                     throw new CommandValidationException(strings.get("missingOptions", name));
                 }
 
-                int operandMin = 0;
-                int operandMax = 0;
-                ParamModel operandParam = getOperandModel();
-                if (operandParam != null) {
-                    operandMin = operandParam.getParam().optional() ? 0 : 1;
-                    operandMax = operandParam.getParam().multiple() ? Integer.MAX_VALUE : 1;
-                }
-
                 if (operands.size() < operandMin && lineReader != null) {
                     String val = null;
                     if (programOpts.isAutoName()) {
@@ -985,26 +984,9 @@ public abstract class CLICommand implements PostConstruct {
                         val = lineReader.readLine(strings.get("operandPrompt", operandParam.getName()));
                     }
 
-
                     if (ok(val)) {
                         operands = new ArrayList<>();
                         operands.add(val);
-                    }
-                }
-                if (operands.size() < operandMin) {
-                    throw new CommandValidationException(strings.get("notEnoughOperands", name, operandParam.getType()));
-                }
-                if (operands.size() > operandMax) {
-                    switch (operandMax) {
-                        case 0:
-                            throw new CommandValidationException(
-                                    strings.get("noOperandsAllowed", name));
-                        case 1:
-                            throw new CommandValidationException(
-                                    strings.get("tooManyOperands1", name));
-                        default:
-                            throw new CommandValidationException(
-                                    strings.get("tooManyOperands", name, operandMax));
                     }
                 }
             } catch (UserInterruptException | EndOfFileException e) {
@@ -1012,7 +994,40 @@ public abstract class CLICommand implements PostConstruct {
             } finally {
                 closeTerminal();
             }
+        } else {
+            // Check if we're missing an operand even if not interactive in case we want to generate it.
+            if (operands.size() < operandMin) {
+                String val = null;
+                if (programOpts.isAutoName()) {
+                    val = NameGenerator.generateName();
+                }
+
+                if (ok(val)) {
+                    operands = new ArrayList<>();
+                    operands.add(val);
+                }
+            }
         }
+
+        // Validate that we have the required operands
+        if (operands.size() < operandMin) {
+            throw new CommandValidationException(strings.get("notEnoughOperands", name,
+                    operandParam.getType()));
+        }
+        if (operands.size() > operandMax) {
+            switch (operandMax) {
+                case 0:
+                    throw new CommandValidationException(
+                            strings.get("noOperandsAllowed", name));
+                case 1:
+                    throw new CommandValidationException(
+                            strings.get("tooManyOperands1", name));
+                default:
+                    throw new CommandValidationException(
+                            strings.get("tooManyOperands", name, operandMax));
+            }
+        }
+
         initializeCommandPassword();
     }
 

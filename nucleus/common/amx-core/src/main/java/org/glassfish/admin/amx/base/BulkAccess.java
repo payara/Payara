@@ -174,5 +174,3 @@ public interface BulkAccess extends AMXProxy, Singleton, Utility
                                final Object[] args, final String[] types);
 
 }
-
-

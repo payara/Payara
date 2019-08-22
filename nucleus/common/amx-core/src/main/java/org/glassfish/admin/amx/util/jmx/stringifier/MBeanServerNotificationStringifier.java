@@ -37,17 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import javax.management.MBeanServerNotification;
 
-public class MBeanServerNotificationStringifier
-        extends NotificationStringifier
-{
-    public static final MBeanServerNotificationStringifier DEFAULT =
-            new MBeanServerNotificationStringifier();
+/**
+ * Creates a String representation of an {@link MBeanServerNotification}
+ * @see Object#toString() 
+ */
+public class MBeanServerNotificationStringifier extends NotificationStringifier {
+    public static final MBeanServerNotificationStringifier DEFAULT = new MBeanServerNotificationStringifier();
 
     public MBeanServerNotificationStringifier()
     {
@@ -73,22 +74,3 @@ public class MBeanServerNotificationStringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

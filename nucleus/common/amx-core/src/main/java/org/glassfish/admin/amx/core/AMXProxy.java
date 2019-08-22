@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.core;
 
@@ -49,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-@deprecated An AMXProxy offers generic access to any AMX-compliant MBean, including the ability to navigate
+An AMXProxy offers generic access to any AMX-compliant MBean, including the ability to navigate
 upwards to the Parent MBean, find all children or those of a particular type or name, to get
 all metadata, atttributes, or to invoke any method.
 <p>
@@ -60,7 +61,7 @@ methods, etc.  The most notable sub-interface is {@link  org.glassfish.admin.amx
 its sub-interfaces.
 <p>
 
-<b>Implementing handler&mdash;</b> an AMXProxy is implemented by {@link AMXProxyHandler}, but the handler should be considered
+<b>Implementing handler &mdash;</b> an AMXProxy is implemented by {@link AMXProxyHandler}, but the handler should be considered
 private: do not use it as it is subject to change.
 <p>
 
@@ -71,7 +72,7 @@ In particular, it makes no sense for an MBean to implement the proxy interface b
 interface demands the use of AMXProxy and sub-types, whereas the MBean must return ObjectName.
 <p>
 
-<b>Method name convention&mdash;</b> a convention followed in AMXProxy is that convenience "getter" methods
+<b>Method name convention &mdash;</b> a convention followed in AMXProxy is that convenience "getter" methods
 (non-remote methods implemented directly by the proxy itself) do not use the <code>get</code> prefix,
 in order to distinguish them from the usual getter pattern for real MBean attributes.
 For example, {@link #parent} returns an AMXProxy, but {@link #getParent} returns the value of the
@@ -79,7 +80,7 @@ For example, {@link #parent} returns an AMXProxy, but {@link #getParent} returns
 The same convention is followed for {@link #childrenSet}, etc / {@link #getChildren}.
 <p>
 
-<b>Not authoritative&mdash;</b> <em>proxy interfaces should not be considered authoritative, meaning that an underlying MBean
+<b>Not authoritative &mdash;</b> <em>proxy interfaces should not be considered authoritative, meaning that an underlying MBean
 implementation determines what the MBean actually provides, possibly ignoring
 the proxy interface</em> (this is the case with config MBeans, which derive their metadata from the ConfigBean
 <code>@Configured</code> interface).  
@@ -97,7 +98,7 @@ The methods {@link #attributeNames} and {@link #attributesMap} can be used to ge
 obtain all available attributes, and of course {@link MetaGetters#mbeanInfo} provides extensive metadata.
 <p>
 
-<b>Auto-mapping of ObjectName&mdash;</b> An AMXProxy automatically maps various ObjectName constructs
+<b>Auto-mapping of ObjectName &mdash;</b> An AMXProxy automatically maps various ObjectName constructs
 to the equivalent AMXProxy(ies).<p>For example, an MBean providing an Attribute named <code>Item</code>
 should declare it as an <code>ObjectName</code>, or for a plurality <code>Items</code>, declaring an <code>ObjectName[]</code>.
 Any of the following proxy methods (declared in a sub-interface of AMXProxy) will automatically convert the resulting
@@ -119,7 +120,6 @@ operation by name.
 @see org.glassfish.admin.amx.config.AMXConfigProxy
  */
 @Taxonomy(stability = Stability.UNCOMMITTED)
-@Deprecated
 public interface AMXProxy extends AMX_SPI
 {
     /** MBean MUST return an ObjectName.  May be null for DomainRoot only. */

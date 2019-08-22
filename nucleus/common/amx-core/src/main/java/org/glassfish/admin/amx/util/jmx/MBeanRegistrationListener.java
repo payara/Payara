@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -101,10 +102,9 @@ public abstract class MBeanRegistrationListener extends NotificationListenerBase
 
     protected abstract void mbeanUnregistered(final ObjectName objectName);
 
-    public void handleNotification(final Notification notifIn, final Object handback)
-    {
-        if (!(notifIn instanceof MBeanServerNotification))
-        {
+    @Override
+    public void handleNotification(final Notification notifIn, final Object handback) {
+        if (!(notifIn instanceof MBeanServerNotification)) {
             throw new IllegalArgumentException(notifIn.toString());
         }
 
@@ -129,7 +129,3 @@ public abstract class MBeanRegistrationListener extends NotificationListenerBase
     }
 
 }
-
-
-
-

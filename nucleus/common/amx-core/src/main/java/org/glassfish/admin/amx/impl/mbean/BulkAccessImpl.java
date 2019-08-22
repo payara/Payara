@@ -205,14 +205,3 @@ public class BulkAccessImpl extends AMXImplBase // implements BulkAccess
         return (results);
     }
 }
-
-
-
-
-
-
-
-
-
-
-

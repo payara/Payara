@@ -95,6 +95,3 @@ public class StringifierRegistryIniter extends org.glassfish.admin.amx.util.stri
     }
 
 }
-
-
-
