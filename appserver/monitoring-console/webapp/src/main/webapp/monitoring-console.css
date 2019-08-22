@@ -71,15 +71,36 @@ h1 {
     padding: 10px;
 	margin: 10px;
     border: 1px solid #F0981B;
+    position: relative;
 }
 .closeBtn {
-	float: right;
+	position: absolute;
+	right: 10px;
+	z-index: 101;
 }
 canvas {
     position: relative;
 }
-a.closeBtn, a.closeBtn:visited {
-	color: white;
-	text-decoration: none;
+#sets-bar .set-tab {
+	display: inline-block;
+	padding: 5px 1em;
+	margin: 2px;
 	font-weight: bold;
+	background-color: #00618A;
+	cursor: pointer;
+	border-radius: 2px;
+}
+#sets-bar .set-tab.set-selected {
+    background-color: #F0981B;
+}
+
+button {
+    padding: 5px 1em;
+    margin: 2px;
+    font-weight: bold;
+    background-color: #F0981B;
+    border-width: 0;
+    color: white;
+    border-radius: 2px;
+    cursor: pointer;
 }

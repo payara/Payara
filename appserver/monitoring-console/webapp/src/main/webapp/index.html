@@ -56,14 +56,15 @@
 <div id="header">
     <h1>Monitoring Console</h1>
     <div>
-        <b>Options:</b><br/>
+        <b>Display Options:</b><br/>
 	    <input type="checkbox" id="zero" checked="checked" /> Begin at Zero</br>
 	    <input type="checkbox" id="labels" checked="checked" /> Automatic Labels</br>
 	    <input type="checkbox" id="curves" checked="checked" /> Use Bezier Curves </br>
 	    <input type="checkbox" id="animations" checked="checked" /> Use Animations</br>
 	    <input type="checkbox" id="rotation" checked="checked" /> Label X-Axis at 90°</br>
 	    <br/>
-	    <select id="options"></select> <button id="add">Add</button>
+	    <div><span id="sets-bar"></span> <input type="text" id="setName" /> <button id="addSet">+</button></div>
+	    <select id="options"></select> <button id="addChart">Add</button>
     </div>
 </div>
 <div id="console">
@@ -74,42 +75,38 @@
 <script>
 $("#zero").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.configure(function(options) {
-		options.scales.yAxes[0].ticks.beginAtZero = checked;
+	MonitoringConsole.ActiveSet.configure(function(options) {
+		options.beginAtZero = checked;
 	});
 });
 
 $("#labels").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.configure(function(options) {
-        options.scales.xAxes[0].ticks.source = checked ? 'auto' : 'data';
+	MonitoringConsole.ActiveSet.configure(function(options) {
+		options.autoTimeTicks = checked;
 	});
 });
 $("#curves").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.configure(function(options) {
-		options.elements.line.tension = checked ? 0.4 : 0;
+	MonitoringConsole.ActiveSet.configure(function(options) {
+		options.drawCurves = checked;
 	});
 });
 $('#animations').on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.configure(function(options) {
-		var time = checked ? 1000 : 0;
-		options.animation.duration = time;
-		options.responsiveAnimationDuration = time;
-		
+	MonitoringConsole.ActiveSet.configure(function(options) {
+		options.drawAnimations = checked;
 	});
 });
 $("#rotation").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.configure(function(options) {
-    	var rotation = checked ? 90 : undefined;
-    	options.scales.xAxes[0].ticks.minRotation = rotation;
-    	options.scales.xAxes[0].ticks.maxRotation = rotation;
+	MonitoringConsole.ActiveSet.configure(function(options) {
+		options.rotateTimeLabels = checked;
     });
 });
 
-MonitoringConsole.init(addChartBox);
+MonitoringConsole.ActiveSet.init(addChartBox);
+updateSetTabs();
 
 function addChartBox(config) {
     var boxId = config.target + '-box';
@@ -117,34 +114,64 @@ function addChartBox(config) {
     	return;
     var newCanvas = $('<canvas/>',{ id: config.target }).prop({ width: 2, height: 1 });
     var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
-    var newCloseButton = $('<a/>', { href: '#', text: '[ x ]', "class": "closeBtn" });
+    var newCloseButton = $('<button/>', { text: 'x', "class": "closeBtn" });
     newCloseButton.click(function() {
-        MonitoringConsole.dispose(config);
-        $('#'+boxId).remove();
+        MonitoringConsole.ActiveSet.dispose(config);
+        newDiv.remove();
     });
     newDiv.append(newCloseButton);
     newDiv.append(newCanvas);
     $('#canvas-container').append(newDiv);
 }
 
-$('#add').click(function() {
+function updateSetTabs() {
+	var bar = $("#sets-bar"); 
+	bar.empty();
+	MonitoringConsole.getSets().forEach(function(set) {
+		var tabId = set.id + '-tab';
+		var css = "set-tab" + (set.active ? ' set-selected' : '');
+	    var newTab = $('<span/>', {id: tabId, "class": css, text: set.name});
+	    newTab.click(function() {
+	    	$('#canvas-container').empty();
+	    	MonitoringConsole.ActiveSet.changeTo(set.id, addChartBox);
+	    	updateSetTabs();
+	    });
+	    bar.append(newTab);
+	});
+}
+
+$('#addSet').click(function() {
+	var set = MonitoringConsole.ActiveSet.create($("#setName").val());
+	if (set) {
+		$('#canvas-container').empty();
+		updateSetTabs();
+	}
+});
+
+$('#addChart').click(function() {
 	$("#options option:selected").each(function() {
 		var series = this.value;
 		var title = $( this ).text();
-	    var target = 'chart-' + series.replace(/[+,:"'?!#%&=]/g, '_');
+	    var target = 'chart-' + series.replace(/[^-a-zA-Z0-9_]/g, '_');
 	    var config = { 
 	        target: target,
 	        series: series,
 	        title: title,
-	        beginAtZero: $('#zero')[0].checked,
+	        options: { 
+	        	beginAtZero: $('#zero')[0].checked,
+	        	autoTimeTicks: $("#labels")[0].checked,
+	        	rotateTimeLabels: $("#rotation")[0].checked,
+	        	drawAnimations: $('#animations')[0].checked,
+	        	drawCurves: $("#curves")[0].checked,
+	        },
 	    };
 	    addChartBox(config);
-	    MonitoringConsole.add(config);
+	    MonitoringConsole.ActiveSet.add(config);
 	});
-	MonitoringConsole.update();
+	MonitoringConsole.ActiveSet.update();
 });
 
-MonitoringConsole.loadAllSeries(function(names) {
+MonitoringConsole.fetchSeries(function(names) {
 	var lastNs;
     var options = $("#options");
     $.each(names, function() {

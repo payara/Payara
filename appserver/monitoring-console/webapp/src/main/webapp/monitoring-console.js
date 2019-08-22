@@ -41,11 +41,11 @@ Chart.defaults.global.defaultFontColor = "#fff";
 
 var MonitoringConsole = (function() {
 	/**
-	 * Key used in local stage for the default page configuration
+	 * Key used in local stage for the sets configuration
 	 */
-	const defaultConfigKey = 'fish.payara.monitoring-console.defaultConfigs';
+	const SETS_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
-	const defaultBackgroundColors = [
+	const DEFAULT_BG_COLORS = [
         'rgba(153, 102, 255, 0.2)',
         'rgba(255, 99, 132, 0.2)',
         'rgba(54, 162, 235, 0.2)',
@@ -53,7 +53,7 @@ var MonitoringConsole = (function() {
         'rgba(75, 192, 192, 0.2)',
         'rgba(255, 159, 64, 0.2)'
     ];
-    const defaultBorderColors = [
+    const DEFAULT_LINE_COLORS = [
         'rgba(153, 102, 255, 1)',
         'rgba(255, 99, 132, 1)',
         'rgba(54, 162, 235, 1)',
@@ -67,29 +67,45 @@ var MonitoringConsole = (function() {
 	 */
 	var updater;
 	/**
-	 * {object} - map of the charts objects as created by Chart.js with series as key
+	 * {object} - map of the charts objects for active set as created by Chart.js with series as key
 	 */
 	var charts = {};
 	
 	/**
-	 * {object} - map of the chart configurations. 
+	 * All set properties must not be must be values as set objects are converted to JSON and back for local storage.
 	 * 
-	 * All configuration properties must not be complex objects (values).
+	 * {object} - map of sets, name of set as key/field;
+	 * {string} name - name of the set
+	 * {object} configs -  map of the chart configurations with series as key
+	 * 
+	 * Each set is an object describing a page or tab containing one or more graphs by their configuration.
 	 */
-	var configs = {};
+	var sets = {};
+	var set = createSet('Home');
+	sets[set.id] = set;
+	
+	var activeSetId = set.id;
 	
 	/**
 	 * Loads and returns the configuration from the local storage
 	 */
-	function loadLocalDefaultConfigs(preConstructionFn) {
+	function loadLocalSets(preConstructionFn) {
 		var localStorage = window.localStorage;
-		var item = localStorage.getItem(defaultConfigKey);
+		var item = localStorage.getItem(SETS_KEY);
 		if (item) {
-			var defaultConfigs = JSON.parse(item);
-			if (preConstructionFn) {
-				Object.values(defaultConfigs).forEach(preConstructionFn);
+			var storedSets = JSON.parse(item);
+			for (let [id, set] of Object.entries(storedSets)) {
+				sets[id] = set; // override or add the entry in sets from local storage
 			}
-			configs = defaultConfigs;
+			initActiveSet(preConstructionFn)
+		}
+	}
+	
+	function initActiveSet(preConstructionFn) {
+		if (sets[activeSetId]) {
+			if (preConstructionFn) {
+				Object.values(sets[activeSetId].configs).forEach(preConstructionFn);
+			}
 			updateAllCharts();
 		}
 	}
@@ -97,8 +113,8 @@ var MonitoringConsole = (function() {
 	/**
 	 * Updates the current configuration in the local storage
 	 */
-	function storeLocalDefaultConfig() {
-		window.localStorage.setItem(defaultConfigKey, JSON.stringify(configs));
+	function storeLocalSets() {
+		window.localStorage.setItem(SETS_KEY, JSON.stringify(sets));
 	}
 	
 	function customTimeLables(value, index, values) {
@@ -123,11 +139,28 @@ var MonitoringConsole = (function() {
 		return undefined;
 	}
 	
+	function createSet(name) {
+		if (!name)
+			throw "New set must have a unique name";
+		var id = name.replace(/[^-a-zA-Z]/g, '_').toLowerCase();
+		if (sets[id])
+			throw "A set with name "+name+" already exist";
+		return {
+			id: id,
+			name: name,
+			configs: {},
+		};
+	}
+	
+	function getActiveSet() {
+		return sets[activeSetId];
+	}
+	
 	/**
-	 * Adds a new Chart.js chart object initialised for the given MC level configuration to the charts object
+	 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
 	 */
 	function createChart(config) {
-		return new Chart(config.target, {
+		var chart = new Chart(config.target, {
 			type: 'line',
 			data: {
 				datasets: [],
@@ -155,13 +188,31 @@ var MonitoringConsole = (function() {
 							color: 'rgb(120,120,120)',
 						},
 						ticks: {
-							beginAtZero: config.beginAtZero,
+							beginAtZero: config.options.beginAtZero,
 							precision:0, // no decimal places in labels
 						},
 					}],
 				}
 			},
 		});
+		applyChartOptions(config, chart);
+		return chart;
+	}
+	
+	/**
+	 * Basically translates the MC level configuration options to Chart.js options
+	 */
+	function applyChartOptions(config, chart) {
+		var options = chart.options;
+		options.scales.yAxes[0].ticks.beginAtZero = config.options.beginAtZero;
+		options.scales.xAxes[0].ticks.source = config.options.autoTimeTicks ? 'auto' : 'data';
+		options.elements.line.tension = config.options.drawCurves ? 0.4 : 0;
+		var time = config.options.drawAnimations ? 1000 : 0;
+		options.animation.duration = time;
+		options.responsiveAnimationDuration = time;
+    	var rotation = config.options.rotateTimeLabels ? 90 : undefined;
+    	options.scales.xAxes[0].ticks.minRotation = rotation;
+    	options.scales.xAxes[0].ticks.maxRotation = rotation;
 	}
 	
 	/**
@@ -172,7 +223,8 @@ var MonitoringConsole = (function() {
 		var series = seriesName(configOrSeries);
 		if (!series)
 			return;
-		var config = configs[series];
+		var set = getActiveSet();
+		var config = set.configs[series];
 		var chart = charts[series];
 		if (!chart) { // might be one newly added
 			chart = createChart(config);
@@ -194,8 +246,8 @@ var MonitoringConsole = (function() {
 				datasets.push({
 					data: data,
 					label: instanceStats.instance,
-					backgroundColor: defaultBackgroundColors[j],
-					borderColor: defaultBorderColors[j],
+					backgroundColor: DEFAULT_BG_COLORS[j],
+					borderColor: DEFAULT_LINE_COLORS[j],
 					borderWidth: 1
 				});
 			}
@@ -223,11 +275,18 @@ var MonitoringConsole = (function() {
 	
 	function removeChart(configOrSeries) {
 		var series = seriesName(configOrSeries);
+		var configs = getActiveSet().configs;
 		if (series) {
 			delete configs[series];
+			destroyChart(series);
+		}
+	}
+	
+	function destroyChart(series) {
+		if (series) {
 			var chart = charts[series];
-			delete charts[series];
 			if (chart) {
+				delete charts[series];
 				chart.destroy();
 			}
 		}
@@ -239,6 +298,7 @@ var MonitoringConsole = (function() {
 				throw 'configuration object requires string property `series`';
 			if (typeof config.target !== 'string')
 				throw 'configuration object requires string property `target`';
+			var configs = getActiveSet().configs;
 			configs[config.series] = config;
 		} else {
 			throw 'configuration was no object but: ' + config;
@@ -268,53 +328,92 @@ var MonitoringConsole = (function() {
 	 * @param {function} fn - a function that accepts a single argument of the string series name
 	 */
 	function applyToAllCharts(fn) {
-		Object.keys(configs).forEach(fn);
+		Object.keys(getActiveSet().configs).forEach(fn);
 	}
 	
 	return {
+		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		loadAllSeries: function(consumer) {
+		fetchSeries: function(consumer) {
 			$.getJSON("api/series/", consumer);
 		},
 		
-		init: function(preConstructionFn) {
-			loadLocalDefaultConfigs(preConstructionFn);
-		},
-		
-		/**
-		 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
-		 */
-		configure: function(optionsUpdate) {
-			Object.values(charts).forEach(function(chart) {
-				optionsUpdate.call(window, chart.options);
-				chart.update();
+		getSets: function() {
+			return Object.values(sets).map(function(set) { 
+				return { id: set.id, name: set.name, active: set.id === getActiveSet().id };
 			});
 		},
 		
-		add: function(config) {
-			addChart(config);
-			storeLocalDefaultConfig();
+		ActiveSet: {
+			
+			create: function(name) {
+				var set = createSet(name);
+				sets[set.id] = set;
+				storeLocalSets();
+				Object.keys(charts).forEach(destroyChart);
+				activeSetId = set.id;
+				return set;
+			},
+			
+			changeTo: function(setId, preConstructionFn) {
+				if (!sets[setId])
+					throw "No such set with id: " + setId;
+				Object.keys(charts).forEach(destroyChart);
+				activeSetId = setId;
+				initActiveSet(preConstructionFn);
+			},
+			
+			id: function() {
+				return getActiveSet().id;
+			},
+
+			title: function() {
+				return getActiveSet().title;
+			},
+
+			init: function(preConstructionFn) {
+				loadLocalSets(preConstructionFn);
+			},
+			
+			/**
+			 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
+			 */
+			configure: function(optionsUpdate) {
+				Object.values(getActiveSet().configs).forEach(function(config) {
+					optionsUpdate.call(window, config.options);
+					var chart = charts[config.series];
+					applyChartOptions(config, chart);
+					chart.update();
+				});
+			},
+			
+			add: function(config) {
+				addChart(config);
+				storeLocalSets();
+			},
+			
+			/**
+			 * Changes the active charts to those of the passed configuration.
+			 */
+			update: function() {
+				updateAllCharts();
+			},
+			
+			dispose: function(configOrSeries) {
+				removeChart(configOrSeries);
+				storeLocalSets();
+			},
+			
+			/**
+			 * Removes and destroys all chart objects of the active set
+			 */
+			reset: function() {
+				removeAllCharts();
+				storeLocalSets();
+			},
 		},
-		
-		/**
-		 * Changes the active charts to those of the passed configuration.
-		 */
-		update: function() {
-			updateAllCharts();
-		},
-		
-		dispose: function(configOrSeries) {
-			removeChart(configOrSeries);
-			storeLocalDefaultConfig();
-		},
-		
-		/**
-		 * Destroys all chart objects
-		 */
-		reset: function() {
-			removeAllCharts();
-		},
+
 	};
 })();
