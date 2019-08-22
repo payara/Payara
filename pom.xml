@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.193-SNAPSHOT</version>
+    <version>5.193</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -61,7 +61,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.193-SNAPSHOT</tag>
+        <tag>payara-server-5.193</tag>
     </scm>
 
     <distributionManagement>
