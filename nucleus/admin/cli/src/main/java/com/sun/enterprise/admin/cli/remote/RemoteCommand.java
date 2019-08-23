@@ -50,7 +50,7 @@ import com.sun.enterprise.admin.cli.DirectoryClassLoader;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
-import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
@@ -104,7 +104,7 @@ public class RemoteCommand extends CLICommand {
      * A special RemoteAdminCommand that overrides methods so that
      * we can handle the interactive requirements of a CLI command.
      */
-    private class CLIRemoteAdminCommand extends RemoteRestAdminCommand {
+    private class CLIRemoteAdminCommand extends RemoteAdminCommand {
 
         private static final String JSESSIONID  = "JSESSIONID";
         private static final String COOKIE_HEADER  = "Cookie";
@@ -120,7 +120,7 @@ public class RemoteCommand extends CLICommand {
                 String authToken)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
-                    authToken, true, true);
+                    authToken, true /* prohibitDirectoryUploads */);
 
             StringBuilder sessionFilePath = new StringBuilder();
 
