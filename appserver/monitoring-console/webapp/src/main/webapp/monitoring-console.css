@@ -104,3 +104,28 @@ button {
     border-radius: 2px;
     cursor: pointer;
 }
+#canvas-container button {
+	border: 1 px solid #F0981B;
+	background-color: transparent;
+}
+#canvas-container button:hover {
+	background-color: #F0981B;
+}
+#overlay {
+	display: none;
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+	z-index: 1002;
+	overflow: auto;
+	color: OrangeRed;
+	font-weight: bold;
+	background-color: black;
+}
+#overlay span {
+    display: inline-block;
+    padding: 10px 2em;
+    border: 2px solid OrangeRed;
+    border-radius: 2px;
+}

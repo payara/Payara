@@ -62,6 +62,12 @@ var MonitoringConsole = (function() {
         'rgba(255, 159, 64, 1)'
     ];
 	
+    /**
+     * {function} - a function called with text status and error thrown in case data requests did not succeed 
+     *              or with no arguments in case of success.
+     */
+    var connectionCallback;
+
 	/**
 	 * {function} - interval function updating the graphs
 	 */
@@ -192,7 +198,14 @@ var MonitoringConsole = (function() {
 							precision:0, // no decimal places in labels
 						},
 					}],
-				}
+				},
+		        legend: {
+		            labels: {
+		                filter: function(item, chart) {
+		                	return !item.text.startsWith(" ");
+		                }
+		            }
+		        }
 			},
 		});
 		applyChartOptions(config, chart);
@@ -231,7 +244,6 @@ var MonitoringConsole = (function() {
 			charts[series] = chart;
 		}
 		$.getJSON('api/series/' + series + '/statistics', function(stats) {
-			var localStats = stats[0];
 			var datasets = [];
 			for (var j = 0; j < stats.length; j++) {
 				var instanceStats = stats[j];
@@ -243,34 +255,65 @@ var MonitoringConsole = (function() {
 						data[i] = { t: new Date(points[i*2]), y: points[i*2+1] };
 					}
 				}
+				var bgColor = DEFAULT_BG_COLORS[j];
+				var lineColor = DEFAULT_LINE_COLORS[j];
 				datasets.push({
 					data: data,
 					label: instanceStats.instance,
-					backgroundColor: DEFAULT_BG_COLORS[j],
-					borderColor: DEFAULT_LINE_COLORS[j],
+					backgroundColor: bgColor,
+					borderColor: lineColor,
 					borderWidth: 1
 				});
-			}
-			if (datasets.length > 0) {
-				var avg = localStats.observedSum / localStats.observedValues;
-				var data = datasets[0].data;
-				var avgData = [{t:data[0].t, y:avg}, {t:data[data.length-1].t, y:avg}];
-
-				datasets.push({
-					data: avgData,
-					label: 'avg',
-					fill:  false,
-					borderColor: [ 'rgba(75, 192, 192, 1)' ],
-					borderWidth: 1,
-					pointRadius: 0
-				});
+				if (config.options.drawAvgLine) {
+					var avg = instanceStats.observedSum / instanceStats.observedValues;
+					var avgData = [{t:data[0].t, y:avg}, {t:data[data.length-1].t, y:avg}];
+					
+					datasets.push({
+						data: avgData,
+						label: ' avg ',
+						fill:  false,
+						borderColor: lineColor,
+						borderWidth: 1,
+						borderDash: [10, 4],
+						pointRadius: 0
+					});
+				}
+				if (config.options.drawMinLine && instanceStats.observedMin > 0) {
+					var min = instanceStats.observedMin;
+					var minData = [{t:data[0].t, y:min}, {t:data[data.length-1].t, y:min}];
+					
+					datasets.push({
+						data: minData,
+						label: ' min ',
+						fill:  false,
+						borderColor: lineColor,
+						borderWidth: 1,
+						borderDash: [2, 2],
+						pointRadius: 0
+					});
+				}
+				if (config.options.drawMaxLine) {
+					var max = instanceStats.observedMax;
+					var minData = [{t:data[0].t, y:max}, {t:data[data.length-1].t, y:max}];
+					
+					datasets.push({
+						data: minData,
+						label: ' max ',
+						fill:  false,
+						borderColor: lineColor,
+						borderWidth: 1,
+						pointRadius: 0
+					});
+				}
 			}
 
 			chart.data.datasets = datasets;
 			chart.options.title.display = true;
 			chart.options.title.text = config.title ? config.title : config.series;
 			chart.update(0);
-		});
+			connectionCallback();
+		})
+		.fail(function(jqXHR, textStatus, errorThrown) { connectionCallback(textStatus, errorThrown); });
 	}
 	
 	function removeChart(configOrSeries) {
@@ -333,6 +376,10 @@ var MonitoringConsole = (function() {
 	
 	return {
 		
+		afterDataRequests: function(callback) {
+			connectionCallback = callback;
+		},
+		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
@@ -387,6 +434,7 @@ var MonitoringConsole = (function() {
 					applyChartOptions(config, chart);
 					chart.update();
 				});
+				storeLocalSets();
 			},
 			
 			add: function(config) {

@@ -55,58 +55,98 @@
 
 <div id="header">
     <h1>Monitoring Console</h1>
-    <div>
-        <b>Display Options:</b><br/>
-	    <input type="checkbox" id="zero" checked="checked" /> Begin at Zero</br>
-	    <input type="checkbox" id="labels" checked="checked" /> Automatic Labels</br>
-	    <input type="checkbox" id="curves" checked="checked" /> Use Bezier Curves </br>
-	    <input type="checkbox" id="animations" checked="checked" /> Use Animations</br>
-	    <input type="checkbox" id="rotation" checked="checked" /> Label X-Axis at 90°</br>
-	    <br/>
-	    <div><span id="sets-bar"></span> <input type="text" id="setName" /> <button id="addSet">+</button></div>
-	    <select id="options"></select> <button id="addChart">Add</button>
-    </div>
+    <table cellspacing="0" cellpadding="0">
+        <tr>
+            <th>Render Options</th>
+            <th>Chart Options</th>
+        </tr>
+        <tr>
+            <td>
+			    <input type="checkbox" id="cfgStartAtZero" checked="checked" /> Begin at Zero</br>
+			    <input type="checkbox" id="cfgAutoTimeTicks" checked="checked" /> Automatic Labels</br>
+			    <input type="checkbox" id="cfgDrawCurves" checked="checked" /> Use Bezier Curves </br>
+			    <input type="checkbox" id="cfgDrawAnimations" checked="checked" /> Use Animations</br>
+			    <input type="checkbox" id="cfgRotateTimeLabels" checked="checked" /> Label X-Axis at 90°</br>
+			</td>
+			<td>
+			     <input type="checkbox" id="cfgDrawAvgLine" checked="checked" /> Show Average</br>
+			     <input type="checkbox" id="cfgDrawMinLine" checked="checked" /> Show Minimum</br>
+			     <input type="checkbox" id="cfgDrawMaxLine" checked="checked" /> Show Maximum</br>
+			</td>
+        </tr>
+    </table>
+    <div><span id="sets-bar"></span> <input type="text" id="setName" /> <button id="addSet">+</button></div>
+    <select id="options"></select> <button id="addChart">Add</button>
 </div>
 <div id="console">
 	
 	<div id="canvas-container"></div>
 </div>
+<div id="overlay"><span>Connection Interrupted</span></div>
+
 
 <script>
-$("#zero").on('change', function() {
+$("#cfgStartAtZero").on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.ActiveSet.configure(function(options) {
 		options.beginAtZero = checked;
 	});
 });
 
-$("#labels").on('change', function() {
+$("#cfgAutoTimeTicks").on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.ActiveSet.configure(function(options) {
 		options.autoTimeTicks = checked;
 	});
 });
-$("#curves").on('change', function() {
+$("#cfgDrawCurves").on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.ActiveSet.configure(function(options) {
 		options.drawCurves = checked;
 	});
 });
-$('#animations').on('change', function() {
+$('#cfgDrawAnimations').on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.ActiveSet.configure(function(options) {
 		options.drawAnimations = checked;
 	});
 });
-$("#rotation").on('change', function() {
+$("#cfgRotateTimeLabels").on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.ActiveSet.configure(function(options) {
 		options.rotateTimeLabels = checked;
     });
 });
+$('#cfgDrawAvgLine').on('change', function() {
+    var checked = this.checked;
+    MonitoringConsole.ActiveSet.configure(function(options) {
+        options.drawAvgLine = checked;
+    });
+});
+$('#cfgDrawMinLine').on('change', function() {
+    var checked = this.checked;
+    MonitoringConsole.ActiveSet.configure(function(options) {
+        options.drawMinLine = checked;
+    });
+});
+$('#cfgDrawMaxLine').on('change', function() {
+    var checked = this.checked;
+    MonitoringConsole.ActiveSet.configure(function(options) {
+        options.drawMaxLine = checked;
+    });
+});
 
+MonitoringConsole.afterDataRequests(applyStatus);
 MonitoringConsole.ActiveSet.init(addChartBox);
 updateSetTabs();
+
+function applyStatus(text, error) {
+	if (text || error) {
+		$('#overlay').show();
+	} else {
+		$('#overlay').hide();
+	}
+}
 
 function addChartBox(config) {
     var boxId = config.target + '-box';
@@ -158,11 +198,14 @@ $('#addChart').click(function() {
 	        series: series,
 	        title: title,
 	        options: { 
-	        	beginAtZero: $('#zero')[0].checked,
-	        	autoTimeTicks: $("#labels")[0].checked,
-	        	rotateTimeLabels: $("#rotation")[0].checked,
-	        	drawAnimations: $('#animations')[0].checked,
-	        	drawCurves: $("#curves")[0].checked,
+	        	beginAtZero:      $('#cfgStartAtZero')[0].checked,
+	        	autoTimeTicks:    $("#cfgAutoTimeTicks")[0].checked,
+	        	rotateTimeLabels: $("#cfgRotateTimeLabels")[0].checked,
+	        	drawAnimations:   $('#cfgDrawAnimations')[0].checked,
+	        	drawCurves:       $("#cfgDrawCurves")[0].checked,
+	        	drawAvgLine:      $("#cfgDrawAvgLine")[0].checked,
+	        	drawMinLine:      $("#cfgDrawMinLine")[0].checked,
+	        	drawMaxLine:      $("#cfgDrawMaxLine")[0].checked,
 	        },
 	    };
 	    addChartBox(config);
