@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.universal.process;
 
-import java.io.*;
 import java.util.*;
-
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.OS;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
@@ -65,7 +63,7 @@ public class Jps {
         }
     }
 
-    static public Map<Integer, String> getProcessTable() {
+    public static Map<Integer, String> getProcessTable() {
         return new Jps().pidMap;
     }
 
@@ -76,7 +74,7 @@ public class Jps {
      * E.g. com.sun.enterprise.glassfish.bootstrap.ASMain and ASMain work the same.
      * @return the process id if possible otherwise 0
      */
-    static public List<Integer> getPid(String mainClassName) {
+    public static List<Integer> getPid(String mainClassName) {
         if (mainClassName == null)
             return Collections.emptyList();
 
@@ -103,7 +101,7 @@ public class Jps {
      * @param apid the pid of interest
      * @return whether there is a process running with that id
      */
-    final static public boolean isPid(int apid) {
+    public static final boolean isPid(int apid) {
         return new Jps().pidMap.containsKey(apid);
     }
 
@@ -155,11 +153,7 @@ public class Jps {
             return true;
         }
 
-        if (id.equals("sun.tools.jps.Jps")) {
-            return true;
-        }
-
-        return false;
+        return id.equals("sun.tools.jps.Jps");
     }
 
     /**
@@ -197,9 +191,7 @@ public class Jps {
     private static boolean hasPath(String s) {
         if(s.indexOf('/') >= 0)
             return true;
-        if(s.indexOf('\\') >= 0)
-            return true;
-        return false;
+        return s.indexOf('\\') >= 0;
     }
 
     /**

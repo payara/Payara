@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -129,11 +130,7 @@ public class GFLauncherUtils {
         // case insensitive compare...
         osname = osname.toLowerCase(Locale.ENGLISH);
 
-        if (osname.indexOf("windows") >= 0) {
-            return true;
-        }
-
-        return false;
+        return osname.contains("windows");
     }
 
     /**
@@ -144,12 +141,19 @@ public class GFLauncherUtils {
      * @deprecated
      * @return 
      * @throws UnknownHostException so it can be handled on a case by case basis
+     * @see NetUtils#getCanonicalHostName
      */
     @Deprecated
     public static String getCanonicalHostName() throws UnknownHostException {
         return NetUtils.getCanonicalHostName();
     }
 
+    /**
+     * @deprecated Now part of {@link String} since JDK 1.5
+     * @see String#replace(CharSequence, CharSequence)
+     * @see String#replaceFirst(String, String)
+     */
+    @Deprecated
     public static String replace(String s, String token, String replace) {
         if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
             return s;
@@ -180,18 +184,12 @@ public class GFLauncherUtils {
     public static boolean isRelativePath(String path) {
         if (!ok(path)) {
             return false;
-        }
-        else if (path.startsWith(".")) {
+        } else if (path.startsWith(".")) {
             return true;
-        }
-        else if (path.indexOf("/.") >= 0) {
+        } else if (path.contains("/.")) {
             return true;
-        }
-        else if (path.indexOf("\\.") >= 0) {
-            return true;
-        }
-        else {
-            return false;
+        } else {
+            return path.contains("\\.");
         }
     }
 
