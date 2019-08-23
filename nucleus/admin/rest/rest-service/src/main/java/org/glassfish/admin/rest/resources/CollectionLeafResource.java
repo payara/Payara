@@ -45,6 +45,8 @@ import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import javax.ws.rs.PUT;
+
+import com.sun.enterprise.util.JDK;
 import org.jvnet.hk2.config.TransactionFailure;
 import java.util.HashMap;
 import java.util.List;
@@ -258,16 +260,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
     
     private Map<String, String> optionToMap(JvmOption option){
         Map baseMap = new HashMap<>();
-        if (option.minVersion.isPresent()) {
-            baseMap.put(MIN_VERSION, option.minVersion.get());
-        } else {
-            baseMap.put(MIN_VERSION, "");
-        }
-        if (option.maxVersion.isPresent()) {
-            baseMap.put(MAX_VERISON, option.maxVersion.get());
-        } else {
-            baseMap.put(MAX_VERISON, "");
-        }
+        baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
+        baseMap.put(MAX_VERISON, option.maxVersion.map(JDK.Version::toString).orElse(""));
         baseMap.put(JVM_OPTION, option.option);
         
         return Collections.unmodifiableMap(baseMap);
