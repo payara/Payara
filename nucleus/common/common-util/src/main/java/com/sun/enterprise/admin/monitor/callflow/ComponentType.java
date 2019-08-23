@@ -37,16 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * ComponentType.java
- * $Id: ComponentType.java,v 1.3 2006/11/08 20:55:16 harpreet Exp $
- * $Date: 2006/11/08 20:55:16 $
- * $Revision: 1.3 $
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package	com.sun.enterprise.admin.monitor.callflow;
 
+/**
+ * 
+ * @since 2006/11/08
+ * @version 1.3
+ */
 public enum ComponentType {
 
     SERVLET {
@@ -83,5 +82,4 @@ public enum ComponentType {
 	public String toString () { return "JAVA_PERSISTENCE";}
     };
 
-    public abstract String toString();
 }

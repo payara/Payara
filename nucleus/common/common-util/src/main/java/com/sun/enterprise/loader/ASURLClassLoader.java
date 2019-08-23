@@ -78,8 +78,7 @@ import java.util.zip.ZipEntry;
  * @author Sivakumar Thyagarajan
  * @since  JDK 1.4
  */
-public class ASURLClassLoader
-        extends CurrentBeforeParentClassLoader
+public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         implements JasperAdapter, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader {
 
     /*
@@ -124,7 +123,7 @@ public class ASURLClassLoader
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
-    private final static StringManager sm = StringManager.getManager(ASURLClassLoader.class);
+    private static final StringManager sm = StringManager.getManager(ASURLClassLoader.class);
 
     //holder for declared and ee permissions
     private PermsHolder permissionsHolder;
@@ -138,8 +137,7 @@ public class ASURLClassLoader
         permissionsHolder = new PermsHolder();
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,
-                        "ClassLoader: " + this + " is getting created.");
+            _logger.log(Level.FINE, "ClassLoader: {0} is getting created.", this);
         }
     }
 
@@ -245,9 +243,7 @@ public class ASURLClassLoader
                     CULoggerInfo.getString(CULoggerInfo.badUrlEntry, file.toURI()),
                     mue);
 
-            IOException ioe = new IOException();
-            ioe.initCause(mue);
-            throw ioe;
+            throw new IOException(mue);
         }
     }
 
@@ -258,6 +254,7 @@ public class ASURLClassLoader
      *
      * @param url the URL to be added to the search path of URLs
      */
+    @Override
     public void addURL(URL url) {
         appendURL(url);
     }
@@ -287,8 +284,7 @@ public class ASURLClassLoader
                     checkManifest(entry.zip, entry.file);
                 }
             } else {
-                _logger.log(Level.FINE,
-                    "[ASURLClassLoader] Ignoring duplicate URL: " + url);
+                _logger.log(Level.FINE, "[ASURLClassLoader] Ignoring duplicate URL: {0}", url);
                 /*
                  *Clean up the unused entry or it could hold open a jar file.
                  */
@@ -324,6 +320,7 @@ public class ASURLClassLoader
      *
      * @return    the urls of this class loader or an empty array
      */
+    @Override
     public synchronized URL[] getURLs() {
         return this.urlSet.stream().map(u -> u.source).toArray(URL[]::new);
     }
@@ -367,6 +364,7 @@ public class ASURLClassLoader
         clearNotFoundCaches();
     }
 
+    @Override
     public void addTransformer(ClassFileTransformer transformer) {
         transformers.add(transformer);
     }
@@ -376,6 +374,7 @@ public class ASURLClassLoader
      * @return a new instance of a class loader that has the same visibility
      *  as this class loader
      */
+    @Override
     public ClassLoader copy() {
         final ASURLClassLoader copyFrom = this;
         return AccessController.doPrivileged((PrivilegedAction<DelegatingClassLoader>) () -> {
@@ -439,7 +438,7 @@ public class ASURLClassLoader
                     if (resourceFile.exists()) {
                         // If we make it this far,
                         // the resource is in the directory.
-                        return  resourceFile.toURL();
+                        return  resourceFile.toURI().toURL();
                     }
 
                 } catch (IOException e) {
@@ -452,6 +451,7 @@ public class ASURLClassLoader
         });
     }
 
+    @Override
     public URL findResource(String name) {
 
         // quick quick that relies on 'doneCalled' being 'volatile'
@@ -503,6 +503,7 @@ public class ASURLClassLoader
      */
     private boolean warnedOnce = false;
 
+    @Override
     public synchronized Enumeration<URL> findResources(String name) {
         if( doneCalled ) {
             //PAYARA-588
@@ -662,6 +663,7 @@ public class ASURLClassLoader
         CAUTION: this method might be overriden, and subclasses must be cautious (also)
         about thread safety.
      */
+    @Override
     protected Class findClass(String name) throws ClassNotFoundException {
         ClassData classData = findClassData(name);
         // Instruments the classes if the profiler's enabled
@@ -813,6 +815,7 @@ public class ASURLClassLoader
      *
      * @return   a string representation of this class loader
      */
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(getClassLoaderName()).append(" : \n");
@@ -830,6 +833,7 @@ public class ASURLClassLoader
         return buffer.toString();
     }
 
+    @Override
     public InputStream getResourceAsStream(final String name) {
         InputStream stream = super.getResourceAsStream(name);
         /*
@@ -882,6 +886,7 @@ public class ASURLClassLoader
          * 6. java.util.zip.ZipFile.close()
          * I
          */
+        @Override
         public void close() {
             // do nothing
         }
@@ -898,6 +903,7 @@ public class ASURLClassLoader
         /**
          * @see java.lang.Object#finalize()
          */
+        @Override
         protected void finalize() throws IOException {
             reallyClose();
             try {
@@ -950,9 +956,7 @@ public class ASURLClassLoader
 
                 table = new ConcurrentHashMap<>();
             } catch (URISyntaxException use) {
-                IOException ioe= new IOException();
-                ioe.initCause(use);
-                throw ioe;
+                throw new IOException(use);
             }
         }
 
@@ -1073,10 +1077,11 @@ public class ASURLClassLoader
            */
          public void setProtectionDomain (ClassLoader ejbClassLoader, Certificate[] signers) throws MalformedURLException {
              if (pd == null) {
-                 pd = new ProtectionDomain(new CodeSource(file.toURL(),signers),null, ejbClassLoader, null );
+                 pd = new ProtectionDomain(new CodeSource(file.toURI().toURL(),signers),null, ejbClassLoader, null );
              }
          }
 
+        @Override
         public String toString() {
             return "URLEntry : " + source.toString();
         }
@@ -1087,6 +1092,7 @@ public class ASURLClassLoader
          * @param  obj   URLEntry to compare against
          * @return       true if both entry has equal URL
          */
+        @Override
         public boolean equals(Object obj) {
 
             boolean tf = false;
@@ -1112,6 +1118,7 @@ public class ASURLClassLoader
         /**
          * Since equals is overridden, we need to override hashCode as well.
          */
+        @Override
         public int hashCode() {
             try {
  	 	        return source.toURI().hashCode();
@@ -1123,14 +1130,6 @@ public class ASURLClassLoader
             }
         }
 
-    }
-
-    /**
-     *Returns the vector of open streams; creates it if needed.
-     *@return Vector<SentinelInputStream> holding open streams
-     */
-    private List<SentinelInputStream> getStreams() {
-        return streams;
     }
 
     /**
@@ -1179,6 +1178,7 @@ public class ASURLClassLoader
         /**
          * Closes underlying input stream.
          */
+        @Override
         public void close() throws IOException {
             _close();
         }
@@ -1190,6 +1190,7 @@ public class ASURLClassLoader
          * 'closed' is 'volatile', but it's a race condition to check it and how this code
          * relates to _close() is unclear.
          */
+        @Override
         protected void finalize() throws Throwable {
             if (!closed && this.in != null){
                 try {
@@ -1202,6 +1203,15 @@ public class ASURLClassLoader
                 report();
             }
             super.finalize();
+        }
+        
+        /**
+         * Returns the vector of open streams; creates it if needed.
+         *
+         * @return Vector<SentinelInputStream> holding open streams
+         */
+        private List<SentinelInputStream> getStreams() {
+            return streams;
         }
 
         private synchronized void _close() throws IOException {
@@ -1256,6 +1266,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.JarURLConnection#getJarFile()
          */
+        @Override
         public JarFile getJarFile() throws IOException {
             return mRes.zip;
         }
@@ -1263,6 +1274,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLConnection#connect()
          */
+        @Override
         public void connect() throws IOException {
             // Nothing
         }
@@ -1270,6 +1282,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLConnection#getInputStream()
          */
+        @Override
         public InputStream getInputStream() throws IOException {
             // When there is no entry name specified (this can happen for url like jar:file:///tmp/foo.jar!/),
             // we must throw an IOException as that's the behavior of JarURLConnection as well.
@@ -1311,6 +1324,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLStreamHandler#openConnection(java.net.URL)
          */
+        @Override
         protected URLConnection openConnection(final URL u) throws IOException {
             String path = u.getPath();
             int separator = path.lastIndexOf('!');
@@ -1414,6 +1428,7 @@ public class ASURLClassLoader
          * This method uses the delegate to use class bytes and then defines
          * the class using this class loader
          */
+        @Override
         protected Class findClass(String name) throws ClassNotFoundException {
             ClassData classData = delegate.findClassData(name);
             // Define package information if necessary
@@ -1455,10 +1470,12 @@ public class ASURLClassLoader
             }
         }
 
+        @Override
         protected URL findResource(String name) {
             return delegate.findResource(name);
         }
 
+        @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             return delegate.findResources(name);
         }

@@ -88,13 +88,13 @@ public class AsadminSecurityUtil {
 		 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
 		 */
 		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
-		logger.finer("AS_GFCLIENT: " + AS_GFCLIENT);
+		logger.log(Level.FINER, "AS_GFCLIENT: {0}", AS_GFCLIENT);
 		if (AS_GFCLIENT != null) {
     			DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
 		} else {
     			DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
 		}
-		logger.finer("Set .gfclient directory to: " + DEFAULT_CLIENT_DIR);
+		logger.log(Level.FINER, "Set .gfclient directory to: {0}", DEFAULT_CLIENT_DIR);
     }
 
 
@@ -128,8 +128,7 @@ public class AsadminSecurityUtil {
 
     private KeyStore asadminKeystore = null;
 
-    private static final LocalStringsImpl strmgr =
-        new LocalStringsImpl(AsadminSecurityUtil.class);
+    private static final LocalStringsImpl strmgr = new LocalStringsImpl(AsadminSecurityUtil.class);
 
 
     /**
@@ -273,20 +272,12 @@ public class AsadminSecurityUtil {
     private KeyStore openKeystore(final char[] candidateMasterPassword)
             throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         final KeyStore permanentKS = KeyStore.getInstance("JKS");
-        InputStream keyStoreStream = null;
-        try {
-            keyStoreStream = asadminKeyStoreStream();
+        try (InputStream keyStoreStream = asadminKeyStoreStream()) {
             if (keyStoreStream == null) {
                 return null;
             }
-            permanentKS.load(
-                    keyStoreStream,
-                    candidateMasterPassword);
+            permanentKS.load(keyStoreStream, candidateMasterPassword);
             return permanentKS;
-        } finally {
-            if (keyStoreStream != null) {
-                keyStoreStream.close();
-            }
         }
     }
 
