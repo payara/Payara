@@ -41,7 +41,7 @@
 
 package org.glassfish.osgi.cli.remote;
 
-import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import java.io.ByteArrayOutputStream;
@@ -142,8 +142,8 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
             int port = svr.getAdminPort();
 
             try {
-                ServerRemoteRestAdminCommand remote =
-                        new ServerRemoteRestAdminCommand(
+                ServerRemoteAdminCommand remote =
+                        new ServerRemoteAdminCommand(
                                 locator,
                                 "osgi",
                                 host,
