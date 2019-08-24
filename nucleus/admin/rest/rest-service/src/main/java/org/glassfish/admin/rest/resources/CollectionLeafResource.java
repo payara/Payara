@@ -259,7 +259,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     }
     
     private Map<String, String> optionToMap(JvmOption option){
-        Map baseMap = new HashMap<>();
+        Map<String, String> baseMap = new HashMap<>();
         baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
         baseMap.put(MAX_VERISON, option.maxVersion.map(JDK.Version::toString).orElse(""));
         baseMap.put(JVM_OPTION, option.option);
