@@ -37,82 +37,56 @@
    only if the new code is made subject to such option by the copyright
    holder.
 */
+
 Chart.defaults.global.defaultFontColor = "#fff";
 
 var MonitoringConsole = (function() {
 	/**
-	 * Key used in local stage for the sets configuration
+	 * Key used in local stage for the pages configuration
 	 */
-	const SETS_KEY = 'fish.payara.monitoring-console.defaultConfigs';
-	
-	const DEFAULT_BG_COLORS = [
-        'rgba(153, 102, 255, 0.2)',
-        'rgba(255, 99, 132, 0.2)',
-        'rgba(54, 162, 235, 0.2)',
-        'rgba(255, 206, 86, 0.2)',
-        'rgba(75, 192, 192, 0.2)',
-        'rgba(255, 159, 64, 0.2)'
-    ];
-    const DEFAULT_LINE_COLORS = [
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(255, 159, 64, 1)'
-    ];
+	const LOCAL_PAGES_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
     /**
-     * {function} - a function called with text status and error thrown in case data requests did not succeed 
-     *              or with no arguments in case of success.
+     * {function} - a function called when charts are updated with new data.
      */
-    var connectionCallback;
+    var updateCallback;
 
 	/**
 	 * {function} - interval function updating the graphs
 	 */
 	var updater;
 	/**
-	 * {object} - map of the charts objects for active set as created by Chart.js with series as key
+	 * {object} - map of the charts objects for active page as created by Chart.js with series as key
 	 */
 	var charts = {};
 	
 	/**
-	 * All set properties must not be must be values as set objects are converted to JSON and back for local storage.
+	 * All page properties must not be must be values as page objects are converted to JSON and back for local storage.
 	 * 
-	 * {object} - map of sets, name of set as key/field;
-	 * {string} name - name of the set
+	 * {object} - map of pages, name of page as key/field;
+	 * {string} name - name of the page
 	 * {object} configs -  map of the chart configurations with series as key
 	 * 
-	 * Each set is an object describing a page or tab containing one or more graphs by their configuration.
+	 * Each page is an object describing a page or tab containing one or more graphs by their configuration.
 	 */
-	var sets = {};
-	var set = createSet('Home');
-	sets[set.id] = set;
+	var pages = {};
+	var page = createPage('Home');
+	pages[page.id] = page;
 	
-	var activeSetId = set.id;
+	var activePageId = page.id;
 	
 	/**
 	 * Loads and returns the configuration from the local storage
 	 */
-	function loadLocalSets(preConstructionFn) {
+	function loadLocalPages() {
 		var localStorage = window.localStorage;
-		var item = localStorage.getItem(SETS_KEY);
+		var item = localStorage.getItem(LOCAL_PAGES_KEY);
 		if (item) {
-			var storedSets = JSON.parse(item);
-			for (let [id, set] of Object.entries(storedSets)) {
-				sets[id] = set; // override or add the entry in sets from local storage
+			var localPages = JSON.parse(item);
+			for (let [id, page] of Object.entries(localPages)) {
+				pages[id] = page; // override or add the entry in pages from local storage
 			}
-			initActiveSet(preConstructionFn)
-		}
-	}
-	
-	function initActiveSet(preConstructionFn) {
-		if (sets[activeSetId]) {
-			if (preConstructionFn) {
-				Object.values(sets[activeSetId].configs).forEach(preConstructionFn);
-			}
-			updateAllCharts();
+			updatePage();
 		}
 	}
 	
@@ -120,7 +94,7 @@ var MonitoringConsole = (function() {
 	 * Updates the current configuration in the local storage
 	 */
 	function storeLocalSets() {
-		window.localStorage.setItem(SETS_KEY, JSON.stringify(sets));
+		window.localStorage.setItem(LOCAL_PAGES_KEY, JSON.stringify(pages));
 	}
 	
 	function customTimeLables(value, index, values) {
@@ -145,21 +119,22 @@ var MonitoringConsole = (function() {
 		return undefined;
 	}
 	
-	function createSet(name) {
+	function createPage(name) {
 		if (!name)
-			throw "New set must have a unique name";
+			throw "New page must have a unique name";
 		var id = name.replace(/[^-a-zA-Z]/g, '_').toLowerCase();
-		if (sets[id])
-			throw "A set with name "+name+" already exist";
+		if (pages[id])
+			throw "A page with name "+name+" already exist";
 		return {
 			id: id,
 			name: name,
 			configs: {},
+			numberOfColumns: 1,
 		};
 	}
 	
-	function getActiveSet() {
-		return sets[activeSetId];
+	function getActivePage() {
+		return pages[activePageId];
 	}
 	
 	/**
@@ -236,14 +211,266 @@ var MonitoringConsole = (function() {
 		var series = seriesName(configOrSeries);
 		if (!series)
 			return;
-		var set = getActiveSet();
-		var config = set.configs[series];
-		var chart = charts[series];
-		if (!chart) { // might be one newly added
-			chart = createChart(config);
-			charts[series] = chart;
+		var page = getActivePage();
+		var config = page.configs[series];
+		var update = { config: config, chart: function() {
+			var res = charts[series];
+			if (!res) { // might be one newly added
+				res = createChart(config);
+				charts[series] = res;
+			}
+			return res;
+		}};
+		$.getJSON('api/series/' + series + '/statistics', function(data) {
+			update.data = data;
+			updateCallback(update);
+		}).fail(function(jqXHR, textStatus, errorThrown) { 
+			updateCallback(update); 
+		});
+	}
+	
+	function removeChart(configOrSeries) {
+		var series = seriesName(configOrSeries);
+		var configs = getActivePage().configs;
+		if (series) {
+			delete configs[series];
+			destroyChart(series);
 		}
-		$.getJSON('api/series/' + series + '/statistics', function(stats) {
+	}
+	
+	function destroyChart(series) {
+		if (series) {
+			var chart = charts[series];
+			if (chart) {
+				delete charts[series];
+				chart.destroy();
+			}
+		}
+	}
+	
+	function addChart(config) {
+		if (typeof config === 'object') {
+			if (typeof config.series !== 'string')
+				throw 'configuration object requires string property `series`';
+			if (typeof config.target !== 'string')
+				throw 'configuration object requires string property `target`';
+			var configs = getActivePage().configs;
+			configs[config.series] = config;
+		} else {
+			throw 'configuration was no object but: ' + config;
+		}
+	}
+	
+	function clearPage() {
+		if (updater) {
+			clearInterval(updater);
+		}
+		applyToAllCharts(removeChart);
+	}
+	
+	/**
+	 * Updates the charts of the current configuration.
+	 */
+	function updatePage() {
+		if (pages[activePageId]) {
+			applyToAllCharts(updateChart);
+			if (!updater) {
+				updater = setInterval(updatePage, 1000);
+			}
+		}
+	}
+	
+	/**
+	 * Applies a function to all charts.
+	 * 
+	 * @param {function} fn - a function that accepts a single argument of the string series name
+	 */
+	function applyToAllCharts(fn) {
+		Object.keys(getActivePage().configs).forEach(fn);
+	}
+	
+	function arrangeLayout() {
+		var page = getActivePage();
+		if (!page)
+			return [];
+		var numberOfColumns = page.numberOfColumns || 1;
+		var configs = page.configs;
+		var configsByColumn = new Array(numberOfColumns);
+		for (var col = 0; col < numberOfColumns; col++)
+			configsByColumn[col] = [];
+		// insert order configs
+		Object.values(configs).forEach(function(config) {
+			var column = config.position && config.position.column ? config.position.column : 0;
+			configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(config);
+		});
+		// build up rows with columns, occupy spans with empty 
+		var layout = new Array(numberOfColumns);
+		for (var col = 0; col < numberOfColumns; col++)
+			layout[col] = [];
+		for (var col = 0; col < numberOfColumns; col++) {
+			var orderedConfigs = configsByColumn[col].sort(function (a, b) {
+				if (!a.position || !a.position.item)
+					return -1;
+				if (!b.position || !b.position.item)
+					return 1;
+				return a.position.item - b.position.item;
+			});
+			orderedConfigs.forEach(function(config) {
+				var span = config.position && config.position.span ? config.position.span : 1;
+				if (typeof span === 'string') {
+					if (span === 'full') {
+						span = numberOfColumns;
+					} else {
+						span = parseInt(span);
+					}
+				}
+				if (span > numberOfColumns - col) {
+					span = numberOfColumns - col;
+				}
+				var info = { target: config.target, span: span, series: config.series};
+				for (var spanX = 0; spanX < span; spanX++) {
+					var column = layout[col + spanX];
+					if (spanX == 0) {
+						if (!config.position)
+							config.position = { column: col, span: span }; // init position
+						config.position.item = column.length; // update item position
+					}
+					for (var spanY = 0; spanY < span; spanY++) {
+						column.push(spanX === 0 && spanY === 0 ? info : null);
+					}
+				}
+			});
+		}
+		return layout;
+	}
+	
+	return {
+		
+		init: function(callback) {
+			updateCallback = callback;
+			loadLocalPages();
+			return arrangeLayout();
+		},
+		
+		/**
+		 * @param {function} consumer - a function with one argument accepting the array of series names
+		 */
+		fetchSeries: function(consumer) {
+			$.getJSON("api/series/", consumer);
+		},
+		
+		pages: function() {
+			return Object.values(pages).map(function(page) { 
+				return { id: page.id, name: page.name, active: page.id === getActivePage().id };
+			});
+		},
+		
+		ActivePage: {
+			
+			id: function() {
+				return getActivePage().id;
+			},
+
+			title: function() {
+				return getActivePage().title;
+			},
+			
+			/**
+			 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
+			 */
+			configure: function(optionsUpdate) {
+				Object.values(getActivePage().configs).forEach(function(config) {
+					optionsUpdate.call(window, config.options);
+					var chart = charts[config.series];
+					applyChartOptions(config, chart);
+					chart.update();
+				});
+				storeLocalSets();
+			},			
+			
+			create: function(name) {
+				var page = createPage(name);
+				pages[page.id] = page;
+				storeLocalSets();
+				Object.keys(charts).forEach(destroyChart);
+				activePageId = page.id;
+				return arrangeLayout();
+			},
+			
+			changeTo: function(setId) {
+				if (!pages[setId])
+					throw "No such page with id: " + setId;
+				Object.keys(charts).forEach(destroyChart);
+				activePageId = setId;
+				updatePage();
+				return arrangeLayout();
+			},
+			
+			add: function(config) {
+				addChart(config);
+				var layout = arrangeLayout();
+				storeLocalSets();
+				return layout;
+			},
+			
+			dispose: function(configOrSeries) {
+				removeChart(configOrSeries);
+				var layout = arrangeLayout();
+				storeLocalSets();
+				return layout;
+			},
+			
+			/**
+			 * Removes and destroys all chart objects of the active page
+			 */
+			clear: function() {
+				clearPage();
+				var layout = arrangeLayout();
+				storeLocalSets();
+				return layout;
+			},
+			
+			/**
+			 * Returns a layout model for the active pages charts and the given number of columns.
+			 * This also updates the position object of the active pages configuration.
+			 * 
+			 * @param {number} numberOfColumns - the number of columns the charts should be arrange in
+			 */
+			rearrange: function(numberOfColumns) {
+				getActivePage().numberOfColumns = numberOfColumns;
+				var layout = arrangeLayout();
+				storeLocalSets();
+				return layout;
+			},
+		},
+
+	};
+})();
+
+var MonitoringConsoleRender = (function() {
+	
+	const DEFAULT_BG_COLORS = [
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(255, 159, 64, 0.2)'
+    ];
+    const DEFAULT_LINE_COLORS = [
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 159, 64, 1)'
+    ];	
+	
+	return {
+		chart: function(update) {
+			var stats = update.data;
+			var config = update.config;
+			var chart = update.chart();
 			var datasets = [];
 			for (var j = 0; j < stats.length; j++) {
 				var instanceStats = stats[j];
@@ -311,157 +538,6 @@ var MonitoringConsole = (function() {
 			chart.options.title.display = true;
 			chart.options.title.text = config.title ? config.title : config.series;
 			chart.update(0);
-			connectionCallback();
-		})
-		.fail(function(jqXHR, textStatus, errorThrown) { connectionCallback(textStatus, errorThrown); });
-	}
-	
-	function removeChart(configOrSeries) {
-		var series = seriesName(configOrSeries);
-		var configs = getActiveSet().configs;
-		if (series) {
-			delete configs[series];
-			destroyChart(series);
 		}
-	}
-	
-	function destroyChart(series) {
-		if (series) {
-			var chart = charts[series];
-			if (chart) {
-				delete charts[series];
-				chart.destroy();
-			}
-		}
-	}
-	
-	function addChart(config) {
-		if (typeof config === 'object') {
-			if (typeof config.series !== 'string')
-				throw 'configuration object requires string property `series`';
-			if (typeof config.target !== 'string')
-				throw 'configuration object requires string property `target`';
-			var configs = getActiveSet().configs;
-			configs[config.series] = config;
-		} else {
-			throw 'configuration was no object but: ' + config;
-		}
-	}
-	
-	function removeAllCharts() {
-		if (updater) {
-			clearInterval(updater);
-		}
-		applyToAllCharts(removeChart);
-	}
-	
-	/**
-	 * Updates the charts of the current configuration.
-	 */
-	function updateAllCharts() {
-		applyToAllCharts(updateChart);
-		if (!updater) {
-			updater = setInterval(updateAllCharts, 1000);
-		}
-	}
-	
-	/**
-	 * Applies a function to all charts.
-	 * 
-	 * @param {function} fn - a function that accepts a single argument of the string series name
-	 */
-	function applyToAllCharts(fn) {
-		Object.keys(getActiveSet().configs).forEach(fn);
-	}
-	
-	return {
-		
-		afterDataRequests: function(callback) {
-			connectionCallback = callback;
-		},
-		
-		/**
-		 * @param {function} consumer - a function with one argument accepting the array of series names
-		 */
-		fetchSeries: function(consumer) {
-			$.getJSON("api/series/", consumer);
-		},
-		
-		getSets: function() {
-			return Object.values(sets).map(function(set) { 
-				return { id: set.id, name: set.name, active: set.id === getActiveSet().id };
-			});
-		},
-		
-		ActiveSet: {
-			
-			create: function(name) {
-				var set = createSet(name);
-				sets[set.id] = set;
-				storeLocalSets();
-				Object.keys(charts).forEach(destroyChart);
-				activeSetId = set.id;
-				return set;
-			},
-			
-			changeTo: function(setId, preConstructionFn) {
-				if (!sets[setId])
-					throw "No such set with id: " + setId;
-				Object.keys(charts).forEach(destroyChart);
-				activeSetId = setId;
-				initActiveSet(preConstructionFn);
-			},
-			
-			id: function() {
-				return getActiveSet().id;
-			},
-
-			title: function() {
-				return getActiveSet().title;
-			},
-
-			init: function(preConstructionFn) {
-				loadLocalSets(preConstructionFn);
-			},
-			
-			/**
-			 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
-			 */
-			configure: function(optionsUpdate) {
-				Object.values(getActiveSet().configs).forEach(function(config) {
-					optionsUpdate.call(window, config.options);
-					var chart = charts[config.series];
-					applyChartOptions(config, chart);
-					chart.update();
-				});
-				storeLocalSets();
-			},
-			
-			add: function(config) {
-				addChart(config);
-				storeLocalSets();
-			},
-			
-			/**
-			 * Changes the active charts to those of the passed configuration.
-			 */
-			update: function() {
-				updateAllCharts();
-			},
-			
-			dispose: function(configOrSeries) {
-				removeChart(configOrSeries);
-				storeLocalSets();
-			},
-			
-			/**
-			 * Removes and destroys all chart objects of the active set
-			 */
-			reset: function() {
-				removeAllCharts();
-				storeLocalSets();
-			},
-		},
-
 	};
 })();

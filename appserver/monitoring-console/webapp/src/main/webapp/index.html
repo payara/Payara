@@ -75,12 +75,18 @@
 			</td>
         </tr>
     </table>
-    <div><span id="sets-bar"></span> <input type="text" id="setName" /> <button id="addSet">+</button></div>
-    <select id="options"></select> <button id="addChart">Add</button>
+    <div><span id="pagesBar"></span> <input type="text" id="pageName" /> <button id="btnAddPage">+</button></div>
+    <div><select id="options"></select> <button id="btnAddChart">Add</button></div>
+    <div>Column <select id="cfgColumn"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+                 Span: <input type="text" id="cfgSpan" /> </div>
 </div>
 <div id="console">
-	
-	<div id="canvas-container"></div>
+	<div>
+	   <button id="btnUniLayout" onclick='renderPage(MonitoringConsole.ActivePage.rearrange(1));'>&#9608</button> 
+	   <button id="btnDualLayout" onclick='renderPage(MonitoringConsole.ActivePage.rearrange(2));'>&#9608 &#9608</button> 
+	   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.ActivePage.rearrange(3));'>&#9608 &#9608 &#9608</button>
+	   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.ActivePage.rearrange(4));'>&#9608 &#9608 &#9608 &#9608</button></div>
+	<div id="chart-container"></div>
 </div>
 <div id="overlay"><span>Connection Interrupted</span></div>
 
@@ -88,107 +94,78 @@
 <script>
 $("#cfgStartAtZero").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.ActiveSet.configure(function(options) {
+	MonitoringConsole.ActivePage.configure(function(options) {
 		options.beginAtZero = checked;
 	});
 });
 
 $("#cfgAutoTimeTicks").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.ActiveSet.configure(function(options) {
+	MonitoringConsole.ActivePage.configure(function(options) {
 		options.autoTimeTicks = checked;
 	});
 });
 $("#cfgDrawCurves").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.ActiveSet.configure(function(options) {
+	MonitoringConsole.ActivePage.configure(function(options) {
 		options.drawCurves = checked;
 	});
 });
 $('#cfgDrawAnimations').on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.ActiveSet.configure(function(options) {
+	MonitoringConsole.ActivePage.configure(function(options) {
 		options.drawAnimations = checked;
 	});
 });
 $("#cfgRotateTimeLabels").on('change', function() {
 	var checked = this.checked;
-	MonitoringConsole.ActiveSet.configure(function(options) {
+	MonitoringConsole.ActivePage.configure(function(options) {
 		options.rotateTimeLabels = checked;
     });
 });
 $('#cfgDrawAvgLine').on('change', function() {
     var checked = this.checked;
-    MonitoringConsole.ActiveSet.configure(function(options) {
+    MonitoringConsole.ActivePage.configure(function(options) {
         options.drawAvgLine = checked;
     });
 });
 $('#cfgDrawMinLine').on('change', function() {
     var checked = this.checked;
-    MonitoringConsole.ActiveSet.configure(function(options) {
+    MonitoringConsole.ActivePage.configure(function(options) {
         options.drawMinLine = checked;
     });
 });
 $('#cfgDrawMaxLine').on('change', function() {
     var checked = this.checked;
-    MonitoringConsole.ActiveSet.configure(function(options) {
+    MonitoringConsole.ActivePage.configure(function(options) {
         options.drawMaxLine = checked;
     });
 });
 
-MonitoringConsole.afterDataRequests(applyStatus);
-MonitoringConsole.ActiveSet.init(addChartBox);
-updateSetTabs();
+renderPage(MonitoringConsole.init(renderChartUpdate));
+renderPageTabs();
 
-function applyStatus(text, error) {
-	if (text || error) {
-		$('#overlay').show();
-	} else {
-		$('#overlay').hide();
-	}
-}
-
-function addChartBox(config) {
-    var boxId = config.target + '-box';
-    if ($('#'+boxId).length)
-    	return;
-    var newCanvas = $('<canvas/>',{ id: config.target }).prop({ width: 2, height: 1 });
-    var newDiv = $('<div/>', { id: boxId, "class": "chart-box" });
-    var newCloseButton = $('<button/>', { text: 'x', "class": "closeBtn" });
-    newCloseButton.click(function() {
-        MonitoringConsole.ActiveSet.dispose(config);
-        newDiv.remove();
-    });
-    newDiv.append(newCloseButton);
-    newDiv.append(newCanvas);
-    $('#canvas-container').append(newDiv);
-}
-
-function updateSetTabs() {
-	var bar = $("#sets-bar"); 
+function renderPageTabs() {
+	var bar = $("#pagesBar"); 
 	bar.empty();
-	MonitoringConsole.getSets().forEach(function(set) {
-		var tabId = set.id + '-tab';
-		var css = "set-tab" + (set.active ? ' set-selected' : '');
-	    var newTab = $('<span/>', {id: tabId, "class": css, text: set.name});
+	MonitoringConsole.pages().forEach(function(page) {
+		var tabId = page.id + '-tab';
+		var css = "page-tab" + (page.active ? ' page-selected' : '');
+	    var newTab = $('<span/>', {id: tabId, "class": css, text: page.name});
 	    newTab.click(function() {
-	    	$('#canvas-container').empty();
-	    	MonitoringConsole.ActiveSet.changeTo(set.id, addChartBox);
-	    	updateSetTabs();
+	    	renderPage(MonitoringConsole.ActivePage.changeTo(page.id));
+	    	renderPageTabs();
 	    });
 	    bar.append(newTab);
 	});
 }
 
-$('#addSet').click(function() {
-	var set = MonitoringConsole.ActiveSet.create($("#setName").val());
-	if (set) {
-		$('#canvas-container').empty();
-		updateSetTabs();
-	}
+$('#btnAddPage').click(function() {
+	renderPage(MonitoringConsole.ActivePage.create($("#pageName").val()));
+	renderPageTabs();
 });
 
-$('#addChart').click(function() {
+$('#btnAddChart').click(function() {
 	$("#options option:selected").each(function() {
 		var series = this.value;
 		var title = $( this ).text();
@@ -207,11 +184,13 @@ $('#addChart').click(function() {
 	        	drawMinLine:      $("#cfgDrawMinLine")[0].checked,
 	        	drawMaxLine:      $("#cfgDrawMaxLine")[0].checked,
 	        },
+	        position: {
+	        	column:  parseInt($("#cfgColumn").val()),
+	        	span:    $("#cfgSpan").val(),
+	        },
 	    };
-	    addChartBox(config);
-	    MonitoringConsole.ActiveSet.add(config);
+	    renderPage(MonitoringConsole.ActivePage.add(config));
 	});
-	MonitoringConsole.ActiveSet.update();
 });
 
 MonitoringConsole.fetchSeries(function(names) {
@@ -231,6 +210,69 @@ MonitoringConsole.fetchSeries(function(names) {
         lastNs = ns;
     });
 });
+
+function renderChartBox(config) {
+    var boxId = config.target + '-box';
+    var box = $('#'+boxId);
+    if (box.length > 0)
+        return box.first();
+    box = $('<div/>', { id: boxId, "class": "chart-box" });
+    box.append($('<canvas/>',{ id: config.target }).prop({ width: 2, height: 1 }));
+    return box;
+}
+
+function renderPage(layout) {
+	var table = $("<table/>", { id: 'chart-grid'});
+	var numberOfColumns = layout.length;
+    var maxRow = 0;
+    for (var col = 0; col < numberOfColumns; col++) {
+    	maxRow = Math.max(maxRow, layout[col].length);
+    }
+    for (var row = 0; row < maxRow; row++) {
+		var tr = $("<tr/>");
+		for (var col = 0; col < numberOfColumns; col++) {
+            if (layout[col].length <= row) {
+            	tr.append($("<td/>"));
+            } else {
+				var cell = layout[col][row];
+	            if (cell) {
+			    	var span = cell.span;
+		            var td = $("<td/>", { colspan: span, rowspan: span});
+		            var newCloseButton = $('<button/>', { text: 'x', "class": "closeBtn" });
+		            newCloseButton.click(function() {
+		                renderPage(MonitoringConsole.ActivePage.dispose(cell.series));
+		            });
+		            td.append(newCloseButton);
+		            td.append(renderChartBox(cell));
+		            tr.append(td);
+	            } else if (row == 0 && layout[col].length == 0) {
+	                // a column with no content, span all rows
+	                var td = $("<td/>", { rowspan: maxRow });
+	                tr.append(td);	            	
+	            }
+            }
+        }
+   	    table.append(tr);
+    }
+  	$('#chart-container').empty();
+	$('#chart-container').append(table);
+}
+
+function renderChartUpdate(update) {
+	var boxId = update.config.target + '-box';
+	var box = $('#'+boxId);
+    if (box.length == 0) {
+    	if (console)
+            console.log('WARN: Box for chart ' + update.config.series + ' not ready.');
+        return;
+    }
+	if (update.data) {
+        MonitoringConsoleRender.chart(update);
+	} else {
+	    box.empty();
+	    box.append($("<span>", {text: 'no data'}));
+	}
+}
 
 </script>
 
