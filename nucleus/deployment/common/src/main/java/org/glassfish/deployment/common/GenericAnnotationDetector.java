@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation]
+//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.deployment.common;
 
 
@@ -56,9 +56,9 @@ import java.net.URI;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
-import org.glassfish.hk2.external.org.objectweb.asm.ClassReader;
-import org.glassfish.hk2.external.org.objectweb.asm.Type;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Type;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LogMessageInfo;

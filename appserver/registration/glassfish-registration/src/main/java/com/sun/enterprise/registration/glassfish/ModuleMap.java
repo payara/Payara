@@ -159,7 +159,7 @@ public class ModuleMap {
                 put("org.glassfish.hk2.config", 100);
                 put("org.glassfish.hk2.config-types", 101);
                 put("org.glassfish.hk2.core", 102);
-                put("org.glassfish.hk2.external.asm-repackaged", 103);
+                //put("org.glassfish.hk2.external.asm-repackaged", 103);
                 //put("org.glassfish.hk2.external.bean-validator", 104);
                 put("org.glassfish.hk2.hk2", 105);
                 put("org.glassfish.hk2.osgi-adapter", 106);
@@ -325,6 +325,11 @@ public class ModuleMap {
                 put("stax2-api", 266);
                 put("woodstox-core-asl", 267);
                 put("com.fasterxml.jackson.dataformat.xml", 268);
+                put("org.objectweb.asm", 269);
+                put("org.objectweb.asm.commons", 270);
+                put("org.objectweb.asm.tree", 271)
+                put("org.objectweb.asm.tree.analysis", 272);
+                put("org.objectweb.asm.util", 273)
             }});
 
     public ModuleMap() {

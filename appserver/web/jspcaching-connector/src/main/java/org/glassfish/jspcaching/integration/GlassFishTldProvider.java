@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.jspcaching.integration;
 
@@ -48,7 +49,7 @@ import java.util.regex.Pattern;
 import com.sun.appserv.web.taglibs.cache.CacheTag;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.net.JarURIPattern;
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -125,7 +126,7 @@ public class GlassFishTldProvider
          */
         Class jspCachingImplClass = CacheTag.class;
         URI[] uris = null;
-        Module m = null;
+        HK2Module m = null;
         if (jspCachingImplClass != null) {
             m = registry.find(jspCachingImplClass);
         }
