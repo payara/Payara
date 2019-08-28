@@ -39,7 +39,7 @@
 */
 
 body {
-    background-color: #002433;
+    background-color: #002c3e;
     font: 13px/1.231 arial,helvetica,clean,sans-serif;
     color: white;
     margin: 0;
@@ -49,37 +49,44 @@ h1 {
 	font-size: 21px;
     font-weight: bold;
 }
-#header {
-    background-color: #002C3E;
-    padding: 20px;
-    padding-left: 430px;
-    min-height: 200px;
-    background-image: url("payara-server-logo.png");
-    background-repeat: no-repeat;
-    background-position: 20px;
+select {
+	width: 100%;
+    max-width: 200px;
 }
 #console {
     position: relative;
-    padding: 20px;
+    border-spacing: 0;
+    border-collapse: collapse;
 }
-#canvas-container {
+.console-area {
+	padding: 5px 10px;
+	vertical-align: top;
+}
+#chart-container {
     position: relative;
+    padding: 0 10px;
 }
 .chart-box {
-    padding: 10px;
-	margin: 10px;
-    border: 1px solid #F0981B;
     position: relative;
 }
-.closeBtn {
+.btnIcon {
 	float: right;
 	z-index: 101;
     position: relative;
+    margin: 0;
+    padding: 0;
+}
+.caption-bar h3 {
+	font-size: 100%;
+	font-weight: bold;
+	display: inline-block;
+	margin: 0;
+	cursor: pointer;
 }
 canvas {
     position: relative;
 }
-#pagesBar .page-tab {
+#pagesTabs .page-tab {
 	display: inline-block;
 	padding: 5px 1em;
 	margin: 2px;
@@ -88,19 +95,26 @@ canvas {
 	cursor: pointer;
 	border-radius: 2px;
 }
-#pagesBar .page-tab.page-selected {
+#pagesTabs .page-tab.page-selected {
     background-color: #F0981B;
 }
-
+#layout-bar {
+	width: 300;
+	text-align: right;
+}
+#layout-bar button {
+	background-color: #aaa;
+}
 button {
     padding: 5px 1em;
-    margin: 2px;
+    margin: 0 1px;
     font-weight: bold;
     background-color: #F0981B;
     border-width: 0;
     color: white;
     border-radius: 2px;
     cursor: pointer;
+    line-height: 1.0;
 }
 #chart-container button {
 	border: 1 px solid #F0981B;
@@ -112,6 +126,38 @@ button {
 #chart-grid {
 	width: 100%;
 	table-layout:fixed;
+	border-spacing: 4px;
+    border-collapse: separate;
+}
+#chart-grid td {
+    background-color: #002433;
+    padding: 10px;
+    vertical-align: top;
+    border: 2px solid #002433;
+}
+#chart-grid td.chart-selected {
+	background-color: #0D3647;
+	border: 2px solid white;
+}
+#chart-options {
+	width: 0;
+	padding: 0;
+    background-image: url("payara-server-logo.png");
+    background-repeat: no-repeat;
+    background-position: 10px 10px;
+    vertical-align: top;
+}
+#chart-options.expanded {
+	width: 380px;
+	padding: 10px;
+	padding-top: 220px;
+	background-color: black;
+}
+#options-box {
+	display: none;
+}
+#chart-options.expanded #options-box {
+    display: block;
 }
 #overlay {
 	display: none;
@@ -130,4 +176,22 @@ button {
     padding: 10px 2em;
     border: 2px solid OrangeRed;
     border-radius: 2px;
+}
+.status-nodata {
+	display: none;
+	position: absolute;
+	font-weight: bold;
+	font-size: 200%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    z-index: 101;
+    border: 5px solid orangered;
+}
+.status-nodata div {
+	position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    margin-top: -1em;
 }

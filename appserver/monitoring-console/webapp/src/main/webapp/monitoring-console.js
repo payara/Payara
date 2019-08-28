@@ -40,394 +40,527 @@
 
 Chart.defaults.global.defaultFontColor = "#fff";
 
+/**
+ * A utility with 'static' helper functions that have no side effect.
+ * 
+ * Extracting such function into this object should help organise the code and allow context independent testing 
+ * of the helper functions in the browser.
+ * 
+ * The MonitoringConsole object is dependent on this object but not vice versa.
+ */
+var MonitoringConsoleUtils = (function() {
+	
+	return {
+		
+		getSpan: function(config, numberOfColumns, currentColumn) {
+			let span = config.position && config.position.span ? config.position.span : 1;
+			if (typeof span === 'string') {
+				if (span === 'full') {
+					span = numberOfColumns;
+				} else {
+					span = parseInt(span);
+				}
+			}
+			if (span > numberOfColumns - currentColumn) {
+				span = numberOfColumns - currentColumn;
+			}
+			return span;
+		},
+		
+		getSeriesId: function(configOrSeries) {
+			let type = typeof configOrSeries;
+			if (type === 'string')
+				return configOrSeries;
+			if (type === 'object')
+				return configOrSeries.series;
+			return undefined;
+		},
+		
+		getPageId: function(name) {
+			return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
+		},
+		
+		getTimeLabel: function(value, index, values) {
+			if (values.length == 0 || index == 0)
+				return value;
+			let span = values[values.length -1].value - values[0].value;
+			if (span < 120000) { // less then two minutes
+				let lastMinute = new Date(values[index-1].value).getMinutes();
+				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+			}
+			return value;
+		},
+	}
+})();
+
+/**
+ * The object that manages the internal state of the monitoring console page.
+ * 
+ * It depends on the MonitoringConsoleUtils object.
+ */
 var MonitoringConsole = (function() {
 	/**
 	 * Key used in local stage for the pages configuration
 	 */
 	const LOCAL_PAGES_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
-    /**
-     * {function} - a function called when charts are updated with new data.
-     */
-    var updateCallback;
+	/**
+	 * Internal API for managing set of pages.
+	 */
+	var Pages = (function() {
 
-	/**
-	 * {function} - interval function updating the graphs
-	 */
-	var updater;
-	/**
-	 * {object} - map of the charts objects for active page as created by Chart.js with series as key
-	 */
-	var charts = {};
-	
-	/**
-	 * All page properties must not be must be values as page objects are converted to JSON and back for local storage.
-	 * 
-	 * {object} - map of pages, name of page as key/field;
-	 * {string} name - name of the page
-	 * {object} configs -  map of the chart configurations with series as key
-	 * 
-	 * Each page is an object describing a page or tab containing one or more graphs by their configuration.
-	 */
-	var pages = {};
-	var page = createPage('Home');
-	pages[page.id] = page;
-	
-	var activePageId = page.id;
-	
-	/**
-	 * Loads and returns the configuration from the local storage
-	 */
-	function loadLocalPages() {
-		var localStorage = window.localStorage;
-		var item = localStorage.getItem(LOCAL_PAGES_KEY);
-		if (item) {
-			var localPages = JSON.parse(item);
-			for (let [id, page] of Object.entries(localPages)) {
-				pages[id] = page; // override or add the entry in pages from local storage
-			}
-			updatePage();
+		/**
+		 * All page properties must not be must be values as page objects are converted to JSON and back for local storage.
+		 * 
+		 * {object} - map of pages, name of page as key/field;
+		 * {string} name - name of the page
+		 * {object} configs -  map of the chart configurations with series as key
+		 * 
+		 * Each page is an object describing a page or tab containing one or more graphs by their configuration.
+		 */
+		var pages = {};
+		
+		var currentPageId = MonitoringConsoleUtils.getPageId('Home');
+		
+		function doStore() {
+			window.localStorage.setItem(LOCAL_PAGES_KEY, JSON.stringify(pages));
 		}
-	}
-	
-	/**
-	 * Updates the current configuration in the local storage
-	 */
-	function storeLocalSets() {
-		window.localStorage.setItem(LOCAL_PAGES_KEY, JSON.stringify(pages));
-	}
-	
-	function customTimeLables(value, index, values) {
-		if (values.length == 0 || index == 0)
-			return value;
-		var span = values[values.length -1].value - values[0].value;
-		if (span < 120000) { // less then two minutes
-			var lastMinute = new Date(values[index-1].value).getMinutes();
-			return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+		
+		function doDeselect() {
+			Object.values(pages[currentPageId].configs)
+				.forEach(config => config.selected = false);
 		}
-		return value;
-	}
-	
-	function seriesName(configOrSeries) {
-		var type = typeof configOrSeries;
-		if (type === 'string') {
-			return configOrSeries;
-		} 
-		if (type === 'object') {
-			return configOrSeries.series;
-		}
-		return undefined;
-	}
-	
-	function createPage(name) {
-		if (!name)
-			throw "New page must have a unique name";
-		var id = name.replace(/[^-a-zA-Z]/g, '_').toLowerCase();
-		if (pages[id])
-			throw "A page with name "+name+" already exist";
+		
 		return {
-			id: id,
-			name: name,
-			configs: {},
-			numberOfColumns: 1,
-		};
-	}
-	
-	function getActivePage() {
-		return pages[activePageId];
-	}
-	
-	/**
-	 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
-	 */
-	function createChart(config) {
-		var chart = new Chart(config.target, {
-			type: 'line',
-			data: {
-				datasets: [],
+			current: function() {
+				return pages[currentPageId];
 			},
-			options: {
-				scales: {
-					xAxes: [{
-						type: 'time',
-						gridLines: {
-							color: 'rgb(120,120,120)',
-						},
-						time: {
-							minUnit: 'second',
-							round: 'second',
-						},
-						ticks: {
-							callback: customTimeLables,
-							minRotation: 90,
-							maxRotation: 90,
+			
+			list: function() {
+				return Object.values(pages).filter(page => page.id !== undefined).map(function(page) { 
+					return { id: page.id, name: page.name, active: page.id === currentPageId };
+				});
+			}, 
+			
+			/**
+			 * Loads and returns the configuration from the local storage
+			 */
+			load: function() {
+				let localStorage = window.localStorage;
+				let item = localStorage.getItem(LOCAL_PAGES_KEY);
+				if (item) {
+					var localPages = JSON.parse(item);
+					for (let [id, page] of Object.entries(localPages)) {
+						pages[id] = page; // override or add the entry in pages from local storage
+					}
+				} else {
+					let page = createPage('Home');
+					pages[page.id] = page;
+					currentPageId = page.id;
+				}
+				return pages[currentPageId];
+			},
+			
+			/**
+			 * Creates a new page with given name, ID is derived from name.
+			 * While name can be changed later on the ID is fixed.
+			 */
+			create: function(name) {
+				if (!name)
+					throw "New page must have a unique name";
+				if (name === 'options')
+					throw "Illegal name for a page: " + name;
+				var id = MonitoringConsoleUtils.getPageId(name);
+				if (pages[id])
+					throw "A page with name "+name+" already exist";
+				let page = {
+					id: id,
+					name: name,
+					configs: {},
+					numberOfColumns: 1,
+				};
+				pages[page.id] = page;
+				currentPageId = page.id;
+				return page;
+			},
+			
+			/**
+			 * Deletes the active page and changes to the home page
+			 */
+			erase: function() {
+				let homePageId = MonitoringConsoleUtils.getPageId('Home');
+				if (currentPageId === homePageId)
+					return undefined;
+				delete pages[currentPageId];
+				currentPageId = homePageId;
+				return pages[currentPageId];
+			},
+			
+			changeTo: function(pageId) {
+				if (!pages[pageId])
+					return undefined;
+				currentPageId = pageId;
+				return pages[currentPageId];
+			},
+			
+			remove: function(configOrSeries) {
+				let series = MonitoringConsoleUtils.getSeriesId(configOrSeries);
+				let configs = pages[currentPageId].configs;
+				if (series && configs) {
+					delete configs[series];
+				}
+			},
+			
+			add: function(config) {
+				if (typeof config === 'object') {
+					if (typeof config.series !== 'string')
+						throw 'configuration object requires string property `series`';
+					if (typeof config.target !== 'string')
+						throw 'configuration object requires string property `target`';
+					doDeselect();
+					var configs = pages[currentPageId].configs;
+					configs[config.series] = config;
+					config.selected = true;
+				} else {
+					throw 'configuration was no object but: ' + config;
+				}
+			},
+			
+			configure: function(configUpdate) {
+				let selected = Object.values(pages[currentPageId].configs)
+					.filter(config => config.selected);
+				selected.forEach(config => configUpdate.call(window, config));
+				doStore();
+				return selected;
+			},
+			
+			select: function(configOrSeries) {
+				let series = MonitoringConsoleUtils.getSeriesId(configOrSeries);
+				let config = pages[currentPageId].configs[series];
+				config.selected = !(config.selected === true);
+				doStore();
+				return config.selected === true;
+			},
+			
+			deselect: function() {
+				doDeselect();
+				doStore();
+			},
+			
+			selected: function() {
+				return Object.values(pages[currentPageId].configs)
+					.filter(config => config.selected)
+					.map(config => config.series);
+			},
+			
+			layout: function(columns) {
+				let page = pages[currentPageId];
+				if (!page)
+					return [];
+				if (columns)
+					page.numberOfColumns = columns;
+				let numberOfColumns = page.numberOfColumns || 1;
+				let configs = page.configs;
+				let configsByColumn = new Array(numberOfColumns);
+				for (let col = 0; col < numberOfColumns; col++)
+					configsByColumn[col] = [];
+				// insert order configs
+				Object.values(configs).forEach(function(config) {
+					let column = config.position && config.position.column ? config.position.column : 0;
+					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(config);
+				});
+				// build up rows with columns, occupy spans with empty 
+				var layout = new Array(numberOfColumns);
+				for (let col = 0; col < numberOfColumns; col++)
+					layout[col] = [];
+				for (let col = 0; col < numberOfColumns; col++) {
+					let orderedConfigs = configsByColumn[col].sort(function (a, b) {
+						if (!a.position || !a.position.item)
+							return -1;
+						if (!b.position || !b.position.item)
+							return 1;
+						return a.position.item - b.position.item;
+					});
+					orderedConfigs.forEach(function(config) {
+						let span = MonitoringConsoleUtils.getSpan(config, numberOfColumns, col);
+						let info = { target: config.target, span: span, series: config.series};
+						for (let spanX = 0; spanX < span; spanX++) {
+							let column = layout[col + spanX];
+							if (spanX == 0) {
+								if (!config.position)
+									config.position = { column: col, span: span }; // init position
+								config.position.item = column.length; // update item position
+							}
+							for (let spanY = 0; spanY < span; spanY++) {
+								column.push(spanX === 0 && spanY === 0 ? info : null);
+							}
 						}
-					}],
-					yAxes: [{
-						display: true,
-						gridLines: {
-							color: 'rgb(120,120,120)',
-						},
-						ticks: {
-							beginAtZero: config.options.beginAtZero,
-							precision:0, // no decimal places in labels
-						},
-					}],
-				},
-		        legend: {
-		            labels: {
-		                filter: function(item, chart) {
-		                	return !item.text.startsWith(" ");
-		                }
-		            }
-		        }
+					});
+				}
+				doStore();
+				return layout;
 			},
-		});
-		applyChartOptions(config, chart);
-		return chart;
-	}
+		};
+	})();
 	
 	/**
-	 * Basically translates the MC level configuration options to Chart.js options
+	 * Internal API for managing charts on a page
 	 */
-	function applyChartOptions(config, chart) {
-		var options = chart.options;
-		options.scales.yAxes[0].ticks.beginAtZero = config.options.beginAtZero;
-		options.scales.xAxes[0].ticks.source = config.options.autoTimeTicks ? 'auto' : 'data';
-		options.elements.line.tension = config.options.drawCurves ? 0.4 : 0;
-		var time = config.options.drawAnimations ? 1000 : 0;
-		options.animation.duration = time;
-		options.responsiveAnimationDuration = time;
-    	var rotation = config.options.rotateTimeLabels ? 90 : undefined;
-    	options.scales.xAxes[0].ticks.minRotation = rotation;
-    	options.scales.xAxes[0].ticks.maxRotation = rotation;
-	}
-	
-	/**
-	 * Updates the referenced chart by fetching the newest data from the server and applying it to the given chart.
-	 * Should no chart exist (but a config) a new chart is created.
-	 */
-	function updateChart(configOrSeries) {
-		var series = seriesName(configOrSeries);
-		if (!series)
-			return;
-		var page = getActivePage();
-		var config = page.configs[series];
-		var update = { config: config, chart: function() {
-			var res = charts[series];
-			if (!res) { // might be one newly added
-				res = createChart(config);
-				charts[series] = res;
-			}
-			return res;
-		}};
-		$.getJSON('api/series/' + series + '/statistics', function(data) {
-			update.data = data;
-			updateCallback(update);
-		}).fail(function(jqXHR, textStatus, errorThrown) { 
-			updateCallback(update); 
-		});
-	}
-	
-	function removeChart(configOrSeries) {
-		var series = seriesName(configOrSeries);
-		var configs = getActivePage().configs;
-		if (series) {
-			delete configs[series];
-			destroyChart(series);
-		}
-	}
-	
-	function destroyChart(series) {
-		if (series) {
-			var chart = charts[series];
+	var Charts = (function() {
+
+		/**
+		 * {object} - map of the charts objects for active page as created by Chart.js with series as key
+		 */
+		var charts = {};
+		
+		function doDestroy(series) {
+			let chart = charts[series]
 			if (chart) {
 				delete charts[series];
 				chart.destroy();
 			}
 		}
-	}
-	
-	function addChart(config) {
-		if (typeof config === 'object') {
-			if (typeof config.series !== 'string')
-				throw 'configuration object requires string property `series`';
-			if (typeof config.target !== 'string')
-				throw 'configuration object requires string property `target`';
-			var configs = getActivePage().configs;
-			configs[config.series] = config;
-		} else {
-			throw 'configuration was no object but: ' + config;
+		
+		/**
+		 * Basically translates the MC level configuration options to Chart.js options
+		 */
+		function syncOptions(config, chart) {
+			let options = chart.options;
+			options.scales.yAxes[0].ticks.beginAtZero = config.options.beginAtZero;
+			options.scales.xAxes[0].ticks.source = config.options.autoTimeTicks ? 'auto' : 'data';
+			options.elements.line.tension = config.options.drawCurves ? 0.4 : 0;
+			let time = config.options.drawAnimations ? 1000 : 0;
+			options.animation.duration = time;
+			options.responsiveAnimationDuration = time;
+	    	let rotation = config.options.rotateTimeLabels ? 90 : undefined;
+	    	options.scales.xAxes[0].ticks.minRotation = rotation;
+	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
 		}
-	}
-	
-	function clearPage() {
-		if (updater) {
-			clearInterval(updater);
-		}
-		applyToAllCharts(removeChart);
-	}
+		
+		return {
+			/**
+			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
+			 */
+			getOrCreate: function(config) {
+				let series = MonitoringConsoleUtils.getSeriesId(config);
+				let chart = charts[series];
+				if (chart)
+					return chart;
+				chart = new Chart(config.target, {
+					type: 'line',
+					data: {
+						datasets: [],
+					},
+					options: {
+						scales: {
+							xAxes: [{
+								type: 'time',
+								gridLines: {
+									color: 'rgb(120,120,120)',
+								},
+								time: {
+									minUnit: 'second',
+									round: 'second',
+								},
+								ticks: {
+									callback: MonitoringConsoleUtils.getTimeLabel,
+									minRotation: 90,
+									maxRotation: 90,
+								}
+							}],
+							yAxes: [{
+								display: true,
+								gridLines: {
+									color: 'rgb(120,120,120)',
+								},
+								ticks: {
+									beginAtZero: config.options.beginAtZero,
+									precision:0, // no decimal places in labels
+								},
+							}],
+						},
+				        legend: {
+				            labels: {
+				                filter: function(item, chart) {
+				                	return !item.text.startsWith(" ");
+				                }
+				            }
+				        }
+					},
+				});
+				syncOptions(config, chart);
+				charts[series] = chart;
+				return chart;
+			},
+			
+			clear: function() {
+				Object.keys(charts).forEach(doDestroy)
+			},
+			
+			destroy: function(configOrSeries) {
+				doDestroy(MonitoringConsoleUtils.getSeriesId(configOrSeries));
+			},
+			
+			update: function(config) {
+				let chart = charts[config.series];
+				syncOptions(config, chart);
+				chart.update();
+			},
+		};
+	})();
 	
 	/**
-	 * Updates the charts of the current configuration.
+	 * Internal API for data loading from server
 	 */
-	function updatePage() {
-		if (pages[activePageId]) {
-			applyToAllCharts(updateChart);
-			if (!updater) {
-				updater = setInterval(updatePage, 1000);
+	var Interval = (function() {
+		
+		const DEFAULT_INTERVAL = 2000;
+		
+	    /**
+	     * {function} - a function called with no extra arguments when interval tick occured
+	     */
+	    var onIntervalTick;
+
+		/**
+		 * {function} - underlying interval function causing the ticks to occur
+		 */
+		var intervalFn;
+		
+		/**
+		 * {number} - tick interval in milliseconds
+		 */
+		var refreshInterval = DEFAULT_INTERVAL;
+		
+		function doPause() {
+			if (intervalFn) {
+				clearInterval(intervalFn);
+				intervalFn = undefined;
 			}
 		}
-	}
-	
-	/**
-	 * Applies a function to all charts.
-	 * 
-	 * @param {function} fn - a function that accepts a single argument of the string series name
-	 */
-	function applyToAllCharts(fn) {
-		Object.keys(getActivePage().configs).forEach(fn);
-	}
-	
-	function arrangeLayout() {
-		var page = getActivePage();
-		if (!page)
-			return [];
-		var numberOfColumns = page.numberOfColumns || 1;
-		var configs = page.configs;
-		var configsByColumn = new Array(numberOfColumns);
-		for (var col = 0; col < numberOfColumns; col++)
-			configsByColumn[col] = [];
-		// insert order configs
-		Object.values(configs).forEach(function(config) {
-			var column = config.position && config.position.column ? config.position.column : 0;
-			configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(config);
-		});
-		// build up rows with columns, occupy spans with empty 
-		var layout = new Array(numberOfColumns);
-		for (var col = 0; col < numberOfColumns; col++)
-			layout[col] = [];
-		for (var col = 0; col < numberOfColumns; col++) {
-			var orderedConfigs = configsByColumn[col].sort(function (a, b) {
-				if (!a.position || !a.position.item)
-					return -1;
-				if (!b.position || !b.position.item)
-					return 1;
-				return a.position.item - b.position.item;
-			});
-			orderedConfigs.forEach(function(config) {
-				var span = config.position && config.position.span ? config.position.span : 1;
-				if (typeof span === 'string') {
-					if (span === 'full') {
-						span = numberOfColumns;
-					} else {
-						span = parseInt(span);
-					}
+		
+		return {
+			
+			init: function(onIntervalFn) {
+				onIntervalTick = onIntervalFn;
+			},
+			
+			/**
+			 * Causes an immediate invocation of the tick target function
+			 */
+			tick: function() {
+				onIntervalTick(); //OBS wrapper function needed as onIntervalTick is set later
+			},
+			
+			/**
+			 * Causes an immediate invocation of the tick target function and makes sure an interval is present or started
+			 */
+			resume: function(atRefreshInterval) {
+				onIntervalTick();
+				if (atRefreshInterval && atRefreshInterval != refreshInterval) {
+					doPause();
+					refreshInterval = atRefreshInterval;
 				}
-				if (span > numberOfColumns - col) {
-					span = numberOfColumns - col;
+				if (refreshInterval === 0)
+					refreshInterval = DEFAULT_INTERVAL;
+				if (intervalFn === undefined) {
+					intervalFn = setInterval(onIntervalTick, refreshInterval);
 				}
-				var info = { target: config.target, span: span, series: config.series};
-				for (var spanX = 0; spanX < span; spanX++) {
-					var column = layout[col + spanX];
-					if (spanX == 0) {
-						if (!config.position)
-							config.position = { column: col, span: span }; // init position
-						config.position.item = column.length; // update item position
-					}
-					for (var spanY = 0; spanY < span; spanY++) {
-						column.push(spanX === 0 && spanY === 0 ? info : null);
-					}
-				}
-			});
-		}
-		return layout;
-	}
+			},
+			
+			pause: function() {
+				doPause();
+			},
+		};
+	})();
 	
 	return {
 		
-		init: function(callback) {
-			updateCallback = callback;
-			loadLocalPages();
-			return arrangeLayout();
+		init: function(onDataUpdate) {
+			Pages.load();
+			Interval.init(function() {
+				Object.values(Pages.current().configs).forEach(function(config) {
+					let update = { config: config, chart: function() {
+						return Charts.getOrCreate(config);
+					}};
+					$.getJSON('api/series/' + config.series + '/statistics', function(data) {
+						update.data = data;
+						onDataUpdate(update);
+					}).fail(function(jqXHR, textStatus, errorThrown) { 
+						onDataUpdate(update); 
+					});
+				});				
+			});
+			Interval.resume();
+			return Pages.layout();
 		},
 		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		fetchSeries: function(consumer) {
+		getSeries: function(consumer) {
 			$.getJSON("api/series/", consumer);
 		},
 		
-		pages: function() {
-			return Object.values(pages).map(function(page) { 
-				return { id: page.id, name: page.name, active: page.id === getActivePage().id };
-			});
+		getPages: Pages.list,
+		
+		/**
+		 * API to control the chart refresh interval.
+		 */
+		Refresh: {
+			pause : Interval.pause,
+			resume: () => Interval.resume(2000),
+			slow: () => Interval.resume(4000),
+			fast: () => Interval.resume(1000),
 		},
 		
-		ActivePage: {
+		/**
+		 * API to control the active page manipulate the set of charts contained on it.
+		 */
+		Page: {
 			
-			id: function() {
-				return getActivePage().id;
-			},
-
-			title: function() {
-				return getActivePage().title;
-			},
-			
-			/**
-			 * @param {function} optionsUpdate - a function accepting chart options applied to each chart
-			 */
-			configure: function(optionsUpdate) {
-				Object.values(getActivePage().configs).forEach(function(config) {
-					optionsUpdate.call(window, config.options);
-					var chart = charts[config.series];
-					applyChartOptions(config, chart);
-					chart.update();
-				});
-				storeLocalSets();
-			},			
+			id: () => Pages.current().id,
+			title: () => Pages.current().title,
 			
 			create: function(name) {
-				var page = createPage(name);
-				pages[page.id] = page;
-				storeLocalSets();
-				Object.keys(charts).forEach(destroyChart);
-				activePageId = page.id;
-				return arrangeLayout();
+				Pages.create(name);
+				Charts.clear();
+				return Pages.layout();
 			},
 			
-			changeTo: function(setId) {
-				if (!pages[setId])
-					throw "No such page with id: " + setId;
-				Object.keys(charts).forEach(destroyChart);
-				activePageId = setId;
-				updatePage();
-				return arrangeLayout();
+			erase: function() {
+				if (Pages.erase()) {
+					Charts.clear();
+					Interval.tick();
+				}
+				return Pages.layout();
+			},
+			
+			changeTo: function(pageId) {
+				if (Pages.changeTo(pageId)) {
+					Charts.clear();
+					Interval.tick();
+				}
+				return Pages.layout();
 			},
 			
 			add: function(config) {
-				addChart(config);
-				var layout = arrangeLayout();
-				storeLocalSets();
-				return layout;
+				Pages.add(config);
+				Interval.tick();
+				return Pages.layout();
 			},
 			
-			dispose: function(configOrSeries) {
-				removeChart(configOrSeries);
-				var layout = arrangeLayout();
-				storeLocalSets();
-				return layout;
+			remove: function(configOrSeries) {
+				Charts.destroy(configOrSeries);
+				Pages.remove(configOrSeries);
+				return Pages.layout();
 			},
 			
 			/**
 			 * Removes and destroys all chart objects of the active page
 			 */
 			clear: function() {
-				clearPage();
-				var layout = arrangeLayout();
-				storeLocalSets();
-				return layout;
+				Charts.clear();
+				return Pages.layout();
 			},
 			
 			/**
@@ -436,11 +569,23 @@ var MonitoringConsole = (function() {
 			 * 
 			 * @param {number} numberOfColumns - the number of columns the charts should be arrange in
 			 */
-			rearrange: function(numberOfColumns) {
-				getActivePage().numberOfColumns = numberOfColumns;
-				var layout = arrangeLayout();
-				storeLocalSets();
-				return layout;
+			rearrange: Pages.layout,
+			
+			/**
+			 * API for the set of selected charts within the active page.
+			 */
+			Selection: {
+				
+				getSeries: Pages.selected,
+				toggle: Pages.select,
+				clear: Pages.deselect,
+				
+				/**
+				 * @param {function} configUpdate - a function accepting chart configuration applied to each chart
+				 */
+				configure: function(configUpdate) {
+					Pages.configure(configUpdate).forEach(Charts.update);
+				},
 			},
 		},
 
@@ -491,7 +636,7 @@ var MonitoringConsoleRender = (function() {
 					borderColor: lineColor,
 					borderWidth: 1
 				});
-				if (config.options.drawAvgLine) {
+				if (data.length > 0 && config.options.drawAvgLine) {
 					var avg = instanceStats.observedSum / instanceStats.observedValues;
 					var avgData = [{t:data[0].t, y:avg}, {t:data[data.length-1].t, y:avg}];
 					
@@ -505,7 +650,7 @@ var MonitoringConsoleRender = (function() {
 						pointRadius: 0
 					});
 				}
-				if (config.options.drawMinLine && instanceStats.observedMin > 0) {
+				if (data.length > 0 && config.options.drawMinLine && instanceStats.observedMin > 0) {
 					var min = instanceStats.observedMin;
 					var minData = [{t:data[0].t, y:min}, {t:data[data.length-1].t, y:min}];
 					
@@ -519,7 +664,7 @@ var MonitoringConsoleRender = (function() {
 						pointRadius: 0
 					});
 				}
-				if (config.options.drawMaxLine) {
+				if (data.length > 0 && config.options.drawMaxLine) {
 					var max = instanceStats.observedMax;
 					var minData = [{t:data[0].t, y:max}, {t:data[data.length-1].t, y:max}];
 					
@@ -535,8 +680,6 @@ var MonitoringConsoleRender = (function() {
 			}
 
 			chart.data.datasets = datasets;
-			chart.options.title.display = true;
-			chart.options.title.text = config.title ? config.title : config.series;
 			chart.update(0);
 		}
 	};
