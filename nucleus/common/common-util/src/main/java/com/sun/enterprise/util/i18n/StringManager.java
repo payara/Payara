@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.util.i18n;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -116,7 +117,7 @@ public class StringManager extends StringManagerBase {
      *
      * @return   a local string manager for the given package name
      */
-    public synchronized static StringManager getManager(String packageName, ClassLoader classLoader) {
+    public static synchronized StringManager getManager(String packageName, ClassLoader classLoader) {
 
         StringManager mgr = managers.get(packageName);
 
@@ -139,7 +140,7 @@ public class StringManager extends StringManagerBase {
      *
      * @return   a local string manager for the given package name
      */
-    public synchronized static StringManager getManager(Class callerClass) {
+    public static synchronized StringManager getManager(Class callerClass) {
 
         try {
             Package pkg = callerClass.getPackage();

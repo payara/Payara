@@ -76,8 +76,8 @@ import java.util.regex.Pattern;
 
 public class FileUtils  {
 
-    private final static Logger _utillogger = CULoggerInfo.getLogger();
-    private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
+    private static final Logger LOGGER = CULoggerInfo.getLogger();
+    private static final LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
 
     public static void setFileProperties()
@@ -147,7 +147,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+        	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -161,7 +161,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+        	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -175,7 +175,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+        	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -184,10 +184,7 @@ public class FileUtils  {
     ///////////////////////////////////////////////////////////////////////////
 
     public static boolean safeIsDirectory(File f) {
-        if (f == null || !f.exists() || !f.isDirectory())
-            return false;
-
-        return true;
+        return (f != null && f.exists() && f.isDirectory());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -209,14 +206,14 @@ public class FileUtils  {
     	  canonical = safeGetCanonicalPath(f);
     	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
 
-    	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
+    	  LOGGER.log(Level.FINE, "Canonical path and abolute path values are {0} {1}", new Object[]{canonical, absolute});
 
     	  if(canonical.equals(absolute)){
-    		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
-		        return true;
-		  }
+    		LOGGER.log(Level.FINE, "The directory  {0} is a symbolic link false", absolute);
+		return true;
+          }
       } catch (IOException ioe) {
-    	  _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
+    	  LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
       }
 
         /* Bug 4715043 -- WHOA -- Bug Obscura!!
@@ -225,11 +222,11 @@ public class FileUtils  {
            * and they won't match!!!
            **/
         if (OS.isWindows() && canonical.equalsIgnoreCase(absolute)){
-        	 _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
+        	 LOGGER.log(Level.FINE, "The directory  {0} is a symbolic link false", absolute);
             return true;
         }
 
-  	   _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link true");
+  	   LOGGER.log(Level.FINE, "The directory  {0} is a symbolic link true", absolute);
         return false;
     }
 
@@ -383,21 +380,7 @@ public class FileUtils  {
 
         filename = makeLegalNoBlankFileName(filename);
 
-        String extension = "";
-        if (filename.endsWith(".ear")) {
-            filename = filename.substring(0, filename.indexOf(".ear"));
-            extension = "_ear";
-        } else if (filename.endsWith(".war")) {
-            filename = filename.substring(0, filename.indexOf(".war"));
-            extension = "_war";
-        } else if (filename.endsWith(".jar")) {
-            filename = filename.substring(0, filename.indexOf(".jar"));
-            extension = "_jar";
-        } else if (filename.endsWith(".rar")) {
-            filename = filename.substring(0, filename.indexOf(".rar"));
-            extension = "_rar";
-        }
-        return filename + extension;
+        return addExtentiontoFileName(filename);
     }
 
     public static String revertFriendlyFilenameExtension(String filename) {
@@ -407,6 +390,19 @@ public class FileUtils  {
             return filename;
         }
 
+        return addExtentiontoFileName(filename);
+    }
+
+    public static String revertFriendlyFilename(String filename) {
+
+        //first, revert the file extension
+        String name = revertFriendlyFilenameExtension(filename);
+
+        //then, revert the rest of the string
+        return name != null ? name.replaceAll("__", "/") : filename;
+    }
+    
+    private static String addExtentiontoFileName(String filename) {
         String extension = "";
         if (filename.endsWith("_ear")) {
             filename = filename.substring(0, filename.indexOf("_ear"));
@@ -422,15 +418,6 @@ public class FileUtils  {
             extension = ".rar";
         }
         return filename + extension;
-    }
-
-    public static String revertFriendlyFilename(String filename) {
-
-        //first, revert the file extension
-        String name = revertFriendlyFilenameExtension(filename);
-
-        //then, revert the rest of the string
-        return name != null ? name.replaceAll("__", "/") : filename;
     }
 
     /////////////////////////////////////////////////////////
@@ -500,7 +487,7 @@ public class FileUtils  {
             */
             return whackResolvedDirectory(parent.getCanonicalFile(), undeletedFiles);
         } catch (IOException ioe) {
-            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
+            LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
             return false;
         }
     }
@@ -526,15 +513,12 @@ public class FileUtils  {
         if (safeIsRealDirectory(parent)) {
             File[] kids = listFiles(parent);
 
-            for (int i = 0; i < kids.length; i++) {
-                File f = kids[i];
-
+            for (File f : kids) {
                 if (f.isDirectory())
                     whackResolvedDirectory(f, undeletedFiles);
                 else if (!deleteFile(f) && undeletedFiles != null) {
                     undeletedFiles.add(f);
                 }
-
             }
         }
 
@@ -608,7 +592,7 @@ public class FileUtils  {
             }
         }
 
-        boolean log = _utillogger.isLoggable(FILE_OPERATION_LOG_LEVEL);
+        boolean log = LOGGER.isLoggable(FILE_OPERATION_LOG_LEVEL);
         String filePath = f.getAbsolutePath();
 
         /*
@@ -618,7 +602,7 @@ public class FileUtils  {
         */
         if (!f.exists()) {
             if (log) {
-                _utillogger.log(Level.FINE, CULoggerInfo.deleteFailedAbsent, filePath);
+                LOGGER.log(Level.FINE, CULoggerInfo.deleteFailedAbsent, filePath);
             }
             return true;
         } else {
@@ -627,7 +611,7 @@ public class FileUtils  {
             *level is enabled and return false to indicate the failure.
             */
             if (log) {
-                _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.deleteFailed, filePath);
+                LOGGER.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.deleteFailed, filePath);
             }
             return false;
         }
@@ -644,14 +628,12 @@ public class FileUtils  {
         FileOutputStreamWork work = new FileOutputStreamWork(out);
         int retries = doWithRetry(work);
         if (retries > 0) {
-            _utillogger.log(Level.FINE, "Retrying " + retries + " times");
+            LOGGER.log(Level.FINE, "Retrying {0} times", retries);
         }
         if (work.workComplete()) {
             return work.getStream();
         } else {
-            IOException ioe = new IOException();
-            ioe.initCause(work.getLastError());
-            throw ioe;
+            throw new IOException(work.getLastError());
         }
     }
 
@@ -687,24 +669,24 @@ public class FileUtils  {
     // performed.
     private static void recursiveGetFilesUnder(File relativizingRoot, File directory, FilenameFilter filenameFilter, Set<File> set, boolean returnDirectories) {
 	File[] files = listFiles(directory, filenameFilter);
-	for (int i = 0; i < files.length; i++) {
-	    if (files[i].isDirectory()) {
-		recursiveGetFilesUnder(relativizingRoot, files[i], filenameFilter, set, returnDirectories);
-		if (returnDirectories) {
-                    if( relativizingRoot != null ) {
-                        set.add(relativize(relativizingRoot, files[i]));
+        for (File file : files) {
+            if (file.isDirectory()) {
+                recursiveGetFilesUnder(relativizingRoot, file, filenameFilter, set, returnDirectories);
+                if (returnDirectories) {
+                    if (relativizingRoot != null) {
+                        set.add(relativize(relativizingRoot, file));
                     } else {
-                        set.add(files[i]);
+                        set.add(file);
                     }
-		}
-	    } else {
-                if( relativizingRoot != null ) {
-                    set.add(relativize(relativizingRoot, files[i]));
-                } else {
-                    set.add(files[i]);
                 }
-	    }
-    	}
+            } else {
+                if (relativizingRoot != null) {
+                    set.add(relativize(relativizingRoot, file));
+                } else {
+                    set.add(file);
+                }
+            }
+        }
     }
 
     /**
@@ -753,12 +735,12 @@ public class FileUtils  {
         		setFileProperties();
         		cmdfilepropertieset=false;
         	}
-            _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
+            LOGGER.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
             while (!work.workComplete() && retries++ < FILE_OPERATION_MAX_RETRIES) {
                 try {
                     Thread.sleep(FILE_OPERATION_SLEEP_DELAY_MS);
                 } catch (InterruptedException ex) {
-                	_utillogger.log(Level.SEVERE, "Thread Interrupted Exception", ex);
+                	LOGGER.log(Level.SEVERE, "Thread Interrupted Exception", ex);
                 }
                 System.gc();
                 work.run();
@@ -800,7 +782,7 @@ public class FileUtils  {
             f = File.createTempFile(TMPFILENAME, "jar", directory);
         }
         catch (IOException ioe) {
-            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
+            LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
         if (f != null) f.deleteOnExit(); // just in case
@@ -822,9 +804,9 @@ public class FileUtils  {
         File[] target = null;
         List<File> list = searchDir(dirName, ext);
 
-        if ((list != null) && (list.size() > 0)) {
+        if (list != null && !list.isEmpty()) {
             target = new File[list.size()];
-            target = (File[]) list.toArray(target);
+            target = list.toArray(target);
         }
 
         return target;
@@ -850,13 +832,13 @@ public class FileUtils  {
 
             File[] list = listFiles(dirName);
 
-            for (int i = 0; i < list.length; i++) {
-                if (list[i].isDirectory()) {
-                    targetList.addAll(searchDir(list[i], ext));
+            for (File dir : list) {
+                if (dir.isDirectory()) {
+                    targetList.addAll(searchDir(dir, ext));
                 } else {
-                    String name = list[i].toString();
+                    String name = dir.toString();
                     if (hasExtension(name, ext)) {
-                        targetList.add(list[i]);
+                        targetList.add(dir);
                     }
                 }
             }
@@ -896,11 +878,13 @@ public class FileUtils  {
             return;
         }
 
-        if (!fin.exists())
+        if (!fin.exists()) {
             throw new IllegalArgumentException("File source doesn't exist");
+        }
 
-            if(!mkdirsMaybe(fout.getParentFile()))
-                throw new RuntimeException("Can't create parent dir of output file: " + fout);
+        if (!mkdirsMaybe(fout.getParentFile())) {
+            throw new RuntimeException("Can't create parent dir of output file: " + fout);
+        }
 
         copyFile(fin, fout);
     }
@@ -1037,7 +1021,7 @@ public class FileUtils  {
                 do {
                     read = inChannel.read(byteBuffer);
                     if (read>0) {
-                        Buffer buffer = (Buffer) byteBuffer;
+                        Buffer buffer = byteBuffer;
                         buffer.limit(byteBuffer.position());
                         buffer.rewind();
                         outChannel.write(byteBuffer);
@@ -1065,7 +1049,7 @@ public class FileUtils  {
          *@return boolean result of the rename attempt
          */
         public static boolean renameFile(File fromFile, File toFile) {
-            boolean log = _utillogger.isLoggable(FILE_OPERATION_LOG_LEVEL) || _utillogger.isLoggable(Level.FINE);
+            boolean log = LOGGER.isLoggable(FILE_OPERATION_LOG_LEVEL) || LOGGER.isLoggable(Level.FINE);
 
             RenameFileWork renameWork = new RenameFileWork(fromFile, toFile);
             int retries = doWithRetry(renameWork);
@@ -1090,12 +1074,12 @@ public class FileUtils  {
                      *FILE_OPERATION_LOG_LEVEL.
                      */
                     if (retries == 0) {
-                        if (_utillogger.isLoggable(Level.FINE)) {
-                            _utillogger.log(Level.FINE, CULoggerInfo.renameInitialSuccess,
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, CULoggerInfo.renameInitialSuccess,
                                     new Object [] {fromFilePath, toFilePath});
                         }
                     } else {
-                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess,
+                        LOGGER.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess,
                                 new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries)});
                     }
                 }
@@ -1103,7 +1087,7 @@ public class FileUtils  {
                 /*
                  *The rename has failed.  Write a warning message.
                  */
-                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure,
+                LOGGER.log(Level.WARNING, CULoggerInfo.retryRenameFailure,
                         new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries) });
             }
             return result;
@@ -1138,13 +1122,12 @@ public class FileUtils  {
                     file.close();
             }
             catch(Exception e){
-            	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+            	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
             }
         }
     }
-    public static void appendText(String fileName, StringBuilder buffer)
-    throws IOException, FileNotFoundException
-    {
+    
+    public static void appendText(String fileName, StringBuilder buffer) throws IOException, FileNotFoundException {
         appendText(fileName, buffer.toString());
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -1174,7 +1157,7 @@ public class FileUtils  {
                 sb.append(System.lineSeparator());
             }
         } catch (Exception e) {
-            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+            LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
         return sb.toString();
     }
@@ -1215,21 +1198,21 @@ public class FileUtils  {
             if (os != null)
                 try {
                     os.close();
-                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+                } catch (IOException ex) {LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
                 finally{
                 	os.close();
                 }
             if (bis != null)
                 try {
                     bis.close();
-                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+                } catch (IOException ex) {LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
                 finally{
                 	bis.close();
                 }
             if (is != null)
                 try {
                     is.close();
-                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+                } catch (IOException ex) {LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
             finally{
             		is.close();
             }
@@ -1257,7 +1240,7 @@ public class FileUtils  {
                     writer.close();
                 }
                 catch(Exception e) {
-                	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+                	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
                 }
                 f.setReadable(true);
                 f.setWritable(true);
@@ -1283,7 +1266,7 @@ public class FileUtils  {
                 return matches;
         }
         catch (Exception e) {
-        	_utillogger.log(Level.SEVERE,"Exception while matching regular expression", e);
+        	LOGGER.log(Level.SEVERE,"Exception while matching regular expression", e);
         }
         return new File[0];
     }
@@ -1330,12 +1313,12 @@ public class FileUtils  {
                     is.close();
                 }
                 catch (Exception ex) {
-                	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);
+                	LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);
                 }finally{
                 	   try {
 						is.close();
 					} catch (IOException io) {
-						_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, io);
+						LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, io);
 					}
                 }
             return null;
