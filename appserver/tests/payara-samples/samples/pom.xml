@@ -133,6 +133,12 @@
 
         <profile>
             <id>payara4</id>
+            <activation>
+                <property>
+                    <name>payara.version</name>
+                    <value>/4.+/</value>
+                </property>
+            </activation>
             <properties>
                 <payara.directory.name>payara41</payara.directory.name>
             </properties>
@@ -149,7 +155,10 @@
         <profile>
             <id>payara5</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>payara.version</name>
+                    <value>/5.+/</value>
+                </property>
             </activation>
             <properties>
                 <payara.directory.name>payara5</payara.directory.name>
