@@ -229,6 +229,7 @@ var MonitoringConsole = (function() {
 			configure: function(configUpdate) {
 				let selected = Object.values(pages[currentPageId].configs)
 					.filter(config => config.selected);
+				
 				selected.forEach(config => configUpdate.call(window, config));
 				doStore();
 				return selected;
@@ -586,6 +587,7 @@ var MonitoringConsole = (function() {
 				 */
 				configure: function(configUpdate) {
 					Pages.configure(configUpdate).forEach(Charts.update);
+					return Pages.layout();
 				},
 			},
 		},

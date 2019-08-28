@@ -44,6 +44,7 @@ body {
     color: white;
     margin: 0;
     padding: 0;
+    overflow-y: hidden; 
 }
 h1 {
 	font-size: 21px;
@@ -51,15 +52,34 @@ h1 {
 }
 select {
 	width: 100%;
-    max-width: 200px;
+    max-width: 172px;
     background: white;
-    padding: 3px 5px;
+    padding: 2px 5px;
     border-radius: 2px;
 }
 input[type=text] {
 	border: 1px solid #ccc;
     padding: 3px 5px;
     border-radius: 2px;
+    width: 160px;
+    max-width: 160px;
+}
+canvas {
+    position: relative;
+}
+button {
+    padding: 5px 1em;
+    margin: 0 1px;
+    font-weight: normal;
+    background-color: #F0981B;
+    border-width: 0;
+    color: white;
+    border-radius: 2px;
+    cursor: pointer;
+    line-height: 1.0;
+}
+button:hover {
+	background-color: #F1A232;
 }
 #console {
     position: relative;
@@ -83,6 +103,12 @@ input[type=text] {
     position: relative;
     margin: 0;
     padding: 0;
+    color: #bbb;
+    background-color: transparent;
+    font-weight: bold;
+}
+.btnIcon:hover {
+    color: white;
 }
 .caption-bar h3 {
 	font-size: 100%;
@@ -96,22 +122,20 @@ input[type=text] {
     display: inline-block;
     padding: 1px 5px;
 }
-canvas {
-    position: relative;
-}
 #pagesTabs .page-tab {
 	display: inline-block;
     padding: 4px 1em;
     margin: 1px;
     font-weight: normal;
-    background-color: #00618A;
     cursor: pointer;
     line-height: 1em;
-    border-bottom: 1px solid white;
+    border: 1px solid #666;
+    border-bottom: 1px solid #bbb;
     border-top-right-radius: 3px;
+    color: #bbb;
 }
 #pagesTabs .page-tab.page-selected {
-    background-color: transparent;
+    color: white;
     font-weight: bold;
     border: 1px solid white;
     border-bottom-width: 0;
@@ -121,26 +145,14 @@ canvas {
 	text-align: right;
 }
 #layout-bar button {
-	background-color: #aaa;
+	color: #bbb;
+    background-color: transparent;
+    padding: 5px;
+    font-size: 14px;
 }
-button {
-    padding: 5px 1em;
-    margin: 0 1px;
-    font-weight: bold;
-    background-color: #F0981B;
-    border-width: 0;
-    color: white;
-    border-radius: 2px;
-    cursor: pointer;
-    line-height: 1.0;
-}
-#chart-container button {
-	border: 1 px solid #F0981B;
-	background-color: transparent;
-}
-#chart-container button:hover {
-	background-color: #F0981B;
-}
+#layout-bar button:hover {
+	color: white;
+}	
 #chart-grid {
 	width: 100%;
 	table-layout:fixed;
@@ -165,35 +177,32 @@ button {
     background-position: 10px 10px;
     vertical-align: top;
 }
-#chart-options.expanded {
-	width: 380px;
-	padding: 10px;
-	padding-top: 220px;
-}
-#options-box {
+#chart-options > * {
 	display: none;
 }
-#chart-options.expanded #options-box {
+#chart-options.expanded {
+    width: 380px;
+    padding: 10px;
+}
+#chart-options.expanded > * {
     display: block;
 }
-#overlay {
-	display: none;
-	position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-	z-index: 1002;
-	overflow: auto;
-	color: OrangeRed;
-	font-weight: bold;
-	background-color: black;
+#options-box {
+	margin-top: 210px;
 }
-#overlay span {
-    display: inline-block;
-    padding: 10px 2em;
-    border: 2px solid OrangeRed;
-    border-radius: 2px;
+.properties {
+	background-color: #002433;
+    padding: 10px;
+    margin-top: 5px;
+    width: 100%;
 }
+.properties th {
+	border-bottom: 1px solid #bbb;
+}
+.properties td:first-child {
+	width: 120px;
+}
+
 .status-nodata {
 	display: none;
 	position: absolute;
