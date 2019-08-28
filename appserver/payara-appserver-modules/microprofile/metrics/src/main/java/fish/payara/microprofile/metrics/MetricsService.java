@@ -144,12 +144,12 @@ public class MetricsService implements EventListener, MonitoringDataSource {
 
             // counters
             appCollector.type("counter")
-                .collectAll(registry.getValue().getCounters(), (collector, counter) -> collector
+                .collectAll(registry.getValue().getCounters(), MetricsService::asTag, (collector, counter) -> collector
                     .collectObject(counter, MetricsService::collectCounting));
 
             // gauges
             appCollector.type("gauge")
-                .collectAll(registry.getValue().getGauges(), (collector, gauge) -> {
+                .collectAll(registry.getValue().getGauges(), MetricsService::asTag, (collector, gauge) -> {
                     Object value = gauge.getValue();
                     if (value instanceof Number) {
                         collector.collect("value", ((Number) value));
@@ -158,20 +158,29 @@ public class MetricsService implements EventListener, MonitoringDataSource {
 
             // histograms
             appCollector.type("histogram")
-                .collectAll(registry.getValue().getHistograms(), (collector, histogram) -> collector
+                .collectAll(registry.getValue().getHistograms(), MetricsService::asTag, (collector, histogram) -> collector
                     .collectObject(histogram, MetricsService::collectSampling)
                     .collectObject(histogram, MetricsService::collectCounting));
 
             // meters
             appCollector.type("meter")
-                .collectAll(registry.getValue().getMeters(), MetricsService::collectMetered);
+                .collectAll(registry.getValue().getMeters(), MetricsService::asTag, MetricsService::collectMetered);
 
             // timers
             appCollector.type("timer")
-                .collectAll(registry.getValue().getTimers(), (collector, timer) -> collector
+                .collectAll(registry.getValue().getTimers(), MetricsService::asTag, (collector, timer) -> collector
                     .collectObject(timer, MetricsService::collectMetered)
                     .collectObject(timer, MetricsService::collectSampling));
         }
+    }
+
+    private static CharSequence asTag(MetricID metric) {
+       StringBuilder tag = new StringBuilder();
+       tag.append(metric.getName());
+       for (Entry<String, String> e : metric.getTags().entrySet()) {
+           tag.append('_').append(e.getKey()).append(':').append(e.getValue());
+       }
+       return tag;
     }
 
     private static void collectCounting(MonitoringDataCollector collector, Counting obj) {
