@@ -520,6 +520,7 @@ var MonitoringConsole = (function() {
 			
 			id: () => Pages.current().id,
 			title: () => Pages.current().title,
+			isEmpty: () => (Object.keys(Pages.current().configs).length === 0),
 			
 			create: function(name) {
 				Pages.create(name);

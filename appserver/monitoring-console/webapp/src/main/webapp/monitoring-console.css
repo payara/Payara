@@ -52,6 +52,14 @@ h1 {
 select {
 	width: 100%;
     max-width: 200px;
+    background: white;
+    padding: 3px 5px;
+    border-radius: 2px;
+}
+input[type=text] {
+	border: 1px solid #ccc;
+    padding: 3px 5px;
+    border-radius: 2px;
 }
 #console {
     position: relative;
@@ -78,25 +86,35 @@ select {
 }
 .caption-bar h3 {
 	font-size: 100%;
-	font-weight: bold;
-	display: inline-block;
-	margin: 0;
-	cursor: pointer;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 90%;
+    display: inline-block;
+    padding: 1px 5px;
 }
 canvas {
     position: relative;
 }
 #pagesTabs .page-tab {
 	display: inline-block;
-	padding: 5px 1em;
-	margin: 2px;
-	font-weight: bold;
-	background-color: #00618A;
-	cursor: pointer;
-	border-radius: 2px;
+    padding: 4px 1em;
+    margin: 1px;
+    font-weight: normal;
+    background-color: #00618A;
+    cursor: pointer;
+    line-height: 1em;
+    border-bottom: 1px solid white;
+    border-top-right-radius: 3px;
 }
 #pagesTabs .page-tab.page-selected {
-    background-color: #F0981B;
+    background-color: transparent;
+    font-weight: bold;
+    border: 1px solid white;
+    border-bottom-width: 0;
 }
 #layout-bar {
 	width: 300;
@@ -135,9 +153,9 @@ button {
     vertical-align: top;
     border: 2px solid #002433;
 }
-#chart-grid td.chart-selected {
-	background-color: #0D3647;
-	border: 2px solid white;
+#chart-grid td.chart-selected h3 {
+    color: #00618A;
+    background-color: white;
 }
 #chart-options {
 	width: 0;
@@ -151,7 +169,6 @@ button {
 	width: 380px;
 	padding: 10px;
 	padding-top: 220px;
-	background-color: black;
 }
 #options-box {
 	display: none;

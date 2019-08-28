@@ -48,7 +48,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=a"></script>
+    <script src="monitoring-console.js?x=b"></script>
     <link href="monitoring-console.css?x=d" rel="stylesheet" type="text/css">
 </head>
 <body>
@@ -93,7 +93,7 @@
        </td>
    </tr>
    <tr>
-       <td colspan="2" id="chart-container"></td>
+       <td colspan="2" id="chart-container" class="console-area"></td>
    </tr>
 </table>
 <div id="overlay"><span>Connection Interrupted</span></div>
@@ -163,6 +163,7 @@ function renderPageTabs() {
 	    newTab.click(function() {
 	    	renderPage(MonitoringConsole.Page.changeTo(page.id));
 	    	renderPageTabs();
+	    	renderChartOptions();
 	    });
 	    bar.append(newTab);
 	});
@@ -298,7 +299,7 @@ function renderChartCaption(cell) {
 }
 
 function renderChartOptions() {
-    if (MonitoringConsole.Page.Selection.getSeries().length > 0) {
+    if (MonitoringConsole.Page.isEmpty() || MonitoringConsole.Page.Selection.getSeries().length > 0) {
         $('#chart-options').addClass('expanded');
     } else {
         $('#chart-options').removeClass('expanded');
