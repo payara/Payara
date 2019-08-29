@@ -80,7 +80,7 @@
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
-        <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
+        <include.group.ids>fish.payara.server.internal.packager,fish.payara.server.internal.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
         <production-domain.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/production-domain.jar</production-domain.template.jar>
         <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>

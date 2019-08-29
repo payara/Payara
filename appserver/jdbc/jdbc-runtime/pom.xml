@@ -71,7 +71,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <classpathDependencyExcludes>
-                        <classpathDependencyExcludes>org.glassfish.main.core:kernel</classpathDependencyExcludes>
+                        <classpathDependencyExcludes>fish.payara.server.internal.core:kernel</classpathDependencyExcludes>
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>

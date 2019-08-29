@@ -92,7 +92,7 @@
                                 <ant dir="." antfile="../build.xml" target="create.distribution">
                                     <property name="finaljar"
                                               value="${project.build.directory}/payara-embedded-all.jar"/>
-                                    <property name="bundlename" value="org.glassfish.main.embedded.all"/>
+                                    <property name="bundlename" value="fish.payara.server.internal.embedded.all"/>
                                     <property name="install.dir.name" value="${install.dir.name}"/>
                                 </ant>
                             </tasks>

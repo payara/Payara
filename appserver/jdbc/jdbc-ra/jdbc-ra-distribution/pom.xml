@@ -65,10 +65,10 @@
             <configuration>
 	      <tasks>
                 <!-- Resolving jdbc-core, jdbc30 and jdbc40 artifacts -->			
-                <resolveArtifact artifactId="jdbc-core" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc-core" property="core.jar" />
-                <resolveArtifact artifactId="jdbc30" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc30" property="30.jar" />
-                <resolveArtifact artifactId="jdbc40" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc40" property="40.jar" />
-		<resolveArtifact artifactId="templates" groupId="org.glassfish.main.jdbc" property="templates.jar" />
+                <resolveArtifact artifactId="jdbc-core" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core" property="core.jar" />
+                <resolveArtifact artifactId="jdbc30" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc30" property="30.jar" />
+                <resolveArtifact artifactId="jdbc40" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc40" property="40.jar" />
+		<resolveArtifact artifactId="templates" groupId="fish.payara.server.internal.jdbc" property="templates.jar" />
 
 	        <unjar src="${core.jar}" dest="target/classes" />
 	        <unjar src="${30.jar}" dest="target/classes" />

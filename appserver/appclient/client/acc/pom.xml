@@ -140,7 +140,7 @@
                        <goal>unpack-dependencies</goal>
                      </goals>
                      <configuration>
-                       <includeGroupIds>org.glassfish.main.deployment</includeGroupIds>
+                       <includeGroupIds>fish.payara.server.internal.deployment</includeGroupIds>
                        <includeArtifactIds>schemas,dtds</includeArtifactIds>
                        <includes>**/*.dtd,**/*.xsd</includes>
                      </configuration>

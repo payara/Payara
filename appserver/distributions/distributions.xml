@@ -271,7 +271,7 @@
         <attribute name="image.dir" />
         <attribute name="delete.includes" />
         <sequential>
-            <resolveArtifact artifactId="legal-fragment" groupId="org.glassfish.main.packager" property="legal-fragment.zip"/>
+            <resolveArtifact artifactId="legal-fragment" groupId="fish.payara.server.internal.packager" property="legal-fragment.zip"/>
             <unzip src="${legal-fragment.zip}" dest="@{image.dir}">
                 <patternset>
                     <exclude name="META-INF/**"/>
@@ -287,7 +287,7 @@
         <attribute name="image.dir" default="${image.dir}"/>
         <attribute name="source.distribution.name" default="${source.distribution.name}"/>
         <sequential>
-            <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.main.registration" property="servicetag-registry.zip"/>
+            <resolveArtifact artifactId="servicetag-registry" groupId="fish.payara.server.internal.registration" property="servicetag-registry.zip"/>
             <unzip src="${servicetag-registry.zip}" dest="@{image.dir}">
                 <patternset>
                     <exclude name="META-INF/**"/>

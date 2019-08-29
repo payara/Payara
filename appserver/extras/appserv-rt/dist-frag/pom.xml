@@ -69,7 +69,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
-                            <includeGroupIds>org.glassfish.main.extras</includeGroupIds>
+                            <includeGroupIds>fish.payara.server.internal.extras</includeGroupIds>
                             <includeTypes>jar</includeTypes>
                             <stripVersion>true</stripVersion>
                         </configuration>
