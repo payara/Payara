@@ -71,7 +71,7 @@ public class BootCommands {
      * [\"'].+?[\"'] e.g --description "results in error"
      *
      */
-    private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'].+?[\"']|[^\"']\\S+|[\"'].+?[\"'])\\s*");
+    private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'].+?[\"']|[^\"']\\S*|[\"'].+?[\"'])\\s*");
     private final List<BootCommand> commands;
 
     private static final Logger LOGGER = Logger.getLogger(BootCommands.class.getName());
