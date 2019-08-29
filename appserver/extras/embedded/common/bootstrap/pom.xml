@@ -47,7 +47,7 @@
     <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-common</artifactId>
     <version>4.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -71,7 +71,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.common</groupId>
+                                    <groupId>fish.payara.server.internal.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -79,7 +79,7 @@
                                     <excludes>META-INF/**</excludes>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.core</groupId>
+                                    <groupId>fish.payara.server.internal.core</groupId>
                                     <artifactId>glassfish</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -107,13 +107,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>4.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

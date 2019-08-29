@@ -50,7 +50,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main.jdbc</groupId>
+    <groupId>fish.payara.server.internal.jdbc</groupId>
     <artifactId>jdbc</artifactId>
     <name>JDBC Module</name>
     <packaging>pom</packaging>

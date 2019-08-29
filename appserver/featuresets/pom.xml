@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
-    <groupId>org.glassfish.main.featuresets</groupId>
+    <groupId>fish.payara.server.internal.featuresets</groupId>
     <artifactId>featuresets</artifactId>
 
     <name>Glassfish featuresets</name>

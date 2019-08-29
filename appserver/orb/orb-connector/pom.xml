@@ -45,7 +45,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.orb</groupId>
+        <groupId>fish.payara.server.internal.orb</groupId>
         <artifactId>orb</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -73,12 +73,12 @@
     </developers>
     <dependencies>
     	<dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-enabler</artifactId>
             <version>${project.version}</version>
         </dependency>         
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -103,7 +103,7 @@
             <artifactId>javax.el-api</artifactId>
         </dependency>
        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -112,23 +112,23 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.main.cluster</groupId>
+           <groupId>fish.payara.server.internal.cluster</groupId>
            <artifactId>cluster-admin</artifactId>
 	   <version>${project.version}</version>
 	   <scope>test</scope>
        </dependency>
         <dependency>
-           <groupId>org.glassfish.main.common</groupId>
+           <groupId>fish.payara.server.internal.common</groupId>
            <artifactId>glassfish-api</artifactId>
            <version>${project.version}</version>
        </dependency>
         <dependency>
-           <groupId>org.glassfish.main.admin</groupId>
+           <groupId>fish.payara.server.internal.admin</groupId>
            <artifactId>config-api</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.admin</groupId>
+           <groupId>fish.payara.server.internal.admin</groupId>
            <artifactId>monitoring-core</artifactId>
            <version>${project.version}</version>
        </dependency>
@@ -141,7 +141,7 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
        <dependency>
-           <groupId>org.glassfish.main.tests</groupId>
+           <groupId>fish.payara.server.internal.tests</groupId>
            <artifactId>utils</artifactId>
            <version>${project.version}</version>
            <scope>test</scope>

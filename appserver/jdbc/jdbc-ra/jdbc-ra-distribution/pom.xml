@@ -44,12 +44,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>jdbc-ra</artifactId>
-    <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
+    <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
     <version>5.194-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-ra-distribution</groupId>
+  <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-ra-distribution</groupId>
   <artifactId>jdbc-ra</artifactId>
   <name>Distribution Module for JDBC Resource Adapter</name>
   <packaging>distribution-fragment</packaging>
@@ -96,28 +96,28 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
+      <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core</groupId>
       <artifactId>jdbc-core</artifactId>
       <version>${project.parent.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc40</groupId>
+      <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc40</groupId>
       <artifactId>jdbc40</artifactId>
       <version>${project.parent.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc30</groupId>
+      <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc30</groupId>
       <artifactId>jdbc30</artifactId>
       <version>${project.parent.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.glassfish.main.jdbc</groupId>
+      <groupId>fish.payara.server.internal.jdbc</groupId>
       <artifactId>templates</artifactId>
       <version>${project.parent.version}</version>
       <type>distribution-fragment</type>

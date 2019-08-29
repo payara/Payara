@@ -51,7 +51,7 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
+  <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
   <artifactId>jdbc-ra</artifactId>
   <name>JDBC Resource Adapter</name>
   <packaging>pom</packaging>
@@ -64,7 +64,7 @@
           <configuration>
               <!-- configuration for the run mojo -->
               <distribution>
-                  <groupId>org.glassfish.main.distributions</groupId>
+                  <groupId>fish.payara.server.internal.distributions</groupId>
                   <artifactId>web</artifactId>
                   <version>${project.version}</version>
               </distribution>

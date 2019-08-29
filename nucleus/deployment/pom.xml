@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.deployment</groupId>
+    <groupId>fish.payara.server.internal.deployment</groupId>
     <artifactId>nucleus-deployment</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Deployment Related Modules</name>  

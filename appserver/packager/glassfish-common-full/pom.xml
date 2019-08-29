@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -122,24 +122,24 @@
         
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>sun-as-jsr88-dm-frag</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>mejb-frag</artifactId>
 	    <version>${project.version}</version>
 	    <type>zip</type>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.external</groupId>
+           <groupId>fish.payara.server.internal.external</groupId>
            <artifactId>jaxr-ra</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
@@ -150,7 +150,7 @@
            <version>${project.version}</version>
        </dependency> 
        <dependency>
-           <groupId>org.glassfish.main.external</groupId>
+           <groupId>fish.payara.server.internal.external</groupId>
            <artifactId>ant</artifactId>
            <version>${project.version}</version>
        </dependency>
@@ -159,17 +159,17 @@
        	till 19614 is resolved.
        -->
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>glassfish-batch-connector</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>glassfish-batch-commands</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>batch-databases</artifactId>
            <version>${project.version}</version>
            <type>zip</type>

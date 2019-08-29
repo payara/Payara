@@ -52,7 +52,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.security</groupId>
+    <groupId>fish.payara.server.internal.security</groupId>
     <artifactId>securitymodule</artifactId>
     <packaging>pom</packaging>
     

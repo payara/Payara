@@ -55,7 +55,7 @@
       <relativePath>../pom.xml</relativePath>
     </parent>
     <packaging>pom</packaging>
-    <groupId>org.glassfish.main.osgi-platforms</groupId>
+    <groupId>fish.payara.server.internal.osgi-platforms</groupId>
     <artifactId>osgi-platforms</artifactId>
     <name>Distribution Fragments for various OSGi platforms</name>
     <modules>

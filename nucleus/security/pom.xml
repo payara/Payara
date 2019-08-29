@@ -48,7 +48,7 @@
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main.security</groupId>
+    <groupId>fish.payara.server.internal.security</groupId>
     <artifactId>nucleus-security</artifactId>
     <packaging>pom</packaging>
     <name>Nucleus Security Parent</name>

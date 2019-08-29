@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.grizzly</groupId>
+    <groupId>fish.payara.server.internal.grizzly</groupId>
     <artifactId>glassfish-grizzly</artifactId>
     <packaging>pom</packaging>
     <name>Grizzly Glassfish Extra modules</name>  

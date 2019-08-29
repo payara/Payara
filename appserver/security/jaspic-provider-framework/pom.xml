@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.security</groupId>
+        <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

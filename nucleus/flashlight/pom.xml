@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.flashlight</groupId>
+    <groupId>fish.payara.server.internal.flashlight</groupId>
     <artifactId>nucleus-flashlight</artifactId>
     <packaging>pom</packaging>
     <name>Flashlight</name>  

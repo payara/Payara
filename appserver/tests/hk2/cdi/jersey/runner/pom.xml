@@ -86,13 +86,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
+            <groupId>fish.payara.server.internal.appclient</groupId>
             <artifactId>gf-client</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

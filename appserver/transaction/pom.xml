@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.transaction</groupId>
+    <groupId>fish.payara.server.internal.transaction</groupId>
     <artifactId>transaction</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Transaction modules</name>  

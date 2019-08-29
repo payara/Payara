@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>        
     </parent>
-    <groupId>org.glassfish.main.core</groupId>
+    <groupId>fish.payara.server.internal.core</groupId>
     <artifactId>core</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Core modules</name>  

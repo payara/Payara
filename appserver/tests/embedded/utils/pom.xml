@@ -56,7 +56,7 @@
     <name>Utilities for embedded testing</name>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.extras</groupId>
+            <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>glassfish-embedded-shell</artifactId>
             <version>4.1-SNAPSHOT</version>
         </dependency>

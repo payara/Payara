@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.webservices</groupId>
+    <groupId>fish.payara.server.internal.webservices</groupId>
     <artifactId>webservices</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Web Services related modules</name>  

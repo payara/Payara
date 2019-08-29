@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.featuresets</groupId>
+        <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -56,51 +56,51 @@
     <dependencies>
 	<!-- Pull payara packages -->
 	<dependency>
-	    <groupId>org.glassfish.main.featuresets</groupId>
+	    <groupId>fish.payara.server.internal.featuresets</groupId>
 	    <artifactId>payara</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
 	</dependency>
 	<!-- Pull payara-web-ml packages -->
 	<dependency>
-	    <groupId>org.glassfish.main.featuresets</groupId>
+	    <groupId>fish.payara.server.internal.featuresets</groupId>
 	    <artifactId>payara-web-ml</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
 	</dependency>
 	<!-- l10n packages -->
 	<dependency>
-	    <groupId>org.glassfish.main.packager</groupId>
+	    <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-common-full-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 	<dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-ejb-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 	<dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-cmp-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 	<dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>metro-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 	<dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-appclient-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 	<dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jms-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

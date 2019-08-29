@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.registration</groupId>
+    <groupId>fish.payara.server.internal.registration</groupId>
     <artifactId>registration</artifactId>
     <packaging>pom</packaging>
     <name>Registration</name>  

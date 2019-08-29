@@ -43,7 +43,7 @@ holder.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.external</groupId>
+        <groupId>fish.payara.server.internal.external</groupId>
         <artifactId>external</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

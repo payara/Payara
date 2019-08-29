@@ -52,7 +52,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-shell-jar</artifactId>
     <modelVersion>4.0.0</modelVersion>
 

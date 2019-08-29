@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.ha</groupId>
+    <groupId>fish.payara.server.internal.ha</groupId>
     <artifactId>ha</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish HA modules</name>

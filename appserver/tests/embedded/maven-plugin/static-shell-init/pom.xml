@@ -62,7 +62,7 @@
                 <artifactId>maven-embedded-glassfish-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>org.glassfish.main.extras</groupId>
+                        <groupId>fish.payara.server.internal.extras</groupId>
                         <artifactId>glassfish-embedded-static-shell</artifactId>
 			<scope>system</scope>
 			<version>${project.version}</version>

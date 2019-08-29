@@ -69,12 +69,12 @@ utilities are in the NucleusTestUtils class.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.tests</groupId>
+        <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.tests</groupId>
+    <groupId>fish.payara.server.internal.tests</groupId>
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
     <version>5.194-SNAPSHOT</version>
@@ -82,13 +82,13 @@ utilities are in the NucleusTestUtils class.
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

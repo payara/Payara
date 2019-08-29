@@ -50,7 +50,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main.concurrent</groupId>
+    <groupId>fish.payara.server.internal.concurrent</groupId>
     <artifactId>concurrent</artifactId>
     <name>Concurrency Utilities Modules</name>
     <packaging>pom</packaging>

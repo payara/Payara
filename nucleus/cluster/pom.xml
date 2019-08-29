@@ -50,7 +50,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.cluster</groupId>
+    <groupId>fish.payara.server.internal.cluster</groupId>
     <artifactId>cluster</artifactId>
     <packaging>pom</packaging>
     <name>Cluster</name>

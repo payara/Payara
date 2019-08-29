@@ -48,7 +48,7 @@
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main.persistence</groupId>
+    <groupId>fish.payara.server.internal.persistence</groupId>
     <artifactId>persistence</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish persistence related modules</name>  

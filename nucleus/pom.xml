@@ -1393,7 +1393,7 @@ Parent is ${project.parent}</echo>
                             </configuration>
                             <dependencies>
                                 <dependency>
-                                    <groupId>org.glassfish.main</groupId>
+                                    <groupId>fish.payara.server.internal</groupId>
                                     <artifactId>copyright</artifactId>
                                     <version>${project.version}</version>
                                 </dependency>

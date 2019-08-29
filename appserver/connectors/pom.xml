@@ -48,7 +48,7 @@
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main.connectors</groupId>
+    <groupId>fish.payara.server.internal.connectors</groupId>
     <artifactId>connectors</artifactId>
     <packaging>pom</packaging>
     <name>Connectors Parent</name>

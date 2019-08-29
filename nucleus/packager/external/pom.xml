@@ -57,7 +57,7 @@
     </parent>
     
     <packaging>pom</packaging>
-    <groupId>org.glassfish.main.external</groupId>
+    <groupId>fish.payara.server.internal.external</groupId>
     <artifactId>nucleus-external</artifactId>
     <name>Repackaged nucleus external modules</name>
 

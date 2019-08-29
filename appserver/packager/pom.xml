@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.packager</groupId>
+    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>packages</artifactId>
     <packaging>pom</packaging>
     <name>Glassfish packages</name>

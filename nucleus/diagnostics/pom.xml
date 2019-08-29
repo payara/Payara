@@ -35,7 +35,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.diagnostics</groupId>
+    <groupId>fish.payara.server.internal.diagnostics</groupId>
     <artifactId>nucleus-diagnostics</artifactId>
     <packaging>pom</packaging>
     <name>Diagnostics</name>

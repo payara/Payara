@@ -47,7 +47,7 @@
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
     <url>http://maven.apache.org</url>
-    <groupId>org.glassfish.main</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>sse-basic-test</artifactId>
 
     <name>sse-basic-test</name>
@@ -60,7 +60,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-sse</artifactId>
             <version>4.1-SNAPSHOT</version>
             <scope>provided</scope>

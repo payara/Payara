@@ -72,7 +72,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.jdbc</groupId>
+            <groupId>fish.payara.server.internal.jdbc</groupId>
             <artifactId>jdbc-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>

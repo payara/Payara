@@ -48,7 +48,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.resources</groupId>
+    <groupId>fish.payara.server.internal.resources</groupId>
     <artifactId>resources</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Resources infrastructure related modules</name>

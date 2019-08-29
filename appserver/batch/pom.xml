@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.main.batch</groupId>
+    <groupId>fish.payara.server.internal.batch</groupId>
     <artifactId>batch</artifactId>
     <packaging>pom</packaging>
     

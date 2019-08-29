@@ -52,7 +52,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
-    <groupId>org.glassfish.main.distributions</groupId>
+    <groupId>fish.payara.server.internal.distributions</groupId>
     <artifactId>nucleus-distributions</artifactId>
     <name>Nucleus distributions</name>
 

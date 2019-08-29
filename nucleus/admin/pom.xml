@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.admin</groupId>
+    <groupId>fish.payara.server.internal.admin</groupId>
     <artifactId>nucleus-admin</artifactId>
     <packaging>pom</packaging>
     <name>Admin Modules</name>

@@ -44,7 +44,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.appclient</groupId>
+        <groupId>fish.payara.server.internal.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
