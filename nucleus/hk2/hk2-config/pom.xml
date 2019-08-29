@@ -141,7 +141,7 @@
         <dependency>
             <groupId>org.jvnet</groupId>
             <artifactId>tiger-types</artifactId>
-            <version>1.4</version>
+            <version>${tiger.types.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>

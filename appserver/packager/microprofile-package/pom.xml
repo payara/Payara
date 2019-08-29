@@ -289,6 +289,11 @@
             <version>${asm.version}</version>
         </dependency>
         <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-analysis</artifactId>
+                <version>${asm.version}</version>
+        </dependency>
+        <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>accessors-smart</artifactId>
             <version>${accessors-smart.version}</version>

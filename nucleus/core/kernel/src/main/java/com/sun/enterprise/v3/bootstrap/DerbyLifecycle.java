@@ -37,20 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * DerbyLifecycle.java
- *
- * Created on November 3, 2006, 2:03 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.bootstrap;
 
 import com.sun.enterprise.module.LifecyclePolicy;
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.common_impl.LogHelper;
 import java.util.logging.Level;
@@ -71,10 +63,10 @@ public class DerbyLifecycle implements LifecyclePolicy {
      * or set up access to resources
      * @param module the module instance
      */
-    public void start(Module module) {
+    public void start(HK2Module module) {
    
         try {
-            final Module myModule = module;
+            final HK2Module myModule = module;
             Thread thread = new Thread() {
                 public void run() {
                     try {
@@ -108,7 +100,7 @@ public class DerbyLifecycle implements LifecyclePolicy {
      * free all the module resources and returned to a {@link ModuleState#NEW NEW} state.
      * @param module the module instance
      */
-    public void stop(Module module) {
+    public void stop(HK2Module module) {
     
     }
     
