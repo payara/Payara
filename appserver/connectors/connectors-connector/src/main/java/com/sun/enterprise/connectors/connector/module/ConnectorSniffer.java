@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.connector.module;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
-import com.sun.enterprise.deployment.annotation.introspection.ResourceAdapterAnnotationScanner;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -97,7 +96,7 @@ public class ConnectorSniffer extends GenericSniffer {
      * @throws java.io.IOException exception if something goes sour
      */
     @Override
-    public Module[] setup(String containerHome, Logger logger) throws IOException {
+    public HK2Module[] setup(String containerHome, Logger logger) throws IOException {
         // do nothing, we are embedded in GFv3 for now
         return null;
     }

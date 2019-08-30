@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
@@ -56,7 +56,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import java.util.logging.Logger;
 import java.io.IOException;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import java.lang.annotation.Annotation;
 
 import javax.inject.Inject;
@@ -116,7 +116,7 @@ public class SecuritySniffer extends GenericSniffer {
      * @throws java.io.IOException exception if something goes sour
      */
     @Override
-    public Module[] setup(String containerHome, Logger logger) throws IOException {
+    public HK2Module[] setup(String containerHome, Logger logger) throws IOException {
         lifecycle = habitat.getServiceHandle(SecurityLifecycle.class);
         lifecycle.getService();
         return null;

@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>hk2-config</artifactId>
     
@@ -141,7 +141,7 @@
         <dependency>
             <groupId>org.jvnet</groupId>
             <artifactId>tiger-types</artifactId>
-            <version>1.4</version>
+            <version>${tiger.types.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
