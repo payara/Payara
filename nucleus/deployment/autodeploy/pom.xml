@@ -119,7 +119,7 @@
           <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

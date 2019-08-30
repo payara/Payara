@@ -334,7 +334,7 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.packager</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>notification-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -342,7 +342,7 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.packager</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara-api-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

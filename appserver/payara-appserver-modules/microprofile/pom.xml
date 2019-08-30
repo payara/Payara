@@ -46,7 +46,7 @@ holder.
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.microprofile</groupId>
+    <groupId>fish.payara.payara-appserver-modules</groupId>
     <artifactId>microprofile</artifactId>
     <description>Parent POM for all Microprofile related modules</description>
     <packaging>pom</packaging>

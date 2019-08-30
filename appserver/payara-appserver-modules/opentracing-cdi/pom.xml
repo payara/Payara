@@ -46,7 +46,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>opentracing-cdi</artifactId>
     
     <packaging>glassfish-jar</packaging>
@@ -55,7 +55,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>

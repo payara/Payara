@@ -129,7 +129,7 @@
             <version>${project.version}</version>
         </dependency> 
 	<dependency>
-	    <groupId>fish.payara.admingui</groupId>
+	    <groupId>fish.payara.server.internal.admingui</groupId>
 	    <artifactId>console-jts-plugin</artifactId>
 	    <version>${project.version}</version>
 	</dependency>

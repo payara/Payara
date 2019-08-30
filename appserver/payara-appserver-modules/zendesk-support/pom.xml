@@ -45,7 +45,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>zendesk-support</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Zendesk Support</name>

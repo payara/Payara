@@ -41,7 +41,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.microprofile</groupId>
+        <groupId>fish.payara.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -54,7 +54,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -75,7 +75,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile</groupId>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>microprofile-opentracing</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

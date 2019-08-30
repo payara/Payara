@@ -43,12 +43,13 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>fish.payara.server.internal.external</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>h2db</artifactId>
+    <groupId>fish.payara.server.internal.packager</groupId>
+    <artifactId>h2db-repackaged</artifactId>
     <packaging>distribution-fragment</packaging>
     <name>H2DB to be bundled into Payara</name>
 

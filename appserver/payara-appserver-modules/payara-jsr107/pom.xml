@@ -48,7 +48,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>payara-jsr107</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara JSR107</name>
@@ -94,7 +94,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

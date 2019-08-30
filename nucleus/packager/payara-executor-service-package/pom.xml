@@ -46,7 +46,7 @@
         <artifactId>nucleus-packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>payara-executor-service-package</artifactId>
     <name>Nucleus Payara Executor Service Package</name>
     <packaging>distribution-fragment</packaging>
@@ -54,7 +54,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>

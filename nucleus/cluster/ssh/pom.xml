@@ -72,7 +72,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>trilead-ssh2-repackaged</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

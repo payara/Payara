@@ -99,12 +99,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-appserver-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>zendesk-support</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>payara-support</artifactId>
             <version>${project.version}</version>
         </dependency>

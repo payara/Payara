@@ -42,12 +42,12 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.microprofile</groupId>
+        <groupId>fish.payara.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.microprofile.config</groupId>
+    <groupId>fish.payara.server.payara-appserver-modules</groupId>
     <artifactId>microprofile-config</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Microprofile-Config</name>
@@ -60,7 +60,7 @@
             <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
         </dependency>

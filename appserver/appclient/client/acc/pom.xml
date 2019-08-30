@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.server.internal.appclient</groupId>
+        <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -317,7 +317,7 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.appclient</groupId>
+            <groupId>fish.payara.server.appclient</groupId>
             <artifactId>acc-config</artifactId>
             <version>${project.version}</version>
         </dependency>

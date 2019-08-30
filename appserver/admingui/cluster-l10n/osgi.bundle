@@ -40,4 +40,4 @@
 
 # "Portions Copyright [2016] [Payara Foundation]"
 
-Fragment-Host: fish.payara.admingui.console-cluster-plugin; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.admingui.console-cluster-plugin; bundle-version=${project.osgi.version}

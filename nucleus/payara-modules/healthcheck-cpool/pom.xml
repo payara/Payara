@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
+        <groupId>fish.payara.server.internal</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -67,7 +67,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
         </dependency>

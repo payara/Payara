@@ -41,11 +41,12 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.monitoring-console</groupId>
+        <groupId>fish.payara.server.monitoring-console</groupId>
         <artifactId>monitoring-console</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
 
+    <groupId>fish.payara.server.internal.monitoring-console</groupId>
     <artifactId>monitoring-console-core</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -57,13 +58,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

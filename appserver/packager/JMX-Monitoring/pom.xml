@@ -123,12 +123,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.jmx.monitoring</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>jmx-monitoring</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
            <artifactId>jmx-monitoring-plugin</artifactId>
            <version>${project.version}</version>
        </dependency>

@@ -85,7 +85,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
+            <groupId>fish.payara.server.internal.monitoring-console</groupId>
             <artifactId>monitoring-console-core</artifactId>
             <version>${project.version}</version>
         </dependency>

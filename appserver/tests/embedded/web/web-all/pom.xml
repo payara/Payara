@@ -51,7 +51,7 @@
         investigates this issue further.                                                                                maven-buildglassfish-extension
     -->
     <!--<parent>-->
-    <!--<groupId>fish.payara</groupId>-->
+    <!--<groupId>fish.payara.server</groupId>-->
     <!--<artifactId>payara-parent</artifactId>-->
     <!--<version>5.194-SNAPSHOT</version>-->
     <!--</parent>-->

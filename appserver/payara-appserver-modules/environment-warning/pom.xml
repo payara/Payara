@@ -47,7 +47,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>environment-warning</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Environment Warning</name>

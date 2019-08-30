@@ -127,7 +127,7 @@
 
         <!-- Microprofile Common -->
         <dependency>
-            <groupId>fish.payara.microprofile.common</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -139,12 +139,12 @@
             <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.config</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-config</artifactId>
             <version>${project.version}</version>
         </dependency>       
@@ -156,7 +156,7 @@
             <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-fault-tolerance</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -168,7 +168,7 @@
             <version>${microprofile-metrics.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.metrics</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -180,7 +180,7 @@
             <version>${microprofile-openapi.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.openapi</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-openapi</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -192,7 +192,7 @@
             <version>${microprofile-jwt-auth.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.jwt-auth</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-jwt-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -210,12 +210,12 @@
             <version>${microprofile-healthcheck.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.healthcheck</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>healthcheck-checker</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -244,19 +244,19 @@
             <version>${microprofile-opentracing.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile</groupId>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>microprofile-opentracing</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>microprofile-opentracing-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <!-- Admin MicroProfile Admin GUI -->
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>microprofile-console-plugin</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -264,7 +264,7 @@
            
         <!-- Nimbus -->
         <dependency>
-            <groupId>fish.payara.server.internal.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

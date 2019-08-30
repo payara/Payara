@@ -47,7 +47,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.ejb.timer</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>hazelcast-ejb-timer</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>HZ EJB Timer</name>
@@ -66,7 +66,7 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

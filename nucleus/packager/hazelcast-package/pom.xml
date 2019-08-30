@@ -45,7 +45,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <artifactId>nucleus-packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>hazelcast-package</artifactId>
     <name>Nucleus Hazelcast Package</name>
     <packaging>distribution-fragment</packaging>
@@ -57,7 +57,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <artifactId>hazelcast</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -66,7 +66,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <artifactId>hazelcast-kubernetes</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>jsr107-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

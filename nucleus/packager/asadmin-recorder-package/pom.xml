@@ -46,7 +46,7 @@
         <artifactId>nucleus-packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>asadmin-recorder-package</artifactId>
     <name>Nucleus Payara Asadmin Recorder Package</name>
     <packaging>distribution-fragment</packaging>
@@ -54,12 +54,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>asadmin-audit</artifactId>
             <version>${project.version}</version>
         </dependency>

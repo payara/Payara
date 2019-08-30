@@ -139,18 +139,18 @@
 	    <type>zip</type>
        </dependency>
        <dependency>
-           <groupId>fish.payara.server.internal.external</groupId>
+           <groupId>fish.payara.server.internal.packager</groupId>
            <artifactId>jaxr-ra</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
        </dependency>
        <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
 	   <artifactId>console-common-full-plugin</artifactId>
            <version>${project.version}</version>
        </dependency> 
        <dependency>
-           <groupId>fish.payara.server.internal.external</groupId>
+           <groupId>fish.payara.server.internal.packager</groupId>
            <artifactId>ant</artifactId>
            <version>${project.version}</version>
        </dependency>
@@ -179,7 +179,7 @@
             <artifactId>javax.batch-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.server.internal.batch</groupId>
             <artifactId>payara-jbatch</artifactId>
            <version>${project.version}</version>
         </dependency>

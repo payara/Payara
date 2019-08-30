@@ -59,10 +59,9 @@
         Perhaps later.
     -->
     <parent>
-        <groupId>fish.payara.server.internal.appclient</groupId>
+        <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client</artifactId>
@@ -188,7 +187,7 @@ this or the downstream JARs and so attempts to find things fail.
             accurate Class-Path for the manifest.
         -->
         <dependency>
-            <groupId>fish.payara.server.internal.appclient</groupId>
+            <groupId>fish.payara.server.appclient</groupId>
             <artifactId>gf-client-module</artifactId>
             <version>${project.version}</version>
         </dependency>

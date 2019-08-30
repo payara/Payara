@@ -41,11 +41,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.microprofile</groupId>
+        <groupId>fish.payara.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.microprofile.metrics</groupId>
+    <groupId>fish.payara.server.payara-appserver-modules</groupId>
     <artifactId>microprofile-metrics</artifactId>
     <name>Microprofile - Metrics</name>
     <description>Implementation of MicroProfile Metrics API</description>
@@ -74,7 +74,7 @@
             </executions>
             <configuration>
                 <sources>
-                    <source>src/main/java/fish/payara/microprofile/metrics/jmx/MBeanMetadataConfig.java</source>
+                    <source>src/main/java/fish.payara.server.payara-appserver-modules</source>
                 </sources>
             </configuration>
             </plugin>
@@ -92,7 +92,7 @@
             <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.common</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -102,7 +102,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>

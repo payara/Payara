@@ -46,7 +46,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.security</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>oauth2-client-integration</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>OAuth 2 Client Integration</name>
@@ -112,7 +112,7 @@
             <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
         </dependency>

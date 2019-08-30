@@ -47,7 +47,7 @@ holder.
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>payara-rest-endpoints</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>REST Endpoints</name>

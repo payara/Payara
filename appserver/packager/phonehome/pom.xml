@@ -127,7 +127,7 @@
     
     <dependencies>
         <dependency>
-           <groupId>fish.payara.packager</groupId>
+           <groupId>fish.payara.server.internal</groupId>
            <artifactId>phonehome-package</artifactId>
            <version>${project.version}</version>
            <type>zip</type>

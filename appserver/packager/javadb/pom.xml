@@ -117,8 +117,8 @@
         
     <dependencies>
         <dependency>
-      	    <groupId>fish.payara.server.internal.external</groupId>
-            <artifactId>javadb</artifactId>
+      	    <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>javadb-repackaged</artifactId>
             <version>${project.version}</version>
             <type>zip</type>    
        </dependency>

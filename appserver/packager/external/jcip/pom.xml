@@ -43,7 +43,7 @@ holder.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.internal.external</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

@@ -117,8 +117,8 @@
         
     <dependencies>
         <dependency>
-      	    <groupId>fish.payara.server.internal.external</groupId>
-            <artifactId>h2db</artifactId>
+      	    <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>h2db-repackaged</artifactId>
             <version>${project.version}</version>
             <type>zip</type>    
        </dependency>

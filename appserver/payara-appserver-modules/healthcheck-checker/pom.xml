@@ -49,7 +49,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>healthcheck-checker</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Healthcheck Checker</name>
@@ -57,7 +57,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.microprofile.healthcheck</groupId>
+            <groupId>fish.payara.server.payara-appserver-modules</groupId>
             <artifactId>microprofile-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>

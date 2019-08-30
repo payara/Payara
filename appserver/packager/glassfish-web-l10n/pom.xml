@@ -123,7 +123,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-web-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

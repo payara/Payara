@@ -144,7 +144,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-ejb-lite-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>

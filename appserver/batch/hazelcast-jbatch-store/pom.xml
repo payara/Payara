@@ -47,7 +47,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>fish.payara.batch</groupId>
     <artifactId>hazelcast-jbatch-store</artifactId>
     <packaging>glassfish-jar</packaging>
 

@@ -122,7 +122,7 @@
     
     <dependencies>
            <dependency>
-              <groupId>fish.payara.ha</groupId>
+              <groupId>fish.payara.server.internal.ha</groupId>
               <artifactId>ha-hazelcast-store</artifactId>
               <version>${project.version}</version>
           </dependency>

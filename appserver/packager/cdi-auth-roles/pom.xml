@@ -126,7 +126,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>cdi-auth-roles</artifactId>
             <version>${project.version}</version>
         </dependency>

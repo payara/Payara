@@ -99,12 +99,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>notification-hipchat-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
            <artifactId>hipchat-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>

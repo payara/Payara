@@ -45,7 +45,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver.monitoring.rest</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>rest-monitoring-parent</artifactId>
     <packaging>pom</packaging>
     <name>Rest Monitoring Parent</name>

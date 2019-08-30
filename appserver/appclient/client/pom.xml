@@ -48,7 +48,7 @@
         <artifactId>appclient</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.appclient</groupId>
+    <groupId>fish.payara.server.appclient</groupId>
     <artifactId>client</artifactId>
     <packaging>pom</packaging>
     <name>App Client - client-side modules</name>

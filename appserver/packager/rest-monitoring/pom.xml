@@ -143,19 +143,19 @@
 
     <dependencies>
 	<dependency>
-            <groupId>fish.payara.appserver.monitoring.rest</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>rest-monitoring-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver.monitoring.rest</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>rest-monitoring-war</artifactId>
             <version>${rest.monitoring.version}</version>
             <type>war</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>rest-monitoring-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>

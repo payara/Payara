@@ -88,7 +88,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.microprofile</groupId>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>opentracing-jaxws</artifactId>
             <version>${project.version}</version>
         </dependency>

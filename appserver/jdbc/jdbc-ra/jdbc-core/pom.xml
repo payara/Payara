@@ -101,7 +101,7 @@
           <artifactId>gmbal</artifactId>
       </dependency>
       <dependency>
-          <groupId>fish.payara.payara-modules</groupId>
+          <groupId>fish.payara.server.internal</groupId>
           <artifactId>requesttracing-core</artifactId>
           <version>${project.version}</version>
       </dependency>

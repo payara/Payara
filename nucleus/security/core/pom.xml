@@ -214,7 +214,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>ldapbp-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

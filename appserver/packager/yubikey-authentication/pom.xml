@@ -129,7 +129,7 @@
             <version>${yubico-validation-client2.version}</version>
         </dependency>
         <dependency>
-           <groupId>fish.payara.security</groupId>
+           <groupId>fish.payara.server.internal</groupId>
            <artifactId>yubikey-authentication</artifactId>
            <version>${project.version}</version>
        </dependency>

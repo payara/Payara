@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.security</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>yubikey-authentication</artifactId>
     
     <name>Yubikey Authentication</name>
@@ -114,7 +114,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -126,7 +126,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

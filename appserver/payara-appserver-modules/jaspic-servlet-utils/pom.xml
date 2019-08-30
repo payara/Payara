@@ -47,7 +47,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.security.jaspic</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>jaspic-servlet-utils</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara JASPIC Servlet Utilities</name>

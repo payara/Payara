@@ -111,7 +111,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.appclient</groupId>
+            <groupId>fish.payara.server.appclient</groupId>
             <artifactId>acc-config</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -127,7 +127,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>payara-console-extras-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

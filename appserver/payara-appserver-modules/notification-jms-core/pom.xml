@@ -47,7 +47,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>notification-jms-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JMS Notification Implementation</name>
@@ -55,7 +55,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>notification-core</artifactId>
             <version>${project.version}</version>
         </dependency>

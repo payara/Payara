@@ -113,7 +113,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.hk2</groupId>
+            <groupId>fish.payara.server.internal.hk2</groupId>
             <artifactId>config-types</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -231,7 +231,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>ldapbp-repackaged</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

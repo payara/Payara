@@ -124,7 +124,7 @@
     
     <dependencies>
        <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
            <artifactId>console-jms-plugin</artifactId>
             <version>${project.version}</version>
        </dependency>
@@ -158,7 +158,7 @@
 	    <artifactId>jakarta.jms-api</artifactId>
        </dependency>
        <dependency>
-            <groupId>fish.payara.server.internal.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jmsra</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

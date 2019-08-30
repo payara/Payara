@@ -124,20 +124,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.packager</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>notification-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
            <artifactId>eventbus-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>cdieventbus-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

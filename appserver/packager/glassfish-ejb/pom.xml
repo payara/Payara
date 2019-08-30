@@ -85,22 +85,22 @@
         </dependency>
         
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-ejb-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-corba-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.timer</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.http</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>ejb-http-admin</artifactId>
             <version>${project.version}</version>
         </dependency>

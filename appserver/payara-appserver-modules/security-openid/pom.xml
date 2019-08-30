@@ -47,7 +47,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.security</groupId>
+    <groupId>fish.payara.server.internal</groupId>
     <artifactId>openid-client-integration</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>OpenID Connect Client Integration</name>
@@ -119,7 +119,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
         </dependency>        

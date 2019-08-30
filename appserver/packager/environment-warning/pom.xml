@@ -123,7 +123,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-appserver-modules</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>environment-warning</artifactId>
             <version>${project.version}</version>
         </dependency>

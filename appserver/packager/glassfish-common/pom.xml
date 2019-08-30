@@ -160,7 +160,7 @@
             <artifactId>javax.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
 	   <artifactId>console-concurrent-plugin</artifactId>
            <version>${project.version}</version>
        </dependency> 

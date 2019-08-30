@@ -141,12 +141,12 @@
                     <artifactId>javax.security.enterprise</artifactId>
                 </dependency>
                 <dependency>
-                    <groupId>fish.payara.security</groupId>
+                    <groupId>fish.payara.server.internal</groupId>
                     <artifactId>oauth2-client-integration</artifactId>
                     <version>${project.version}</version>
                 </dependency>
                 <dependency>
-                    <groupId>fish.payara.security</groupId>
+                    <groupId>fish.payara.server.internal</groupId>
                     <artifactId>openid-client-integration</artifactId>
                     <version>${project.version}</version>
                 </dependency>
@@ -303,7 +303,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.security.jaspic</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>jaspic-servlet-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
