@@ -217,8 +217,11 @@ button.btnIcon:hover {
     padding: 0;
     background-image: url("payara-server-logo.png");
     background-repeat: no-repeat;
-    background-position: 10px 10px;
+    background-position: 0 10px;
     vertical-align: top;
+    position: absolute;
+    top: 5px;
+    right: 10px;
 }
 .properties {
     background-color: #002433;
@@ -226,7 +229,7 @@ button.btnIcon:hover {
     margin-top: 5px;
     width: 100%;
 }
-.properties:first-child {
+button.btnClose + .properties {
     margin-top: 210px;
 }
 .properties th {
@@ -242,5 +245,5 @@ button.btnIcon:hover {
 	display: block;
 }
 #console.state-show-properties #panel-grid {
-    width: calc(100% - 380px);
+    width: calc(100% - 385px);
 }
