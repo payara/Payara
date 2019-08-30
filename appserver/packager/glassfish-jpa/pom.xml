@@ -183,7 +183,7 @@
         </dependency>
         <!-- JPA hazelcast cache coordination -->
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>hazelcast-eclipselink-coordination</artifactId>
             <version>${project.version}</version>
         </dependency>

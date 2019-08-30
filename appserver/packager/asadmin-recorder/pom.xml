@@ -99,7 +99,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>asadmin-recorder-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

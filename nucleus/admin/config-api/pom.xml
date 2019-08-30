@@ -136,7 +136,7 @@
 
         <!-- test dependencies -->
         <dependency>
-            <groupId>fish.payara.server.internal.tests</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

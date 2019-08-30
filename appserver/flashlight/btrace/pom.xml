@@ -49,7 +49,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
-
+    <groupId>fish.payara.server.internal.flashlight</groupId>
     <artifactId>btrace-jars</artifactId>
     <name>btrace jar files</name>
     <!--

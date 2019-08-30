@@ -45,7 +45,7 @@
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>payara-appserver-modules</artifactId>
     <name>Payara Appserver Modules</name>
     <description>Payara Appserver modules</description>

@@ -43,7 +43,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.payara-appserver-modules</groupId>
+        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

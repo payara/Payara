@@ -123,7 +123,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>payara-rest-endpoints</artifactId>
             <version>${project.version}</version>
         </dependency>

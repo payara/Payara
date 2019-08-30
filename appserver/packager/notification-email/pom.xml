@@ -98,7 +98,7 @@
     </profiles>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>notification-email-core</artifactId>
             <version>${project.version}</version>
         </dependency>

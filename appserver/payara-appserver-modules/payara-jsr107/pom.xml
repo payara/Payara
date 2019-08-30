@@ -44,11 +44,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal</groupId>
+        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>payara-jsr107</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara JSR107</name>
@@ -94,7 +94,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

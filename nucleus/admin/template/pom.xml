@@ -60,7 +60,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-http-endpoint</artifactId>
             <version>${project.version}</version>
             <type>war</type>
@@ -99,7 +99,7 @@
                                 </artifactItem>
 
                                 <artifactItem>
-                                    <groupId>fish.payara.server.internal</groupId>
+                                    <groupId>fish.payara.server.internal.ejb</groupId>
                                     <artifactId>ejb-http-endpoint</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>

@@ -166,12 +166,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>gf-load-balancer-connector-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>load-balancer-admin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

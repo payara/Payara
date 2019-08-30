@@ -143,12 +143,12 @@
 
     <dependencies>
 	<dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>rest-monitoring-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>rest-monitoring-war</artifactId>
             <version>${rest.monitoring.version}</version>
             <type>war</type>

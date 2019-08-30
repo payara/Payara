@@ -43,7 +43,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.micro</groupId>
+        <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>payara-micro-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -366,7 +366,7 @@
 
         <!-- Add Payara Micro Core -->
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -374,7 +374,7 @@
 
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -382,7 +382,7 @@
 
         <!-- Add Boot classes -->
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -390,7 +390,7 @@
 
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -418,19 +418,19 @@
 
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>hazelcast-eclipselink-coordination</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>jmx-monitoring</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

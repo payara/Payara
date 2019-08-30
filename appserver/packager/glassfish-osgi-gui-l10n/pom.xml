@@ -121,7 +121,7 @@
  
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
+            <groupId>fish.payara.server.internal.osgi-platforms</groupId>
             <artifactId>glassfish-osgi-console-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

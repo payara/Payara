@@ -86,7 +86,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.tests</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

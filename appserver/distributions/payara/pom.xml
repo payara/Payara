@@ -45,7 +45,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.server.internal.distributions</groupId>
+        <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

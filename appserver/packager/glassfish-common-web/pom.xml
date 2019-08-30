@@ -231,7 +231,7 @@
         <!-- TODO: move to glassfish-cluster after nucleus distro build moves
         to its own workspace or create dedicated cluster package-->
         <dependency>
-            <groupId>fish.payara.server.internal.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>load-balancer-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -270,7 +270,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>gf-load-balancer-connector</artifactId>
             <version>${project.version}</version>
         </dependency>

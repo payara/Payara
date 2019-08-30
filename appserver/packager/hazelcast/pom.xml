@@ -127,7 +127,7 @@
     
     <dependencies>
         <dependency>
-           <groupId>fish.payara.server.internal</groupId>
+           <groupId>fish.payara.server.internal.packager</groupId>
            <artifactId>hazelcast-package</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
@@ -139,12 +139,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>payara-jsr107</artifactId>
             <version>${project.version}</version>
         </dependency>     
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>jsr107-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

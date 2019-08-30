@@ -44,12 +44,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal</groupId>
+        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>yubikey-authentication</artifactId>
     
     <name>Yubikey Authentication</name>
@@ -114,7 +114,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -126,7 +126,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>microprofile-config-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

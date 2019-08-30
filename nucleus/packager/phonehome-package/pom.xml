@@ -25,7 +25,7 @@
         <artifactId>nucleus-packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>phonehome-package</artifactId>
     <name>Nucleus Phonehome Package</name>
     <packaging>distribution-fragment</packaging>
@@ -33,7 +33,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>phonehome-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

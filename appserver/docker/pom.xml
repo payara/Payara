@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.docker</groupId>
     <artifactId>docker</artifactId>
     <packaging>glassfish-jar</packaging>
 

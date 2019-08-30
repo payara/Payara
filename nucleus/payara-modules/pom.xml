@@ -49,7 +49,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.payara-modules</groupId>
     <artifactId>payara-nucleus-modules</artifactId>
     <packaging>pom</packaging>
     <name>Payara Nucleus Modules</name>

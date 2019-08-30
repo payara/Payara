@@ -50,7 +50,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.server.internal.distributions</groupId>
+    <groupId>fish.payara.distributions</groupId>
     <artifactId>distributions</artifactId>
     <packaging>pom</packaging>
     

@@ -48,6 +48,7 @@
         <version>5.194-SNAPSHOT</version>
       <relativePath>../../admingui/pom.xml</relativePath>
     </parent>
+    <groupId>fish.payara.server.internal.osgi-platforms</groupId>
     <artifactId>glassfish-osgi-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
     

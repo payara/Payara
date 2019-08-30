@@ -48,7 +48,7 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.server.internal.loadbalancer</groupId>
+    <groupId>fish.payara.server.internal.load-balancer</groupId>
     <artifactId>load-balancer</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Load-Balancer Plugin related modules</name>

@@ -6,7 +6,7 @@
         <artifactId>extras</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.micro</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>payara-micro-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Micro Parent</name>

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <groupId>fish.payara.server.internal</groupId>
+    <groupId>fish.payara.server.internal.test-utils</groupId>
     <artifactId>test-utils</artifactId>
     <packaging>pom</packaging>
     <name>Test Utilities Modules</name>  
