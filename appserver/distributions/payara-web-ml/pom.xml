@@ -123,7 +123,7 @@
         <!-- pull minnow packages -->
         <dependency>
             <groupId>fish.payara.server.internal.featuresets</groupId>
-            <artifactId>payara-web-ml</artifactId>
+            <artifactId>payara-web-ml-featureset</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <optional>true</optional>

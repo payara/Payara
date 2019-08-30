@@ -48,7 +48,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <artifactId>payara</artifactId>
+    <artifactId>payara-featureset</artifactId>
     <packaging>pom</packaging>
     
     <name>Payara Featureset</name>
@@ -58,7 +58,7 @@
         <!-- Web packages -->
         <dependency>
             <groupId>fish.payara.server.internal.featuresets</groupId>
-            <artifactId>payara-web</artifactId>
+            <artifactId>payara-web-featureset</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>

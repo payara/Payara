@@ -48,7 +48,7 @@
         <artifactId>featuresets</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <artifactId>payara-ml</artifactId>
+    <artifactId>payara-ml-featureset</artifactId>
     <name>Payara Multi-Language Featureset</name>
     <packaging>pom</packaging>
     <description>This pom defines the set of packages for Payara distribution</description>
@@ -57,14 +57,14 @@
 	<!-- Pull payara packages -->
 	<dependency>
 	    <groupId>fish.payara.server.internal.featuresets</groupId>
-	    <artifactId>payara</artifactId>
+	    <artifactId>payara-featureset</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
 	</dependency>
 	<!-- Pull payara-web-ml packages -->
 	<dependency>
 	    <groupId>fish.payara.server.internal.featuresets</groupId>
-	    <artifactId>payara-web-ml</artifactId>
+	    <artifactId>payara-web-ml-featureset</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
 	</dependency>

@@ -121,7 +121,7 @@
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.featuresets</groupId>
-            <artifactId>payara</artifactId>
+            <artifactId>payara-featureset</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <optional>true</optional>

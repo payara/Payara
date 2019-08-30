@@ -128,7 +128,7 @@
         <!-- pull minnow packages -->
         <dependency>
             <groupId>fish.payara.server.internal.featuresets</groupId>
-            <artifactId>payara-web</artifactId>
+            <artifactId>payara-web-featureset</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <optional>true</optional>

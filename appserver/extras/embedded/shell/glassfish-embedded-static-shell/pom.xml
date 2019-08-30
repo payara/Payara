@@ -365,7 +365,7 @@
         <!-- Micro Service -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>payara-micro</artifactId>
+            <artifactId>payara-micro-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
