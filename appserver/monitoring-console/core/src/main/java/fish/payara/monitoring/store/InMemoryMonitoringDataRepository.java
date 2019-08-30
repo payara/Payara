@@ -112,16 +112,22 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     public void init() {
         serviceLocator = Globals.getDefaultBaseServiceLocator();
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
-        HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
-        instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
-        exchange = hz.getInstance().getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
         isDas = serverEnv.isDas();
         PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
-        if (isDas) {
-            MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
-            exchange.addMessageListener(subscriber);
-            executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS);
+        HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
+        if (hz.isEnabled()) {
+            instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+            exchange = hz.getInstance().getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
         } else {
+            instanceName = "server";
+        }
+        if (isDas) {
+            if (exchange != null) {
+                MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
+                exchange.addMessageListener(subscriber);
+            }
+            executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS);
+        } else if (exchange != null) {
             executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
         }
     }
