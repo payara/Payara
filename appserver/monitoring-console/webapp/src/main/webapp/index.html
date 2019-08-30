@@ -48,86 +48,76 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=c"></script>
+    <script src="monitoring-console.js?x=d"></script>
     <link href="monitoring-console.css?x=d" rel="stylesheet" type="text/css">
 </head>
-<body>
-<table id="console">
+<body id="console">
+
+<table id="panel-grid">
    <tr>
-       <td class="console-area">
+       <td class="console-area" height="0">
            <div id="nav-bar"><span id="pagesTabs"></span></div>
        </td>
-       <td id="layout-bar" class="console-area">
+       <td id="layout-bar" class="console-area" height="0">
            <button title="Pause Data Update" onclick="MonitoringConsole.Refresh.pause();">&#9208;</button>
            <button title="Resume Data Update" onclick="MonitoringConsole.Refresh.resume();">&#9654;</button>
            <button title="Slow Data Update" onclick="MonitoringConsole.Refresh.slow();">&#128034;</button>
            <button title="Fast Data Update" onclick="MonitoringConsole.Refresh.fast();">&#128007;</button>
            &nbsp; &nbsp;
-		   <button id="btnUniLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(1));' title="Use one column layout">&#9608</button> 
-		   <button id="btnDualLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(2));' title="Use two column layout">&#9608 &#9608</button> 
-		   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(3));' title="Use three column layout">&#9608 &#9608 &#9608</button>
-		   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(4));' title="Use four column layout">&#9608 &#9608 &#9608 &#9608</button>
+		   <button id="btnUniLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(1));' title="Use one column layout">&#11034;</button> 
+		   <button id="btnDualLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(2));' title="Use two column layout">&#11034; &#11034;</button> 
+		   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(3));' title="Use three column layout">&#11034; &#11034; &#11034;</button>
+		   <button id="btnTripleLayout" onclick='renderPage(MonitoringConsole.Page.rearrange(4));' title="Use four column layout">&#11034; &#11034; &#11034; &#11034;</button>
            &nbsp; &nbsp; &nbsp;
-           <button id="btnDeselect" title="Deselect all">&#9032;</button>
-       </td>
-       <td rowspan="2" id="chart-options" class="console-area">
-         <button id="btnRemovePage" title="Delete current page" class='btnIcon btnClose'>x</button>
-         <div id="options-box">
-	         <table  class="properties">
-	         <tr><th colspan="2">Page</th></tr>
-	         <tr><td colspan="2"></td></tr>
-             <tr><td>Tab</td><td><input type="text" id="pageName" /><button id="btnAddPage" title="Add new page tab with given name">Add</button></td></tr>
-             <tr><td>Chart</td><td><select id="options"></select><button id="btnAddChart" title="Add selected chart">Add</button></td></tr>
-	         </table>
-	         
-	         <table  class="properties">
-	         <tr><th colspan="2">Layout</th></tr>
-             <tr><td colspan="2"></td></tr>
-             <tr><td>Span</td>
-                <td>
-                    <input type="radio" name="cfgSpan" id="span1" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = 1; }));" />
-                    <label for="span1">1</label>
-                    <input type="radio" name="cfgSpan" id="span2" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = 2; }));" />
-                    <label for="span2">2</label>
-                    <input type="radio" name="cfgSpan" id="span3" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = 3; }));" />
-                    <label for="span3">3</label>
-                    <input type="radio" name="cfgSpan" id="span4" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = 4; }));" />
-                    <label for="span4">4</label>
-                </td>
-             </tr>
-             <tr><td>Column</td>
-                <td>
-                    <input type="radio" name="cfgColumn" id="column1" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = 0; }));" />
-                    <label for="column1">1</label>
-                    <input type="radio" name="cfgColumn" id="column2" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = 1; }));" />
-                    <label for="column2">2</label>
-                    <input type="radio" name="cfgColumn" id="column3" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = 2; }));" />
-                    <label for="column3">3</label>
-                    <input type="radio" name="cfgColumn" id="column4" onclick="renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = 3; }));" />
-                    <label for="column4">4</label>
-                </td>
-             </tr>             
-             </table>
-             
-             <table  class="properties">
-	         <tr><th colspan="2">Render Options</th></tr>
-	         <tr><td>Begin at Zero</td><td><input type="checkbox" id="cfgStartAtZero" checked="checked" /></td></tr>
-	         <tr><td>Automatic Labels</td><td><input type="checkbox" id="cfgAutoTimeTicks" checked="checked" /></td></tr>
-	         <tr><td>Use Bezier Curves</td><td><input type="checkbox" id="cfgDrawCurves" checked="checked" /></td></tr>
-	         <tr><td>Use Animations</td><td><input type="checkbox" id="cfgDrawAnimations" checked="checked" /></td></tr>
-	         <tr><td>Label X-Axis at 90°</td><td><input type="checkbox" id="cfgRotateTimeLabels" checked="checked" /></td></tr>
-	         <tr><th colspan="2">Chart Options</th></tr>
-	         <tr><td>Show Average</td><td><input type="checkbox" id="cfgDrawAvgLine" checked="checked" /></td></tr>
-	         <tr><td>Show Minimum</td><td><input type="checkbox" id="cfgDrawMinLine" checked="checked" /></td></tr>
-	         <tr><td>Show Maximum</td><td><input type="checkbox" id="cfgDrawMaxLine" checked="checked" /></td></tr>
-	         </table>
-         </div>
+           <button id="btnDeselect" title="Deselect all">&#12281;</button>
        </td>
    </tr>
    <tr>
        <td colspan="2" id="chart-container" class="console-area"></td>
    </tr>
 </table>
+
+<div id="panel-properties">
+  <button id="btnRemovePage" title="Delete current page" class='btnIcon btnClose'>x</button>
+  
+  <table  class="properties">
+  <tr><th colspan="2">Page</th></tr>
+  <tr><td colspan="2"></td></tr>
+  <tr><td>New Tab</td><td><input type="text" id="pageName" /><button id="btnAddPage" title="Add new page tab with given name">Add</button></td></tr>
+  <tr><td>New Chart</td><td><select id="options"></select><button id="btnAddChart" title="Add selected chart">Add</button></td></tr>
+  <tr><td>Name</td><td><input type="text" id="cftPageName" /></td></tr>
+  </table>
+
+  <table  class="properties">
+  <tr><th colspan="2">Data</th></tr>
+  <tr><td colspan="2"></td></tr>
+  <tr><td>Instances</td><td id="panelCfgInstances"></td></tr>
+  </table>
+  
+  <table  class="properties">
+  <tr><th colspan="2">Layout</th></tr>
+  <tr><td colspan="2"></td></tr>
+  <tr><td>Span</td>
+     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = val; }));" /></td>
+  </tr>
+  <tr><td>Column</td>
+     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = val-1; }));" /></td>
+  </tr>
+  </table>
+  
+  <table  class="properties">
+  <tr><th colspan="2">Render Options</th></tr>
+  <tr><td>Begin at Zero</td><td><input type="checkbox" id="cfgStartAtZero" checked="checked" /></td></tr>
+  <tr><td>Automatic Labels</td><td><input type="checkbox" id="cfgAutoTimeTicks" checked="checked" /></td></tr>
+  <tr><td>Use Bezier Curves</td><td><input type="checkbox" id="cfgDrawCurves" checked="checked" /></td></tr>
+  <tr><td>Use Animations</td><td><input type="checkbox" id="cfgDrawAnimations" checked="checked" /></td></tr>
+  <tr><td>Label X-Axis at 90°</td><td><input type="checkbox" id="cfgRotateTimeLabels" checked="checked" /></td></tr>
+  <tr><th colspan="2">Chart Options</th></tr>
+  <tr><td>Show Average</td><td><input type="checkbox" id="cfgDrawAvgLine" checked="checked" /></td></tr>
+  <tr><td>Show Minimum</td><td><input type="checkbox" id="cfgDrawMinLine" checked="checked" /></td></tr>
+  <tr><td>Show Maximum</td><td><input type="checkbox" id="cfgDrawMaxLine" checked="checked" /></td></tr>
+  </table>
+</div>
 
 <script>
 $("#cfgStartAtZero").on('change', function() {
@@ -214,6 +204,11 @@ $('#btnDeselect').click(function() {
 	renderChartOptions();
 });
 
+$('#cftPageName').on("propertychange change keyup paste input", function() {
+	MonitoringConsole.Page.rename(this.value);
+	renderPageTabs();
+});
+
 $('#btnAddChart').click(function() {
 	$("#options option:selected").each(function() {
 		var series = this.value;
@@ -281,6 +276,7 @@ function renderPage(layout) {
     for (var col = 0; col < numberOfColumns; col++) {
     	maxRow = Math.max(maxRow, layout[col].length);
     }
+    var rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
     for (var row = 0; row < maxRow; row++) {
 		var tr = $("<tr/>");
 		for (var col = 0; col < numberOfColumns; col++) {
@@ -290,7 +286,7 @@ function renderPage(layout) {
 				var cell = layout[col][row];
 	            if (cell) {
 			    	var span = cell.span;
-		            var td = $("<td/>", { colspan: span, rowspan: span});
+		            var td = $("<td/>", { colspan: span, rowspan: span, 'class': 'box', style: 'height: '+(span * rowHeight)+"px;"});
 		            td.append(renderChartCaption(cell));
 		            var status = $('<div/>', { "class": 'status-nodata'});
 		            status.append($('<div/>', {text: 'No Data'}));
@@ -312,7 +308,7 @@ function renderPage(layout) {
 
 function renderChartCaption(cell) {
     var bar = $('<div/>', {"class": "caption-bar"});
-    var caption = $('<h3/>', {text: cell.series});
+    var caption = $('<h3/>', {text: cell.series, title: 'Select '+cell.series});
     caption.click(function() {
     	if (MonitoringConsole.Page.Selection.toggle(cell.series)) {
     	    bar.parent().addClass('chart-selected');
@@ -329,14 +325,61 @@ function renderChartCaption(cell) {
 		}
     });
     bar.append(btnClose);
+    var btnLarger = $('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;');
+    btnLarger.click(function() {
+    	renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
+    		if (config.position.span < 4)
+    			  config.position.span += 1;
+    	}));
+    });
+    bar.append(btnLarger);
+    var btnSmaller = $('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;');
+    btnSmaller.click(function() {
+        renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
+            if (config.position.span > 1)
+            	config.position.span -= 1;
+        }));
+    });
+    bar.append(btnSmaller);
+    var btnRight = $('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;');
+    btnRight.click(function() {
+        renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
+            if (config.position.column < 4)
+            	config.position.item = undefined;
+            	config.position.column += 1;
+        }));
+    });
+    bar.append(btnRight);
+    var btnLeft = $('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;');
+    btnLeft.click(function() {
+        renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
+            if (config.position.column > 0)
+            	config.position.item = undefined;
+                config.position.column -= 1;
+        }));
+    });
+    bar.append(btnLeft);
     return bar;
 }
 
 function renderChartOptions() {
-    if (MonitoringConsole.Page.isEmpty() || MonitoringConsole.Page.Selection.getSeries().length > 0) {
-        $('#chart-options').addClass('expanded');
+	var panelConsole = $('#console');
+	if (MonitoringConsole.Page.isEmpty() || MonitoringConsole.Page.Selection.getSeries().length > 0) {
+        if (!panelConsole.hasClass('state-show-properties')) {
+        	panelConsole.addClass('state-show-properties');
+            var instancePanel = $("#panelCfgInstances");
+            instancePanel.empty();
+            $.getJSON("api/instances/", function(instances) {
+            	var select = $('<select />', {multiple: true});
+            	for (var i = 0; i < instances.length; i++) {
+            		select.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
+            	}
+            	instancePanel.append(select);
+            });
+            $('#cftPageName').val(MonitoringConsole.Page.name());
+        }
     } else {
-        $('#chart-options').removeClass('expanded');
+    	panelConsole.removeClass('state-show-properties');
     }
 }
 
@@ -353,10 +396,22 @@ function renderChartUpdate(update) {
             console.log('WARN: Box for chart ' + update.config.series + ' not ready.');
         return;
     }
-    var td = box.parents('td');
+    var td = box.closest('td');
     if (update.data) {
     	td.children('.status-nodata').hide();
-        MonitoringConsoleRender.chart(update);
+        var points = update.data[0].points;
+        if (points.length == 4 && points[1] === points[3]) {
+        	if (td.children('.stable').length == 0) {
+	        	var info = $('<div/>', { 'class': 'stable' });
+	        	info.append($('<span/>', { text: points[1] }));
+        		td.append(info);
+	        	box.hide();
+        	}
+        } else {
+        	td.children('.stable').remove();
+        	box.show();
+            MonitoringConsoleRender.chart(update);
+        }
 	} else {
 		td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
 	}
@@ -369,6 +424,11 @@ function renderChartUpdate(update) {
 	renderChartOptions();
 }
 
+
+//TODO add a "onPageChange" function that needs to be called by all changing handlers that impact the page
+// so that all necessary updates to the content can be made in the function 
+
+//TODO add helper functions that based on a model for the properties build the property settings
 </script>
 
 </body>

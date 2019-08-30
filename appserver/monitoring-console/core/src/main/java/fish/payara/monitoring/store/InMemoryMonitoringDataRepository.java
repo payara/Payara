@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -105,6 +106,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
+    private final Set<String> instances = ConcurrentHashMap.newKeySet();
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
 
@@ -114,6 +116,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
         HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
         instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        instances.add(instanceName);
         exchange = hz.getInstance().getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
         isDas = serverEnv.isDas();
         PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
@@ -126,8 +129,14 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         }
     }
 
+    @Override
+    public Set<String> instances() {
+        return instances;
+    }
+
     public void addRemoteDatasets(Message<SeriesDatasetsSnapshot> message) {
         String instance = message.getPublishingMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        instances.add(instance);
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {

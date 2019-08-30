@@ -67,14 +67,16 @@ public class MonitoringConsoleResource {
     }
 
     @GET
-    @Path("/series/{series}/statistics")
-    public SeriesStatistics[] getSeriesStatistics(@PathParam("series") String series) {
+    @Path("/series/data/{series}/")
+    public SeriesStatistics[] getSeries(@PathParam("series") String series) {
         return SeriesStatistics.from(getDataStore().selectSeries(new Series(series)));
     }
 
+    //TODO make this into one API receiving a JSON describing the query
+    
     @GET
-    @Path("/series/statistics/")
-    public List<SeriesStatistics[]> querySeriesStatistics(@QueryParam("q") String query) {
+    @Path("/series/data/")
+    public List<SeriesStatistics[]> querySeries(@QueryParam("q") String query) {
         List<SeriesStatistics[]> matches = new ArrayList<>();
         for (String series : query.split("|")) {
             matches.add(SeriesStatistics.from(getDataStore().selectSeries(new Series(series))));
@@ -88,6 +90,10 @@ public class MonitoringConsoleResource {
         return stream(getDataStore().selectAllSeries().spliterator(), false)
                 .map(dataset -> dataset.getSeries().toString()).sorted().toArray(String[]::new);
     }
-    
-    //TODO add a method that returns the HTML needed to embedd one or more charts
+
+    @GET
+    @Path("/instances/")
+    public String[] getInstanceNames() {
+        return getDataStore().instances().toArray(new String[0]);
+    }
 }

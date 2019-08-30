@@ -131,6 +131,25 @@ var MonitoringConsole = (function() {
 				.forEach(config => config.selected = false);
 		}
 		
+		function doCreate(name) {
+			if (!name)
+				throw "New page must have a unique name";
+			if (name === 'options')
+				throw "Illegal name for a page: " + name;
+			var id = MonitoringConsoleUtils.getPageId(name);
+			if (pages[id])
+				throw "A page with name "+name+" already exist";
+			let page = {
+				id: id,
+				name: name,
+				configs: {},
+				numberOfColumns: 1,
+			};
+			pages[page.id] = page;
+			currentPageId = page.id;
+			return page;
+		}
+		
 		return {
 			current: function() {
 				return pages[currentPageId];
@@ -140,7 +159,7 @@ var MonitoringConsole = (function() {
 				return Object.values(pages).filter(page => page.id !== undefined).map(function(page) { 
 					return { id: page.id, name: page.name, active: page.id === currentPageId };
 				});
-			}, 
+			},
 			
 			/**
 			 * Loads and returns the configuration from the local storage
@@ -154,7 +173,7 @@ var MonitoringConsole = (function() {
 						pages[id] = page; // override or add the entry in pages from local storage
 					}
 				} else {
-					let page = createPage('Home');
+					let page = doCreate('Home');
 					pages[page.id] = page;
 					currentPageId = page.id;
 				}
@@ -166,22 +185,12 @@ var MonitoringConsole = (function() {
 			 * While name can be changed later on the ID is fixed.
 			 */
 			create: function(name) {
-				if (!name)
-					throw "New page must have a unique name";
-				if (name === 'options')
-					throw "Illegal name for a page: " + name;
-				var id = MonitoringConsoleUtils.getPageId(name);
-				if (pages[id])
-					throw "A page with name "+name+" already exist";
-				let page = {
-					id: id,
-					name: name,
-					configs: {},
-					numberOfColumns: 1,
-				};
-				pages[page.id] = page;
-				currentPageId = page.id;
-				return page;
+				return doCreate(name);
+			},
+			
+			rename: function(name) {
+				pages[currentPageId].name = name;
+				doStore();
 			},
 			
 			/**
@@ -226,10 +235,10 @@ var MonitoringConsole = (function() {
 				}
 			},
 			
-			configure: function(configUpdate) {
-				let selected = Object.values(pages[currentPageId].configs)
-					.filter(config => config.selected);
-				
+			configure: function(configUpdate, series) {
+				let selected = series
+					? [pages[currentPageId].configs[series]]
+					: Object.values(pages[currentPageId].configs).filter(config => config.selected);
 				selected.forEach(config => configUpdate.call(window, config));
 				doStore();
 				return selected;
@@ -357,7 +366,8 @@ var MonitoringConsole = (function() {
 							xAxes: [{
 								type: 'time',
 								gridLines: {
-									color: 'rgb(120,120,120)',
+									color: 'rgba(100,100,100,0.3)',
+									lineWidth: 0.5,
 								},
 								time: {
 									minUnit: 'second',
@@ -372,7 +382,8 @@ var MonitoringConsole = (function() {
 							yAxes: [{
 								display: true,
 								gridLines: {
-									color: 'rgb(120,120,120)',
+									color: 'rgba(100,100,100,0.7)',
+									lineWidth: 0.5,
 								},
 								ticks: {
 									beginAtZero: config.options.beginAtZero,
@@ -404,8 +415,10 @@ var MonitoringConsole = (function() {
 			
 			update: function(config) {
 				let chart = charts[config.series];
-				syncOptions(config, chart);
-				chart.update();
+				if (chart) {
+					syncOptions(config, chart);
+					chart.update();
+				}
 			},
 		};
 	})();
@@ -483,7 +496,7 @@ var MonitoringConsole = (function() {
 					let update = { config: config, chart: function() {
 						return Charts.getOrCreate(config);
 					}};
-					$.getJSON('api/series/' + config.series + '/statistics', function(data) {
+					$.getJSON('api/series/data/' + config.series + '/', function(data) {
 						update.data = data;
 						onDataUpdate(update);
 					}).fail(function(jqXHR, textStatus, errorThrown) { 
@@ -520,15 +533,15 @@ var MonitoringConsole = (function() {
 		Page: {
 			
 			id: () => Pages.current().id,
-			title: () => Pages.current().title,
+			name: () => Pages.current().name,
 			isEmpty: () => (Object.keys(Pages.current().configs).length === 0),
+			rename: Pages.rename,
 			
 			create: function(name) {
 				Pages.create(name);
 				Charts.clear();
 				return Pages.layout();
 			},
-			
 			erase: function() {
 				if (Pages.erase()) {
 					Charts.clear();
@@ -572,6 +585,11 @@ var MonitoringConsole = (function() {
 			 * @param {number} numberOfColumns - the number of columns the charts should be arrange in
 			 */
 			rearrange: Pages.layout,
+			
+			configure: function(series, configUpdate) {
+				Pages.configure(configUpdate, series).forEach(Charts.update);
+				return Pages.layout();
+			},
 			
 			/**
 			 * API for the set of selected charts within the active page.
