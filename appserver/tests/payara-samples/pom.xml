@@ -14,7 +14,7 @@
     </parent>
 
     <groupId>fish.payara.samples</groupId>
-    <artifactId>parent-aggregator</artifactId>
+    <artifactId>payara-samples-aggregator</artifactId>
     <packaging>pom</packaging>
 
     <name>Payara Samples - root</name>
