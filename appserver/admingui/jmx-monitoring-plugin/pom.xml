@@ -43,8 +43,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-    <artifactId>admingui</artifactId>
     <groupId>fish.payara.server.internal.admingui</groupId>
+    <artifactId>admingui</artifactId>
     <version>5.194-SNAPSHOT</version>
   </parent>
 
