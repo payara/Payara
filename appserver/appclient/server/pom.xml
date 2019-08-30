@@ -49,7 +49,6 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.server.internal.appclient</groupId>
     <artifactId>server</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish App Client Server-side Modules</name>  

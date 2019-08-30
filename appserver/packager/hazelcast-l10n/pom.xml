@@ -48,7 +48,6 @@
         <artifactId>packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>hazelcast-l10n</artifactId>
     <name>Hazelcast Localization Package</name>
     <packaging>distribution-fragment</packaging>

@@ -45,7 +45,6 @@
         <artifactId>rest-monitoring-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>rest-monitoring-service</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Rest Monitoring Service</name>

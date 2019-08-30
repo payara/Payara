@@ -46,7 +46,6 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.internal.ejb</groupId>
     <artifactId>ejb-http-remoting</artifactId>
     <packaging>pom</packaging>
     

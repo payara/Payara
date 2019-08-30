@@ -45,7 +45,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>jmx-monitoring</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JMX Monitoring</name>

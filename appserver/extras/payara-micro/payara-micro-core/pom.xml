@@ -45,7 +45,6 @@
         <artifactId>payara-micro-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>payara-micro-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro Core</name>

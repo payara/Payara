@@ -48,7 +48,6 @@
         <artifactId>distributions</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.distributions</groupId>
     <artifactId>payara-web-ml</artifactId>
     <name>Payara Web Multi-Language Distribution</name>
     <packaging>glassfish-distribution</packaging>

@@ -46,7 +46,6 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>opentracing-repackaged</artifactId>
 
     <name>Repackaged OpenTracing</name>

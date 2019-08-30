@@ -48,7 +48,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.internal.jdbc</groupId>
     <artifactId>jdbc-config</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JDBC Config Module</name>

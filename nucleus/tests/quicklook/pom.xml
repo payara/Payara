@@ -73,8 +73,7 @@ utilities are in the NucleusTestUtils class.
         <artifactId>nucleus-tests</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.server.internal.tests</groupId>
+
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
     <version>5.194-SNAPSHOT</version>

@@ -49,8 +49,7 @@
         <artifactId>distributions</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.distributions</groupId>
+
     <artifactId>payara</artifactId>
     <name>Payara Distribution</name>
     <packaging>glassfish-distribution</packaging>

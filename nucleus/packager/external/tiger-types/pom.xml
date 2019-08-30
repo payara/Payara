@@ -40,7 +40,6 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>tiger-types</artifactId>
 
     <name>Repackaged Tiger-Types</name>

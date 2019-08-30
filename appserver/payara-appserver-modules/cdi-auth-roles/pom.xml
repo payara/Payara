@@ -46,8 +46,7 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+
     <artifactId>cdi-auth-roles</artifactId>
     
     <packaging>glassfish-jar</packaging>

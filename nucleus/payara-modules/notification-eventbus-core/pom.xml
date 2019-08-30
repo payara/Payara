@@ -45,7 +45,6 @@
         <artifactId>payara-nucleus-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.payara-modules</groupId>
     <artifactId>notification-eventbus-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Eventbus Notification Implementation</name>

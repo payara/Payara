@@ -51,7 +51,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.tests</groupId>
     <artifactId>embedded-web-war</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Embedded Web war test</name>

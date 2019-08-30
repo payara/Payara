@@ -49,7 +49,6 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.internal.test-utils</groupId>
     <artifactId>utils-ng</artifactId>
     <name>nucleus.tests.utils-ng</name>
 

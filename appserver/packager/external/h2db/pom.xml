@@ -48,7 +48,6 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>h2db-repackaged</artifactId>
     <packaging>distribution-fragment</packaging>
     <name>H2DB to be bundled into Payara</name>

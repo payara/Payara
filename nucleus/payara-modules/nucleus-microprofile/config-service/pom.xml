@@ -45,8 +45,7 @@
         <artifactId>nucleus-microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.server.internal.payara-modules</groupId>
+
     <artifactId>microprofile-config-service</artifactId>
     <name>Microprofile Config Service</name>
     

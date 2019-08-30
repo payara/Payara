@@ -51,7 +51,6 @@
         <version>5.194-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-all</artifactId>
     <name>Embedded Payara All-In-One</name>
 
