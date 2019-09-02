@@ -45,7 +45,7 @@
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-fault-tolerance</artifactId>
     <name>Microprofile - Fault Tolerance</name>
     <description>Implementation of MicroProfile Fault Tolerance API</description>

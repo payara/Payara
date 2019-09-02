@@ -56,7 +56,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.payara-appserver-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>

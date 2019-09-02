@@ -48,7 +48,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-jwt-auth</artifactId>
     <name>Microprofile - JWT</name>
 

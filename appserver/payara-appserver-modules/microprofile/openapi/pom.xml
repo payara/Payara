@@ -47,7 +47,7 @@
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.server.payara-appserver-modules</groupId>
+    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-openapi</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -66,7 +66,7 @@
             <version>${microprofile-openapi.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.payara-appserver-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-common</artifactId>
             <version>${project.version}</version>
         </dependency>
