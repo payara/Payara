@@ -38,6 +38,6 @@
 # holder.
 #
 
-# "Portions Copyright [2016] [Payara Foundation]"
+# "Portions Copyright [2016-2019] [Payara Foundation]"
 
 Fragment-Host: fish.payara.server.internal.admingui.console-jca-plugin; bundle-version=${project.osgi.version}
