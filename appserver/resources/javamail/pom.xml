@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>resources</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>javamail</artifactId>

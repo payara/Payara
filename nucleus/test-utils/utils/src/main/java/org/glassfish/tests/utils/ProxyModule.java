@@ -37,23 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.tests.utils;
 
 import com.sun.enterprise.module.*;
-import com.sun.enterprise.module.Module;
 import java.util.List;
 import java.io.PrintStream;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: Nov 19, 2008
- * Time: 11:29:13 PM
- * To change this template use File | Settings | File Templates.
+ * @author dochez
+ * @since Nov 19, 2008
  */
-public class ProxyModule implements Module {
+public class ProxyModule implements HK2Module {
 
     final ClassLoader classLoader;
     final ModuleDefinition moduleDef;
@@ -115,15 +111,15 @@ public class ProxyModule implements Module {
         return classLoader;
     }
 
-    public List<Module> getImports() {
+    public List<HK2Module> getImports() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void addImport(Module module) {
+    public void addImport(HK2Module module) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Module addImport(ModuleDependency dependency) {
+    public HK2Module addImport(ModuleDependency dependency) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

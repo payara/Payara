@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!--
   External repackaging modules.
@@ -51,7 +52,7 @@
     <parent>
       <groupId>fish.payara</groupId>
       <artifactId>payara-nucleus-parent</artifactId>
-      <version>5.193-SNAPSHOT</version>
+      <version>5.194-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
@@ -72,6 +73,7 @@
         <module>j-interop</module>
 	<module>antlr</module>
         <module>opentracing-repackaged</module>
+        <module>tiger-types</module>
     </modules>
     <build>
         <plugins>

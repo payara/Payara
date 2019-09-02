@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>nucleus-common</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.flashlight</groupId>
@@ -109,10 +109,6 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>asm-repackaged</artifactId>
         </dependency>
     </dependencies>
     <build>

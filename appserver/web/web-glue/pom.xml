@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.web</groupId>
         <artifactId>web</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
     <artifactId>web-glue</artifactId>

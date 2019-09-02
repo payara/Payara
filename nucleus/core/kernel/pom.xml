@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>kernel</artifactId>
@@ -258,7 +258,11 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
         </dependency>
-        
+        <dependency>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>tiger-types</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     
     <profiles>
