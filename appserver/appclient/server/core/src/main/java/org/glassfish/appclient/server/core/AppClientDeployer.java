@@ -159,7 +159,7 @@ public class AppClientDeployer
     public static final Attributes.Name GLASSFISH_APP_NAME =
             new Attributes.Name("GlassFish-App-Name");
 
-    private static final String GF_CLIENT_MODULE_NAME = "fish.payara.server.internal.appclient.gf-client-module";
+    private static final String GF_CLIENT_MODULE_NAME = "fish.payara.server.appclient.gf-client-module";
 
     /** Save the helper across phases in the deployment context's appProps */
     public static final String HELPER_KEY_NAME = "org.glassfish.appclient.server.core.helper";
