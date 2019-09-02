@@ -120,7 +120,7 @@
                          immediate="#{true}" multiple="#{true}" rows="$int{4}"
                          labels="$pageSession{virtualServersAvailable}" >
                 <!beforeCreate
-                    getVsForDeployment(result="#{pageSession.virtualServersList}");
+                    getVsForDeployment(targetConfig="#{pageSession.configName}" result="#{pageSession.virtualServersList}");
                     getListBoxOptions(
                     availableList="#{pageSession.virtualServersList}",
                     selectedCommaString="#{pageSession.valueMap['virtualServers']}",
