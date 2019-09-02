@@ -38,4 +38,4 @@
 # holder.
 #
 
--exportcontents: org.glassfish.cluster.admingui; version=${project.osgi.version}
+-exportcontents: org.glassfish.cluster.admingui; fish.payara.cluster.admingui; version=${project.osgi.version}
