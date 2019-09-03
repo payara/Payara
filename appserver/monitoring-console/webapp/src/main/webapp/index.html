@@ -48,7 +48,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=e"></script>
+    <script src="monitoring-console.js?x=f"></script>
     <link href="monitoring-console.css?x=e" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
@@ -237,7 +237,7 @@ MonitoringConsole.getSeries(function(names) {
 	var lastNs;
     var options = $("#options");
     $.each(names, function() {
-        var key = this.replace(/ /g, ',');
+        var key = this; //.replace(/ /g, ',');
         var ns =  this.substring(3, this.indexOf(' '));
         var $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
         if (ns == lastNs) {
@@ -370,7 +370,7 @@ function renderChartOptions() {
             var instancePanel = $("#panelCfgInstances");
             instancePanel.empty();
             $.getJSON("api/instances/", function(instances) {
-            	var select = $('<select />', {multiple: true});
+            	var select = $('<select />', {id: 'cfgInstances', multiple: true});
             	for (var i = 0; i < instances.length; i++) {
             		select.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
             	}

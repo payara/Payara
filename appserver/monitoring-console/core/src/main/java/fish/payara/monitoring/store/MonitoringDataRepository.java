@@ -53,7 +53,7 @@ public interface MonitoringDataRepository {
 
     Iterable<SeriesDataset> selectAllSeries();
 
-    List<SeriesDataset> selectSeries(Series series);
+    List<SeriesDataset> selectSeries(Series series, String... instances);
 
     Set<String> instances();
 }

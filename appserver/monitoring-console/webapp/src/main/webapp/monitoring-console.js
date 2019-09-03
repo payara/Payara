@@ -492,17 +492,40 @@ var MonitoringConsole = (function() {
 		init: function(onDataUpdate) {
 			Pages.load();
 			Interval.init(function() {
-				Object.values(Pages.current().configs).forEach(function(config) {
-					let update = { config: config, chart: function() {
-						return Charts.getOrCreate(config);
-					}};
-					$.getJSON('api/series/data/' + config.series + '/', function(data) {
-						update.data = data;
-						onDataUpdate(update);
-					}).fail(function(jqXHR, textStatus, errorThrown) { 
-						onDataUpdate(update); 
+				let configs = Pages.current().configs;
+				let payload = {
+				};
+				let instances = $('#cfgInstances').val();
+				payload.series = Object.keys(configs).map(function(series) { 
+					return { 
+						series: series,
+						instances: instances
+					}; 
+				});
+				let request = $.ajax({
+					url: 'api/series/data/',
+					type: 'POST',
+					data: JSON.stringify(payload),
+					contentType:"application/json; charset=utf-8",
+					dataType:"json",
+				});
+				request.done(function(response) {
+					Object.values(configs).forEach(function(config) {
+						onDataUpdate({
+							config: config,
+							data: response[config.series],
+							chart: () => Charts.getOrCreate(config),
+						});
 					});
-				});				
+				});
+				request.fail(function(jqXHR, textStatus) {
+					Object.values(configs).forEach(function(config) {
+						onDataUpdate({
+							config: config,
+							chart: () => Charts.getOrCreate(config),
+						});
+					});
+				});
 			});
 			Interval.resume();
 			return Pages.layout();

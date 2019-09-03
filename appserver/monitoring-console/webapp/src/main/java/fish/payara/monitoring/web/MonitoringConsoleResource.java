@@ -41,20 +41,23 @@ package fish.payara.monitoring.web;
 
 import static java.util.stream.StreamSupport.stream;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
 
 @Path("/")
@@ -68,20 +71,23 @@ public class MonitoringConsoleResource {
 
     @GET
     @Path("/series/data/{series}/")
-    public SeriesStatistics[] getSeries(@PathParam("series") String series) {
-        return SeriesStatistics.from(getDataStore().selectSeries(new Series(series)));
+    public SeriesResponse[] getSeries(@PathParam("series") String series) {
+        return SeriesResponse.from(getDataStore().selectSeries(new Series(series)));
     }
 
-    //TODO make this into one API receiving a JSON describing the query
-    
-    @GET
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
-    public List<SeriesStatistics[]> querySeries(@QueryParam("q") String query) {
-        List<SeriesStatistics[]> matches = new ArrayList<>();
-        for (String series : query.split("|")) {
-            matches.add(SeriesStatistics.from(getDataStore().selectSeries(new Series(series))));
+    public Map<Series, SeriesResponse[]> querySeries(Query query) {
+        Map<Series, SeriesResponse[]> res = new HashMap<>();
+        for (SeriesRequest seriesRequest : query.series) {
+            Series key = new Series(seriesRequest.series);
+            List<SeriesDataset> value = getDataStore().selectSeries(key, seriesRequest.instances);
+            if (value != null && !value.isEmpty()) {
+                res.put(key, SeriesResponse.from(value));
+            }
         }
-        return matches;
+        return res;
     }
 
     @GET
