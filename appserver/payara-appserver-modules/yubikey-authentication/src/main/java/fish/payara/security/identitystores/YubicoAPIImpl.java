@@ -55,8 +55,6 @@ import javax.enterprise.inject.Alternative;
  * @author Mark Wareham
  */
 @ApplicationScoped
-@Alternative
-@Priority(1000)
 public class YubicoAPIImpl implements YubicoAPI {
     
     private static final Logger LOG = Logger.getLogger(YubicoAPIImpl.class.getName());
