@@ -62,8 +62,10 @@ import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -109,6 +111,12 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
     @Inject
     private Domain domain;
 
+    @Inject
+    UnprocessedConfigListener unprocessedListener;
+
+    @Inject
+    ServiceLocator habitat;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
@@ -133,17 +141,16 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
 
         try {
             ConfigSupport.apply(configProxy -> {
-                boolean restart = false;
+                boolean isDynamic = false;
                 if (dynamic != null) {
                     configProxy.setDynamic(dynamic.toString());
+                    isDynamic = dynamic;
                 }
                 if (enabled != null) {
                     configProxy.setEnabled(enabled.toString());
                     if ((dynamic != null && dynamic)
                             || Boolean.valueOf(metricsConfiguration.getDynamic())) {
                         metricsService.resetMetricsEnabledProperty();
-                    } else {
-                        restart = true;
                     }
                 }
                 if (secure != null) {
@@ -152,30 +159,26 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                     if ((dynamic != null && dynamic)
                             || Boolean.valueOf(metricsConfiguration.getDynamic())) {
                         metricsService.resetMetricsSecureProperty();
-                    } else {
-                        restart = true;
                     }
                 }
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
-                    restart = true;
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
-                    restart = true;
                 }
                 if (securityEnabled != null) {
                     configProxy.setSecurityEnabled(securityEnabled.toString());
-                    restart = true;
                 }
                 if (roles != null) {
                     configProxy.setRoles(roles);
-                    restart = true;
                 }
 
-                if (restart) {
+                if(!isDynamic) {
                     actionReport.setMessage("Restart server for change to take effect");
                 }
+
+                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;
             }, metricsConfiguration);
         } catch (TransactionFailure ex) {
@@ -187,6 +190,5 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
             actionReport.getSubActionsReport().clear();
         }
     }
-
 
 }
