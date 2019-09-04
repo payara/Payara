@@ -79,6 +79,10 @@ public class JVMGCStatsProvider {
         this.gcName = gcName;
     }
 
+    public String getGcName() {
+        return gcName;
+    }
+
     /**
      * Gets the total number of collections that have occurred
      * @return a {@link CountStatistic} with the number of collections
