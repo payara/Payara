@@ -167,37 +167,37 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void subFirstHasTag() {
-        assertDataPoint("sub=one subFirst", 4L);
+        assertDataPoint("sub:one subFirst", 4L);
     }
 
     @Test
     public void subChainedHasTag() {
-        assertDataPoint("sub=one subChained", 5L);
+        assertDataPoint("sub:one subChained", 5L);
     }
 
     @Test
     public void subRestartedHasTag() {
-        assertDataPoint("sub=one subRestarted", 6L);
+        assertDataPoint("sub:one subRestarted", 6L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTag() {
-        assertDataPoint("sub=two resubbed", 7L);
+        assertDataPoint("sub:two resubbed", 7L);
     }
 
     @Test
     public void differntTagDoesNotReplaceExistingTag() {
-        assertDataPoint("sub=two subsub=three doubleTagged", 9L);
+        assertDataPoint("sub:two subsub:three doubleTagged", 9L);
     }
 
     @Test
     public void sameSubTagDoesReplaceExistingSubTag() {
-        assertDataPoint("sub=two subsub=four doubleTaggedReplaced", 10L);
+        assertDataPoint("sub:two subsub:four doubleTaggedReplaced", 10L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTagFromThatTagOn() {
-        assertDataPoint("sub=five reset", 11L);
+        assertDataPoint("sub:five reset", 11L);
     }
 
     @Test
@@ -292,29 +292,29 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void objectUsesCurrentContext() {
-        assertDataPoint("type=obj entity=SomeObject length", 10L);
-        assertDataPoint("type=obj entity=SomeObject mIsAt", 2L);
+        assertDataPoint("type:obj entity:SomeObject length", 10L);
+        assertDataPoint("type:obj entity:SomeObject mIsAt", 2L);
     }
 
     @Test
     public void objectsRunsConsumerForAllItemsInCollectionWhileUsingTheCurrentContext() {
-        assertDataPoint("type=obj entity=Foo length", 3L);
-        assertDataPoint("type=obj entity=Bar length", 3L);
+        assertDataPoint("type:obj entity:Foo length", 3L);
+        assertDataPoint("type:obj entity:Bar length", 3L);
     }
 
     @Test
     public void nullOrEmptyMapsDoNotAddSize() {
-        assertNoDataPoint("type=emptyMapEntry size");
+        assertNoDataPoint("type:emptyMapEntry size");
     }
 
     @Test
     public void nonEmptyMapsDoAddSize() {
-        assertDataPoint("type=mapEntry size", 1L);
+        assertDataPoint("type:mapEntry size", 1L);
     }
 
     @Test
     public void mapEntriesAddEntityTag() {
-        assertDataPoint("type=mapEntry entity=foo valueLength", 3L);
+        assertDataPoint("type:mapEntry entity:foo valueLength", 3L);
     }
 
     private void assertDataPoint(String key, long value) {

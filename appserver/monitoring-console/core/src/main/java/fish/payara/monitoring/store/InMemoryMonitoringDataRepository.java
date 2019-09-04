@@ -40,6 +40,7 @@
 
 package fish.payara.monitoring.store;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -47,8 +48,10 @@ import static java.util.Collections.singletonList;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -105,6 +108,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
+    private final Set<String> instances = ConcurrentHashMap.newKeySet();
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
 
@@ -121,6 +125,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         } else {
             instanceName = "server";
         }
+        instances.add(instanceName);
         if (isDas) {
             if (exchange != null) {
                 MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
@@ -132,8 +137,14 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         }
     }
 
+    @Override
+    public Set<String> instances() {
+        return instances;
+    }
+
     public void addRemoteDatasets(Message<SeriesDatasetsSnapshot> message) {
         String instance = message.getPublishingMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        instances.add(instance);
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {
@@ -224,26 +235,33 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     @Override
-    public List<SeriesDataset> selectSeries(Series series) {
+    public List<SeriesDataset> selectSeries(Series series, String... instances) {
         if (!isDas) {
             return emptyList();
         }
+        Set<String> filter = instances == null || instances.length == 0 
+                ? this.instances
+                : new HashSet<>(asList(instances));
         SeriesDataset localSet = secondsRead.get(series);
         SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
         if (remoteSets == null) {
-            return singletonList(localSet);
+            return filter.contains(localSet.getInstance()) 
+                   ? singletonList(localSet) 
+                   : emptyList();
         }
         long cutOffTime = System.currentTimeMillis() - 30_000;
         List<SeriesDataset> res = new ArrayList<>(remoteSets.length + 1);
-        if (!localSet.isStableZero()) {
+        if (!localSet.isStableZero() && filter.contains(localSet.getInstance())) {
             res.add(localSet);
         }
         for (SeriesDataset remoteSet : remoteSets) {
-            if (remoteSet.lastTime() >= cutOffTime && !remoteSet.isStableZero()) {
+            if (remoteSet.lastTime() >= cutOffTime 
+                    && !remoteSet.isStableZero() 
+                    && filter.contains(remoteSet.getInstance())) {
                 res.add(remoteSet);
             }
         }
-        if (res.isEmpty()) {
+        if (res.isEmpty() && filter.contains(localSet.getInstance())) {
             res.add(localSet);
         }
         return res;

@@ -44,13 +44,13 @@ import java.util.Collection;
 
 import fish.payara.monitoring.model.SeriesDataset;
 
-public final class SeriesStatistics {
+public final class SeriesResponse {
 
-    public static SeriesStatistics[] from(Collection<SeriesDataset> sets) {
-        SeriesStatistics[] stats = new SeriesStatistics[sets.size()];
+    public static SeriesResponse[] from(Collection<SeriesDataset> sets) {
+        SeriesResponse[] stats = new SeriesResponse[sets.size()];
         int i = 0;
         for (SeriesDataset set : sets) {
-            stats[i++] = new SeriesStatistics(set);
+            stats[i++] = new SeriesResponse(set);
         }
         return stats;
     }
@@ -67,7 +67,7 @@ public final class SeriesStatistics {
     public final int stableCount;
     public final long stableSince;
 
-    public SeriesStatistics(SeriesDataset set) {
+    public SeriesResponse(SeriesDataset set) {
         this.instance = set.getInstance();
         this.series = set.getSeries().toString();
         this.points = set.points();
