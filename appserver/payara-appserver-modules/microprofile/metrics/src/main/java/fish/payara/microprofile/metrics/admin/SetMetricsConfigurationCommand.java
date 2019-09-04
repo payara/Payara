@@ -116,9 +116,6 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
 
     @Inject
     ServiceLocator habitat;
-
-    @Inject
-    MetricsServiceConfiguration metricsConfig;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -171,7 +168,7 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                 return configProxy;
             }, metricsConfiguration);
             
-            if(metricsConfig != null && !Boolean.valueOf(metricsConfig.getDynamic())) {
+            if(metricsConfiguration != null && !Boolean.valueOf(metricsConfiguration.getDynamic())) {
                 actionReport.setMessage("Restart server for change to take effect");
             }
         } catch (TransactionFailure ex) {
