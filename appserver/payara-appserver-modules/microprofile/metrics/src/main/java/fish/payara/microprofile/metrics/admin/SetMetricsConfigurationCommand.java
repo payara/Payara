@@ -117,6 +117,9 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
     @Inject
     ServiceLocator habitat;
 
+    @Inject
+    MetricsServiceConfiguration metricsConfig;
+    
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
@@ -141,25 +144,15 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
 
         try {
             ConfigSupport.apply(configProxy -> {
-                boolean isDynamic = false;
                 if (dynamic != null) {
                     configProxy.setDynamic(dynamic.toString());
-                    isDynamic = dynamic;
                 }
                 if (enabled != null) {
                     configProxy.setEnabled(enabled.toString());
-                    if ((dynamic != null && dynamic)
-                            || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsEnabledProperty();
-                    }
                 }
                 if (secure != null) {
                     actionReport.setMessage("--secureMetrics option is deprecated, replaced by --securityEnabled option.");
                     configProxy.setSecureMetrics(secure.toString());
-                    if ((dynamic != null && dynamic)
-                            || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsSecureProperty();
-                    }
                 }
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
@@ -174,13 +167,13 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                     configProxy.setRoles(roles);
                 }
 
-                if(!isDynamic) {
-                    actionReport.setMessage("Restart server for change to take effect");
-                }
-
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;
             }, metricsConfiguration);
+            
+            if(metricsConfig != null && !Boolean.valueOf(metricsConfig.getDynamic())) {
+                actionReport.setMessage("Restart server for change to take effect");
+            }
         } catch (TransactionFailure ex) {
             actionReport.failure(LOGGER, "Failed to update Metrics configuration", ex);
         }
