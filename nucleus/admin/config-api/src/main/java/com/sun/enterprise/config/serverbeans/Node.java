@@ -443,7 +443,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             //only create-node-ssh and update-node-ssh should be changing the type to SSH
             instance.setType(type);
 
-            if (type.equals("CONFIG"))
+            if (type.equals("CONFIG") || type.equals("HIDDEN"))
                 return;
 
             if (type.equals("DOCKER")) {

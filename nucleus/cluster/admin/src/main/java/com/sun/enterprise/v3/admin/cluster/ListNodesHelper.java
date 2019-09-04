@@ -81,15 +81,14 @@ public class ListNodesHelper {
         boolean firstNode = true;
 
         for (Node n : nodeList) {
-
-            String name = n.getName();
             String nodeType = n.getType();
-            String host = n.getNodeHost();
-            String installDir = n.getInstallDir();
-
-            if (!listType.equals(nodeType) && !listType.equals("ALL")) {
+            if ((!listType.equals(nodeType) && !listType.equals("ALL")) || nodeType.equals("HIDDEN")) {
                 continue;
             }
+
+            String name = n.getName();
+            String host = n.getNodeHost();
+            String installDir = n.getInstallDir();
 
             if (firstNode) {
                 firstNode = false;

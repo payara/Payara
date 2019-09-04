@@ -79,7 +79,7 @@
     <!beforeCreate
         setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/nodes");
         setPageSessionAttribute(key="childType" value="node");
-        gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
+        py.getNodesList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
         foreach(var="oneNode" list="#{requestScope.listOfRows}"){
             mapPut(map="#{oneNode}" key="hasPing" value="#{false}");
             mapPut(map="#{oneNode}" key="cmd" value="");
