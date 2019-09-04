@@ -61,9 +61,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 /**
@@ -99,13 +101,16 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     private final AtomicInteger checksDone = new AtomicInteger();
     private final AtomicInteger checksFailed = new AtomicInteger();
     private final AtomicBoolean inProcess = new AtomicBoolean(false);
+    private volatile HealthCheckResultStatus mostRecentCumulativeStatus;
 
     public final HealthCheckResult doCheck() {
         if (!getOptions().isEnabled() || inProcess.compareAndSet(false, true)) {
             return null;
         }
         try {
-            return doCheckInternal();
+            HealthCheckResult result = doCheckInternal();
+            mostRecentCumulativeStatus = result.getCumulativeStatus();
+            return result;
         } catch (Exception ex) {
             checksFailed.incrementAndGet();
             throw ex;
@@ -117,6 +122,10 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     protected abstract HealthCheckResult doCheckInternal();
     public abstract O constructOptions(C c);
+
+    public HealthCheckResultStatus getMostRecentCumulativeStatus() {
+        return mostRecentCumulativeStatus;
+    }
 
     public boolean isInProgress() {
         return inProcess.get();

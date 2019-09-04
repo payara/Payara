@@ -40,8 +40,6 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
@@ -60,24 +58,9 @@ import java.lang.management.MemoryUsage;
 @Service(name = "healthcheck-heap")
 @RunLevel(StartupRunLevel.VAL)
 public class HeapMemoryUsageHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker>
-        implements MonitoringDataSource {
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
 
     private volatile MemoryUsage heap;
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady() && heap != null) {
-            collector.in("health-check").type("checker").entity("HEAP")
-                .collect("checksDone", getChecksDone())
-                .collectNonZero("checksFailed", getChecksFailed())
-                .collectNonZero("initBytes", heap.getInit())
-                .collectNonZero("usedBytes", heap.getUsed())
-                .collectNonZero("committedBytes", heap.getCommitted())
-                .collectNonZero("maxBytes", heap.getMax())
-                .collectNonZero("usedPercentage", calculatePercentage(heap));
-        }
-    }
 
     @PostConstruct
     void postConstruct() {

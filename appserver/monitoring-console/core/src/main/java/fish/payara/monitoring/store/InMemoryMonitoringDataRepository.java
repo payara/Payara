@@ -245,13 +245,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         SeriesDataset localSet = secondsRead.get(series);
         SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
         if (remoteSets == null) {
-            return filter.contains(localSet.getInstance()) 
+            return localSet != null && filter.contains(localSet.getInstance()) 
                    ? singletonList(localSet) 
                    : emptyList();
         }
         long cutOffTime = System.currentTimeMillis() - 30_000;
         List<SeriesDataset> res = new ArrayList<>(remoteSets.length + 1);
-        if (!localSet.isStableZero() && filter.contains(localSet.getInstance())) {
+        if (localSet != null && !localSet.isStableZero() && filter.contains(localSet.getInstance())) {
             res.add(localSet);
         }
         for (SeriesDataset remoteSet : remoteSets) {
@@ -261,7 +261,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
                 res.add(remoteSet);
             }
         }
-        if (res.isEmpty() && filter.contains(localSet.getInstance())) {
+        if (res.isEmpty() && localSet != null && filter.contains(localSet.getInstance())) {
             res.add(localSet);
         }
         return res;

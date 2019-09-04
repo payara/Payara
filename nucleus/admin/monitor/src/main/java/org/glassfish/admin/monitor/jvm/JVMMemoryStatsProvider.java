@@ -43,6 +43,8 @@ package org.glassfish.admin.monitor.jvm;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
 import org.glassfish.gmbal.AMXMetadata;
@@ -63,6 +65,8 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Memory Statistics" )
 public class JVMMemoryStatsProvider {
     private final MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+
+    private final CountStatisticImpl heapUsage = new CountStatisticImpl("HeapUsage", "%", "Heap usage in percent");
 
     private final CountStatisticImpl committedHeap = new CountStatisticImpl(
             "CommittedHeapSize", "bytes",
@@ -189,5 +193,13 @@ public class JVMMemoryStatsProvider {
     public CountStatistic getObjectPendingFinalizationCount() {
         objectPendingFinalizationCount.setCount(memBean.getObjectPendingFinalizationCount());
         return objectPendingFinalizationCount;
+    }
+
+    @ManagedAttribute(id="heapusage")
+    @Description( "Percent of total heap that is already used" )
+    public CountStatistic getHeapUsage() {
+        MemoryUsage usage = memBean.getHeapMemoryUsage();
+        heapUsage.setCount(usage.getMax() == 0L ? 0L : Math.round(100d * usage.getUsed() / usage.getMax()));
+        return heapUsage;
     }
 }

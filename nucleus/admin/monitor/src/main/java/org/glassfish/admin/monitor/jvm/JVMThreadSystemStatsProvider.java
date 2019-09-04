@@ -67,7 +67,12 @@ import org.glassfish.gmbal.ManagedObject;
 public class JVMThreadSystemStatsProvider {
     
     private final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-    
+
+    private volatile long nanotimeBefore = System.nanoTime();
+    private volatile long totalCpuNanosBefore = 0;
+
+    private final CountStatisticImpl cpuUsage = new CountStatisticImpl("CpuUsage", "%", "CPU usage in percent");
+
     private final StringStatisticImpl allThreadIds = new StringStatisticImpl(
             "LiveThreads", "String", "Returns all live thread IDs" );
     private final CountStatisticImpl currentThreadCpuTime = new CountStatisticImpl(
@@ -226,5 +231,25 @@ public class JVMThreadSystemStatsProvider {
     public CountStatistic getTotalStartedThreadCount() {
         totalStartedThreadCount.setCount(threadBean.getTotalStartedThreadCount());
         return totalStartedThreadCount;
+    }
+
+    @ManagedAttribute(id="cpuusage")
+    @Description( "Returns the CPU usage in percent." )
+    public CountStatistic getCpuUsage() {
+        long totalCpuNanos = 0L;
+        for (long id : threadBean.getAllThreadIds()) {
+            final long threadCpuTime = threadBean.getThreadCpuTime(id);
+            if (threadCpuTime >= 0L) {
+                totalCpuNanos += threadCpuTime;
+            }
+        }
+        long nanotime = System.nanoTime();
+        long timeDelta = nanotime - nanotimeBefore;
+        long cpuTimeDelta = totalCpuNanos - totalCpuNanosBefore;
+        long percentage = Math.max(0L, Math.min(100L, 100L * cpuTimeDelta / timeDelta));
+        cpuUsage.setCount(percentage);
+        nanotimeBefore = nanotime;
+        totalCpuNanosBefore = totalCpuNanos;
+        return cpuUsage;
     }
 }

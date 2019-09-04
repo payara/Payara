@@ -40,8 +40,6 @@
 package fish.payara.nucleus.healthcheck.stuck;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
@@ -51,7 +49,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -67,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "healthcheck-stuck")
 @RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends
-        BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker> implements MonitoringDataSource {
+        BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker> {
 
     @Inject
     StuckThreadsStore stuckThreadsStore;
@@ -76,20 +73,6 @@ public class StuckThreadsHealthCheck extends
     StuckThreadsChecker checker;
 
     private final Map<ThreadInfo, Long> stuckThreads = new ConcurrentHashMap<>();
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            MonitoringDataCollector stuckCollector = collector.in("health-check").type("checker").entity("STUCK")
-                    .collect("checksDone", getChecksDone())
-                    .collectNonZero("checksFailed", getChecksFailed())
-                    .collectNonZero("size", stuckThreads.size());
-            for (Entry<ThreadInfo, Long> stuckThread : stuckThreads.entrySet()) {
-                stuckCollector.tag("thread", stuckThread.getKey().getThreadName())
-                    .collect("timeHeld", stuckThread.getValue());
-            }
-        }
-    }
 
     @PostConstruct
     void postConstruct() {

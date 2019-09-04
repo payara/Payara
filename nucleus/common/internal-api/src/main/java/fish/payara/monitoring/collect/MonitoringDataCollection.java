@@ -70,7 +70,7 @@ public final class MonitoringDataCollection {
     public static void collectRange(MonitoringDataCollector collector, RangeStatistic range) {
         collector
             .collect(range.getName(), range.getCurrent())
-            .tag("name", range.getName())
+            .group(range.getName())
                 .collect("lowWaterMark", range.getLowWaterMark())
                 .collect("highWaterMark", range.getHighWaterMark());
     }

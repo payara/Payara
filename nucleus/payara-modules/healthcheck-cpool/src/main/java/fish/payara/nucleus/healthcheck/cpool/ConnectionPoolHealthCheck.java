@@ -45,8 +45,6 @@ import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
@@ -75,8 +73,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service(name = "healthcheck-cpool")
 @RunLevel(10)
 public class ConnectionPoolHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
-        implements MonitoringDataSource {
+        extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker> {
 
     @Inject
     private Domain domain;
@@ -89,28 +86,12 @@ public class ConnectionPoolHealthCheck
 
     private final Map<String, PoolStatus> status = new ConcurrentHashMap<>();
 
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            collector.in("health-check").type("checker").entity("CONP")
-                .collect("checksDone", getChecksDone())
-                .collectNonZero("checksFailed", getChecksFailed())
-                .collectObjects(status.values(), ConnectionPoolHealthCheck::collectPoolStatus);
-        }
-    }
-
-    private static void collectPoolStatus(MonitoringDataCollector collector, PoolStatus status) {
-        PoolInfo info = status.getPoolInfo();
-        collector.tag("app", info.getApplicationName()).tag("pool", info.getName())
-            .collect("freeConnections", status.getNumConnFree())
-            .collect("usedConnections", status.getNumConnUsed());
-    }
-
     @PostConstruct
     void postConstruct() {
         postConstruct(this, ConnectionPoolChecker.class);
     }
 
+    @Override
     public HealthCheckConnectionPoolExecutionOptions constructOptions(ConnectionPoolChecker checker) {
         return new HealthCheckConnectionPoolExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),

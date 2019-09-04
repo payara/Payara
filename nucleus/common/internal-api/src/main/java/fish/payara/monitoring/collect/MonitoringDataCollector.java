@@ -178,10 +178,9 @@ public interface MonitoringDataCollector {
     default <K, V> MonitoringDataCollector collectAll(Map<K, V> entries, Function<K, CharSequence> entryTag,
             BiConsumer<MonitoringDataCollector, V> collect) {
         if (entries != null) {
-            collectNonZero("size", entries.size());
             for (Entry<K,V> entry : entries.entrySet()) {
                 K key = entry.getKey();
-                collect.accept(entity(entryTag.apply(key)), entry.getValue());
+                collect.accept(group(entryTag.apply(key)), entry.getValue());
             }
         }
         return this;
@@ -208,10 +207,6 @@ public interface MonitoringDataCollector {
         return this;
     }
 
-    default MonitoringDataCollector app(CharSequence appName) {
-        return tag("app", appName);
-    }
-
     /**
      * Namespaces are used to distinguish data points of different origin.
      * Each origin uses its own namespace. The namespace should be the first (top/right most) tag added.
@@ -230,19 +225,8 @@ public interface MonitoringDataCollector {
      * @param type type of entity or collection of entities that are about to be collected
      * @return A collector with the type context added/set
      */
-    default MonitoringDataCollector type(CharSequence type) {
-        return tag("type", type);
-    }
-
-    /**
-     * The entity tag states the identity that distinguishes values of one entry from another within the same collection
-     * of entries. The entity is usually the third tag added after the namespace and type (if needed).
-     *
-     * @param entity the entity to use, e.g. "log-notifier" (as opposed to "teams-notifier")
-     * @return A collector with the entity context added/set
-     */
-    default MonitoringDataCollector entity(CharSequence entity) {
-        return tag("entity", entity);
+    default MonitoringDataCollector group(CharSequence type) {
+        return tag("group", type);
     }
 
 }

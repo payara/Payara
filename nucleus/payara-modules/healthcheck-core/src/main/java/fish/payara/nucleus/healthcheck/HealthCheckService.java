@@ -42,6 +42,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
@@ -75,6 +76,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -131,28 +133,18 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        rootCollector.in("health-check")
-            .collect("enabled", enabled)
-            .collect("historicalTraceEnabled", historicalTraceEnabled)
-            .collect("historicalTraceStoreSize", historicalTraceStoreSize)
-            .collect("notifiers", notifierExecutionOptionsList == null ? 0 : notifierExecutionOptionsList.size())
-            .collect("checkers", scheduledCheckers == null ? 0 : scheduledCheckers.size())
-            .type("checker").collectAll(registeredTasks, HealthCheckService::collectTask)
-            .type("notifier").collectObjects(notifierExecutionOptionsList, HealthCheckService::collectNotifierOption);
+        MonitoringDataCollector health = rootCollector.in("health");
+        for (Entry<String, HealthCheckTask> task : registeredTasks.entrySet()) {
+            BaseHealthCheck<?,?> check = task.getValue().getCheck();
+            if (check.isReady() && check.getChecksDone() > 0) {
+                HealthCheckResultStatus status = check.getMostRecentCumulativeStatus();
+                if (status != null) {
+                    health.collect(task.getKey(), status.getLevel());
+                }
+            }
+        }
     }
 
-    private static void collectTask(MonitoringDataCollector collector, HealthCheckTask task) {
-        HealthCheckExecutionOptions options = task.getCheck().getOptions();
-        collector
-            .collect("enabled", options.isEnabled())
-            .collectNonZero("interval", options.getUnit().toMillis(options.getTime()));
-    }
-
-    private static void collectNotifierOption(MonitoringDataCollector collector, NotifierExecutionOptions options) {
-        collector.entity(options.getNotifierType().name())
-            .collect("enabled", options.isEnabled())
-            .collect("noisy", options.isNoisy());
-    }
 
     @Override
     public void event(Event event) {
