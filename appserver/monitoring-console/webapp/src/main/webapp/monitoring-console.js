@@ -53,7 +53,7 @@ var MonitoringConsoleUtils = (function() {
 	return {
 		
 		getSpan: function(config, numberOfColumns, currentColumn) {
-			let span = config.position && config.position.span ? config.position.span : 1;
+			let span = config.grid && config.grid.span ? config.grid.span : 1;
 			if (typeof span === 'string') {
 				if (span === 'full') {
 					span = numberOfColumns;
@@ -103,6 +103,14 @@ var MonitoringConsole = (function() {
 	 * Key used in local stage for the pages configuration
 	 */
 	const LOCAL_PAGES_KEY = 'fish.payara.monitoring-console.defaultConfigs';
+	
+	const HOME_PAGE = [
+		{ series: 'ns:jvm HeapUsage', grid: { item: 0, column: 0, span: 1} },
+		{ series: 'ns:jvm CpuUsage', grid: { item: 1, column: 0, span: 1} },
+		{ series: 'ns:jvm ThreadCount', grid: { item: 0, column: 1, span: 1} },
+		{ series: 'ns:web RequestCount', grid: { item: 0, column: 2, span: 1} },
+		{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+	];
 	
 	/**
 	 * Internal API for managing set of pages.
@@ -276,7 +284,7 @@ var MonitoringConsole = (function() {
 					configsByColumn[col] = [];
 				// insert order configs
 				Object.values(configs).forEach(function(config) {
-					let column = config.position && config.position.column ? config.position.column : 0;
+					let column = config.grid && config.grid.column ? config.grid.column : 0;
 					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(config);
 				});
 				// build up rows with columns, occupy spans with empty 
@@ -285,11 +293,11 @@ var MonitoringConsole = (function() {
 					layout[col] = [];
 				for (let col = 0; col < numberOfColumns; col++) {
 					let orderedConfigs = configsByColumn[col].sort(function (a, b) {
-						if (!a.position || !a.position.item)
+						if (!a.grid || !a.grid.item)
 							return -1;
-						if (!b.position || !b.position.item)
+						if (!b.grid || !b.grid.item)
 							return 1;
-						return a.position.item - b.position.item;
+						return a.grid.item - b.grid.item;
 					});
 					orderedConfigs.forEach(function(config) {
 						let span = MonitoringConsoleUtils.getSpan(config, numberOfColumns, col);
@@ -297,9 +305,9 @@ var MonitoringConsole = (function() {
 						for (let spanX = 0; spanX < span; spanX++) {
 							let column = layout[col + spanX];
 							if (spanX == 0) {
-								if (!config.position)
-									config.position = { column: col, span: span }; // init position
-								config.position.item = column.length; // update item position
+								if (!config.grid)
+									config.grid = { column: col, span: span }; // init grid
+								config.grid.item = column.length; // update item position
 							}
 							for (let spanY = 0; spanY < span; spanY++) {
 								column.push(spanX === 0 && spanY === 0 ? info : null);
@@ -603,7 +611,7 @@ var MonitoringConsole = (function() {
 			
 			/**
 			 * Returns a layout model for the active pages charts and the given number of columns.
-			 * This also updates the position object of the active pages configuration.
+			 * This also updates the grid object of the active pages configuration.
 			 * 
 			 * @param {number} numberOfColumns - the number of columns the charts should be arrange in
 			 */
@@ -655,74 +663,116 @@ var MonitoringConsoleRender = (function() {
         'rgba(255, 159, 64, 1)'
     ];	
 	
+    function createMinimumLineDataset(data, points, lineColor) {
+		var min = data.observedMin;
+		var minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
+		
+		return {
+			data: minPoints,
+			label: ' min ',
+			fill:  false,
+			borderColor: lineColor,
+			borderWidth: 1,
+			borderDash: [2, 2],
+			pointRadius: 0
+		};
+    }
+    
+    function createMaximumLineDataset(data, points, lineColor) {
+    	var max = data.observedMax;
+		var maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
+		
+		return {
+			data: maxPoints,
+			label: ' max ',
+			fill:  false,
+			borderColor: lineColor,
+			borderWidth: 1,
+			pointRadius: 0
+		};
+    }
+    
+    function createAverageLineDataset(data, points, lineColor) {
+		var avg = data.observedSum / data.observedValues;
+		var avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
+		
+		return {
+			data: avgPoints,
+			label: ' avg ',
+			fill:  false,
+			borderColor: lineColor,
+			borderWidth: 1,
+			borderDash: [10, 4],
+			pointRadius: 0
+		};
+    }
+    
+    function createMainLineDataset(data, points, lineColor, bgColor) {
+		return {
+			data: points,
+			label: data.instance,
+			backgroundColor: bgColor,
+			borderColor: lineColor,
+			borderWidth: 1
+		};
+    }
+    
+    function createInstancePoints(points1d) {
+    	if (!points1d)
+    		return [];
+    	let points2d = new Array(points1d.length / 2);
+		for (var i = 0; i < points2d.length; i++) {
+			points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+		}
+		return points2d;
+    }
+    
+    function createInstancePerSecPoints(points1d) {
+    	if (!points1d)
+    		return [];
+    	let points2d = new Array((points1d.length / 2) - 1);
+    	for (var i = 0; i < points2d.length; i++) {
+    		let t0 = points1d[i*2];
+    		let t1 = points1d[i*2+2];
+    		let y0 = points1d[i*2+1];
+    		let y1 = points1d[i*2+3];
+    		let dt = t1 - t0;
+    		let dy = y1 - y0;
+    		let y = (dt / 1000) * dy;
+    		points2d[i] = { t: new Date(t1), y: y };
+    	}
+    	return points2d;
+    }
+    
+    function createInstanceDatasets(config, data, lineColor, bgColor) {
+    	if (config.options.perSec) {
+    		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
+    	}
+    	let points = createInstancePoints(data.points)
+    	let datasets = [];
+    	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
+    	if (points.length > 0 && config.options.drawAvgLine) {
+			datasets.push(createAverageLineDataset(data, points, lineColor));
+		}
+		if (points.length > 0 && config.options.drawMinLine && data.observedMin > 0) {
+			datasets.push(createMinimumLineDataset(data, points, lineColor));
+		}
+		if (points.length > 0 && config.options.drawMaxLine) {
+			datasets.push(createMaximumLineDataset(data, points, lineColor));
+		}
+		return datasets;
+    }
+    
 	return {
 		chart: function(update) {
-			var stats = update.data;
+			var data = update.data;
 			var config = update.config;
 			var chart = update.chart();
 			var datasets = [];
-			for (var j = 0; j < stats.length; j++) {
-				var instanceStats = stats[j];
-				var points = instanceStats.points;
-				var data = [];
-				if (points) {
-					data = new Array(points.length / 2);
-					for (var i = 0; i < data.length; i++) {
-						data[i] = { t: new Date(points[i*2]), y: points[i*2+1] };
-					}
-				}
-				var bgColor = DEFAULT_BG_COLORS[j];
-				var lineColor = DEFAULT_LINE_COLORS[j];
-				datasets.push({
-					data: data,
-					label: instanceStats.instance,
-					backgroundColor: bgColor,
-					borderColor: lineColor,
-					borderWidth: 1
-				});
-				if (data.length > 0 && config.options.drawAvgLine) {
-					var avg = instanceStats.observedSum / instanceStats.observedValues;
-					var avgData = [{t:data[0].t, y:avg}, {t:data[data.length-1].t, y:avg}];
-					
-					datasets.push({
-						data: avgData,
-						label: ' avg ',
-						fill:  false,
-						borderColor: lineColor,
-						borderWidth: 1,
-						borderDash: [10, 4],
-						pointRadius: 0
-					});
-				}
-				if (data.length > 0 && config.options.drawMinLine && instanceStats.observedMin > 0) {
-					var min = instanceStats.observedMin;
-					var minData = [{t:data[0].t, y:min}, {t:data[data.length-1].t, y:min}];
-					
-					datasets.push({
-						data: minData,
-						label: ' min ',
-						fill:  false,
-						borderColor: lineColor,
-						borderWidth: 1,
-						borderDash: [2, 2],
-						pointRadius: 0
-					});
-				}
-				if (data.length > 0 && config.options.drawMaxLine) {
-					var max = instanceStats.observedMax;
-					var minData = [{t:data[0].t, y:max}, {t:data[data.length-1].t, y:max}];
-					
-					datasets.push({
-						data: minData,
-						label: ' max ',
-						fill:  false,
-						borderColor: lineColor,
-						borderWidth: 1,
-						pointRadius: 0
-					});
-				}
+			for (var j = 0; j < data.length; j++) {
+				datasets = datasets.concat(
+						createInstanceDatasets(config, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
 			}
-
 			chart.data.datasets = datasets;
 			chart.update(0);
 		}

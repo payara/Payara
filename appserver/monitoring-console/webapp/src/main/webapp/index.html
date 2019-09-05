@@ -48,8 +48,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=f"></script>
-    <link href="monitoring-console.css?x=e" rel="stylesheet" type="text/css">
+    <script src="monitoring-console.js?x=g"></script>
+    <link href="monitoring-console.css?x=g" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
 
@@ -98,10 +98,10 @@
   <tr><th colspan="2">Layout</th></tr>
   <tr><td colspan="2"></td></tr>
   <tr><td>Span</td>
-     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.span = val; }));" /></td>
+     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.grid.span = val; }));" /></td>
   </tr>
   <tr><td>Column</td>
-     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.position.column = val-1; }));" /></td>
+     <td><input type="range" min="1" max="4" oninput="var val = this.valueAsNumber; renderPage(MonitoringConsole.Page.Selection.configure(function(config) { config.grid.column = val-1; }));" /></td>
   </tr>
   </table>
   
@@ -112,6 +112,7 @@
   <tr><td>Use Bezier Curves</td><td><input type="checkbox" id="cfgDrawCurves" checked="checked" /></td></tr>
   <tr><td>Use Animations</td><td><input type="checkbox" id="cfgDrawAnimations" checked="checked" /></td></tr>
   <tr><td>Label X-Axis at 90°</td><td><input type="checkbox" id="cfgRotateTimeLabels" checked="checked" /></td></tr>
+  <tr><td>Per Second</td><td><input type="checkbox" id="cfgPerSec" /></td></tr>
   <tr><th colspan="2">Chart Options</th></tr>
   <tr><td>Show Average</td><td><input type="checkbox" id="cfgDrawAvgLine" checked="checked" /></td></tr>
   <tr><td>Show Minimum</td><td><input type="checkbox" id="cfgDrawMinLine" checked="checked" /></td></tr>
@@ -120,6 +121,13 @@
 </div>
 
 <script>
+$("#cfgPerSec").on('change', function() {
+    var checked = this.checked;
+    MonitoringConsole.Page.Selection.configure(function(config) {
+        config.options.perSec = checked;
+    });
+});
+
 $("#cfgStartAtZero").on('change', function() {
 	var checked = this.checked;
 	MonitoringConsole.Page.Selection.configure(function(config) {
@@ -328,34 +336,34 @@ function renderChartCaption(cell) {
     var btnLarger = $('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;');
     btnLarger.click(function() {
     	renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
-    		if (config.position.span < 4)
-    			  config.position.span += 1;
+    		if (config.grid.span < 4)
+    			  config.grid.span += 1;
     	}));
     });
     bar.append(btnLarger);
     var btnSmaller = $('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;');
     btnSmaller.click(function() {
         renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
-            if (config.position.span > 1)
-            	config.position.span -= 1;
+            if (config.grid.span > 1)
+            	config.grid.span -= 1;
         }));
     });
     bar.append(btnSmaller);
     var btnRight = $('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;');
     btnRight.click(function() {
         renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
-            if (config.position.column < 4)
-            	config.position.item = undefined;
-            	config.position.column += 1;
+            if (config.grid.column < 4)
+            	config.grid.item = undefined;
+            	config.grid.column += 1;
         }));
     });
     bar.append(btnRight);
     var btnLeft = $('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;');
     btnLeft.click(function() {
         renderPage(MonitoringConsole.Page.configure(cell.series, function(config) {
-            if (config.position.column > 0)
-            	config.position.item = undefined;
-                config.position.column -= 1;
+            if (config.grid.column > 0)
+            	config.grid.item = undefined;
+                config.grid.column -= 1;
         }));
     });
     bar.append(btnLeft);
