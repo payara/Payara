@@ -96,8 +96,8 @@ import org.glassfish.embeddable.GlassFishRuntime;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
- applications to create a full JavaEE runtime environment and deploy deploymentFile
- files.
+ * applications to create a full JavaEE runtime environment and deploy war
+ * files.
  *
  * This class is used to configure and bootstrap a Payara Micro Runtime.
  *
