@@ -1,0 +1,3 @@
+set-metrics-configuration --securityenabled=true
+set-microprofile-healthcheck-configuration --securityenabled=true
+set-openapi-configuration --securityenabled=true
