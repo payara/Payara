@@ -80,4 +80,38 @@ public class PayaraRestApiHandlers {
             GuiUtil.handleException(handlerCtx, ex);
         }
     }
+
+    @Handler(id = "py.getNodeNamesList",
+            input = {
+                    @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+                    @HandlerInput(name = "childType", type = String.class, required = true),
+                    @HandlerInput(name = "skipList", type = List.class, required = false),
+                    @HandlerInput(name = "includeList", type = List.class, required = false),
+                    @HandlerInput(name = "id", type = String.class, defaultValue = "name")},
+            output = {
+                    @HandlerOutput(name = "result", type = List.class)
+            })
+    public static void getNodeNamesList(HandlerContext handlerCtx) {
+        try {
+            String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+            List<Map<String, Object>> allNodes = buildChildEntityList(
+                    parentEndpoint,
+                    (String)handlerCtx.getInputValue("childType"),
+                    (List)handlerCtx.getInputValue("skipList"),
+                    (List)handlerCtx.getInputValue("includeList"),
+                    (String)handlerCtx.getInputValue("id"));
+
+            List<String> nonHiddenNodes = new ArrayList<>();
+            for (Map<String, Object> node : allNodes) {
+                if (!node.get("type").equals("HIDDEN")) {
+                    String name = (String) node.get("name");
+                    nonHiddenNodes.add(name);
+                }
+            }
+
+            handlerCtx.setOutputValue("result", nonHiddenNodes);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+    }
 }

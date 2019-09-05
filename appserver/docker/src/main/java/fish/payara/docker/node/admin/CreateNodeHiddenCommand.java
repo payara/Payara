@@ -2,6 +2,7 @@ package fish.payara.docker.node.admin;
 
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.util.StringUtils;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -42,8 +43,9 @@ public class CreateNodeHiddenCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
+        ActionReport actionReport = adminCommandContext.getActionReport();
         CommandRunner.CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_create-node",
-                adminCommandContext.getActionReport(), adminCommandContext.getSubject());
+                actionReport, adminCommandContext.getSubject());
         ParameterMap commandParameters = new ParameterMap();
 
         commandParameters.add("DEFAULT", name);
@@ -54,5 +56,9 @@ public class CreateNodeHiddenCommand implements AdminCommand {
 
         commandInvocation.parameters(commandParameters);
         commandInvocation.execute();
+
+        if (actionReport.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+            commandInvocation.report().setMessage(name);
+        }
     }
 }
