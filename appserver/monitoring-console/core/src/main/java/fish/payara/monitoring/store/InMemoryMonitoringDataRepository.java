@@ -203,13 +203,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             estimatedTotalBytesMemory += set.estimatedBytesMemory();
         }
         int seriesCount = secondsWrite.size();
-        collector.in("collect")
-            .collect("duration", System.currentTimeMillis() - collectionStart)
-            .collectNonZero("series", seriesCount)
-            .collectNonZero("estimatedTotalBytesMemory", estimatedTotalBytesMemory)
-            .collectNonZero("estimatedAverageBytesMemory", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
-            .collectNonZero("sources", collectedSources)
-            .collectNonZero("failed", failedSources);
+        collector.in("mc")
+            .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
+            .collectNonZero("SeriesCount", seriesCount)
+            .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
+            .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
+            .collectNonZero("SourcesCount", collectedSources)
+            .collectNonZero("FailedCollectionCount", failedSources);
     }
 
     /**

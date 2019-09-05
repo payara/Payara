@@ -115,7 +115,7 @@ public class JVMStatsProviderBootstrap implements PostConstruct, MonitoringDataS
             .collectObject(runtimeStatsProvider, MonitoringDataCollection::collectObject)
             .collectObject(threadSysStatsProvider, MonitoringDataCollection::collectObject);
         for (JVMGCStatsProvider gc : jvmStatsProviderList) {
-            jvm.tag("name", gc.getGcName()).collectObject(gc, MonitoringDataCollection::collectObject);
+            jvm.group(gc.getGcName()).collectObject(gc, MonitoringDataCollection::collectObject);
         }
     }
 }

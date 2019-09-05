@@ -86,12 +86,12 @@ public class EventBus implements EventListener, MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector eventCollector = rootCollector.in("event");
+        MonitoringDataCollector eventCollector = rootCollector.in("topic");
         if (hzCore.isEnabled()) {
             HazelcastInstance hz = hzCore.getInstance();
             for (DistributedObject obj : hz.getDistributedObjects()) {
                 if (TopicService.SERVICE_NAME.equals(obj.getServiceName())) {
-                    eventCollector.group("topic-" + obj.getName())
+                    eventCollector.group(obj.getName())
                         .collectObject(hz.getTopic(obj.getName()).getLocalTopicStats(), LocalTopicStats.class);
                 }
             }

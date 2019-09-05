@@ -193,7 +193,7 @@ public class MetricsService implements EventListener, MonitoringDataSource {
        StringBuilder tag = new StringBuilder();
        tag.append(metric.getName());
        for (Entry<String, String> e : metric.getTags().entrySet()) {
-           tag.append('_').append(e.getKey()).append('@').append(e.getValue());
+           tag.append('.').append(e.getKey()).append('.').append(e.getValue());
        }
        return tag;
     }

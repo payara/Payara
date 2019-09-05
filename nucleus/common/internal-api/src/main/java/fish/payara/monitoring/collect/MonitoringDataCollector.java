@@ -191,7 +191,7 @@ public interface MonitoringDataCollector {
             String name = getter.getName();
             int offset = name.startsWith("get") ? 3 : name.startsWith("is") ? 2 : 0;
             if (offset > 0) {
-                String property = Character.toLowerCase(name.charAt(offset)) + name.substring(offset+1);
+                String property = name.substring(offset);
                 Class<?> returnType = getter.getReturnType();
                 try {
                     if (Boolean.class.isAssignableFrom(returnType) || returnType == boolean.class) {
@@ -226,7 +226,7 @@ public interface MonitoringDataCollector {
      * @return A collector with the type context added/set
      */
     default MonitoringDataCollector group(CharSequence type) {
-        return tag("group", type);
+        return tag("@", type);
     }
 
 }

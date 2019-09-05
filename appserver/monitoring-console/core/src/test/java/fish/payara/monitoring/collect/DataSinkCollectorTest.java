@@ -293,19 +293,19 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void objectUsesCurrentContext() {
-        assertDataPoint("group:obj sub:SomeObject length", 10L);
-        assertDataPoint("group:obj sub:SomeObject mIsAt", 2L);
+        assertDataPoint("@:obj sub:SomeObject length", 10L);
+        assertDataPoint("@:obj sub:SomeObject mIsAt", 2L);
     }
 
     @Test
     public void objectsRunsConsumerForAllItemsInCollectionWhileUsingTheCurrentContext() {
-        assertDataPoint("group:obj sub:Foo length", 3L);
-        assertDataPoint("group:obj sub:Bar length", 3L);
+        assertDataPoint("@:obj sub:Foo length", 3L);
+        assertDataPoint("@:obj sub:Bar length", 3L);
     }
 
     @Test
-    public void mapEntriesAddEntityTag() {
-        assertDataPoint("group:foo valueLength", 3L);
+    public void mapEntriesAddGroupTag() {
+        assertDataPoint("@:foo valueLength", 3L);
     }
 
     private void assertDataPoint(String key, long value) {
