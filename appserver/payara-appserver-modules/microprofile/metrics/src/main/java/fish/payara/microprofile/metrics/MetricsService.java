@@ -240,7 +240,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     @Override
     public void event(Event event) {
         if (event.is(Deployment.APPLICATION_LOADED)) {
-            ApplicationInfo info = Deployment.APPLICATION_UNLOADED.getHook(event);
+            ApplicationInfo info = (ApplicationInfo) event.hook();
             registerApplication(info.getName());
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
@@ -474,9 +474,9 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
         for(PropertyChangeEvent event : events) {
-            unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile Metrics configuration changed:" + event.getPropertyName()
-            + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
-        }
+                unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile Metrics configuration changed:" + event.getPropertyName()
+                        + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
+            }
         return new UnprocessedChangeEvents(unchangedList);
     }
 }
