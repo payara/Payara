@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -127,7 +127,7 @@
                 <sun:textField id="NameText" text="#{pageSession.name}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" />
             </sun:property>
 
-            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" >
+            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" helpText="$resource{i18ncs.autoName.help}" >
                 <sun:checkbox id="AutoName" selected="#{pageSession.autoNameSelected}" selectedValue="#{true}" />
             </sun:property>
 
