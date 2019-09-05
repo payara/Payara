@@ -66,6 +66,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.namespace.QName;
 
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.util.io.FileUtils;
 
 /**
  */
@@ -106,7 +107,7 @@ public class DomainXmlTransformer {
     private static final Set<String> DISABLE_ELEMENTS = new HashSet(Arrays.asList(JMX_CONNECTOR));
     private static final Set<String> DISABLE_SUB_ELEMENTS = new HashSet(Arrays.asList(LAZY_INIT_ATTR));
 
-    private static final StringManager localStrings = 
+    private static final StringManager localStrings =
         StringManager.getManager(DomainXmlTransformer.class);
 
     public DomainXmlTransformer(File domainXml) {
@@ -124,7 +125,7 @@ public class DomainXmlTransformer {
         XMLEventReader parser = null;
         XMLEventWriter writer = null;
         XMLInputFactory xif =XMLInputFactory.newInstance();
-        
+
         Set<String> empty_elements = (keepPorts)? EMPTY_ELEMENTS_KEEP_PORTS : EMPTY_ELEMENTS;
         try {
             fis = new FileInputStream(in);
@@ -134,7 +135,7 @@ public class DomainXmlTransformer {
             }
 
             if (System.getProperty(EJBContainerProviderImpl.KEEP_TEMPORARY_FILES) == null) {
-                out.deleteOnExit();
+                FileUtils.deleteOnExitRecursively(out);
             }
 
             fos = new FileOutputStream(out);
@@ -152,7 +153,7 @@ public class DomainXmlTransformer {
                         }
                         getEndEventFor(parser, name);
                         continue;
-                    } 
+                    }
 
                     boolean skip_to_end = false;
                     if (empty_elements.contains(name)) {
@@ -196,10 +197,10 @@ public class DomainXmlTransformer {
                         }
                         fixedDasConfig = false; // for the next config
                     }
-                } 
+                }
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("[DomainXmlTransformer] Processing: " + event); 
-                } 
+                    _logger.finest("[DomainXmlTransformer] Processing: " + event);
+                }
                 writer.add(event);
             }
             writer.flush();
@@ -238,7 +239,7 @@ public class DomainXmlTransformer {
         return out;
     }
 
-    private XMLEvent getEndEventFor(XMLEventReader parser, String name) 
+    private XMLEvent getEndEventFor(XMLEventReader parser, String name)
             throws XMLStreamException, EOFException {
         while (parser.hasNext()) {
             XMLEvent event = parser.nextEvent();
@@ -269,14 +270,14 @@ public class DomainXmlTransformer {
         }
 
         StartElement oldStartEvent = event.asStartElement();
-        return xmlEventFactory.createStartElement(oldStartEvent.getName(), 
+        return xmlEventFactory.createStartElement(oldStartEvent.getName(),
                 attributes.iterator(), oldStartEvent.getNamespaces());
     }
 
     /** Write a new element with the specified name and text
      * @return the end element
      */
-    private XMLEvent getAddedEvent(XMLEvent event, XMLEventWriter writer, String elementName, 
+    private XMLEvent getAddedEvent(XMLEvent event, XMLEventWriter writer, String elementName,
             String text) throws XMLStreamException {
         StartElement oldStartEvent = event.asStartElement();
         StartElement newStartEvent = xmlEventFactory.createStartElement(new QName(elementName),
@@ -320,7 +321,7 @@ public class DomainXmlTransformer {
         attributes.add(newAttribute);
 
         StartElement oldStartEvent = event.asStartElement();
-        return xmlEventFactory.createStartElement(oldStartEvent.getName(), 
+        return xmlEventFactory.createStartElement(oldStartEvent.getName(),
                 attributes.iterator(), oldStartEvent.getNamespaces());
     }
 }

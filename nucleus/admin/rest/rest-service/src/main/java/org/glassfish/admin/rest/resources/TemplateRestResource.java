@@ -44,6 +44,7 @@ package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -166,7 +167,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      * allows for remote files to be put in a tmp area and we pass the
      * local location of this file to the corresponding command instead of the content of the file
      * * Yu need to add  enctype="multipart/form-data" in the form
-     * for ex:  
+     * for ex:
      * {@code <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">}
      * then any param of type="file" will be uploaded, stored locally and the param will use the local location
      * on the server side (ie. just the path)
@@ -432,7 +433,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                         }
 
                         File f = Util.saveFile(fileName, mimeType, fileStream);
-                        f.deleteOnExit();
+                        FileUtils.deleteOnExitRecursively(f);
                         //put only the local path of the file in the same field.
                         data.put(fieldName, f.getAbsolutePath());
 

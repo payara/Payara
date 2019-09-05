@@ -87,19 +87,19 @@ import org.jvnet.hk2.annotations.Service;
 /**
  * This class is starting point for persistent CheckpointHelper, and currently only
  * persists and restores AdminCommandContext with payloads in separate files.
- * 
+ *
  * @author Andriy Zhdanov
- * 
+ *
  */
 @Service
 public class CheckpointHelper {
-    
+
     public static class CheckpointFilename {
-        
+
         enum ExtensionType {
             BASIC, ATTACHMENT, PAYLOAD_INBOUD, PAYLOAD_OUTBOUND;
         }
-        
+
         private static final Map<ExtensionType, String> EXTENSIONS;
         static {
             Map<ExtensionType, String> extMap = new EnumMap<ExtensionType, String>(ExtensionType.class);
@@ -109,20 +109,20 @@ public class CheckpointHelper {
             extMap.put(ExtensionType.PAYLOAD_OUTBOUND, ".checkpoint_outb");
             EXTENSIONS = Collections.unmodifiableMap(extMap);
         }
-        
+
         private final ExtensionType ext;
         private final String jobId;
         private String attachmentId;
         private final File parentDir;
-        
+
         private String cachedFileName;
-        
+
         private CheckpointFilename(String jobId, File parentDir, ExtensionType ext) {
             this.ext = ext;
             this.jobId = jobId;
             this.parentDir = parentDir;
         }
-        
+
         private CheckpointFilename(CheckpointFilename basic, ExtensionType ext) {
             this.ext = ext;
             this.jobId = basic.jobId;
@@ -134,7 +134,7 @@ public class CheckpointHelper {
             this(job.getId(), job.getJobsFile().getParentFile(), ExtensionType.ATTACHMENT);
             this.attachmentId = attachmentId;
         }
-        
+
         public CheckpointFilename(File file) throws IOException {
             this.parentDir = file.getParentFile();
             String name = file.getName();
@@ -185,7 +185,7 @@ public class CheckpointHelper {
         public File getParentDir() {
             return parentDir;
         }
-        
+
         @Override
         public String toString() {
             if (cachedFileName == null) {
@@ -212,31 +212,31 @@ public class CheckpointHelper {
             }
             return cachedFileName;
         }
-        
+
         public File getFile() {
             return new File(parentDir, toString());
         }
-        
+
         public CheckpointFilename getForPayload(boolean inbound) {
             return new CheckpointFilename(this, inbound ? ExtensionType.PAYLOAD_INBOUD : ExtensionType.PAYLOAD_OUTBOUND);
         }
-        
+
         public static CheckpointFilename createBasic(Job job) {
             return createBasic(job.getId(), job.getJobsFile().getParentFile());
         }
-        
+
         public static CheckpointFilename createBasic(String jobId, File dir) {
             return new CheckpointFilename(jobId, dir, ExtensionType.BASIC);
         }
-        
+
         public static CheckpointFilename createAttachment(Job job, String attachmentId) {
             return new CheckpointFilename(job, attachmentId);
         }
-        
+
     }
-    
+
     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CheckpointHelper.class);
-    
+
     @Inject
     AuthenticationService authenticationService;
 
@@ -245,7 +245,7 @@ public class CheckpointHelper {
 
     @Inject
     ObjectInputOutputStreamFactory factory;
-    
+
     public void save(JobManager.Checkpoint checkpoint) throws IOException {
         CheckpointFilename cf = CheckpointFilename.createBasic(checkpoint.getJob());
         ObjectOutputStream oos = null;
@@ -283,7 +283,7 @@ public class CheckpointHelper {
             throw e;
         }
     }
-    
+
     public void saveAttachment(Serializable data, Job job, String attachmentId) throws IOException {
         ObjectOutputStream oos = null;
         FileOutputStream fos = null;
@@ -329,7 +329,7 @@ public class CheckpointHelper {
         }
         return checkpoint;
     }
-    
+
     public <T extends Serializable> T loadAttachment(Job job, String attachmentId) throws IOException, ClassNotFoundException {
         CheckpointFilename cf = CheckpointFilename.createAttachment(job, attachmentId);
         File file = cf.getFile();
@@ -349,7 +349,7 @@ public class CheckpointHelper {
             }
         }
     }
-    
+
     public Collection<CheckpointFilename> listCheckpoints(File dir) {
         if (dir == null || !dir.exists()) {
             return Collections.emptyList();
@@ -378,7 +378,7 @@ public class CheckpointHelper {
     private void writeHeader(OutputStream os, Job job) throws IOException {
         writeHeader(os, StringUtils.nvl(job.getScope()) + job.getName());
     }
-    
+
     private void writeHeader(OutputStream os, String headerStr) throws IOException {
         byte[] headerB = headerStr.getBytes("UTF-8");
         int len = headerB.length;
@@ -389,7 +389,7 @@ public class CheckpointHelper {
         os.write(len);
         os.write(headerB);
     }
-    
+
     private String readHeader(InputStream is) throws IOException {
         int length = 0;
         int r;
@@ -407,7 +407,7 @@ public class CheckpointHelper {
         }
         return new String(headerB, "UTF-8");
     }
-    
+
     private ObjectInputStream getObjectInputStream(InputStream is, String header) throws IOException {
         if (!StringUtils.ok(header)) {
             return new ObjectInputStream(is);
@@ -434,7 +434,7 @@ public class CheckpointHelper {
         }
         return result;
     }
-*/    
+*/
 
     private void saveOutbound(Payload.Outbound outbound, File outboundFile) throws IOException {
         FileOutputStream os = new FileOutputStream(outboundFile);
@@ -450,7 +450,7 @@ public class CheckpointHelper {
         Inbound outboundSource = loadInbound(outboundFile);
         Iterator<Part> parts = outboundSource.parts();
         File topDir = createTempDir("checkpoint", "");
-        topDir.deleteOnExit();
+        FileUtils.deleteOnExitRecursively(topDir);
         while (parts.hasNext()) {
             Part part = parts.next();
             File sourceFile = File.createTempFile("source", "", topDir);
@@ -477,7 +477,7 @@ public class CheckpointHelper {
     }
 
     // ZipPayloadImpl
-    
+
     private void writePartsTo(Iterator<Part> parts, OutputStream os) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(os);
         while (parts.hasNext()) {
@@ -523,5 +523,5 @@ public class CheckpointHelper {
     }
 
     private static final String CONTENT_TYPE_NAME = "Content-Type";
-    
+
 }

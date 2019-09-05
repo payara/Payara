@@ -41,6 +41,7 @@
 
 package org.glassfish.admin.rest.generator.client;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
@@ -87,9 +88,9 @@ public class PythonClientGenerator extends ClientGenerator {
             if (!zipFile.createNewFile()) {
                 throw new RuntimeException("Unable to create new file"); //i18n
             }
-            zipFile.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(zipFile);
             zip = new ZipOutputStream(new FileOutputStream(zipFile));
-            
+
             add(ZIP_GF_PACKAGE_DIR, "__init__.py", new ByteArrayInputStream("".getBytes()), zip);
             //add(ZIP_BASE_DIR, "PKG-INFO", new ByteArrayInputStream(getFileContents("PKG-INFO").getBytes()), zip);
             add(ZIP_BASE_DIR, "setup.py", new ByteArrayInputStream(getFileContents("setup.py").getBytes()), zip);
@@ -101,7 +102,7 @@ public class PythonClientGenerator extends ClientGenerator {
             for (File file : baseDirectory.listFiles()) {
                 add(ZIP_REST_PACKAGE_DIR, file, zip);
             }
-        
+
             artifacts.put(zipFile.getName(), zipFile.toURI());
             Util.deleteDirectory(baseDirectory);
         } catch (Exception ex) {
@@ -115,7 +116,7 @@ public class PythonClientGenerator extends ClientGenerator {
                 }
             }
         }
-        
+
         return artifacts;
     }
 
@@ -129,11 +130,11 @@ public class PythonClientGenerator extends ClientGenerator {
 
         return contents.replace("VERSION", Version.getVersionNumber());
     }
-    
+
     private void addFileFromClasspath(String targetDir, String fileName, ZipOutputStream zip) throws IOException {
         add(targetDir, fileName, getClass().getClassLoader().getResourceAsStream("/client/python/" + fileName), zip);
     }
-    
+
     private void add(String dirInZip, String nameInZip, InputStream source, ZipOutputStream target) throws IOException {
         try {
             String sourcePath = dirInZip + "/" + nameInZip;

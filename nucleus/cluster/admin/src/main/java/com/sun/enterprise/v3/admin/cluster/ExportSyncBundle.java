@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -107,40 +108,40 @@ import com.sun.enterprise.util.cluster.SyncRequest;
 @I18n("export-sync-bundle")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
-        opType = POST, 
-        path = "export-sync-bundle", 
+        opType = POST,
+        path = "export-sync-bundle",
         description = "export-sync-bundle")
 })
 public class ExportSyncBundle implements AdminCommand {
-    
+
     private static final String[] ALL_DIRS = new String[] { "config", "applications", "lib", "docroot", "config-specific" };
     private static final String SYNC_FAIL = "export.sync.bundle.fail";
 
     @Param(name = "target", optional = false)
     private String clusterInstance;
-    
+
     @Param(name = "retrieve", optional = true, defaultValue = "false")
     private boolean isRetrieve;
-    
+
     @Param(optional = true, primary = true)
     String file_name;
 
     @Inject
     @Optional
     private Servers servers;
-    
+
     @Inject
     @Optional
     private Clusters clusters;
-    
+
     @Inject
     private ServerSynchronizer serverSynchronizer;
-    
+
     @Inject
     private ServerEnvironment env;
-    
+
     private SyncRequest syncRequest = new SyncRequest();
-    
+
     private ActionReport report;
     private File syncBundleExport;
     private Logger logger;
@@ -189,20 +190,20 @@ public class ExportSyncBundle implements AdminCommand {
     private void pumpItOut(AdminCommandContext context) {
         String fileName = file_name != null && !file_name.isEmpty() ? file_name : getDefaultBundleName();
         File localFile = new File(fileName.replace('\\', '/'));
-        
+
         File parent = localFile.getParentFile();
         if (parent == null) {
             parent = localFile;
         }
-        
+
         Properties props = new Properties();
         props.setProperty("file-xfer-root", parent.getPath().replace('\\', '/'));
         URI parentURI = parent.toURI();
         try {
             context.getOutboundPayload()
                    .attachFile(
-                       "application/octet-stream", 
-                       parentURI.relativize(localFile.toURI()), "sync-bundle", 
+                       "application/octet-stream",
+                       parentURI.relativize(localFile.toURI()), "sync-bundle",
                        props, syncBundleExport);
         } catch (IOException ex) {
             setError(Strings.get("export.sync.bundle.retrieveFailed", ex.getLocalizedMessage()));
@@ -242,7 +243,7 @@ public class ExportSyncBundle implements AdminCommand {
                 }
             }
         }
-        
+
         if (!isRetrieve) {
             if (syncBundleExport.isFile()) {
                 report.setMessage(Strings.get("export.sync.bundle.success", syncBundleExport.getAbsolutePath()));
@@ -256,7 +257,7 @@ public class ExportSyncBundle implements AdminCommand {
         if (instance != null) {
             serverSynchronizer.synchronize(instance, syncRequest, payload, report, logger);
         }
-        
+
         if (cluster != null) { // Use one of the clustered instances
             List<Server> clusterInstances = cluster.getInstances();
             if (clusterInstances != null && !clusterInstances.isEmpty()) {
@@ -281,7 +282,7 @@ public class ExportSyncBundle implements AdminCommand {
         if (servers != null) {
             instance = servers.getServer(clusterInstance);
         }
-        
+
         if (clusters != null) {
             cluster = clusters.getCluster(clusterInstance);
             if (cluster != null) {
@@ -304,7 +305,7 @@ public class ExportSyncBundle implements AdminCommand {
         if (isRetrieve) {
             try {
                 syncBundleExport = File.createTempFile("GlassFishSyncBundle", ".zip");
-                syncBundleExport.deleteOnExit();
+                FileUtils.deleteOnExitRecursively(syncBundleExport);
             } catch (Exception ex) {
                 syncBundleExport = null;
                 setError(Strings.get("sync.bad_temp_file", ex.getLocalizedMessage()));
@@ -331,7 +332,7 @@ public class ExportSyncBundle implements AdminCommand {
             }
             syncBundleExport = SmartFile.sanitize(file);
         }
-        
+
         return true;
     }
 

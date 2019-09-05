@@ -49,6 +49,7 @@
 // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.admingui.handlers;
 
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -98,7 +99,7 @@ public class WoodstockHandler {
      * <p>
      * This handler will delete file from temp directory</p>
      * @param handlerCtx
-     * @throws IOException 
+     * @throws IOException
      */
     @Handler(id = "deleteFileFromTempDir",
             input = {
@@ -180,7 +181,7 @@ public class WoodstockHandler {
                     prefix = prefix + new SecureRandom().nextInt(100000);
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
-                tmpFile.deleteOnExit();
+                FileUtils.deleteOnExitRecursively(tmpFile);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
                 }

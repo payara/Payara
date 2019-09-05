@@ -45,6 +45,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -134,7 +135,7 @@ public class Util {
      public static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainTempFiles) throws IOException, FileNotFoundException {
         File result = File.createTempFile(prefix, suffix);
         if ( ! retainTempFiles) {
-            result.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(result);
         }
         try (BufferedWriter writer =
                  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))) {

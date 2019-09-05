@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.boot.loader;
 
+import com.sun.enterprise.util.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,14 +75,13 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     public ExplodedURLClassloader() throws IOException {
         super(new URL[0]);
-        File directory;
-        directory = File.createTempFile("payaramicro-rt", "tmp");
+        File directory = File.createTempFile("payaramicro-rt", "tmp");
         System.setProperty("fish.payara.micro.tmpdir", directory.getAbsolutePath());
         if (!directory.delete() || !directory.mkdir()) { // convert the file into a directory.
             throw new IOException("Unable to create temporary runtime directory");
         }
         deleteOnExit = true;
-        directory.deleteOnExit();
+        FileUtils.deleteOnExitRecursively(directory);
         explodedDir = directory;
         explodeJars();
     }
@@ -91,14 +92,14 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         File runtimeDir = new File(explodedDir, "runtime");
         runtimeDir.mkdirs();
         if (deleteOnExit) {
-            runtimeDir.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(runtimeDir);
         }
 
         // create a lib directory
         File libDir = new File(explodedDir,"lib");
         libDir.mkdirs();
         if (deleteOnExit) {
-            libDir.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(libDir);
         }
 
         // sets the system property used in the server.policy file for permissions
@@ -110,7 +111,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         if (src != null) {
             try {
                 // find the root jar
-                String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
+                String[] jars = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
                 try (JarFile jar = new JarFile(file)) {
@@ -127,7 +128,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                         if (fileName != null) {
                             File outputFile = new File(runtimeDir, fileName);
                             if (deleteOnExit) {
-                                outputFile.deleteOnExit();
+                                FileUtils.deleteOnExitRecursively(outputFile);
                             }
                             super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 

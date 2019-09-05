@@ -54,6 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.appclient.client.acc.config.LogService;
 
 /**
@@ -76,7 +78,7 @@ import org.glassfish.appclient.client.acc.config.LogService;
 public class ACCLogger extends Logger {
 
     private static final String ACC_LOGGER_NAME = "GlassFish.ACC";
-    
+
     private static final Level DEFAULT_ACC_LOG_LEVEL = Level.INFO;
 
     public ACCLogger(final LogService logService) throws IOException {
@@ -153,7 +155,7 @@ public class ACCLogger extends Logger {
         handler.setFormatter(new SimpleFormatter());
         handler.setLevel(level);
         File lockFile = new File(filePath + ".lck");
-        lockFile.deleteOnExit();
+        FileUtils.deleteOnExitRecursively(lockFile);
         return handler;
     }
 

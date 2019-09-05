@@ -60,6 +60,8 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -121,12 +123,12 @@ public class JavaClientGenerator extends ClientGenerator {
             StringBuilder sb = new StringBuilder();
             sb.append(ASClassLoaderUtil.getModuleClassPath(habitat, "", null));
             options.add(sb.toString());
-            
+
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
             if (!compiler.getTask(null, fileManager, null, options, null, compilationUnits).call()) {
                 RestLogging.restLogger.log(Level.INFO, RestLogging.COMPILATION_FAILED);
             }
-            
+
             fileManager.close();
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
@@ -141,12 +143,12 @@ public class JavaClientGenerator extends ClientGenerator {
             if (!jarFile.createNewFile()) {
                 throw new RuntimeException("Unable to create new file"); //i18n
             }
-            jarFile.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(jarFile);
             target = new JarOutputStream(new FileOutputStream(jarFile));
 
             addFiles(baseDirectory, target, ext);
             target.close();
-            
+
             artifacts.put(jarFile.getName(), jarFile.toURI());
         } catch (Exception ex) {
            RestLogging.restLogger.log(Level.SEVERE, null, ex);
@@ -160,7 +162,7 @@ public class JavaClientGenerator extends ClientGenerator {
             }
         }
     }
-    
+
     private void gatherFiles(File file, List<File> list) throws IOException {
         if (file == null || !file.exists()) {
             return;
@@ -177,18 +179,18 @@ public class JavaClientGenerator extends ClientGenerator {
             list.add(file);
         }
     }
-    
+
     private void addPom(String versionString)  {
         FileWriter writer = null;
         try {
             String pom = new Scanner(Thread.currentThread().getContextClassLoader().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
             pom = pom.replace("{{glassfish.version}}", versionString);
             File out = File.createTempFile("pom", "xml");
-            out.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(out);
             writer = new FileWriter(out);
             writer.write(pom);
             writer.close();
-            
+
             artifacts.put("pom.xml", out.toURI());
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);

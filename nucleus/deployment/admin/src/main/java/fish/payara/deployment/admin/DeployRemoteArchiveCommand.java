@@ -43,6 +43,7 @@ package fish.payara.deployment.admin;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.deployment.util.GAVConvertor;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -97,26 +98,26 @@ import org.jvnet.hk2.annotations.Service;
 public class DeployRemoteArchiveCommand extends DeployCommandParameters implements AdminCommand {
 
     private final static Logger logger = Logger.getLogger(DeployRemoteArchiveCommand.class.getName());
-    
+
     @Param(primary = true)
     private String path;
-    
+
     @Param(name = "additionalRepositories", optional = true, alias = "additionalrepositories")
     private List<String> additionalRepositories;
-    
+
     @Inject
     ServiceLocator serviceLocator;
-    
+
     private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
-    
+
     @Override
     public void execute(AdminCommandContext context) {
         CommandRunner commandRunner = serviceLocator.getService(CommandRunner.class);
         ActionReport actionReport = context.getActionReport();
-        
+
         // Initialise to null so we can do a null check later
         File fileToDeploy = null;
-        
+
         // Assume only Http or Https connections are direct URLs
         if (path.startsWith("http://") || path.startsWith("https://")) {
             try {
@@ -127,7 +128,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 actionReport.setMessage("Exception converting URI to File: " + path);
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            
+
             // If a name hasn't been provided, get it from the URI
             if (name == null) {
                 if (path.endsWith(".jar")) {
@@ -138,7 +139,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
                 }
             }
-            
+
             // If a context root hasn't been provided, get it from the URI
             if (contextroot == null) {
                 if (path.endsWith(".jar")) {
@@ -149,26 +150,26 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
                 }
             }
-        } else {     
+        } else {
             try {
                 // If the path String doesn't start with Http or Https, then assume it's a GAV coordinate
                 logger.log(Level.FINE, "Path does not appear to be a URL, will attempt to read as GAV coordinate");
-                
+
                 // Convert the Array to a List of Urls, and append "/" to the Urls if they don't already end with one
                 List<URL> repositoryUrls = formatRepositoryUrls(additionalRepositories);
-                
+
                 // Get the URL for the given GAV coordinate
                 GAVConvertor gavConvertor = new GAVConvertor();
                 Entry<String, URL> artefactEntry = gavConvertor.getArtefactMapEntry(path, repositoryUrls);
-                
+
                 // Download the file to temp, and return a File object to pass to the deploy command
                 fileToDeploy = convertUriToFile(artefactEntry.getValue().toURI());
-                
+
                 // If a name hasn't been provided, get it from the artefact name
                 if (name == null) {
                     name = artefactEntry.getKey();
                 }
-                
+
                 // If a context root hasn't been provided, get it from the artefact name
                 if (contextroot == null) {
                     contextroot = "/" + artefactEntry.getKey();
@@ -183,22 +184,22 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
-        
+
         // Only continue if we actually have a file to deploy
         if (fileToDeploy != null) {
             ActionReport subReport = actionReport.addSubActionsReport();
-            CommandRunner.CommandInvocation commandInvocation = 
+            CommandRunner.CommandInvocation commandInvocation =
                     commandRunner.getCommandInvocation("deploy", subReport, context.getSubject());
             ParameterMap parameters = createAndPopulateParameterMap(fileToDeploy);
             commandInvocation.parameters(parameters);
             commandInvocation.execute();
         } else {
-            actionReport.setMessage("Provided path does not appear to be a valid URL or GAV coordinate: " + path 
+            actionReport.setMessage("Provided path does not appear to be a valid URL or GAV coordinate: " + path
                     + "\nSee the server log for more details");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
-    
+
     private List<URL> formatRepositoryUrls(List<String> additionalRepositories) throws MalformedURLException {
         List<URL> repositoryUrls = new ArrayList<>();
         for (String repository : additionalRepositories) {
@@ -208,138 +209,138 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 repositoryUrls.add(new URL(repository));
             }
         }
-        
+
         return repositoryUrls;
     }
-    
+
     private ParameterMap createAndPopulateParameterMap(File fileToDeploy) {
         ParameterMap parameterMap = new ParameterMap();
-        
+
         parameterMap.add("name", name);
         parameterMap.add("path", fileToDeploy.getAbsolutePath());
         parameterMap.add("contextroot", contextroot);
-        
+
         if (virtualservers != null) {
             parameterMap.add("virtualservers", virtualservers);
         }
-        
+
         if (libraries != null) {
             parameterMap.add("libraries", libraries);
         }
-        
+
         if (force != null) {
             parameterMap.add("force", force.toString());
         }
-        
+
         if (precompilejsp != null) {
             parameterMap.add("precompilejsp", precompilejsp.toString());
         }
-        
+
         if (verify != null) {
             parameterMap.add("verify", verify.toString());
         }
-        
+
         if (retrieve != null) {
             parameterMap.add("retrieve", retrieve);
         }
-        
+
         if (dbvendorname != null) {
             parameterMap.add("dbvendorname", dbvendorname);
         }
-        
+
         if (createtables != null) {
             parameterMap.add("createtables", createtables.toString());
         }
-        
+
         if (dropandcreatetables != null) {
             parameterMap.add("dropandcreatetables", dropandcreatetables.toString());
         }
-        
+
         if (uniquetablenames != null) {
             parameterMap.add("uniquetablenames", uniquetablenames.toString());
         }
-        
+
         if (deploymentplan != null) {
             parameterMap.add("deploymentplan", deploymentplan.getAbsolutePath());
         }
-        
+
         if (altdd != null) {
             parameterMap.add("altdd", altdd.getAbsolutePath());
         }
-        
+
         if (runtimealtdd != null) {
             parameterMap.add("runtimealtdd", runtimealtdd.getAbsolutePath());
         }
-        
+
         if (enabled != null) {
             parameterMap.add("enabled", enabled.toString());
         }
-        
+
         if (generatermistubs != null) {
             parameterMap.add("generatermistubs", generatermistubs.toString());
         }
-        
+
         if (availabilityenabled != null) {
             parameterMap.add("availabilityenabled", availabilityenabled.toString());
         }
-        
+
         if (asyncreplication != null) {
             parameterMap.add("asyncreplication", asyncreplication.toString());
         }
-        
+
         if (target != null) {
             parameterMap.add("target", target);
         }
-        
+
         if (keepreposdir != null) {
             parameterMap.add("keepreposdir", keepreposdir.toString());
         }
-        
+
         if (keepfailedstubs != null) {
             parameterMap.add("keepfailedstubs", keepfailedstubs.toString());
         }
-        
+
         if (isredeploy != null) {
             parameterMap.add("isredeploy", isredeploy.toString());
         }
-        
+
         if (logReportedErrors != null) {
             parameterMap.add("logReportedErrors", logReportedErrors.toString());
         }
-        
+
         if (properties != null) {
             String propertiesString = properties.toString();
             propertiesString = propertiesString.replaceAll(", ", ":");
             parameterMap.add("properties", propertiesString);
         }
-        
+
         if (property != null) {
             String propertyString = property.toString();
             propertyString = propertyString.replaceAll(", ", ":");
             parameterMap.add("property", propertyString);
         }
-        
+
         if (type != null) {
             parameterMap.add("type", type);
         }
-        
+
         if (keepstate != null) {
             parameterMap.add("keepstate", keepstate.toString());
         }
-        
+
         if (lbenabled != null) {
             parameterMap.add("lbenabled", lbenabled);
         }
-        
+
         if (deploymentorder != null) {
             parameterMap.add("deploymentorder", deploymentorder.toString());
         }
-        
+
         return parameterMap;
     }
-    
-    
-    private File convertUriToFile(URI uri) throws URISyntaxException, IOException {       
+
+
+    private File convertUriToFile(URI uri) throws URISyntaxException, IOException {
         try (InputStream in = uri.toURL().openStream()) {
             return createFile(in);
         }
@@ -348,12 +349,12 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
     private File createFile(InputStream in) throws IOException {
         File file;
         file = File.createTempFile("app", "tmp");
-        file.deleteOnExit();
-        
+        FileUtils.deleteOnExitRecursively(file);
+
         try (OutputStream out = new FileOutputStream(file)) {
             copyStream(in, out);
-        } 
-        
+        }
+
         return file;
     }
 

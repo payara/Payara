@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.admin.CommandException;
 
 /**
@@ -115,7 +117,7 @@ public abstract class DBControl {
             if (fDBLog.exists() && !fDBLog.canWrite()) {
                 System.out.println(localManager.getString("UnableToAccessDatabaseLog", getLogFileName(), dbLogFilePath));
                 System.out.println(localManager.getString("ContinueStartingDatabase"));
-                // if exist but not able to write then create a temporary 
+                // if exist but not able to write then create a temporary
                 // log file and persist on starting the database
                 dbLogFilePath = createTempLogFile();
             } else if (!fDBLog.exists()) {
@@ -144,7 +146,7 @@ public abstract class DBControl {
         String tempFileName = "";
         try {
             final File fTemp = File.createTempFile("foo", null);
-            fTemp.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(fTemp);
             tempFileName = fTemp.toString();
         } catch (IOException ioe) {
             final StringManager localManager = StringManager.getManager(this.getClass());

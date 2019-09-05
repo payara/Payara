@@ -87,7 +87,7 @@ import org.glassfish.api.admin.Payload.Part;
  * ({@link #processParts(org.glassfish.api.admin.Payload.Inbound)}) or a
  * single part ({@link #processPart(org.glassfish.api.admin.Payload.Part)}).  Recall that each part in the
  * payload has a name which is a relative or absolute URI.
- * 
+ *
  * @author tjquinn
  */
 public abstract class PayloadFilesManager {
@@ -344,58 +344,13 @@ public abstract class PayloadFilesManager {
 
         @Override
         protected void postExtract(File extractedFile) {
-            extractedFile.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(extractedFile);
         }
 
         @Override
         protected void postProcessParts() {
             // no-op
         }
-
-
-//        private String getParentPath(String partName) {
-//            if (partName.endsWith("/")) {
-//                partName = partName.substring(0, partName.length() - 1);
-//            }
-//            int lastSlash = partName.lastIndexOf('/');
-//            if (lastSlash != -1) {
-//                return partName.substring(0, lastSlash);
-//            }
-//            return null;
-//        }
-
-//        URI getTempSubDirForPath(String path) throws IOException {
-//            /*
-//             * Convert the path (which is currently in URI form) to
-//             * the local file system form.
-//             */
-//            path = path.replace('/', File.separatorChar);
-//            File tempSubDir = pathToTempSubdir.get(path);
-//            if (tempSubDir == null) {
-//                /*
-//                 * Replace slashes (forward or backward) that are directory
-//                 * separators and replace colons (from Windows devices) with single
-//                 * dashes.  This technique generates unique but flat directory
-//                 * names so same-named files in different directories will
-//                 * go to different directories.
-//                 *
-//                 * The extra dashes make sure the prefix meets createTempFile's reqts.
-//                 *
-//                 */
-//                String tempDirPrefix = path.replaceAll(DIR_PATH_TO_FLAT_NAME_PATTERN, "-") + "---";
-//                tempSubDir = createTempFolder(getTargetDir(), tempDirPrefix, super.logger);
-//                pathToTempSubdir.put(path, tempSubDir);
-//            }
-//            return tempSubDir.toURI();
-//        }
-
-//        private String getNameAndType(String path) {
-//            if (path.endsWith("/")) {
-//                path = path.substring(0, path.length() - 1);
-//            }
-//            final int lastSlash = path.lastIndexOf('/');
-//            return path.substring(lastSlash + 1);
-//        }
 
     }
 
@@ -410,8 +365,7 @@ public abstract class PayloadFilesManager {
         if (name.startsWith("/")) {
             name = name.substring(1);
         }
-        URI targetURI = getParentURI(part).resolve(name);
-        return targetURI;
+        return getParentURI(part).resolve(name);
     }
 
     private File removeFile(final Payload.Part part) throws IOException {
@@ -533,7 +487,7 @@ public abstract class PayloadFilesManager {
              */
             if (outputName.endsWith("/")) {
                 if ( ! extractedFile.exists() && ! extractedFile.mkdir()) {
-                    logger.log(Level.WARNING, 
+                    logger.log(Level.WARNING,
                             strings.getLocalString("payload.mkdirsFailed",
                             "Attempt to create directories for {0} failed; no further information is available. Continuing.",
                             extractedFile.getAbsolutePath()));
@@ -559,7 +513,7 @@ public abstract class PayloadFilesManager {
              * some file
              */
             part.setExtracted(extractedFile);
-            
+
             final String lastModifiedString = part.getProperties().getProperty("last-modified");
             final long lastModified = (lastModifiedString != null ?
                 Long.parseLong(lastModifiedString) :

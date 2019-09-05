@@ -93,7 +93,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
      */
     @Override
     protected int executeCommand() throws CommandException {
-        
+
         if (synchronizeInstance()) {
             return SUCCESS;
         } else {
@@ -105,10 +105,10 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
     }
 
     /**
-     * Synchronize this server instance.  Return true if server is synchronized. 
+     * Synchronize this server instance.  Return true if server is synchronized.
      * Return false if synchronization failed, but no files were changed
      * (meaning that it is ok to bring the server up).
-     * Throw a CommandException if synchronization failed in such a way that 
+     * Throw a CommandException if synchronization failed in such a way that
      * instance startup should not be attempted.
      */
     protected boolean synchronizeInstance() throws CommandException {
@@ -235,7 +235,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             for (File adir : FileUtils.listFiles(archiveDir)) {
                 File[] af = FileUtils.listFiles(adir);
                 if (af.length != 1) {
-                    if (logger.isLoggable(Level.FINER)) 
+                    if (logger.isLoggable(Level.FINER))
                         logger.log(Level.FINER, "IGNORING {0}, # files {1}", new Object[]{adir, af.length});
                     continue;
                 }
@@ -265,7 +265,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              */
             sr = getModTimes("docroot", SyncLevel.DIRECTORY);
             synchronizeFiles(sr);
-            
+
             /*
              * Next, the endpoints.
              * The endpoints too could be full of files, so we only check
@@ -314,7 +314,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 logger.finer("Exception during synchronization: " + ex);
             exc = ex;
         }
-        
+
         if (exc != null) {
             /*
              * Some unexpected failure.  If the domain.xml hasn't
@@ -403,7 +403,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         File tempFile = null;
         try {
             tempFile = File.createTempFile("mt.", ".xml");
-            tempFile.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(tempFile);
 
             JAXBContext context = JAXBContext.newInstance(SyncRequest.class);
             Marshaller marshaller = context.createMarshaller();

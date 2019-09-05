@@ -40,6 +40,7 @@
 
 package org.glassfish.appclient.client.jws.boot;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.client.acc.JWSACCClassLoader;
 import org.glassfish.appclient.common.Util;
@@ -375,7 +376,7 @@ public class JWSACCMain implements Runnable {
      private static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainTempFiles) throws IOException, FileNotFoundException {
         File result = File.createTempFile(prefix, suffix);
         if ( ! retainTempFiles) {
-            result.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(result);
         }
         try (BufferedWriter wtr =
                  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))){

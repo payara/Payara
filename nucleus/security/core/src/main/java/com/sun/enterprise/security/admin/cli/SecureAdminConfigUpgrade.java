@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- * 
+ *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- * 
+ *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -49,6 +49,7 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.security.SecurityUpgradeService;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -87,13 +88,13 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Upgrades older config to current.
- * 
- * In 3.1.2 GlassFish uses SSL for DAS-to-instance traffic regardless of 
+ *
+ * In 3.1.2 GlassFish uses SSL for DAS-to-instance traffic regardless of
  * whether the user enables secure admin.  This means that the upgrade must
  * always:
  * <ol>
  * <li>Create the secure-admin element.
- * <li>Add the glassfish-instance private key to the keystore and the 
+ * <li>Add the glassfish-instance private key to the keystore and the
  * corresponding self-signed cert to the truststore.
  * <li>Add secure-admin-principal children to secure-admin, one for alias s1as and
  * one for glassfish-instance.
@@ -109,10 +110,10 @@ import org.jvnet.hk2.config.TransactionFailure;
 public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implements ConfigurationUpgrade, PostConstruct {
 
     public SecureAdminConfigUpgrade() {
-        
+
     }
     private final static String ADMIN_LISTENER_NAME = "admin-listener";
-    
+
     /*
      * Constants used for creating a missing network-listener during upgrade.
      * Ideally this will be handled in the grizzly upgrade code.
@@ -122,7 +123,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
     private final static String ASADMIN_LISTENER_THREADPOOL = "http-thread-pool";
 
     private final static String ASADMIN_VS_NAME = "__asadmin";
-        
+
     private static final Logger logger = Logger.getAnonymousLogger();
 
     // Thanks to Jerome for suggesting this injection to make sure the
@@ -135,21 +136,21 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 
     @Inject
     private Configs configs;
-    
+
     @Inject
     private ServerEnvironment serverEnv;
-    
+
     /**
-     * Inject this to make sure it is initialized.  It is used by 
+     * Inject this to make sure it is initialized.  It is used by
      * SecuritySupportImpl, but because SecuritySupportImpl is not a service
      * hk2 does not operate on it and would not automatically initialize
      * MasterPassword.
      */
     @Inject
     private MasterPassword masterPassword;
-    
+
     private Map<String,Config> writableConfigs = new HashMap<String,Config>();
-    
+
     @Override
     public void postConstruct() {
         /*
@@ -167,7 +168,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 
             stage = "upgrading config for secure DAS-to-instance admin traffic";
             setupNewDefaultConfig();
-            
+
             /*
              * See if we need to set up secure admin during the upgrade.
              */
@@ -194,8 +195,8 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         }
     }
 
-    private void setupNewDefaultConfig() throws 
-            IOException, NoSuchAlgorithmException, CertificateException, 
+    private void setupNewDefaultConfig() throws
+            IOException, NoSuchAlgorithmException, CertificateException,
             KeyStoreException, UnrecoverableKeyException, ProcessManagerException, TransactionFailure, RetryableException, PropertyVetoException {
         /*
          * In 3.1.2 the default config has a secure-admin element with child secure-admin-principal
@@ -205,7 +206,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          * aliases.
          */
         ensureKeyPairForInstanceAlias();
-        
+
         /*
          * Add the secure-admin-principal children below secure-admin, one for
          * the DAS alias and one for the instance alias.
@@ -214,7 +215,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         prepareDASConfig();
 //        prepareNonDASConfigs();
     }
-    
+
     private boolean requiresSecureAdmin() {
         return isOriginalAdminSecured() || securityUpgradeService.requiresSecureAdmin();
     }
@@ -225,7 +226,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         final NetworkListener nl_w = transaction().enroll(nc.getNetworkListener(SecureAdminCommand.ADMIN_LISTENER_NAME));
         nl_w.setProtocol(SecureAdminCommand.ADMIN_LISTENER_NAME);
     }
-    
+
 //    private void prepareNonDASConfigs() throws TransactionFailure, PropertyVetoException {
 //        for (Config c : configs.getConfig()) {
 //            if (c.getName().equals(DAS_CONFIG_NAME)) {
@@ -234,7 +235,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 //            ensureConfigReady(c, SecureAdminCommand.PORT_UNIF_PROTOCOL_NAME);
 //        }
 //    }
-    
+
     private void ensureConfigReady(final Config c, final String adminListenerProtocol) throws TransactionFailure, PropertyVetoException {
         final NetworkConfig nc = c.getNetworkConfig();
         final NetworkListener nl = nc.getNetworkListener(SecureAdminCommand.ADMIN_LISTENER_NAME);
@@ -246,11 +247,11 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          * Create an admin-listener for this configuration.
          */
         final Config config_w = writableConfig(c);
-        
+
         createAdminNetworkListener(transaction(), nc, adminListenerProtocol);
         createAdminVirtualServer(transaction(), config_w);
     }
-    
+
     private Config writableConfig(final Config c) throws TransactionFailure {
         Config result = writableConfigs.get(c.getName());
         if (result == null) {
@@ -259,7 +260,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         }
         return result;
     }
-    
+
     private void ensureNonDASConfigsHaveAdminNetworkListener() throws TransactionFailure, PropertyVetoException {
 
         for (Config c : configs.getConfig()) {
@@ -269,8 +270,8 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             ensureConfigReady(c, SecureAdminCommand.PORT_UNIF_PROTOCOL_NAME);
         }
     }
-    
-    
+
+
 
     private NetworkListener createAdminNetworkListener(
             final Transaction t,
@@ -286,7 +287,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         nl_w.setThreadPool(ASADMIN_LISTENER_THREADPOOL);
         return nl_w;
     }
-    
+
     private VirtualServer createAdminVirtualServer(
             final Transaction t,
             final Config config_w) throws TransactionFailure, PropertyVetoException {
@@ -297,13 +298,13 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         vs_w.setNetworkListeners(ADMIN_LISTENER_NAME);
         return vs_w;
     }
-    
-    
-    
+
+
+
     private boolean isOriginalAdminSecured() {
         /*
          * The Grizzly conversion has already occurred.  So look for
-         * 
+         *
          * <server-config>
          *   <network-config>
          *     <protocols>
@@ -327,7 +328,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
              return false;
          }
 
-         
+
          if ((ssl = p.getSsl()) == null) {
              return false;
          }
@@ -342,17 +343,17 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         if (ks.containsAlias(SecureAdmin.Duck.DEFAULT_INSTANCE_ALIAS)) {
             return;
         }
-        
+
         /*
-         * This is ugly but effective.  We need to add a new private key to 
+         * This is ugly but effective.  We need to add a new private key to
          * the keystore and a new self-signed cert to the truststore.  To do so
-         * we run keytool commands to change the on-disk stores, then we 
+         * we run keytool commands to change the on-disk stores, then we
          * cause the in-memory copies to reload.
          */
         final File keyStoreFile = serverEnv.getJKS();
         final File trustStoreFile = new File(serverEnv.getConfigDirPath(), "cacerts.jks");
         final String pw = masterPassword();
-        
+
         ProcessManager pm = new ProcessManager(new String[]{
             "keytool",
             "-genkey",
@@ -368,9 +369,9 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             final String err = pm.getStdout();
             throw new RuntimeException(err);
         }
-        
+
         final File tempCertFile = new File(serverEnv.getConfigDirPath(),"temp.cer");
-        tempCertFile.deleteOnExit();
+        FileUtils.deleteOnExitRecursively(tempCertFile);
         pm = new ProcessManager(new String[] {
             "keytool",
             "-exportcert",
@@ -381,11 +382,11 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             "-file", tempCertFile.getAbsolutePath()
         });
         pm.execute();
-        
+
         if (pm.getExitValue() != 0) {
             throw new RuntimeException(pm.getStderr());
         }
-        
+
         pm = new ProcessManager(new String[] {
             "keytool",
             "-importcert",
@@ -401,21 +402,21 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         if ( ! tempCertFile.delete()) {
             logger.log(Level.FINE, "Unable to delete temp file {0}; continuing", tempCertFile.getAbsolutePath());
         }
-        
+
         if (pm.getExitValue() != 0) {
             throw new RuntimeException(pm.getStderr());
         }
-        
+
         /*
          * Reload the keystore and truststore from disk.
          */
         reload(sslUtils().getKeyStore(), keyStoreFile, pw);
         reload(sslUtils().getTrustStore(), serverEnv.getTrustStore(), pw);
     }
-    
-    private void reload(final KeyStore keystore, final File keystoreFile, final String pw) throws 
+
+    private void reload(final KeyStore keystore, final File keystoreFile, final String pw) throws
             FileNotFoundException, IOException, NoSuchAlgorithmException, CertificateException {
-        
+
         InputStream is = null;
         try {
             is = new BufferedInputStream(new FileInputStream(keystoreFile));
@@ -426,7 +427,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             }
         }
     }
-    
+
     private String masterPassword() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
 //        /*
 //         * Crude way to get the master password of the keystore.
@@ -445,7 +446,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         }
         return masterPW;
     }
-    
+
     private Properties pwProps(final String pwFilePath) throws IOException {
         Properties result = new Properties();
         InputStream is = null;
@@ -459,7 +460,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             return result;
         }
     }
-    
+
     private static String CERTIFICATE_DN_PREFIX = "CN=";
 
     private static String CERTIFICATE_DN_SUFFIX =

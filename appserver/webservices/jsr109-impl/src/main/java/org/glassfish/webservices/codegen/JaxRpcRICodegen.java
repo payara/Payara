@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import javax.xml.rpc.Stub;
 
 // DOL imports
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.deployment.common.Descriptor;
@@ -626,7 +627,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
         if (dummyConfigFile == null) {
             dummyConfigFile = File.createTempFile("dummy_wscompile_config", "config");
-            dummyConfigFile.deleteOnExit();
+            FileUtils.deleteOnExitRecursively(dummyConfigFile);
         }
 
         // wscompile doesn't support the -extdirs option, so the best we

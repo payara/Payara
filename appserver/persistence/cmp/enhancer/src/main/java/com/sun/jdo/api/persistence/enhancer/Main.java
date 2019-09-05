@@ -77,6 +77,7 @@ import java.util.zip.ZipException;
 
 import java.net.URL;
 
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.jdo.api.persistence.model.Model;
 
 //import com.sun.jdo.api.persistence.enhancer.util.ClassFileSource;
@@ -895,9 +896,8 @@ public class Main
     {
 
         //noWrite or (not enhanced and not forceWrite)
-        if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite))
-        {
-            temp.deleteOnExit ();
+        if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite)) {
+            FileUtils.deleteOnExitRecursively(temp);
             return;
         }
 

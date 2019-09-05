@@ -157,7 +157,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Invoke the deployer load() method for each application.
      */
     public void postConstruct() {
-        
+
         assert env!=null;
         try{
             logger.fine("Satisfying Optional Packages dependencies...");
@@ -198,7 +198,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         for (Application app : allApplications) {
           appOrderInfoMap.put(app.getName(), Integer.valueOf(appOrder++));
         }
-        
+
         for (Application systemApp : systemApplications.getApplications()) {
             // check to see if we need to load up this system application
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
@@ -213,8 +213,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         // load standalone resource adapters first
         for (Application standaloneAdapter : standaloneAdapters) {
-            // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS when application is 
+            // load the referenced enabled applications on this instance
+            // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
@@ -224,12 +224,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         // then the rest of the applications
         for (Application app : allApplications) {
-            if (app.isStandaloneModule() && 
+            if (app.isStandaloneModule() &&
                 app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
-            // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS when application is 
+            // load the referenced enabled applications on this instance
+            // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
@@ -251,7 +251,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         if (defaultParam!=null) {
 
             initializeRuntimeDependencies();
-            
+
             File sourceFile;
             if (defaultParam.equals(".")) {
                 sourceFile = new File(System.getProperty("user.dir"));
@@ -282,7 +282,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             logger.log(Level.WARNING, KernelLoggerInfo.cantDeleteTempFile, path);
                         }
                         File tmpDir = new File(path);
-                        tmpDir.deleteOnExit();
+                        FileUtils.deleteOnExitRecursively(tmpDir);
                         events.register(new org.glassfish.api.event.EventListener() {
                             public void event(Event event) {
                                 if (event.is(EventTypes.SERVER_SHUTDOWN)) {
@@ -304,7 +304,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                         }
                     }
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, parameters, report).source(sourceArchive).build();
-                    
+
                     Deployment.ApplicationDeployment appDeployment = deployment.prepare(null, depContext);
                     if (appDeployment==null) {
 
@@ -358,7 +358,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
-        initializeRuntimeDependencies();        
+        initializeRuntimeDependencies();
 
         String source = app.getLocation();
         final String appName = app.getName();
@@ -479,7 +479,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             stopApplication(app, appInfo);
         }
 
-        // now stop the applications which are not registered in the 
+        // now stop the applications which are not registered in the
         // domain.xml like timer service application
         Set<String> allAppNames = new HashSet<String>();
         allAppNames.addAll(appRegistry.getAllApplicationNames());
@@ -608,12 +608,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
             for (String target : targets) {
                 if (!DeploymentUtils.isDASTarget(target)) {
-                    // if application is referenced by any non-DAS target 
+                    // if application is referenced by any non-DAS target
                     // we need to partially load it on DAS
                     return true;
                 }
             }
-        } 
+        }
         return false;
     }
 }

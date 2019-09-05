@@ -551,8 +551,52 @@ public class FileUtils  {
      * @param f file to delete
      */
     public static void deleteFileNowOrLater(File f) {
-        if(!deleteFile(f))
-            f.deleteOnExit();
+        if(!deleteFile(f)) {
+            deleteOnExitRecursively(f);
+        }
+    }
+
+    /**
+     * Deletes the provided file by registering a shutdown hook with the
+     * Java Runtime. Non-empty directories will be deleted recursively.
+     * @param f the file to delete on JVM shutdown
+     */
+    public static void deleteOnExitRecursively(File f) {
+        if (f != null && f.exists()) {
+            final SecurityManager securityManager = System.getSecurityManager();
+            if (securityManager != null) {
+                securityManager.checkDelete(f.getAbsolutePath());
+            }
+            FILES_TO_DELETE_ON_SHUTDOWN.add(f);
+        }
+    }
+
+    private static final Set<File> FILES_TO_DELETE_ON_SHUTDOWN = new LinkedHashSet<>();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(
+            new Thread() {
+                @Override
+                public void run() {
+                    for (File f : FILES_TO_DELETE_ON_SHUTDOWN) {
+                        delete(f);
+                    }
+                    FILES_TO_DELETE_ON_SHUTDOWN.clear();
+                }
+                private void delete(File file) {
+                    if (file.exists()) {
+                        if (file.isDirectory()) {
+                            final File[] files = file.listFiles();
+                            if (files != null) {
+                                for (File f : files) {
+                                    delete(f);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
     }
 
     /**
@@ -803,7 +847,9 @@ public class FileUtils  {
             _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
-        if (f != null) f.deleteOnExit(); // just in case
+        if (f != null) {
+            deleteOnExitRecursively(f); // just in case
+        }
         return f;
     }
 
