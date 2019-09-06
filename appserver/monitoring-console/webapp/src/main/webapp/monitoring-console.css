@@ -132,34 +132,41 @@ button.btnIcon:hover {
     color: #bbb;
 }
 #pagesTabs .page-tab {
-	display: inline-block;
+    display: inline-block;
     padding: 4px 1em;
     margin: 1px;
     font-weight: normal;
     cursor: pointer;
     line-height: 1em;
     border: 1px solid #666;
-    border-bottom: 1px solid #bbb;
-    border-top-right-radius: 3px;
+    border-top-width: 0;
     color: #bbb;
 }
 #pagesTabs .page-tab.page-selected {
     color: white;
     font-weight: bold;
     border: 1px solid white;
-    border-bottom-width: 0;
+    border-top-width: 0;
+    padding-bottom: 6px;
 }
 #layout-bar {
+	display: inline-block;
+	float: right;
 	text-align: right;
+	width: 50%;
 }
-#layout-bar button {
+#panel-iconbar {
+	padding: 0 10px;
+	margin-bottom: 5px;
+}
+#panel-iconbar button {
 	color: #bbb;
     background-color: transparent;
     padding: 5px;
     font-size: 14px;
     letter-spacing: -2px;
 }
-#layout-bar button:hover {
+#panel-iconbar button:hover {
 	color: white;
 }	
 #chart-grid {
