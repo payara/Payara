@@ -81,6 +81,19 @@ var MonitoringConsoleUtils = (function() {
 			}
 			return value;
 		},
+		
+		readTextFile: function(file) {
+		    return new Promise(function(resolve, reject){
+		        var reader = new FileReader();
+		        reader.onload = function(evt){
+		            resolve(evt.target.result);
+		        };
+		        reader.onerror = function(err) {
+		            reject(err);
+		        };
+		        reader.readAsText(file);
+		    });
+		},
 	}
 })();
 
@@ -95,13 +108,23 @@ var MonitoringConsole = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
-	const HOME_PAGE = [
-		{ series: 'ns:jvm HeapUsage', grid: { item: 0, column: 0, span: 1} },
-		{ series: 'ns:jvm CpuUsage', grid: { item: 1, column: 0, span: 1} },
-		{ series: 'ns:jvm ThreadCount', grid: { item: 0, column: 1, span: 1} },
-		{ series: 'ns:web RequestCount', grid: { item: 0, column: 2, span: 1} },
-		{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
-	];
+	const UI_PRESETS = {
+			pages: {
+				core: {
+					name: 'Core',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
+						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
+						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1} },
+						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+					]
+				}
+			},
+			settings: {},
+	};
+;
 	
 	/**
 	 * Internal API for managing set model of the user interface.
@@ -124,7 +147,7 @@ var MonitoringConsole = (function() {
 		 */
 		var settings = {};
 		
-		var currentPageId = MonitoringConsoleUtils.getPageId('Home');
+		var currentPageId;
 		
 		/**
 		 * Makes sure the page data structure has all required attributes.
@@ -142,7 +165,7 @@ var MonitoringConsole = (function() {
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
 				page.numberOfColumns = 1;
 			// make widgets from array to object if needed
-			if (typeof page.widgets === 'array') {
+			if (Array.isArray(page.widgets)) {
 				let widgets = {};
 				for (let i = 0; i < page.widgets.length; i++) {
 					let widget = page.widgets[i];
@@ -202,17 +225,8 @@ var MonitoringConsole = (function() {
 			if (!isPagesOnly)
 				settings = userInterface.settings;
 			let importedPages = isPagesOnly ? userInterface : userInterface.pages;
-			let pagesType = typeof importedPages;
 			// override or add the entry in pages from userInterface
-			if (pagesType === 'object') {
-				for (let [id, page] of Object.entries(importedPages)) {
-					try {
-						page.id = id;
-						pages[id] = sanityCheckPage(page); 
-					} catch (ex) {
-					}
-				}
-			} else if (pagesType == 'array') {
+			if (Array.isArray(importedPages)) {
 				for (let i = 0; i < importedPages.length; i++) {
 					try {
 						let page = sanityCheckPage(importedPages[i]);
@@ -220,12 +234,16 @@ var MonitoringConsole = (function() {
 					} catch (ex) {
 					}
 				}
-			}
-			if (Object.keys(pages).length == 0) {
-				let page = doCreate('Home');
-				pages[page.id] = page;
-				currentPageId = page.id;
 			} else {
+				for (let [id, page] of Object.entries(importedPages)) {
+					try {
+						page.id = id;
+						pages[id] = sanityCheckPage(page); 
+					} catch (ex) {
+					}
+				}
+			}
+			if (Object.keys(pages).length > 0) {
 				currentPageId = Object.keys(pages)[0];
 			}
 			doStore();
@@ -235,19 +253,6 @@ var MonitoringConsole = (function() {
 		function doExport(prettyPrint) {
 			let ui = { pages: pages, settings: settings };
 			return prettyPrint ? JSON.stringify(ui, null, 2) : JSON.stringify(ui);
-		}
-		
-		function readTextFile(file){
-		    return new Promise(function(resolve, reject){
-		        var reader = new FileReader();
-		        reader.onload = function(evt){
-		            resolve(evt.target.result);
-		        };
-		        reader.onerror = function(err) {
-		            reject(err);
-		        };
-		        reader.readAsText(file);
-		    });
 		}
 		
 		return {
@@ -273,7 +278,7 @@ var MonitoringConsole = (function() {
 				if (userInterface instanceof FileList) {
 					let file = userInterface[0];
 					if (file) {
-						let json = await readTextFile(file);
+						let json = await MonitoringConsoleUtils.readTextFile(file);
 						doImport(JSON.parse(json));
 					}
 				} else {
@@ -289,7 +294,7 @@ var MonitoringConsole = (function() {
 			load: function() {
 				let localStorage = window.localStorage;
 				let ui = localStorage.getItem(LOCAL_UI_KEY);
-				doImport(ui ? JSON.parse(ui) : undefined);
+				doImport(ui ? JSON.parse(ui) : JSON.parse(JSON.stringify(UI_PRESETS)));
 				return pages[currentPageId];
 			},
 			
@@ -302,7 +307,15 @@ var MonitoringConsole = (function() {
 			},
 			
 			renamePage: function(name) {
-				pages[currentPageId].name = name;
+				let pageId = MonitoringConsoleUtils.getPageId(name);
+				if (pages[pageId])
+					throw "Page with name already exist";
+				let page = pages[currentPageId];
+				page.name = name;
+				page.id = pageId;
+				pages[pageId] = page;
+				delete pages[currentPageId];
+				currentPageId = pageId;
 				doStore();
 			},
 			
@@ -317,6 +330,17 @@ var MonitoringConsole = (function() {
 				delete pages[currentPageId];
 				currentPageId = pageIds[0];
 				return pages[currentPageId];
+			},
+
+			resetPage: function() {
+				let presets = UI_PRESETS;
+				if (presets && presets.pages && presets.pages[currentPageId]) {
+					let preset = presets.pages[currentPageId];
+					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
+					doStore();
+					return true;
+				}
+				return false;
 			},
 			
 			switchPage: function(pageId) {
@@ -680,6 +704,14 @@ var MonitoringConsole = (function() {
 			
 			erase: function() {
 				if (UI.deletePage()) {
+					Charts.clear();
+					Interval.tick();
+				}
+				return UI.arrange();
+			},
+			
+			reset: function() {
+				if (UI.resetPage()) {
 					Charts.clear();
 					Interval.tick();
 				}

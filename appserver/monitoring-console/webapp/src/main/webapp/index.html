@@ -60,6 +60,8 @@
            <div id="nav-bar"><span id="pagesTabs"></span></div>
        </td>
        <td id="layout-bar" class="console-area" height="0">
+       
+           <button id="btnReset" title="Reset Page to Preset" onclick='onPageChange(MonitoringConsole.Page.reset());'>&#10226;</button>
            <button id="btnImport" title="Import Configuration...">&#128229;</button>
            <button id="btnExport" title="Export Configuration...">&#128228;</button>
            &nbsp; &nbsp;
@@ -87,9 +89,8 @@
   <table  class="properties">
   <tr><th colspan="2">Page</th></tr>
   <tr><td colspan="2"></td></tr>
-  <tr><td>New Tab</td><td><input type="text" id="pageName" /><button id="btnAddPage" title="Add new page tab with given name">Add</button></td></tr>
-  <tr><td>New Chart</td><td><select id="options"></select><button id="btnAddChart" title="Add selected chart">Add</button></td></tr>
   <tr><td>Name</td><td><input type="text" id="cftPageName" /></td></tr>
+  <tr><td>Widgets</td><td><select id="options"></select><button id="btnAddChart" title="Add selected chart">Add</button></td></tr>
   </table>
 
   <table  class="properties">
@@ -212,6 +213,7 @@ function renderPageTabs() {
 	MonitoringConsole.listPages().forEach(function(page) {
 		var tabId = page.id + '-tab';
 		var css = "page-tab" + (page.active ? ' page-selected' : '');
+		//TODO when clicking active page tab the options could open/close
 	    var newTab = $('<span/>', {id: tabId, "class": css, text: page.name});
 	    newTab.click(function() {
 	    	onPageChange(MonitoringConsole.Page.changeTo(page.id));
@@ -225,10 +227,6 @@ function renderPageTabs() {
 	bar.append(addPage);
 }
 
-$('#btnAddPage').click(function() {
-	renderPage(MonitoringConsole.Page.create($("#pageName").val()));
-	renderPageTabs();
-});
 $('#btnRemovePage').click(function() {
 	if (window.confirm("Do you really want to delete the current page?")) { 
 	    renderPage(MonitoringConsole.Page.erase());
