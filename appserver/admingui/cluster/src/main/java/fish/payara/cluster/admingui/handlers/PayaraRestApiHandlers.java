@@ -34,14 +34,14 @@ public class PayaraRestApiHandlers {
                     (List)handlerCtx.getInputValue("includeList"),
                     (String)handlerCtx.getInputValue("id"));
 
-            List<Map<String, Object>> nonHiddenNodes = new ArrayList<>();
+            List<Map<String, Object>> nonTempNodes = new ArrayList<>();
             for (Map<String, Object> node : allNodes) {
-                if (!node.get("type").equals("HIDDEN")) {
-                    nonHiddenNodes.add(node);
+                if (!node.get("type").equals("TEMP")) {
+                    nonTempNodes.add(node);
                 }
             }
 
-            handlerCtx.setOutputValue("result", nonHiddenNodes);
+            handlerCtx.setOutputValue("result", nonTempNodes);
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
@@ -67,15 +67,15 @@ public class PayaraRestApiHandlers {
                     (List)handlerCtx.getInputValue("includeList"),
                     (String)handlerCtx.getInputValue("id"));
 
-            Map<String, String> nonHiddenNodes = new HashMap<>();
+            Map<String, String> nonTempNodes = new HashMap<>();
             for (Map<String, Object> node : allNodes) {
-                if (!node.get("type").equals("HIDDEN")) {
+                if (!node.get("type").equals("TEMP")) {
                     String name = (String) node.get("name");
-                    nonHiddenNodes.put(name, parentEndpoint + name);
+                    nonTempNodes.put(name, parentEndpoint + name);
                 }
             }
 
-            handlerCtx.setOutputValue("result", nonHiddenNodes);
+            handlerCtx.setOutputValue("result", nonTempNodes);
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
@@ -101,15 +101,15 @@ public class PayaraRestApiHandlers {
                     (List)handlerCtx.getInputValue("includeList"),
                     (String)handlerCtx.getInputValue("id"));
 
-            List<String> nonHiddenNodes = new ArrayList<>();
+            List<String> nonTempNodes = new ArrayList<>();
             for (Map<String, Object> node : allNodes) {
-                if (!node.get("type").equals("HIDDEN")) {
+                if (!node.get("type").equals("TEMP")) {
                     String name = (String) node.get("name");
-                    nonHiddenNodes.add(name);
+                    nonTempNodes.add(name);
                 }
             }
 
-            handlerCtx.setOutputValue("result", nonHiddenNodes);
+            handlerCtx.setOutputValue("result", nonTempNodes);
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }

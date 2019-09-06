@@ -7,6 +7,7 @@ echo "Docker Container ID is: ${DOCKER_CONTAINER_ID}"
 if [ -z ${DOCKER_CONTAINER_IP} ]; then
     echo "No Docker container IP override given, setting to first result from 'hostname -I'"
     DOCKER_CONTAINER_IP="$(hostname -I | cut -f1 -d ' ')"
+    echo "Hostname is ${DOCKER_CONTAINER_IP}"
 fi
 
 echo "Docker Container IP is: ${DOCKER_CONTAINER_IP}"
@@ -15,8 +16,8 @@ echo "Docker Container IP is: ${DOCKER_CONTAINER_IP}"
 function createNewNode {
     echo "WARNING: Could not find a matching Docker Node: Creating a temporary node specific to this container - cleanup of this container cannot be done by Payara Server"
     if [ -z ${PAYARA_NODE_NAME} ]; then
-        echo "./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-hidden --nodehost ${DOCKER_CONTAINER_IP}"
-        PAYARA_NODE_NAME="$(./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-hidden --nodehost ${DOCKER_CONTAINER_IP})"
+        echo "./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP}"
+        PAYARA_NODE_NAME="$(./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP})"
     fi
 }
 
@@ -67,24 +68,33 @@ else
     # Check if node exists and matches this IP address
     echo "Node name provided, checking if node details match this container."
     NODE_EXISTS="$(./payara5/bin/asadmin -I false -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} get nodes.node.${PAYARA_NODE_NAME}.name)" || true
-    if [ ! -z ${NODE_EXISTS} ]; then
+    if [ ! -z "${NODE_EXISTS}" ]; then
+        # Cut off the "Command completed succesfully bit
+        NODE_EXISTS="$(echo ${NODE_EXISTS} | cut -f1 -d ' ')"
         if [ "${NODE_EXISTS}" == "nodes.node.${PAYARA_NODE_NAME}.name=${PAYARA_NODE_NAME}" ]; then
-          echo "Node with matching name found, checking node details."
-          NODE_HOST="$(./payara5/bin/asadmin -I false -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} get nodes.node.${PAYARA_NODE_NAME}.node-host)" || true
-          if [ ! -z ${NODE_HOST} ]; then
-              if [ "${NODE_HOST}" == "nodes.node.${NODE_HOST}.node-host=${DOCKER_CONTAINER_IP})" ]; then
-                  echo "Node details match, no need to create a new node."
-              else
-                  echo "Node details do not match, creating a new node."
-                  createNewNode
-              fi
-          fi
+            echo "Node with matching name found, checking node details."
+            NODE_HOST="$(./payara5/bin/asadmin -I false -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} get nodes.node.${PAYARA_NODE_NAME}.node-host)" || true
+            if [ ! -z "${NODE_HOST}" ]; then
+                # Cut off the "Command completed succesfully bit
+                NODE_HOST="$(echo ${NODE_HOST} | cut -f1 -d ' ')"
+                if [ "${NODE_HOST}" == "nodes.node.${NODE_HOST}.node-host=${DOCKER_CONTAINER_IP})" ]; then
+                    echo "Node details match, no need to create a new node."
+                else
+                    echo "Node details do not match, creating a new node."
+                    createNewNode
+                fi
+            else
+                echo "Could not retrieve node host, creating a new node."
+                createNewNode
+            fi
         else
             echo "No node with matching name found."
             createNewNode
         fi
+    else
+        echo "No node with matching name found."
+        createNewNode
     fi
-
 fi
 
 # Check if we actually have an instance name. If we don't have an instance name, we can assume that we need to create an instance from scratch

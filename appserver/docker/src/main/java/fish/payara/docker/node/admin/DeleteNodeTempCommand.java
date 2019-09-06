@@ -57,21 +57,19 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
-import java.util.logging.Logger;
-
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
-@Service(name = "_delete-node-hidden")
+@Service(name = "_delete-node-temp")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
         @RestEndpoint(configBean = Nodes.class,
                 opType = POST,
-                path = "_delete-node-hidden",
-                description = "Delete Node Hidden")
+                path = "_delete-node-temp",
+                description = "Delete Node Temp")
 })
-public class DeleteNodeHiddenCommand implements AdminCommand {
+public class DeleteNodeTempCommand implements AdminCommand {
 
     @Param(name = "name", primary = true)
     private String name;
@@ -94,10 +92,10 @@ public class DeleteNodeHiddenCommand implements AdminCommand {
             return;
         }
 
-        if (!(node.getType().equals("HIDDEN"))) {
+        if (!(node.getType().equals("TEMP"))) {
             // No node to delete nothing to do here
             actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("Node with given name is not a hidden node: " + name);
+            actionReport.setMessage("Node with given name is not a temp node: " + name);
             return;
 
         }

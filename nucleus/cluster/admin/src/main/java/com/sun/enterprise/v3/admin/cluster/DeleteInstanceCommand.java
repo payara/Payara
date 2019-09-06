@@ -176,7 +176,7 @@ public class DeleteInstanceCommand implements AdminCommand {
 
             if (theNode.getType().equals("DOCKER")) {
                 deleteDockerContainer(ctx);
-            } else if (!theNode.getType().equals("HIDDEN")){
+            } else if (!theNode.getType().equals("TEMP")){
                 deleteInstanceFilesystem(ctx);
             }
 
@@ -219,8 +219,8 @@ public class DeleteInstanceCommand implements AdminCommand {
             report.setActionExitCode(FAILURE);
             report.setMessage(msg);
         } else {
-            if (theNode.getType().equals("HIDDEN") && !theNode.nodeInUse()) {
-                deleteHiddenNode(ctx);
+            if (theNode.getType().equals("TEMP") && !theNode.nodeInUse()) {
+                deleteTempNode(ctx);
             }
         }
     }
@@ -288,14 +288,14 @@ public class DeleteInstanceCommand implements AdminCommand {
                 instanceName, noderef, theNode.getNodeHost()));
     }
 
-    private void deleteHiddenNode(AdminCommandContext ctx) {
+    private void deleteTempNode(AdminCommandContext ctx) {
         ActionReport actionReport = ctx.getActionReport().addSubActionsReport();
 
         if (theNode.nodeInUse()) {
             logger.log(Level.FINE, "Temporary node " + theNode.getName()
                     + " still detected as having instances registered to it, skipping deletion.");
         } else {
-            CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-node-hidden",
+            CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-node-temp",
                     actionReport, ctx.getSubject());
             ParameterMap commandParameters = new ParameterMap();
             commandParameters.add("DEFAULT", theNode.getName());

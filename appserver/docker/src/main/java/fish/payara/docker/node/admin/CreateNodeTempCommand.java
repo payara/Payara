@@ -61,16 +61,16 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
-@Service(name = "_create-node-hidden")
+@Service(name = "_create-node-temp")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
         @RestEndpoint(configBean = Nodes.class,
                 opType = POST,
-                path = "_create-node-hidden",
-                description = "Create Node Hidden")
+                path = "_create-node-temp",
+                description = "Create Node Temp")
 })
-public class CreateNodeHiddenCommand implements AdminCommand {
+public class CreateNodeTempCommand implements AdminCommand {
 
     @Param(name = "name", primary = true)
     String name;
@@ -92,7 +92,7 @@ public class CreateNodeHiddenCommand implements AdminCommand {
         if (StringUtils.ok(nodehost)) {
             commandParameters.add(PARAM_NODEHOST, nodehost);
         }
-        commandParameters.add(PARAM_TYPE, "HIDDEN");
+        commandParameters.add(PARAM_TYPE, "TEMP");
 
         commandInvocation.parameters(commandParameters);
         commandInvocation.execute();
