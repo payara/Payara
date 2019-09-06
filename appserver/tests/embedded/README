@@ -1,6 +1,0 @@
-Set the following before running 'mvn clean verify':
-
-MAVEN_OPTS="-Xmx1024m"
-
-(See http://jira.codehaus.org/browse/MCOMPILER-64)
-

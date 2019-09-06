@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~    The contents of this file are subject to the terms of either the GNU
+  ~    General Public License Version 2 only ("GPL") or the Common Development
+  ~    and Distribution License("CDDL") (collectively, the "License").  You
+  ~    may not use this file except in compliance with the License.  You can
+  ~    obtain a copy of the License at
+  ~    https://github.com/payara/Payara/blob/master/LICENSE.txt
+  ~    See the License for the specific
+  ~    language governing permissions and limitations under the License.
+  ~
+  ~    When distributing the software, include this License Header Notice in each
+  ~    file and include the License file at glassfish/legal/LICENSE.txt.
+  ~
+  ~    GPL Classpath Exception:
+  ~    The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~    file that accompanied this code.
+  ~
+  ~    Modifications:
+  ~    If applicable, add the following below the License Header, with the fields
+  ~    enclosed by brackets [] replaced by your own identifying information:
+  ~    "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~    Contributor(s):
+  ~    If you wish your version of this file to be governed by only the CDDL or
+  ~    only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~    elects to include this software in this distribution under the [CDDL or GPL
+  ~    Version 2] license."  If you don't indicate a single choice of license, a
+  ~    recipient has the option to distribute your version of this file under
+  ~    either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~    its licensees as provided above.  However, if you add GPL Version 2 code
+  ~    and therefore, elected the GPL Version 2 license, then the option applies
+  ~    only if the new code is made subject to such option by the copyright
+  ~    holder.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>fish.payara.samples.ejb-http-remoting</groupId>
+        <artifactId>ejb-http-remoting</artifactId>
+        <version>5.193-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>client</artifactId>
+
+    <properties>
+        <payara.adminPort>4848</payara.adminPort>
+        <payara.username>admin</payara.username>
+        <payara.password></payara.password>
+        <payara.hostname>localhost</payara.hostname>
+        <payara.domainName>domain1</payara.domainName>
+        <payara.home></payara.home>
+        <payara.domainDir>${payara.home}/glassfish/domains</payara.domainDir>
+        <servlet.port>8080</servlet.port>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>ejb-http-client</artifactId>
+	        <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.9.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.samples.ejb-http-remoting</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.mq</groupId>
+            <artifactId>imq</artifactId><!-- mq-client hasn't been released by EE4J-->
+            <version>5.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- This will use cargo for testing to keep all the dependencies away from the test classpath -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.21.0</version>
+                <executions>
+                    <execution>
+                        <id>perform-it</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <systemProperties>
+                                <property>
+                                    <name>servlet.port</name>
+                                    <value>${servlet.port}</value>
+                                </property>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-it</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-server-app</id>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <stripVersion>true</stripVersion>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>server-app</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <configuration>
+                    <skip>${skipTests}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>deploy</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>redeploy</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>undeploy</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>undeploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <version>1.7.3</version>
+                    <configuration>
+                        <container>
+                            <containerId>glassfish5x</containerId>
+                            <type>remote</type>
+                        </container>
+                        <configuration>
+                            <type>runtime</type>
+                            <properties>
+                                <cargo.remote.username>${payara.username}</cargo.remote.username>
+                                <cargo.remote.password>${payara.password}</cargo.remote.password>
+                                <cargo.glassfish.admin.port>${payara.adminPort}</cargo.glassfish.admin.port>
+                                <cargo.hostname>${payara.hostname}</cargo.hostname>
+                                <cargo.servlet.port>${servlet.port}</cargo.servlet.port>
+                            </properties>
+                        </configuration>
+                        <deployables>
+                            <deployable>
+                                <properties>
+                                    <context>server-app</context>
+                                </properties>
+                                <location>${project.build.directory}/dependency/server-app.war</location>
+                                <type>war</type>
+                            </deployable>
+                        </deployables>
+                    </configuration>
+                    <!-- provides JSR88 client API to deploy on Payara -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.glassfish.main.deployment</groupId>
+                            <artifactId>deployment-client</artifactId>
+                            <version>5.0</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
