@@ -44,6 +44,7 @@ package com.sun.enterprise.admin.util;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -52,7 +53,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
-import com.sun.enterprise.util.StringUtils;
 
 /**
  *
@@ -72,7 +72,7 @@ public class InstanceRestCommandExecutor extends ServerRemoteRestAdminCommand im
     private final FailurePolicy failPolicy;
     private final InstanceCommandResult result;
 
-    private static final LocalStringManagerImpl STRINGS = new LocalStringManagerImpl(InstanceCommandExecutor.class);
+    private static final LocalStringManagerImpl STRINGS = new LocalStringManagerImpl(InstanceRestCommandExecutor.class);
 
     public InstanceRestCommandExecutor(ServiceLocator habitat,
                                    String name, FailurePolicy fail, FailurePolicy offline, Server server,

@@ -208,8 +208,8 @@ public class ClusterOperationUtil {
                     f = instanceState.submitJob(svr, ice, aResult);
                 } else {
                     LOGGER.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
-                    InstanceCommandExecutor ice =
-                            new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                    InstanceRestCommandExecutor ice =
+                            new InstanceRestCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
                                     svr, host, port, LOGGER, parameters, aReport, aResult);
                     if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
                         continue;
@@ -271,7 +271,7 @@ public class ClusterOperationUtil {
                     iReport = ice.getReport();
                     iServer = ice.getServer();
                 } else {
-                    InstanceCommandExecutor ice = (InstanceCommandExecutor) aResult.getInstanceCommand();
+                    InstanceRestCommandExecutor ice = (InstanceRestCommandExecutor) aResult.getInstanceCommand();
                     iReport = ice.getReport();
                     iServer = ice.getServer();
                 }
