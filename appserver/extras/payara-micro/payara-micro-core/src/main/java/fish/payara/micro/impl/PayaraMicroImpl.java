@@ -1516,7 +1516,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     File file = new File(entry);
                     String deployContext = file.getName();
                     String name = deployContext.substring(0, deployContext.length() - 4);
-                    if (hasJavaFileExtension(deployContext)) {
+                    if (hasJavaArchiveExtension(deployContext)) {
                         deployContext = name;
                     }
 
@@ -1562,7 +1562,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
 
-                            if (hasJavaFileExtension(deployContext)) {
+                            if (hasJavaArchiveExtension(deployContext)) {
                                 deployContext = deployContext.substring(0, deployContext.length() - 4);
                             }
 
@@ -1590,7 +1590,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             for (File entry : deploymentDirEntries) {
                 String entryPath = entry.getAbsolutePath();
-                if (entry.isFile() && entry.canRead() && hasJavaFileExtension(entryPath)) {
+                if (entry.isFile() && entry.canRead() && hasJavaArchiveExtension(entryPath)) {
                     String deployContext = null;
                     if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
                         deployContext = contextRoots.getProperty(entry.getName());
@@ -1608,7 +1608,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
                             
-                            if (hasJavaFileExtension(deployContext)) {
+                            if (hasJavaArchiveExtension(deployContext)) {
                                 deployContext = deployContext.substring(0, deployContext.length() - 4);
                             }
                             
@@ -1651,12 +1651,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
     
-    private boolean hasJavaFileExtension(String filePath) {
-        if (filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar")) {
-            return true;
-        }
-        
-        return false;
+    private boolean hasJavaArchiveExtension(String filePath) {        
+        return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
     }
 
     private void addShutdownHook() {
