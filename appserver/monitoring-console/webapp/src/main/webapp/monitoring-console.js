@@ -52,8 +52,8 @@ var MonitoringConsoleUtils = (function() {
 	
 	return {
 		
-		getSpan: function(config, numberOfColumns, currentColumn) {
-			let span = config.grid && config.grid.span ? config.grid.span : 1;
+		getSpan: function(widget, numberOfColumns, currentColumn) {
+			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
 			if (typeof span === 'string') {
 				if (span === 'full') {
 					span = numberOfColumns;
@@ -65,15 +65,6 @@ var MonitoringConsoleUtils = (function() {
 				span = numberOfColumns - currentColumn;
 			}
 			return span;
-		},
-		
-		getSeriesId: function(configOrSeries) {
-			let type = typeof configOrSeries;
-			if (type === 'string')
-				return configOrSeries;
-			if (type === 'object')
-				return configOrSeries.series;
-			return undefined;
 		},
 		
 		getPageId: function(name) {
@@ -100,9 +91,9 @@ var MonitoringConsoleUtils = (function() {
  */
 var MonitoringConsole = (function() {
 	/**
-	 * Key used in local stage for the pages configuration
+	 * Key used in local stage for the userInterface
 	 */
-	const LOCAL_PAGES_KEY = 'fish.payara.monitoring-console.defaultConfigs';
+	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
 	const HOME_PAGE = [
 		{ series: 'ns:jvm HeapUsage', grid: { item: 0, column: 0, span: 1} },
@@ -113,78 +104,192 @@ var MonitoringConsole = (function() {
 	];
 	
 	/**
-	 * Internal API for managing set of pages.
+	 * Internal API for managing set model of the user interface.
 	 */
-	var Pages = (function() {
+	var UI = (function() {
 
 		/**
 		 * All page properties must not be must be values as page objects are converted to JSON and back for local storage.
 		 * 
 		 * {object} - map of pages, name of page as key/field;
 		 * {string} name - name of the page
-		 * {object} configs -  map of the chart configurations with series as key
+		 * {object} widgets -  map of the chart configurations with series as key
 		 * 
 		 * Each page is an object describing a page or tab containing one or more graphs by their configuration.
 		 */
 		var pages = {};
 		
+		/**
+		 * General settings for the user interface
+		 */
+		var settings = {};
+		
 		var currentPageId = MonitoringConsoleUtils.getPageId('Home');
 		
+		/**
+		 * Makes sure the page data structure has all required attributes.
+		 */
+		function sanityCheckPage(page) {
+			if (!page.id)
+				page.id = MonitoringConsoleUtils.getPageId(page.name);
+			if (page.configs) {
+				if (!page.widgets)
+					page.widgets = page.configs;
+				delete page['configs'];
+			}
+			if (!page.widgets)
+				page.widgets = {};
+			if (!page.numberOfColumns || page.numberOfColumns < 1)
+				page.numberOfColumns = 1;
+			// make widgets from array to object if needed
+			if (typeof page.widgets === 'array') {
+				let widgets = {};
+				for (let i = 0; i < page.widgets.length; i++) {
+					let widget = page.widgets[i];
+					widgets[widget.series] = widget;
+				}
+				page.widgets = widgets;
+			}
+			Object.values(page.widgets).forEach(sanityCheckWidget);
+			return page;
+		}
+		
+		/**
+		 * Makes sure a widget (configiguration for a chart) within a page has all required attributes
+		 */
+		function sanityCheckWidget(widget) {
+			if (!widget.target)
+				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
+			if (!widget.options) {
+				widget.options = { 
+					beginAtZero: true,
+					autoTimeTicks: true,
+				};
+			}
+			if (!widget.grid)
+				widget.grid = {};
+			if (widget.position)
+				delete widget['position'];
+			return widget;
+		}
+		
 		function doStore() {
-			window.localStorage.setItem(LOCAL_PAGES_KEY, JSON.stringify(pages));
+			window.localStorage.setItem(LOCAL_UI_KEY, doExport());
 		}
 		
 		function doDeselect() {
-			Object.values(pages[currentPageId].configs)
-				.forEach(config => config.selected = false);
+			Object.values(pages[currentPageId].widgets)
+				.forEach(widget => widget.selected = false);
 		}
 		
 		function doCreate(name) {
 			if (!name)
 				throw "New page must have a unique name";
-			if (name === 'options')
-				throw "Illegal name for a page: " + name;
 			var id = MonitoringConsoleUtils.getPageId(name);
 			if (pages[id])
 				throw "A page with name "+name+" already exist";
-			let page = {
-				id: id,
-				name: name,
-				configs: {},
-				numberOfColumns: 1,
-			};
+			let page = sanityCheckPage({name: name});
 			pages[page.id] = page;
 			currentPageId = page.id;
 			return page;
 		}
 		
+		function doImport(userInterface) {
+			if (!userInterface) {
+				return false;
+			}
+			let isPagesOnly = !userInterface.pages || !userInterface.settings;
+			if (!isPagesOnly)
+				settings = userInterface.settings;
+			let importedPages = isPagesOnly ? userInterface : userInterface.pages;
+			let pagesType = typeof importedPages;
+			// override or add the entry in pages from userInterface
+			if (pagesType === 'object') {
+				for (let [id, page] of Object.entries(importedPages)) {
+					try {
+						page.id = id;
+						pages[id] = sanityCheckPage(page); 
+					} catch (ex) {
+					}
+				}
+			} else if (pagesType == 'array') {
+				for (let i = 0; i < importedPages.length; i++) {
+					try {
+						let page = sanityCheckPage(importedPages[i]);
+						pages[page.id] = page;
+					} catch (ex) {
+					}
+				}
+			}
+			if (Object.keys(pages).length == 0) {
+				let page = doCreate('Home');
+				pages[page.id] = page;
+				currentPageId = page.id;
+			} else {
+				currentPageId = Object.keys(pages)[0];
+			}
+			doStore();
+			return true;
+		}
+		
+		function doExport(prettyPrint) {
+			let ui = { pages: pages, settings: settings };
+			return prettyPrint ? JSON.stringify(ui, null, 2) : JSON.stringify(ui);
+		}
+		
+		function readTextFile(file){
+		    return new Promise(function(resolve, reject){
+		        var reader = new FileReader();
+		        reader.onload = function(evt){
+		            resolve(evt.target.result);
+		        };
+		        reader.onerror = function(err) {
+		            reject(err);
+		        };
+		        reader.readAsText(file);
+		    });
+		}
+		
 		return {
-			current: function() {
+			currentPage: function() {
 				return pages[currentPageId];
 			},
 			
-			list: function() {
-				return Object.values(pages).filter(page => page.id !== undefined).map(function(page) { 
+			listPages: function() {
+				return Object.values(pages).map(function(page) { 
 					return { id: page.id, name: page.name, active: page.id === currentPageId };
 				});
 			},
 			
+			$export: function() {
+				return doExport(true);
+			},
+			
 			/**
-			 * Loads and returns the configuration from the local storage
+			 * @param {FileList|object} userInterface - a plain user interface configuration object or a file containing such an object
+			 * @param {function} onImportComplete - optional function to call when import is done
+			 */
+			$import: async (userInterface, onImportComplete) => {
+				if (userInterface instanceof FileList) {
+					let file = userInterface[0];
+					if (file) {
+						let json = await readTextFile(file);
+						doImport(JSON.parse(json));
+					}
+				} else {
+					doImport(userInterface)
+				}
+				if (onImportComplete)
+					onImportComplete();
+			},
+			
+			/**
+			 * Loads and returns the userInterface from the local storage
 			 */
 			load: function() {
 				let localStorage = window.localStorage;
-				let item = localStorage.getItem(LOCAL_PAGES_KEY);
-				if (item) {
-					var localPages = JSON.parse(item);
-					for (let [id, page] of Object.entries(localPages)) {
-						pages[id] = page; // override or add the entry in pages from local storage
-					}
-				} else {
-					let page = doCreate('Home');
-					pages[page.id] = page;
-					currentPageId = page.id;
-				}
+				let ui = localStorage.getItem(LOCAL_UI_KEY);
+				doImport(ui ? JSON.parse(ui) : undefined);
 				return pages[currentPageId];
 			},
 			
@@ -192,72 +297,66 @@ var MonitoringConsole = (function() {
 			 * Creates a new page with given name, ID is derived from name.
 			 * While name can be changed later on the ID is fixed.
 			 */
-			create: function(name) {
+			createPage: function(name) {
 				return doCreate(name);
 			},
 			
-			rename: function(name) {
+			renamePage: function(name) {
 				pages[currentPageId].name = name;
 				doStore();
 			},
 			
 			/**
-			 * Deletes the active page and changes to the home page
+			 * Deletes the active page and changes to the first page.
+			 * Does not delete the last page.
 			 */
-			erase: function() {
-				let homePageId = MonitoringConsoleUtils.getPageId('Home');
-				if (currentPageId === homePageId)
+			deletePage: function() {
+				let pageIds = Object.keys(pages);
+				if (pageIds.length <= 1)
 					return undefined;
 				delete pages[currentPageId];
-				currentPageId = homePageId;
+				currentPageId = pageIds[0];
 				return pages[currentPageId];
 			},
 			
-			changeTo: function(pageId) {
+			switchPage: function(pageId) {
 				if (!pages[pageId])
 					return undefined;
 				currentPageId = pageId;
 				return pages[currentPageId];
 			},
 			
-			remove: function(configOrSeries) {
-				let series = MonitoringConsoleUtils.getSeriesId(configOrSeries);
-				let configs = pages[currentPageId].configs;
-				if (series && configs) {
-					delete configs[series];
+			removeWidget: function(series) {
+				let widgets = pages[currentPageId].widgets;
+				if (series && widgets) {
+					delete widgets[series];
 				}
 			},
 			
-			add: function(config) {
-				if (typeof config === 'object') {
-					if (typeof config.series !== 'string')
-						throw 'configuration object requires string property `series`';
-					if (typeof config.target !== 'string')
-						throw 'configuration object requires string property `target`';
-					doDeselect();
-					var configs = pages[currentPageId].configs;
-					configs[config.series] = config;
-					config.selected = true;
-				} else {
-					throw 'configuration was no object but: ' + config;
-				}
+			addWidget: function(series) {
+				if (typeof series !== 'string')
+					throw 'configuration object requires string property `series`';
+				doDeselect();
+				let widgets = pages[currentPageId].widgets;
+				let widget = { series: series };
+				widgets[series] = sanityCheckWidget(widget);
+				widget.selected = true;
 			},
 			
-			configure: function(configUpdate, series) {
+			configureWidget: function(widgetUpdate, series) {
 				let selected = series
-					? [pages[currentPageId].configs[series]]
-					: Object.values(pages[currentPageId].configs).filter(config => config.selected);
-				selected.forEach(config => configUpdate.call(window, config));
+					? [pages[currentPageId].widgets[series]]
+					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
+				selected.forEach(widget => widgetUpdate.call(window, widget));
 				doStore();
 				return selected;
 			},
 			
-			select: function(configOrSeries) {
-				let series = MonitoringConsoleUtils.getSeriesId(configOrSeries);
-				let config = pages[currentPageId].configs[series];
-				config.selected = !(config.selected === true);
+			select: function(series) {
+				let widget = pages[currentPageId].widgets[series];
+				widget.selected = !(widget.selected === true);
 				doStore();
-				return config.selected === true;
+				return widget.selected === true;
 			},
 			
 			deselect: function() {
@@ -266,26 +365,26 @@ var MonitoringConsole = (function() {
 			},
 			
 			selected: function() {
-				return Object.values(pages[currentPageId].configs)
-					.filter(config => config.selected)
-					.map(config => config.series);
+				return Object.values(pages[currentPageId].widgets)
+					.filter(widget => widget.selected)
+					.map(widget => widget.series);
 			},
 			
-			layout: function(columns) {
+			arrange: function(columns) {
 				let page = pages[currentPageId];
 				if (!page)
 					return [];
 				if (columns)
 					page.numberOfColumns = columns;
 				let numberOfColumns = page.numberOfColumns || 1;
-				let configs = page.configs;
+				let widgets = page.widgets;
 				let configsByColumn = new Array(numberOfColumns);
 				for (let col = 0; col < numberOfColumns; col++)
 					configsByColumn[col] = [];
-				// insert order configs
-				Object.values(configs).forEach(function(config) {
-					let column = config.grid && config.grid.column ? config.grid.column : 0;
-					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(config);
+				// insert order widgets
+				Object.values(widgets).forEach(function(widget) {
+					let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
+					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(widget);
 				});
 				// build up rows with columns, occupy spans with empty 
 				var layout = new Array(numberOfColumns);
@@ -299,15 +398,15 @@ var MonitoringConsole = (function() {
 							return 1;
 						return a.grid.item - b.grid.item;
 					});
-					orderedConfigs.forEach(function(config) {
-						let span = MonitoringConsoleUtils.getSpan(config, numberOfColumns, col);
-						let info = { target: config.target, span: span, series: config.series};
+					orderedConfigs.forEach(function(widget) {
+						let span = MonitoringConsoleUtils.getSpan(widget, numberOfColumns, col);
+						let info = { span: span, widget: widget};
 						for (let spanX = 0; spanX < span; spanX++) {
 							let column = layout[col + spanX];
 							if (spanX == 0) {
-								if (!config.grid)
-									config.grid = { column: col, span: span }; // init grid
-								config.grid.item = column.length; // update item position
+								if (!widget.grid)
+									widget.grid = { column: col, span: span }; // init grid
+								widget.grid.item = column.length; // update item position
 							}
 							for (let spanY = 0; spanY < span; spanY++) {
 								column.push(spanX === 0 && spanY === 0 ? info : null);
@@ -342,15 +441,15 @@ var MonitoringConsole = (function() {
 		/**
 		 * Basically translates the MC level configuration options to Chart.js options
 		 */
-		function syncOptions(config, chart) {
+		function syncOptions(widget, chart) {
 			let options = chart.options;
-			options.scales.yAxes[0].ticks.beginAtZero = config.options.beginAtZero;
-			options.scales.xAxes[0].ticks.source = config.options.autoTimeTicks ? 'auto' : 'data';
-			options.elements.line.tension = config.options.drawCurves ? 0.4 : 0;
-			let time = config.options.drawAnimations ? 1000 : 0;
+			options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
+			options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
+			options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
+			let time = widget.options.drawAnimations ? 1000 : 0;
 			options.animation.duration = time;
 			options.responsiveAnimationDuration = time;
-	    	let rotation = config.options.rotateTimeLabels ? 90 : undefined;
+	    	let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
 	    	options.scales.xAxes[0].ticks.minRotation = rotation;
 	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
 		}
@@ -359,12 +458,12 @@ var MonitoringConsole = (function() {
 			/**
 			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
 			 */
-			getOrCreate: function(config) {
-				let series = MonitoringConsoleUtils.getSeriesId(config);
+			getOrCreate: function(widget) {
+				let series = widget.series;
 				let chart = charts[series];
 				if (chart)
 					return chart;
-				chart = new Chart(config.target, {
+				chart = new Chart(widget.target, {
 					type: 'line',
 					data: {
 						datasets: [],
@@ -394,7 +493,7 @@ var MonitoringConsole = (function() {
 									lineWidth: 0.5,
 								},
 								ticks: {
-									beginAtZero: config.options.beginAtZero,
+									beginAtZero: widget.options.beginAtZero,
 									precision:0, // no decimal places in labels
 								},
 							}],
@@ -408,7 +507,7 @@ var MonitoringConsole = (function() {
 				        }
 					},
 				});
-				syncOptions(config, chart);
+				syncOptions(widget, chart);
 				charts[series] = chart;
 				return chart;
 			},
@@ -417,14 +516,14 @@ var MonitoringConsole = (function() {
 				Object.keys(charts).forEach(doDestroy)
 			},
 			
-			destroy: function(configOrSeries) {
-				doDestroy(MonitoringConsoleUtils.getSeriesId(configOrSeries));
+			destroy: function(series) {
+				doDestroy(series);
 			},
 			
-			update: function(config) {
-				let chart = charts[config.series];
+			update: function(widget) {
+				let chart = charts[widget.series];
 				if (chart) {
-					syncOptions(config, chart);
+					syncOptions(widget, chart);
 					chart.update();
 				}
 			},
@@ -498,13 +597,13 @@ var MonitoringConsole = (function() {
 	return {
 		
 		init: function(onDataUpdate) {
-			Pages.load();
+			UI.load();
 			Interval.init(function() {
-				let configs = Pages.current().configs;
+				let widgets = UI.currentPage().widgets;
 				let payload = {
 				};
 				let instances = $('#cfgInstances').val();
-				payload.series = Object.keys(configs).map(function(series) { 
+				payload.series = Object.keys(widgets).map(function(series) { 
 					return { 
 						series: series,
 						instances: instances
@@ -518,35 +617,40 @@ var MonitoringConsole = (function() {
 					dataType:"json",
 				});
 				request.done(function(response) {
-					Object.values(configs).forEach(function(config) {
+					Object.values(widgets).forEach(function(widget) {
 						onDataUpdate({
-							config: config,
-							data: response[config.series],
-							chart: () => Charts.getOrCreate(config),
+							widget: widget,
+							data: response[widget.series],
+							chart: () => Charts.getOrCreate(widget),
 						});
 					});
 				});
 				request.fail(function(jqXHR, textStatus) {
-					Object.values(configs).forEach(function(config) {
+					Object.values(widgets).forEach(function(widget) {
 						onDataUpdate({
-							config: config,
-							chart: () => Charts.getOrCreate(config),
+							widget: widget,
+							chart: () => Charts.getOrCreate(widget),
 						});
 					});
 				});
 			});
 			Interval.resume();
-			return Pages.layout();
+			return UI.arrange();
+		},
+		
+		$export: UI.$export,
+		$import: function(userInterface, onImportComplete) {
+			UI.$import(userInterface, () => onImportComplete(UI.arrange()));
 		},
 		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		getSeries: function(consumer) {
+		listSeries: function(consumer) {
 			$.getJSON("api/series/", consumer);
 		},
 		
-		getPages: Pages.list,
+		listPages: UI.listPages,
 		
 		/**
 		 * API to control the chart refresh interval.
@@ -563,50 +667,31 @@ var MonitoringConsole = (function() {
 		 */
 		Page: {
 			
-			id: () => Pages.current().id,
-			name: () => Pages.current().name,
-			isEmpty: () => (Object.keys(Pages.current().configs).length === 0),
-			rename: Pages.rename,
+			id: () => UI.currentPage().id,
+			name: () => UI.currentPage().name,
+			rename: UI.renamePage,
+			isEmpty: () => (Object.keys(UI.currentPage().widgets).length === 0),
 			
 			create: function(name) {
-				Pages.create(name);
+				UI.createPage(name);
 				Charts.clear();
-				return Pages.layout();
+				return UI.arrange();
 			},
+			
 			erase: function() {
-				if (Pages.erase()) {
+				if (UI.deletePage()) {
 					Charts.clear();
 					Interval.tick();
 				}
-				return Pages.layout();
+				return UI.arrange();
 			},
 			
 			changeTo: function(pageId) {
-				if (Pages.changeTo(pageId)) {
+				if (UI.switchPage(pageId)) {
 					Charts.clear();
 					Interval.tick();
 				}
-				return Pages.layout();
-			},
-			
-			add: function(config) {
-				Pages.add(config);
-				Interval.tick();
-				return Pages.layout();
-			},
-			
-			remove: function(configOrSeries) {
-				Charts.destroy(configOrSeries);
-				Pages.remove(configOrSeries);
-				return Pages.layout();
-			},
-			
-			/**
-			 * Removes and destroys all chart objects of the active page
-			 */
-			clear: function() {
-				Charts.clear();
-				return Pages.layout();
+				return UI.arrange();
 			},
 			
 			/**
@@ -615,30 +700,46 @@ var MonitoringConsole = (function() {
 			 * 
 			 * @param {number} numberOfColumns - the number of columns the charts should be arrange in
 			 */
-			rearrange: Pages.layout,
+			arrange: UI.arrange,
 			
-			configure: function(series, configUpdate) {
-				Pages.configure(configUpdate, series).forEach(Charts.update);
-				return Pages.layout();
-			},
-			
-			/**
-			 * API for the set of selected charts within the active page.
-			 */
-			Selection: {
+			Widgets: {
 				
-				getSeries: Pages.selected,
-				toggle: Pages.select,
-				clear: Pages.deselect,
+				add: function(series) {
+					UI.addWidget(series);
+					Interval.tick();
+					return UI.arrange();
+				},
 				
+				remove: function(series) {
+					Charts.destroy(series);
+					UI.removeWidget(series);
+					return UI.arrange();
+				},
+				
+				configure: function(series, widgetUpdate) {
+					UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+					return UI.arrange();
+				},
+
 				/**
-				 * @param {function} configUpdate - a function accepting chart configuration applied to each chart
+				 * API for the set of selected widgets on the current page.
 				 */
-				configure: function(configUpdate) {
-					Pages.configure(configUpdate).forEach(Charts.update);
-					return Pages.layout();
+				Selection: {
+					
+					listSeries: UI.selected,
+					toggle: UI.select,
+					clear: UI.deselect,
+					
+					/**
+					 * @param {function} widgetUpdate - a function accepting chart configuration applied to each chart
+					 */
+					configure: function(widgetUpdate) {
+						UI.configureWidget(widgetUpdate).forEach(Charts.update);
+						return UI.arrange();
+					},
 				},
 			},
+			
 		},
 
 	};
@@ -744,20 +845,20 @@ var MonitoringConsoleRender = (function() {
     	return points2d;
     }
     
-    function createInstanceDatasets(config, data, lineColor, bgColor) {
-    	if (config.options.perSec) {
+    function createInstanceDatasets(widget, data, lineColor, bgColor) {
+    	if (widget.options.perSec) {
     		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
     	}
     	let points = createInstancePoints(data.points)
     	let datasets = [];
     	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
-    	if (points.length > 0 && config.options.drawAvgLine) {
+    	if (points.length > 0 && widget.options.drawAvgLine) {
 			datasets.push(createAverageLineDataset(data, points, lineColor));
 		}
-		if (points.length > 0 && config.options.drawMinLine && data.observedMin > 0) {
+		if (points.length > 0 && widget.options.drawMinLine && data.observedMin > 0) {
 			datasets.push(createMinimumLineDataset(data, points, lineColor));
 		}
-		if (points.length > 0 && config.options.drawMaxLine) {
+		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(data, points, lineColor));
 		}
 		return datasets;
@@ -766,12 +867,12 @@ var MonitoringConsoleRender = (function() {
 	return {
 		chart: function(update) {
 			var data = update.data;
-			var config = update.config;
+			var widget = update.widget;
 			var chart = update.chart();
 			var datasets = [];
 			for (var j = 0; j < data.length; j++) {
 				datasets = datasets.concat(
-						createInstanceDatasets(config, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
+						createInstanceDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
 			}
 			chart.data.datasets = datasets;
 			chart.update(0);

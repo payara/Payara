@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 
@@ -76,7 +75,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     private ConcurrentMap<String, ConcurrentMap<String, Queue<Object>>> vsNameToStatsProviderMap =
             new ConcurrentHashMap<>();
     private Queue<Object> webContainerStatsProviderQueue = new ConcurrentLinkedQueue<>();
-    private AtomicBoolean isWebStatsProvidersRegistered = new AtomicBoolean(false);
 
     public WebStatsProviderBootstrap() {
     }
@@ -88,10 +86,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     }
 
     private synchronized void registerWebStatsProviders() {
-        if (isWebStatsProvidersRegistered.get()) {
-            return;
-        }
-
         JspStatsProvider jsp = new JspStatsProvider(null, null);
         RequestStatsProvider wsp = new RequestStatsProvider(null, null);
         ServletStatsProvider svsp = new ServletStatsProvider(null, null);
@@ -104,8 +98,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         webContainerStatsProviderQueue.add(wsp);
         webContainerStatsProviderQueue.add(svsp);
         webContainerStatsProviderQueue.add(sssp);
-
-        isWebStatsProvidersRegistered.set(true);
     }
 
     public void registerApplicationStatsProviders(String monitoringName,
@@ -186,15 +178,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
 
         if (statsProviderMap.isEmpty()) {
             vsNameToStatsProviderMap.remove(vsName);
-        }
-
-        // remove web stats provider if it is empty (for all vs)
-        if (vsNameToStatsProviderMap.isEmpty()) {
-            for (Object statsProvider : webContainerStatsProviderQueue) {
-                StatsProviderManager.unregister(statsProvider);
-            }
-            webContainerStatsProviderQueue.clear();
-            isWebStatsProvidersRegistered.set(false);
         }
     }
 

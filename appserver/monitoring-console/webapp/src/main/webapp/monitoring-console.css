@@ -126,6 +126,11 @@ button.btnIcon:hover {
     display: inline-block;
     padding: 1px 5px;
 }
+.caption-bar h3 i {
+    font-weight: normal;
+    font-style: normal;
+    color: #bbb;
+}
 #pagesTabs .page-tab {
 	display: inline-block;
     padding: 4px 1em;
