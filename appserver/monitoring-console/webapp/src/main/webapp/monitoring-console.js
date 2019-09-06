@@ -117,7 +117,7 @@ var MonitoringConsole = (function() {
 						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
 						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
 						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1} },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true } },
 						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
 					]
 				}
