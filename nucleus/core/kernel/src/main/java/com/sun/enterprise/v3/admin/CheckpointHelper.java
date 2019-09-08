@@ -40,7 +40,7 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.StringUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,16 +67,13 @@ import org.glassfish.api.admin.Payload.Part;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FilenameFilter;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.common.util.ObjectInputOutputStreamFactory;
@@ -450,7 +447,7 @@ public class CheckpointHelper {
         Inbound outboundSource = loadInbound(outboundFile);
         Iterator<Part> parts = outboundSource.parts();
         File topDir = createTempDir("checkpoint", "");
-        FileUtils.deleteOnExitRecursively(topDir);
+        FileUtils.deleteOnExit(topDir);
         while (parts.hasNext()) {
             Part part = parts.next();
             File sourceFile = File.createTempFile("source", "", topDir);

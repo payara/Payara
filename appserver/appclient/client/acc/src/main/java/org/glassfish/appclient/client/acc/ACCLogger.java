@@ -46,7 +46,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -155,7 +154,7 @@ public class ACCLogger extends Logger {
         handler.setFormatter(new SimpleFormatter());
         handler.setLevel(level);
         File lockFile = new File(filePath + ".lck");
-        FileUtils.deleteOnExitRecursively(lockFile);
+        FileUtils.deleteOnExit(lockFile);
         return handler;
     }
 

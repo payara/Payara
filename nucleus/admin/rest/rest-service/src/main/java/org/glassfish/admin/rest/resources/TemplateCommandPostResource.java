@@ -71,8 +71,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.sse.SseFeature;
 
-import static org.glassfish.admin.rest.resources.TemplateExecCommand.localStrings;
-
 /**
  *
  * @author ludovic champenois ludo@dev.java.net
@@ -224,7 +222,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
                         }
 
                         File f = Util.saveFile(fileName, mimeType, fileStream);
-                        FileUtils.deleteOnExitRecursively(f);
+                        FileUtils.deleteOnExit(f);
                         //put only the local path of the file in the same field.
                         data.add(fieldName, f.getAbsolutePath());
                     } else {

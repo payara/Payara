@@ -143,7 +143,7 @@ public class JavaClientGenerator extends ClientGenerator {
             if (!jarFile.createNewFile()) {
                 throw new RuntimeException("Unable to create new file"); //i18n
             }
-            FileUtils.deleteOnExitRecursively(jarFile);
+            FileUtils.deleteOnExit(jarFile);
             target = new JarOutputStream(new FileOutputStream(jarFile));
 
             addFiles(baseDirectory, target, ext);
@@ -186,7 +186,7 @@ public class JavaClientGenerator extends ClientGenerator {
             String pom = new Scanner(Thread.currentThread().getContextClassLoader().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
             pom = pom.replace("{{glassfish.version}}", versionString);
             File out = File.createTempFile("pom", "xml");
-            FileUtils.deleteOnExitRecursively(out);
+            FileUtils.deleteOnExit(out);
             writer = new FileWriter(out);
             writer.write(pom);
             writer.close();

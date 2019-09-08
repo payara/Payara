@@ -433,7 +433,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                         }
 
                         File f = Util.saveFile(fileName, mimeType, fileStream);
-                        FileUtils.deleteOnExitRecursively(f);
+                        FileUtils.deleteOnExit(f);
                         //put only the local path of the file in the same field.
                         data.put(fieldName, f.getAbsolutePath());
 

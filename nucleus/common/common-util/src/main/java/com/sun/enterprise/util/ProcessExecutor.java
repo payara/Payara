@@ -173,9 +173,9 @@ public class ProcessExecutor {
     private void init() throws ExecException {
         try {
             mOutFile = File.createTempFile("stdout", null);
-            FileUtils.deleteOnExitRecursively(mOutFile);
+            FileUtils.deleteOnExit(mOutFile);
             mErrFile = File.createTempFile("stderr", null);
-            FileUtils.deleteOnExitRecursively(mErrFile);
+            FileUtils.deleteOnExit(mErrFile);
         }
         catch (IllegalArgumentException iae) {
             deleteTempFiles();
@@ -487,7 +487,7 @@ public class ProcessExecutor {
      */
     private static void delete(File f) {
         if(f != null && !f.delete()) {
-            FileUtils.deleteOnExitRecursively(f);
+            FileUtils.deleteOnExit(f);
         }
     }
 

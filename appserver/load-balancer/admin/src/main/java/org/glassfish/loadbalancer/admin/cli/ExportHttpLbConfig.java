@@ -186,7 +186,7 @@ public class ExportHttpLbConfig implements AdminCommand {
             File tmpLbXmlFile = null;
             if (retrieveFile) {
                 tmpLbXmlFile = File.createTempFile("load-balancer", ".xml");
-                FileUtils.deleteOnExitRecursively(tmpLbXmlFile);
+                FileUtils.deleteOnExit(tmpLbXmlFile);
             } else {
                 if (lbConfigFile.exists()) {
                     String msg = LbLogUtil.getStringManager().getString(

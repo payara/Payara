@@ -135,7 +135,7 @@ public class Util {
      public static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainTempFiles) throws IOException, FileNotFoundException {
         File result = File.createTempFile(prefix, suffix);
         if ( ! retainTempFiles) {
-            FileUtils.deleteOnExitRecursively(result);
+            FileUtils.deleteOnExit(result);
         }
         try (BufferedWriter writer =
                  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))) {

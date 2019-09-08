@@ -403,7 +403,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         File tempFile = null;
         try {
             tempFile = File.createTempFile("mt.", ".xml");
-            FileUtils.deleteOnExitRecursively(tempFile);
+            FileUtils.deleteOnExit(tempFile);
 
             JAXBContext context = JAXBContext.newInstance(SyncRequest.class);
             Marshaller marshaller = context.createMarshaller();

@@ -305,7 +305,7 @@ public class ExportSyncBundle implements AdminCommand {
         if (isRetrieve) {
             try {
                 syncBundleExport = File.createTempFile("GlassFishSyncBundle", ".zip");
-                FileUtils.deleteOnExitRecursively(syncBundleExport);
+                FileUtils.deleteOnExit(syncBundleExport);
             } catch (Exception ex) {
                 syncBundleExport = null;
                 setError(Strings.get("sync.bad_temp_file", ex.getLocalizedMessage()));

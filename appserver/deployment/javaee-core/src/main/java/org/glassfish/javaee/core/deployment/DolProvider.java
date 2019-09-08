@@ -310,7 +310,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                     logger.log(Level.WARNING, "cannot.delete.temp.file", new Object[] {path});
                 }
                 File tmpDir = new File(path);
-                FileUtils.deleteOnExitRecursively(tmpDir);
+                FileUtils.deleteOnExit(tmpDir);
 
                 if (!tmpDir.exists() && !tmpDir.mkdirs()) {
                   throw new IOException("Unable to create directory " + tmpDir.getAbsolutePath());

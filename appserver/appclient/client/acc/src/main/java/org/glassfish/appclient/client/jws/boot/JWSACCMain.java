@@ -376,7 +376,7 @@ public class JWSACCMain implements Runnable {
      private static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainTempFiles) throws IOException, FileNotFoundException {
         File result = File.createTempFile(prefix, suffix);
         if ( ! retainTempFiles) {
-            FileUtils.deleteOnExitRecursively(result);
+            FileUtils.deleteOnExit(result);
         }
         try (BufferedWriter wtr =
                  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))){

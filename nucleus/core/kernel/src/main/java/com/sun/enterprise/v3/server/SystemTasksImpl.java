@@ -129,7 +129,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         }
         finally {
             if (pidFile != null) {
-                FileUtils.deleteOnExitRecursively(pidFile);
+                FileUtils.deleteOnExit(pidFile);
             }
         }
     }

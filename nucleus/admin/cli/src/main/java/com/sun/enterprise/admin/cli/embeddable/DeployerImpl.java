@@ -204,7 +204,7 @@ public class DeployerImpl implements Deployer {
     private File createFile(InputStream in) throws IOException {
         File file;
         file = File.createTempFile("app", "tmp");
-        FileUtils.deleteOnExitRecursively(file);
+        FileUtils.deleteOnExit(file);
         try (OutputStream out = new FileOutputStream(file)) {
             copyStream(in, out);
         } finally {

@@ -45,29 +45,16 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Writer;
+
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -552,7 +539,7 @@ public class FileUtils  {
      */
     public static void deleteFileNowOrLater(File f) {
         if(!deleteFile(f)) {
-            deleteOnExitRecursively(f);
+            deleteOnExit(f);
         }
     }
 
@@ -561,43 +548,54 @@ public class FileUtils  {
      * Java Runtime. Non-empty directories will be deleted recursively.
      * @param f the file to delete on JVM shutdown
      */
-    public static void deleteOnExitRecursively(File f) {
+    public static void deleteOnExit(File f) {
         if (f != null && f.exists()) {
             final SecurityManager securityManager = System.getSecurityManager();
             if (securityManager != null) {
                 securityManager.checkDelete(f.getAbsolutePath());
             }
-            FILES_TO_DELETE_ON_SHUTDOWN.add(f);
+            FILE_DELETION_ON_EXIT.add(f);
         }
     }
 
-    private static final Set<File> FILES_TO_DELETE_ON_SHUTDOWN = new LinkedHashSet<>();
+    private static final FileDeletionThread FILE_DELETION_ON_EXIT = new FileDeletionThread();
 
     static {
-        Runtime.getRuntime().addShutdownHook(
-            new Thread() {
-                @Override
-                public void run() {
-                    for (File f : FILES_TO_DELETE_ON_SHUTDOWN) {
-                        delete(f);
-                    }
-                    FILES_TO_DELETE_ON_SHUTDOWN.clear();
-                }
-                private void delete(File file) {
-                    if (file.exists()) {
-                        if (file.isDirectory()) {
-                            final File[] files = file.listFiles();
-                            if (files != null) {
-                                for (File f : files) {
-                                    delete(f);
-                                }
-                            }
-                        }
-                        file.delete();
-                    }
+        Runtime.getRuntime().addShutdownHook(FILE_DELETION_ON_EXIT);
+    }
+
+    private static final class FileDeletionThread extends Thread {
+
+        private static final Logger LOG = Logger.getLogger(FileDeletionThread.class.getName());
+        private final Set<String> filesToDelete = new LinkedHashSet<>();
+
+        public void add(File file) {
+            if (file != null && file.exists()) {
+                filesToDelete.add(file.getAbsolutePath());
+            }
+        }
+
+        @Override
+        public void run() {
+            for (String path : filesToDelete) {
+                delete(new File(path));
+            }
+            filesToDelete.clear();
+        }
+
+        private void delete(File file) {
+            if (file.exists()) {
+                try {
+                    Files.walk(file.toPath())
+                          .sorted(Comparator.reverseOrder())
+                          .map(Path::toFile)
+                          .forEach(File::delete);
+                } catch (IOException e) {
+                    LOG.info("Cannot delete file "+file);
                 }
             }
-        );
+        }
+
     }
 
     /**
@@ -849,7 +847,7 @@ public class FileUtils  {
         }
 
         if (f != null) {
-            deleteOnExitRecursively(f); // just in case
+            deleteOnExit(f); // just in case
         }
         return f;
     }

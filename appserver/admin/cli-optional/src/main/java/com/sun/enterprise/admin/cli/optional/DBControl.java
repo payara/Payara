@@ -146,7 +146,7 @@ public abstract class DBControl {
         String tempFileName = "";
         try {
             final File fTemp = File.createTempFile("foo", null);
-            FileUtils.deleteOnExitRecursively(fTemp);
+            FileUtils.deleteOnExit(fTemp);
             tempFileName = fTemp.toString();
         } catch (IOException ioe) {
             final StringManager localManager = StringManager.getManager(this.getClass());

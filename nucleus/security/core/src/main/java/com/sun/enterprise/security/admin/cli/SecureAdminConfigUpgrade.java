@@ -371,7 +371,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         }
 
         final File tempCertFile = new File(serverEnv.getConfigDirPath(),"temp.cer");
-        FileUtils.deleteOnExitRecursively(tempCertFile);
+        FileUtils.deleteOnExit(tempCertFile);
         pm = new ProcessManager(new String[] {
             "keytool",
             "-exportcert",

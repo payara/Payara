@@ -132,7 +132,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
 
 
         File packageDir = new File(baseDirectory, Constants.CLIENT_JAVA_PACKAGE_DIR);
-        FileUtils.deleteOnExitRecursively(packageDir);
+        FileUtils.deleteOnExit(packageDir);
         boolean success = packageDir.exists() || packageDir.mkdirs();
         if (!success) {
             throw new RuntimeException("Unable to create output directory"); // i18n

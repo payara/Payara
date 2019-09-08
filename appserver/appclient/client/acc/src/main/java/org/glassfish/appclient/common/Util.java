@@ -155,7 +155,7 @@ public class Util {
      public static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainFile) throws IOException, FileNotFoundException {
         File result = File.createTempFile(prefix, suffix);
         if ( ! retainFile) {
-            FileUtils.deleteOnExitRecursively(result);
+            FileUtils.deleteOnExit(result);
         }
         try (BufferedWriter wtr =
                  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))) {
@@ -238,7 +238,7 @@ public class Util {
         try {
             result = File.createTempFile(prefix, suffix);
             if ( ! retainFile) {
-                FileUtils.deleteOnExitRecursively(result);
+                FileUtils.deleteOnExit(result);
             }
             os = new BufferedOutputStream(new FileOutputStream(result));
             is = new BufferedInputStream(new FileInputStream(inputFile));

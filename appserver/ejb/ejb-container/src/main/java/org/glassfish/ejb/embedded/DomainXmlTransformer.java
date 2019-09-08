@@ -43,12 +43,8 @@ package org.glassfish.ejb.embedded;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 import java.io.EOFException;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -135,7 +131,7 @@ public class DomainXmlTransformer {
             }
 
             if (System.getProperty(EJBContainerProviderImpl.KEEP_TEMPORARY_FILES) == null) {
-                FileUtils.deleteOnExitRecursively(out);
+                FileUtils.deleteOnExit(out);
             }
 
             fos = new FileOutputStream(out);

@@ -627,7 +627,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
         if (dummyConfigFile == null) {
             dummyConfigFile = File.createTempFile("dummy_wscompile_config", "config");
-            FileUtils.deleteOnExitRecursively(dummyConfigFile);
+            FileUtils.deleteOnExit(dummyConfigFile);
         }
 
         // wscompile doesn't support the -extdirs option, so the best we

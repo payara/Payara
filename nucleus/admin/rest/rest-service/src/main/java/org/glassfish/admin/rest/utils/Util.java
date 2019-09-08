@@ -429,7 +429,7 @@ public class Util {
         if (!tempDir.mkdirs()) {
             throw new RuntimeException("Unable to create directories"); // i81n
         }
-        FileUtils.deleteOnExitRecursively(tempDir);
+        FileUtils.deleteOnExit(tempDir);
 
         return tempDir;
     }

@@ -173,7 +173,7 @@ public final class SetupLocalDcom extends CLICommand {
         if (logger.isLoggable(Level.FINER))
             logger.finer(Strings.get("vld.app.deleted", CPP_APP));
 
-        FileUtils.deleteOnExitRecursively(CPP_APP);
+        FileUtils.deleteOnExit(CPP_APP);
 
         // copy it from inside this jar to the file system
         InputStream in = null;

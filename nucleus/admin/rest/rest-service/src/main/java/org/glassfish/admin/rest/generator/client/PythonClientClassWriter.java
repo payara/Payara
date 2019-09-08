@@ -89,7 +89,7 @@ class PythonClientClassWriter implements ClientClassWriter {
         this.className = className;
 
         packageDir = baseDirectory;
-        FileUtils.deleteOnExitRecursively(packageDir);
+        FileUtils.deleteOnExit(packageDir);
         boolean success = packageDir.exists() || packageDir.mkdirs();
         if (!success) {
             throw new RuntimeException("Unable to create output directory"); // i18n
@@ -181,7 +181,7 @@ class PythonClientClassWriter implements ClientClassWriter {
                 if (!classFile.createNewFile()) {
                     throw new RuntimeException("Unable to create new file"); //i18n
                 }
-                FileUtils.deleteOnExitRecursively(classFile);
+                FileUtils.deleteOnExit(classFile);
                 writer = new BufferedWriter(new FileWriter(classFile));
                 writer.append(source.toString());
             } catch (IOException ioe) {

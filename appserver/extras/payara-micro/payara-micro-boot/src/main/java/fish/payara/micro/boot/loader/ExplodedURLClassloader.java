@@ -81,7 +81,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
             throw new IOException("Unable to create temporary runtime directory");
         }
         deleteOnExit = true;
-        FileUtils.deleteOnExitRecursively(directory);
+        FileUtils.deleteOnExit(directory);
         explodedDir = directory;
         explodeJars();
     }
@@ -92,14 +92,14 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         File runtimeDir = new File(explodedDir, "runtime");
         runtimeDir.mkdirs();
         if (deleteOnExit) {
-            FileUtils.deleteOnExitRecursively(runtimeDir);
+            FileUtils.deleteOnExit(runtimeDir);
         }
 
         // create a lib directory
         File libDir = new File(explodedDir,"lib");
         libDir.mkdirs();
         if (deleteOnExit) {
-            FileUtils.deleteOnExitRecursively(libDir);
+            FileUtils.deleteOnExit(libDir);
         }
 
         // sets the system property used in the server.policy file for permissions
@@ -128,7 +128,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                         if (fileName != null) {
                             File outputFile = new File(runtimeDir, fileName);
                             if (deleteOnExit) {
-                                FileUtils.deleteOnExitRecursively(outputFile);
+                                FileUtils.deleteOnExit(outputFile);
                             }
                             super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 

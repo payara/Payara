@@ -282,7 +282,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             logger.log(Level.WARNING, KernelLoggerInfo.cantDeleteTempFile, path);
                         }
                         File tmpDir = new File(path);
-                        FileUtils.deleteOnExitRecursively(tmpDir);
+                        FileUtils.deleteOnExit(tmpDir);
                         events.register(new org.glassfish.api.event.EventListener() {
                             public void event(Event event) {
                                 if (event.is(EventTypes.SERVER_SHUTDOWN)) {

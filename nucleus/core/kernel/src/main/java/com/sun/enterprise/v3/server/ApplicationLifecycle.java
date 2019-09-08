@@ -2147,7 +2147,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private File createGeneratedContentZip() throws IOException {
         final File tempFile = File.createTempFile("gendContent", ".zip");
-        FileUtils.deleteOnExitRecursively(tempFile);
+        FileUtils.deleteOnExit(tempFile);
         return tempFile;
     }
 

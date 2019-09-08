@@ -88,7 +88,7 @@ public class PythonClientGenerator extends ClientGenerator {
             if (!zipFile.createNewFile()) {
                 throw new RuntimeException("Unable to create new file"); //i18n
             }
-            FileUtils.deleteOnExitRecursively(zipFile);
+            FileUtils.deleteOnExit(zipFile);
             zip = new ZipOutputStream(new FileOutputStream(zipFile));
 
             add(ZIP_GF_PACKAGE_DIR, "__init__.py", new ByteArrayInputStream("".getBytes()), zip);

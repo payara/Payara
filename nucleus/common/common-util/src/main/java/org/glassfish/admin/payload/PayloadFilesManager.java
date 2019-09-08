@@ -344,7 +344,7 @@ public abstract class PayloadFilesManager {
 
         @Override
         protected void postExtract(File extractedFile) {
-            FileUtils.deleteOnExitRecursively(extractedFile);
+            FileUtils.deleteOnExit(extractedFile);
         }
 
         @Override

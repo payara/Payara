@@ -59,21 +59,14 @@ import java.io.BufferedReader;
 
 //@olsen:
 //import java.util.*;
-import java.util.Map;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipException;
 
 import java.net.URL;
 
@@ -897,7 +890,7 @@ public class Main
 
         //noWrite or (not enhanced and not forceWrite)
         if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite)) {
-            FileUtils.deleteOnExitRecursively(temp);
+            FileUtils.deleteOnExit(temp);
             return;
         }
 

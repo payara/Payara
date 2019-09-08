@@ -635,7 +635,7 @@ public class DefaultServlet
         File contentFile = new File(tempDir, convertedResourcePath);
         if (contentFile.createNewFile()) {
             // Clean up contentFile when Tomcat is terminated
-            FileUtils.deleteOnExitRecursively(contentFile);
+            FileUtils.deleteOnExit(contentFile);
         }
 
         Resource oldResource = null;

@@ -112,7 +112,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         } finally {
             if (!save && delete) {
                 if (zipFile != null && !zipFile.delete()) {
-                    FileUtils.deleteOnExitRecursively(zipFile);
+                    FileUtils.deleteOnExit(zipFile);
                 }
             }
         }

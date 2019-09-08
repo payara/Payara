@@ -150,7 +150,7 @@ class Status {
     void delete() {
         if(statusFile != null && !statusFile.delete()) {
             // TBD warning message
-            FileUtils.deleteOnExitRecursively(statusFile);
+            FileUtils.deleteOnExit(statusFile);
         }
     }
 
