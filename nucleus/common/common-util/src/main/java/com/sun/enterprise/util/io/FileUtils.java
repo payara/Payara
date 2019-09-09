@@ -567,21 +567,21 @@ public class FileUtils  {
     private static final class FileDeletionThread extends Thread {
 
         private static final Logger LOG = Logger.getLogger(FileDeletionThread.class.getName());
-        private volatile Set<String> filesToDelete = new LinkedHashSet<>();
+        private volatile Set<File> filesToDelete = new LinkedHashSet<>();
 
         public void add(File file) {
             if (file != null) {
-                filesToDelete.add(file.getAbsolutePath());
+                filesToDelete.add(file);
             }
         }
 
         @Override
         public void run() {
             while (!filesToDelete.isEmpty()) {
-                final Set<String> filesToIterate = filesToDelete;
+                final Set<File> filesToIterate = filesToDelete;
                 filesToDelete = new LinkedHashSet<>();
-                for (String path : filesToIterate) {
-                    delete(new File(path));
+                for (File file : filesToIterate) {
+                    delete(file);
                 }
                 filesToIterate.clear();
             }
