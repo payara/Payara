@@ -468,14 +468,14 @@
                         <!-- Common Annotations -->
                         <spec>
                             <artifact>
-                                <groupId>javax.annotation</groupId>
-                                <artifactId>javax.annotation-api</artifactId>
-                                <version>${javax.annotation-api.version}</version>
+                                <groupId>jakarta.annotation</groupId>
+                                <artifactId>jakarta.annotation-api</artifactId>
+                                <version>${jakarta.annotation-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.annotation-api.version}</specVersion>
-                            <specImplVersion>${javax.annotation-api.version}</specImplVersion>
+                            <specVersion>${jakarta.annotation-api.version}</specVersion>
+                            <specImplVersion>${jakarta.annotation-api.version}</specImplVersion>
                             <apiPackage>javax.annotation</apiPackage>
                         </spec>
 
@@ -671,17 +671,17 @@
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
             </dependency>
-    	    <dependency>
+            <dependency>
                 <groupId>jakarta.resource</groupId>
-    		        <artifactId>jakarta.resource-api</artifactId>
-    		        <version>${jakarta.resource-api.version}</version>
-    	        </dependency>
+                <artifactId>jakarta.resource-api</artifactId>
+                <version>${jakarta.resource-api.version}</version>
+            </dependency>
             <dependency>
                 <groupId>javax.enterprise.deploy</groupId>
                 <artifactId>javax.enterprise.deploy-api</artifactId>
                 <version>${javax.enterprise.deploy-api.version}</version>
             </dependency>
-            
+
             <!-- JSF - JavaServer Faces -->
             <dependency>
                 <groupId>jakarta.faces</groupId>

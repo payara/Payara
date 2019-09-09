@@ -76,7 +76,7 @@
             <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>xmlunit</groupId>
             <artifactId>xmlunit</artifactId>
@@ -128,7 +128,7 @@
     </dependencies>
 
     <profiles>
-    
+
         <!-- Helper profiles to set properties etc -->
 
         <profile>
@@ -189,12 +189,12 @@
                 </plugins>
             </build>
         </profile>
-        
-        
+
+
         <!-- Profiles for the application servers against which the samples are run -->
 
         <profile>
-            <!-- 
+            <!--
             This profile will install a Payara server and start up the server per sample. Useful for CI servers.
             The Payara version that's used can be set via the payara.container.version property.
 
@@ -256,13 +256,6 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>javax.annotation</groupId>
-                                    <artifactId>javax.annotation-api</artifactId>
-                                    <version>1.3.1</version>
-                                </dependency>
-                            </dependencies>
                             <environmentVariables>
                                 <GLASSFISH_HOME>${session.executionRootDirectory}/target/${payara.directory.name}</GLASSFISH_HOME>
                             </environmentVariables>
@@ -282,13 +275,12 @@
 
         <profile>
             <id>payara-micro-managed</id>
-            
-            <!-- 
+
+            <!--
             This profile will install a Payara Micro and start up the server per sample. Useful for CI servers.
             The Payara version that's used can be set via the payara.version property.
-
             -->
-                
+
             <properties>
                 <skipJMS>true</skipJMS>
                 <skipJAXWS>true</skipJAXWS>
@@ -351,10 +343,10 @@
 
         <profile>
             <id>payara-server-remote</id>
-            
-            <!-- 
+
+            <!--
             This profile requires you to start up a Payara server outside of the build.
-            
+
             Each sample will then reuse this instance to run the tests.
             Useful for development to avoid the server start up cost per sample.
 

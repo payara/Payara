@@ -56,21 +56,20 @@
 
     <build>
         <plugins>
-            <!-- temporary fix - don't execute failing plugin -->
-<!--             <plugin> -->
-<!--                 <groupId>org.glassfish.build</groupId> -->
-<!--                 <artifactId>glassfishbuild-maven-plugin</artifactId> -->
-<!--                 <extensions>true</extensions> -->
-<!--                 <executions> -->
-<!--                     <execution> -->
-<!--                         <id>create-glassfish-domain</id> -->
-<!--                         <goals> -->
-<!--                             <goal>exec</goal> -->
-<!--                         </goals> -->
-<!--                         <phase>process-resources</phase> -->
-<!--                     </execution> -->
-<!--                 </executions> -->
-<!--             </plugin> -->
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>create-glassfish-domain</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -105,8 +104,8 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-	<dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -171,7 +170,7 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>healthcheck-package</artifactId>
