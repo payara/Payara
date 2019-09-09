@@ -15,10 +15,8 @@ echo "Docker Container IP is: ${DOCKER_CONTAINER_IP}"
 ### Functions ###
 function createNewNode {
     echo "WARNING: Could not find a matching Docker Node: Creating a temporary node specific to this container - cleanup of this container cannot be done by Payara Server"
-    if [ -z ${PAYARA_NODE_NAME} ]; then
-        echo "./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP}"
-        PAYARA_NODE_NAME="$(./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP})"
-    fi
+    echo "./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP}"
+    PAYARA_NODE_NAME="$(./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-node-temp --nodehost ${DOCKER_CONTAINER_IP})"
 }
 
 function createNewInstance {
@@ -77,7 +75,8 @@ else
             if [ ! -z "${NODE_HOST}" ]; then
                 # Cut off the "Command completed succesfully bit
                 NODE_HOST="$(echo ${NODE_HOST} | cut -f1 -d ' ')"
-                if [ "${NODE_HOST}" == "nodes.node.${NODE_HOST}.node-host=${DOCKER_CONTAINER_IP})" ]; then
+                echo "Node Host of matching node is ${NODE_HOST}"
+                if [ "${NODE_HOST}" == "nodes.node.${PAYARA_NODE_NAME}.node-host=${DOCKER_CONTAINER_IP}" ]; then
                     echo "Node details match, no need to create a new node."
                 else
                     echo "Node details do not match, creating a new node."
