@@ -89,7 +89,7 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     /**
      * @return a String value defines the attached virtual servers.
      */
-    @Attribute(dataType = String.class)
+    @Attribute(defaultValue = "", dataType = String.class)
     String getVirtualServers();
     void setVirtualServers(String value) throws PropertyVetoException;
 
