@@ -570,7 +570,7 @@ public class FileUtils  {
         private volatile Set<String> filesToDelete = new LinkedHashSet<>();
 
         public void add(File file) {
-            if (file != null && file.exists()) {
+            if (file != null) {
                 filesToDelete.add(file.getAbsolutePath());
             }
         }
