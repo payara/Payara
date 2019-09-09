@@ -77,7 +77,7 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     /**
      * @return a String value defines the attached virtual servers.
      */
-    @Attribute(dataType = String.class)
+    @Attribute(defaultValue = "", dataType = String.class)
     String getVirtualServers();
 
     void setVirtualServers(String value) throws PropertyVetoException;
