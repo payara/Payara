@@ -56,6 +56,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -567,7 +568,7 @@ public class FileUtils  {
     private static final class FileDeletionThread extends Thread {
 
         private static final Logger LOG = Logger.getLogger(FileDeletionThread.class.getName());
-        private volatile Set<File> filesToDelete = new LinkedHashSet<>();
+        private final Set<File> filesToDelete = new ConcurrentSkipListSet<>();
 
         public void add(File file) {
             if (file != null) {
@@ -577,13 +578,13 @@ public class FileUtils  {
 
         @Override
         public void run() {
+            // to make sure files added during iteration are deleted in successive iteration
             while (!filesToDelete.isEmpty()) {
-                final Set<File> filesToIterate = filesToDelete;
-                filesToDelete = new LinkedHashSet<>();
-                for (File file : filesToIterate) {
-                    delete(file);
+                Iterator<File> fileIterator = filesToDelete.iterator();
+                while (fileIterator.hasNext()) {
+                    delete(fileIterator.next());
+                    fileIterator.remove();
                 }
-                filesToIterate.clear();
             }
         }
 
