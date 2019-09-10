@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -54,6 +55,7 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Progress;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -99,10 +101,13 @@ public class StartDeploymentGroupCommand implements AdminCommand {
     @Param(optional = false, primary = true)
     private String deploymentGroup;
 
-    @Param(optional = true, defaultValue = "false")
+    @Param(optional = true, shortName = "v", defaultValue = "false")
     private boolean verbose;
-   
     
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, shortName = "t", defaultValue = "120")
+    private int instanceTimeout;
+      
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -120,11 +125,15 @@ public class StartDeploymentGroupCommand implements AdminCommand {
         }
 
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain, runner);
-       
+
         try {
-            // Run start-instance against each instance in the cluster
-            String commandName = "start-instance";          
-            clusterHelper.runCommand(commandName, null, deploymentGroup, context, verbose);           
+            // Run start-instance against each instance in the Deployment Group
+            String commandName = "start-instance";
+            
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("timeout", String.valueOf(instanceTimeout));
+
+            clusterHelper.runCommand(commandName, parameterMap, deploymentGroup, context, verbose);
         } catch (CommandException e) {
             String msg = e.getLocalizedMessage();
             logger.warning(msg);
