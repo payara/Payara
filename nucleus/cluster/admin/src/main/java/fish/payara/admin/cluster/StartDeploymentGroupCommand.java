@@ -127,7 +127,7 @@ public class StartDeploymentGroupCommand implements AdminCommand {
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain, runner);
 
         try {
-            // Run start-instance against each instance in the Deployment Group
+            // Run start-instance with timeout parameter against each instance in the Deployment Group
             String commandName = "start-instance";
             
             ParameterMap parameterMap = new ParameterMap();
