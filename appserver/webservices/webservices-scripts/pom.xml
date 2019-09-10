@@ -44,7 +44,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.webservices</groupId>
+        <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>

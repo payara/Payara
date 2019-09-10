@@ -39,13 +39,13 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portion Copyright [2018] Payara Foundation and/or affiliates
+    Portion Copyright [2018-2019] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.persistence.cmp</groupId>
+        <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -78,12 +78,12 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-generator-database</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-model</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -92,7 +92,7 @@
             <artifactId>schema2beans-repackaged</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -40,17 +40,17 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016] [Payara Foundation]" -->
+<!--"Portions Copyright [2016-2019] [Payara Foundation]" -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <!-- version 4.0 means this is the dataprovider used in Woodstock 4.2 release -->
-    <groupId>fish.payara.admingui</groupId>
+    <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>dataprovider</artifactId>
     <name>DataProvider</name>
     <modelVersion>4.0.0</modelVersion>

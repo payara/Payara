@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#  Copyright (c) [2018] Payara Foundation and/or its affiliates. 
+#  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. 
 #  All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
@@ -38,4 +38,4 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 
-Fragment-Host: fish.payara.admingui.slack-notifier-console-plugin; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.admingui.slack-notifier-console-plugin; bundle-version=${project.osgi.version}

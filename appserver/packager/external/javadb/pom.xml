@@ -48,12 +48,11 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.external</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
-    <artifactId>javadb</artifactId>
+    <artifactId>javadb-repackaged</artifactId>
     <packaging>distribution-fragment</packaging>
     
     <name>JavaDB to be bundled into GlassFish</name>

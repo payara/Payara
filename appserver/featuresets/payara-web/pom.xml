@@ -44,12 +44,12 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">  <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.featuresets</groupId>
+        <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <artifactId>payara-web</artifactId>
+    <artifactId>payara-web-featureset</artifactId>
     <packaging>pom</packaging>
     
     <name>Payara Web Featureset</name>
@@ -58,49 +58,49 @@
     <dependencies>
         <!-- pull minnow packages -->
         <dependency>
-            <groupId>org.glassfish.main.featuresets</groupId>
+            <groupId>fish.payara.server.internal.featuresets</groupId>
             <artifactId>minnow</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jpa</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jts</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-ejb-lite</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-osgi-http</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-osgi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jcdi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -108,7 +108,7 @@
         
         <!-- json package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>json</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -116,7 +116,7 @@
         
         <!-- admin ui package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-gui</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -124,7 +124,7 @@
         
         <!-- javadb package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>javadb</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -132,7 +132,7 @@
         
         <!-- h2db package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>h2db</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -140,20 +140,20 @@
         
         <!-- hazelcast package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>hazelcast</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>healthcheck</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>requesttracing</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -161,61 +161,61 @@
         
         <!-- Notifiers -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-email</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-hipchat</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-slack</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-snmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-xmpp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-datadog</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-newrelic</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -223,7 +223,7 @@
         
         <!-- phomehome package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>phonehome</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -231,7 +231,7 @@
         
         <!-- monitoring -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jmx-monitoring-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -239,15 +239,15 @@
         
         <!-- payara micro -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-micro</artifactId>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>payara-micro-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         
         <!-- zendesk support --><!-- Removed for now -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>zendesk-support</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -255,7 +255,7 @@
         
         <!-- environment warning -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>environment-warning</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -263,14 +263,14 @@
         
         <!-- payara rest endpoints -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-rest-endpoints</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         
 	    <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -278,7 +278,7 @@
         
         <!-- roles api -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>cdi-auth-roles</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -286,7 +286,7 @@
         
         <!-- Yubikey Authentication -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>yubikey-authentication</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -294,14 +294,14 @@
 
         <!-- Microprofile -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>microprofile-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>docker</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
