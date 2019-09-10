@@ -553,7 +553,7 @@ public class FileUtils  {
      * @param f the file to delete on JVM shutdown
      */
     public static void deleteOnExit(File f) {
-        if (f != null && f.exists()) {
+        if (f != null) {
             final SecurityManager securityManager = System.getSecurityManager();
             if (securityManager != null) {
                 securityManager.checkDelete(f.getAbsolutePath());
