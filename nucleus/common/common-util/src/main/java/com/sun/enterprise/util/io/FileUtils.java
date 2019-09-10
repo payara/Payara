@@ -53,10 +53,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -67,6 +64,11 @@ public class FileUtils  {
     private final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
+    private static final FileDeletionThread FILE_DELETION_ON_EXIT = new FileDeletionThread();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(FILE_DELETION_ON_EXIT);
+    }
 
     public static void setFileProperties()
     {
@@ -547,6 +549,7 @@ public class FileUtils  {
     /**
      * Deletes the provided file by registering a shutdown hook with the
      * Java Runtime. Non-empty directories will be deleted recursively.
+     *
      * @param f the file to delete on JVM shutdown
      */
     public static void deleteOnExit(File f) {
@@ -557,50 +560,6 @@ public class FileUtils  {
             }
             FILE_DELETION_ON_EXIT.add(f);
         }
-    }
-
-    private static final FileDeletionThread FILE_DELETION_ON_EXIT = new FileDeletionThread();
-
-    static {
-        Runtime.getRuntime().addShutdownHook(FILE_DELETION_ON_EXIT);
-    }
-
-    private static final class FileDeletionThread extends Thread {
-
-        private static final Logger LOG = Logger.getLogger(FileDeletionThread.class.getName());
-        private final Set<File> filesToDelete = new ConcurrentSkipListSet<>();
-
-        public void add(File file) {
-            if (file != null) {
-                filesToDelete.add(file);
-            }
-        }
-
-        @Override
-        public void run() {
-            // to make sure files added during iteration are deleted in successive iteration
-            while (!filesToDelete.isEmpty()) {
-                Iterator<File> fileIterator = filesToDelete.iterator();
-                while (fileIterator.hasNext()) {
-                    delete(fileIterator.next());
-                    fileIterator.remove();
-                }
-            }
-        }
-
-        private void delete(File file) {
-            if (file.exists()) {
-                try {
-                    Files.walk(file.toPath())
-                          .sorted(Comparator.reverseOrder())
-                          .map(Path::toFile)
-                          .forEach(File::delete);
-                } catch (IOException e) {
-                    LOG.info("Cannot delete file "+file);
-                }
-            }
-        }
-
     }
 
     /**
