@@ -51,7 +51,7 @@
     </parent>
     <artifactId>appserver-cli</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>App Server CLI Skinning Class</name>
     <description>App Server CLI Skinning Class</description>
 
@@ -65,7 +65,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -75,15 +75,15 @@
                     <archive>
                         <manifest>
                             <mainClass>org.glassfish.admin.cli.AsadminMain</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>../../modules</classpathPrefix>
                         </manifest>
-                        <manifestEntries>
-                            <Class-Path>../../modules/admin-cli.jar ../../modules/jaxb-osgi.jar ../../modules/istack-commons-runtime.jar jna.jar jline-terminal-jna.jar</Class-Path>
-                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
