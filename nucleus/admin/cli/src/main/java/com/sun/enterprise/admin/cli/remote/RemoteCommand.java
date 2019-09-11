@@ -937,16 +937,12 @@ public class RemoteCommand extends CLICommand {
      * (jar files) in the <INSTALL_ROOT>/modules directory.
      */
     private static synchronized ClassLoader getModuleClassLoader() {
-        if (moduleClassLoader != null){
+        if (moduleClassLoader != null) {
             return moduleClassLoader;
         }
-        try {
-            File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File modulesDir = new File(installDir, "modules");
-            moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
-            return moduleClassLoader;
-        } catch (IOException ioex) {
-            return null;
-        }
+        File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        File modulesDir = new File(installDir, "modules");
+        moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
+        return moduleClassLoader;
     }
 }
