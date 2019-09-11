@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,6 +117,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private static final String CUSTOM_CONVERTERS_KEY = "MICROPROFILE_CUSTOM_CONVERTERS";
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
 
+    static final CountDownLatch initialized = new CountDownLatch(1);
+
     @Inject
     private InvocationManager invocationManager;
 
@@ -142,6 +145,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     @PostConstruct
     public void postConstruct() {
         ConfigProviderResolver.setInstance(this);
+        initialized.countDown();
     }
 
 
