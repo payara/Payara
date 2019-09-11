@@ -87,7 +87,6 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @Inject
     private BeanManager bm;
 
-    @Resource
     private ManagedExecutorService managedExecutorService;
 
     private JavaEEContextUtil ctxUtil;
