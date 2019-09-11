@@ -105,7 +105,7 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>nucleus-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -136,7 +136,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>nucleus-common-l10n</artifactId>
             <version>${project.version}</version>
@@ -150,14 +150,14 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>nucleus-management-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>nucleus-cluster</artifactId>
             <version>${project.version}</version>
