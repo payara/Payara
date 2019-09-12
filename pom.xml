@@ -44,7 +44,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara</groupId>
+    <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
     <version>5.194-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -99,6 +99,7 @@
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <profiles>

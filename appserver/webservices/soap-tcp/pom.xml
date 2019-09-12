@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.webservices</groupId>
+        <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -68,17 +68,17 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.webservices</groupId>
+            <groupId>fish.payara.server.internal.webservices</groupId>
             <artifactId>jsr109-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>

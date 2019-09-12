@@ -47,7 +47,7 @@
          http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.glassfish.main.transaction</groupId>
+        <groupId>fish.payara.server.internal.transaction</groupId>
         <artifactId>transaction</artifactId>
         <version>4.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -90,12 +90,12 @@
             <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -105,7 +105,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

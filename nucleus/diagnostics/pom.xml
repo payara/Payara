@@ -30,12 +30,12 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.diagnostics</groupId>
+    <groupId>fish.payara.server.internal.diagnostics</groupId>
     <artifactId>nucleus-diagnostics</artifactId>
     <packaging>pom</packaging>
     <name>Diagnostics</name>

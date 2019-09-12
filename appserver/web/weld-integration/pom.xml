@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	      <groupId>org.glassfish.main.web</groupId>
+	      <groupId>fish.payara.server.internal.web</groupId>
     	  <artifactId>web</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,7 +99,7 @@
             <artifactId>jakarta.faces</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -113,7 +113,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
             <!-- Since weld-integration artifact is part of web distro and we
@@ -161,17 +161,17 @@
             <artifactId>bcel</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-weld-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -196,7 +196,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>

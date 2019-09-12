@@ -41,7 +41,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.monitoring-console</groupId>
+        <groupId>fish.payara.server.monitoring-console</groupId>
         <artifactId>monitoring-console</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -57,7 +57,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
+            <groupId>fish.payara.server.internal.monitoring-console</groupId>
             <artifactId>monitoring-console-core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -88,7 +88,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

@@ -45,12 +45,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.admingui</groupId>
+    <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
     <name>Admin Console WAR</name>
@@ -71,7 +71,7 @@
                             <archive>
                                 <manifestEntries>
                                     <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                                    <HK2-Import-Bundles>fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                                    <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -98,7 +98,7 @@
                                <jar jarfile="target/admingui.war" basedir="target/temp">
                                     <manifest>
                                       <attribute name="Glassfish-require-services" value="org.glassfish.api.admingui.ConsoleProvider" />
-                                      <attribute name="HK2-Import-Bundles" value="fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client " />
+                                      <attribute name="HK2-Import-Bundles" value="fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client " />
                                     </manifest>
                                 </jar>
                                 <delete dir="target/temp" />

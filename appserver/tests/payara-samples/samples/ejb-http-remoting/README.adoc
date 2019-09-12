@@ -1,0 +1,6 @@
+= Tests for EJB HTTP Client
+
+The tests can only be executed in profile `payara-server-remote`.
+Target domain needs to have invoker enabled by executing `asadmin enable-ejb-invoker`.
+
+Submodules do not have parent relationship to this module, in order to keep classpath clean of any dependencies except for ejb-http-client.

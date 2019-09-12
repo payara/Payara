@@ -50,6 +50,7 @@ import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import java.beans.PropertyChangeEvent;
 
 import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Metadata;
@@ -86,10 +87,14 @@ import org.eclipse.microprofile.metrics.MetricID;
 
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsService implements EventListener, MonitoringDataSource {
+public class MetricsService implements EventListener, ConfigListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
@@ -97,8 +102,14 @@ public class MetricsService implements EventListener, MonitoringDataSource {
     Events events;
 
     @Inject
-    private ServerEnvironment serverEnv;
+    ApplicationRegistry applicationRegistry;
+
+    @Inject
+    MetricsServiceConfiguration configuration;
     
+    @Inject
+    private ServerEnvironment serverEnv;
+
     @Inject
     ServiceLocator serviceLocator;
     
@@ -123,6 +134,9 @@ public class MetricsService implements EventListener, MonitoringDataSource {
 
     @PostConstruct
     public void init() {
+        if(events == null){
+            events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
+        }
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         // Only start if metrics are enabled
@@ -454,5 +468,15 @@ public class MetricsService implements EventListener, MonitoringDataSource {
         MBeanMetadataConfig metadataConfig = getConfig();
         checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
         initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
+        for(PropertyChangeEvent event : events) {
+                unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile Metrics configuration changed:" + event.getPropertyName()
+                        + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
+            }
+        return new UnprocessedChangeEvents(unchangedList);
     }
 }

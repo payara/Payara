@@ -40,17 +40,17 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates]-->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]-->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
+        <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
         <artifactId>jdbc-ra</artifactId>
-        <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
         <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc40</groupId>
+    <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc40</groupId>
     <artifactId>jdbc40</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JDBC 40 related classes for JDBC Resource Adapter</name>
@@ -83,7 +83,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
+            <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core</groupId>
             <artifactId>jdbc-core</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -43,11 +43,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
+        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-cdi</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro CDI</name>
@@ -66,19 +65,19 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.micro</groupId>
+            <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

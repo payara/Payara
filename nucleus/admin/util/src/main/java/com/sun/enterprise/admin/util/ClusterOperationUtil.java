@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -208,8 +208,8 @@ public class ClusterOperationUtil {
                     f = instanceState.submitJob(svr, ice, aResult);
                 } else {
                     LOGGER.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
-                    InstanceCommandExecutor ice =
-                            new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                    InstanceRestCommandExecutor ice =
+                            new InstanceRestCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
                                     svr, host, port, LOGGER, parameters, aReport, aResult);
                     if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
                         continue;
@@ -271,7 +271,7 @@ public class ClusterOperationUtil {
                     iReport = ice.getReport();
                     iServer = ice.getServer();
                 } else {
-                    InstanceCommandExecutor ice = (InstanceCommandExecutor) aResult.getInstanceCommand();
+                    InstanceRestCommandExecutor ice = (InstanceRestCommandExecutor) aResult.getInstanceCommand();
                     iReport = ice.getReport();
                     iServer = ice.getServer();
                 }

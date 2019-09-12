@@ -44,7 +44,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.connectors</groupId>
+        <groupId>fish.payara.server.internal.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -109,13 +109,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -131,19 +131,19 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.parent.version}</version>
         </dependency> 
