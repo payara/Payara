@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,36 +39,29 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
-import javax.annotation.Priority;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
-import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.core.FeatureContext;
+
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
 /**
- * ExceptionMapper that catches all Exceptions. We need this because we need to add details about any exceptions to the
- * active span - if this isn't here, we don't go back through the container filter.
+ * AutoDiscoverable that registers the {@link OpenTracingApplicationEventListener}.
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * @author David Matejcek
  */
-@Priority(Integer.MAX_VALUE)
-public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
+public class JerseyOpenTracingAutoDiscoverable implements ForcedAutoDiscoverable {
 
     @Override
-    public Response toResponse(Throwable exception) {
-        StatusType status = Response.Status.INTERNAL_SERVER_ERROR;
-
-        // Get the status and location if available
-        if (exception instanceof WebApplicationException) {
-            return ((WebApplicationException) exception).getResponse();
+    public void configure(FeatureContext context) {
+        // Only register for application deployments (not the admin console)
+        if (Globals.getDefaultBaseServiceLocator().getService(Deployment.class).getCurrentDeploymentContext() == null) {
+            return;
         }
 
-        Response.ResponseBuilder responseBuilder = Response.status(status);
-
-        // If the status is a server error, attach it as an entity, otherwise just return a response
-        if (status.getFamily() == Response.Status.Family.SERVER_ERROR) {
-            responseBuilder.entity(exception);
+        if (!context.getConfiguration().isRegistered(OpenTracingApplicationEventListener.class)) {
+            context.register(OpenTracingApplicationEventListener.class);
         }
-        return responseBuilder.build();
     }
 }

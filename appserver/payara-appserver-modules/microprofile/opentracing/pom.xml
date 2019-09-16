@@ -45,21 +45,20 @@ holder.
         <artifactId>microprofile</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>microprofile-opentracing</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>MicroProfile - OpenTracing</name>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -86,5 +85,5 @@ holder.
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-    
+
 </project>
