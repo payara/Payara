@@ -336,7 +336,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         try (DeploymentSpan topSpan = tracing.startSpan(DeploymentTracing.AppStage.PREPARE);
              SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE, "ArchiveMetadata")) {
             if (commandParams.origin == OpsParams.Origin.deploy
-                    && appRegistry.get(appName) != null) {
+                    && appRegistry.get(appName) != null
+                    && !commandParams.hotDeploy) {
                 report.setMessage(localStrings.getLocalString("appnamenotunique", "Application name {0} is already in use. Please pick a different name.", appName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return null;
@@ -425,7 +426,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             if (logger.isLoggable(Level.FINE)) {
                 for (EngineInfo info : sortedEngineInfos) {
-                    logger.fine("After Sorting " + info.getSniffer().getModuleType());
+                    logger.log(Level.FINE, "After Sorting {0}", info.getSniffer().getModuleType());
                 }
             }
 
@@ -855,7 +856,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
             Deployer deployer = entry.getKey();
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Keyed Deployer " + deployer.getClass());
+                logger.log(Level.FINE, "Keyed Deployer {0}", deployer.getClass());
             }
             DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
             loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
@@ -865,7 +866,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // now load metadata from deployers.
         for (Deployer deployer : orderedDeployers) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Ordered Deployer " + deployer.getClass());
+                logger.log(Level.FINE, "Ordered Deployer {0}", deployer.getClass());
             }
 
             final MetaData metadata = deployer.getMetaData();
@@ -1218,24 +1219,29 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         throws TransactionFailure {
         final Properties appProps = context.getAppProps();
         final DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-        Transaction t = new Transaction();
-
-        try {
-            // prepare the application element
-            ConfigBean newBean = ((ConfigBean)ConfigBean.unwrap(applications)).allocate(Application.class);
-            Application app = newBean.createProxy();
-            Application app_w = t.enroll(app);
-            setInitialAppAttributes(app_w, deployParams, appProps, context);
-            context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
-        } catch(TransactionFailure e) {
-            t.rollback();
-            throw e;
-        } catch (Exception e) {
-            t.rollback();
-            throw new TransactionFailure(e.getMessage(), e);
+        Transaction tx = null;
+        Application app, app_w;
+        app = applications.getApplication(deployParams.name);
+        if (app == null) {
+            try {
+                tx = new Transaction();
+                // prepare the application element
+                ConfigBean newBean = ((ConfigBean) ConfigBean.unwrap(applications)).allocate(Application.class);
+                app = newBean.createProxy();
+                app_w = tx.enroll(app);
+                setInitialAppAttributes(app_w, deployParams, appProps, context);
+            } catch (TransactionFailure e) {
+                tx.rollback();
+                throw e;
+            } catch (Exception e) {
+                tx.rollback();
+                throw new TransactionFailure(e.getMessage(), e);
+            }
+        } else {
+            app_w = app;
         }
-
-        return t;
+        context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
+        return tx;
     }
 
     // register application information in domain.xml

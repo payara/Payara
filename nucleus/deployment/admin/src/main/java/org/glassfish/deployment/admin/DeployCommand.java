@@ -163,7 +163,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private File safeCopyOfAltDD = null;
     private File safeCopyOfRuntimeAltDD = null;
     private File originalPathValue;
-    private List<String> previousTargets = new ArrayList<String>();
+    private List<String> previousTargets = new ArrayList<>();
     private Properties previousVirtualServers = new Properties();
     private Properties previousEnabledAttributes = new Properties();
     private Logger logger;
@@ -408,7 +408,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             ApplicationConfigInfo savedAppConfig
                     = new ApplicationConfigInfo(apps.getModule(Application.class, name));
-            Properties undeployProps = handleRedeploy(name, report, context);
+            Properties undeployProps = null;
+            if (!hotDeploy) {
+                undeployProps = handleRedeploy(name, report, context);
+            }
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
@@ -531,13 +534,14 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             savedAppConfig.store(appProps);
 
+            deploymentContext.addTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, hotDeploy);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_VIRTUAL_SERVERS, previousVirtualServers);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);
-            Transaction t = deployment.prepareAppConfigChanges(deploymentContext);
+            Transaction tx = deployment.prepareAppConfigChanges(deploymentContext);
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
-            if(deplResult != null && !loadOnly) {
+            if (deplResult != null && !loadOnly) {
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
@@ -563,14 +567,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     downloadableArtifacts.record(appProps);
                     generatedArtifacts.record(appProps);
 
-                    // Set the application deploy time
                     timeTakenToDeploy = timing.elapsed();
-                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
-
                     deploymentTimeMillis = System.currentTimeMillis();
-                    deploymentContext.getTransientAppMetaData("application", Application.class).setTimeDeployed(Long.toString(deploymentTimeMillis));
-                    // register application information in domain.xml
-                    deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
+                    if (!hotDeploy) {
+                        Application application = deploymentContext.getTransientAppMetaData("application", Application.class);
+                        // Set the application deploy time
+                        application.setDeploymentTime(Long.toString(timeTakenToDeploy));
+                        application.setTimeDeployed(Long.toString(deploymentTimeMillis));
+
+                        // register application information in domain.xml
+                        deployment.registerAppInDomainXML(appInfo, deploymentContext, tx);
+                    }
                     if (retrieve != null) {
                         retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false, name);
                     }

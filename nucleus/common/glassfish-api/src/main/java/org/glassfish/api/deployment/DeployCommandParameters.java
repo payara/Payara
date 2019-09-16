@@ -79,7 +79,13 @@ public class DeployCommandParameters extends OpsParams {
     public Boolean isForce() {
         return force;
     }
-    
+
+    @Param(optional = true, defaultValue = "false")
+    public Boolean hotDeploy = false;
+    public Boolean isHotDeploy() {
+        return hotDeploy;
+    }
+
     @Param(optional=true, defaultValue="false")
     public Boolean forceName = false;
     public Boolean isForceName() {

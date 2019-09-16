@@ -235,9 +235,10 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 dc.addModuleMetaData(extension);
             }
         }
-
-        addModuleConfig(dc, application);
-
+        boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
+        if (!hotDeploy) {
+            addModuleConfig(dc, application);
+        }
         validateKeepStateOption(dc, params, application);
 
         return application;
@@ -400,7 +401,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         if (!params.origin.isDeploy()) {
             return;
         }
-        
+
         try {
             com.sun.enterprise.config.serverbeans.Application app_w = dc.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.ServerTags.APPLICATION, com.sun.enterprise.config.serverbeans.Application.class);
             if (app_w != null) {
