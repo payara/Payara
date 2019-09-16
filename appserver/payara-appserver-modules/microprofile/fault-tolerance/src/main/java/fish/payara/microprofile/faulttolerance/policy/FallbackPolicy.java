@@ -40,6 +40,7 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import javax.interceptor.InvocationContext;
 
@@ -53,7 +54,7 @@ import javassist.Modifier;
 
 /**
  * The resolved "cached" information of a {@link Fallback} annotation an a specific method.
- * 
+ *
  * @author Jan Bernitt
  */
 public final class FallbackPolicy extends Policy {
@@ -100,7 +101,10 @@ public final class FallbackPolicy extends Policy {
     }
 
     private static void checkAccessible(Method annotated, Method fallback) {
-        boolean samePackage = fallback.getDeclaringClass().getPackage().equals(annotated.getDeclaringClass().getPackage());
+        boolean samePackage = Objects.equals(
+            fallback.getDeclaringClass().getPackage(),
+            annotated.getDeclaringClass().getPackage()
+        );
         boolean sameClass = fallback.getDeclaringClass().equals(annotated.getDeclaringClass());
         if (Modifier.isPackage(fallback.getModifiers()) && !samePackage
                 || Modifier.isPrivate(fallback.getModifiers()) && !sameClass) {
