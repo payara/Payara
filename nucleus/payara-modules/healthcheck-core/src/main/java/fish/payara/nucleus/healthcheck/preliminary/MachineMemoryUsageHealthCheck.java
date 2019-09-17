@@ -40,8 +40,6 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
@@ -67,8 +65,7 @@ import java.util.List;
 @Service(name = "healthcheck-machinemem")
 @RunLevel(StartupRunLevel.VAL)
 public class MachineMemoryUsageHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker>
-        implements MonitoringDataSource {
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker> {
 
     private static final String MEMTOTAL = "MemTotal:";
     private static final String MEMFREE = "MemFree:";
@@ -77,24 +74,6 @@ public class MachineMemoryUsageHealthCheck
     private static final String INACTIVEFILE = "Inactive(file):";
     private static final String RECLAIMABLE = "SReclaimable:";
     private static final String KB = "kB";
-
-    private volatile long memTotal;
-    private volatile long memAvailable;
-    private volatile long memUsed;
-    private volatile double usedPercentage;
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            collector.in("health-check").type("checker").entity("MEMM")
-                .collect("checksDone", getChecksDone())
-                .collectNonZero("checksFailed", getChecksFailed())
-                .collectNonZero("memBytesTotal", memTotal)
-                .collectNonZero("memBytesAvailable", memAvailable)
-                .collectNonZero("memBytesUsed", memUsed)
-                .collect("usedPercentage", usedPercentage);
-        }
-    }
 
     @PostConstruct
     void postConstruct() {
@@ -166,11 +145,6 @@ public class MachineMemoryUsageHealthCheck
             }
 
             double usedPercentage = memTotal == 0L ? 0d :((double) (memTotal - memAvailable) / memTotal) * 100;
-
-            this.memTotal = memTotal;
-            this.memAvailable = memAvailable;
-            this.usedPercentage = usedPercentage;
-            this.memUsed = memTotal - memAvailable;
 
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
                     "Physical Memory Used: " + prettyPrintBytes(memTotal - memAvailable) + " - " +

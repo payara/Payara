@@ -42,13 +42,9 @@
 package org.glassfish.internal.data;
 
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.MetaData;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
-
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import javax.inject.Singleton;
 
@@ -62,7 +58,7 @@ import java.util.*;
  */
 @Service
 @Singleton
-public class ContainerRegistry implements MonitoringDataSource {
+public class ContainerRegistry {
 
     @Inject
     ServiceLocator habitat;
@@ -102,18 +98,5 @@ public class ContainerRegistry implements MonitoringDataSource {
         ArrayList<EngineInfo> copy = new ArrayList<EngineInfo>(containers.size());
         copy.addAll(containers.values());
         return copy;
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        collector.in("container")
-            .collectAll(containers, ContainerRegistry::collectContainer);
-    }
-
-    private static void collectContainer(MonitoringDataCollector collector, EngineInfo<?, ?> container) {
-        MetaData metaData = container.getDeployer().getMetaData();
-        collector
-            .collectNonZero("provides", metaData.provides().length)
-            .collectNonZero("requires", metaData.requires().length);
     }
 }

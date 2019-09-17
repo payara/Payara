@@ -44,9 +44,6 @@ package org.glassfish.internal.data;
 
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-
 import javax.inject.Singleton;
 
 import java.util.HashMap;
@@ -64,7 +61,7 @@ import org.glassfish.internal.deployment.Deployment;
  */
 @Service
 @Singleton
-public class ApplicationRegistry implements MonitoringDataSource {
+public class ApplicationRegistry {
 
     private Map<String, ApplicationInfo> apps = new HashMap<>();
     private final Map<String, Deployment.ApplicationDeployment> transientDeployments = new HashMap<>();
@@ -105,21 +102,4 @@ public class ApplicationRegistry implements MonitoringDataSource {
         return transientDeployments.get(appName);
     }
 
-    @Override
-    public void collect(MonitoringDataCollector rootCollector) {
-        rootCollector.in("application")
-            .collectAll(apps, (collector, app) -> collector
-                .collectNonZero("sniffers", app.getSniffers().size())
-                .collectNonZero("engines", app.getEngineRefs().size())
-                .collectNonZero("properties", app.getModuleProps().size())
-                .collectNonZero("modules", app.getModuleInfos().size())
-                .collectObjects(app.getModuleInfos(), ApplicationRegistry::collectModule));
-    }
-
-    private static void collectModule(MonitoringDataCollector collector, ModuleInfo module) {
-        collector.tag("module", module.getName())
-            .collectNonZero("sniffers", module.getSniffers().size())
-            .collectNonZero("engines", module.getEngineRefs().size())
-            .collectNonZero("properties", module.getModuleProps().size());
-    }
 }

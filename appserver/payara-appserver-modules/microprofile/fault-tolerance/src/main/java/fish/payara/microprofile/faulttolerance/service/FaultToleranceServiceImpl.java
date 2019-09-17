@@ -149,13 +149,13 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        MonitoringDataCollector ftCollector = collector.in("fault-tolerance");
+        MonitoringDataCollector ftCollector = collector.in("ft");
         for (Entry<String, FaultToleranceApplicationState> appStateEntry : stateByApplication.entrySet()) {
             String appName = appStateEntry.getKey();
             FaultToleranceApplicationState appState = appStateEntry.getValue();
-            collectMethodState(ftCollector, appName, "execution-semaphore",
+            collectMethodState(ftCollector, appName, "execution",
                     appState.getBulkheadExecutionSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
-            collectMethodState(ftCollector, appName, "queue-semaphore",
+            collectMethodState(ftCollector, appName, "queue",
                     appState.getBulkheadExecutionQueueSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
             collectMethodState(ftCollector, appName, "circuit-breaker",
                     appState.getCircuitBreakerStates(), FaultToleranceServiceImpl::collectCircuitBreakerState);
@@ -164,13 +164,13 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     private static <V> void collectMethodState(MonitoringDataCollector collector, String appName, String type,
-            Map<Object, Map<String, V>> semaphores, BiConsumer<MonitoringDataCollector, V> collect) {
-        for (Entry<Object, Map<String, V>> targetExecutionSemaphores : semaphores.entrySet()) {
-            Object target = targetExecutionSemaphores.getKey();
+            Map<Object, Map<String, V>> entries, BiConsumer<MonitoringDataCollector, V> collect) {
+        for (Entry<Object, Map<String, V>> entry : entries.entrySet()) {
+            Object target = entry.getKey();
             String targetValue = System.identityHashCode(target) + "@" + target.getClass().getSimpleName();
-            for (Entry<String, V> methodValue : targetExecutionSemaphores.getValue().entrySet()) {
-                collect.accept(collector.app(appName).type(type).tag("target", targetValue)
-                        .entity(methodValue.getKey()), methodValue.getValue());
+            for (Entry<String, V> methodValue : entry.getValue().entrySet()) {
+                String group = appName + "-" + type + "-" + targetValue + "-" + methodValue.getKey();
+                collect.accept(collector.group(group), methodValue.getValue());
             }
         }
     }

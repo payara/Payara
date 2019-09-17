@@ -39,8 +39,8 @@
 */
 
 body {
-    background-color: #002433;
-    font: 13px/1.231 arial,helvetica,clean,sans-serif;
+    background-color: #002c3e;
+    font: 13px/1.231 helvetica,clean,sans-serif;
     color: white;
     margin: 0;
     padding: 0;
@@ -49,37 +49,212 @@ h1 {
 	font-size: 21px;
     font-weight: bold;
 }
-#header {
-    background-color: #002C3E;
-    padding: 20px;
-    padding-left: 430px;
-    min-height: 200px;
-    background-image: url("payara-server-logo.png");
-    background-repeat: no-repeat;
-    background-position: 20px;
+select {
+	width: 100%;
+    max-width: 162px;
+    background: white;
+    padding: 2px 5px;
+    border-radius: 2px;
 }
-#console {
-    position: relative;
-    padding: 20px;
-}
-#canvas-container {
-    position: relative;
-}
-.chart-box {
-    width: 600px;
-    float: left;
-    padding: 10px;
-	margin: 10px;
-    border: 1px solid #F0981B;
-}
-.closeBtn {
-	float: right;
+input[type=text] {
+	border: 1px solid #ccc;
+    padding: 3px 5px;
+    border-radius: 2px;
+    width: 150px;
+    max-width: 150px;
 }
 canvas {
     position: relative;
 }
-a.closeBtn, a.closeBtn:visited {
+button {
+    padding: 5px 1em;
+    margin: 0 1px;
+    font-weight: normal;
+    background-color: #F0981B;
+    border-width: 0;
+    color: white;
+    border-radius: 2px;
+    cursor: pointer;
+    line-height: 1.0;
+}
+button:hover {
+	background-color: #F1A232;
+}
+#grid-console {
+    position: relative;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+.console-area {
+	padding: 5px 10px;
+	vertical-align: top;
+}
+#chart-container {
+    position: relative;
+    padding: 0 10px;
+}
+.chart-box {
+    position: relative;
+}
+.btnIcon {
+	float: right;
+	z-index: 101;
+    position: relative;
+    margin: 0;
+    margin-left: 5px;
+    padding: 0;
+    color: #bbb;
+    background-color: transparent;
+    font-weight: bold;
+}
+.btnClose {
+	margin-left: 15px;
+}
+button.btnIcon:hover {
+    color: white;
+    background-color: transparent;
+}
+.caption-bar h3 {
+	font-size: 100%;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 75%;
+    display: inline-block;
+    padding: 1px 5px;
+}
+.caption-bar h3 i {
+    font-weight: normal;
+    font-style: normal;
+    color: #bbb;
+}
+#pagesTabs .page-tab {
+    display: inline-block;
+    padding: 4px 1em;
+    margin: 1px;
+    font-weight: normal;
+    cursor: pointer;
+    line-height: 1em;
+    border: 1px solid #666;
+    border-top-width: 0;
+    color: #bbb;
+}
+#pagesTabs .page-tab.page-selected {
+    color: white;
+    font-weight: bold;
+    border: 1px solid white;
+    border-top-width: 0;
+    padding-bottom: 6px;
+}
+#layout-bar {
+	display: inline-block;
+	float: right;
+	text-align: right;
+	width: 50%;
+}
+#panel-iconbar {
+	padding: 0 10px;
+	margin-bottom: 5px;
+}
+#panel-iconbar button {
+	color: #bbb;
+    background-color: transparent;
+    padding: 5px;
+    font-size: 14px;
+    letter-spacing: -2px;
+}
+#panel-iconbar button:hover {
 	color: white;
-	text-decoration: none;
+}	
+#chart-grid {
+	width: 100%;
+	table-layout:fixed;
+	border-spacing: 4px;
+    border-collapse: separate;
+}
+#chart-grid td {
+    background-color: #002433;
+    padding: 10px;
+    vertical-align: top;
+    border: 2px solid #002433;
+}
+#chart-grid td.chart-selected h3 {
+    color: #00618A;
+    background-color: white;
+}
+.status-nodata {
+	display: none;
+	position: absolute;
 	font-weight: bold;
+	font-size: 200%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    z-index: 101;
+    border: 5px solid orangered;
+}
+.status-nodata div {
+	position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    margin-top: -1em;
+}
+.stable {
+	background-color: rgba(153, 102, 255, 0.2);
+	border: 1px solid rgba(153, 102, 255, 1);
+	font-size: 50px;
+	font-weight: bold;
+	color: rgba(153, 102, 255, 1);
+    text-align: center;
+    height: 90%;
+}
+.stable span {
+	position: relative;
+	float: left;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/**
+ * Properties (Sizes and Visibility)
+ */
+#panel-properties {
+    width: 380px;
+    padding: 0;
+    background-image: url("payara-server-logo.png");
+    background-repeat: no-repeat;
+    background-position: 0 10px;
+    vertical-align: top;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+.properties {
+    background-color: #002433;
+    padding: 10px;
+    margin-top: 5px;
+    width: 100%;
+}
+button.btnClose + .properties {
+    margin-top: 210px;
+}
+.properties th {
+    border-bottom: 1px solid #bbb;
+}
+.properties td:first-child {
+    width: 120px;
+}
+#console #panel-properties {
+	display: none;
+}
+#console.state-show-properties #panel-properties {
+	display: block;
+}
+#console.state-show-properties #panel-grid {
+    width: calc(100% - 385px);
 }

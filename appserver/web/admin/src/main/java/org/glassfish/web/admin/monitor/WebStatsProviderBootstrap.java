@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -45,17 +45,19 @@
 
 package org.glassfish.web.admin.monitor;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.monitoring.collect.MonitoringDataCollection;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
 
@@ -65,50 +67,37 @@ import javax.inject.Singleton;
  */
 @Service(name = "web")
 @Singleton
-public class WebStatsProviderBootstrap implements PostConstruct {
+public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
 
     private static final String NODE_SEPARATOR = "/";
 
-    @Inject
-    private Domain domain;
-
     // Map of apps and its StatsProvider list
     private ConcurrentMap<String, ConcurrentMap<String, Queue<Object>>> vsNameToStatsProviderMap =
-            new ConcurrentHashMap<String, ConcurrentMap<String, Queue<Object>>>();
-    private Queue<Object> webContainerStatsProviderQueue = new ConcurrentLinkedQueue<Object>();
-    private AtomicBoolean isWebStatsProvidersRegistered = new AtomicBoolean(false);
+            new ConcurrentHashMap<>();
+    private Queue<Object> webContainerStatsProviderQueue = new ConcurrentLinkedQueue<>();
 
     public WebStatsProviderBootstrap() {
     }
 
+    @Override
     public void postConstruct(){
         //Register the Web stats providers
         registerWebStatsProviders();
     }
 
     private synchronized void registerWebStatsProviders() {
-        if (isWebStatsProvidersRegistered.get()) {
-            return;
-        }
-
         JspStatsProvider jsp = new JspStatsProvider(null, null);
         RequestStatsProvider wsp = new RequestStatsProvider(null, null);
         ServletStatsProvider svsp = new ServletStatsProvider(null, null);
         SessionStatsProvider sssp = new SessionStatsProvider(null, null);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER,
-            "web/jsp", jsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER,
-            "web/request", wsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER,
-            "web/servlet", svsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER,
-            "web/session", sssp);
+        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/jsp", jsp);
+        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/request", wsp);
+        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/servlet", svsp);
+        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/session", sssp);
         webContainerStatsProviderQueue.add(jsp);
         webContainerStatsProviderQueue.add(wsp);
         webContainerStatsProviderQueue.add(svsp);
         webContainerStatsProviderQueue.add(sssp);
-
-        isWebStatsProvidersRegistered.set(true);
     }
 
     public void registerApplicationStatsProviders(String monitoringName,
@@ -122,7 +111,7 @@ public class WebStatsProviderBootstrap implements PostConstruct {
         ConcurrentMap<String, Queue<Object>> statsProviderMap = vsNameToStatsProviderMap.get(vsName);
         Queue<Object> statspList = null;
         if (statsProviderMap == null) {
-            statsProviderMap = new ConcurrentHashMap<String, Queue<Object>>();
+            statsProviderMap = new ConcurrentHashMap<>();
             ConcurrentMap<String, Queue<Object>> anotherMap =
                     vsNameToStatsProviderMap.putIfAbsent(vsName, statsProviderMap);
             if (anotherMap != null) {
@@ -132,7 +121,7 @@ public class WebStatsProviderBootstrap implements PostConstruct {
             statspList = statsProviderMap.get(monitoringName);
         }
         if (statspList == null) {
-            statspList = new ConcurrentLinkedQueue<Object>();
+            statspList = new ConcurrentLinkedQueue<>();
             Queue<Object> anotherQueue = statsProviderMap.putIfAbsent(monitoringName, statspList);
             if (anotherQueue != null) {
                 statspList = anotherQueue;
@@ -190,22 +179,21 @@ public class WebStatsProviderBootstrap implements PostConstruct {
         if (statsProviderMap.isEmpty()) {
             vsNameToStatsProviderMap.remove(vsName);
         }
-
-        // remove web stats provider if it is empty (for all vs)
-        if (vsNameToStatsProviderMap.isEmpty()) {
-            for (Object statsProvider : webContainerStatsProviderQueue) {
-                StatsProviderManager.unregister(statsProvider);
-            }
-            webContainerStatsProviderQueue.clear();
-            isWebStatsProvidersRegistered.set(false);
-        }
     }
 
-    private String getNodeString(String moduleName, String... others) {
+    private static String getNodeString(String moduleName, String... others) {
         StringBuilder sb = new StringBuilder(moduleName);
         for (String other: others) {
             sb.append(NODE_SEPARATOR).append(other);
         }
         return sb.toString();
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector web = collector.in("web");
+        for (Object provider : webContainerStatsProviderQueue) {
+            web.collectObject(provider, MonitoringDataCollection::collectObject);
+        }
     }
 }

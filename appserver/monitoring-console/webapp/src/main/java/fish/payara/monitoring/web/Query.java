@@ -37,23 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.monitoring.web;
 
-package fish.payara.monitoring.store;
+public class Query {
 
-import java.util.List;
-import java.util.Set;
-
-import org.jvnet.hk2.annotations.Contract;
-
-import fish.payara.monitoring.model.Series;
-import fish.payara.monitoring.model.SeriesDataset;
-
-@Contract
-public interface MonitoringDataRepository {
-
-    Iterable<SeriesDataset> selectAllSeries();
-
-    List<SeriesDataset> selectSeries(Series series, String... instances);
-
-    Set<String> instances();
+    public SeriesRequest[] series;
 }

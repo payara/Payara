@@ -94,4 +94,35 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>com.bekioui.maven.plugin</groupId>
+              <artifactId>merge-maven-plugin</artifactId>
+              <version>1.2.0</version>
+              <executions>
+                <execution>
+                  <id>merge-files</id>
+                  <goals>
+                    <goal>merge</goal>
+                  </goals>
+                  <configuration>
+                    <merges>
+                      <merge>
+                        <override>true</override>
+                        <target>src/main/webapp/monitoring-console.js</target>
+                        <sources>
+                            <source>src/main/webapp/mc-ui.js</source>
+                            <source>src/main/webapp/mc-render.js</source>
+                            <source>src/main/webapp/mc-page.js</source>
+                        </sources>
+                      </merge>
+                    </merges>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
