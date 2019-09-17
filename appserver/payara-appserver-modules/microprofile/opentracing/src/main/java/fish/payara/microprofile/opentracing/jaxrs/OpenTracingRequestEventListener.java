@@ -116,7 +116,7 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
 
     @Override
     public void onEvent(final RequestEvent event) {
-        LOG.info(() -> "onEvent(event.type=" + event.getType() + ")");
+        LOG.fine(() -> "onEvent(event.type=" + event.getType() + ")");
 
         // onException is special, it can come in any phase of request processing.
         // early phases are simply ignored.
@@ -124,17 +124,26 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
             return;
         }
 
-        final Traced tracedAnnotation = getTracedAnnotation();
-        final ContainerRequest requestContext = event.getContainerRequest();
-        if (!canTrace(requestContext, tracedAnnotation)) {
-            LOG.finest(() -> "canTrace(...) returned false, nothing to do.");
-            return;
-        }
-
         try {
             if (event.getType() == Type.REQUEST_MATCHED) {
-                onIncomingRequest(event, tracedAnnotation);
-            } else if (event.getType() == Type.ON_EXCEPTION) {
+                final Traced tracedAnnotation = getTracedAnnotation();
+                final ContainerRequest requestContext = event.getContainerRequest();
+                if (!canTrace(requestContext, tracedAnnotation)) {
+                    LOG.finest(() -> "canTrace(...) returned false, nothing to do.");
+                    return;
+                }
+                final String operationName = determineOperationName(requestContext, tracedAnnotation);
+                onIncomingRequest(event, operationName);
+                return;
+            }
+
+            final Scope activeScope = openTracing.getTracer(this.applicationName).scopeManager().active();
+            if (activeScope == null) {
+                LOG.finest(() -> "Could not find any active scope, nothing to do.");
+                return;
+            }
+
+            if (event.getType() == Type.ON_EXCEPTION) {
                 onException(event);
             } else if (event.getType() == Type.RESP_FILTERS_FINISHED) {
                 onOutgoingResponse(event);
@@ -148,14 +157,14 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
     }
 
 
-    private void onIncomingRequest(final RequestEvent event, final Traced tracedAnnotation) {
-        LOG.fine(() -> "onIncomingRequest(event=" + event.getType() + ")");
+    private void onIncomingRequest(final RequestEvent event, final String operationName) {
+        LOG.fine(() -> "onIncomingRequest(event=" + event.getType() + ", operationName=" + operationName + ")");
 
         final ContainerRequest requestContext = event.getContainerRequest();
         final Tracer tracer = openTracing.getTracer(this.applicationName);
 
         // Create a Span and instrument it with details about the request
-        final SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation)) //
+        final SpanBuilder spanBuilder = tracer.buildSpan(operationName) //
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER) //
                 .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod()) //
                 .withTag(Tags.HTTP_URL.getKey(), toString(requestContext.getUriInfo())) //
@@ -320,12 +329,11 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
 
     /**
      * Helper method that determines what the operation name of the span.
+     * Depends on completely initialized resourceInfo.
      *
-     * @param requestContext The context of the request, obtained from the filter methods
-     * @param tracedAnnotation The Traced annotation obtained from the target method
      * @return The name to use as the Span's operation name
      */
-    private String determineOperationName(final ContainerRequestContext requestContext, final Traced tracedAnnotation) {
+    private String determineOperationName(final ContainerRequestContext request, final Traced tracedAnnotation) {
         if (tracedAnnotation != null) {
             String operationName = OpenTracingCdiUtils.getConfigOverrideValue(
                     Traced.class, "operationName", resourceInfo, String.class)
@@ -334,7 +342,7 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
             // If the annotation or config override providing an empty name, just set it equal to the HTTP Method,
             // followed by the method signature
             if (operationName.equals("")) {
-                operationName = requestContext.getMethod() + ":"
+                operationName = request.getMethod() + ":"
                         + resourceInfo.getResourceClass().getCanonicalName() + "."
                         + resourceInfo.getResourceMethod().getName();
             }
@@ -357,7 +365,7 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
 
             // If the provider is set to "http-path" and the class-level @Path annotation is actually present
             if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
-                String operationName = requestContext.getMethod() + ":";
+                String operationName = request.getMethod() + ":";
 
                 if (classLevelAnnotation.value().startsWith("/")) {
                     operationName += classLevelAnnotation.value();
@@ -379,7 +387,7 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
         }
 
         // If we haven't returned by now, just go with the default ("class-method")
-        return requestContext.getMethod() + ":"
+        return request.getMethod() + ":"
                 + resourceInfo.getResourceClass().getCanonicalName() + "."
                 + resourceInfo.getResourceMethod().getName();
     }
