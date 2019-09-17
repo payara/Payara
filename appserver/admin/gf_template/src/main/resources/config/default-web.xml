@@ -322,7 +322,7 @@
         javax.servlet.jsp-api.jar
         javax.servlet.jsp.jstl-api.jar
         javax.servlet.jsp.jstl.jar
-        javax.jms-api.jar
+        jakarta.jms-api.jar
         jakarta.faces.jar
         javax.servlet.jsp.jar
         jspcaching-connector.jar
@@ -330,7 +330,6 @@
         hibernate-validator.jar
         jakarta.ejb.jar
         javax.enterprise.deploy-api.jar
-        javax.jms-api.jar
         jakarta.mail.jar
         javax.management.j2ee-api.jar
         jakarta.persistence.jar
