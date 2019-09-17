@@ -144,7 +144,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
             classWriter.done();
         }
-        alreadyGenerated.add(className);
     }
 
     public void generateList(ConfigModel model, DomDocument domDocument) {
@@ -377,7 +376,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      * @return true if the given className is already generated. false otherwise.
      */
     protected boolean alreadyGenerated(String className) {
-        return alreadyGenerated.contains(className);
+        return !alreadyGenerated.add(className);
     }
 
     /**
