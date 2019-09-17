@@ -43,68 +43,70 @@
 Chart.defaults.global.defaultFontColor = "#fff";
 
 /**
- * A utility with 'static' helper functions that have no side effect.
- * 
- * Extracting such function into this object should help organise the code and allow context independent testing 
- * of the helper functions in the browser.
- * 
- * The MonitoringConsole object is dependent on this object but not vice versa.
+ * The different parts of the Monitoring Console are added as the below properties by the individual files.
  */
-var MonitoringConsoleUtils = (function() {
-	
-	return {
-		
-		getSpan: function(widget, numberOfColumns, currentColumn) {
-			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
-			if (typeof span === 'string') {
-				if (span === 'full') {
-					span = numberOfColumns;
-				} else {
-					span = parseInt(span);
-				}
-			}
-			if (span > numberOfColumns - currentColumn) {
-				span = numberOfColumns - currentColumn;
-			}
-			return span;
-		},
-		
-		getPageId: function(name) {
-			return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
-		},
-		
-		getTimeLabel: function(value, index, values) {
-			if (values.length == 0 || index == 0)
-				return value;
-			let span = values[values.length -1].value - values[0].value;
-			if (span < 120000) { // less then two minutes
-				let lastMinute = new Date(values[index-1].value).getMinutes();
-				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-			}
-			return value;
-		},
-		
-		readTextFile: function(file) {
-		    return new Promise(function(resolve, reject){
-		        var reader = new FileReader();
-		        reader.onload = function(evt){
-		            resolve(evt.target.result);
-		        };
-		        reader.onerror = function(err) {
-		            reject(err);
-		        };
-		        reader.readAsText(file);
-		    });
-		},
-	};
-})();
+var MonitoringConsole =  {
+   /**
+    * Functions to update the actual HTML page of the MC
+    **/
+	View: undefined,
+   /**
+    * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
+    **/ 
+	Model: undefined,
+   /**
+    * Functions specifically to take the data and prepare the display of a line chart using the underlying charting library. 
+    **/
+	LineChart: undefined,
+};
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
 
 /**
  * The object that manages the internal state of the monitoring console page.
  * 
- * It depends on the MonitoringConsoleUtils object.
+ * It depends on the MonitoringConsole.Utils object.
  */
-var MonitoringConsole = (function() {
+MonitoringConsole.Model = (function() {
 	/**
 	 * Key used in local stage for the userInterface
 	 */
@@ -126,6 +128,10 @@ var MonitoringConsole = (function() {
 			},
 			settings: {},
 	};
+
+	function getPageId(name) {
+    	return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
+    }
 
 	
 	/**
@@ -156,7 +162,7 @@ var MonitoringConsole = (function() {
 		 */
 		function sanityCheckPage(page) {
 			if (!page.id)
-				page.id = MonitoringConsoleUtils.getPageId(page.name);
+				page.id = getPageId(page.name);
 			if (!page.widgets)
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
@@ -203,7 +209,7 @@ var MonitoringConsole = (function() {
 		function doCreate(name) {
 			if (!name)
 				throw "New page must have a unique name";
-			var id = MonitoringConsoleUtils.getPageId(name);
+			var id = getPageId(name);
 			if (pages[id])
 				throw "A page with name "+name+" already exist";
 			let page = sanityCheckPage({name: name});
@@ -249,6 +255,106 @@ var MonitoringConsole = (function() {
 			let ui = { pages: pages, settings: settings };
 			return prettyPrint ? JSON.stringify(ui, null, 2) : JSON.stringify(ui);
 		}
+
+		function readTextFile(file) {
+          	return new Promise(function(resolve, reject) {
+				let reader = new FileReader();
+				reader.onload = function(evt){
+				  resolve(evt.target.result);
+				};
+				reader.onerror = function(err) {
+				  reject(err);
+				};
+				reader.readAsText(file);
+          	});
+      	}
+
+      	function doLayout(columns) {
+			let page = pages[currentPageId];
+			if (!page)
+				return [];
+			if (columns)
+				page.numberOfColumns = columns;
+			let numberOfColumns = page.numberOfColumns || 1;
+			let widgets = page.widgets;
+			// init temporary and result data structure
+			let widgetsByColumn = new Array(numberOfColumns);
+			var layout = new Array(numberOfColumns);
+			for (let col = 0; col < numberOfColumns; col++) {
+				widgetsByColumn[col] = [];
+				layout[col] = [];
+			}
+			// organise widgets in columns
+			Object.values(widgets).forEach(function(widget) {
+				let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
+				widgetsByColumn[Math.min(Math.max(column, 0), widgetsByColumn.length - 1)].push(widget);
+			});
+			// order columns by item position
+			for (let col = 0; col < numberOfColumns; col++) {
+				widgetsByColumn[col] = widgetsByColumn[col].sort(function (a, b) {
+					if (!a.grid || !a.grid.item)
+						return -1;
+					if (!b.grid || !b.grid.item)
+						return 1;
+					return a.grid.item - b.grid.item;
+				});
+			}
+			// do layout by marking cells with item (left top corner in case of span), null (empty) and undefined (spanned)
+			for (let col = 0; col < numberOfColumns; col++) {
+				let columnWidgets = widgetsByColumn[col];
+				for (let item = 0; item < columnWidgets.length; item++) {
+					let widget = columnWidgets[item];
+					let span = getSpan(widget, numberOfColumns, col);
+					let info = { span: span, widget: widget};
+					let column0 = layout[col];
+					let row0 = getEmptyRowIndex(column0, span);
+					for (let spanX = 0; spanX < span; spanX++) {
+						let column = layout[col + spanX];
+						if (spanX == 0) {
+							if (!widget.grid)
+								widget.grid = { column: col, span: span }; // init grid
+							widget.grid.item = column.length; // update item position
+						} else {
+							while (column.length < row0)
+								column.push(null); // null marks empty cells
+						}
+						for (let spanY = 0; spanY < span; spanY++) {
+							column.push(spanX === 0 && spanY === 0 ? info : undefined);
+						}
+					}
+				}
+			}
+			// give the layout a uniform row number
+			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
+			for (let col = 0; col < numberOfColumns; col++) {
+				while (layout[col].length < maxRows) {
+					layout[col].push(null);
+				}
+			}
+			return layout;
+      	}
+
+      	function getSpan(widget, numberOfColumns, currentColumn) {
+			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+			if (typeof span === 'string') {
+			if (span === 'full') {
+			   span = numberOfColumns;
+			} else {
+			   span = parseInt(span);
+			}
+			}
+			if (span > numberOfColumns - currentColumn) {
+			span = numberOfColumns - currentColumn;
+			}
+			return span;
+      	}
+
+		/**
+		 * @return {number} row position in column where n rows are still empty ('null' marks empty)
+		 */
+      	function getEmptyRowIndex(column, n) {
+			return Math.max(column.length, column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null))); 
+      	}
 		
 		return {
 			currentPage: function() {
@@ -273,7 +379,7 @@ var MonitoringConsole = (function() {
 				if (userInterface instanceof FileList) {
 					let file = userInterface[0];
 					if (file) {
-						let json = await MonitoringConsoleUtils.readTextFile(file);
+						let json = await readTextFile(file);
 						doImport(JSON.parse(json));
 					}
 				} else {
@@ -302,7 +408,7 @@ var MonitoringConsole = (function() {
 			},
 			
 			renamePage: function(name) {
-				let pageId = MonitoringConsoleUtils.getPageId(name);
+				let pageId = getPageId(name);
 				if (pages[pageId])
 					throw "Page with name already exist";
 				let page = pages[currentPageId];
@@ -390,49 +496,7 @@ var MonitoringConsole = (function() {
 			},
 			
 			arrange: function(columns) {
-				let page = pages[currentPageId];
-				if (!page)
-					return [];
-				if (columns)
-					page.numberOfColumns = columns;
-				let numberOfColumns = page.numberOfColumns || 1;
-				let widgets = page.widgets;
-				let configsByColumn = new Array(numberOfColumns);
-				for (let col = 0; col < numberOfColumns; col++)
-					configsByColumn[col] = [];
-				// insert order widgets
-				Object.values(widgets).forEach(function(widget) {
-					let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
-					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(widget);
-				});
-				// build up rows with columns, occupy spans with empty 
-				var layout = new Array(numberOfColumns);
-				for (let col = 0; col < numberOfColumns; col++)
-					layout[col] = [];
-				for (let col = 0; col < numberOfColumns; col++) {
-					let orderedConfigs = configsByColumn[col].sort(function (a, b) {
-						if (!a.grid || !a.grid.item)
-							return -1;
-						if (!b.grid || !b.grid.item)
-							return 1;
-						return a.grid.item - b.grid.item;
-					});
-					orderedConfigs.forEach(function(widget) {
-						let span = MonitoringConsoleUtils.getSpan(widget, numberOfColumns, col);
-						let info = { span: span, widget: widget};
-						for (let spanX = 0; spanX < span; spanX++) {
-							let column = layout[col + spanX];
-							if (spanX == 0) {
-								if (!widget.grid)
-									widget.grid = { column: col, span: span }; // init grid
-								widget.grid.item = column.length; // update item position
-							}
-							for (let spanY = 0; spanY < span; spanY++) {
-								column.push(spanX === 0 && spanY === 0 ? info : null);
-							}
-						}
-					});
-				}
+				let layout = doLayout(columns);
 				doStore();
 				return layout;
 			},
@@ -492,6 +556,17 @@ var MonitoringConsole = (function() {
 	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
 	    	options.legend.display = widget.options.showLegend === true;
 		}
+
+		function getTimeLabel(value, index, values) {
+			if (values.length == 0 || index == 0)
+				return value;
+			let span = values[values.length -1].value - values[0].value;
+			if (span < 120000) { // less then two minutes
+				let lastMinute = new Date(values[index-1].value).getMinutes();
+				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+			}
+			return value;
+      	}
 		
 		return {
 			/**
@@ -520,7 +595,7 @@ var MonitoringConsole = (function() {
 									round: 'second',
 								},
 								ticks: {
-									callback: MonitoringConsoleUtils.getTimeLabel,
+									callback: getTimeLabel,
 									minRotation: 90,
 									maxRotation: 90,
 								}
@@ -840,7 +915,7 @@ var MonitoringConsole = (function() {
 
 /*jshint esversion: 8 */
 
-var MonitoringConsoleRender = (function() {
+MonitoringConsole.LineChart = (function() {
 	
 	const DEFAULT_BG_COLORS = [
         'rgba(153, 102, 255, 0.2)',
@@ -860,8 +935,8 @@ var MonitoringConsoleRender = (function() {
     ];	
 	
     function createMinimumLineDataset(data, points, lineColor) {
-		var min = data.observedMin;
-		var minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
+		let min = data.observedMin;
+		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
 			data: minPoints,
@@ -875,8 +950,8 @@ var MonitoringConsoleRender = (function() {
     }
     
     function createMaximumLineDataset(data, points, lineColor) {
-    	var max = data.observedMax;
-		var maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
+    	let max = data.observedMax;
+		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
 			data: maxPoints,
@@ -889,8 +964,8 @@ var MonitoringConsoleRender = (function() {
     }
     
     function createAverageLineDataset(data, points, lineColor) {
-		var avg = data.observedSum / data.observedValues;
-		var avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
+		let avg = data.observedSum / data.observedValues;
+		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
 			data: avgPoints,
@@ -917,7 +992,7 @@ var MonitoringConsoleRender = (function() {
     	if (!points1d)
     		return [];
     	let points2d = new Array(points1d.length / 2);
-		for (var i = 0; i < points2d.length; i++) {
+		for (let i = 0; i < points2d.length; i++) {
 			points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
 		}
 		return points2d;
@@ -927,7 +1002,7 @@ var MonitoringConsoleRender = (function() {
     	if (!points1d)
     		return [];
     	let points2d = new Array((points1d.length / 2) - 1);
-    	for (var i = 0; i < points2d.length; i++) {
+    	for (let i = 0; i < points2d.length; i++) {
     		let t0 = points1d[i*2];
     		let t1 = points1d[i*2+2];
     		let y0 = points1d[i*2+1];
@@ -944,7 +1019,7 @@ var MonitoringConsoleRender = (function() {
     	if (widget.options.perSec) {
     		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
     	}
-    	let points = createInstancePoints(data.points)
+    	let points = createInstancePoints(data.points);
     	let datasets = [];
     	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
     	if (points.length > 0 && widget.options.drawAvgLine) {
@@ -960,12 +1035,12 @@ var MonitoringConsoleRender = (function() {
     }
     
 	return {
-		chart: function(update) {
-			var data = update.data;
-			var widget = update.widget;
-			var chart = update.chart();
-			var datasets = [];
-			for (var j = 0; j < data.length; j++) {
+		onDataUpdate: function(update) {
+			let data = update.data;
+			let widget = update.widget;
+			let chart = update.chart();
+			let datasets = [];
+			for (let j = 0; j < data.length; j++) {
 				datasets = datasets.concat(
 						createInstanceDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
 			}
@@ -1016,15 +1091,18 @@ var MonitoringConsoleRender = (function() {
 
 /*jshint esversion: 8 */
 
-var MonitoringConsolePage = (function() {
+/**
+ *
+ **/
+MonitoringConsole.View = (function() {
 
     function download(filename, text) {
-        var pom = document.createElement('a');
+        let pom = document.createElement('a');
         pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         pom.setAttribute('download', filename);
 
         if (document.createEvent) {
-            var event = document.createEvent('MouseEvents');
+            let event = document.createEvent('MouseEvents');
             event.initEvent('click', true, true);
             pom.dispatchEvent(event);
         }
@@ -1034,21 +1112,21 @@ var MonitoringConsolePage = (function() {
     }
 
     function renderPageTabs() {
-        var bar = $("#pagesTabs"); 
+        let bar = $("#pagesTabs"); 
         bar.empty();
-        MonitoringConsole.listPages().forEach(function(page) {
-            var tabId = page.id + '-tab';
-            var css = "page-tab" + (page.active ? ' page-selected' : '');
+        MonitoringConsole.Model.listPages().forEach(function(page) {
+            let tabId = page.id + '-tab';
+            let css = "page-tab" + (page.active ? ' page-selected' : '');
             //TODO when clicking active page tab the options could open/close
-            var newTab = $('<span/>', {id: tabId, "class": css, text: page.name});
+            let newTab = $('<span/>', {id: tabId, "class": css, text: page.name});
             newTab.click(function() {
-                onPageChange(MonitoringConsole.Page.changeTo(page.id));
+                onPageChange(MonitoringConsole.Model.Page.changeTo(page.id));
             });
             bar.append(newTab);
         });
-        var addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
+        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
         addPage.click(function() {
-            onPageChange(MonitoringConsole.Page.create('(Unnamed)'));
+            onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));
         });
         bar.append(addPage);
     }
@@ -1058,12 +1136,12 @@ var MonitoringConsolePage = (function() {
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
     function renderChartBox(cell) {
-        var boxId = cell.widget.target + '-box';
-        var box = $('#'+boxId);
+        let boxId = cell.widget.target + '-box';
+        let box = $('#'+boxId);
         if (box.length > 0)
             return box.first();
         box = $('<div/>', { id: boxId, "class": "chart-box" });
-        var win = $(window);
+        let win = $(window);
         box.append($('<canvas/>',{ id: cell.widget.target }));
         return box;
     }
@@ -1071,35 +1149,26 @@ var MonitoringConsolePage = (function() {
     /**
      * This function refleshes the page with the given layout.
      */
-    function renderPage(layout) {
-        var table = $("<table/>", { id: 'chart-grid'});
-        var numberOfColumns = layout.length;
-        var maxRow = 0;
-        for (var col = 0; col < numberOfColumns; col++) {
-            maxRow = Math.max(maxRow, layout[col].length);
-        }
-        var rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
-        for (var row = 0; row < maxRow; row++) {
-            var tr = $("<tr/>");
-            for (var col = 0; col < numberOfColumns; col++) {
-                if (layout[col].length <= row) {
-                    tr.append($("<td/>"));
-                } else {
-                    var cell = layout[col][row];
-                    if (cell) {
-                        var span = cell.span;
-                        var td = $("<td/>", { colspan: span, rowspan: span, 'class': 'box', style: 'height: '+(span * rowHeight)+"px;"});
-                        td.append(renderChartCaption(cell));
-                        var status = $('<div/>', { "class": 'status-nodata'});
-                        status.append($('<div/>', {text: 'No Data'}));
-                        td.append(status);
-                        td.append(renderChartBox(cell));
-                        tr.append(td);
-                    } else if (row == 0 && layout[col].length == 0) {
-                        // a column with no content, span all rows
-                        var td = $("<td/>", { rowspan: maxRow });
-                        tr.append(td);                  
-                    }
+    function onPageUpdate(layout) {
+        let numberOfColumns = layout.length;
+        let maxRows = layout[0].length;
+        let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        for (let row = 0; row < maxRows; row++) {
+            let tr = $("<tr/>");
+            for (let col = 0; col < numberOfColumns; col++) {
+                let cell = layout[col][row];
+                if (cell) {
+                    let span = cell.span;
+                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    td.append(renderChartCaption(cell));
+                    let status = $('<div/>', { "class": 'status-nodata'});
+                    status.append($('<div/>', {text: 'No Data'}));
+                    td.append(status);
+                    td.append(renderChartBox(cell));
+                    tr.append(td);
+                } else if (cell === null) {
+                    tr.append($("<td/>"));                  
                 }
             }
             table.append(tr);
@@ -1113,18 +1182,18 @@ var MonitoringConsolePage = (function() {
     }
 
     function renderChartCaption(cell) {
-        var bar = $('<div/>', {"class": "caption-bar"});
-        var series = cell.widget.series;
-        var endOfTags = series.lastIndexOf(' ');
-        var text = endOfTags <= 0 
+        let bar = $('<div/>', {"class": "caption-bar"});
+        let series = cell.widget.series;
+        let endOfTags = series.lastIndexOf(' ');
+        let text = endOfTags <= 0 
            ? camelCaseToWords(series) 
            : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
         if (cell.widget.options.perSec) {
             text += ' <i>(per second)</i>';
         }
-        var caption = $('<h3/>', {title: 'Select '+series}).html(text);
+        let caption = $('<h3/>', {title: 'Select '+series}).html(text);
         caption.click(function() {
-            if (MonitoringConsole.Page.Widgets.Selection.toggle(series)) {
+            if (MonitoringConsole.Model.Page.Widgets.Selection.toggle(series)) {
                 bar.parent().addClass('chart-selected');
             } else {
                 bar.parent().removeClass('chart-selected');
@@ -1132,34 +1201,34 @@ var MonitoringConsolePage = (function() {
             renderChartOptions();
         });
         bar.append(caption);
-        var btnClose = $('<button/>', { "class": "btnIcon btnClose", title:'Remove chart from page' }).html('&times;');
+        let btnClose = $('<button/>', { "class": "btnIcon btnClose", title:'Remove chart from page' }).html('&times;');
         btnClose.click(function() {
             if (window.confirm('Do you really want to remove the chart from the page?')) {
-                renderPage(MonitoringConsole.Page.Widgets.remove(series));
+                onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
             }
         });
         bar.append(btnClose);
-        var btnLarger = $('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;');
+        let btnLarger = $('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;');
         btnLarger.click(function() {
-            renderPage(MonitoringConsole.Page.Widgets.configure(series, function(widget) {
+            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
                 if (widget.grid.span < 4) {
                     widget.grid.span = !widget.grid.span ? 1 : widget.grid.span + 1;
                 }
             }));
         });
         bar.append(btnLarger);
-        var btnSmaller = $('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;');
+        let btnSmaller = $('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;');
         btnSmaller.click(function() {
-            renderPage(MonitoringConsole.Page.Widgets.configure(series, function(widget) {
+            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
                 if (!widget.grid.span || widget.grid.span > 1) {
                     widget.grid.span = !widget.grid.span ? 1 : widget.grid.span - 1;
                 }
             }));
         });
         bar.append(btnSmaller);
-        var btnRight = $('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;');
+        let btnRight = $('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;');
         btnRight.click(function() {
-            renderPage(MonitoringConsole.Page.Widgets.configure(series, function(widget) {
+            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
                 if (!widget.grid.column || widget.grid.column < 4) {
                     widget.grid.item = undefined;
                     widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
@@ -1167,9 +1236,9 @@ var MonitoringConsolePage = (function() {
             }));
         });
         bar.append(btnRight);
-        var btnLeft = $('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;');
+        let btnLeft = $('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;');
         btnLeft.click(function() {
-            renderPage(MonitoringConsole.Page.Widgets.configure(series, function(widget) {
+            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
                 if (!widget.grid.column || widget.grid.column > 0) {
                     widget.grid.item = undefined;
                     widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
@@ -1181,20 +1250,20 @@ var MonitoringConsolePage = (function() {
     }
 
     function renderChartOptions() {
-        var panelConsole = $('#console');
-        if (MonitoringConsole.Settings.isDispayed()) {
+        let panelConsole = $('#console');
+        if (MonitoringConsole.Model.Settings.isDispayed()) {
             if (!panelConsole.hasClass('state-show-properties')) {
                 panelConsole.addClass('state-show-properties');
-                var instancePanel = $("#panelCfgInstances");
+                let instancePanel = $("#panelCfgInstances");
                 instancePanel.empty();
                 $.getJSON("api/instances/", function(instances) {
-                    var select = $('<select />', {id: 'cfgInstances', multiple: true});
-                    for (var i = 0; i < instances.length; i++) {
+                    let select = $('<select />', {id: 'cfgInstances', multiple: true});
+                    for (let i = 0; i < instances.length; i++) {
                         select.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
                     }
                     instancePanel.append(select);
                 });
-                $('#cftPageName').val(MonitoringConsole.Page.name());
+                $('#cftPageName').val(MonitoringConsole.Model.Page.name());
             }
         } else {
             panelConsole.removeClass('state-show-properties');
@@ -1207,20 +1276,20 @@ var MonitoringConsolePage = (function() {
      * Depending on the update different content is rendered within a chart box.
      */
     function onDataUpdate(update) {
-        var boxId = update.widget.target + '-box';
-        var box = $('#'+boxId);
+        let boxId = update.widget.target + '-box';
+        let box = $('#'+boxId);
         if (box.length == 0) {
             if (console)
                 console.log('WARN: Box for chart ' + update.widget.series + ' not ready.');
             return;
         }
-        var td = box.closest('td');
+        let td = box.closest('.widget');
         if (update.data) {
             td.children('.status-nodata').hide();
-            var points = update.data[0].points;
+            let points = update.data[0].points;
             if (points.length == 4 && points[1] === points[3] && !update.widget.options.perSec) {
                 if (td.children('.stable').length == 0) {
-                    var info = $('<div/>', { 'class': 'stable' });
+                    let info = $('<div/>', { 'class': 'stable' });
                     info.append($('<span/>', { text: points[1] }));
                     td.append(info);
                     box.hide();
@@ -1228,7 +1297,7 @@ var MonitoringConsolePage = (function() {
             } else {
                 td.children('.stable').remove();
                 box.show();
-                MonitoringConsoleRender.chart(update);
+                MonitoringConsole.LineChart.onDataUpdate(update);
             }
         } else {
             td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
@@ -1246,113 +1315,113 @@ var MonitoringConsolePage = (function() {
      * Method to call when page changes to update UI elements accordingly
      */
     function onPageChange(layout) {
-        renderPage(layout);
+        onPageUpdate(layout);
         renderPageTabs();
         renderChartOptions();
     }
 
-    function init() {
+    function onPageReady() {
         $('#btnExport').click(function() {
-            download('monitoring-console-config.json', MonitoringConsole.$export());
+            download('monitoring-console-config.json', MonitoringConsole.Model.$export());
         });
         $('#btnImport').click(function() {
             $('#cfgImport').click();
         });
 
         $("#cfgPerSec").on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.perSec = checked;
             });
         });
 
         $("#cfgStartAtZero").on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.beginAtZero = checked;
             });
         });
 
         $("#cfgAutoTimeTicks").on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.autoTimeTicks = checked;
             });
         });
         $("#cfgDrawCurves").on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.drawCurves = checked;
             });
         });
         $('#cfgDrawAnimations').on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.drawAnimations = checked;
             });
         });
         $("#cfgRotateTimeLabels").on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.rotateTimeLabels = checked;
             });
         });
         $('#cfgDrawAvgLine').on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.drawAvgLine = checked;
             });
         });
         $('#cfgDrawMinLine').on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.drawMinLine = checked;
             });
         });
         $('#cfgDrawMaxLine').on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.drawMaxLine = checked;
             });
         });
         $('#cfgShowLegend').on('change', function() {
-            var checked = this.checked;
-            MonitoringConsole.Page.Widgets.Selection.configure(function(widget) {
+            let checked = this.checked;
+            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
                 widget.options.showLegend = checked;
             });
         });
         $('#btnRemovePage').click(function() {
             if (window.confirm("Do you really want to delete the current page?")) { 
-                renderPage(MonitoringConsole.Page.erase());
+                onPageUpdate(MonitoringConsole.Model.Page.erase());
                 renderPageTabs();
             }
         });
         $('#btnMenu').click(function() {
-            MonitoringConsole.Settings.toggle();
+            MonitoringConsole.Model.Settings.toggle();
             renderChartOptions();
         });
         $('#cftPageName').on("propertychange change keyup paste input", function() {
-            MonitoringConsole.Page.rename(this.value);
+            MonitoringConsole.Model.Page.rename(this.value);
             renderPageTabs();
         });
         $('#btnAddChart').click(function() {
             $("#options option:selected").each(function() {
-                var series = this.value;
-                renderPage(MonitoringConsole.Page.Widgets.add(series));
+                let series = this.value;
+                onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(series));
             });
         });
 
-        MonitoringConsole.listSeries(function(names) {
-            var lastNs;
-            var options = $("#options");
+        MonitoringConsole.Model.listSeries(function(names) {
+            let lastNs;
+            let options = $("#options");
             $.each(names, function() {
-                var key = this; //.replace(/ /g, ',');
-                var ns =  this.substring(3, this.indexOf(' '));
-                var $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
+                let key = this; //.replace(/ /g, ',');
+                let ns =  this.substring(3, this.indexOf(' '));
+                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
                 if (ns == lastNs) {
                     options.find('optgroup').last().append($option);
                 } else {
-                    var group = $('<optgroup/>').attr('label', ns);
+                    let group = $('<optgroup/>').attr('label', ns);
                     group.append($option);
                     options.append(group);
                 }
@@ -1365,11 +1434,13 @@ var MonitoringConsolePage = (function() {
 
     return {
         onPageReady: function() {
-            init();
-            renderPage(MonitoringConsole.init(onDataUpdate));
+            onPageReady();
+            // connect the view to the model by passing the 'onDataUpdate' function to the model
+            // which will call it when data is received
+            onPageUpdate(MonitoringConsole.Model.init(onDataUpdate));
             renderPageTabs();
         },
         onPageChange: (layout) => onPageChange(layout),
-        onPageUpdate: (layout) => renderPage(layout),
+        onPageUpdate: (layout) => onPageUpdate(layout),
     };
 })();

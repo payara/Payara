@@ -90,7 +90,6 @@ button:hover {
 	vertical-align: top;
 }
 #chart-container {
-    position: relative;
     padding: 0 10px;
 }
 .chart-box {

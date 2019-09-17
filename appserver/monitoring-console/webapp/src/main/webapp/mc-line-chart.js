@@ -40,7 +40,7 @@
 
 /*jshint esversion: 8 */
 
-var MonitoringConsoleRender = (function() {
+MonitoringConsole.LineChart = (function() {
 	
 	const DEFAULT_BG_COLORS = [
         'rgba(153, 102, 255, 0.2)',
@@ -60,8 +60,8 @@ var MonitoringConsoleRender = (function() {
     ];	
 	
     function createMinimumLineDataset(data, points, lineColor) {
-		var min = data.observedMin;
-		var minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
+		let min = data.observedMin;
+		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
 			data: minPoints,
@@ -75,8 +75,8 @@ var MonitoringConsoleRender = (function() {
     }
     
     function createMaximumLineDataset(data, points, lineColor) {
-    	var max = data.observedMax;
-		var maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
+    	let max = data.observedMax;
+		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
 			data: maxPoints,
@@ -89,8 +89,8 @@ var MonitoringConsoleRender = (function() {
     }
     
     function createAverageLineDataset(data, points, lineColor) {
-		var avg = data.observedSum / data.observedValues;
-		var avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
+		let avg = data.observedSum / data.observedValues;
+		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
 			data: avgPoints,
@@ -117,7 +117,7 @@ var MonitoringConsoleRender = (function() {
     	if (!points1d)
     		return [];
     	let points2d = new Array(points1d.length / 2);
-		for (var i = 0; i < points2d.length; i++) {
+		for (let i = 0; i < points2d.length; i++) {
 			points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
 		}
 		return points2d;
@@ -127,7 +127,7 @@ var MonitoringConsoleRender = (function() {
     	if (!points1d)
     		return [];
     	let points2d = new Array((points1d.length / 2) - 1);
-    	for (var i = 0; i < points2d.length; i++) {
+    	for (let i = 0; i < points2d.length; i++) {
     		let t0 = points1d[i*2];
     		let t1 = points1d[i*2+2];
     		let y0 = points1d[i*2+1];
@@ -144,7 +144,7 @@ var MonitoringConsoleRender = (function() {
     	if (widget.options.perSec) {
     		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
     	}
-    	let points = createInstancePoints(data.points)
+    	let points = createInstancePoints(data.points);
     	let datasets = [];
     	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
     	if (points.length > 0 && widget.options.drawAvgLine) {
@@ -160,12 +160,12 @@ var MonitoringConsoleRender = (function() {
     }
     
 	return {
-		chart: function(update) {
-			var data = update.data;
-			var widget = update.widget;
-			var chart = update.chart();
-			var datasets = [];
-			for (var j = 0; j < data.length; j++) {
+		onDataUpdate: function(update) {
+			let data = update.data;
+			let widget = update.widget;
+			let chart = update.chart();
+			let datasets = [];
+			for (let j = 0; j < data.length; j++) {
 				datasets = datasets.concat(
 						createInstanceDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
 			}
