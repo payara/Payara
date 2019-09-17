@@ -21,7 +21,7 @@ This is a bug fix / feature. <!-- delete/modify as applicable-->
 ## Testing
 
 ### New tests
-<!-- link to the test suite PR or provide info -->
+<!-- Link to the test suite PR or provide info -->
 
 ### Testing Performed
 <!--- Please describe how you tested these changes.  -->
@@ -41,11 +41,11 @@ This is a bug fix / feature. <!-- delete/modify as applicable-->
 - [ ] Cargo Tracker
 
 ### Testing Environment
-<!--- which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
+<!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
 
 ## Documentation
-<!-- link to the documentation PR -->
+<!-- Link to the documentation PR -->
 
 ## Notes for Reviewers
 <!-- Please give notes for any reviewers. The code should explain itself, but where should they start? Do you want feedback on anything specific? -->
-<!-- have you tagged any appropriate reviewers?-->
+<!-- Have you tagged any appropriate reviewers?-->
