@@ -129,16 +129,15 @@ MonitoringConsole.View = (function() {
         return $('<div/>', {"class": "caption-bar"})
             .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
                 .click(() => onWidgetToolbarClick(cell.widget)))
-            .append($('<button/>', { "class": "btnIcon btnClose", title:'Remove chart from page' }).html('&times;')
-                .click(onWidgetDelete))
-            .append($('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;')
-                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append($('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;')
-                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append($('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;')
-                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append($('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;')
-                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+            .append(createToolbarButton('Remove chart from page', '&times;', onWidgetDelete))
+            .append(createToolbarButton('Enlarge this chart', '&plus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
+            .append(createToolbarButton('Shrink this chart', '&minus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
+            .append(createToolbarButton('Move to right', '&#9655;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
+            .append(createToolbarButton('Move to left', '&#9665;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+    }
+
+    function createToolbarButton(title, icon, onClick) {
+        return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
     }
 
     /**
@@ -228,7 +227,13 @@ MonitoringConsole.View = (function() {
     }
 
     function createSettingsHeaderRow(caption) {
-        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}));
+        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}).click(function() {
+            let tr = $(this).closest('tr').next();
+            while (tr.length > 0 && !tr.children('th').length > 0) {
+                tr.children().toggle();
+                tr = tr.next();
+            }
+        }));
     }
 
     function createSettingsCheckboxRow(label, checked, onChange) {
@@ -342,7 +347,7 @@ MonitoringConsole.View = (function() {
                     td.append(createWidgetTargetContainer(cell));
                     tr.append(td);
                 } else if (cell === null) {
-                    tr.append($("<td/>"));                  
+                    tr.append($("<td/>", { 'class': 'widget', style: 'height: '+rowHeight+'px;'}));                  
                 }
             }
             table.append(tr);

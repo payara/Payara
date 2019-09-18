@@ -106,7 +106,7 @@ button:hover {
     background-color: transparent;
     font-weight: bold;
 }
-.btnClose {
+.btnIcon:first-of-type {
 	margin-left: 15px;
 }
 button.btnIcon:hover {
@@ -244,6 +244,7 @@ button.btnClose + .settings {
 }
 .settings th {
     border-bottom: 1px solid #bbb;
+    cursor: pointer;
 }
 .settings td:first-child {
     width: 120px;

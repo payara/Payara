@@ -264,7 +264,7 @@ MonitoringConsole.Model = (function() {
 				}
 			}
 			// give the layout a uniform row number
-			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
+			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
 			for (let col = 0; col < numberOfColumns; col++) {
 				while (layout[col].length < maxRows) {
 					layout[col].push(null);
