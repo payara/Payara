@@ -43,12 +43,18 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.ThreadLocalScopeManager;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.interceptor.InvocationContext;
+
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
@@ -94,16 +100,27 @@ public class OpenTracingService implements EventListener {
     public synchronized Tracer getTracer(String applicationName) {
         // Get the tracer if there is one
         Tracer tracer = tracers.get(applicationName);
-       
+
         // If there isn't a tracer for the application, create one
         if (tracer == null) {
             // Check which type of Tracer to create
+
+            try {//See if an alternate implementation of Tracer is available in a library.
+                ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
+                Iterator<Tracer> loadedTracer = tracerLoader.iterator();
+                if (loadedTracer.hasNext()) {
+                    tracer = tracerLoader.iterator().next();
+                }
+            } catch (NoClassDefFoundError ex){
+                Logger.getLogger("opentracing").log(Level.SEVERE, "Unable to find Tracer implementation", ex);
+            }
+
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
-            } else {
+            } else if (tracer == null) {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
-            
+
             // Register the tracer instance to the application
             tracers.put(applicationName, tracer);
         }
