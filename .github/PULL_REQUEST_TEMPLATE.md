@@ -1,24 +1,26 @@
 <!--- Title your PR with a Jira reference (if available) followed by brief description - for example: "PAYARA-1234 Add readme file" -->
 
-## Description
+# Description
 This is a bug fix / feature. <!-- delete/modify as applicable-->
+
+<!-- fixes GitHub issue? - provide a link to that issue here -->
 
 <!-- Provide some context here -->
 
 <!--- Please provide enough information here about the what and why of your change. Target for developers of any experience level to understand -->
 
-## Important Info
+# Important Info
 
-### Dependant PRs (if applicable)
+### Dependant PRs <!-- delete as applicable -->
 <!--- Link any related or dependant PRs here with brief description why -->
 
-### Blockers (if applicable)
+### Blockers <!-- delete as applicable -->
 <!-- Detail any blockers with links/info -->
 
-### Deadline (if applicable)
+### Deadline <!-- delete as applicable -->
 <!-- Detail any deadlines, why? -->
 
-## Testing
+# Testing
 
 ### New tests
 <!-- Link to the test suite PR or provide info -->
@@ -35,17 +37,15 @@ This is a bug fix / feature. <!-- delete/modify as applicable-->
 - [ ] Payara Private Tests
 - [ ] Payara Microprofile TCKs Runner
 - [ ] Jakarta TCKs
-- [ ] Microprofile Samples 1.2
-- [ ] Microprofile Samples 1.4
 - [ ] Mojarra
 - [ ] Cargo Tracker
 
 ### Testing Environment
 <!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
 
-## Documentation
-<!-- Link to the documentation PR -->
+# Documentation
+<!-- Link to the documentation PR where applicable -->
 
-## Notes for Reviewers
+# Notes for Reviewers
 <!-- Please give notes for any reviewers. The code should explain itself, but where should they start? Do you want feedback on anything specific? -->
 <!-- Have you tagged any appropriate reviewers?-->
