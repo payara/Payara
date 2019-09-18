@@ -367,7 +367,7 @@ MonitoringConsole.Model = (function() {
 				});
 			},
 			
-			$export: function() {
+			exportPages: function() {
 				return doExport(true);
 			},
 			
@@ -375,7 +375,7 @@ MonitoringConsole.Model = (function() {
 			 * @param {FileList|object} userInterface - a plain user interface configuration object or a file containing such an object
 			 * @param {function} onImportComplete - optional function to call when import is done
 			 */
-			$import: async (userInterface, onImportComplete) => {
+			importPages: async (userInterface, onImportComplete) => {
 				if (userInterface instanceof FileList) {
 					let file = userInterface[0];
 					if (file) {
@@ -410,7 +410,7 @@ MonitoringConsole.Model = (function() {
 			renamePage: function(name) {
 				let pageId = getPageId(name);
 				if (pages[pageId])
-					throw "Page with name already exist";
+					return false;
 				let page = pages[currentPageId];
 				page.name = name;
 				page.id = pageId;
@@ -418,6 +418,7 @@ MonitoringConsole.Model = (function() {
 				delete pages[currentPageId];
 				currentPageId = pageId;
 				doStore();
+				return true;
 			},
 			
 			/**
@@ -708,63 +709,75 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	return {
-		
-		init: function(onDataUpdate) {
-			UI.load();
-			Interval.init(function() {
-				let widgets = UI.currentPage().widgets;
-				let payload = {
-				};
-				let instances = $('#cfgInstances').val();
-				payload.series = Object.keys(widgets).map(function(series) { 
-					return { 
-						series: series,
-						instances: instances
-					}; 
-				});
-				let request = $.ajax({
-					url: 'api/series/data/',
-					type: 'POST',
-					data: JSON.stringify(payload),
-					contentType:"application/json; charset=utf-8",
-					dataType:"json",
-				});
-				request.done(function(response) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							data: response[widget.series],
-							chart: () => Charts.getOrCreate(widget),
-						});
-					});
-				});
-				request.fail(function(jqXHR, textStatus) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							chart: () => Charts.getOrCreate(widget),
-						});
+	function doInit(onDataUpdate) {
+		UI.load();
+		Interval.init(function() {
+			let widgets = UI.currentPage().widgets;
+			let payload = {
+			};
+			let instances = $('#cfgInstances').val();
+			payload.series = Object.keys(widgets).map(function(series) { 
+				return { 
+					series: series,
+					instances: instances
+				}; 
+			});
+			let request = $.ajax({
+				url: 'api/series/data/',
+				type: 'POST',
+				data: JSON.stringify(payload),
+				contentType:"application/json; charset=utf-8",
+				dataType:"json",
+			});
+			request.done(function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						data: response[widget.series],
+						chart: () => Charts.getOrCreate(widget),
 					});
 				});
 			});
-			Interval.resume();
-			return UI.arrange();
-		},
+			request.fail(function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			});
+		});
+		Interval.resume();
+		return UI.arrange();
+	}
+
+	function doConfigureSelection(widgetUpdate) {
+		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	function doConfigureWidget(series, widgetUpdate) {
+		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	/**
+	 * The public API object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 */
+	return {
 		
-		$export: UI.$export,
-		$import: function(userInterface, onImportComplete) {
-			UI.$import(userInterface, () => onImportComplete(UI.arrange()));
-		},
+		init: doInit,
 		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		listSeries: function(consumer) {
-			$.getJSON("api/series/", consumer);
-		},
-		
+		listSeries: (consumer) => $.getJSON("api/series/", consumer),
+
 		listPages: UI.listPages,
+		exportPages: UI.exportPages,
+		importPages: function(userInterface, onImportComplete) {
+			UI.importPages(userInterface, () => onImportComplete(UI.arrange()));
+		},
 		
 		/**
 		 * API to control the chart refresh interval.
@@ -845,10 +858,33 @@ MonitoringConsole.Model = (function() {
 					return UI.arrange();
 				},
 				
-				configure: function(series, widgetUpdate) {
-					UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
-					return UI.arrange();
-				},
+				configure: doConfigureWidget,
+
+				moveLeft: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column > 0) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
+	                }
+	            }),
+
+	            moveRight: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column < 4) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
+	                }
+	            }),
+
+	            spanMore: (series) => doConfigureWidget(series, function(widget) {
+	                if (! widget.grid.span || widget.grid.span < 4) {
+	                    widget.grid.span = !widget.grid.span ? 2 : widget.grid.span + 1;
+	                }
+	            }),
+
+	            spanLess: (series) => doConfigureWidget(series, function(widget) {
+	            	if (widget.grid.span > 1) {
+	                    widget.grid.span -= 1;
+	                }
+	            }),
 
 				/**
 				 * API for the set of selected widgets on the current page.
@@ -856,16 +892,16 @@ MonitoringConsole.Model = (function() {
 				Selection: {
 					
 					listSeries: UI.selected,
+					isSingle: () => UI.selected().length == 1,
+					first: () => UI.currentPage().widgets[UI.selected()[0]],
 					toggle: UI.select,
 					clear: UI.deselect,
 					
 					/**
 					 * @param {function} widgetUpdate - a function accepting chart configuration applied to each chart
 					 */
-					configure: function(widgetUpdate) {
-						UI.configureWidget(widgetUpdate).forEach(Charts.update);
-						return UI.arrange();
-					},
+					configure: doConfigureSelection,
+
 				},
 			},
 			
@@ -1096,7 +1132,219 @@ MonitoringConsole.LineChart = (function() {
  **/
 MonitoringConsole.View = (function() {
 
-    function download(filename, text) {
+    /**
+     * Updates the DOM with the page navigation tabs so it reflects current model state
+     */ 
+    function updatePageNavigation() {
+        let nav = $("#pagesTabs"); 
+        nav.empty();
+        MonitoringConsole.Model.listPages().forEach(function(page) {
+            let tabId = page.id + '-tab';
+            let css = "page-tab" + (page.active ? ' page-selected' : '');
+            let pageTab = $('<span/>', {id: tabId, "class": css, text: page.name});
+            if (page.active) {
+                pageTab.click(function() {
+                    MonitoringConsole.Model.Settings.toggle();
+                    updatePageAndSelectionSettings();
+                });
+            } else {
+                pageTab.click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)));                
+            }
+            nav.append(pageTab);
+        });
+        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
+        addPage.click(() => onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')));
+        nav.append(addPage);
+    }
+
+    /**
+     * Updates the DOM with the page and selection settings so it reflects current model state
+     */ 
+    function updatePageAndSelectionSettings() {
+        let panelConsole = $('#console');
+        if (MonitoringConsole.Model.Settings.isDispayed()) {
+            if (!panelConsole.hasClass('state-show-settings')) {
+                panelConsole.addClass('state-show-settings');                
+            }
+            let panelSettings = $('#panel-settings');
+            panelSettings
+                .empty()
+                .append($('<button/>', { title: 'Delete current page', 'class': 'btnIcon btnClose' }).html('&times;').click(MonitoringConsole.View.onPageDelete))
+                .append(createPageSettings())
+                .append(createDataSettings());
+            if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
+                panelSettings.append(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+            }
+        } else {
+            panelConsole.removeClass('state-show-settings');
+        }
+    }
+
+    /**
+     * Each chart needs to be in a relative positioned box to allow responsive sizing.
+     * This fuction creates this box including the canvas element the chart is drawn upon.
+     */
+    function createWidgetTargetContainer(cell) {
+        let boxId = cell.widget.target + '-box';
+        let box = $('#'+boxId);
+        if (box.length > 0)
+            return box.first();
+        box = $('<div/>', { id: boxId, "class": "chart-box" });
+        let win = $(window);
+        box.append($('<canvas/>',{ id: cell.widget.target }));
+        return box;
+    }
+
+    function camelCaseToWords(str) {
+        return str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+    }
+
+    function formatSeriesName(widget) {
+        let series = widget.series;
+        let endOfTags = series.lastIndexOf(' ');
+        let text = endOfTags <= 0 
+           ? camelCaseToWords(series) 
+           : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
+        if (widget.options.perSec) {
+            text += ' <i>(per second)</i>';
+        }
+        return text;
+    }
+
+    function createWidgetToolbar(cell) {
+        let series = cell.widget.series;
+        return $('<div/>', {"class": "caption-bar"})
+            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
+                .click(() => onWidgetToolbarClick(cell.widget)))
+            .append($('<button/>', { "class": "btnIcon btnClose", title:'Remove chart from page' }).html('&times;')
+                .click(onWidgetDelete))
+            .append($('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;')
+                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
+            .append($('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;')
+                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
+            .append($('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;')
+                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
+            .append($('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;')
+                .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+    }
+
+    /**
+     * Creates a checkbox to configure the attributes of a widget.
+     *
+     * @param {boolean} isChecked - if the created checkbox should be checked
+     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
+     */
+    function createConfigurationCheckbox(isChecked, onChange) {
+        return $("<input/>", { type: 'checkbox', checked: isChecked })
+            .on('change', function() {
+                let checked = this.checked;
+                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
+            });
+    }
+
+    function createSettingsSliderRow(label, min, max, value, onChange) {
+        return createSettingsRow(label, () => $('<input/>', {type: 'range', min:min, max:max, value: value})
+            .on('input', function() {  
+                let val = this.valueAsNumber;
+                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
+            }));
+    }
+
+    function createWidgetSettings(widget) {
+        return createSettingsTable('settings-widget')
+            .append(createSettingsHeaderRow('Render Options'))
+            .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
+            .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
+            .append(createSettingsCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
+            .append(createSettingsCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
+            .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
+            .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
+            .append(createSettingsHeaderRow('Chart Options'))
+            .append(createSettingsCheckboxRow('Show Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
+            .append(createSettingsCheckboxRow('Show Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
+            .append(createSettingsCheckboxRow('Show Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))
+            .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
+            .append(createSettingsHeaderRow('Layout'))
+            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
+            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1));
+    }
+
+    function createPageSettings() {
+        let widgetsSelection = $('<select/>');
+        MonitoringConsole.Model.listSeries(function(names) {
+            let lastNs;
+            $.each(names, function() {
+                let key = this; //.replace(/ /g, ',');
+                let ns =  this.substring(3, this.indexOf(' '));
+                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
+                if (ns == lastNs) {
+                    widgetsSelection.find('optgroup').last().append($option);
+                } else {
+                    let group = $('<optgroup/>').attr('label', ns);
+                    group.append($option);
+                    widgetsSelection.append(group);
+                }
+                lastNs = ns;
+            });
+        });            
+        return createSettingsTable('settings-page')
+            .append(createSettingsHeaderRow('Page'))
+            .append(createSettingsRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
+                .on("propertychange change keyup paste input", function() {
+                    if (MonitoringConsole.Model.Page.rename(this.value)) {
+                        updatePageNavigation();                        
+                    }
+                })))
+            .append(createSettingsRow('Widgets', () => $('<span/>')
+                .append(widgetsSelection)
+                .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
+                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetsSelection.val()))))
+                ));
+    }
+
+    function createDataSettings() {
+        let instanceSelection = $('<select />', {multiple: true});
+        $.getJSON("api/instances/", function(instances) {
+            for (let i = 0; i < instances.length; i++) {
+                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
+            }
+        });
+        return createSettingsTable('settings-data')
+            .append(createSettingsHeaderRow('Data'))
+            .append(createSettingsRow('Instances', () => instanceSelection));
+    }
+
+    function createSettingsHeaderRow(caption) {
+        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}));
+    }
+
+    function createSettingsCheckboxRow(label, checked, onChange) {
+        return createSettingsRow(label, () => createConfigurationCheckbox(checked, onChange));
+    }
+
+    function createSettingsTable(id) {
+        return $('<table />', { 'class': 'settings', id: id });
+    }
+
+    function createSettingsRow(label, createInput) {
+        return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(createInput()));   
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    function onWidgetToolbarClick(widget) {
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
+        onWidgetUpdate(widget);
+        updatePageAndSelectionSettings();
+    }
+
+    function onWidgetDelete() {
+        if (window.confirm('Do you really want to remove the chart from the page?')) {
+            onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
+        }
+    }
+
+    function onPageExport(filename, text) {
         let pom = document.createElement('a');
         pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         pom.setAttribute('download', filename);
@@ -1111,165 +1359,6 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function renderPageTabs() {
-        let bar = $("#pagesTabs"); 
-        bar.empty();
-        MonitoringConsole.Model.listPages().forEach(function(page) {
-            let tabId = page.id + '-tab';
-            let css = "page-tab" + (page.active ? ' page-selected' : '');
-            //TODO when clicking active page tab the options could open/close
-            let newTab = $('<span/>', {id: tabId, "class": css, text: page.name});
-            newTab.click(function() {
-                onPageChange(MonitoringConsole.Model.Page.changeTo(page.id));
-            });
-            bar.append(newTab);
-        });
-        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
-        addPage.click(function() {
-            onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));
-        });
-        bar.append(addPage);
-    }
-
-    /**
-     * Each chart needs to be in a relative positioned box to allow responsive sizing.
-     * This fuction creates this box including the canvas element the chart is drawn upon.
-     */
-    function renderChartBox(cell) {
-        let boxId = cell.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length > 0)
-            return box.first();
-        box = $('<div/>', { id: boxId, "class": "chart-box" });
-        let win = $(window);
-        box.append($('<canvas/>',{ id: cell.widget.target }));
-        return box;
-    }
-
-    /**
-     * This function refleshes the page with the given layout.
-     */
-    function onPageUpdate(layout) {
-        let numberOfColumns = layout.length;
-        let maxRows = layout[0].length;
-        let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
-        for (let row = 0; row < maxRows; row++) {
-            let tr = $("<tr/>");
-            for (let col = 0; col < numberOfColumns; col++) {
-                let cell = layout[col][row];
-                if (cell) {
-                    let span = cell.span;
-                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
-                    td.append(renderChartCaption(cell));
-                    let status = $('<div/>', { "class": 'status-nodata'});
-                    status.append($('<div/>', {text: 'No Data'}));
-                    td.append(status);
-                    td.append(renderChartBox(cell));
-                    tr.append(td);
-                } else if (cell === null) {
-                    tr.append($("<td/>"));                  
-                }
-            }
-            table.append(tr);
-        }
-        $('#chart-container').empty();
-        $('#chart-container').append(table);
-    }
-
-    function camelCaseToWords(str) {
-        return str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
-    }
-
-    function renderChartCaption(cell) {
-        let bar = $('<div/>', {"class": "caption-bar"});
-        let series = cell.widget.series;
-        let endOfTags = series.lastIndexOf(' ');
-        let text = endOfTags <= 0 
-           ? camelCaseToWords(series) 
-           : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
-        if (cell.widget.options.perSec) {
-            text += ' <i>(per second)</i>';
-        }
-        let caption = $('<h3/>', {title: 'Select '+series}).html(text);
-        caption.click(function() {
-            if (MonitoringConsole.Model.Page.Widgets.Selection.toggle(series)) {
-                bar.parent().addClass('chart-selected');
-            } else {
-                bar.parent().removeClass('chart-selected');
-            }
-            renderChartOptions();
-        });
-        bar.append(caption);
-        let btnClose = $('<button/>', { "class": "btnIcon btnClose", title:'Remove chart from page' }).html('&times;');
-        btnClose.click(function() {
-            if (window.confirm('Do you really want to remove the chart from the page?')) {
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
-            }
-        });
-        bar.append(btnClose);
-        let btnLarger = $('<button/>', { "class": "btnIcon", title:'Enlarge this chart' }).html('&plus;');
-        btnLarger.click(function() {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
-                if (widget.grid.span < 4) {
-                    widget.grid.span = !widget.grid.span ? 1 : widget.grid.span + 1;
-                }
-            }));
-        });
-        bar.append(btnLarger);
-        let btnSmaller = $('<button/>', { "class": "btnIcon", title:'Shrink this chart' }).html('&minus;');
-        btnSmaller.click(function() {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
-                if (!widget.grid.span || widget.grid.span > 1) {
-                    widget.grid.span = !widget.grid.span ? 1 : widget.grid.span - 1;
-                }
-            }));
-        });
-        bar.append(btnSmaller);
-        let btnRight = $('<button/>', { "class": "btnIcon", title:'Move to right' }).html('&#9655;');
-        btnRight.click(function() {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
-                if (!widget.grid.column || widget.grid.column < 4) {
-                    widget.grid.item = undefined;
-                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
-                }
-            }));
-        });
-        bar.append(btnRight);
-        let btnLeft = $('<button/>', { "class": "btnIcon", title:'Move to left'}).html('&#9665;');
-        btnLeft.click(function() {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.configure(series, function(widget) {
-                if (!widget.grid.column || widget.grid.column > 0) {
-                    widget.grid.item = undefined;
-                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
-                }
-            }));
-        });
-        bar.append(btnLeft);
-        return bar;
-    }
-
-    function renderChartOptions() {
-        let panelConsole = $('#console');
-        if (MonitoringConsole.Model.Settings.isDispayed()) {
-            if (!panelConsole.hasClass('state-show-properties')) {
-                panelConsole.addClass('state-show-properties');
-                let instancePanel = $("#panelCfgInstances");
-                instancePanel.empty();
-                $.getJSON("api/instances/", function(instances) {
-                    let select = $('<select />', {id: 'cfgInstances', multiple: true});
-                    for (let i = 0; i < instances.length; i++) {
-                        select.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
-                    }
-                    instancePanel.append(select);
-                });
-                $('#cftPageName').val(MonitoringConsole.Model.Page.name());
-            }
-        } else {
-            panelConsole.removeClass('state-show-properties');
-        }
-    }
-
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -1279,7 +1368,7 @@ MonitoringConsole.View = (function() {
         let boxId = update.widget.target + '-box';
         let box = $('#'+boxId);
         if (box.length == 0) {
-            if (console)
+            if (console && console.log)
                 console.log('WARN: Box for chart ' + update.widget.series + ' not ready.');
             return;
         }
@@ -1303,12 +1392,50 @@ MonitoringConsole.View = (function() {
             td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
         }
         
-        if (update.widget.selected) {
-            td.addClass('chart-selected');
+        onWidgetUpdate(update.widget);
+    }
+
+    /**
+     * Called when changes to the widget require to update the view of the widget (non data related changes)
+     */
+    function onWidgetUpdate(widget) {
+        let container = $('#' + widget.target + '-box').closest('.widget');
+        if (widget.selected) {
+            container.addClass('chart-selected');
         } else {
-            td.removeClass('chart-selected');
+            container.removeClass('chart-selected');
         }
-        renderChartOptions();
+    }
+
+    /**
+     * This function refleshes the page with the given layout.
+     */
+    function onPageUpdate(layout) {
+        let numberOfColumns = layout.length;
+        let maxRows = layout[0].length;
+        let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        for (let row = 0; row < maxRows; row++) {
+            let tr = $("<tr/>");
+            for (let col = 0; col < numberOfColumns; col++) {
+                let cell = layout[col][row];
+                if (cell) {
+                    let span = cell.span;
+                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    td.append(createWidgetToolbar(cell));
+                    let status = $('<div/>', { "class": 'status-nodata'});
+                    status.append($('<div/>', {text: 'No Data'}));
+                    td.append(status);
+                    td.append(createWidgetTargetContainer(cell));
+                    tr.append(td);
+                } else if (cell === null) {
+                    tr.append($("<td/>"));                  
+                }
+            }
+            table.append(tr);
+        }
+        $('#chart-container').empty();
+        $('#chart-container').append(table);
     }
 
     /**
@@ -1316,131 +1443,33 @@ MonitoringConsole.View = (function() {
      */
     function onPageChange(layout) {
         onPageUpdate(layout);
-        renderPageTabs();
-        renderChartOptions();
+        updatePageNavigation();
+        updatePageAndSelectionSettings();
     }
 
-    function onPageReady() {
-        $('#btnExport').click(function() {
-            download('monitoring-console-config.json', MonitoringConsole.Model.$export());
-        });
-        $('#btnImport').click(function() {
-            $('#cfgImport').click();
-        });
-
-        $("#cfgPerSec").on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.perSec = checked;
-            });
-        });
-
-        $("#cfgStartAtZero").on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.beginAtZero = checked;
-            });
-        });
-
-        $("#cfgAutoTimeTicks").on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.autoTimeTicks = checked;
-            });
-        });
-        $("#cfgDrawCurves").on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.drawCurves = checked;
-            });
-        });
-        $('#cfgDrawAnimations').on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.drawAnimations = checked;
-            });
-        });
-        $("#cfgRotateTimeLabels").on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.rotateTimeLabels = checked;
-            });
-        });
-        $('#cfgDrawAvgLine').on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.drawAvgLine = checked;
-            });
-        });
-        $('#cfgDrawMinLine').on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.drawMinLine = checked;
-            });
-        });
-        $('#cfgDrawMaxLine').on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.drawMaxLine = checked;
-            });
-        });
-        $('#cfgShowLegend').on('change', function() {
-            let checked = this.checked;
-            MonitoringConsole.Model.Page.Widgets.Selection.configure(function(widget) {
-                widget.options.showLegend = checked;
-            });
-        });
-        $('#btnRemovePage').click(function() {
-            if (window.confirm("Do you really want to delete the current page?")) { 
-                onPageUpdate(MonitoringConsole.Model.Page.erase());
-                renderPageTabs();
-            }
-        });
-        $('#btnMenu').click(function() {
-            MonitoringConsole.Model.Settings.toggle();
-            renderChartOptions();
-        });
-        $('#cftPageName').on("propertychange change keyup paste input", function() {
-            MonitoringConsole.Model.Page.rename(this.value);
-            renderPageTabs();
-        });
-        $('#btnAddChart').click(function() {
-            $("#options option:selected").each(function() {
-                let series = this.value;
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(series));
-            });
-        });
-
-        MonitoringConsole.Model.listSeries(function(names) {
-            let lastNs;
-            let options = $("#options");
-            $.each(names, function() {
-                let key = this; //.replace(/ /g, ',');
-                let ns =  this.substring(3, this.indexOf(' '));
-                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
-                if (ns == lastNs) {
-                    options.find('optgroup').last().append($option);
-                } else {
-                    let group = $('<optgroup/>').attr('label', ns);
-                    group.append($option);
-                    options.append(group);
-                }
-                lastNs = ns;
-            });
-        });
-    }
-
-//TODO add helper functions that based on a model for the properties build the property settings
-
+    /**
+     * Public API of the View object:
+     */
     return {
         onPageReady: function() {
-            onPageReady();
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
             onPageUpdate(MonitoringConsole.Model.init(onDataUpdate));
-            renderPageTabs();
+            updatePageAndSelectionSettings();
+            updatePageNavigation();
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
+        onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
+        onPageImport: () => MonitoringConsole.Model.importPages(this.files, onPageChange),
+        onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
+        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
+        onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
+        onPageDelete: function() {
+            if (window.confirm("Do you really want to delete the current page?")) { 
+                onPageUpdate(MonitoringConsole.Model.Page.erase());
+                updatePageNavigation();
+            }
+        },
     };
 })();

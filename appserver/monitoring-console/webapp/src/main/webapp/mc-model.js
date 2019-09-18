@@ -306,7 +306,7 @@ MonitoringConsole.Model = (function() {
 				});
 			},
 			
-			$export: function() {
+			exportPages: function() {
 				return doExport(true);
 			},
 			
@@ -314,7 +314,7 @@ MonitoringConsole.Model = (function() {
 			 * @param {FileList|object} userInterface - a plain user interface configuration object or a file containing such an object
 			 * @param {function} onImportComplete - optional function to call when import is done
 			 */
-			$import: async (userInterface, onImportComplete) => {
+			importPages: async (userInterface, onImportComplete) => {
 				if (userInterface instanceof FileList) {
 					let file = userInterface[0];
 					if (file) {
@@ -349,7 +349,7 @@ MonitoringConsole.Model = (function() {
 			renamePage: function(name) {
 				let pageId = getPageId(name);
 				if (pages[pageId])
-					throw "Page with name already exist";
+					return false;
 				let page = pages[currentPageId];
 				page.name = name;
 				page.id = pageId;
@@ -357,6 +357,7 @@ MonitoringConsole.Model = (function() {
 				delete pages[currentPageId];
 				currentPageId = pageId;
 				doStore();
+				return true;
 			},
 			
 			/**
@@ -647,63 +648,75 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	return {
-		
-		init: function(onDataUpdate) {
-			UI.load();
-			Interval.init(function() {
-				let widgets = UI.currentPage().widgets;
-				let payload = {
-				};
-				let instances = $('#cfgInstances').val();
-				payload.series = Object.keys(widgets).map(function(series) { 
-					return { 
-						series: series,
-						instances: instances
-					}; 
-				});
-				let request = $.ajax({
-					url: 'api/series/data/',
-					type: 'POST',
-					data: JSON.stringify(payload),
-					contentType:"application/json; charset=utf-8",
-					dataType:"json",
-				});
-				request.done(function(response) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							data: response[widget.series],
-							chart: () => Charts.getOrCreate(widget),
-						});
-					});
-				});
-				request.fail(function(jqXHR, textStatus) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							chart: () => Charts.getOrCreate(widget),
-						});
+	function doInit(onDataUpdate) {
+		UI.load();
+		Interval.init(function() {
+			let widgets = UI.currentPage().widgets;
+			let payload = {
+			};
+			let instances = $('#cfgInstances').val();
+			payload.series = Object.keys(widgets).map(function(series) { 
+				return { 
+					series: series,
+					instances: instances
+				}; 
+			});
+			let request = $.ajax({
+				url: 'api/series/data/',
+				type: 'POST',
+				data: JSON.stringify(payload),
+				contentType:"application/json; charset=utf-8",
+				dataType:"json",
+			});
+			request.done(function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						data: response[widget.series],
+						chart: () => Charts.getOrCreate(widget),
 					});
 				});
 			});
-			Interval.resume();
-			return UI.arrange();
-		},
+			request.fail(function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			});
+		});
+		Interval.resume();
+		return UI.arrange();
+	}
+
+	function doConfigureSelection(widgetUpdate) {
+		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	function doConfigureWidget(series, widgetUpdate) {
+		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	/**
+	 * The public API object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 */
+	return {
 		
-		$export: UI.$export,
-		$import: function(userInterface, onImportComplete) {
-			UI.$import(userInterface, () => onImportComplete(UI.arrange()));
-		},
+		init: doInit,
 		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		listSeries: function(consumer) {
-			$.getJSON("api/series/", consumer);
-		},
-		
+		listSeries: (consumer) => $.getJSON("api/series/", consumer),
+
 		listPages: UI.listPages,
+		exportPages: UI.exportPages,
+		importPages: function(userInterface, onImportComplete) {
+			UI.importPages(userInterface, () => onImportComplete(UI.arrange()));
+		},
 		
 		/**
 		 * API to control the chart refresh interval.
@@ -784,10 +797,33 @@ MonitoringConsole.Model = (function() {
 					return UI.arrange();
 				},
 				
-				configure: function(series, widgetUpdate) {
-					UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
-					return UI.arrange();
-				},
+				configure: doConfigureWidget,
+
+				moveLeft: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column > 0) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
+	                }
+	            }),
+
+	            moveRight: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column < 4) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
+	                }
+	            }),
+
+	            spanMore: (series) => doConfigureWidget(series, function(widget) {
+	                if (! widget.grid.span || widget.grid.span < 4) {
+	                    widget.grid.span = !widget.grid.span ? 2 : widget.grid.span + 1;
+	                }
+	            }),
+
+	            spanLess: (series) => doConfigureWidget(series, function(widget) {
+	            	if (widget.grid.span > 1) {
+	                    widget.grid.span -= 1;
+	                }
+	            }),
 
 				/**
 				 * API for the set of selected widgets on the current page.
@@ -795,16 +831,16 @@ MonitoringConsole.Model = (function() {
 				Selection: {
 					
 					listSeries: UI.selected,
+					isSingle: () => UI.selected().length == 1,
+					first: () => UI.currentPage().widgets[UI.selected()[0]],
 					toggle: UI.select,
 					clear: UI.deselect,
 					
 					/**
 					 * @param {function} widgetUpdate - a function accepting chart configuration applied to each chart
 					 */
-					configure: function(widgetUpdate) {
-						UI.configureWidget(widgetUpdate).forEach(Charts.update);
-						return UI.arrange();
-					},
+					configure: doConfigureSelection,
+
 				},
 			},
 			
