@@ -140,7 +140,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -253,6 +253,11 @@
             <artifactId>microprofile-opentracing-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>opentracing-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <!-- Admin MicroProfile Admin GUI -->
         <dependency>
