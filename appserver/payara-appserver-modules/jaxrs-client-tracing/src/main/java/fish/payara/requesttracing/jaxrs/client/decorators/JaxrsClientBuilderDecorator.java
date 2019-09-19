@@ -162,7 +162,8 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
                 ServiceHandle<RequestTracingService> requestTracingHandle = serviceLocator.getServiceHandle(RequestTracingService.class);
                 ServiceHandle<OpenTracingService> openTracingHandle = serviceLocator.getServiceHandle(OpenTracingService.class);
                 return requestTracingHandle != null && openTracingHandle != null
-                        && requestTracingHandle.isActive() && openTracingHandle.isActive();
+                        && requestTracingHandle.isActive() && openTracingHandle.isActive()
+                        && requestTracingHandle.getService().isRequestTracingEnabled();
             }
         } catch (Exception e) {
             // means that we likely cannot do request tracing anyway
