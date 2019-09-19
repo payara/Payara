@@ -146,10 +146,16 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                 }
                 if (enabled != null) {
                     configProxy.setEnabled(enabled.toString());
+                    if(dynamic != null && dynamic || Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                        metricsService.resetMetricsEnabledProperty();
+                    }
                 }
                 if (secure != null) {
                     actionReport.setMessage("--secureMetrics option is deprecated, replaced by --securityEnabled option.");
                     configProxy.setSecureMetrics(secure.toString());
+                    if(dynamic != null && dynamic || Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                        metricsService.resetMetricsSecureProperty();
+                    }
                 }
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
