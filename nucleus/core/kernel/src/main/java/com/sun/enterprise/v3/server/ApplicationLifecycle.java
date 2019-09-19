@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.ActionReport;
@@ -2146,7 +2147,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private File createGeneratedContentZip() throws IOException {
         final File tempFile = File.createTempFile("gendContent", ".zip");
-        tempFile.deleteOnExit();
+        FileUtils.deleteOnExit(tempFile);
         return tempFile;
     }
 
