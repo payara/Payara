@@ -129,6 +129,12 @@ button.btnIcon:hover {
     font-weight: normal;
     font-style: normal;
     color: #bbb;
+    margin-right: 1em;
+}
+.caption-bar h3 code {
+    font-style: normal;
+    font-weight: normal;
+    margin-right: 1em;
 }
 #pagesTabs .page-tab {
     display: inline-block;
@@ -243,11 +249,16 @@ button.btnClose + .settings {
     margin-top: 210px;
 }
 .settings th {
-    border-bottom: 1px solid #bbb;
-    cursor: pointer;
+  cursor: pointer;
+  font-weight: normal;
+}
+.settings tr:first-child th {
+  font-weight: bold;
+  border-bottom: 1px solid #bbb;
 }
 .settings td:first-child {
     width: 120px;
+    vertical-align: top;
 }
 #console #panel-settings {
 	display: none;

@@ -103,23 +103,39 @@ MonitoringConsole.View = (function() {
         if (box.length > 0)
             return box.first();
         box = $('<div/>', { id: boxId, "class": "chart-box" });
-        let win = $(window);
         box.append($('<canvas/>',{ id: cell.widget.target }));
         return box;
     }
 
-    function camelCaseToWords(str) {
-        return str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+    function toWords(str) {
+        // camel case to words
+        let res = str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+        if (res.indexOf('.') > 0) {
+            // dots to words with upper casing each word
+            return res.replace(/\.([a-z])/g, " $1").split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+        }
+        return res;
     }
 
     function formatSeriesName(widget) {
         let series = widget.series;
         let endOfTags = series.lastIndexOf(' ');
-        let text = endOfTags <= 0 
-           ? camelCaseToWords(series) 
-           : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
+        let metric = endOfTags <= 0 ? series : series.substring(endOfTags + 1);
+        if (endOfTags <= 0 )
+            return toWords(metric);
+        let tags = series.substring(0, endOfTags).split(' ');
+        let text = '';
+        for (let i = 0; i < tags.length; i++) {
+            let tag = tags[i];
+            if (tag.startsWith('@:')) {
+                text += '<code>'+tag.substring(2)+'</code> ';
+            } else {
+                text +='<i>'+tag+'</i> ';
+            }
+        }
+        text += toWords(metric);
         if (widget.options.perSec) {
-            text += ' <i>(per second)</i>';
+            text += ' <i>(1/sec)</i>';
         }
         return text;
     }
@@ -129,7 +145,7 @@ MonitoringConsole.View = (function() {
         return $('<div/>', {"class": "caption-bar"})
             .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
                 .click(() => onWidgetToolbarClick(cell.widget)))
-            .append(createToolbarButton('Remove chart from page', '&times;', onWidgetDelete))
+            .append(createToolbarButton('Remove chart from page', '&times;', () => onWidgetDelete(series)))
             .append(createToolbarButton('Enlarge this chart', '&plus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
             .append(createToolbarButton('Shrink this chart', '&minus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
             .append(createToolbarButton('Move to right', '&#9655;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
@@ -164,6 +180,7 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         return createSettingsTable('settings-widget')
+            .append(createSettingsHeaderRow(formatSeriesName(widget)))
             .append(createSettingsHeaderRow('Render Options'))
             .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
             .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
@@ -172,10 +189,13 @@ MonitoringConsole.View = (function() {
             .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
             .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
             .append(createSettingsHeaderRow('Chart Options'))
+            .append(createSettingsCheckboxRow('Show Points', widget.options.drawPoints, (widget, checked) => widget.options.drawPoints = checked))            
+            .append(createSettingsCheckboxRow('Show Stabe', widget.options.drawStableLine, (widget, checked) => widget.options.drawStableLine = checked))
             .append(createSettingsCheckboxRow('Show Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
             .append(createSettingsCheckboxRow('Show Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
             .append(createSettingsCheckboxRow('Show Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))
             .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
+            .append(createSettingsCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))            
             .append(createSettingsHeaderRow('Layout'))
             .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
             .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1));
@@ -198,7 +218,9 @@ MonitoringConsole.View = (function() {
                 }
                 lastNs = ns;
             });
-        });            
+        });
+        let widgetSeries = $('<input />', {type: 'text'});
+        widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
         return createSettingsTable('settings-page')
             .append(createSettingsHeaderRow('Page'))
             .append(createSettingsRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
@@ -209,8 +231,9 @@ MonitoringConsole.View = (function() {
                 })))
             .append(createSettingsRow('Widgets', () => $('<span/>')
                 .append(widgetsSelection)
+                .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetsSelection.val()))))
+                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
                 ));
     }
 
@@ -218,7 +241,7 @@ MonitoringConsole.View = (function() {
         let instanceSelection = $('<select />', {multiple: true});
         $.getJSON("api/instances/", function(instances) {
             for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
+                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
             }
         });
         return createSettingsTable('settings-data')
@@ -227,10 +250,13 @@ MonitoringConsole.View = (function() {
     }
 
     function createSettingsHeaderRow(caption) {
-        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}).click(function() {
+        return $('<tr/>').append($('<th/>', {colspan: 2}).html(caption).click(function() {
             let tr = $(this).closest('tr').next();
-            while (tr.length > 0 && !tr.children('th').length > 0) {
-                tr.children().toggle();
+            let toggleAll = tr.children('th').length > 0;
+            while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+                if (tr.children('th').length == 0) {
+                    tr.children().toggle();                    
+                }
                 tr = tr.next();
             }
         }));
@@ -256,7 +282,7 @@ MonitoringConsole.View = (function() {
         updatePageAndSelectionSettings();
     }
 
-    function onWidgetDelete() {
+    function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
             onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
@@ -283,18 +309,20 @@ MonitoringConsole.View = (function() {
      * Depending on the update different content is rendered within a chart box.
      */
     function onDataUpdate(update) {
-        let boxId = update.widget.target + '-box';
+        let widget = update.widget;
+        let boxId = widget.target + '-box';
         let box = $('#'+boxId);
         if (box.length == 0) {
             if (console && console.log)
-                console.log('WARN: Box for chart ' + update.widget.series + ' not ready.');
+                console.log('WARN: Box for chart ' + widget.series + ' not ready.');
             return;
         }
         let td = box.closest('.widget');
         if (update.data) {
             td.children('.status-nodata').hide();
             let points = update.data[0].points;
-            if (points.length == 4 && points[1] === points[3] && !update.widget.options.perSec) {
+            let stable = points.length == 4 && points[1] === points[3];
+            if (stable && !widget.options.drawStableLine) {
                 if (td.children('.stable').length == 0) {
                     let info = $('<div/>', { 'class': 'stable' });
                     info.append($('<span/>', { text: points[1] }));
@@ -304,17 +332,19 @@ MonitoringConsole.View = (function() {
             } else {
                 td.children('.stable').remove();
                 box.show();
-                MonitoringConsole.LineChart.onDataUpdate(update);
+                MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
             }
         } else {
             td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
         }
         
-        onWidgetUpdate(update.widget);
+        onWidgetUpdate(widget);
     }
 
     /**
      * Called when changes to the widget require to update the view of the widget (non data related changes)
+
+     * TODO this should be called by the model in the same way onDataUpdate is whenever config of a widget is configured - also rename to onWidgetConfigurationUpdate?
      */
     function onWidgetUpdate(widget) {
         let container = $('#' + widget.target + '-box').closest('.widget');

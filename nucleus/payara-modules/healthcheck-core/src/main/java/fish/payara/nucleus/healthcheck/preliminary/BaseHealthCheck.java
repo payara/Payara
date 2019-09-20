@@ -41,12 +41,10 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.entity.ThreadTimes;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
@@ -61,11 +59,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 /**

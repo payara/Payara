@@ -71,20 +71,24 @@ public class MonitoringConsoleResource {
 
     @GET
     @Path("/series/data/{series}/")
-    public SeriesResponse[] getSeries(@PathParam("series") String series) {
+    public List<SeriesResponse> getSeries(@PathParam("series") String series) {
         return SeriesResponse.from(getDataStore().selectSeries(new Series(series)));
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
-    public Map<Series, SeriesResponse[]> querySeries(Query query) {
-        Map<Series, SeriesResponse[]> res = new HashMap<>();
-        for (SeriesRequest seriesRequest : query.series) {
-            Series key = new Series(seriesRequest.series);
-            List<SeriesDataset> value = getDataStore().selectSeries(key, seriesRequest.instances);
+    public Map<Series, List<SeriesResponse>> querySeries(SeriesRequest request) {
+        Map<Series, List<SeriesResponse>> res = new HashMap<>();
+        for (SeriesQuery query : request.queries) {
+            Series key = new Series(query.series);
+            List<SeriesDataset> value = getDataStore().selectSeries(key, query.instances);
             if (value != null && !value.isEmpty()) {
-                res.put(key, SeriesResponse.from(value));
+                if (res.containsKey(key)) {
+                    res.get(key).addAll(SeriesResponse.from(value));
+                } else {
+                    res.put(key, SeriesResponse.from(value));
+                }
             }
         }
         return res;

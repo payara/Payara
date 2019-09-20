@@ -40,41 +40,39 @@
 
 /*jshint esversion: 8 */
 
-Chart.defaults.global.defaultFontColor = "#fff";
+MonitoringConsole.Chart.Bar = (function() {
 
-/**
- * The different parts of the Monitoring Console are added as the below properties by the individual files.
- */
-var MonitoringConsole =  {
-   /**
-    * Functions to update the actual HTML page of the MC
-    **/
-	View: undefined,
-   /**
-    * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
-    **/ 
-	Model: undefined,
-   /**
-    * Functions specifically to take the data and prepare the display particular chart type using the underlying charting library.
-    *
-    * Each of the type objects below shares the same public API that is used by Model and View to apply the model to the chart to update the view properly.
-    **/
-	Chart: {
-   /**
-    * Line chart adapter API
-    **/
-    Line: undefined,
-   /**
-    * Bar chart adapter API
-    **/
-    Bar: undefined,
+   function onCreation(widget) {
+      return new Chart(ctx, {
+         type: 'horizontalBar',
+         data: data,
+         options: {
+           scales: {
+               xAxes: [{
+                   stacked: true
+               }],
+               yAxes: [{
+                   stacked: true
+               }]
+           }
+         }
+      });
+   }
 
-  }
-};
-MonitoringConsole.Chart.getAPI = function(widget) {
-  switch (widget.type) {
-    default:
-    case 'line': return MonitoringConsole.Chart.Line;
-    case 'bar': return MonitoringConsole.Chart.Bar;
-  }
-};
+   function onConfigUpdate(widget, chart) {
+      return chart;
+   }
+
+   function onDatdaUpdate(update) {
+      
+   }
+
+  /**
+   * Public API if this chart type (same for all types).
+   */
+   return {
+      onCreation: (widget) => onConfigUpdate(widget, onCreation(widget)),
+      onConfigUpdate: (widget, chart) => onConfigUpdate(widget, chart),
+      onDataUpdate: (update) => onDataUpdate(update),
+   };
+})();

@@ -125,10 +125,13 @@ MonitoringConsole.Model = (function() {
 		function sanityCheckWidget(widget) {
 			if (!widget.target)
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
+			if (!widget.type)
+				widget.type = 'line';
 			if (!widget.options) {
 				widget.options = { 
 					beginAtZero: true,
 					autoTimeTicks: true,
+					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
 				};
 			}
 			if (!widget.grid)
@@ -479,35 +482,7 @@ MonitoringConsole.Model = (function() {
 				chart.destroy();
 			}
 		}
-		
-		/**
-		 * Basically translates the MC level configuration options to Chart.js options
-		 */
-		function syncOptions(widget, chart) {
-			let options = chart.options;
-			options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-			options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-			options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-			let time = widget.options.drawAnimations ? 1000 : 0;
-			options.animation.duration = time;
-			options.responsiveAnimationDuration = time;
-	    	let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-	    	options.scales.xAxes[0].ticks.minRotation = rotation;
-	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
-	    	options.legend.display = widget.options.showLegend === true;
-		}
 
-		function getTimeLabel(value, index, values) {
-			if (values.length == 0 || index == 0)
-				return value;
-			let span = values[values.length -1].value - values[0].value;
-			if (span < 120000) { // less then two minutes
-				let lastMinute = new Date(values[index-1].value).getMinutes();
-				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-			}
-			return value;
-      	}
-		
 		return {
 			/**
 			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
@@ -517,51 +492,7 @@ MonitoringConsole.Model = (function() {
 				let chart = charts[series];
 				if (chart)
 					return chart;
-				chart = new Chart(widget.target, {
-					type: 'line',
-					data: {
-						datasets: [],
-					},
-					options: {
-						scales: {
-							xAxes: [{
-								type: 'time',
-								gridLines: {
-									color: 'rgba(100,100,100,0.3)',
-									lineWidth: 0.5,
-								},
-								time: {
-									minUnit: 'second',
-									round: 'second',
-								},
-								ticks: {
-									callback: getTimeLabel,
-									minRotation: 90,
-									maxRotation: 90,
-								}
-							}],
-							yAxes: [{
-								display: true,
-								gridLines: {
-									color: 'rgba(100,100,100,0.7)',
-									lineWidth: 0.5,
-								},
-								ticks: {
-									beginAtZero: widget.options.beginAtZero,
-									precision:0, // no decimal places in labels
-								},
-							}],
-						},
-				        legend: {
-				            labels: {
-				                filter: function(item, chart) {
-				                	return !item.text.startsWith(" ");
-				                }
-				            }
-				        }
-					},
-				});
-				syncOptions(widget, chart);
+				chart = MonitoringConsole.Chart.getAPI(widget).onCreation(widget);			
 				charts[series] = chart;
 				return chart;
 			},
@@ -577,7 +508,7 @@ MonitoringConsole.Model = (function() {
 			update: function(widget) {
 				let chart = charts[widget.series];
 				if (chart) {
-					syncOptions(widget, chart);
+					MonitoringConsole.Chart.getAPI(widget).onConfigUpdate(widget, chart);
 					chart.update();
 				}
 			},
@@ -655,7 +586,7 @@ MonitoringConsole.Model = (function() {
 			let payload = {
 			};
 			let instances = $('#cfgInstances').val();
-			payload.series = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
 					instances: instances

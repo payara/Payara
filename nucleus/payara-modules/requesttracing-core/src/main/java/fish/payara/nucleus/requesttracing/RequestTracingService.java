@@ -554,7 +554,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector tracingCollector = rootCollector.in("tracing");
+        MonitoringDataCollector tracingCollector = rootCollector.in("trace");
         if (requestEventStore != null) {
             for (Entry<Thread, RequestTrace> entry : requestEventStore.getTraces()) {
                 collectTrace(tracingCollector, entry.getValue());
@@ -577,20 +577,24 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
     }
 
     private static void collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace) {
-        UUID traceId = trace.getTraceId();
-        if (traceId != null) {
-            MonitoringDataCollector traceCollector = tracingCollector.tag("traceid", traceId.toString())
-                    .collect("start", trace.getStartTime())
-                    .collect("end", trace.getEndTime())
-                    .collectNonZero("elapsed", trace.getElapsedTime());
-            for (RequestTraceSpan span : trace.getTraceSpans()) {
-                traceCollector.group(span.getId().toString()).tag("op", span.getEventName())
-                    .collect("start", span.getStartInstant())
-                    .collect("end", span.getTraceEndTime())
-                    .collectNonZero("duration", span.getSpanDuration())
-                    .collectNonZero("tags", span.getSpanTags().size())
-                    .collectNonZero("refs", span.getSpanReferences().size());
+        try {
+            UUID traceId = trace.getTraceId();
+            if (traceId != null) {
+                for (RequestTraceSpan span : trace.getTraceSpans()) {
+                    tracingCollector.group(stripPackageName(span.getEventName())).collect("Duration", span.getSpanDuration());
+                }
             }
+        } catch (Exception ex) {
+            logger.log(Level.FINE, "Failed to collect trace", ex);
         }
+    }
+
+    private static String stripPackageName(String eventName) {
+        int javaMethodDot = eventName.lastIndexOf('.');
+        int httpMethodDivider = eventName.indexOf(':');
+        return javaMethodDot < 0 || httpMethodDivider < 0
+                ? eventName
+                : eventName.substring(0, httpMethodDivider) + "_"
+                        + eventName.substring(eventName.lastIndexOf('.', javaMethodDot - 1) + 1);
     }
 }

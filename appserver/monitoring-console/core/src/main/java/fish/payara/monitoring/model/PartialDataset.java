@@ -86,14 +86,15 @@ public final class PartialDataset extends SeriesDataset {
 
     PartialDataset(ConstantDataset predecessor, long time, long value) {
         super(predecessor);
-        this.size = predecessor.size() + 1;
+        long lastTime = predecessor.lastTime();
+        this.size = predecessor.size() + (lastTime == time ? 0 : 1);
         this.offset = 0;
-        this.data = new long[predecessor.capacity() * 4];
+        this.data = new long[predecessor.capacity() * 4]; // 2x for time and value, 2x for double buffer size
         int i = 0;
         this.data[i++] = predecessor.getStableSince();
         this.data[i++] = predecessor.lastValue();
-        if (size == 3) {
-            this.data[i++] = predecessor.firstTime();
+        if (predecessor.size() == 2 && lastTime < time) {
+            this.data[i++] = lastTime;
             this.data[i++] = predecessor.lastValue();
         }
         this.data[i++] = time;
@@ -197,6 +198,10 @@ public final class PartialDataset extends SeriesDataset {
 
     @Override
     public SeriesDataset add(long time, long value) {
+        if (time == lastTime()) {
+            data[2 * (offset + size - 1) + 1] += value; // this is actually summing in place, 
+            return this; // therefore no need to change the instance
+        }
         int newOffset = offset;
         int newSize = size;
         if (size < capacity()) {

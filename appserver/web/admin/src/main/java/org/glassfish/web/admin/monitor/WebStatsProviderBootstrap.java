@@ -69,6 +69,8 @@ import javax.inject.Singleton;
 @Singleton
 public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
 
+    private static final String WEB_CONTAINER = "web-container";
+
     private static final String NODE_SEPARATOR = "/";
 
     // Map of apps and its StatsProvider list
@@ -90,10 +92,10 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         RequestStatsProvider wsp = new RequestStatsProvider(null, null);
         ServletStatsProvider svsp = new ServletStatsProvider(null, null);
         SessionStatsProvider sssp = new SessionStatsProvider(null, null);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/jsp", jsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/request", wsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/servlet", svsp);
-        StatsProviderManager.register("web-container", PluginPoint.SERVER, "web/session", sssp);
+        StatsProviderManager.register(WEB_CONTAINER, PluginPoint.SERVER, "web/jsp", jsp);
+        StatsProviderManager.register(WEB_CONTAINER, PluginPoint.SERVER, "web/request", wsp);
+        StatsProviderManager.register(WEB_CONTAINER, PluginPoint.SERVER, "web/servlet", svsp);
+        StatsProviderManager.register(WEB_CONTAINER, PluginPoint.SERVER, "web/session", sssp);
         webContainerStatsProviderQueue.add(jsp);
         webContainerStatsProviderQueue.add(wsp);
         webContainerStatsProviderQueue.add(svsp);
@@ -131,25 +133,25 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         JspStatsProvider jspStatsProvider =
                 new JspStatsProvider(monitoringName, vsName);
         StatsProviderManager.register(
-                "web-container", PluginPoint.APPLICATIONS, node,
+                WEB_CONTAINER, PluginPoint.APPLICATIONS, node,
                 jspStatsProvider);
         statspList.add(jspStatsProvider);
         ServletStatsProvider servletStatsProvider =
                 new ServletStatsProvider(monitoringName, vsName);
         StatsProviderManager.register(
-                "web-container", PluginPoint.APPLICATIONS, node,
+                WEB_CONTAINER, PluginPoint.APPLICATIONS, node,
                 servletStatsProvider);
         statspList.add(servletStatsProvider);
         SessionStatsProvider sessionStatsProvider =
                 new SessionStatsProvider(monitoringName, vsName);
         StatsProviderManager.register(
-                "web-container", PluginPoint.APPLICATIONS, node,
+                WEB_CONTAINER, PluginPoint.APPLICATIONS, node,
                 sessionStatsProvider);
         statspList.add(sessionStatsProvider);
         RequestStatsProvider websp =
                 new RequestStatsProvider(monitoringName, vsName);
         StatsProviderManager.register(
-                "web-container", PluginPoint.APPLICATIONS, node,
+                WEB_CONTAINER, PluginPoint.APPLICATIONS, node,
                 websp);
 
         for (String servletName : servletNames) {
@@ -157,7 +159,7 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
                  new ServletInstanceStatsProvider(servletName,
                      monitoringName, vsName, servletStatsProvider);
              StatsProviderManager.register(
-                     "web-container", PluginPoint.APPLICATIONS,
+                     WEB_CONTAINER, PluginPoint.APPLICATIONS,
                      getNodeString(monitoringName, vsName, servletName),
                      servletInstanceStatsProvider);
              statspList.add(servletInstanceStatsProvider);

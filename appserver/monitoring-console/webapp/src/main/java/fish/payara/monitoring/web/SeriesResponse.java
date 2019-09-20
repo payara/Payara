@@ -40,17 +40,18 @@
 package fish.payara.monitoring.web;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import fish.payara.monitoring.model.SeriesDataset;
 
 public final class SeriesResponse {
 
-    public static SeriesResponse[] from(Collection<SeriesDataset> sets) {
-        SeriesResponse[] stats = new SeriesResponse[sets.size()];
-        int i = 0;
+    public static List<SeriesResponse> from(Collection<SeriesDataset> sets) {
+        List<SeriesResponse> stats = new ArrayList<>(sets.size());
         for (SeriesDataset set : sets) {
-            stats[i++] = new SeriesResponse(set);
+            stats.add(new SeriesResponse(set));
         }
         return stats;
     }

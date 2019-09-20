@@ -52,19 +52,10 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.Sampling;
-import org.eclipse.microprofile.metrics.Snapshot;
-import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -88,6 +79,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToLongFunction;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.MetricID;
 
@@ -160,56 +152,52 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
             return;
         MonitoringDataCollector metricsCollector = rootCollector.in("metric");
         for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
-            MonitoringDataCollector appCollector = metricsCollector;
-
-            // counters
-            for (Entry<MetricID, Counter> counter : registry.getValue().getCounters().entrySet()) {
-                CharSequence metric = asTag(counter.getKey());
-                appCollector.collect(metric, counter.getValue().getCount());
-            }
-
-            // gauges
-            for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
-                CharSequence metric = asTag(gauge.getKey());
-                Object value = gauge.getValue().getValue();
-                if (value instanceof Number) {
-                    appCollector.collect(metric, ((Number) value));
-                }
-            }
-
-            // concurrent gauges
-            for (Entry<MetricID, ConcurrentGauge> gauge : registry.getValue().getConcurrentGauges().entrySet()) {
-                CharSequence metric = asTag(gauge.getKey());
-                    appCollector.collect(metric, gauge.getValue().getCount());
-            }
-
-            // histograms
-            for (Entry<MetricID, Histogram> histogram : registry.getValue().getHistograms().entrySet()) {
-                CharSequence metric = asTag(histogram.getKey());
-                appCollector.collect(metric, histogram.getValue().getCount());
-            }
-
-            // meters
-            for (Entry<MetricID, Meter> meter : registry.getValue().getMeters().entrySet()) {
-                CharSequence metric = asTag(meter.getKey());
-                appCollector.collect(metric, meter.getValue().getCount());
-            }
-
-            // timers
-            for (Entry<MetricID, Timer> timer : registry.getValue().getTimers().entrySet()) {
-                CharSequence metric = asTag(timer.getKey());
-                appCollector.collect(metric, timer.getValue().getCount());
-            }
+            collectRegistry(registry, metricsCollector);
         }
     }
 
-    private static CharSequence asTag(MetricID metric) {
-       StringBuilder tag = new StringBuilder();
-       tag.append(metric.getName());
-       for (Entry<String, String> e : metric.getTags().entrySet()) {
-           tag.append('.').append(e.getKey()).append('.').append(e.getValue());
-       }
-       return tag;
+    private static void collectRegistry(Entry<String, MetricRegistry> registry, MonitoringDataCollector collector) {
+        for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
+            Object value = gauge.getValue().getValue();
+            if (value instanceof Number) {
+                tagCollector(gauge.getKey(), collector).collect(toName(gauge.getKey()), ((Number) value));
+            }
+        }
+        collectMetrics(registry.getValue().getCounters(), counter -> counter.getCount(), collector);
+        collectMetrics(registry.getValue().getConcurrentGauges(), gauge -> gauge.getCount(), collector);
+        collectMetrics(registry.getValue().getHistograms(), histogram -> histogram.getCount(), collector);
+        collectMetrics(registry.getValue().getMeters(), meter -> meter.getCount(), collector);
+        collectMetrics(registry.getValue().getTimers(), timer -> timer.getCount(), collector);
+    }
+
+    private static <T extends Metric> void collectMetrics(Map<MetricID, T> metrics, ToLongFunction<T> count, 
+            MonitoringDataCollector collector) {
+        for (Entry<MetricID, T> metric : metrics.entrySet()) {
+            tagCollector(metric.getKey(), collector).collect(toName(metric.getKey()), count.applyAsLong(metric.getValue()));
+        }
+    }
+
+    private static CharSequence toName(MetricID metric) {
+        String name = metric.getName();
+        return name.indexOf(' ') < 0 ? name : name.replace(' ', '.'); // trying to avoid replace
+    }
+
+    private static MonitoringDataCollector tagCollector(MetricID metric, MonitoringDataCollector collector) {
+        Map<String, String> tags = metric.getTags();
+        if (tags.isEmpty()) {
+            return collector;
+        }
+        StringBuilder tag = new StringBuilder();
+        for (Entry<String, String> e : metric.getTags().entrySet()) {
+            if (tag.length() > 0) {
+                tag.append('_');
+            }
+            if (!"name".equals(e.getKey())) {
+                tag.append(e.getKey().replace(' ', '.'));
+            }
+            tag.append(e.getValue().replace(' ', '.'));
+        }
+        return collector.group(tag);
     }
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {

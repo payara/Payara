@@ -43,11 +43,11 @@ package fish.payara.monitoring.store;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +207,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
             .collectNonZero("SeriesCount", seriesCount)
             .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
-            .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
+            .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
             .collectNonZero("SourcesCount", collectedSources)
             .collectNonZero("FailedCollectionCount", failedSources);
     }
@@ -239,32 +239,54 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         if (!isDas) {
             return emptyList();
         }
-        Set<String> filter = instances == null || instances.length == 0 
+        Set<String> instanceFilter = instances == null || instances.length == 0 
                 ? this.instances
                 : new HashSet<>(asList(instances));
-        SeriesDataset localSet = secondsRead.get(series);
-        SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
-        if (remoteSets == null) {
-            return localSet != null && filter.contains(localSet.getInstance()) 
-                   ? singletonList(localSet) 
-                   : emptyList();
-        }
-        long cutOffTime = System.currentTimeMillis() - 30_000;
-        List<SeriesDataset> res = new ArrayList<>(remoteSets.length + 1);
-        if (localSet != null && !localSet.isStableZero() && filter.contains(localSet.getInstance())) {
-            res.add(localSet);
-        }
-        for (SeriesDataset remoteSet : remoteSets) {
-            if (remoteSet.lastTime() >= cutOffTime 
-                    && !remoteSet.isStableZero() 
-                    && filter.contains(remoteSet.getInstance())) {
-                res.add(remoteSet);
+        List<SeriesDataset> res = new ArrayList<>(instanceFilter.size());
+        selectSeries(res, Collections.singleton(series), instanceFilter, System.currentTimeMillis() - 30_000);
+        return res;
+    }
+
+    private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter,
+            long cutOffTime) {
+        for (Series series : seriesSet) {
+            if (series.isPattern()) {
+                selectSeries(res, seriesMatchingPattern(series), instanceFilter, cutOffTime);
+            } else {
+                SeriesDataset localSet = secondsRead.get(series);
+                SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
+
+                if (localSet != null && isRelevantSet(localSet, instanceFilter, cutOffTime)) {
+                    res.add(localSet);
+                }
+                if (remoteSets != null && remoteSets.length > 0) {
+                    for (SeriesDataset remoteSet : remoteSets) {
+                        if (isRelevantSet(remoteSet, instanceFilter, cutOffTime)) {
+                            res.add(remoteSet);
+                        }
+                    }
+                }
             }
         }
-        if (res.isEmpty() && localSet != null && filter.contains(localSet.getInstance())) {
-            res.add(localSet);
+    }
+
+    private static boolean isRelevantSet(SeriesDataset set, Set<String> instanceFilter, long cutOffTime) {
+        return set.lastTime() >= cutOffTime && instanceFilter.contains(set.getInstance());
+    }
+
+    private Set<Series> seriesMatchingPattern(Series pattern) {
+        Set<Series> matches = new HashSet<>();
+        for (Series candidate : secondsRead.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
         }
-        return res;
+        for (Series candidate : remoteInstanceDatasets.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
+        }
+        return matches;
     }
 
     @Override

@@ -114,8 +114,9 @@
                         <target>src/main/webapp/monitoring-console.js</target>
                         <sources>
                             <source>src/main/webapp/mc-main.js</source>
-                            <source>src/main/webapp/mc-model.js</source>
                             <source>src/main/webapp/mc-line-chart.js</source>
+                            <source>src/main/webapp/mc-bar-chart.js</source>
+                            <source>src/main/webapp/mc-model.js</source>
                             <source>src/main/webapp/mc-view.js</source>
                         </sources>
                       </merge>
