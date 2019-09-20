@@ -40,71 +40,12 @@
 
 /*jshint esversion: 8 */
 
-Chart.defaults.global.defaultFontColor = "#fff";
-
-/**
- * A utility with 'static' helper functions that have no side effect.
- * 
- * Extracting such function into this object should help organise the code and allow context independent testing 
- * of the helper functions in the browser.
- * 
- * The MonitoringConsole object is dependent on this object but not vice versa.
- */
-var MonitoringConsoleUtils = (function() {
-	
-	return {
-		
-		getSpan: function(widget, numberOfColumns, currentColumn) {
-			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
-			if (typeof span === 'string') {
-				if (span === 'full') {
-					span = numberOfColumns;
-				} else {
-					span = parseInt(span);
-				}
-			}
-			if (span > numberOfColumns - currentColumn) {
-				span = numberOfColumns - currentColumn;
-			}
-			return span;
-		},
-		
-		getPageId: function(name) {
-			return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
-		},
-		
-		getTimeLabel: function(value, index, values) {
-			if (values.length == 0 || index == 0)
-				return value;
-			let span = values[values.length -1].value - values[0].value;
-			if (span < 120000) { // less then two minutes
-				let lastMinute = new Date(values[index-1].value).getMinutes();
-				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-			}
-			return value;
-		},
-		
-		readTextFile: function(file) {
-		    return new Promise(function(resolve, reject){
-		        var reader = new FileReader();
-		        reader.onload = function(evt){
-		            resolve(evt.target.result);
-		        };
-		        reader.onerror = function(err) {
-		            reject(err);
-		        };
-		        reader.readAsText(file);
-		    });
-		},
-	};
-})();
-
 /**
  * The object that manages the internal state of the monitoring console page.
  * 
- * It depends on the MonitoringConsoleUtils object.
+ * It depends on the MonitoringConsole.Utils object.
  */
-var MonitoringConsole = (function() {
+MonitoringConsole.Model = (function() {
 	/**
 	 * Key used in local stage for the userInterface
 	 */
@@ -126,6 +67,10 @@ var MonitoringConsole = (function() {
 			},
 			settings: {},
 	};
+
+	function getPageId(name) {
+    	return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
+    }
 
 	
 	/**
@@ -156,7 +101,7 @@ var MonitoringConsole = (function() {
 		 */
 		function sanityCheckPage(page) {
 			if (!page.id)
-				page.id = MonitoringConsoleUtils.getPageId(page.name);
+				page.id = getPageId(page.name);
 			if (!page.widgets)
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
@@ -203,7 +148,7 @@ var MonitoringConsole = (function() {
 		function doCreate(name) {
 			if (!name)
 				throw "New page must have a unique name";
-			var id = MonitoringConsoleUtils.getPageId(name);
+			var id = getPageId(name);
 			if (pages[id])
 				throw "A page with name "+name+" already exist";
 			let page = sanityCheckPage({name: name});
@@ -249,6 +194,106 @@ var MonitoringConsole = (function() {
 			let ui = { pages: pages, settings: settings };
 			return prettyPrint ? JSON.stringify(ui, null, 2) : JSON.stringify(ui);
 		}
+
+		function readTextFile(file) {
+          	return new Promise(function(resolve, reject) {
+				let reader = new FileReader();
+				reader.onload = function(evt){
+				  resolve(evt.target.result);
+				};
+				reader.onerror = function(err) {
+				  reject(err);
+				};
+				reader.readAsText(file);
+          	});
+      	}
+
+      	function doLayout(columns) {
+			let page = pages[currentPageId];
+			if (!page)
+				return [];
+			if (columns)
+				page.numberOfColumns = columns;
+			let numberOfColumns = page.numberOfColumns || 1;
+			let widgets = page.widgets;
+			// init temporary and result data structure
+			let widgetsByColumn = new Array(numberOfColumns);
+			var layout = new Array(numberOfColumns);
+			for (let col = 0; col < numberOfColumns; col++) {
+				widgetsByColumn[col] = [];
+				layout[col] = [];
+			}
+			// organise widgets in columns
+			Object.values(widgets).forEach(function(widget) {
+				let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
+				widgetsByColumn[Math.min(Math.max(column, 0), widgetsByColumn.length - 1)].push(widget);
+			});
+			// order columns by item position
+			for (let col = 0; col < numberOfColumns; col++) {
+				widgetsByColumn[col] = widgetsByColumn[col].sort(function (a, b) {
+					if (!a.grid || !a.grid.item)
+						return -1;
+					if (!b.grid || !b.grid.item)
+						return 1;
+					return a.grid.item - b.grid.item;
+				});
+			}
+			// do layout by marking cells with item (left top corner in case of span), null (empty) and undefined (spanned)
+			for (let col = 0; col < numberOfColumns; col++) {
+				let columnWidgets = widgetsByColumn[col];
+				for (let item = 0; item < columnWidgets.length; item++) {
+					let widget = columnWidgets[item];
+					let span = getSpan(widget, numberOfColumns, col);
+					let info = { span: span, widget: widget};
+					let column0 = layout[col];
+					let row0 = getEmptyRowIndex(column0, span);
+					for (let spanX = 0; spanX < span; spanX++) {
+						let column = layout[col + spanX];
+						if (spanX == 0) {
+							if (!widget.grid)
+								widget.grid = { column: col, span: span }; // init grid
+							widget.grid.item = column.length; // update item position
+						} else {
+							while (column.length < row0)
+								column.push(null); // null marks empty cells
+						}
+						for (let spanY = 0; spanY < span; spanY++) {
+							column.push(spanX === 0 && spanY === 0 ? info : undefined);
+						}
+					}
+				}
+			}
+			// give the layout a uniform row number
+			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
+			for (let col = 0; col < numberOfColumns; col++) {
+				while (layout[col].length < maxRows) {
+					layout[col].push(null);
+				}
+			}
+			return layout;
+      	}
+
+      	function getSpan(widget, numberOfColumns, currentColumn) {
+			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+			if (typeof span === 'string') {
+			if (span === 'full') {
+			   span = numberOfColumns;
+			} else {
+			   span = parseInt(span);
+			}
+			}
+			if (span > numberOfColumns - currentColumn) {
+			span = numberOfColumns - currentColumn;
+			}
+			return span;
+      	}
+
+		/**
+		 * @return {number} row position in column where n rows are still empty ('null' marks empty)
+		 */
+      	function getEmptyRowIndex(column, n) {
+			return Math.max(column.length, column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null))); 
+      	}
 		
 		return {
 			currentPage: function() {
@@ -261,7 +306,7 @@ var MonitoringConsole = (function() {
 				});
 			},
 			
-			$export: function() {
+			exportPages: function() {
 				return doExport(true);
 			},
 			
@@ -269,11 +314,11 @@ var MonitoringConsole = (function() {
 			 * @param {FileList|object} userInterface - a plain user interface configuration object or a file containing such an object
 			 * @param {function} onImportComplete - optional function to call when import is done
 			 */
-			$import: async (userInterface, onImportComplete) => {
+			importPages: async (userInterface, onImportComplete) => {
 				if (userInterface instanceof FileList) {
 					let file = userInterface[0];
 					if (file) {
-						let json = await MonitoringConsoleUtils.readTextFile(file);
+						let json = await readTextFile(file);
 						doImport(JSON.parse(json));
 					}
 				} else {
@@ -302,9 +347,9 @@ var MonitoringConsole = (function() {
 			},
 			
 			renamePage: function(name) {
-				let pageId = MonitoringConsoleUtils.getPageId(name);
+				let pageId = getPageId(name);
 				if (pages[pageId])
-					throw "Page with name already exist";
+					return false;
 				let page = pages[currentPageId];
 				page.name = name;
 				page.id = pageId;
@@ -312,6 +357,7 @@ var MonitoringConsole = (function() {
 				delete pages[currentPageId];
 				currentPageId = pageId;
 				doStore();
+				return true;
 			},
 			
 			/**
@@ -390,49 +436,7 @@ var MonitoringConsole = (function() {
 			},
 			
 			arrange: function(columns) {
-				let page = pages[currentPageId];
-				if (!page)
-					return [];
-				if (columns)
-					page.numberOfColumns = columns;
-				let numberOfColumns = page.numberOfColumns || 1;
-				let widgets = page.widgets;
-				let configsByColumn = new Array(numberOfColumns);
-				for (let col = 0; col < numberOfColumns; col++)
-					configsByColumn[col] = [];
-				// insert order widgets
-				Object.values(widgets).forEach(function(widget) {
-					let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
-					configsByColumn[Math.min(Math.max(column, 0), configsByColumn.length - 1)].push(widget);
-				});
-				// build up rows with columns, occupy spans with empty 
-				var layout = new Array(numberOfColumns);
-				for (let col = 0; col < numberOfColumns; col++)
-					layout[col] = [];
-				for (let col = 0; col < numberOfColumns; col++) {
-					let orderedConfigs = configsByColumn[col].sort(function (a, b) {
-						if (!a.grid || !a.grid.item)
-							return -1;
-						if (!b.grid || !b.grid.item)
-							return 1;
-						return a.grid.item - b.grid.item;
-					});
-					orderedConfigs.forEach(function(widget) {
-						let span = MonitoringConsoleUtils.getSpan(widget, numberOfColumns, col);
-						let info = { span: span, widget: widget};
-						for (let spanX = 0; spanX < span; spanX++) {
-							let column = layout[col + spanX];
-							if (spanX == 0) {
-								if (!widget.grid)
-									widget.grid = { column: col, span: span }; // init grid
-								widget.grid.item = column.length; // update item position
-							}
-							for (let spanY = 0; spanY < span; spanY++) {
-								column.push(spanX === 0 && spanY === 0 ? info : null);
-							}
-						}
-					});
-				}
+				let layout = doLayout(columns);
 				doStore();
 				return layout;
 			},
@@ -492,6 +496,17 @@ var MonitoringConsole = (function() {
 	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
 	    	options.legend.display = widget.options.showLegend === true;
 		}
+
+		function getTimeLabel(value, index, values) {
+			if (values.length == 0 || index == 0)
+				return value;
+			let span = values[values.length -1].value - values[0].value;
+			if (span < 120000) { // less then two minutes
+				let lastMinute = new Date(values[index-1].value).getMinutes();
+				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+			}
+			return value;
+      	}
 		
 		return {
 			/**
@@ -520,7 +535,7 @@ var MonitoringConsole = (function() {
 									round: 'second',
 								},
 								ticks: {
-									callback: MonitoringConsoleUtils.getTimeLabel,
+									callback: getTimeLabel,
 									minRotation: 90,
 									maxRotation: 90,
 								}
@@ -633,63 +648,75 @@ var MonitoringConsole = (function() {
 		};
 	})();
 	
-	return {
-		
-		init: function(onDataUpdate) {
-			UI.load();
-			Interval.init(function() {
-				let widgets = UI.currentPage().widgets;
-				let payload = {
-				};
-				let instances = $('#cfgInstances').val();
-				payload.series = Object.keys(widgets).map(function(series) { 
-					return { 
-						series: series,
-						instances: instances
-					}; 
-				});
-				let request = $.ajax({
-					url: 'api/series/data/',
-					type: 'POST',
-					data: JSON.stringify(payload),
-					contentType:"application/json; charset=utf-8",
-					dataType:"json",
-				});
-				request.done(function(response) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							data: response[widget.series],
-							chart: () => Charts.getOrCreate(widget),
-						});
-					});
-				});
-				request.fail(function(jqXHR, textStatus) {
-					Object.values(widgets).forEach(function(widget) {
-						onDataUpdate({
-							widget: widget,
-							chart: () => Charts.getOrCreate(widget),
-						});
+	function doInit(onDataUpdate) {
+		UI.load();
+		Interval.init(function() {
+			let widgets = UI.currentPage().widgets;
+			let payload = {
+			};
+			let instances = $('#cfgInstances').val();
+			payload.series = Object.keys(widgets).map(function(series) { 
+				return { 
+					series: series,
+					instances: instances
+				}; 
+			});
+			let request = $.ajax({
+				url: 'api/series/data/',
+				type: 'POST',
+				data: JSON.stringify(payload),
+				contentType:"application/json; charset=utf-8",
+				dataType:"json",
+			});
+			request.done(function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						data: response[widget.series],
+						chart: () => Charts.getOrCreate(widget),
 					});
 				});
 			});
-			Interval.resume();
-			return UI.arrange();
-		},
+			request.fail(function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			});
+		});
+		Interval.resume();
+		return UI.arrange();
+	}
+
+	function doConfigureSelection(widgetUpdate) {
+		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	function doConfigureWidget(series, widgetUpdate) {
+		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		return UI.arrange();
+	}
+
+	/**
+	 * The public API object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 */
+	return {
 		
-		$export: UI.$export,
-		$import: function(userInterface, onImportComplete) {
-			UI.$import(userInterface, () => onImportComplete(UI.arrange()));
-		},
+		init: doInit,
 		
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		listSeries: function(consumer) {
-			$.getJSON("api/series/", consumer);
-		},
-		
+		listSeries: (consumer) => $.getJSON("api/series/", consumer),
+
 		listPages: UI.listPages,
+		exportPages: UI.exportPages,
+		importPages: function(userInterface, onImportComplete) {
+			UI.importPages(userInterface, () => onImportComplete(UI.arrange()));
+		},
 		
 		/**
 		 * API to control the chart refresh interval.
@@ -770,10 +797,33 @@ var MonitoringConsole = (function() {
 					return UI.arrange();
 				},
 				
-				configure: function(series, widgetUpdate) {
-					UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
-					return UI.arrange();
-				},
+				configure: doConfigureWidget,
+
+				moveLeft: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column > 0) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
+	                }
+	            }),
+
+	            moveRight: (series) => doConfigureWidget(series, function(widget) {
+	                if (!widget.grid.column || widget.grid.column < 4) {
+	                    widget.grid.item = undefined;
+	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
+	                }
+	            }),
+
+	            spanMore: (series) => doConfigureWidget(series, function(widget) {
+	                if (! widget.grid.span || widget.grid.span < 4) {
+	                    widget.grid.span = !widget.grid.span ? 2 : widget.grid.span + 1;
+	                }
+	            }),
+
+	            spanLess: (series) => doConfigureWidget(series, function(widget) {
+	            	if (widget.grid.span > 1) {
+	                    widget.grid.span -= 1;
+	                }
+	            }),
 
 				/**
 				 * API for the set of selected widgets on the current page.
@@ -781,16 +831,16 @@ var MonitoringConsole = (function() {
 				Selection: {
 					
 					listSeries: UI.selected,
+					isSingle: () => UI.selected().length == 1,
+					first: () => UI.currentPage().widgets[UI.selected()[0]],
 					toggle: UI.select,
 					clear: UI.deselect,
 					
 					/**
 					 * @param {function} widgetUpdate - a function accepting chart configuration applied to each chart
 					 */
-					configure: function(widgetUpdate) {
-						UI.configureWidget(widgetUpdate).forEach(Charts.update);
-						return UI.arrange();
-					},
+					configure: doConfigureSelection,
+
 				},
 			},
 			

@@ -90,7 +90,6 @@ button:hover {
 	vertical-align: top;
 }
 #chart-container {
-    position: relative;
     padding: 0 10px;
 }
 .chart-box {
@@ -107,7 +106,7 @@ button:hover {
     background-color: transparent;
     font-weight: bold;
 }
-.btnClose {
+.btnIcon:first-of-type {
 	margin-left: 15px;
 }
 button.btnIcon:hover {
@@ -221,9 +220,9 @@ button.btnIcon:hover {
 }
 
 /**
- * Properties (Sizes and Visibility)
+ * Widget Settings (Sizes and Visibility)
  */
-#panel-properties {
+#panel-settings {
     width: 380px;
     padding: 0;
     background-image: url("payara-server-logo.png");
@@ -234,27 +233,28 @@ button.btnIcon:hover {
     top: 5px;
     right: 10px;
 }
-.properties {
+.settings {
     background-color: #002433;
     padding: 10px;
     margin-top: 5px;
     width: 100%;
 }
-button.btnClose + .properties {
+button.btnClose + .settings {
     margin-top: 210px;
 }
-.properties th {
+.settings th {
     border-bottom: 1px solid #bbb;
+    cursor: pointer;
 }
-.properties td:first-child {
+.settings td:first-child {
     width: 120px;
 }
-#console #panel-properties {
+#console #panel-settings {
 	display: none;
 }
-#console.state-show-properties #panel-properties {
+#console.state-show-settings #panel-settings {
 	display: block;
 }
-#console.state-show-properties #panel-grid {
-    width: calc(100% - 385px);
+#console.state-show-settings #panel-grid {
+  width: calc(100% - 385px);
 }

@@ -113,9 +113,10 @@
                         <override>true</override>
                         <target>src/main/webapp/monitoring-console.js</target>
                         <sources>
-                            <source>src/main/webapp/mc-ui.js</source>
-                            <source>src/main/webapp/mc-render.js</source>
-                            <source>src/main/webapp/mc-page.js</source>
+                            <source>src/main/webapp/mc-main.js</source>
+                            <source>src/main/webapp/mc-model.js</source>
+                            <source>src/main/webapp/mc-line-chart.js</source>
+                            <source>src/main/webapp/mc-view.js</source>
                         </sources>
                       </merge>
                     </merges>
