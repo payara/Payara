@@ -37,42 +37,31 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
+package fish.payara.microprofile.opentracing.jaxrs.client;
 
-package fish.payara.requesttracing.jaxrs.client.mprest;
+import java.util.concurrent.ExecutorService;
+import javax.ws.rs.client.ClientBuilder;
+import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
 
-import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
-import fish.payara.requesttracing.jaxrs.client.decorators.JaxrsClientBuilderDecorator;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
-import org.eclipse.microprofile.rest.client.spi.RestClientListener;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-public class TracingClientListener implements RestClientListener {
-    // Spec defined invoked method reference
-    static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
-
-    private static final Logger logger = Logger.getLogger(TracingClientListener.class.getName());
+/**
+ * A no-op {@link ClientTracingRegistrarProvider}.
+ * 
+ * Client tracing is enabled globally in Payara
+ * @author jonathan coustick
+ * @since 5.183
+ */
+public class JaxrsClientRegistrarProvider implements ClientTracingRegistrarProvider {
 
     @Override
-    public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
-        // Rest client spec mandates early initialization of providers in its TCK rather than on first request
-        restClientBuilder.property(JaxrsClientBuilderDecorator.EARLY_BUILDER_INIT, true);
-
-        // OpenTracing mandates respecting setting of @Traced annotation on the class
-        restClientBuilder.property(JaxrsClientRequestTracingFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
-                new TracedMethodFilter(obtainConfig(), aClass));
+    public ClientBuilder configure(ClientBuilder clientBuilder) {
+        // tracing async client calls requires decoration
+        return JaxrsClientBuilderDecorator.wrap(clientBuilder);
     }
 
-    private Config obtainConfig() {
-
-        try {
-            return  ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-        return null;
+    @Override
+    public ClientBuilder configure(ClientBuilder clientBuilder, ExecutorService executorService) {
+        clientBuilder.executorService(executorService);
+        return configure(clientBuilder);
     }
+    
 }
