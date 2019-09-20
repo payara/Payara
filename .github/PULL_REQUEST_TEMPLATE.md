@@ -17,9 +17,6 @@ This is a bug fix / feature. <!-- delete/modify as applicable-->
 ### Blockers <!-- delete as applicable -->
 <!-- Detail any blockers with links/info -->
 
-### Deadline <!-- delete as applicable -->
-<!-- Detail any deadlines, why? -->
-
 # Testing
 
 ### New tests
