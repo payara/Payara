@@ -40,39 +40,37 @@
 
 package fish.payara.microprofile.opentracing.jaxrs.client;
 
-import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
-import org.eclipse.microprofile.rest.client.spi.RestClientListener;
+import fish.payara.requesttracing.jaxrs.client.SpanPropagator;
+import io.opentracing.SpanContext;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptor;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptorFactory;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+public class AsyncContextPropagator implements AsyncInvocationInterceptor {
+    private SpanContext context;
+    private SpanContext previous;
 
-public class RestClientTracingListener implements RestClientListener {
-    // Spec defined invoked method reference
-    static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
-
-    private static final Logger logger = Logger.getLogger(RestClientTracingListener.class.getName());
 
     @Override
-    public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
-        // Rest client spec mandates early initialization of providers rather than on first request in its TCK
-        restClientBuilder.property(JaxrsClientBuilderDecorator.EARLY_BUILDER_INIT, true);
-        restClientBuilder.register(new AsyncContextPropagator.Factory());
-
-        // OpenTracing mandates respecting setting of @Traced annotation on the class
-        restClientBuilder.property(JaxrsClientRequestTracingFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
-                new TracedMethodFilter(obtainConfig(), aClass));
+    public void prepareContext() {
+        // move thread context into propagator
+        this.context = SpanPropagator.activeContext();
     }
 
-    private Config obtainConfig() {
+    @Override
+    public void applyContext() {
+        this.previous = SpanPropagator.propagateContext(this.context);
+    }
 
-        try {
-            return  ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
+    @Override
+    public void removeContext() {
+        SpanPropagator.propagateContext(this.previous);
+    }
+
+    static class Factory implements AsyncInvocationInterceptorFactory {
+
+        @Override
+        public AsyncInvocationInterceptor newInterceptor() {
+            return new AsyncContextPropagator();
         }
-        return null;
     }
 }

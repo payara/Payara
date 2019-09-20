@@ -38,41 +38,59 @@
  *    holder.
  */
 
-package fish.payara.microprofile.opentracing.jaxrs.client;
+package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
-import org.eclipse.microprofile.rest.client.spi.RestClientListener;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+public class SpanPropagator {
+    private static final SpanPropagator INSTANCE = new SpanPropagator();
+    private static ThreadLocal<SpanContext> propagatedContext = new ThreadLocal<>();
 
-public class RestClientTracingListener implements RestClientListener {
-    // Spec defined invoked method reference
-    static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
+    private final OpenTracingService openTracing;
+    private final InvocationManager invocationManager;
 
-    private static final Logger logger = Logger.getLogger(RestClientTracingListener.class.getName());
-
-    @Override
-    public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
-        // Rest client spec mandates early initialization of providers rather than on first request in its TCK
-        restClientBuilder.property(JaxrsClientBuilderDecorator.EARLY_BUILDER_INIT, true);
-        restClientBuilder.register(new AsyncContextPropagator.Factory());
-
-        // OpenTracing mandates respecting setting of @Traced annotation on the class
-        restClientBuilder.property(JaxrsClientRequestTracingFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
-                new TracedMethodFilter(obtainConfig(), aClass));
+    SpanPropagator() {
+        // Get the ServiceLocator and OpenTracing services
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        if (serviceLocator != null) {
+            openTracing = serviceLocator.getService(OpenTracingService.class);
+            invocationManager = serviceLocator.getService(InvocationManager.class);
+        } else {
+            openTracing = null;
+            invocationManager = null;
+        }
     }
 
-    private Config obtainConfig() {
-
-        try {
-            return  ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
+    private SpanContext _activeContext() {
+        if (openTracing != null) {
+            Span activeSpan = openTracing.getTracer(
+                    openTracing.getApplicationName(invocationManager))
+                    .activeSpan();
+            return activeSpan != null ? activeSpan.context() : null;
         }
         return null;
+    }
+
+    public static SpanContext activeContext() {
+        return INSTANCE._activeContext();
+    }
+
+    public static SpanContext propagateContext(SpanContext context) {
+        SpanContext previous = propagatedContext.get();
+        propagatedContext.set(context);
+        return previous;
+    }
+
+    public static SpanContext propagatedContext() {
+        return propagatedContext.get();
+    }
+
+    public static void clearPropagatedContext() {
+        propagateContext(null);
     }
 }

@@ -41,8 +41,7 @@ package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Span;
-import org.glassfish.api.invocation.InvocationManager;
+import fish.payara.requesttracing.jaxrs.client.SpanPropagator;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -68,15 +67,9 @@ class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     protected Invocation.Builder invocationBuilder;
 
-    private ServiceLocator serviceLocator;
-    private OpenTracingService openTracing;
 
     public JaxrsInvocationBuilderDecorator(Invocation.Builder invocationBuilder) {
         this.invocationBuilder = invocationBuilder;
-
-        // Get the ServiceLocator and OpenTracing services
-        serviceLocator = Globals.getDefaultBaseServiceLocator();
-        openTracing = serviceLocator.getService(OpenTracingService.class);
     }
 
     @Override
@@ -329,16 +322,7 @@ class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
      * Instruments this InvocationBuilder instance with OpenTracing
      */
     private void instrumentInvocationBuilder() {
-        // Get the currently active span if present
-        if (openTracing != null) {
-            Span activeSpan = openTracing.getTracer(
-                    openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)))
-                    .activeSpan();
-
-            // If there is an active span, add its context to the request as a property so it can be picked up by the filter
-            if (activeSpan != null) {
-                this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
-            }
-        }
+        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
+        this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, SpanPropagator.activeContext());
     }
 }
