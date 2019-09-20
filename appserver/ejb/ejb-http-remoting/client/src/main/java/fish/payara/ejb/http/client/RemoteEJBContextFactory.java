@@ -42,6 +42,8 @@ package fish.payara.ejb.http.client;
 import java.util.Hashtable;
 
 import javax.naming.Context;
+import static javax.naming.Context.SECURITY_CREDENTIALS;
+import static javax.naming.Context.SECURITY_PRINCIPAL;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
@@ -69,6 +71,10 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
 
     public static final String FACTORY_CLASS = RemoteEJBContextFactory.class.getName();
     public static final String CLIENT_ADAPTER = "fish.payara.clientAdapter";
+
+    public static final String PROVIDER_AUTH_TYPE = "fish.payara.provider.auth.type";
+    public static final String PROVIDER_PRINCIPAL = "fish.payara.provider.principal";
+    public static final String PROVIDER_CREDENTIALS = "fish.payara.provider.credentials";
 
     public static final String JAXRS_CLIENT_CONFIG = "fish.payara.withConfig";
     public static final String JAXRS_CLIENT_TRUST_STORE = "fish.payara.trustStore";

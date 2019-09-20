@@ -41,7 +41,6 @@ package fish.payara.ejb.http.endpoint;
 
 import static java.util.Arrays.asList;
 
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -50,11 +49,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.json.bind.JsonbBuilder;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

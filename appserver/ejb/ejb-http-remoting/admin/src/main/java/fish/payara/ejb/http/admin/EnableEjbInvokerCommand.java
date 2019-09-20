@@ -75,6 +75,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Arjan Tijms
  *
  */
+@Deprecated
 @Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)

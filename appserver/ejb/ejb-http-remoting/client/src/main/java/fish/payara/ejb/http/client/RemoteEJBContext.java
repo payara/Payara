@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
+import fish.payara.ejb.http.protocol.rs.BasicAuthFilter;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import java.util.logging.Level;
+import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -166,11 +169,11 @@ class RemoteEJBContext implements Context {
 
             Integer version = getVersion(discovery);
             if (discovery.isV1target() && (version == null || version.intValue() == 1)) {
-                logger.info("Discovered v1 at " + discovery.getV1lookup().getUri());
+                logger.log(Level.INFO, "Discovered v1 at {0}", discovery.getV1lookup().getUri());
                 return new LookupV1(environment, client, discovery.getV1lookup());
             }
             if (discovery.isV0target() && (version == null || version.intValue() == 0)) {
-                logger.info("Discovered v0 at " + discovery.getV0lookup().getUri());
+                logger.log(Level.INFO, "Discovered v0 at {0}", discovery.getV0lookup().getUri());
                 return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
             }
             throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
@@ -195,7 +198,7 @@ class RemoteEJBContext implements Context {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
 
         if (environment.containsKey(JAXRS_CLIENT_CONNECT_TIMEOUT)) {
-            clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)).longValue(), MICROSECONDS);
+            clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)), MICROSECONDS);
         }
 
         if (environment.contains(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
@@ -211,7 +214,7 @@ class RemoteEJBContext implements Context {
         }
 
         if (environment.containsKey(JAXRS_CLIENT_READ_TIMEOUT)) {
-            clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)).longValue(), MICROSECONDS);
+            clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)), MICROSECONDS);
         }
 
         if (environment.contains(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
@@ -230,11 +233,19 @@ class RemoteEJBContext implements Context {
             clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
         }
 
+        String providerPrincipal = (String)environment.get(PROVIDER_PRINCIPAL);
+        String providerCredentials = (String)environment.get(PROVIDER_CREDENTIALS);
+        if (providerPrincipal != null && providerCredentials != null) {
+            String authType = (String)environment.get(PROVIDER_AUTH_TYPE);
+            if (authType == null || BASIC_AUTH.equals(authType)) {
+                clientBuilder.register(new BasicAuthFilter(providerPrincipal, providerCredentials));
+            }
+        }
         return clientBuilder;
     }
 
     private static NamingException newNamingException(String name, Exception cause) {
-        NamingException namingException = new NamingException("Could not lookup :" + name);
+        NamingException namingException = new NamingException("Could not lookup: " + name);
         namingException.initCause(cause);
 
         return namingException;
