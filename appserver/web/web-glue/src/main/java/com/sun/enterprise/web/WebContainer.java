@@ -1690,9 +1690,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         Map<String, AdHocServletInfo> adHocPaths = null;
         Map<String, AdHocServletInfo> adHocSubtrees = null;
-        
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
+              Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
@@ -1717,7 +1717,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  */
                 webModule.setAvailable(true);
                 return webModule;
-            } else if(dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class)){
+            } else if(Boolean.TRUE.equals(hotDeploy)){
                 webModule.stop();
                 _embedded.updateContext(webModule,
                         virtualServer.getDefaultContextXmlLocation(),

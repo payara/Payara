@@ -1220,14 +1220,16 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final Properties appProps = context.getAppProps();
         final DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
         Transaction tx = null;
-        Application app, app_w;
-        app = applications.getApplication(deployParams.name);
-        if (app == null) {
+        Application app_w;
+
+        if (deployParams.hotDeploy) {
+            app_w = applications.getApplication(deployParams.name);
+        } else {
             try {
                 tx = new Transaction();
                 // prepare the application element
                 ConfigBean newBean = ((ConfigBean) ConfigBean.unwrap(applications)).allocate(Application.class);
-                app = newBean.createProxy();
+                Application app = newBean.createProxy();
                 app_w = tx.enroll(app);
                 setInitialAppAttributes(app_w, deployParams, appProps, context);
             } catch (TransactionFailure e) {
@@ -1237,8 +1239,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tx.rollback();
                 throw new TransactionFailure(e.getMessage(), e);
             }
-        } else {
-            app_w = app;
         }
         context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
         return tx;
