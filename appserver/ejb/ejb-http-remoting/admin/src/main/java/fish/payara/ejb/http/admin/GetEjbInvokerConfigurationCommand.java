@@ -81,7 +81,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetEjbInvokerConfigurationCommand implements AdminCommand {
 
-    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "Security Enabled", "Realm Name", "Auth Type", "Roles"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "Security Enabled", "Realm Name", "Auth Type", "Auth Module", "Auth Module Class", "Roles"};
 
     @Inject
     private Target targetUtil;
@@ -110,6 +110,8 @@ public class GetEjbInvokerConfigurationCommand implements AdminCommand {
             configuration.getSecurityEnabled(),
             configuration.getRealmName(),
             configuration.getAuthType(),
+            configuration.getAuthModule(),
+            configuration.getAuthModuleClass(),
             configuration.getRoles()
         };
         columnFormatter.addRow(outputValues);
@@ -123,6 +125,8 @@ public class GetEjbInvokerConfigurationCommand implements AdminCommand {
         extraPropertiesMap.put("securityEnabled", configuration.getSecurityEnabled());
         extraPropertiesMap.put("realmName", configuration.getRealmName());
         extraPropertiesMap.put("authType", configuration.getAuthType());
+        extraPropertiesMap.put("authModule", configuration.getAuthModule());
+        extraPropertiesMap.put("authModuleClass", configuration.getAuthModuleClass());
         extraPropertiesMap.put("roles", configuration.getRoles());
 
         Properties extraProperties = new Properties();

@@ -37,8 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.admin;
+package fish.payara.ejb.invoke;
 
+import fish.payara.ejb.http.admin.EjbInvokerConfiguration;
+import fish.payara.ejb.http.endpoint.EjbOverHttpApplication;
+import static java.util.Arrays.asList;
+import java.util.HashSet;
 import java.util.Set;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
@@ -48,7 +52,8 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.glassfish.internal.api.Globals;
-import java.util.logging.Logger;
+import static javax.servlet.http.HttpServletRequest.FORM_AUTH;
+import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
 
 /**
  *
@@ -56,28 +61,31 @@ import java.util.logging.Logger;
  */
 public class EjbInvokerContainerInitializer  implements ServletContainerInitializer {
 
-    private static final Logger LOGGER = Logger.getLogger(EjbInvokerContainerInitializer.class.getName());
-    
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {
 
-        EjbInvokerConfiguration configuration = Globals.getDefaultBaseServiceLocator()
+        EjbInvokerConfiguration config = Globals.getDefaultBaseServiceLocator()
                 .getService(EjbInvokerConfiguration.class);
         String endpoint = ctx.getContextPath();
         if(endpoint.startsWith("/")){
             endpoint = endpoint.substring(1);
         }
-        if (!configuration.getEndpoint().equals(endpoint)) {
+        if (!config.getEndpoint().equals(endpoint)) {
             return;
         }
 
-        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
-            String[] roles = configuration.getRoles().split(",");
-            ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistration("fish.payara.ejb.http.endpoint.EjbOverHttpApplication");
-            if (reg != null) {
-                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
-            } else {
-                LOGGER.warning("ejb-invoker endpoint not initialized");
+        if (Boolean.parseBoolean(config.getSecurityEnabled())) {
+            String[] roles = config.getRoles().split(",");
+            ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistration(EjbOverHttpApplication.class.getName());
+            if (reg == null) {
+                new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(EjbOverHttpApplication.class)), ctx);
+                reg = (ServletRegistration.Dynamic) ctx.getServletRegistration(EjbOverHttpApplication.class.getName());
+            }
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
+            if (FORM_AUTH.equals(config.getAuthType())) {
+                ServletRegistration defaultRegistration = ctx.getServletRegistration("default");
+                defaultRegistration.addMapping("/login.xhtml");
+                defaultRegistration.addMapping("/error.xhtml");
             }
             ctx.declareRoles(roles);
         }

@@ -51,6 +51,7 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+import static javax.servlet.http.HttpServletRequest.FORM_AUTH;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -120,6 +121,12 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
     @Param(optional = true, alias = "authtype")
     protected String authType;
 
+    @Param(optional = true, alias = "authmodule")
+    protected String authModule;
+
+    @Param(optional = true, alias = "authmoduleclass")
+    protected String authModuleClass;
+
     @Param(optional = true)
     protected String roles;
 
@@ -168,6 +175,19 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
                 if (authType != null) {
                     configProxy.setAuthType(authType);
                 }
+                if (authModule != null) {
+                    configProxy.setAuthModule(authModule);
+                }
+                if (authModuleClass != null) {
+                    if (StringUtils.ok(authModuleClass)
+                            && authModuleClass.indexOf('.') == -1) {
+                        actionReport.failure(
+                                LOGGER,
+                                "authModuleClass parameter value must be fully qualified class name."
+                        );
+                    }
+                    configProxy.setAuthModuleClass(authModuleClass);
+                }
                 if (roles != null) {
                     configProxy.setRoles(roles);
                 }
@@ -181,16 +201,35 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
 
         if (Boolean.parseBoolean(config.getEnabled())
                 && Boolean.parseBoolean(config.getSecurityEnabled())) {
-            // Create the default user if it doesn't exist
-            ActionReport checkUserReport = actionReport.addSubActionsReport();
-            ActionReport createUserReport = actionReport.addSubActionsReport();
-            if (!defaultUserExists(config, checkUserReport, subject)
-                    && !checkUserReport.hasFailures()) {
-                createDefaultUser(config, createUserReport, subject);
+
+            // If the required message security provider is not present, create it
+            if (StringUtils.ok(config.getAuthModuleClass())) {
+                String moduleClass = config.getAuthModuleClass();
+                String moduleId = moduleClass.substring(moduleClass.lastIndexOf('.') + 1);
+                ActionReport checkSecurityProviderReport = actionReport.addSubActionsReport();
+                ActionReport createSecurityProviderReport = actionReport.addSubActionsReport();
+                if (!messageSecurityProviderExists(moduleId, checkSecurityProviderReport,
+                        context.getSubject())) {
+                    createRequiredMessageSecurityProvider(moduleId, moduleClass, createSecurityProviderReport, subject);
+                }
+                if (checkSecurityProviderReport.hasFailures() || createSecurityProviderReport.hasFailures()) {
+                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
             }
-            if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
+
+            // Create the default user if it doesn't exist
+            if (!StringUtils.ok(config.getRealmName()) || config.getRealmName().equals("file")) {
+                ActionReport checkUserReport = actionReport.addSubActionsReport();
+                ActionReport createUserReport = actionReport.addSubActionsReport();
+                if (!defaultUserExists(config, checkUserReport, subject)
+                        && !checkUserReport.hasFailures()) {
+                    createDefaultUser(config, createUserReport, subject);
+                }
+                if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
             }
         }
 
@@ -207,7 +246,6 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
             actionReport.getSubActionsReport().clear();
         }
     }
-
 
     public void disableEjbInvoker(ActionReport report) {
         Path endPointsPath = serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINTS_DIR);
@@ -255,6 +293,46 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
                     + "normal application using the create-application-ref, delete-application-ref, "
                     + "or update-application-ref commands");
         }
+    }
+
+    private boolean messageSecurityProviderExists(String authModule, ActionReport subActionReport, Subject subject) {
+        boolean exists = false;
+
+        CommandRunner.CommandInvocation invocation
+                = commandRunner.getCommandInvocation(
+                        "list-message-security-providers",
+                        subActionReport,
+                        subject,
+                        false
+                );
+
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("layer", "HttpServlet");
+
+        invocation.parameters(parameters).execute();
+
+        for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
+            if (message.getMessage().equals(authModule)) {
+                exists = true;
+                break;
+            }
+        }
+
+        return exists;
+    }
+
+    private void createRequiredMessageSecurityProvider(String authModule, String authModuleClass, ActionReport subActionReport, Subject subject) {
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-message-security-provider",
+                subActionReport, subject, false);
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("classname", authModuleClass);
+        parameters.add("isdefaultprovider", "false");
+        parameters.add("layer", "HttpServlet");
+        parameters.add("providertype", "server");
+        parameters.add("target", target);
+        parameters.add("requestauthsource", "sender");
+        parameters.add("DEFAULT", authModule);
+        invocation.parameters(parameters).execute();
     }
 
     protected boolean defaultUserExists(EjbInvokerConfiguration config, ActionReport subActionReport, Subject subject) {

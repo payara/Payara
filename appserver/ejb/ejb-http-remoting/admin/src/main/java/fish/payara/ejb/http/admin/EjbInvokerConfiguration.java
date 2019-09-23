@@ -43,6 +43,7 @@ package fish.payara.ejb.http.admin;
 import static fish.payara.ejb.http.admin.Constants.DEFAULT_ENDPOINT;
 import static fish.payara.ejb.http.admin.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
+import javax.security.enterprise.identitystore.IdentityStore;
 import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
@@ -105,10 +106,27 @@ public interface EjbInvokerConfiguration extends ConfigBeanProxy, ConfigExtensio
      * @return a String value defines the name of the authentication mechanism
      * used to protect the ejb-invoker endpoint.
      */
-    @Attribute(defaultValue = BASIC_AUTH, dataType = String.class)
+    @Attribute(dataType = String.class)
     String getAuthType();
 
     void setAuthType(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the id of message-security-provider.
+     */
+    @Attribute(dataType = String.class)
+    String getAuthModule();
+
+    void setAuthModule(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the name of class implementing the
+     * {@code javax.security.auth.message.module.ServerAuthModule}.
+     */
+    @Attribute(dataType = String.class)
+    String getAuthModuleClass();
+
+    void setAuthModuleClass(String value) throws PropertyVetoException;
 
     /**
      * @return a String value defines the roles.

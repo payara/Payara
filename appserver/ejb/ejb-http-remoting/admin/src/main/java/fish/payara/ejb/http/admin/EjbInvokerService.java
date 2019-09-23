@@ -42,11 +42,13 @@ package fish.payara.ejb.http.admin;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import static com.sun.enterprise.deployment.runtime.web.SunWebApp.HTTPSERVLET_SECURITY_PROVIDER;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.util.StringUtils;
 import static fish.payara.ejb.http.admin.Constants.EJB_INVOKER_APP;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import static javax.servlet.http.HttpServletRequest.FORM_AUTH;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
@@ -54,6 +56,7 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.jvnet.hk2.annotations.Service;
 /**
  *
@@ -81,15 +84,36 @@ public class EjbInvokerService implements EventListener {
     }
 
     @Override
-    public void event(EventListener.Event event) {//event.type().type()
+    public void event(EventListener.Event event) {
         if (event.is(Deployment.APPLICATION_PREPARED)) {
             DeploymentContext context = (DeploymentContext) event.hook();
             Application app = context.getModuleMetaData(Application.class);
-            if (EJB_INVOKER_APP.equals(app.getAppName())) {
+            if (EJB_INVOKER_APP.equals(app.getAppName())
+                    && Boolean.parseBoolean(config.getSecurityEnabled())) {
                 for (WebBundleDescriptor descriptor : app.getBundleDescriptors(WebBundleDescriptor.class)) {
+                    SunWebAppImpl webApp = (SunWebAppImpl) descriptor.getSunDescriptor();
+                    String moduleName;
+                    if (StringUtils.ok(config.getAuthModuleClass())
+                            && config.getAuthModuleClass().indexOf('.') != -1) {
+                        moduleName = config.getAuthModuleClass().substring(config.getAuthModuleClass().lastIndexOf('.') + 1);
+                        webApp.setAttributeValue(HTTPSERVLET_SECURITY_PROVIDER, moduleName);
+                    } else if (StringUtils.ok(config.getAuthModule())) {
+                        moduleName = config.getAuthModule();
+                        webApp.setAttributeValue(HTTPSERVLET_SECURITY_PROVIDER, moduleName);
+                    }
                     LoginConfiguration loginConf = descriptor.getLoginConfiguration();
-                    loginConf.setAuthenticationMethod(config.getAuthType());
-                    loginConf.setRealmName(StringUtils.ok(config.getRealmName()) ? config.getRealmName() : securityService.getDefaultRealm());
+                    String authType = config.getAuthType();
+                    String realmName = config.getRealmName();
+                    if (StringUtils.ok(authType)) {
+                        loginConf.setAuthenticationMethod(authType);
+                    }
+                    if (StringUtils.ok(realmName)) {
+                        loginConf.setRealmName(realmName);
+                    }
+                    if (FORM_AUTH.equals(config.getAuthType())) {
+                        loginConf.setFormErrorPage("/error.xhtml");
+                        loginConf.setFormLoginPage("/login.xhtml");
+                    }
                 }
             }
         }

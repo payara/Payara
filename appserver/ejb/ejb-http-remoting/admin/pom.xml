@@ -69,6 +69,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>${javaee.api.version}</version>
