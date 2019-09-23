@@ -47,10 +47,10 @@
     </parent>
 
     <artifactId>jaxrs-client-tracing</artifactId>
-    <packaging>glassfish-jar</packaging>    
-    
+    <packaging>glassfish-jar</packaging>
+
     <name>Payara JAX-RS Client Tracing</name>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -77,5 +77,5 @@
             <version>${microprofile-opentracing.version}</version>
         </dependency>
     </dependencies>
-    
+
 </project>

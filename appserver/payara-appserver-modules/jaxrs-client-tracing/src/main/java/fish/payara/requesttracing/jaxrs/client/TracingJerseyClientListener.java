@@ -38,41 +38,38 @@
  *    holder.
  */
 
-package fish.payara.requesttracing.jaxrs.client.mprest;
+package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
-import fish.payara.requesttracing.jaxrs.client.decorators.JaxrsClientBuilderDecorator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.eclipse.microprofile.rest.client.spi.RestClientListener;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+public class TracingJerseyClientListener implements RestClientListener {
 
-public class TracingClientListener implements RestClientListener {
-    // Spec defined invoked method reference
-    static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
-
-    private static final Logger logger = Logger.getLogger(TracingClientListener.class.getName());
+    private static final Logger LOG = Logger.getLogger(TracingJerseyClientListener.class.getName());
 
     @Override
     public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
+        LOG.fine(() -> "onNewClient(class=" + aClass + ", restClientBuilder=" + restClientBuilder + ")");
+
         // Rest client spec mandates early initialization of providers in its TCK rather than on first request
-        restClientBuilder.property(JaxrsClientBuilderDecorator.EARLY_BUILDER_INIT, true);
+        restClientBuilder.property(TracingJerseyClientBuilder.EARLY_BUILDER_INIT, true);
 
         // OpenTracing mandates respecting setting of @Traced annotation on the class
         restClientBuilder.property(JaxrsClientRequestTracingFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
-                new TracedMethodFilter(obtainConfig(), aClass));
+                new TracedMethodFilter(getConfig(), aClass));
     }
 
-    private Config obtainConfig() {
-
+    private Config getConfig() {
         try {
             return  ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
+        } catch (final RuntimeException ex) {
+            LOG.log(Level.INFO, "No config could be found", ex);
+            return null;
         }
-        return null;
     }
 }

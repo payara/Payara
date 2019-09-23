@@ -38,10 +38,15 @@
  *    holder.
  */
 
-package fish.payara.requesttracing.jaxrs.client.mprest;
+package fish.payara.requesttracing.jaxrs.client;
 
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.opentracing.Traced;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -51,14 +56,9 @@ import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.client.ClientRequestContext;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.opentracing.Traced;
 
 /**
  * Checks whether REST Client invoked method should be traced according to configuration and class annotations.
@@ -72,35 +72,41 @@ import java.util.function.Supplier;
  * </ol>
  */
 class TracedMethodFilter implements Predicate<ClientRequestContext> {
+    private static final Logger LOG = Logger.getLogger(TracedMethodFilter.class.getName());
+    /** Spec defined invoked method reference */
+    private static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
+
     private final boolean classDefault;
     private final Map<Method, Boolean> methodOverrides;
-
-    @Override
-    public boolean test(ClientRequestContext clientRequestContext) {
-        Object invokedMethod = clientRequestContext.getProperty(TracingClientListener.REST_CLIENT_INVOKED_METHOD);
-        if (invokedMethod instanceof Method) {
-            return test((Method) invokedMethod);
-        } else {
-            return true;
-        }
-    }
-
-    private boolean test(Method invokedMethod) {
-        return methodOverrides.getOrDefault(invokedMethod, classDefault);
-    }
 
     TracedMethodFilter(Config config, Class<?> clientClass) {
         this.classDefault = determineClassDefault(config, clientClass);
         this.methodOverrides = new HashMap<>();
 
-        for (Method method : clientClass.getMethods()) {
+        for (final Method method : clientClass.getMethods()) {
             if (!isRestMethod(method)) {
                 // sub resources are not yet defined by the spec
                 continue;
             }
             determineMethodValue(config, clientClass, method)
-                    .ifPresent(value -> methodOverrides.put(method, value));
+                .ifPresent(value -> this.methodOverrides.put(method, value));
         }
+        LOG.finest(() -> "Created " + this);
+    }
+
+    @Override
+    public boolean test(ClientRequestContext clientRequestContext) {
+        final Object invokedMethod = clientRequestContext.getProperty(REST_CLIENT_INVOKED_METHOD);
+        LOG.fine(() -> "invoked method found in the request context: " + invokedMethod);
+        if (invokedMethod instanceof Method) {
+            return test((Method) invokedMethod);
+        }
+        return true;
+    }
+
+    private boolean test(Method invokedMethod) {
+        LOG.finest(() -> "test(invoked method=" + invokedMethod + ")");
+        return this.methodOverrides.getOrDefault(invokedMethod, this.classDefault);
     }
 
     private static boolean isRestMethod(Method m) {
@@ -123,17 +129,17 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
         // 1. config value of <className>/<methodName>/Traced/value
         // 2. Method's @Traced annotation value
         // (3. class default)
-        Optional<Boolean> configValue = Optional.ofNullable(config)
+        final Optional<Boolean> configValue = Optional.ofNullable(config)
                 .flatMap(cfg -> cfg.getOptionalValue(methodOverrideProperty(clientClass, method), boolean.class));
         return configValue.isPresent() ? configValue : tracedAnnotationValue(method::getAnnotation);
     }
 
     private static String getHttpMethodName(Method method) {
         // Initialise an Array with all supported JaxRs HTTP methods
-        Class[] httpMethods = {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
+        final Class[] httpMethods = {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
 
         // Check if any of the HTTP Method annotations are present on the intercepted method
-        for (Class httpMethod : httpMethods) {
+        for (final Class httpMethod : httpMethods) {
             if (method.getAnnotation(httpMethod) != null) {
                 return httpMethod.getSimpleName();
             }
@@ -152,6 +158,16 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
 
     private static Optional<Boolean> tracedAnnotationValue(Function<Class<Traced>, Traced> annotationSource) {
         return Optional.ofNullable(annotationSource.apply(Traced.class)).map(Traced::value);
+    }
+
+
+    /**
+     * Returns the filter instance id and it's internal data.
+     */
+    @Override
+    public String toString() {
+        return new StringBuilder().append(super.toString()).append("[classDefault=").append(this.classDefault)
+            .append(", methodOverrides=").append(this.methodOverrides).append(']').toString();
     }
 
 }
