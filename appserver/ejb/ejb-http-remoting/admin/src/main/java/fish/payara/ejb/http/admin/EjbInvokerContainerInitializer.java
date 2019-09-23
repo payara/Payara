@@ -46,7 +46,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.glassfish.internal.api.Globals;
 import java.util.logging.Logger;
 
@@ -75,7 +75,7 @@ public class EjbInvokerContainerInitializer  implements ServletContainerInitiali
             String[] roles = configuration.getRoles().split(",");
             ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistration("fish.payara.ejb.http.endpoint.EjbOverHttpApplication");
             if (reg != null) {
-                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, roles)));
+                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
             } else {
                 LOGGER.warning("ejb-invoker endpoint not initialized");
             }
