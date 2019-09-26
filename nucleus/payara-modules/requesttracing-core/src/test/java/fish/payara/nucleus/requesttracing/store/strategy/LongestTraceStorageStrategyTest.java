@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +37,52 @@
  */
 package fish.payara.nucleus.requesttracing.store.strategy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+
 import fish.payara.notification.requesttracing.RequestTrace;
-import java.util.Collection;
 
 /**
- * An interface for objects that will choose from a collection of request traces
- * which one needs removing.
+ * Tests the correct behaviour of the {@link LongestTraceStorageStrategy}.
+ *  
+ * @author Jan Bernitt
  */
-public interface TraceStorageStrategy {
+public class LongestTraceStorageStrategyTest extends AbstractStorageStrategyTest {
 
-    /**
-     * Get the trace that needs removing suggesting a candidate that should be chosen in case it is contained in the
-     * given list of traces.
-     * 
-     * @param traces        the list of traces to test.
-     * @param maxSize       the maximum size of the list.
-     * @param traceToRemove the trace to remove if present or null if no particular candidate if favoured
-     * @return the trace that needs removing, or null if no traces need removing.
-     */
-    RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize, RequestTrace traceToRemove);
+    public LongestTraceStorageStrategyTest() {
+        super(new LongestTraceStorageStrategy());
+    }
+
+    @Test
+    public void shortestTraceIsRemovedAboveMaxSize() {
+        int maxSize = 10;
+        List<RequestTrace> traces = new ArrayList<>();
+        for (int i = 0; i < maxSize; i++) {
+            traces.add(createTrace(1000000000L * (i+1))); // 1-10sec long traces
+        }
+        List<RequestTrace> added = new ArrayList<>();
+        List<RequestTrace> removed = new ArrayList<>();
+        for (int i = 0; i < maxSize; i++) {
+            RequestTrace newTrace = createTrace(1000000000L * (i+1) - 500000000L); // 0.5-9.5ms long traces
+            added.add(newTrace);
+            traces.add(newTrace);
+            RequestTrace traceForRemoval = strategy.getTraceForRemoval(traces, maxSize, null);
+            assertTrue(traceForRemoval.getElapsedTime() <= newTrace.getElapsedTime());
+            for (int j = 0; j < maxSize; j++) {
+                RequestTrace candidate = traces.get(j);
+                assertSame(candidate, strategy.getTraceForRemoval(traces, maxSize, candidate));
+            }
+            removed.add(traceForRemoval);
+            traces.remove(traceForRemoval);
+        }
+        // remaining elements should be half from the original 10 items, half from the later added ones
+        added.removeAll(removed);
+        assertEquals(maxSize/2, added.size());
+    }
 }
