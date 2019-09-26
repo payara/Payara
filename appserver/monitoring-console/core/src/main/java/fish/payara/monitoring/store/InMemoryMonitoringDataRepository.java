@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -185,6 +186,9 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     private void collectAll(MonitoringDataCollector collector) {
+        for (Entry<Series, SeriesDataset> e : secondsRead.entrySet()) {
+            secondsWrite.put(e.getKey(), e.getValue());
+        }
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
@@ -208,8 +212,8 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             .collectNonZero("SeriesCount", seriesCount)
             .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
             .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
-            .collectNonZero("SourcesCount", collectedSources)
-            .collectNonZero("FailedCollectionCount", failedSources);
+            .collect("SourcesCount", collectedSources)
+            .collect("FailedCollectionCount", failedSources);
     }
 
     /**
@@ -227,7 +231,9 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
 
     private void addLocalPoint(CharSequence key, long value) {
         Series series = new Series(key.toString());
-        secondsWrite.put(series, secondsRead.computeIfAbsent(series, this::emptySet).add(collectedSecond, value));
+        secondsWrite.compute(series, (s, dataset) -> dataset == null 
+                ?  emptySet(s).add(collectedSecond, value) 
+                : dataset.add(collectedSecond, value));
     }
 
     private SeriesDataset emptySet(Series series) {
@@ -243,25 +249,24 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
                 ? this.instances
                 : new HashSet<>(asList(instances));
         List<SeriesDataset> res = new ArrayList<>(instanceFilter.size());
-        selectSeries(res, Collections.singleton(series), instanceFilter, System.currentTimeMillis() - 30_000);
+        selectSeries(res, Collections.singleton(series), instanceFilter);
         return res;
     }
 
-    private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter,
-            long cutOffTime) {
+    private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter) {
         for (Series series : seriesSet) {
             if (series.isPattern()) {
-                selectSeries(res, seriesMatchingPattern(series), instanceFilter, cutOffTime);
+                selectSeries(res, seriesMatchingPattern(series), instanceFilter);
             } else {
                 SeriesDataset localSet = secondsRead.get(series);
                 SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
 
-                if (localSet != null && isRelevantSet(localSet, instanceFilter, cutOffTime)) {
+                if (localSet != null && isRelevantSet(localSet, instanceFilter)) {
                     res.add(localSet);
                 }
                 if (remoteSets != null && remoteSets.length > 0) {
                     for (SeriesDataset remoteSet : remoteSets) {
-                        if (isRelevantSet(remoteSet, instanceFilter, cutOffTime)) {
+                        if (isRelevantSet(remoteSet, instanceFilter)) {
                             res.add(remoteSet);
                         }
                     }
@@ -270,8 +275,8 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         }
     }
 
-    private static boolean isRelevantSet(SeriesDataset set, Set<String> instanceFilter, long cutOffTime) {
-        return set.lastTime() >= cutOffTime && instanceFilter.contains(set.getInstance());
+    private static boolean isRelevantSet(SeriesDataset set, Set<String> instanceFilter) {
+        return instanceFilter.contains(set.getInstance());
     }
 
     private Set<Series> seriesMatchingPattern(Series pattern) {

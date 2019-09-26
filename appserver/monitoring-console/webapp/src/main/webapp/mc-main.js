@@ -41,6 +41,7 @@
 /*jshint esversion: 8 */
 
 Chart.defaults.global.defaultFontColor = "#fff";
+Chart.defaults.global.tooltips.enabled = false;
 
 /**
  * The different parts of the Monitoring Console are added as the below properties by the individual files.
@@ -61,13 +62,18 @@ var MonitoringConsole =  {
     **/
 	Chart: {
    /**
-    * Line chart adapter API
+    * Line chart adapter API for monitoring series data
     **/
     Line: undefined,
    /**
-    * Bar chart adapter API
+    * Bar chart adapter API for monitoring series data
     **/
     Bar: undefined,
+
+    /**
+     * Trace 'gantt chart' like API, this is not a strict adapter API as the other two as the data to populate this is specific to traces
+     */
+    Trace: undefined,
 
   }
 };

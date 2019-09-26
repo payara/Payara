@@ -42,7 +42,6 @@ package fish.payara.monitoring.model;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
@@ -265,6 +264,7 @@ public class SeriesDatasetTest {
         assertTrue(set instanceof PartialDataset);
         assertEquals(1 + 3, set.lastValue());
         assertEquals(2, set.size());
+        assertEquals(3, set.getObservedValues());
     }
 
     @Test
@@ -273,11 +273,10 @@ public class SeriesDatasetTest {
         set = set.add(1, 1);
         set = set.add(2, 2);
         assertTrue(set instanceof PartialDataset);
-        SeriesDataset set0 = set;
         set = set.add(2, 4);
-        assertSame(set0, set);
         assertEquals(2 + 4, set.lastValue());
-        assertEquals(2, set.size());
+        assertEquals(3, set.size());
+        assertEquals(3, set.getObservedValues());
     }
 
     @Test
@@ -295,6 +294,7 @@ public class SeriesDatasetTest {
         set = set.add(7, 5);
         assertTrue(set instanceof PartialDataset);
         assertEquals(3 + 5, set.lastValue());
+        assertEquals(8, set.getObservedValues());
     }
 
     private static void assertValues(SeriesDataset set, long... values) {

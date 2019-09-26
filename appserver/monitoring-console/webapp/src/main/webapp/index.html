@@ -47,8 +47,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=w"></script>
-    <link href="monitoring-console.css?x=w" rel="stylesheet" type="text/css">
+    <script src="monitoring-console.js?x=r"></script>
+    <link href="monitoring-console.css?x=r" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
 
@@ -82,6 +82,15 @@
 </div>
 
 <div id="panel-settings"></div>
+
+<div id='trace-details'>
+  <div id='trace-iconbar'>
+    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onClosePopup();">&#9664;</button>
+  </div>
+  <div id='trace-chart-box'>
+    <canvas id="trace-chart"></canvas>
+  </div>
+</div>
 
 <script>
   MonitoringConsole.View.onPageReady();

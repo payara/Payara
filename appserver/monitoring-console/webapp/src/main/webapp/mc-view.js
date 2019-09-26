@@ -156,49 +156,36 @@ MonitoringConsole.View = (function() {
         return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
     }
 
-    /**
-     * Creates a checkbox to configure the attributes of a widget.
-     *
-     * @param {boolean} isChecked - if the created checkbox should be checked
-     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-     */
-    function createConfigurationCheckbox(isChecked, onChange) {
-        return $("<input/>", { type: 'checkbox', checked: isChecked })
-            .on('change', function() {
-                let checked = this.checked;
-                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
-            });
-    }
-
-    function createSettingsSliderRow(label, min, max, value, onChange) {
-        return createSettingsRow(label, () => $('<input/>', {type: 'range', min:min, max:max, value: value})
-            .on('input', function() {  
-                let val = this.valueAsNumber;
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
-            }));
-    }
 
     function createWidgetSettings(widget) {
-        return createSettingsTable('settings-widget')
+        let settings = createSettingsTable('settings-widget')
             .append(createSettingsHeaderRow(formatSeriesName(widget)))
-            .append(createSettingsHeaderRow('Render Options'))
+            .append(createSettingsHeaderRow('General'))
+            .append(createSettingsDropdownRow('Type', {line: 'Time Curve', bar: 'Range Indicator'}, widget.type, (widget, selected) => widget.type = selected))
+            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
+            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1))
+            .append(createSettingsSliderRow('Item', 1, 4, 1 + (widget.grid.item || 0), (widget, value) => widget.grid.item = value - 1))
+            .append(createSettingsHeaderRow('Data'))
+            .append(createSettingsCheckboxRow('Add Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
+            .append(createSettingsCheckboxRow('Add Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))            
+            ;
+        if (widget.type === 'line') {
+            settings
+            .append(createSettingsCheckboxRow('Add Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
             .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
+            .append(createSettingsHeaderRow('Display Options'))
             .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
             .append(createSettingsCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
             .append(createSettingsCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
             .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
             .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
-            .append(createSettingsHeaderRow('Chart Options'))
             .append(createSettingsCheckboxRow('Show Points', widget.options.drawPoints, (widget, checked) => widget.options.drawPoints = checked))            
             .append(createSettingsCheckboxRow('Show Stabe', widget.options.drawStableLine, (widget, checked) => widget.options.drawStableLine = checked))
-            .append(createSettingsCheckboxRow('Show Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
-            .append(createSettingsCheckboxRow('Show Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
-            .append(createSettingsCheckboxRow('Show Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))
             .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
-            .append(createSettingsCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))            
-            .append(createSettingsHeaderRow('Layout'))
-            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
-            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1));
+            .append(createSettingsCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))
+            ;            
+        }
+        return settings;        
     }
 
     function createPageSettings() {
@@ -263,7 +250,7 @@ MonitoringConsole.View = (function() {
     }
 
     function createSettingsCheckboxRow(label, checked, onChange) {
-        return createSettingsRow(label, () => createConfigurationCheckbox(checked, onChange));
+        return createSettingsRow(label, () => createSettingsCheckbox(checked, onChange));
     }
 
     function createSettingsTable(id) {
@@ -272,6 +259,35 @@ MonitoringConsole.View = (function() {
 
     function createSettingsRow(label, createInput) {
         return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(createInput()));   
+    }
+
+    /**
+     * Creates a checkbox to configure the attributes of a widget.
+     *
+     * @param {boolean} isChecked - if the created checkbox should be checked
+     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
+     */
+    function createSettingsCheckbox(isChecked, onChange) {
+        return $("<input/>", { type: 'checkbox', checked: isChecked })
+            .on('change', function() {
+                let checked = this.checked;
+                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
+            });
+    }
+
+    function createSettingsSliderRow(label, min, max, value, onChange) {
+        return createSettingsRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
+            .on('input change', function() {  
+                let val = this.valueAsNumber;
+                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
+            }));
+    }
+
+    function createSettingsDropdownRow(label, options, value, onChange) {
+        let dropdown = $('<select/>');
+        Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
+        dropdown.change(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, dropdown.val()))));
+        return createSettingsRow(label, () => dropdown);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -321,7 +337,7 @@ MonitoringConsole.View = (function() {
         if (update.data) {
             td.children('.status-nodata').hide();
             let points = update.data[0].points;
-            let stable = points.length == 4 && points[1] === points[3];
+            let stable = points.length === 4 && points[1] === points[3] && widget.type === 'line';
             if (stable && !widget.options.drawStableLine) {
                 if (td.children('.stable').length == 0) {
                     let info = $('<div/>', { 'class': 'stable' });

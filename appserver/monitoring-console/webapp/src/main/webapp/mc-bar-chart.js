@@ -40,31 +40,146 @@
 
 /*jshint esversion: 8 */
 
+/**
+ * Adapter to horizontal bar charts of Chart.js
+ */ 
 MonitoringConsole.Chart.Bar = (function() {
 
+   const DEFAULT_BG_COLORS = [
+    'rgba(153, 102, 255, 0.2)',
+    'rgba(255, 99, 132, 0.2)',
+    'rgba(54, 162, 235, 0.2)',
+    'rgba(255, 206, 86, 0.2)',
+    'rgba(75, 192, 192, 0.2)',
+    'rgba(255, 159, 64, 0.2)'
+  ];
+  const DEFAULT_LINE_COLORS = [
+    'rgba(153, 102, 255, 1)',
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(255, 159, 64, 1)'
+  ];
+
+   function createData(widget, response) {
+      let labels = [];
+      let series = [];
+      let zeroToMinValues = [];
+      let observedMinToMinValues = [];
+      let minToMaxValues = [];
+      let maxToObservedMaxValues = [];
+      let showObservedMin = widget.options.drawMinLine;
+      let startOfLastMinute = Date.now() - 60000;
+      for (let i = 0; i < response.length; i++) {
+         let seriesResponse = response[i];
+         if (seriesResponse.observedValues > 0) {
+            let points = seriesResponse.points;
+            let min;
+            let max;
+            let count = 0;
+            for (let j = 0; j < points.length; j+=2) {
+               if (points[j] > startOfLastMinute) {
+                  let value = points[j+1];
+                  count++;
+                  min = min === undefined ? value : Math.min(min, value);
+                  max = max === undefined ? value : Math.max(max, value);
+               }
+            }
+            if (min && max) {
+               series.push(seriesResponse.series);
+               let label = widget.series.indexOf('*') < 0 ? '' : seriesResponse.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+               label += '    x ' + count;
+               labels.push(label);               
+               zeroToMinValues.push(showObservedMin ? seriesResponse.observedMin : min);
+               observedMinToMinValues.push(min - seriesResponse.observedMin);
+               minToMaxValues.push(max - min);
+               maxToObservedMaxValues.push(seriesResponse.observedMax - max);
+            }
+         }
+      }
+      let datasets = [];
+      let offset = {
+        data: zeroToMinValues,
+        backgroundColor: 'transparent',
+      };
+      datasets.push(offset);  
+      if (showObservedMin) {
+         datasets.push({
+            data: observedMinToMinValues,
+            backgroundColor: DEFAULT_BG_COLORS,
+            borderColor: DEFAULT_LINE_COLORS,
+            borderWidth: { right: 2 },
+         });       
+      }
+      offset.borderColor = DEFAULT_LINE_COLORS;
+      offset.borderWidth = { right: 2 };  
+      datasets.push({
+         data: minToMaxValues,
+         backgroundColor: DEFAULT_BG_COLORS,
+         borderColor: DEFAULT_LINE_COLORS,
+         borderWidth: { right: 2 },
+      });
+      if (widget.options.drawMaxLine) {
+         datasets.push({
+           data: maxToObservedMaxValues,
+           backgroundColor: DEFAULT_BG_COLORS,
+         }); 
+      }
+      return {
+         series: series,
+         labels: labels,
+         datasets: datasets,
+      };
+   }
+
    function onCreation(widget) {
-      return new Chart(ctx, {
+      return new Chart(widget.target, {
          type: 'horizontalBar',
-         data: data,
+         data: { datasets: [] },
          options: {
-           scales: {
+            maintainAspectRatio: false,
+            scales: {
                xAxes: [{
-                   stacked: true
+                  stacked: true,
                }],
                yAxes: [{
-                   stacked: true
+                  maxBarThickness: 50, //px
+                  barPercentage: 1.0,
+                  categoryPercentage: 1.0,
+                  borderSkipped: false,
+                  stacked: true,
+                  ticks: {
+                     mirror: true,
+                     padding: -10,
+                  }
                }]
-           }
+            },
+            legend: {
+               display: false,
+            },
+            onClick: function (event) {
+               let bar = this.getElementsAtEventForMode(event, "y", 1)[0];
+               let series = bar._chart.config.data.series[bar._index]; 
+               if (series.startsWith('ns:trace ') && series.endsWith(' Duration')) {
+                  MonitoringConsole.Chart.Trace.onOpenPopup(series);
+               }
+            }
          }
       });
    }
 
    function onConfigUpdate(widget, chart) {
+      let options = chart.options;
       return chart;
    }
 
-   function onDatdaUpdate(update) {
-      
+   function onDataUpdate(update) {
+      let data = update.data;
+      let widget = update.widget;
+      let chart = update.chart();
+      chart.data = createData(widget, data);
+      chart.update(0);
    }
 
   /**

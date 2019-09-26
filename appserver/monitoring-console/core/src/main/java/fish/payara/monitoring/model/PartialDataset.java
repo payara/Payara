@@ -199,8 +199,7 @@ public final class PartialDataset extends SeriesDataset {
     @Override
     public SeriesDataset add(long time, long value) {
         if (time == lastTime()) {
-            data[2 * (offset + size - 1) + 1] += value; // this is actually summing in place, 
-            return this; // therefore no need to change the instance
+            value = lastValue() + value;
         }
         int newOffset = offset;
         int newSize = size;

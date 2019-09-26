@@ -60,6 +60,13 @@
             <groupId>fish.payara.server.internal.monitoring-console</groupId>
             <artifactId>monitoring-console-core</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -116,6 +123,7 @@
                             <source>src/main/webapp/mc-main.js</source>
                             <source>src/main/webapp/mc-line-chart.js</source>
                             <source>src/main/webapp/mc-bar-chart.js</source>
+                            <source>src/main/webapp/mc-trace-chart.js</source>
                             <source>src/main/webapp/mc-model.js</source>
                             <source>src/main/webapp/mc-view.js</source>
                         </sources>

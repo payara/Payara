@@ -40,6 +40,9 @@
 
 /*jshint esversion: 8 */
 
+/**
+ * Adapter to line charts of Chart.js
+ */ 
 MonitoringConsole.Chart.Line = (function() {
 	
 	const DEFAULT_BG_COLORS = [
@@ -93,13 +96,13 @@ MonitoringConsole.Chart.Line = (function() {
           },
         }],
       },
-          legend: {
-              labels: {
-                  filter: function(item, chart) {
-                    return !item.text.startsWith(" ");
-                  }
+      legend: {
+          labels: {
+              filter: function(item, chart) {
+                return !item.text.startsWith(" ");
               }
           }
+      }
     };
     return new Chart(widget.target, {
           type: 'line',
@@ -123,14 +126,24 @@ MonitoringConsole.Chart.Line = (function() {
    * Convertes a array of points given as one dimensional array with alternativ time value elements 
    * to a 2-dimensional array of points with t and y attribute.
    */
-  function points1Dto2D(points1d) {
+  function points1Dto2D(points1d, lastMinute) {
     if (!points1d)
       return [];
-    let points2d = new Array(points1d.length / 2);
-    for (let i = 0; i < points2d.length; i++) {
-      points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+    if (lastMinute) {
+      let points2d = [];
+      let startOfLastMinute = Date.now() - 60000;
+      for (let i = 0; i < points1d.length; i+=2) {
+        if (points1d[i] > startOfLastMinute)
+          points2d.push({ t: new Date(points1d[i]), y: points1d[i+1] });
+      }
+      return points2d;
+    } else {
+      let points2d = new Array(points1d.length / 2);
+      for (let i = 0; i < points2d.length; i++) {
+        points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+      }
+      return points2d;      
     }
-    return points2d;
   }
     
   /**
@@ -223,7 +236,7 @@ MonitoringConsole.Chart.Line = (function() {
   		//TODO add min/max/avg per sec lines
       return [ createCurrentLineDataset(widget, seriesResponse, points1Dto2DPerSec(seriesResponse.points), lineColor, bgColor) ];
   	}
-  	let points = points1Dto2D(seriesResponse.points);
+  	let points = points1Dto2D(seriesResponse.points, true);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesResponse, points, lineColor, bgColor));
   	if (points.length > 0 && widget.options.drawAvgLine) {

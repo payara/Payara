@@ -415,9 +415,8 @@ MonitoringConsole.Model = (function() {
 				let selected = series
 					? [pages[currentPageId].widgets[series]]
 					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
-				selected.forEach(widget => widgetUpdate.call(window, widget));
+				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
-				return selected;
 			},
 			
 			select: function(series) {
@@ -622,13 +621,25 @@ MonitoringConsole.Model = (function() {
 	}
 
 	function doConfigureSelection(widgetUpdate) {
-		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate));
 		return UI.arrange();
 	}
 
 	function doConfigureWidget(series, widgetUpdate) {
-		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate), series);
 		return UI.arrange();
+	}
+
+	function createWidgetUpdate(widgetUpdate) {
+		return function(widget) {
+			let type = widget.type;
+			widgetUpdate(widget);
+			if (widget.type === type) {
+				Charts.update(widget, );
+			} else {
+				Charts.destroy(widget.series);
+			}
+		};
 	}
 
 	/**

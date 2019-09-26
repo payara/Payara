@@ -80,6 +80,30 @@ button {
 button:hover {
 	background-color: #F1A232;
 }
+#trace-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #002c3e;
+  display: none;
+  z-index: 110;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+#trace-chart-box {
+  position: relative;
+  background-color: #002433;
+  clear: both;
+  padding: 10px;
+}
+#trace-iconbar {
+  margin-bottom: 5px;
+}
+#trace-iconbar .btnIcon {
+  float: none;
+}
 #grid-console {
     position: relative;
     border-spacing: 0;

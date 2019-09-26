@@ -41,6 +41,7 @@ package fish.payara.monitoring.web;
 
 import static java.util.stream.StreamSupport.stream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,9 @@ import org.glassfish.internal.api.Globals;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
+import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -69,16 +73,20 @@ public class MonitoringConsoleResource {
         return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
     }
 
+    private static RequestTraceStoreInterface getRequestTracingStore() {
+        return Globals.getDefaultBaseServiceLocator().getService( RequestTracingService.class).getRequestTraceStore();
+    }
+
     @GET
     @Path("/series/data/{series}/")
-    public List<SeriesResponse> getSeries(@PathParam("series") String series) {
+    public List<SeriesResponse> getSeriesData(@PathParam("series") String series) {
         return SeriesResponse.from(getDataStore().selectSeries(new Series(series)));
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
-    public Map<Series, List<SeriesResponse>> querySeries(SeriesRequest request) {
+    public Map<Series, List<SeriesResponse>> getSeriesData(SeriesRequest request) {
         Map<Series, List<SeriesResponse>> res = new HashMap<>();
         for (SeriesQuery query : request.queries) {
             Series key = new Series(query.series);
@@ -105,5 +113,18 @@ public class MonitoringConsoleResource {
     @Path("/instances/")
     public String[] getInstanceNames() {
         return getDataStore().instances().toArray(new String[0]);
+    }
+
+    @GET
+    @Path("/trace/data/{series}/")
+    public List<RequestTraceResponse> getTraceData(@PathParam("series") String series) {
+        String group = series.split(""+Series.TAG_SEPARATOR)[1].substring(2);
+        List<RequestTraceResponse> response = new ArrayList<>();
+        for (RequestTrace trace : getRequestTracingStore().getTraces()) {
+            if (RequestTracingService.metricGroupName(trace).equals(group)) {
+                response.add(new RequestTraceResponse(trace));
+            }
+        }
+        return response;
     }
 }
