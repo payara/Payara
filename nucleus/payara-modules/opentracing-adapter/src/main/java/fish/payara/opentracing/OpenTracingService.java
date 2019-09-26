@@ -51,6 +51,7 @@ import javax.annotation.PostConstruct;
 import javax.interceptor.InvocationContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -128,12 +129,17 @@ public class OpenTracingService implements EventListener {
      * @return The application name
      */
     public String getApplicationName(InvocationManager invocationManager) {
-        String appName = invocationManager.getCurrentInvocation().getAppName();
+        final ComponentInvocation invocation = invocationManager.getCurrentInvocation();
+        if (invocation == null) {
+            // if the invocation context is not an application but some server component.
+            return null;
+        }
+        String appName = invocation.getAppName();
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getModuleName();
+            appName = invocation.getModuleName();
 
             if (appName == null) {
-                appName = invocationManager.getCurrentInvocation().getComponentId();
+                appName = invocation.getComponentId();
 
                 // If we've found a component name, check if there's an application registered with the same name
                 if (appName != null) {
