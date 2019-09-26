@@ -88,9 +88,14 @@ public class OpenTracingApplicationEventListener implements ApplicationEventList
             LOG.config("Default base service locator is null, JAX-RS server tracing is disabled.");
             return;
         }
+        final InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
         this.requestTracing = serviceLocator.getService(RequestTracingService.class);
         this.openTracing = serviceLocator.getService(OpenTracingService.class);
-        this.applicationName = this.openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class));
+        if (invocationManager == null || this.openTracing == null) {
+            this.applicationName = null;
+        } else {
+            this.applicationName = this.openTracing.getApplicationName(invocationManager);
+        }
     }
 
 
