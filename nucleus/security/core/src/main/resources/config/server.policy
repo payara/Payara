@@ -119,7 +119,7 @@ grant {
     permission java.lang.RuntimePermission "closeClassLoader";
     permission java.io.SerializablePermission "enableSubstitution";
     permission java.security.SecurityPermission "getProperty.package.definition";
-
+    permission java.security.SecurityPermission "createPolicy.JavaPolicy";
 };
 
 
