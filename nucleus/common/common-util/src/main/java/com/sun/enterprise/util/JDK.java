@@ -75,6 +75,10 @@ public final class JDK {
         return update;
     }
 
+    public static String getVendor() {
+        return vendor;
+    }
+
     public static class Version {
         private final int major;
         private final Optional<Integer> minor;
@@ -284,6 +288,7 @@ public final class JDK {
     private static int minor;
     private static int subminor;
     private static int update;
+    private static String vendor;
     private static Version JDK_VERSION;
 
     // silently fall back to ridiculous defaults if something is crazily wrong...
@@ -291,7 +296,8 @@ public final class JDK {
         major = 1;
         minor = subminor = update = 0;
         try {
-            String jv = System.getProperty("java.version");
+            String javaVersion = System.getProperty("java.version");
+            vendor = System.getProperty("java.vendor");
             /*In JEP 223 java.specification.version will be a single number versioning , not a dotted versioning . So if we get a single
             integer as versioning we know that the JDK is post JEP 223
             For JDK 8:
@@ -305,7 +311,7 @@ public final class JDK {
             String[] jsvSplit = javaSpecificationVersion.split("\\.");
             if (jsvSplit.length == 1) {
                 //This is handle Early Access build .Example 9-ea
-                String[] jvSplit = jv.split("-");
+                String[] jvSplit = javaVersion.split("-");
                 String jvReal = jvSplit[0];
                 String[] split = jvReal.split("[\\.]+");
 
@@ -324,10 +330,10 @@ public final class JDK {
                     }
                 }
             } else {
-                if (!StringUtils.ok(jv))
+                if (!StringUtils.ok(javaVersion))
                     return; // not likely!!
 
-                String[] ss = jv.split("\\.");
+                String[] ss = javaVersion.split("\\.");
 
                 if (ss.length < 3 || !ss[0].equals("1"))
                     return;

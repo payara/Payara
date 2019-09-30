@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2018-2019] Payara Foundation and/or affiliates -->
 
 <!-- sslAttrs.inc -->
 
@@ -60,6 +60,24 @@
                 EphemeralCiphersList="#{requestScope.availableEphemeral}"
                 OtherCiphersList="#{requestScope.availableOther}"
                 EccCiphersList="#{requestScope.availableEcc}")
+
+        py.getJdkMajorVersion(jdkMajorVersion="#{requestScope.jdkMajorVersion}");
+        setPageSessionAttribute(key="showTLS13Prop", value="#{true}");
+        
+        if (#{requestScope.jdkMajorVersion}<$int{9}){
+            setPageSessionAttribute(key="showTLS13Prop", value="#{false}");
+            py.getJavaVendor(javaVendor="#{requestScope.javaVendor}");
+            setPageSessionAttribute(key="isVendorAzul", value="#{requestScope.javaVendor.contains('Azul')}");
+
+            if (#{pageSession.isVendorAzul}){
+                py.getJdkUpdateVersion(jdkUpdateVersion="#{requestScope.jdkUpdateVersion}");
+
+                if (#{requestScope.jdkUpdateVersion}>$int{221}){
+                    setPageSessionAttribute(key="showTLS13Prop", value="#{true}");
+                }
+
+            }
+        }
     />
      <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{sheetId});
@@ -82,7 +100,7 @@
      <sun:property id="TLSProp12"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel12}" >
         <sun:checkbox id="TLS12" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls12Enabled']}" selectedValue="true"/>
      </sun:property>
-     <sun:property id="TLSProp13"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel13}" >
+     <sun:property id="TLSProp13"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel13}" rendered="#{pageSession.showTLS13Prop}">
         <sun:checkbox id="TLS13" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls13Enabled']}" selectedValue="true"/>
      </sun:property>
 

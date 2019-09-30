@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
 <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
@@ -256,6 +256,7 @@
         <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
         <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
         <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
+        <jvm-options>[1.8.0u222|1.8.0u500]-XX:+UseOpenJSSE</jvm-options>
       </java-config>
       <network-config>
         <protocols>
