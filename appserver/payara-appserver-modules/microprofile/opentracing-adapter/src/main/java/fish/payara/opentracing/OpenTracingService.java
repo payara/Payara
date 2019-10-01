@@ -109,7 +109,7 @@ public class OpenTracingService implements EventListener {
                 ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
                 Iterator<Tracer> loadedTracer = tracerLoader.iterator();
                 if (loadedTracer.hasNext()) {
-                    tracer = tracerLoader.iterator().next();
+                    tracer = loadedTracer.next();
                 }
             } catch (NoClassDefFoundError ex){
                 Logger.getLogger("opentracing").log(Level.SEVERE, "Unable to find Tracer implementation", ex);
