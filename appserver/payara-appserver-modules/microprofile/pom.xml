@@ -59,7 +59,6 @@ holder.
         <module>metrics</module>
         <module>openapi</module>
         <module>opentracing</module>
-        <module>opentracing-adapter</module>
         <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
         <module>opentracing-jaxws</module>
         <module>microprofile-common</module>

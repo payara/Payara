@@ -62,7 +62,7 @@ holder.
             <version>${javaee.api.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
