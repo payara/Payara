@@ -136,14 +136,19 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
             if (null == threadPoolExecutor) {
                 initialiseThreadPools();
             }
+        } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+            stopThreadPools();
         } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             terminateThreadPools();
         }
     }
-
-    private void terminateThreadPools() {
+    
+    private void stopThreadPools() {
         threadPoolExecutor.shutdown();
         scheduledThreadPoolExecutor.shutdown();
+    }
+
+    private void terminateThreadPools() {
 
         // Wait until the schedulers actually terminate
         try {
