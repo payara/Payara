@@ -201,35 +201,38 @@ class RemoteEJBContext implements Context {
             clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)), MICROSECONDS);
         }
 
-        if (environment.contains(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
+        if (environment.containsKey(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
             clientBuilder.executorService(getInstance(environment.get(JAXRS_CLIENT_EXECUTOR_SERVICE), ExecutorService.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
+        if (environment.containsKey(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
             clientBuilder.hostnameVerifier(getInstance(environment.get(JAXRS_CLIENT_HOSTNAME_VERIFIER), HostnameVerifier.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_KEY_STORE)) {
-            clientBuilder.keyStore(getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class), getPassword(environment.get("keyStorePassword")));
+        if (environment.containsKey(JAXRS_CLIENT_KEY_STORE)) {
+            clientBuilder.keyStore(
+                    getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class),
+                    getPassword(environment.containsKey("keyStorePassword") ? environment.get("keyStorePassword") : environment.get(JAXRS_CLIENT_KEY_STORE_PASSOWRD))
+            );
         }
 
         if (environment.containsKey(JAXRS_CLIENT_READ_TIMEOUT)) {
             clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)), MICROSECONDS);
         }
 
-        if (environment.contains(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
+        if (environment.containsKey(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
             clientBuilder.scheduledExecutorService(getInstance(environment.get(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE), ScheduledExecutorService.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_SSL_CONTEXT)) {
+        if (environment.containsKey(JAXRS_CLIENT_SSL_CONTEXT)) {
             clientBuilder.sslContext(getInstance(environment.get(JAXRS_CLIENT_SSL_CONTEXT), SSLContext.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_TRUST_STORE)) {
+        if (environment.containsKey(JAXRS_CLIENT_TRUST_STORE)) {
             clientBuilder.trustStore(getInstance(environment.get(JAXRS_CLIENT_TRUST_STORE), KeyStore.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_CONFIG)) {
+        if (environment.containsKey(JAXRS_CLIENT_CONFIG)) {
             clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
         }
 

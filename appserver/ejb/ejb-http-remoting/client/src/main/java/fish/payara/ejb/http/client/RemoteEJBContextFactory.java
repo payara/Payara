@@ -82,6 +82,7 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
     public static final String JAXRS_CLIENT_READ_TIMEOUT = "fish.payara.readTimeout";
     public static final String JAXRS_CLIENT_KEY_STORE = "fish.payara.keyStore";
+    public static final String JAXRS_CLIENT_KEY_STORE_PASSOWRD = "fish.payara.keyStorePassword";
     public static final String JAXRS_CLIENT_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
     public static final String JAXRS_CLIENT_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String JAXRS_CLIENT_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
