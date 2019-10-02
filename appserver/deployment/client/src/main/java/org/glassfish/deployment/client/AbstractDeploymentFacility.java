@@ -443,6 +443,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                     targets[0].getName(), appName);
                 deploymentOptions.put(DFDeploymentProperties.ENABLED,
                     enabledAttr);
+                deploymentOptions.put("forceName","true");
             }
 
             Target[] origTargets = targets;
