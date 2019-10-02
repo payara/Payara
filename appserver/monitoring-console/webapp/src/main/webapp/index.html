@@ -47,19 +47,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=r"></script>
-    <link href="monitoring-console.css?x=r" rel="stylesheet" type="text/css">
+    <script src="monitoring-console.js?x=c"></script>
+    <link href="monitoring-console.css?x=c" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
 
 <input type="file" id="cfgImport" accept=".json" style="display:none" oninput="MonitoringConsole.View.onPageImport();">
 
+<button title='Delete current page' onclick="MonitoringConsole.View.onPageDelete();" class='btnIcon btnClose'>&times;</button>
+
 <div id="panel-grid">
     <div id="panel-iconbar">
-        <button title="Show/Hide Settings" onclick="MonitoringConsole.View.onPageMenu()">&#9776;</button>
-        &nbsp; &nbsp;
-
-        <span id="pagesTabs"></span>
+        <button title="New Page" onclick="MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));">&plus;</button>
+        <span id="panel-nav"></span>
 
         <span id="layout-bar">
            <button title="Reset Page to Preset" onclick='MonitoringConsole.View.onPageReset()'>&#10226;</button>
@@ -75,6 +75,8 @@
            <button onclick='MonitoringConsole.View.onPageLayoutChange(2);' title="Use two column layout">&#11034; &#11034;</button> 
            <button onclick='MonitoringConsole.View.onPageLayoutChange(3);' title="Use three column layout">&#11034; &#11034; &#11034;</button>
            <button onclick='MonitoringConsole.View.onPageLayoutChange(4);' title="Use four column layout">&#11034; &#11034; &#11034; &#11034;</button>
+           &nbsp; &nbsp;
+           <button title="Show/Hide Settings" onclick="MonitoringConsole.View.onPageMenu()">&#9881;</button>
         </span>
     </div>
 
@@ -83,12 +85,14 @@
 
 <div id="panel-settings"></div>
 
-<div id='trace-details'>
+<div id='panel-trace'>
   <div id='trace-iconbar'>
-    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onClosePopup();">&#9664;</button>
+    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onClosePopup();" title="Back">&#9664;</button>
+    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onDataRefresh();" title="Reload">&#10226;</button>
   </div>
   <div id='trace-chart-box'>
     <canvas id="trace-chart"></canvas>
+    <div id="chartjs-tooltip">
   </div>
 </div>
 

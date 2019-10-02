@@ -68,6 +68,8 @@ MonitoringConsole.Model = (function() {
 			settings: {},
 	};
 
+	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
+
 	function getPageId(name) {
     	return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
     }
@@ -753,6 +755,14 @@ MonitoringConsole.Model = (function() {
 	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
 	                }
+	            }),
+
+				moveUp: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item = 0;
+	            }),
+
+	            moveDown: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item += 1.1;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {

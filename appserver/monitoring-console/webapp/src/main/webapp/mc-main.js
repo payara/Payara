@@ -50,30 +50,35 @@ var MonitoringConsole =  {
    /**
     * Functions to update the actual HTML page of the MC
     **/
-	View: undefined,
+	View: {},
    /**
     * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
     **/ 
-	Model: undefined,
+	Model: {},
    /**
     * Functions specifically to take the data and prepare the display particular chart type using the underlying charting library.
     *
     * Each of the type objects below shares the same public API that is used by Model and View to apply the model to the chart to update the view properly.
     **/
 	Chart: {
+
+    /**
+     * A collection of general adapter functions for the underlying chart library
+     */ 
+    Common: {},
    /**
     * Line chart adapter API for monitoring series data
     **/
-    Line: undefined,
+    Line: {},
    /**
     * Bar chart adapter API for monitoring series data
     **/
-    Bar: undefined,
+    Bar: {},
 
     /**
      * Trace 'gantt chart' like API, this is not a strict adapter API as the other two as the data to populate this is specific to traces
      */
-    Trace: undefined,
+    Trace: {},
 
   }
 };

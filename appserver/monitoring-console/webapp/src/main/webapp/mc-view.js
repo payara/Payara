@@ -45,29 +45,25 @@
  **/
 MonitoringConsole.View = (function() {
 
+    const Settings = MonitoringConsole.View.Widgets.Settings;
+
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = $("#pagesTabs"); 
+        let nav = $("#panel-nav"); 
         nav.empty();
-        MonitoringConsole.Model.listPages().forEach(function(page) {
-            let tabId = page.id + '-tab';
-            let css = "page-tab" + (page.active ? ' page-selected' : '');
-            let pageTab = $('<span/>', {id: tabId, "class": css, text: page.name});
+        let dropdown = $('<span/>', {'class': 'nav-page-dropdown'});
+        MonitoringConsole.Model.listPages().forEach(function(page) {            
             if (page.active) {
-                pageTab.click(function() {
-                    MonitoringConsole.Model.Settings.toggle();
-                    updatePageAndSelectionSettings();
-                });
+                nav.append($('<h2/>', {text: page.name})
+                    .click(() => dropdown.toggle()));
             } else {
-                pageTab.click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)));                
+                dropdown.append($('<span/>', {text: page.name})
+                    .click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id))));                
             }
-            nav.append(pageTab);
         });
-        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
-        addPage.click(() => onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')));
-        nav.append(addPage);
+        nav.append(dropdown);
     }
 
     /**
@@ -79,10 +75,7 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let panelSettings = $('#panel-settings');
-            panelSettings
-                .empty()
-                .append($('<button/>', { title: 'Delete current page', 'class': 'btnIcon btnClose' }).html('&times;').click(MonitoringConsole.View.onPageDelete))
+            let panelSettings = Settings.emptyPanel()
                 .append(createPageSettings())
                 .append(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
@@ -93,18 +86,46 @@ MonitoringConsole.View = (function() {
         }
     }
 
+    function createWidgetLegend(widget) {
+        return $('<ol/>',  {'class': 'widget-legend-bar'});
+    }
+
+    function createWidgetLegendItem(data, color) {
+        let value = data.points[data.points.length-1];
+        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
+    }
+
+    function updateDomOfWidget(parent, widget) {
+        if (!parent) {
+            parent = $('#widget-'+widget.target);
+            if (!parent) {
+                return; // can't update
+            }
+        }
+        if (parent.children().length == 0) {
+            let previousParent = $('#widget-'+widget.target);
+            if (previousParent.length > 0 && previousParent.children().length > 0) {
+                previousParent.children().appendTo(parent);
+            } else {
+                parent.append(createWidgetToolbar(widget));
+                parent.append(createWidgetTargetContainer(widget));
+                parent.append(createWidgetLegend(widget));                
+            }
+        }
+        if (widget.selected) {
+            parent.addClass('chart-selected');
+        } else {
+            parent.removeClass('chart-selected');
+        }
+    }
+
     /**
      * Each chart needs to be in a relative positioned box to allow responsive sizing.
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
-    function createWidgetTargetContainer(cell) {
-        let boxId = cell.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length > 0)
-            return box.first();
-        box = $('<div/>', { id: boxId, "class": "chart-box" });
-        box.append($('<canvas/>',{ id: cell.widget.target }));
-        return box;
+    function createWidgetTargetContainer(widget) {
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+            .append($('<canvas/>',{ id: widget.target }));
     }
 
     function toWords(str) {
@@ -125,31 +146,43 @@ MonitoringConsole.View = (function() {
             return toWords(metric);
         let tags = series.substring(0, endOfTags).split(' ');
         let text = '';
+        let metricText = toWords(metric);
+        if (widget.options.perSec) {
+            metricText += ' <i>(1/sec)</i>';
+        }
+        let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
             if (tag.startsWith('@:')) {
-                text += '<code>'+tag.substring(2)+'</code> ';
+                grouped = true;
+                text += metricText;
+                text += ': <code>'+tag.substring(2)+'</code> ';
             } else {
-                text +='<i>'+tag+'</i> ';
+                text +=' <i>'+tag+'</i> ';
             }
         }
-        text += toWords(metric);
-        if (widget.options.perSec) {
-            text += ' <i>(1/sec)</i>';
-        }
+        if (!grouped)
+            text += metricText;
         return text;
     }
 
-    function createWidgetToolbar(cell) {
-        let series = cell.widget.series;
-        return $('<div/>', {"class": "caption-bar"})
-            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
-                .click(() => onWidgetToolbarClick(cell.widget)))
-            .append(createToolbarButton('Remove chart from page', '&times;', () => onWidgetDelete(series)))
-            .append(createToolbarButton('Enlarge this chart', '&plus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&minus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&#9655;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&#9665;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+    function createWidgetToolbar(widget, expanded) {
+        let series = widget.series;
+        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
+            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
+            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
+            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
+            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
+            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
+            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
+            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
+            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
+            ;
+        return $('<div/>', {"class": "widget-title-bar"})
+            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
+                .click(() => onWidgetToolbarClick(widget)))
+            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
+            .append(settings));
     }
 
     function createToolbarButton(title, icon, onClick) {
@@ -158,31 +191,32 @@ MonitoringConsole.View = (function() {
 
 
     function createWidgetSettings(widget) {
-        let settings = createSettingsTable('settings-widget')
-            .append(createSettingsHeaderRow(formatSeriesName(widget)))
-            .append(createSettingsHeaderRow('General'))
-            .append(createSettingsDropdownRow('Type', {line: 'Time Curve', bar: 'Range Indicator'}, widget.type, (widget, selected) => widget.type = selected))
-            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
-            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1))
-            .append(createSettingsSliderRow('Item', 1, 4, 1 + (widget.grid.item || 0), (widget, value) => widget.grid.item = value - 1))
-            .append(createSettingsHeaderRow('Data'))
-            .append(createSettingsCheckboxRow('Add Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
-            .append(createSettingsCheckboxRow('Add Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))            
+        let settings = Settings.createTable('settings-widget')
+            .append(Settings.createHeaderRow(formatSeriesName(widget)))
+            .append(Settings.createHeaderRow('General'))
+            .append(Settings.createDropdownRow('Type', {line: 'Time Curve', bar: 'Range Indicator'}, widget.type, (widget, selected) => widget.type = selected))
+            .append(Settings.createSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
+            .append(Settings.createSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1))
+            .append(Settings.createSliderRow('Item', 1, 4, 1 + (widget.grid.item || 0), (widget, value) => widget.grid.item = value - 1))
+            .append(Settings.createHeaderRow('Data'))
+            .append(Settings.createCheckboxRow('Add Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
+            .append(Settings.createCheckboxRow('Add Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))            
             ;
         if (widget.type === 'line') {
             settings
-            .append(createSettingsCheckboxRow('Add Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
-            .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
-            .append(createSettingsHeaderRow('Display Options'))
-            .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
-            .append(createSettingsCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
-            .append(createSettingsCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
-            .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
-            .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
-            .append(createSettingsCheckboxRow('Show Points', widget.options.drawPoints, (widget, checked) => widget.options.drawPoints = checked))            
-            .append(createSettingsCheckboxRow('Show Stabe', widget.options.drawStableLine, (widget, checked) => widget.options.drawStableLine = checked))
-            .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
-            .append(createSettingsCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))
+            .append(Settings.createCheckboxRow('Add Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
+            .append(Settings.createCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
+            .append(Settings.createHeaderRow('Display Options'))
+            .append(Settings.createCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
+            .append(Settings.createCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
+            .append(Settings.createCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
+            .append(Settings.createCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
+            .append(Settings.createCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
+            .append(Settings.createCheckboxRow('Show Points', widget.options.drawPoints, (widget, checked) => widget.options.drawPoints = checked))
+            .append(Settings.createCheckboxRow('Show Fill', widget.options.drawFill, (widget, checked) => widget.options.drawFill = checked))
+            .append(Settings.createCheckboxRow('Show Stabe', widget.options.drawStableLine, (widget, checked) => widget.options.drawStableLine = checked))
+            .append(Settings.createCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
+            .append(Settings.createCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))
             ;            
         }
         return settings;        
@@ -208,15 +242,15 @@ MonitoringConsole.View = (function() {
         });
         let widgetSeries = $('<input />', {type: 'text'});
         widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
-        return createSettingsTable('settings-page')
-            .append(createSettingsHeaderRow('Page'))
-            .append(createSettingsRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
+        return Settings.createTable('settings-page')
+            .append(Settings.createHeaderRow('Page'))
+            .append(Settings.createRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
                 .on("propertychange change keyup paste input", function() {
                     if (MonitoringConsole.Model.Page.rename(this.value)) {
                         updatePageNavigation();                        
                     }
                 })))
-            .append(createSettingsRow('Widgets', () => $('<span/>')
+            .append(Settings.createRow('Widgets', () => $('<span/>')
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
@@ -231,70 +265,18 @@ MonitoringConsole.View = (function() {
                 instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
             }
         });
-        return createSettingsTable('settings-data')
-            .append(createSettingsHeaderRow('Data'))
-            .append(createSettingsRow('Instances', () => instanceSelection));
+        return Settings.createTable('settings-data')
+            .append(Settings.createHeaderRow('Data'))
+            .append(Settings.createRow('Instances', () => instanceSelection));
     }
 
-    function createSettingsHeaderRow(caption) {
-        return $('<tr/>').append($('<th/>', {colspan: 2}).html(caption).click(function() {
-            let tr = $(this).closest('tr').next();
-            let toggleAll = tr.children('th').length > 0;
-            while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
-                if (tr.children('th').length == 0) {
-                    tr.children().toggle();                    
-                }
-                tr = tr.next();
-            }
-        }));
-    }
-
-    function createSettingsCheckboxRow(label, checked, onChange) {
-        return createSettingsRow(label, () => createSettingsCheckbox(checked, onChange));
-    }
-
-    function createSettingsTable(id) {
-        return $('<table />', { 'class': 'settings', id: id });
-    }
-
-    function createSettingsRow(label, createInput) {
-        return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(createInput()));   
-    }
-
-    /**
-     * Creates a checkbox to configure the attributes of a widget.
-     *
-     * @param {boolean} isChecked - if the created checkbox should be checked
-     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-     */
-    function createSettingsCheckbox(isChecked, onChange) {
-        return $("<input/>", { type: 'checkbox', checked: isChecked })
-            .on('change', function() {
-                let checked = this.checked;
-                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
-            });
-    }
-
-    function createSettingsSliderRow(label, min, max, value, onChange) {
-        return createSettingsRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
-            .on('input change', function() {  
-                let val = this.valueAsNumber;
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
-            }));
-    }
-
-    function createSettingsDropdownRow(label, options, value, onChange) {
-        let dropdown = $('<select/>');
-        Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
-        dropdown.change(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, dropdown.val()))));
-        return createSettingsRow(label, () => dropdown);
-    }
+    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
-        onWidgetUpdate(widget);
+        updateDomOfWidget(undefined, widget);
         updatePageAndSelectionSettings();
     }
 
@@ -326,48 +308,17 @@ MonitoringConsole.View = (function() {
      */
     function onDataUpdate(update) {
         let widget = update.widget;
-        let boxId = widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length == 0) {
-            if (console && console.log)
-                console.log('WARN: Box for chart ' + widget.series + ' not ready.');
-            return;
-        }
-        let td = box.closest('.widget');
+        updateDomOfWidget(undefined, widget);
+        let widgetNode = $('#widget-'+widget.target);
+        let legendNode = widgetNode.find('.widget-legend-bar').first();
         if (update.data) {
-            td.children('.status-nodata').hide();
-            let points = update.data[0].points;
-            let stable = points.length === 4 && points[1] === points[3] && widget.type === 'line';
-            if (stable && !widget.options.drawStableLine) {
-                if (td.children('.stable').length == 0) {
-                    let info = $('<div/>', { 'class': 'stable' });
-                    info.append($('<span/>', { text: points[1] }));
-                    td.append(info);
-                    box.hide();
-                }
-            } else {
-                td.children('.stable').remove();
-                box.show();
-                MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
+            MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
+            legendNode.empty();
+            for (let j = 0; j < update.data.length; j++) {
+                legendNode.append(createWidgetLegendItem(update.data[j], MonitoringConsole.Chart.Common.lineColor(j)));
             }
         } else {
-            td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
-        }
-        
-        onWidgetUpdate(widget);
-    }
-
-    /**
-     * Called when changes to the widget require to update the view of the widget (non data related changes)
-
-     * TODO this should be called by the model in the same way onDataUpdate is whenever config of a widget is configured - also rename to onWidgetConfigurationUpdate?
-     */
-    function onWidgetUpdate(widget) {
-        let container = $('#' + widget.target + '-box').closest('.widget');
-        if (widget.selected) {
-            container.addClass('chart-selected');
-        } else {
-            container.removeClass('chart-selected');
+            //TODO
         }
     }
 
@@ -385,12 +336,8 @@ MonitoringConsole.View = (function() {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
-                    td.append(createWidgetToolbar(cell));
-                    let status = $('<div/>', { "class": 'status-nodata'});
-                    status.append($('<div/>', {text: 'No Data'}));
-                    td.append(status);
-                    td.append(createWidgetTargetContainer(cell));
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
                     tr.append($("<td/>", { 'class': 'widget', style: 'height: '+rowHeight+'px;'}));                  
@@ -408,6 +355,13 @@ MonitoringConsole.View = (function() {
     function onPageChange(layout) {
         onPageUpdate(layout);
         updatePageNavigation();
+        updatePageAndSelectionSettings();
+    }
+
+    function onOpenWidgetSettings(series) {
+        MonitoringConsole.Model.Page.Widgets.Selection.clear();
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
+        MonitoringConsole.Model.Settings.open();
         updatePageAndSelectionSettings();
     }
 
@@ -435,5 +389,6 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();
             }
         },
+        onOpenWidgetSettings: (series) => onOpenWidgetSettings(series),
     };
 })();

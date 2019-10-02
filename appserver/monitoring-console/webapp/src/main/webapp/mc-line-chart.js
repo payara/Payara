@@ -67,6 +67,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onCreation(widget) {
     let options = {
+      maintainAspectRatio: false,
       scales: {
         xAxes: [{
           type: 'time',
@@ -97,11 +98,7 @@ MonitoringConsole.Chart.Line = (function() {
         }],
       },
       legend: {
-          labels: {
-              filter: function(item, chart) {
-                return !item.text.startsWith(" ");
-              }
-          }
+          display: false,
       }
     };
     return new Chart(widget.target, {
@@ -267,7 +264,7 @@ MonitoringConsole.Chart.Line = (function() {
     options.scales.xAxes[0].ticks.minRotation = rotation;
     options.scales.xAxes[0].ticks.maxRotation = rotation;
     options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
-    options.legend.display = widget.options.showLegend === true;
+    options.elements.line.fill = widget.options.drawFill === true;
     return chart;
   }
 

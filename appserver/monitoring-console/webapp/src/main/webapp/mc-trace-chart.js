@@ -48,17 +48,23 @@ MonitoringConsole.Chart.Trace = (function() {
    const DEFAULT_BG_COLORS = 'rgba(153, 102, 255, 0.2)';
    const DEFAULT_LINE_COLORS = 'rgba(153, 102, 255, 1)';
 
+   const Settings = MonitoringConsole.View.Widgets.Settings;
+   const util = MonitoringConsole.Chart.Common;
+
+   var model = {};
    var chart;
 
    function onDataUpdate(data) {
       let zeroToMinValues = [];
       let minToMaxValues = [];
+      let spans = [];
       let labels = [];
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
          let startTime = trace.startTime;
          for (let j = 0; j < trace.spans.length; j++) {
             let span = trace.spans[j];
+            spans.push(span);
             zeroToMinValues.push(span.startTime - startTime);
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
@@ -81,8 +87,28 @@ MonitoringConsole.Chart.Trace = (function() {
       chart.data = { 
          datasets: datasets,
          labels: labels,
+         spans: spans,
+      };
+      chart.options.onClick = function(event)  {
+        updateDomSpanDetails(data, spans[this.getElementsAtEventForMode(event, "y", 1)[0]._index]); 
       };
       chart.update(0);
+   }
+
+   function autoLink(text) {
+      if (text.startsWith('http://') || text.startsWith('https://'))
+         return $('<a/>', { href: text, text: text});
+      return $(document.createTextNode(text));
+   }
+
+   function addCustomTooltip(chart) {
+      chart.options.tooltips.custom = util.createCustomTooltipFunction(function(dataPoints) {
+         let index = dataPoints[0].index;
+         let span = spans[index];
+         let body = $('<div/>');
+         //...
+         return body;
+      });      
    }
 
    function onCreation() {
@@ -94,6 +120,7 @@ MonitoringConsole.Chart.Trace = (function() {
             scales: {
                xAxes: [{
                   stacked: true,
+                  position: 'top',
                }],
                yAxes: [{
                   maxBarThickness: 15, //px
@@ -110,15 +137,44 @@ MonitoringConsole.Chart.Trace = (function() {
             legend: {
                display: false,
             },
+            tooltips: {
+               enabled: false,
+               position: 'nearest',
+               filter: (tooltipItem) => tooltipItem.datasetIndex > 0, // remove offsets (not considered data, just necessary to offset the visible bars)
+            },
          }
       });
    }
 
+   function updateDomSpanDetails(data, span) {
+      let settingsPanel = Settings.emptyPanel();
+      settingsPanel.append(Settings.createTable('settings-span', 'Span')
+         .append(Settings.createRow('ID', span.id))
+         .append(Settings.createRow('Operation', span.operation))
+         .append(Settings.createRow('Start', util.formatDate(new Date(span.startTime))))
+         .append(Settings.createRow('End', util.formatDate(new Date(span.endTime))))
+         .append(Settings.createRow('Duration', (span.duration / 1000000) + 'ms'))
+         );
+
+      let tags = Settings.createTable('settings-tags', 'Tags'); 
+      for (let [key, value] of Object.entries(span.tags)) {
+         if (value.startsWith('[') && value.endsWith(']')) {
+            value = value.slice(1,-1);
+         }
+         tags.append(Settings.createRow(key, autoLink(value)));
+      }
+      settingsPanel.append(tags);
+   }
+
+
+   function onDataRefresh() {
+      $.getJSON("api/trace/data/"+model.series, onDataUpdate);
+   }
+
    function onOpenPopup(series) {
-      $.getJSON("api/trace/data/"+series, function(data) {
-         $('#trace-details').show();
-         onDataUpdate(data);
-      });
+      $('#panel-trace').show();
+      model.series = series;
+      onDataRefresh();
    }
 
    function onClosePopup() {
@@ -126,7 +182,7 @@ MonitoringConsole.Chart.Trace = (function() {
          chart.destroy();
          chart = undefined;
       }
-      $('#trace-details').hide();
+      $('#panel-trace').hide();
    }
 
    /**
@@ -135,5 +191,6 @@ MonitoringConsole.Chart.Trace = (function() {
    return {
       onOpenPopup: (series) => onOpenPopup(series),
       onClosePopup: () => onClosePopup(),
+      onDataRefresh: () => onDataRefresh(),
    };
 })();

@@ -80,7 +80,7 @@ button {
 button:hover {
 	background-color: #F1A232;
 }
-#trace-details {
+#panel-trace {
   position: absolute;
   top: 0;
   left: 0;
@@ -116,67 +116,47 @@ button:hover {
 #chart-container {
     padding: 0 10px;
 }
-.chart-box {
+.widget-chart-box {
     position: relative;
+    padding-bottom: 50px; /* for legend */
 }
 .btnIcon {
 	float: right;
 	z-index: 101;
-    position: relative;
-    margin: 0;
-    margin-left: 5px;
-    padding: 0;
-    color: #bbb;
-    background-color: transparent;
-    font-weight: bold;
-}
-.btnIcon:first-of-type {
-	margin-left: 15px;
+  margin: 0;
+  margin-left: 5px;
+  padding: 0;
+  color: #bbb;
+  background-color: transparent;
+  font-weight: bold;
 }
 button.btnIcon:hover {
     color: white;
     background-color: transparent;
 }
-.caption-bar h3 {
-	font-size: 100%;
-    font-weight: bold;
-    margin: 0;
-    cursor: pointer;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 75%;
-    display: inline-block;
-    padding: 1px 5px;
+.widget-title-bar h3 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 0;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 75%;
+  display: inline-block;
+  padding: 1px 5px;
 }
-.caption-bar h3 i {
-    font-weight: normal;
-    font-style: normal;
-    color: #bbb;
-    margin-right: 1em;
+.widget-title-bar h3 i {
+  font-size: 80%;
+  font-weight: normal;
+  font-style: normal;
+  color: #bbb;
+  margin-right: 1em;
 }
-.caption-bar h3 code {
-    font-style: normal;
-    font-weight: normal;
-    margin-right: 1em;
-}
-#pagesTabs .page-tab {
-    display: inline-block;
-    padding: 4px 1em;
-    margin: 1px;
-    font-weight: normal;
-    cursor: pointer;
-    line-height: 1em;
-    border: 1px solid #666;
-    border-top-width: 0;
-    color: #bbb;
-}
-#pagesTabs .page-tab.page-selected {
-    color: white;
-    font-weight: bold;
-    border: 1px solid white;
-    border-top-width: 0;
-    padding-bottom: 6px;
+.widget-title-bar h3 code {
+  font-style: normal;
+  font-weight: normal;
+  margin-right: 1em;
 }
 #layout-bar {
 	display: inline-block;
@@ -213,24 +193,6 @@ button.btnIcon:hover {
 #chart-grid td.chart-selected h3 {
     color: #00618A;
     background-color: white;
-}
-.status-nodata {
-	display: none;
-	position: absolute;
-	font-weight: bold;
-	font-size: 200%;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    z-index: 101;
-    border: 5px solid orangered;
-}
-.status-nodata div {
-	position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    margin-top: -1em;
 }
 .stable {
 	background-color: rgba(153, 102, 255, 0.2);
@@ -269,7 +231,7 @@ button.btnIcon:hover {
     margin-top: 5px;
     width: 100%;
 }
-button.btnClose + .settings {
+.settings:first-child {
     margin-top: 210px;
 }
 .settings th {
@@ -281,8 +243,11 @@ button.btnClose + .settings {
   border-bottom: 1px solid #bbb;
 }
 .settings td:first-child {
-    width: 120px;
-    vertical-align: top;
+  width: 120px;
+  vertical-align: top;
+}
+.settings a, .settings a:visited {
+  color: white;
 }
 #console #panel-settings {
 	display: none;
@@ -290,6 +255,103 @@ button.btnClose + .settings {
 #console.state-show-settings #panel-settings {
 	display: block;
 }
-#console.state-show-settings #panel-grid {
+#console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
   width: calc(100% - 385px);
+}
+
+/* HTML Chart Tooltips */
+#chartjs-tooltip {
+  position: absolute;
+  background-color: #002c3e;
+  padding: 5px;
+  width: 400px;
+}
+table.tags {
+  width: 100%;
+}
+table.tags th {
+  text-align: left;
+  width: 25%;
+}
+table.tags th, table.tags td {
+  background-color: #002433;
+}
+
+/* Widget Settings Toolbar */
+.widget-settings-bar {
+  display:none; 
+  position: absolute; 
+  background-color: #002c3e;
+  white-space: nowrap;
+  padding: 10px;
+  z-index: 150;
+  width: 120px;
+  margin-left: -140px;
+  margin-top: 20px;    
+}
+.widget-settings-bar button {
+  float: left;
+  margin-bottom: 5px;
+}
+.widget-settings-bar button::first-letter {
+  margin-right: 5px;
+}
+
+/* Widget Legend Bar */
+.widget-legend-bar {
+  margin: 0;
+  padding: 0 20px;
+  margin-top: -40px;
+}
+.widget-legend-bar li {
+  display: inline-block;
+  list-style:none;
+  padding-left: 5px;
+  border-left: 5px solid #ccc;
+  margin-right: 20px;
+}
+.widget-legend-bar li span {
+  font-size: 200%;
+  font-weight: bold;
+  display: block;
+}
+.widget-legend-bar li span:first-child {
+  font-size: 100%;
+  font-weight: 300;
+}
+
+/* Page Navigation */
+#panel-nav {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;  
+}
+.nav-page-dropdown {
+  display: none;
+  position: absolute;
+  background-color: #002c3e;
+  white-space: nowrap;
+  padding: 5px;
+  z-index: 160;
+  top: 35px;
+  left: -10px;
+}
+.nav-page-dropdown span {
+  display: block;
+  cursor: pointer;
+  padding: 5px;
+}
+.nav-page-dropdown span:hover {
+  background-color: #002433;
+}
+#panel-nav h2 {
+  min-width: 100px;
+  font-weight: bold;
+  font-size: 140%;
+  display: inline-block;
+  margin: 0;
+  margin-top: 5px;
+  padding: 0;
+  cursor: pointer;
 }
