@@ -42,7 +42,6 @@
 -->
 
 <!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
@@ -52,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
     <packaging>glassfish-jar</packaging>
-
+    
     <name>Nucleus Logging Classes</name>
     <description>Glassfish logging classes</description>
 
@@ -94,12 +93,6 @@
             <version>${jsonp.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
@@ -127,6 +120,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
             </plugin>
         </plugins>
     </build>

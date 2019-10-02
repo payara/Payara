@@ -37,20 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.server.logging;
 
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test class to exercise the LogEvent notification mechanism.
@@ -58,10 +60,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class LogEventListenerTest {
 
-    private static final String FILE_SEP = File.pathSeparator;
-
+    private static final String FILE_SEP = System.getProperty("file.separator");
+    
     private static final String USER_DIR = System.getProperty("user.dir");
-
+    
     private static final String BASE_PATH = USER_DIR + FILE_SEP + "target";
 
     private static final String TEST_EVENTS_LOG =  BASE_PATH + FILE_SEP + "test-events.log";
@@ -71,17 +73,15 @@ public class LogEventListenerTest {
     private static final String LOGGER_NAME = "javax.enterprise.test.logging.events";
 
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
-
+    
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
         File basePath = new File(BASE_PATH);
         basePath.mkdirs();
         File testLog = new File(TEST_EVENTS_LOG);
-
+        
         // Add a file handler with UniformLogFormatter
-        PayaraExecutorService payaraExecutorService = new TestPayaraExecutorService();
         gfFileHandler = new GFFileHandler();
-        gfFileHandler.setPayaraExecutorService(payaraExecutorService);
         gfFileHandler.changeFileName(testLog);
         UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setLogEventBroadcaster(gfFileHandler);
@@ -97,7 +97,7 @@ public class LogEventListenerTest {
     }
 
     private static TestLogEventListener logEventListener;
-
+    
     @Test
     public void testLogEventListenerNotifications() throws Exception {
         String msg = "Test message for testLogEventListenerNotifications";
@@ -106,49 +106,26 @@ public class LogEventListenerTest {
         assertEquals(msg, event.getMessage());
         System.out.println("Test testLogEventListenerNotifications passed.");
     }
-
+    
     @AfterClass
     public static void cleanupLoggingAnnotationsTest() throws Exception {
         logEventListener.logEvents.clear();
-        LOGGER.removeHandler(gfFileHandler);
+        LOGGER.removeHandler(gfFileHandler);        
         // Flush and Close the handler
         gfFileHandler.flush();
         gfFileHandler.close();
         gfFileHandler.preDestroy();
     }
-
-    private static class TestPayaraExecutorService extends PayaraExecutorService {
-
-        private ScheduledExecutorService scheduledExecutorService;
-        private ExecutorService executorService;
-
-        TestPayaraExecutorService() {
-            super();
-            this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            this.executorService = Executors.newSingleThreadExecutor();
-        }
-
-        @Override
-        public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
-            return this.scheduledExecutorService;
-        }
-
-        @Override
-        public Future<?> submit(Runnable task) {
-            return this.executorService.submit(task);
-        }
-
-    }
-
+    
     private static class TestLogEventListener implements LogEventListener {
-
-        private BlockingQueue<LogEvent> logEvents = new ArrayBlockingQueue<>(100);
+        
+        private BlockingQueue<LogEvent> logEvents = new ArrayBlockingQueue<LogEvent>(100);
 
         @Override
         public void messageLogged(LogEvent event) {
             logEvents.add(event);
         }
-
+        
     }
-
+    
 }
