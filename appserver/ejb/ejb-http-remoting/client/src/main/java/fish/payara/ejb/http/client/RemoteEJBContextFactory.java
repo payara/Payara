@@ -76,6 +76,8 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String PROVIDER_PRINCIPAL = "fish.payara.provider.principal";
     public static final String PROVIDER_CREDENTIALS = "fish.payara.provider.credentials";
 
+    public static final String JAXRS_CLIENT_REQUEST_FILTER = "fish.payara.requestFilter";
+    public static final String JAXRS_CLIENT_RESPONSE_FILTER = "fish.payara.responseFilter";
     public static final String JAXRS_CLIENT_CONFIG = "fish.payara.withConfig";
     public static final String JAXRS_CLIENT_TRUST_STORE = "fish.payara.trustStore";
     public static final String JAXRS_CLIENT_SSL_CONTEXT = "fish.payara.sslContext";

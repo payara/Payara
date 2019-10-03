@@ -64,6 +64,8 @@ import java.util.logging.Logger;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import java.util.logging.Level;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.core.Form;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
@@ -236,6 +238,26 @@ class RemoteEJBContext implements Context {
 
         if (environment.containsKey(JAXRS_CLIENT_CONFIG)) {
             clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
+        }
+
+        if (environment.containsKey(JAXRS_CLIENT_REQUEST_FILTER)) {
+            Object value = environment.get(JAXRS_CLIENT_REQUEST_FILTER);
+            if (value instanceof Class
+                    && (ClientRequestFilter.class.isAssignableFrom((Class) value))) {
+                clientBuilder.register((Class<ClientRequestFilter>) value);
+            } else if (value instanceof ClientRequestFilter) {
+                clientBuilder.register((ClientRequestFilter) value);
+            }
+        }
+
+        if (environment.containsKey(JAXRS_CLIENT_RESPONSE_FILTER)) {
+            Object value = environment.get(JAXRS_CLIENT_RESPONSE_FILTER);
+            if (value instanceof Class
+                    && (ClientResponseFilter.class.isAssignableFrom((Class) value))) {
+                clientBuilder.register((Class<ClientResponseFilter>) value);
+            } else if (value instanceof ClientResponseFilter) {
+                clientBuilder.register((ClientResponseFilter) value);
+            }
         }
 
         String providerPrincipal = (String)environment.get(PROVIDER_PRINCIPAL);
