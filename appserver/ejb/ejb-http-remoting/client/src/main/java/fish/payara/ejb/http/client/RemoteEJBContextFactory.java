@@ -72,7 +72,7 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String FACTORY_CLASS = RemoteEJBContextFactory.class.getName();
     public static final String CLIENT_ADAPTER = "fish.payara.clientAdapter";
 
-    public static final String PROVIDER_AUTH_TYPE = "fish.payara.provider.auth.type";
+    public static final String PROVIDER_AUTH_TYPE = "fish.payara.provider.authType";
     public static final String PROVIDER_PRINCIPAL = "fish.payara.provider.principal";
     public static final String PROVIDER_CREDENTIALS = "fish.payara.provider.credentials";
 
