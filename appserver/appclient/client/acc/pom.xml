@@ -394,6 +394,11 @@
          <artifactId>javax.json.bind-api</artifactId>
      </dependency>
 
+     <dependency>
+         <groupId>org.eclipse</groupId>
+         <artifactId>yasson</artifactId>
+     </dependency>     
+
      <!-- JAXR -JSR-93 Support-->
      <dependency>
          <groupId>javax.xml.registry</groupId>
