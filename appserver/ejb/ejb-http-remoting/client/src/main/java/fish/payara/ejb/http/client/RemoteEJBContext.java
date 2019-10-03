@@ -61,12 +61,14 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
-
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
-import fish.payara.ejb.http.protocol.rs.BasicAuthFilter;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import java.util.logging.Level;
+import javax.ws.rs.core.Form;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
+import static javax.ws.rs.core.SecurityContext.FORM_AUTH;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -240,8 +242,10 @@ class RemoteEJBContext implements Context {
         String providerCredentials = (String)environment.get(PROVIDER_CREDENTIALS);
         if (providerPrincipal != null && providerCredentials != null) {
             String authType = (String)environment.get(PROVIDER_AUTH_TYPE);
-            if (authType == null || BASIC_AUTH.equals(authType)) {
-                clientBuilder.register(new BasicAuthFilter(providerPrincipal, providerCredentials));
+            if (null == authType || BASIC_AUTH.equals(authType)) {
+                clientBuilder.register(HttpAuthenticationFeature.basic(providerPrincipal, providerCredentials));
+            } else if (DIGEST_AUTH.equals(authType)) {
+                clientBuilder.register(HttpAuthenticationFeature.digest(providerPrincipal, providerCredentials));
             }
         }
         return clientBuilder;
