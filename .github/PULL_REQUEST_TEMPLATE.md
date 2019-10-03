@@ -26,16 +26,16 @@ This is a bug fix / feature. <!-- delete/modify as applicable-->
 <!--- Please describe how you tested these changes.  -->
 
 ### Test suites executed
-<!-- Which test suites did you run this against? put an 'x' in the appropriate box(s). Feel free to add others.-->
-- [ ] Quicklook
-- [ ] Payara Samples
-- [ ] Java EE7 Samples
-- [ ] Java EE8 Samples
-- [ ] Payara Private Tests
-- [ ] Payara Microprofile TCKs Runner
-- [ ] Jakarta TCKs
-- [ ] Mojarra
-- [ ] Cargo Tracker
+<!-- Which test suites did you run this against? Keep corresponding items. Feel free to add others, for example bug reproducer project. -->
+- Quicklook
+- Payara Samples
+- Java EE7 Samples
+- Java EE8 Samples
+- Payara Private Tests
+- Payara Microprofile TCKs Runner
+- Jakarta TCKs
+- Mojarra
+- Cargo Tracker
 
 ### Testing Environment
 <!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
