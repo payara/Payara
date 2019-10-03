@@ -146,7 +146,6 @@
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>payara-client-ee7</artifactId>
-                    <version>1.1</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -167,7 +166,6 @@
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>payara-client-ee8</artifactId>
-                    <version>1.1</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -355,6 +353,7 @@
             <!-- http remoting tests are only available remote, with asadmin enable-ejb-invoker -->
             <modules>
                 <module>ejb-http-remoting</module>
+                <module>ejb-invoker-secure-endpoint</module>
             </modules>
             <dependencies>
 
