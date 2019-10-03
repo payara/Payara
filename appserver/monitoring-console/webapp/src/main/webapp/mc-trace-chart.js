@@ -48,7 +48,7 @@ MonitoringConsole.Chart.Trace = (function() {
    const DEFAULT_BG_COLORS = 'rgba(153, 102, 255, 0.2)';
    const DEFAULT_LINE_COLORS = 'rgba(153, 102, 255, 1)';
 
-   const Settings = MonitoringConsole.View.Widgets.Settings;
+   const Components = MonitoringConsole.View.Components;
    const util = MonitoringConsole.Chart.Common;
 
    var model = {};
@@ -147,23 +147,24 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function updateDomSpanDetails(data, span) {
-      let settingsPanel = Settings.emptyPanel();
-      settingsPanel.append(Settings.createTable('settings-span', 'Span')
-         .append(Settings.createRow('ID', span.id))
-         .append(Settings.createRow('Operation', span.operation))
-         .append(Settings.createRow('Start', util.formatDate(new Date(span.startTime))))
-         .append(Settings.createRow('End', util.formatDate(new Date(span.endTime))))
-         .append(Settings.createRow('Duration', (span.duration / 1000000) + 'ms'))
-         );
-
-      let tags = Settings.createTable('settings-tags', 'Tags'); 
+      let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
+      let model = [
+         { id: 'settings-span', caption: 'Span' , entries: [
+            { label: 'ID', input: span.id},
+            { label: 'Operation', input: span.operation},
+            { label: 'Start', input: util.formatDate(new Date(span.startTime))},
+            { label: 'End', input:  util.formatDate(new Date(span.endTime))},
+            { label: 'Duration', input: (span.duration / 1000000) + 'ms'},
+         ]},
+         tags,
+      ];
       for (let [key, value] of Object.entries(span.tags)) {
          if (value.startsWith('[') && value.endsWith(']')) {
             value = value.slice(1,-1);
          }
-         tags.append(Settings.createRow(key, autoLink(value)));
+         tags.entries.push({ label: key, input: autoLink(value)});
       }
-      settingsPanel.append(tags);
+      Components.onSettingsUpdate(model);
    }
 
 

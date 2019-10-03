@@ -41,9 +41,11 @@
 /*jshint esversion: 8 */
 
 /**
+ * Data/Model driven view components.
  *
+ * Each of them gets passed a model which updates the view of the component to the model state.
  **/
-MonitoringConsole.View.Widgets = (function() {
+MonitoringConsole.View.Components = (function() {
 
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
@@ -52,6 +54,9 @@ MonitoringConsole.View.Widgets = (function() {
       return (typeof e === 'string') ? document.createTextNode(e) : e;
    }
 
+   /**
+    * This is the side panel showing the details and settings of widgets
+    */
    let Settings = (function() {
 
       function emptyPanel() {
@@ -116,21 +121,107 @@ MonitoringConsole.View.Widgets = (function() {
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
          return createRow(label, () => dropdown);
       }
-      return {
-         emptyPanel: emptyPanel,
-         createTable: createTable,
-         createRow: createRow,
-         createHeaderRow: createHeaderRow,
-         createCheckboxRow: createCheckboxRow,
-         createSliderRow: createSliderRow,
-         createDropdownRow: createDropdownRow,
-      };
+
+      function onUpdate(model) {
+         let panel = emptyPanel();
+         for (let t = 0; t < model.length; t++) {
+            let tableModel = model[t];
+            let table = createTable(tableModel.id, tableModel.caption);
+            panel.append(table);
+            for (let r = 0; r < tableModel.entries.length; r++) {
+               let rowModel = tableModel.entries[r];
+               switch (rowModel.type) {
+                  case 'header':
+                     table.append(createHeaderRow(rowModel.label));
+                     break;
+                  case 'checkbox':
+                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'range':
+                  case 'slider':
+                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'dropdown':
+                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
+                     break;
+                  default:
+                     if (rowModel.input) {
+                        table.append(createRow(rowModel.label, rowModel.input));
+                     } else {
+                        table.append(createHeaderRow(rowModel.label));
+                     }
+               }
+            }
+         }
+      }
+
+      return { onUpdate: onUpdate };
+    })();
+
+    /**
+     * Legend is a generic component showing a number of current values annotated with label and color.
+     */ 
+    let Legend = (function() {
+
+      function createItem(label, value, color) {
+        return $('<li/>', {style: 'border-color: '+color+';'})
+               .append($('<span/>').text(label))
+               .append($('<span/>').text(value));
+      }
+
+      function onCreation(model) {
+         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         for (let i = 0; i < model.length; i++) {
+            let itemModel = model[i];
+            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+         }
+         return legend;
+      }
+
+      return { onCreation: onCreation };
+    })();
+
+    /**
+     * Component to navigate pages. More a less a dropdown.
+     */
+    let Navigation = (function() {
+
+      function onUpdate(model) {
+         let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
+         dropdown.change(() => model.onChange(dropdown.val()));
+         for (let i = 0; i < model.pages.length; i++) {
+            let pageModel = model.pages[i];
+            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
+            if (pageModel.active) {
+               dropdown.val(pageModel.id);
+            }
+         }
+         let nav = $("#panel-nav"); 
+         nav.empty();
+         nav.append(dropdown);
+         return dropdown;
+      }
+
+      return { onUpdate: onUpdate };
     })();
 
     /*
      * Public API below:
      */
     return {
-      Settings: Settings,
+      /**
+       * Call to update the settings side panel with the given model
+       */
+      onSettingsUpdate: (model) => Settings.onUpdate(model),
+      /**
+       * Call to update the top page navigation with the given model
+       */
+      onNavigationUpdate: (model) => Navigation.onUpdate(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onLegendCreation: (model) => Legend.onCreation(model),
+      //TODO add id to model and make it an update?
     };
+
 })();

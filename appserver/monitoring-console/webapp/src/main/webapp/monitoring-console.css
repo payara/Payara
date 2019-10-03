@@ -327,24 +327,16 @@ table.tags th, table.tags td {
   transform: translateX(-50%);
   display: inline-block;  
 }
-.nav-page-dropdown {
-  display: none;
-  position: absolute;
+#page-nav-dropdown {
   background-color: #002c3e;
-  white-space: nowrap;
   padding: 5px;
-  z-index: 160;
-  top: 35px;
-  left: -10px;
+  border-width: 0;
+  color: white;
+  font-size: 160%;
+  font-weight: bold;
+  max-width: 400px;
 }
-.nav-page-dropdown span {
-  display: block;
-  cursor: pointer;
-  padding: 5px;
-}
-.nav-page-dropdown span:hover {
-  background-color: #002433;
-}
+
 #panel-nav h2 {
   min-width: 100px;
   font-weight: bold;

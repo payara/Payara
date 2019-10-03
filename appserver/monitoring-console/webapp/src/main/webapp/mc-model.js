@@ -730,8 +730,10 @@ MonitoringConsole.Model = (function() {
 			Widgets: {
 				
 				add: function(series) {
-					UI.addWidget(series);
-					Interval.tick();
+					if (series.trim()) {
+						UI.addWidget(series);
+						Interval.tick();
+					}
 					return UI.arrange();
 				},
 				

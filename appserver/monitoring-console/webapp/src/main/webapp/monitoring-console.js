@@ -821,8 +821,10 @@ MonitoringConsole.Model = (function() {
 			Widgets: {
 				
 				add: function(series) {
-					UI.addWidget(series);
-					Interval.tick();
+					if (series.trim()) {
+						UI.addWidget(series);
+						Interval.tick();
+					}
 					return UI.arrange();
 				},
 				
@@ -934,9 +936,11 @@ MonitoringConsole.Model = (function() {
 /*jshint esversion: 8 */
 
 /**
+ * Data/Model driven view components.
  *
+ * Each of them gets passed a model which updates the view of the component to the model state.
  **/
-MonitoringConsole.View.Widgets = (function() {
+MonitoringConsole.View.Components = (function() {
 
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
@@ -945,6 +949,9 @@ MonitoringConsole.View.Widgets = (function() {
       return (typeof e === 'string') ? document.createTextNode(e) : e;
    }
 
+   /**
+    * This is the side panel showing the details and settings of widgets
+    */
    let Settings = (function() {
 
       function emptyPanel() {
@@ -1009,23 +1016,109 @@ MonitoringConsole.View.Widgets = (function() {
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
          return createRow(label, () => dropdown);
       }
-      return {
-         emptyPanel: emptyPanel,
-         createTable: createTable,
-         createRow: createRow,
-         createHeaderRow: createHeaderRow,
-         createCheckboxRow: createCheckboxRow,
-         createSliderRow: createSliderRow,
-         createDropdownRow: createDropdownRow,
-      };
+
+      function onUpdate(model) {
+         let panel = emptyPanel();
+         for (let t = 0; t < model.length; t++) {
+            let tableModel = model[t];
+            let table = createTable(tableModel.id, tableModel.caption);
+            panel.append(table);
+            for (let r = 0; r < tableModel.entries.length; r++) {
+               let rowModel = tableModel.entries[r];
+               switch (rowModel.type) {
+                  case 'header':
+                     table.append(createHeaderRow(rowModel.label));
+                     break;
+                  case 'checkbox':
+                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'range':
+                  case 'slider':
+                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'dropdown':
+                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
+                     break;
+                  default:
+                     if (rowModel.input) {
+                        table.append(createRow(rowModel.label, rowModel.input));
+                     } else {
+                        table.append(createHeaderRow(rowModel.label));
+                     }
+               }
+            }
+         }
+      }
+
+      return { onUpdate: onUpdate };
+    })();
+
+    /**
+     * Legend is a generic component showing a number of current values annotated with label and color.
+     */ 
+    let Legend = (function() {
+
+      function createItem(label, value, color) {
+        return $('<li/>', {style: 'border-color: '+color+';'})
+               .append($('<span/>').text(label))
+               .append($('<span/>').text(value));
+      }
+
+      function onCreation(model) {
+         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         for (let i = 0; i < model.length; i++) {
+            let itemModel = model[i];
+            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+         }
+         return legend;
+      }
+
+      return { onCreation: onCreation };
+    })();
+
+    /**
+     * Component to navigate pages. More a less a dropdown.
+     */
+    let Navigation = (function() {
+
+      function onUpdate(model) {
+         let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
+         dropdown.change(() => model.onChange(dropdown.val()));
+         for (let i = 0; i < model.pages.length; i++) {
+            let pageModel = model.pages[i];
+            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
+            if (pageModel.active) {
+               dropdown.val(pageModel.id);
+            }
+         }
+         let nav = $("#panel-nav"); 
+         nav.empty();
+         nav.append(dropdown);
+         return dropdown;
+      }
+
+      return { onUpdate: onUpdate };
     })();
 
     /*
      * Public API below:
      */
     return {
-      Settings: Settings,
+      /**
+       * Call to update the settings side panel with the given model
+       */
+      onSettingsUpdate: (model) => Settings.onUpdate(model),
+      /**
+       * Call to update the top page navigation with the given model
+       */
+      onNavigationUpdate: (model) => Navigation.onUpdate(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onLegendCreation: (model) => Legend.onCreation(model),
+      //TODO add id to model and make it an update?
     };
+
 })();
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -1678,7 +1771,7 @@ MonitoringConsole.Chart.Trace = (function() {
    const DEFAULT_BG_COLORS = 'rgba(153, 102, 255, 0.2)';
    const DEFAULT_LINE_COLORS = 'rgba(153, 102, 255, 1)';
 
-   const Settings = MonitoringConsole.View.Widgets.Settings;
+   const Components = MonitoringConsole.View.Components;
    const util = MonitoringConsole.Chart.Common;
 
    var model = {};
@@ -1777,23 +1870,24 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function updateDomSpanDetails(data, span) {
-      let settingsPanel = Settings.emptyPanel();
-      settingsPanel.append(Settings.createTable('settings-span', 'Span')
-         .append(Settings.createRow('ID', span.id))
-         .append(Settings.createRow('Operation', span.operation))
-         .append(Settings.createRow('Start', util.formatDate(new Date(span.startTime))))
-         .append(Settings.createRow('End', util.formatDate(new Date(span.endTime))))
-         .append(Settings.createRow('Duration', (span.duration / 1000000) + 'ms'))
-         );
-
-      let tags = Settings.createTable('settings-tags', 'Tags'); 
+      let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
+      let model = [
+         { id: 'settings-span', caption: 'Span' , entries: [
+            { label: 'ID', input: span.id},
+            { label: 'Operation', input: span.operation},
+            { label: 'Start', input: util.formatDate(new Date(span.startTime))},
+            { label: 'End', input:  util.formatDate(new Date(span.endTime))},
+            { label: 'Duration', input: (span.duration / 1000000) + 'ms'},
+         ]},
+         tags,
+      ];
       for (let [key, value] of Object.entries(span.tags)) {
          if (value.startsWith('[') && value.endsWith(']')) {
             value = value.slice(1,-1);
          }
-         tags.append(Settings.createRow(key, autoLink(value)));
+         tags.entries.push({ label: key, input: autoLink(value)});
       }
-      settingsPanel.append(tags);
+      Components.onSettingsUpdate(model);
    }
 
 
@@ -1871,25 +1965,19 @@ MonitoringConsole.Chart.Trace = (function() {
  **/
 MonitoringConsole.View = (function() {
 
-    const Settings = MonitoringConsole.View.Widgets.Settings;
+    const Components = MonitoringConsole.View.Components;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = $("#panel-nav"); 
-        nav.empty();
-        let dropdown = $('<span/>', {'class': 'nav-page-dropdown'});
-        MonitoringConsole.Model.listPages().forEach(function(page) {            
-            if (page.active) {
-                nav.append($('<h2/>', {text: page.name})
-                    .click(() => dropdown.toggle()));
-            } else {
-                dropdown.append($('<span/>', {text: page.name})
-                    .click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id))));                
-            }
-        });
-        nav.append(dropdown);
+        let nav = { 
+            onChange: (pageid) => onPageChange(MonitoringConsole.Model.Page.changeTo(pageid)),
+            pages: MonitoringConsole.Model.listPages().map(function(page) {
+                return { label: page.name, id: page.id, active: page.active };
+            }),
+        };
+        Components.onNavigationUpdate(nav);
     }
 
     /**
@@ -1901,12 +1989,13 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let panelSettings = Settings.emptyPanel()
-                .append(createPageSettings())
-                .append(createDataSettings());
+            let model = [];
+            model.push(createPageSettings());
+            model.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                panelSettings.append(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
+            Components.onSettingsUpdate(model);
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -1935,7 +2024,7 @@ MonitoringConsole.View = (function() {
             } else {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
-                parent.append(createWidgetLegend(widget));                
+                parent.append(Components.onLegendCreation([]));                
             }
         }
         if (widget.selected) {
@@ -2017,35 +2106,35 @@ MonitoringConsole.View = (function() {
 
 
     function createWidgetSettings(widget) {
-        let settings = Settings.createTable('settings-widget')
-            .append(Settings.createHeaderRow(formatSeriesName(widget)))
-            .append(Settings.createHeaderRow('General'))
-            .append(Settings.createDropdownRow('Type', {line: 'Time Curve', bar: 'Range Indicator'}, widget.type, (widget, selected) => widget.type = selected))
-            .append(Settings.createSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
-            .append(Settings.createSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1))
-            .append(Settings.createSliderRow('Item', 1, 4, 1 + (widget.grid.item || 0), (widget, value) => widget.grid.item = value - 1))
-            .append(Settings.createHeaderRow('Data'))
-            .append(Settings.createCheckboxRow('Add Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
-            .append(Settings.createCheckboxRow('Add Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))            
-            ;
+        let options = widget.options;
+        let model = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
+            { label: 'General'},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
+            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            { label: 'Data'},
+            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+        ]};
         if (widget.type === 'line') {
-            settings
-            .append(Settings.createCheckboxRow('Add Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
-            .append(Settings.createCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
-            .append(Settings.createHeaderRow('Display Options'))
-            .append(Settings.createCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
-            .append(Settings.createCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
-            .append(Settings.createCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
-            .append(Settings.createCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
-            .append(Settings.createCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
-            .append(Settings.createCheckboxRow('Show Points', widget.options.drawPoints, (widget, checked) => widget.options.drawPoints = checked))
-            .append(Settings.createCheckboxRow('Show Fill', widget.options.drawFill, (widget, checked) => widget.options.drawFill = checked))
-            .append(Settings.createCheckboxRow('Show Stabe', widget.options.drawStableLine, (widget, checked) => widget.options.drawStableLine = checked))
-            .append(Settings.createCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
-            .append(Settings.createCheckboxRow('Show Time Labels', widget.options.showTimeLabels, (widget, checked) => widget.options.showTimeLabels = checked))
-            ;            
+            model.entries.push(
+                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
+                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: 'Display Options'},
+                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
+                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
+                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
+                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
+                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
+                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
+                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
+                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
+            );
         }
-        return settings;        
+        return model;       
     }
 
     function createPageSettings() {
@@ -2068,20 +2157,24 @@ MonitoringConsole.View = (function() {
         });
         let widgetSeries = $('<input />', {type: 'text'});
         widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
-        return Settings.createTable('settings-page')
-            .append(Settings.createHeaderRow('Page'))
-            .append(Settings.createRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
+        
+        return { id: 'settings-page', caption: 'Page', entries: [
+            { label: 'Name', input: () => 
+                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
                 .on("propertychange change keyup paste input", function() {
                     if (MonitoringConsole.Model.Page.rename(this.value)) {
                         updatePageNavigation();                        
                     }
-                })))
-            .append(Settings.createRow('Widgets', () => $('<span/>')
+                })
+            },
+            { label: 'Widgets', input: () => 
+                $('<span/>')
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
                     .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
-                ));
+            },
+        ]};
     }
 
     function createDataSettings() {
@@ -2091,9 +2184,9 @@ MonitoringConsole.View = (function() {
                 instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
             }
         });
-        return Settings.createTable('settings-data')
-            .append(Settings.createHeaderRow('Data'))
-            .append(Settings.createRow('Instances', () => instanceSelection));
+        return { id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Instances', input: instanceSelection }
+        ]};
     }
 
     
@@ -2139,10 +2232,12 @@ MonitoringConsole.View = (function() {
         let legendNode = widgetNode.find('.widget-legend-bar').first();
         if (update.data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
-            legendNode.empty();
+            let legend = [];
             for (let j = 0; j < update.data.length; j++) {
-                legendNode.append(createWidgetLegendItem(update.data[j], MonitoringConsole.Chart.Common.lineColor(j)));
+                let data = update.data[j];
+                legend.push({ label: data.instance, value: data.points[data.points.length-1], color: MonitoringConsole.Chart.Common.lineColor(j) });
             }
+            legendNode.replaceWith(Components.onLegendCreation(legend));
         } else {
             //TODO
         }
