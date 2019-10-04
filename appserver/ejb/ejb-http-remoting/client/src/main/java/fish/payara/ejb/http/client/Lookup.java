@@ -45,7 +45,7 @@ import javax.naming.NamingException;
 import java.util.Base64;
 import java.util.Map;
 
-public abstract class Lookup {
+abstract class Lookup {
     protected final Map<String, Object> environment;
 
     protected Lookup(Map<String,Object> environment) {

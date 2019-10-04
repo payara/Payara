@@ -350,7 +350,7 @@
 
             -->
 
-            <!-- http remoting tests are only available remote, with asadmin enable-ejb-invoker -->
+            <!-- http remoting tests are only available remote, with asadmin set-ejb-invoker-configuration \-\-enabled=true -->
             <modules>
                 <module>ejb-http-remoting</module>
                 <module>ejb-invoker-secure-endpoint</module>

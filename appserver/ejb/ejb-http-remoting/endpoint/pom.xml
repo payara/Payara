@@ -56,7 +56,7 @@
         This module contains the endpoint that services HTTP commands from the client (fish.payara.ejb.http:ejb-http-client) and looks EJBs up and invokes them.
         
         It contains a mini web application that is picked up by the domain template (fish.payara.server.internal.admin:nucleus-domain) which places it in the
-        glassfish/domains/[domainname]/endpoints/ejb-invoker folder.
+        glassfish/domains/[domainname]/endpoints/__ejb-invoker folder.
     </description>
 
     <dependencies>

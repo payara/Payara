@@ -53,5 +53,5 @@ public interface Constants {
     
     String ENDPOINTS_DIR = "endpoints";
 
-    String EJB_INVOKER_APP = "ejb-invoker";
+    String EJB_INVOKER_APP = "__ejb-invoker";
 }
