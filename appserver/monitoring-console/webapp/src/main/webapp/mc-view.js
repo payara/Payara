@@ -319,7 +319,8 @@ MonitoringConsole.View = (function() {
             }
             legendNode.replaceWith(Components.onLegendCreation(legend));
         } else {
-            //TODO
+            let legend = [{ label: 'No Data', value: '?', color: 'red' }];
+            legendNode.replaceWith(Components.onLegendCreation(legend));
         }
     }
 
@@ -330,7 +331,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -380,7 +381,7 @@ MonitoringConsole.View = (function() {
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
-        onPageImport: () => MonitoringConsole.Model.importPages(this.files, onPageChange),
+        onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
         onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),

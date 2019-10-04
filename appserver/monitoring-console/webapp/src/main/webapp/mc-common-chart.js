@@ -43,27 +43,31 @@
 MonitoringConsole.Chart.Common = (function() {
 
    const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+      'rgba(240, 152, 27, 0.2)',
+      'rgba(0, 140, 196, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(255, 206, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(255, 159, 64, 0.2)'
+   ];
+   const DEFAULT_LINE_COLORS = [
+      'rgba(240, 152, 27, 1)',
+      'rgba(0, 140, 196, 1)',
+      'rgba(153, 102, 255, 1)',
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)',
+      'rgba(255, 159, 64, 1)'
+   ];
 
    function createCustomTooltipFunction(createHtmlTooltip) {
       return function(tooltipModel) {
         let tooltip = $('#chartjs-tooltip');
         if (tooltipModel.opacity === 0) {
-          //tooltip.css({opacity: 0}); // without this the tooptip sticks and is not removed when moving the mouse away
+          tooltip.css({opacity: 0}); // without this the tooptip sticks and is not removed when moving the mouse away
           return;
         }
         tooltipModel.opacity = 1;
@@ -74,30 +78,38 @@ MonitoringConsole.Chart.Common = (function() {
    }
 
    function formatDate(date) {
+      if (typeof date === 'number') {
+         date = new Date(date);
+      }
       let dayOfMonth = date.getDate();
       let month = date.getMonth() + 1;
       let year = date.getFullYear();
       let hour = date.getHours();
-      let minutes = date.getMinutes();
-      let diffMs = new Date() - date;
-      let diffSec = Math.round(diffMs / 1000);
-      let diffMin = diffSec / 60;
-      let diffHour = diffMin / 60;
-
-      // formatting
-      year = year.toString().slice(-2);
-      month = month < 10 ? '0' + month : month;
-      dayOfMonth = dayOfMonth < 10 ? '0' + dayOfMonth : dayOfMonth;
-
-      if (diffSec < 1) {
-       return 'right now';
-      } else if (diffMin < 1) {
-       return `${diffSec} sec. ago`;
-      } else if (diffHour < 1) {
-       return `${diffMin} min. ago`;
-      } else {
-       return `${dayOfMonth}.${month}.${year} ${hour}:${minutes}`;
+      let min = date.getMinutes();
+      let sec = date.getSeconds();
+      let ms = date.getMilliseconds();
+      let now = new Date();
+      let diffMs =  now - date;
+      let text = `Today ${hour}:${min}:${sec}.${ms}`; 
+      if (diffMs < 5000) {
+         return text + ' (just now)';
       }
+      if (diffMs < 60 * 1000) { // less then a minute ago
+         let diffSecs = diffMs / 1000;
+         return text + ' (about '+ diffSecs.toFixed(0) + ' seconds ago)';
+      }
+      if (diffMs < 60 * 60 * 1000) { // less then an hour ago
+         let diffMins = diffMs / (60*1000);
+         return text + ' (about '+ diffMins.toFixed(0) + ' minutes ago)';  
+      }
+      let dayOfMonthNow = now.getDate();
+      if (dayOfMonth == dayOfMonthNow) {
+         return text;
+      }
+      if (dayOfMonthNow - 1 == dayOfMonth) {
+         return `Yesterday ${hour}:${min}:${sec}.${ms}`; 
+      }
+      return `${dayOfMonth}.${month}.${year} ${hour}:${min}:${sec}.${ms}`; 
    }
 
    /**
@@ -110,7 +122,9 @@ MonitoringConsole.Chart.Common = (function() {
       createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
       formatDate: (date) => formatDate(date),
       backgroundColor: (n) => DEFAULT_BG_COLORS[n],
+      backgroundColors: () => DEFAULT_BG_COLORS,
       lineColor: (n) => DEFAULT_LINE_COLORS[n],
+      lineColors: () => DEFAULT_LINE_COLORS,
    };
 
 })();

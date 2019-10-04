@@ -45,11 +45,8 @@
  */ 
 MonitoringConsole.Chart.Trace = (function() {
 
-   const DEFAULT_BG_COLORS = 'rgba(153, 102, 255, 0.2)';
-   const DEFAULT_LINE_COLORS = 'rgba(153, 102, 255, 1)';
-
    const Components = MonitoringConsole.View.Components;
-   const util = MonitoringConsole.Chart.Common;
+   const Common = MonitoringConsole.Chart.Common;
 
    var model = {};
    var chart;
@@ -59,6 +56,11 @@ MonitoringConsole.Chart.Trace = (function() {
       let minToMaxValues = [];
       let spans = [];
       let labels = [];
+      let operations = {};
+      let colorCounter = 0;
+      let colors = [];
+      let bgColors = [];
+      data.sort((a,b) => a.startTime - b.startTime);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
          let startTime = trace.startTime;
@@ -68,30 +70,56 @@ MonitoringConsole.Chart.Trace = (function() {
             zeroToMinValues.push(span.startTime - startTime);
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
-         }        
+            if (!operations[span.operation]) {
+               operations[span.operation] = {
+                  color: Common.lineColor(colorCounter),
+                  bgColor: Common.backgroundColor(colorCounter++),
+                  count: 1,
+                  duration: span.endTime - span.startTime,
+               };
+            } else {
+               let op = operations[span.operation];
+               op.count += 1;
+               op.duration += span.endTime - span.startTime;
+            }
+            colors.push(operations[span.operation].color);
+            bgColors.push(operations[span.operation].bgColor);
+         }
+         spans.push(null);
+         zeroToMinValues.push(0);
+         minToMaxValues.push(0);
+         labels.push('');
+         colors.push('transparent');
+         bgColors.push('transparent');
       }
       let datasets = [ {
             data: zeroToMinValues,
             backgroundColor: 'transparent',
          }, {
             data: minToMaxValues,
-            backgroundColor: DEFAULT_BG_COLORS,
-            borderColor: DEFAULT_LINE_COLORS,
-            borderWidth: { right: 2 },
+            backgroundColor: bgColors, //'rgba(153, 153, 153, 0.2)',
+            borderColor: colors,
+            borderWidth: { right: 3 },
          }
       ];
       if (!chart) {
          chart = onCreation();
       }
-      $('#trace-chart').height(labels.length * 15 + 30);
+      let legend = [];
+      for (let [label, operationData] of Object.entries(operations)) {
+         legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
+      }
+      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-chart-box').height(10 * spans.length + 30);
       chart.data = { 
          datasets: datasets,
-         labels: labels,
          spans: spans,
+         labels: labels,
       };
       chart.options.onClick = function(event)  {
         updateDomSpanDetails(data, spans[this.getElementsAtEventForMode(event, "y", 1)[0]._index]); 
       };
+      addCustomTooltip(chart, spans);
       chart.update(0);
    }
 
@@ -101,12 +129,15 @@ MonitoringConsole.Chart.Trace = (function() {
       return $(document.createTextNode(text));
    }
 
-   function addCustomTooltip(chart) {
-      chart.options.tooltips.custom = util.createCustomTooltipFunction(function(dataPoints) {
+   function addCustomTooltip(chart, spans) {
+      chart.options.tooltips.custom = Common.createCustomTooltipFunction(function(dataPoints) {
          let index = dataPoints[0].index;
          let span = spans[index];
-         let body = $('<div/>');
-         //...
+         let body = $('<div/>', {'class': 'Tooltip'});
+         body
+            .append($('<div/>').text("ID: "+span.id))
+            .append($('<div/>').text("Start: "+Common.formatDate(span.startTime)))
+            .append($('<div/>').text("End: "+Common.formatDate(span.endTime)));
          return body;
       });      
    }
@@ -123,15 +154,18 @@ MonitoringConsole.Chart.Trace = (function() {
                   position: 'top',
                }],
                yAxes: [{
-                  maxBarThickness: 15, //px
-                  barThickness: 15, //px
+                  maxBarThickness: 10, //px
+                  barThickness: 10, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
                   stacked: true,
                   gridLines: {
                      display:false
-                  }
+                  },
+                  ticks: {
+                     display: false,
+                  },
                }]
             },
             legend: {
@@ -152,8 +186,8 @@ MonitoringConsole.Chart.Trace = (function() {
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
-            { label: 'Start', input: util.formatDate(new Date(span.startTime))},
-            { label: 'End', input:  util.formatDate(new Date(span.endTime))},
+            { label: 'Start', input: Common.formatDate(new Date(span.startTime))},
+            { label: 'End', input:  Common.formatDate(new Date(span.endTime))},
             { label: 'Duration', input: (span.duration / 1000000) + 'ms'},
          ]},
          tags,

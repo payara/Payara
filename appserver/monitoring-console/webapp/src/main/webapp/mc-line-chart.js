@@ -45,22 +45,7 @@
  */ 
 MonitoringConsole.Chart.Line = (function() {
 	
-	const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+  const Common = MonitoringConsole.Chart.Common;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -275,7 +260,7 @@ MonitoringConsole.Chart.Line = (function() {
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
       datasets = datasets.concat(
-          createSeriesDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
+          createSeriesDatasets(widget, data[j], Common.lineColor(j), Common.backgroundColor(j)));
     }
     chart.data.datasets = datasets;
     chart.update(0);

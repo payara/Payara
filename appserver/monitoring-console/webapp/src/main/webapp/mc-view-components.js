@@ -164,9 +164,16 @@ MonitoringConsole.View.Components = (function() {
     let Legend = (function() {
 
       function createItem(label, value, color) {
-        return $('<li/>', {style: 'border-color: '+color+';'})
+         let strong = value;
+         let normal = '';
+         if (typeof value === 'string' && value.indexOf(' ') > 0) {
+            strong = value.substring(0, value.indexOf(' '));
+            normal = value.substring(value.indexOf(' '));
+         }
+         return $('<li/>', {style: 'border-color: '+color+';'})
                .append($('<span/>').text(label))
-               .append($('<span/>').text(value));
+               .append($('<strong/>').text(strong))
+               .append($('<span/>').text(normal));
       }
 
       function onCreation(model) {

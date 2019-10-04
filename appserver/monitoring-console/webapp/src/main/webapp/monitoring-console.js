@@ -1059,9 +1059,16 @@ MonitoringConsole.View.Components = (function() {
     let Legend = (function() {
 
       function createItem(label, value, color) {
-        return $('<li/>', {style: 'border-color: '+color+';'})
+         let strong = value;
+         let normal = '';
+         if (typeof value === 'string' && value.indexOf(' ') > 0) {
+            strong = value.substring(0, value.indexOf(' '));
+            normal = value.substring(value.indexOf(' '));
+         }
+         return $('<li/>', {style: 'border-color: '+color+';'})
                .append($('<span/>').text(label))
-               .append($('<span/>').text(value));
+               .append($('<strong/>').text(strong))
+               .append($('<span/>').text(normal));
       }
 
       function onCreation(model) {
@@ -1165,27 +1172,31 @@ MonitoringConsole.View.Components = (function() {
 MonitoringConsole.Chart.Common = (function() {
 
    const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+      'rgba(240, 152, 27, 0.2)',
+      'rgba(0, 140, 196, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(255, 206, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(255, 159, 64, 0.2)'
+   ];
+   const DEFAULT_LINE_COLORS = [
+      'rgba(240, 152, 27, 1)',
+      'rgba(0, 140, 196, 1)',
+      'rgba(153, 102, 255, 1)',
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)',
+      'rgba(255, 159, 64, 1)'
+   ];
 
    function createCustomTooltipFunction(createHtmlTooltip) {
       return function(tooltipModel) {
         let tooltip = $('#chartjs-tooltip');
         if (tooltipModel.opacity === 0) {
-          //tooltip.css({opacity: 0}); // without this the tooptip sticks and is not removed when moving the mouse away
+          tooltip.css({opacity: 0}); // without this the tooptip sticks and is not removed when moving the mouse away
           return;
         }
         tooltipModel.opacity = 1;
@@ -1196,30 +1207,38 @@ MonitoringConsole.Chart.Common = (function() {
    }
 
    function formatDate(date) {
+      if (typeof date === 'number') {
+         date = new Date(date);
+      }
       let dayOfMonth = date.getDate();
       let month = date.getMonth() + 1;
       let year = date.getFullYear();
       let hour = date.getHours();
-      let minutes = date.getMinutes();
-      let diffMs = new Date() - date;
-      let diffSec = Math.round(diffMs / 1000);
-      let diffMin = diffSec / 60;
-      let diffHour = diffMin / 60;
-
-      // formatting
-      year = year.toString().slice(-2);
-      month = month < 10 ? '0' + month : month;
-      dayOfMonth = dayOfMonth < 10 ? '0' + dayOfMonth : dayOfMonth;
-
-      if (diffSec < 1) {
-       return 'right now';
-      } else if (diffMin < 1) {
-       return `${diffSec} sec. ago`;
-      } else if (diffHour < 1) {
-       return `${diffMin} min. ago`;
-      } else {
-       return `${dayOfMonth}.${month}.${year} ${hour}:${minutes}`;
+      let min = date.getMinutes();
+      let sec = date.getSeconds();
+      let ms = date.getMilliseconds();
+      let now = new Date();
+      let diffMs =  now - date;
+      let text = `Today ${hour}:${min}:${sec}.${ms}`; 
+      if (diffMs < 5000) {
+         return text + '(just now)';
       }
+      if (diffMs < 60 * 1000) { // less then a minute ago
+         let diffSecs = diffMs / 1000;
+         return text + '(about '+ diffSecs.toFixed(0) + ' seconds ago)';
+      }
+      if (diffMs < 60 * 60 * 1000) { // less then an hour ago
+         let diffMins = diffMs / (60*1000);
+         return text + '(about '+ diffMins.toFixed(0) + ' minutes ago)';  
+      }
+      let dayOfMonthNow = now.getDate();
+      if (dayOfMonth == dayOfMonthNow) {
+         return text;
+      }
+      if (dayOfMonthNow - 1 == dayOfMonth) {
+         return `Yesterday ${hour}:${min}:${sec}.${ms}`; 
+      }
+      return `${dayOfMonth}.${month}.${year} ${hour}:${min}:${sec}.${ms}`; 
    }
 
    /**
@@ -1232,7 +1251,9 @@ MonitoringConsole.Chart.Common = (function() {
       createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
       formatDate: (date) => formatDate(date),
       backgroundColor: (n) => DEFAULT_BG_COLORS[n],
+      backgroundColors: () => DEFAULT_BG_COLORS,
       lineColor: (n) => DEFAULT_LINE_COLORS[n],
+      lineColors: () => DEFAULT_LINE_COLORS,
    };
 
 })();
@@ -1283,22 +1304,7 @@ MonitoringConsole.Chart.Common = (function() {
  */ 
 MonitoringConsole.Chart.Line = (function() {
 	
-	const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+  const Common = MonitoringConsole.Chart.Common;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -1513,7 +1519,7 @@ MonitoringConsole.Chart.Line = (function() {
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
       datasets = datasets.concat(
-          createSeriesDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
+          createSeriesDatasets(widget, data[j], Common.lineColor(j), Common.backgroundColor(j)));
     }
     chart.data.datasets = datasets;
     chart.update(0);
@@ -1575,22 +1581,7 @@ MonitoringConsole.Chart.Line = (function() {
  */ 
 MonitoringConsole.Chart.Bar = (function() {
 
-   const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+  const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
       let labels = [];
@@ -1633,27 +1624,29 @@ MonitoringConsole.Chart.Bar = (function() {
         data: zeroToMinValues,
         backgroundColor: 'transparent',
       };
-      datasets.push(offset);  
+      datasets.push(offset);
+      let bgColors = Common.backgroundColors();
+      let lineColors = Common.lineColors();
       if (showObservedMin) {
          datasets.push({
             data: observedMinToMinValues,
-            backgroundColor: DEFAULT_BG_COLORS,
-            borderColor: DEFAULT_LINE_COLORS,
+            backgroundColor: bgColors,
+            borderColor: lineColors,
             borderWidth: { right: 2 },
          });       
       }
-      offset.borderColor = DEFAULT_LINE_COLORS;
+      offset.borderColor = lineColors;
       offset.borderWidth = { right: 2 };  
       datasets.push({
          data: minToMaxValues,
-         backgroundColor: DEFAULT_BG_COLORS,
-         borderColor: DEFAULT_LINE_COLORS,
+         backgroundColor: bgColors,
+         borderColor: lineColors,
          borderWidth: { right: 2 },
       });
       if (widget.options.drawMaxLine) {
          datasets.push({
            data: maxToObservedMaxValues,
-           backgroundColor: DEFAULT_BG_COLORS,
+           backgroundColor: bgColors,
          }); 
       }
       return {
@@ -1768,11 +1761,8 @@ MonitoringConsole.Chart.Bar = (function() {
  */ 
 MonitoringConsole.Chart.Trace = (function() {
 
-   const DEFAULT_BG_COLORS = 'rgba(153, 102, 255, 0.2)';
-   const DEFAULT_LINE_COLORS = 'rgba(153, 102, 255, 1)';
-
    const Components = MonitoringConsole.View.Components;
-   const util = MonitoringConsole.Chart.Common;
+   const Common = MonitoringConsole.Chart.Common;
 
    var model = {};
    var chart;
@@ -1782,6 +1772,11 @@ MonitoringConsole.Chart.Trace = (function() {
       let minToMaxValues = [];
       let spans = [];
       let labels = [];
+      let operations = {};
+      let colorCounter = 0;
+      let colors = [];
+      let bgColors = [];
+      data.sort((a,b) => a.startTime - b.startTime);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
          let startTime = trace.startTime;
@@ -1791,30 +1786,56 @@ MonitoringConsole.Chart.Trace = (function() {
             zeroToMinValues.push(span.startTime - startTime);
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
-         }        
+            if (!operations[span.operation]) {
+               operations[span.operation] = {
+                  color: Common.lineColor(colorCounter),
+                  bgColor: Common.backgroundColor(colorCounter++),
+                  count: 1,
+                  duration: span.endTime - span.startTime,
+               };
+            } else {
+               let op = operations[span.operation];
+               op.count += 1;
+               op.duration += span.endTime - span.startTime;
+            }
+            colors.push(operations[span.operation].color);
+            bgColors.push(operations[span.operation].bgColor);
+         }
+         spans.push(null);
+         zeroToMinValues.push(0);
+         minToMaxValues.push(0);
+         labels.push('');
+         colors.push('transparent');
+         bgColors.push('transparent');
       }
       let datasets = [ {
             data: zeroToMinValues,
             backgroundColor: 'transparent',
          }, {
             data: minToMaxValues,
-            backgroundColor: DEFAULT_BG_COLORS,
-            borderColor: DEFAULT_LINE_COLORS,
-            borderWidth: { right: 2 },
+            backgroundColor: bgColors, //'rgba(153, 153, 153, 0.2)',
+            borderColor: colors,
+            borderWidth: { right: 3 },
          }
       ];
       if (!chart) {
          chart = onCreation();
       }
-      $('#trace-chart').height(labels.length * 15 + 30);
+      let legend = [];
+      for (let [label, operationData] of Object.entries(operations)) {
+         legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
+      }
+      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-chart-box').height(10 * spans.length + 30);
       chart.data = { 
          datasets: datasets,
-         labels: labels,
          spans: spans,
+         labels: labels,
       };
       chart.options.onClick = function(event)  {
         updateDomSpanDetails(data, spans[this.getElementsAtEventForMode(event, "y", 1)[0]._index]); 
       };
+      addCustomTooltip(chart, spans);
       chart.update(0);
    }
 
@@ -1824,12 +1845,15 @@ MonitoringConsole.Chart.Trace = (function() {
       return $(document.createTextNode(text));
    }
 
-   function addCustomTooltip(chart) {
-      chart.options.tooltips.custom = util.createCustomTooltipFunction(function(dataPoints) {
+   function addCustomTooltip(chart, spans) {
+      chart.options.tooltips.custom = Common.createCustomTooltipFunction(function(dataPoints) {
          let index = dataPoints[0].index;
          let span = spans[index];
-         let body = $('<div/>');
-         //...
+         let body = $('<div/>', {'class': 'Tooltip'});
+         body
+            .append($('<div/>').text("ID: "+span.id))
+            .append($('<div/>').text("Start: "+Common.formatDate(span.startTime)))
+            .append($('<div/>').text("End: "+Common.formatDate(span.endTime)));
          return body;
       });      
    }
@@ -1846,15 +1870,18 @@ MonitoringConsole.Chart.Trace = (function() {
                   position: 'top',
                }],
                yAxes: [{
-                  maxBarThickness: 15, //px
-                  barThickness: 15, //px
+                  maxBarThickness: 10, //px
+                  barThickness: 10, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
                   stacked: true,
                   gridLines: {
                      display:false
-                  }
+                  },
+                  ticks: {
+                     display: false,
+                  },
                }]
             },
             legend: {
@@ -1875,8 +1902,8 @@ MonitoringConsole.Chart.Trace = (function() {
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
-            { label: 'Start', input: util.formatDate(new Date(span.startTime))},
-            { label: 'End', input:  util.formatDate(new Date(span.endTime))},
+            { label: 'Start', input: Common.formatDate(new Date(span.startTime))},
+            { label: 'End', input:  Common.formatDate(new Date(span.endTime))},
             { label: 'Duration', input: (span.duration / 1000000) + 'ms'},
          ]},
          tags,
@@ -2239,7 +2266,8 @@ MonitoringConsole.View = (function() {
             }
             legendNode.replaceWith(Components.onLegendCreation(legend));
         } else {
-            //TODO
+            let legend = [{ label: 'No Data', value: '?', color: 'red' }];
+            legendNode.replaceWith(Components.onLegendCreation(legend));
         }
     }
 
@@ -2250,7 +2278,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -2300,7 +2328,7 @@ MonitoringConsole.View = (function() {
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
-        onPageImport: () => MonitoringConsole.Model.importPages(this.files, onPageChange),
+        onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
         onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),

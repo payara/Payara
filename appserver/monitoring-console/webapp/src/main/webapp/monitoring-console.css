@@ -80,6 +80,13 @@ button {
 button:hover {
 	background-color: #F1A232;
 }
+#logo {
+  height: 30px;
+  top: 5px;
+  left: 15px;
+  position: absolute;
+}
+
 #panel-trace {
   position: absolute;
   top: 0;
@@ -91,6 +98,7 @@ button:hover {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  margin-bottom: 40px;
 }
 #trace-chart-box {
   position: relative;
@@ -166,7 +174,6 @@ button.btnIcon:hover {
 }
 #panel-iconbar {
 	padding: 0 10px;
-	margin-bottom: 5px;
 }
 #panel-iconbar button {
 	color: #bbb;
@@ -217,9 +224,6 @@ button.btnIcon:hover {
 #panel-settings {
     width: 380px;
     padding: 0;
-    background-image: url("payara-server-logo.png");
-    background-repeat: no-repeat;
-    background-position: 0 10px;
     vertical-align: top;
     position: absolute;
     top: 5px;
@@ -230,9 +234,6 @@ button.btnIcon:hover {
     padding: 10px;
     margin-top: 5px;
     width: 100%;
-}
-.settings:first-child {
-    margin-top: 210px;
 }
 .settings th {
   cursor: pointer;
@@ -310,13 +311,12 @@ table.tags th, table.tags td {
   border-left: 5px solid #ccc;
   margin-right: 20px;
 }
-.widget-legend-bar li span {
+.widget-legend-bar li strong {
   font-size: 200%;
   font-weight: bold;
-  display: block;
 }
 .widget-legend-bar li span:first-child {
-  font-size: 100%;
+  display: block;
   font-weight: 300;
 }
 

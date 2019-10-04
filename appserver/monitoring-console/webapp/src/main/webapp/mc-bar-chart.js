@@ -45,22 +45,7 @@
  */ 
 MonitoringConsole.Chart.Bar = (function() {
 
-   const DEFAULT_BG_COLORS = [
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(255, 159, 64, 0.2)'
-  ];
-  const DEFAULT_LINE_COLORS = [
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 159, 64, 1)'
-  ];
+  const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
       let labels = [];
@@ -103,27 +88,29 @@ MonitoringConsole.Chart.Bar = (function() {
         data: zeroToMinValues,
         backgroundColor: 'transparent',
       };
-      datasets.push(offset);  
+      datasets.push(offset);
+      let bgColors = Common.backgroundColors();
+      let lineColors = Common.lineColors();
       if (showObservedMin) {
          datasets.push({
             data: observedMinToMinValues,
-            backgroundColor: DEFAULT_BG_COLORS,
-            borderColor: DEFAULT_LINE_COLORS,
+            backgroundColor: bgColors,
+            borderColor: lineColors,
             borderWidth: { right: 2 },
          });       
       }
-      offset.borderColor = DEFAULT_LINE_COLORS;
+      offset.borderColor = lineColors;
       offset.borderWidth = { right: 2 };  
       datasets.push({
          data: minToMaxValues,
-         backgroundColor: DEFAULT_BG_COLORS,
-         borderColor: DEFAULT_LINE_COLORS,
+         backgroundColor: bgColors,
+         borderColor: lineColors,
          borderWidth: { right: 2 },
       });
       if (widget.options.drawMaxLine) {
          datasets.push({
            data: maxToObservedMaxValues,
-           backgroundColor: DEFAULT_BG_COLORS,
+           backgroundColor: bgColors,
          }); 
       }
       return {
