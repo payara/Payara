@@ -1369,6 +1369,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         targetTypesAllowed.add(CommandTarget.STANDALONE_INSTANCE);
                         targetTypesAllowed.add(CommandTarget.CLUSTER);
                         targetTypesAllowed.add(CommandTarget.CONFIG);
+                        targetTypesAllowed.add(CommandTarget.DEPLOYMENT_GROUP);
                     }
 
                     // If the target is "server" and the command is not marked for DAS,
