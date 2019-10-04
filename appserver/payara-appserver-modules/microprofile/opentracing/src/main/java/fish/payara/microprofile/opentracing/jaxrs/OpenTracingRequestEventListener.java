@@ -116,7 +116,7 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
 
     @Override
     public void onEvent(final RequestEvent event) {
-        LOG.fine(() -> "onEvent(event.type=" + event.getType() + ")");
+        LOG.fine(() -> "onEvent(event.type=" + event.getType() + ", path=" + getPath(event) + ")");
 
         // onException is special, it can come in any phase of request processing.
         // early phases are simply ignored.
@@ -156,6 +156,10 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
         }
     }
 
+
+    private String getPath(final RequestEvent event) {
+        return event.getUriInfo() == null ? "<unknown>" : event.getUriInfo().getPath();
+    }
 
     private void onIncomingRequest(final RequestEvent event, final String operationName) {
         LOG.fine(() -> "onIncomingRequest(event=" + event.getType() + ", operationName=" + operationName + ")");
