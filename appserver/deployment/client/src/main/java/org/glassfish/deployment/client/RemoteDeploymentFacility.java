@@ -37,26 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.client;
 
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+
 import org.glassfish.api.admin.CommandException;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 /**
@@ -66,11 +59,11 @@ import java.util.Properties;
  * Because RemoteCommand uses the http interface with the admin back-end it
  * is connectionless.  Clients of RemoteDeploymentFacility must still invoke
  * {@link #connect} before attempting to use the DF.
- * 
+ *
  * @author tjquinn
  */
 public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
-    
+
     @Override
     protected boolean doConnect() {
         return true;
@@ -80,11 +73,11 @@ public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
     public boolean doDisconnect() {
         return true;
     }
-    
+
     @Override
     protected DFCommandRunner getDFCommandRunner(
-            String commandName, 
-            Map<String,Object> commandOptions,
+            String commandName,
+            DFDeploymentProperties commandOptions,
             String[] operands) throws CommandException {
         return new RemoteCommandRunner(commandName, commandOptions, operands);
     }
@@ -92,33 +85,25 @@ public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
     private class RemoteCommandRunner implements DFCommandRunner {
 
         private final String commandName;
-        private final Map<String,Object> commandOptions;
+        private final DFDeploymentProperties commandOptions;
         private final String[] operands;
 
-        private RemoteCommandRunner(
-                String commandName,
-                Map<String,Object> commandOptions,
-                String[] operands) {
+
+        private RemoteCommandRunner(String commandName, DFDeploymentProperties commandOptions, String[] operands) {
             this.commandOptions = commandOptions;
             this.commandName = commandName;
             this.operands = operands;
         }
 
+        @Override
         public DFDeploymentStatus run() throws CommandException {
-            try {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-                String[] commandArgs = prepareRemoteCommandArguments(
-                    commandName, 
-                    commandOptions, 
-                    operands
-                    );
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream(1024)) {
+                String[] commandArgs = prepareRemoteCommandArguments(commandName, commandOptions, operands);
                 Environment env = new Environment();
                 ProgramOptions po = prepareRemoteCommandProgramOptions(env);
-                RemoteCommand rc =
-                    new RemoteCommand(commandName, po, env, "jsr-88/xml", baos);
+                RemoteCommand rc = new RemoteCommand(commandName, po, env, "jsr-88/xml", baos);
                 rc.executeAndReturnOutput(commandArgs);
-                DFDeploymentStatus status = CommandXMLResultParser.parse(new ByteArrayInputStream(baos.toByteArray()));
-                return status;
+                return CommandXMLResultParser.parse(baos);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -135,15 +120,15 @@ public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
      */
     protected String[] prepareRemoteCommandArguments(
             String commandName,
-            Map<String,Object> options,
+            DFDeploymentProperties options,
             String[] operands) {
 
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         result.add(commandName);
         if (options == null) {
-            options = Collections.EMPTY_MAP;
+            options = new DFDeploymentProperties();
         }
-        for (Map.Entry<String,Object> entry : options.entrySet()) {
+        for (Entry<Object, Object> entry : options.entrySet()) {
             result.add("--" + entry.getKey() + "=" + convertValue(entry.getValue()));
         }
 
@@ -155,8 +140,8 @@ public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
         return result.toArray(new String[result.size()]);
     }
 
-    protected ProgramOptions prepareRemoteCommandProgramOptions(
-            Environment env) throws CommandException {
+
+    protected ProgramOptions prepareRemoteCommandProgramOptions(Environment env) throws CommandException {
         /*
          * Add the authentication information from the
          * caller-provided connection identifier.
@@ -167,8 +152,8 @@ public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
         po.setPort(targetDAS.getHostPort());
         po.setUser(targetDAS.getUserName());
         po.setSecure(targetDAS.isSecure());
-        po.setPassword(getTargetDAS().getPassword() != null ?
-                getTargetDAS().getPassword().toCharArray() : null, ProgramOptions.PasswordLocation.LOCAL_PASSWORD);
+        char[] password = getTargetDAS().getPassword() == null ? null : getTargetDAS().getPassword().toCharArray();
+        po.setPassword(password, ProgramOptions.PasswordLocation.LOCAL_PASSWORD);
         po.setOptionsSet(true);
         return po;
     }
