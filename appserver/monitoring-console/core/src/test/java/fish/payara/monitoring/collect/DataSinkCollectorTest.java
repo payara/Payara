@@ -57,6 +57,7 @@ import org.junit.Test;
 
 import fish.payara.monitoring.store.MonitoringDataSink;
 import fish.payara.monitoring.store.SinkDataCollector;
+import fish.payara.monitoring.model.Series;
 
 /**
  * Component test testing the {@link SinkDataCollector} implementation semantics.
@@ -93,6 +94,7 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
             .collect("plainAfterSub", 8)
             .tag("ignoredTagSinceNull", null).collect("plainIgnoredTag", 13L)
             .tag("igniredTagSinceEmpty", "").collect("plainIgnoredEmptyTag", 14L);
+        collector.tag("complex", "sp aced; str,\u1F408ange").collect("sub", 1);
 
         // testing simple value conversion
         collector
@@ -168,37 +170,42 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void subFirstHasTag() {
-        assertDataPoint("sub:one subFirst", 4L);
+        assertDataPoint("sub:one" + Series.TAG_SEPARATOR + "subFirst", 4L);
     }
 
     @Test
     public void subChainedHasTag() {
-        assertDataPoint("sub:one subChained", 5L);
+        assertDataPoint("sub:one" + Series.TAG_SEPARATOR + "subChained", 5L);
     }
 
     @Test
     public void subRestartedHasTag() {
-        assertDataPoint("sub:one subRestarted", 6L);
+        assertDataPoint("sub:one" + Series.TAG_SEPARATOR + "subRestarted", 6L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTag() {
-        assertDataPoint("sub:two resubbed", 7L);
+        assertDataPoint("sub:two" + Series.TAG_SEPARATOR + "resubbed", 7L);
     }
 
     @Test
     public void differntTagDoesNotReplaceExistingTag() {
-        assertDataPoint("sub:two subsub:three doubleTagged", 9L);
+        assertDataPoint("sub:two" + Series.TAG_SEPARATOR + "subsub:three" + Series.TAG_SEPARATOR + "doubleTagged", 9L);
     }
 
     @Test
     public void sameSubTagDoesReplaceExistingSubTag() {
-        assertDataPoint("sub:two subsub:four doubleTaggedReplaced", 10L);
+        assertDataPoint("sub:two" + Series.TAG_SEPARATOR + "subsub:four" + Series.TAG_SEPARATOR + "doubleTaggedReplaced", 10L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTagFromThatTagOn() {
-        assertDataPoint("sub:five reset", 11L);
+        assertDataPoint("sub:five" + Series.TAG_SEPARATOR + "reset", 11L);
+    }
+    
+    @Test
+    public void tagwithUnusualCharacters() {
+        assertDataPoint("complex:sp aced; str,\u1F408ange" + Series.TAG_SEPARATOR +"sub", 1);
     }
 
     @Test
@@ -293,19 +300,19 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void objectUsesCurrentContext() {
-        assertDataPoint("@:obj sub:SomeObject length", 10L);
-        assertDataPoint("@:obj sub:SomeObject mIsAt", 2L);
+        assertDataPoint("@:obj" + Series.TAG_SEPARATOR + "sub:SomeObject" + Series.TAG_SEPARATOR + "length", 10L);
+        assertDataPoint("@:obj" + Series.TAG_SEPARATOR + "sub:SomeObject" + Series.TAG_SEPARATOR + "mIsAt", 2L);
     }
 
     @Test
     public void objectsRunsConsumerForAllItemsInCollectionWhileUsingTheCurrentContext() {
-        assertDataPoint("@:obj sub:Foo length", 3L);
-        assertDataPoint("@:obj sub:Bar length", 3L);
+        assertDataPoint("@:obj" + Series.TAG_SEPARATOR + "sub:Foo" + Series.TAG_SEPARATOR + "length", 3L);
+        assertDataPoint("@:obj" + Series.TAG_SEPARATOR + "sub:Bar" + Series.TAG_SEPARATOR + "length", 3L);
     }
 
     @Test
     public void mapEntriesAddGroupTag() {
-        assertDataPoint("@:foo valueLength", 3L);
+        assertDataPoint("@:foo" + Series.TAG_SEPARATOR + "valueLength", 3L);
     }
 
     private void assertDataPoint(String key, long value) {

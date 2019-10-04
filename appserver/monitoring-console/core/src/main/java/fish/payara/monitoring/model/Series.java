@@ -52,8 +52,8 @@ import java.util.regex.Pattern;
 public final class Series implements Comparable<Series>, Serializable {
 
     public static final char TAG_ASSIGN = ':';
-    public static final char TAG_SEPARATOR = ' ';
-    private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
+    public static final char TAG_SEPARATOR = '\u001F'; //As tag values can be any valid UTF-8 character, use a control character to separate tags
+    private static final char[] TAG_SEPARATORS = { TAG_SEPARATOR, TAG_ASSIGN };
 
     private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
 
@@ -130,11 +130,6 @@ public final class Series implements Comparable<Series>, Serializable {
         if (c == TAG_ASSIGN) {
             return true;
         }
-        for (char sep : TAG_SEPARATORS) {
-            if (sep == c) {
-                return true;
-            }
-        }
-        return false;
+        return TAG_SEPARATOR == c;
     }
 }
