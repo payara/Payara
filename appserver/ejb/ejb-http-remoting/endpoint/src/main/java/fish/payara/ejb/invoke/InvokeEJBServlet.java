@@ -71,8 +71,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -93,6 +91,7 @@ public class InvokeEJBServlet extends HttpServlet {
 
     private String[] roles;
 
+    @Override
     public void init() throws ServletException {
             EjbInvokerConfiguration config = Globals.getDefaultBaseServiceLocator()
                 .getService(EjbInvokerConfiguration.class);
