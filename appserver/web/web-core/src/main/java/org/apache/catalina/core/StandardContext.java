@@ -5417,6 +5417,10 @@ public class StandardContext
 
         this.resources = null;
         this.webappResources = null;
+
+        this.servletRegisMap.clear();
+        this.filterRegisMap.clear();
+
         return (ok);
 
     }
