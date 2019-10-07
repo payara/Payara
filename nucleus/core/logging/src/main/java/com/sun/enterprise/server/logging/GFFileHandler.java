@@ -51,8 +51,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
-import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;;
 import java.io.*;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
@@ -120,9 +119,6 @@ public class GFFileHandler extends StreamHandler implements
     @Inject
     private ServiceLocator habitat;
 
-    @Inject
-    private PayaraExecutorService payaraExecutorService;
-
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
     private MeteredStream meter;
@@ -175,22 +171,18 @@ public class GFFileHandler extends StreamHandler implements
     public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500*1000;
 
     private BooleanLatch done = new BooleanLatch();
-
+    
     private boolean dayBasedFileRotation = false;
 
     private List<LogEventListener> logEventListeners = new ArrayList<>();
 
-    private Future<?> pumpFuture;
+    private Thread pump;
 
     protected String logFileProperty = "";
     private final LogManager manager = LogManager.getLogManager();
     private final String className = getClass().getName();
     private static final String GF_FILE_HANDLER = GFFileHandler.class.getCanonicalName() ;
     private LogRecord logRecord = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
-
-    void setPayaraExecutorService(PayaraExecutorService payaraExecutorService) {
-        this.payaraExecutorService = payaraExecutorService;
-    }
 
     @Override
     public void postConstruct() {
@@ -433,12 +425,10 @@ public class GFFileHandler extends StreamHandler implements
 
         if (className.equals(GF_FILE_HANDLER)) {
             LogRotationTimer.getInstance().startTimer(
-                    payaraExecutorService.getUnderlyingScheduledExecutorService(),
                     new LogRotationTimerTask(rotationTask,
                             rotationTimeLimitValue / 60000));
         } else {
             PayaraNotificationLogRotationTimer.getInstance().startTimer(
-                    payaraExecutorService.getUnderlyingScheduledExecutorService(),
                     new LogRotationTimerTask(rotationTask,
                             rotationTimeLimitValue / 60000));
         }
@@ -453,17 +443,15 @@ public class GFFileHandler extends StreamHandler implements
 
             if (className.equals(GF_FILE_HANDLER)) {
                 LogRotationTimer.getInstance().startTimer(
-                        payaraExecutorService.getUnderlyingScheduledExecutorService(),
                         new LogRotationTimerTask(rotationTask,
                                 rotationTimeLimitValue));
             } else {
                 PayaraNotificationLogRotationTimer.getInstance().startTimer(
-                        payaraExecutorService.getUnderlyingScheduledExecutorService(),
                         new LogRotationTimerTask(rotationTask,
                                 rotationTimeLimitValue));
             }
         }
-}
+    }
 
     private void rotationOnFileSizeLimit(String propertyValue) {
         try {
@@ -585,14 +573,10 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     void initializePump() {
-        if (pumpFuture != null) {
-            pumpFuture.cancel(true);
-            pumpFuture = null;
-        }
-        if (logToFile) {
-            pumpFuture = payaraExecutorService.submit(
-                () -> {
-                    while (!done.isSignalled() && logToFile) {
+        pump = new Thread() { //Not using the PayaraExecutorService here as it prevents shutdown happening quickly, see PAYARA-4118
+            @Override
+            public void run() {
+                while (!done.isSignalled() && logToFile) {
                         try {
                             log();
                         } catch (Exception e) {
@@ -601,11 +585,10 @@ public class GFFileHandler extends StreamHandler implements
                         }
                     }
                 }
-            );
-        } else {
-            drainAllPendingRecords();
-            flush();
-        }
+        };
+        pump.setName("GFFileHandler log pump");
+        pump.setDaemon(true);
+        pump.start();
     }
 
     @Override
@@ -631,8 +614,8 @@ public class GFFileHandler extends StreamHandler implements
         }
 
         done.tryReleaseShared(1);
-        if (pumpFuture != null) {
-            pumpFuture.cancel(true);
+        if (pump != null) {
+            pump.interrupt();
         }
 
         // drain and return all
@@ -934,18 +917,18 @@ public class GFFileHandler extends StreamHandler implements
         if (dayBasedFileRotation) {
             if (className.equals(GF_FILE_HANDLER)) {
                 LogRotationTimer.getInstance()
-                        .restartTimerForDayBasedRotation(payaraExecutorService.getUnderlyingScheduledExecutorService());
+                        .restartTimerForDayBasedRotation();
             } else {
                 PayaraNotificationLogRotationTimer.getInstance()
-                        .restartTimerForDayBasedRotation(payaraExecutorService.getUnderlyingScheduledExecutorService());
+                        .restartTimerForDayBasedRotation();
             }
         } else {
             if (className.equals(GF_FILE_HANDLER)) {
                 LogRotationTimer.getInstance()
-                        .restartTimer(payaraExecutorService.getUnderlyingScheduledExecutorService());
+                        .restartTimer();
             } else {
                 PayaraNotificationLogRotationTimer.getInstance()
-                        .restartTimer(payaraExecutorService.getUnderlyingScheduledExecutorService());
+                        .restartTimer();
             }
         }
 
