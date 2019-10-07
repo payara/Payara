@@ -61,6 +61,12 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
+/**
+ * Command to create a temporary node. A temporary node only exists as long as there are instances assinged to it, the
+ * intention behind this being for use in cloud environments to allow containers to manage their own nodes.
+ *
+ * @author AndrewPielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "_create-node-temp")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)

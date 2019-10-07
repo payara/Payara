@@ -60,6 +60,11 @@ import javax.inject.Inject;
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
+/**
+ * Command to delete a temporary node.
+ *
+ * @author AndrewPielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "_delete-node-temp")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
