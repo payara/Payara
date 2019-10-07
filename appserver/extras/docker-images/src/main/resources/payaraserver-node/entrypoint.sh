@@ -156,5 +156,5 @@ fi
 
 ### Start ###
 echo "Starting instance ${PAYARA_INSTANCE_NAME}"
-echo "./payara5/bin/asadmin --passwordfile ${PAYARA_PASSWORD_FILE} start-local-instance --verbose ${PAYARA_INSTANCE_NAME}"
-./payara5/bin/asadmin --passwordfile ${PAYARA_PASSWORD_FILE} start-local-instance --verbose ${PAYARA_INSTANCE_NAME}
+echo "./payara5/bin/asadmin --passwordfile ${PAYARA_PASSWORD_FILE} start-local-instance --node ${PAYARA_NODE_NAME} --verbose ${PAYARA_INSTANCE_NAME}"
+./payara5/bin/asadmin --passwordfile ${PAYARA_PASSWORD_FILE} start-local-instance --node ${PAYARA_NODE_NAME} --verbose ${PAYARA_INSTANCE_NAME}

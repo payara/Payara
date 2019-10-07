@@ -55,6 +55,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 
@@ -151,9 +153,14 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {
-            Series series = new Series(snapshot.series[i]);
-            long value = snapshot.values[i];
-            remoteInstanceDatasets.compute(series, (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+            try {
+                Series series = new Series(snapshot.series[i]);
+                long value = snapshot.values[i];
+                remoteInstanceDatasets.compute(series, (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+            } catch (IndexOutOfBoundsException ioobe) {
+                Logger.getLogger(InMemoryMonitoringDataRepository.class.getName()).log(Level.FINE,
+                        "Could not create new series object for snapshot", ioobe);
+            }
         }
     }
 
