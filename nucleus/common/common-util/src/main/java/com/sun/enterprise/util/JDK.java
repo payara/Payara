@@ -273,21 +273,19 @@ public final class JDK {
     public static boolean isCorrectJDK(Optional<Version> reference, Optional<String> vendor, Optional<Version> minVersion, Optional<Version> maxVersion) {
         Version version = reference.orElse(JDK_VERSION);
         boolean correctJDK = true;
-        
+
         if (vendor.isPresent()) {
             correctJDK = JDK.vendor.contains(vendor.get());
         }
 
-        if (correctJDK) {
-            if (minVersion.isPresent()) {
-                correctJDK = version.newerOrEquals(minVersion.get());
-            }
-
-            if (maxVersion.isPresent()) {
-                correctJDK = version.olderOrEquals(maxVersion.get());
-            }
+        if (correctJDK && minVersion.isPresent()) {
+            correctJDK = version.newerOrEquals(minVersion.get());
         }
-    
+
+        if (correctJDK && maxVersion.isPresent()) {
+            correctJDK = version.olderOrEquals(maxVersion.get());
+        }
+
         return correctJDK;
     }
 
