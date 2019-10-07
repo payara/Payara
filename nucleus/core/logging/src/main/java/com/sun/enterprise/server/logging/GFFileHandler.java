@@ -573,7 +573,7 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     void initializePump() {
-        pump = new Thread() {
+        pump = new Thread() { //Not using the PayaraExecutorService here as it prevents shutdown happening quickly, see PAYARA-4118
             @Override
             public void run() {
                 while (!done.isSignalled() && logToFile) {
