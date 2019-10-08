@@ -68,6 +68,12 @@
                 <module>quicklook</module>
             </modules>
         </profile>
+        <profile>
+            <id>payara-samples</id>
+            <modules>
+                <module>payara-samples</module>
+            </modules>
+        </profile>
     </profiles>
 
     <build>
