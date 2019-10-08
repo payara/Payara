@@ -38,7 +38,7 @@
  *    holder.
  */
 
-package fish.payara.requesttracing.jaxrs.client.mprest;
+package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.opentracing.Traced;
@@ -51,14 +51,12 @@ import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.client.ClientRequestContext;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * Checks whether REST Client invoked method should be traced according to configuration and class annotations.
@@ -77,7 +75,7 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
 
     @Override
     public boolean test(ClientRequestContext clientRequestContext) {
-        Object invokedMethod = clientRequestContext.getProperty(TracingClientListener.REST_CLIENT_INVOKED_METHOD);
+        Object invokedMethod = clientRequestContext.getProperty(RestClientTracingListener.REST_CLIENT_INVOKED_METHOD);
         if (invokedMethod instanceof Method) {
             return test((Method) invokedMethod);
         } else {

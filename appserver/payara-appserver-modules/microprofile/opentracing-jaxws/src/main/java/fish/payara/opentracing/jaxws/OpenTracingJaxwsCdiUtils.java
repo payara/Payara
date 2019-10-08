@@ -40,11 +40,13 @@
 package fish.payara.opentracing.jaxws;
 
 import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
-import org.glassfish.webservices.monitoring.MonitorContext;
 
-import javax.enterprise.inject.spi.BeanManager;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
+
+import javax.enterprise.inject.spi.BeanManager;
+
+import org.glassfish.webservices.monitoring.MonitorContext;
 
 public class OpenTracingJaxwsCdiUtils {
 
@@ -75,10 +77,9 @@ public class OpenTracingJaxwsCdiUtils {
      * @param parameterType The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
-    @SuppressWarnings("unchecked")
-    public static <A extends Annotation> Optional<Object> getConfigOverrideValue(Class<A> annotationClass,
-            String parameterName, MonitorContext monitorContext, Class<?> parameterType) {
-        return (Optional<Object>) OpenTracingCdiUtils.getConfigOverrideValue(annotationClass, parameterName,
+    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass,
+            String parameterName, MonitorContext monitorContext, Class<T> parameterType) {
+        return OpenTracingCdiUtils.getConfigOverrideValue(annotationClass, parameterName,
                 monitorContext.getCallInfo().getMethod(), parameterType);
     }
 }

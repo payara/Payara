@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.io.File;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -79,9 +78,7 @@ public class LogEventListenerTest {
         File testLog = new File(TEST_EVENTS_LOG);
 
         // Add a file handler with UniformLogFormatter
-        PayaraExecutorService payaraExecutorService = new TestPayaraExecutorService();
         gfFileHandler = new GFFileHandler();
-        gfFileHandler.setPayaraExecutorService(payaraExecutorService);
         gfFileHandler.changeFileName(testLog);
         UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setLogEventBroadcaster(gfFileHandler);
@@ -115,29 +112,6 @@ public class LogEventListenerTest {
         gfFileHandler.flush();
         gfFileHandler.close();
         gfFileHandler.preDestroy();
-    }
-
-    private static class TestPayaraExecutorService extends PayaraExecutorService {
-
-        private ScheduledExecutorService scheduledExecutorService;
-        private ExecutorService executorService;
-
-        TestPayaraExecutorService() {
-            super();
-            this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            this.executorService = Executors.newSingleThreadExecutor();
-        }
-
-        @Override
-        public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
-            return this.scheduledExecutorService;
-        }
-
-        @Override
-        public Future<?> submit(Runnable task) {
-            return this.executorService.submit(task);
-        }
-
     }
 
     private static class TestLogEventListener implements LogEventListener {
