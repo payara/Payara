@@ -52,7 +52,10 @@ MonitoringConsole.View = (function() {
      */ 
     function updatePageNavigation() {
         let nav = { 
-            onChange: (pageid) => onPageChange(MonitoringConsole.Model.Page.changeTo(pageid)),
+            onChange: function(pageid) {
+                MonitoringConsole.Chart.Trace.onClosePopup();
+                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
+            },
             pages: MonitoringConsole.Model.listPages().map(function(page) {
                 return { label: page.name, id: page.id, active: page.active };
             }),
@@ -187,7 +190,7 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let model = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
+        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
             { label: 'General'},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
@@ -198,7 +201,7 @@ MonitoringConsole.View = (function() {
             { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
         ]};
         if (widget.type === 'line') {
-            model.entries.push(
+            settings.entries.push(
                 { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
                 { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
                 { label: 'Display Options'},
@@ -214,7 +217,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
             );
         }
-        return model;       
+        return settings;       
     }
 
     function createPageSettings() {
@@ -300,6 +303,28 @@ MonitoringConsole.View = (function() {
         }
     }
 
+    function createLegend(widget, data) {
+        if (!data)
+            return [{ label: 'No Data', value: '?', color: 'red' }];
+        let legend = [];
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            let label = seriesData.instance;
+            if (widget.series.indexOf('*') > 0) {
+                label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+            }
+            let item = { 
+                label: label, 
+                value: seriesData.points[seriesData.points.length-1], 
+                color: MonitoringConsole.Chart.Common.lineColor(j),
+                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+            };
+            legend.push(item);
+            data[j].legend = item;
+        }
+        return legend;
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -310,18 +335,11 @@ MonitoringConsole.View = (function() {
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
         let legendNode = widgetNode.find('.widget-legend-bar').first();
+        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
         if (update.data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
-            let legend = [];
-            for (let j = 0; j < update.data.length; j++) {
-                let data = update.data[j];
-                legend.push({ label: data.instance, value: data.points[data.points.length-1], color: MonitoringConsole.Chart.Common.lineColor(j) });
-            }
-            legendNode.replaceWith(Components.onLegendCreation(legend));
-        } else {
-            let legend = [{ label: 'No Data', value: '?', color: 'red' }];
-            legendNode.replaceWith(Components.onLegendCreation(legend));
         }
+        legendNode.replaceWith(Components.onLegendCreation(legend));
     }
 
     /**

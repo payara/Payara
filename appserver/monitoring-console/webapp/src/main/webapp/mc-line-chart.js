@@ -108,24 +108,13 @@ MonitoringConsole.Chart.Line = (function() {
    * Convertes a array of points given as one dimensional array with alternativ time value elements 
    * to a 2-dimensional array of points with t and y attribute.
    */
-  function points1Dto2D(points1d, lastMinute) {
+  function points1Dto2D(points1d) {
     if (!points1d)
       return [];
-    if (lastMinute) {
-      let points2d = [];
-      let startOfLastMinute = Date.now() - 60000;
-      for (let i = 0; i < points1d.length; i+=2) {
-        if (points1d[i] > startOfLastMinute)
-          points2d.push({ t: new Date(points1d[i]), y: points1d[i+1] });
-      }
-      return points2d;
-    } else {
-      let points2d = new Array(points1d.length / 2);
-      for (let i = 0; i < points2d.length; i++) {
-        points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
-      }
-      return points2d;      
-    }
+    let points2d = new Array(points1d.length / 2);
+    for (let i = 0; i < points2d.length; i++)
+      points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+    return points2d;      
   }
     
   /**
@@ -150,8 +139,8 @@ MonitoringConsole.Chart.Line = (function() {
     return points2d;
   }  
 	
-  function createMinimumLineDataset(seriesResponse, points, lineColor) {
-		let min = seriesResponse.observedMin;
+  function createMinimumLineDataset(seriesData, points, lineColor) {
+		let min = seriesData.observedMin;
 		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
@@ -165,8 +154,8 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createMaximumLineDataset(seriesResponse, points, lineColor) {
-  	let max = seriesResponse.observedMax;
+  function createMaximumLineDataset(seriesData, points, lineColor) {
+  	let max = seriesData.observedMax;
 		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
@@ -179,8 +168,8 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createAverageLineDataset(seriesResponse, points, lineColor) {
-		let avg = seriesResponse.observedSum / seriesResponse.observedValues;
+  function createAverageLineDataset(seriesData, points, lineColor) {
+		let avg = seriesData.observedSum / seriesData.observedValues;
 		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
@@ -194,11 +183,11 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createCurrentLineDataset(widget, seriesResponse, points, lineColor, bgColor) {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
 		let pointRadius = widget.options.drawPoints ? 3 : 0;
-    let label = seriesResponse.instance;
+    let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
-      label += ': '+ (seriesResponse.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+      label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
     return {
 			data: points,
 			label: label,
@@ -213,22 +202,24 @@ MonitoringConsole.Chart.Line = (function() {
    * Creates one or more lines for a single series dataset related to the widget.
    * A widget might display multiple series in the same graph generating one or more dataset for each of them.
    */
-  function createSeriesDatasets(widget, seriesResponse, lineColor, bgColor) {
-    if (widget.options.perSec && seriesResponse.points.length > 4) {    
+  function createSeriesDatasets(widget, seriesData) {
+    let lineColor = seriesData.legend.color;
+    let bgColor = seriesData.legend.backgroundColor;
+    if (widget.options.perSec && seriesData.points.length > 4) {    
   		//TODO add min/max/avg per sec lines
-      return [ createCurrentLineDataset(widget, seriesResponse, points1Dto2DPerSec(seriesResponse.points), lineColor, bgColor) ];
+      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
   	}
-  	let points = points1Dto2D(seriesResponse.points, true);
+  	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
-  	datasets.push(createCurrentLineDataset(widget, seriesResponse, points, lineColor, bgColor));
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
   	if (points.length > 0 && widget.options.drawAvgLine) {
-			datasets.push(createAverageLineDataset(seriesResponse, points, lineColor));
+			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
-		if (points.length > 0 && widget.options.drawMinLine && seriesResponse.observedMin > 0) {
-			datasets.push(createMinimumLineDataset(seriesResponse, points, lineColor));
+		if (points.length > 0 && widget.options.drawMinLine && seriesData.observedMin > 0) {
+			datasets.push(createMinimumLineDataset(seriesData, points, lineColor));
 		}
 		if (points.length > 0 && widget.options.drawMaxLine) {
-			datasets.push(createMaximumLineDataset(seriesResponse, points, lineColor));
+			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
 	  return datasets;
   }
@@ -259,8 +250,7 @@ MonitoringConsole.Chart.Line = (function() {
     let chart = update.chart();
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
-      datasets = datasets.concat(
-          createSeriesDatasets(widget, data[j], Common.lineColor(j), Common.backgroundColor(j)));
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
     }
     chart.data.datasets = datasets;
     chart.update(0);

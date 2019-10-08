@@ -60,10 +60,17 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
 						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
 						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true } },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
 						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
 					]
-				}
+				},
+				request_tracing: {
+					name: 'Request Tracing',
+					numberOfColumns: 2,
+					widgets: [
+						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+					]
+				},
 			},
 			settings: {},
 	};
@@ -580,6 +587,21 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	function retainLastMinute(data) {
+		let startOfLastMinute = Date.now() - 60000;
+		data.forEach(function(seriesData) {
+			let points = [];
+			for (let i = 0; i < seriesData.points.length; i += 2) {
+				if (seriesData.points[i] >= startOfLastMinute) {
+					points.push(seriesData.points[i]);
+					points.push(seriesData.points[i+1]);
+				}
+			}
+			seriesData.points = points;
+		});
+		return data.filter(seriesData => seriesData.points.length >= 2);
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -604,7 +626,7 @@ MonitoringConsole.Model = (function() {
 				Object.values(widgets).forEach(function(widget) {
 					onDataUpdate({
 						widget: widget,
-						data: response[widget.series],
+						data: retainLastMinute(response[widget.series]),
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});

@@ -52,6 +52,12 @@ MonitoringConsole.Chart.Trace = (function() {
    var chart;
 
    function onDataUpdate(data) {
+      model.data = data;
+      onSortByDuration();
+   }
+
+   function updateChart() {
+      let data = model.data;
       let zeroToMinValues = [];
       let minToMaxValues = [];
       let spans = [];
@@ -60,7 +66,7 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
-      data.sort((a,b) => a.startTime - b.startTime);
+      data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
          let startTime = trace.startTime;
@@ -99,7 +105,7 @@ MonitoringConsole.Chart.Trace = (function() {
             data: minToMaxValues,
             backgroundColor: bgColors, //'rgba(153, 153, 153, 0.2)',
             borderColor: colors,
-            borderWidth: { right: 3 },
+            borderWidth: {top: 1, right: 1},
          }
       ];
       if (!chart) {
@@ -152,10 +158,21 @@ MonitoringConsole.Chart.Trace = (function() {
                xAxes: [{
                   stacked: true,
                   position: 'top',
+                  ticks: {
+                     callback: function(value, index, values) {
+                        if (value > 1000) {
+                           return (value / 1000).toFixed(1)+"s";
+                        }
+                        return value+"ms";
+                     }
+                  },
+                  scaleLabel: {
+                     display: true,
+                     labelString: 'Relative Timeline'
+                  }
                }],
                yAxes: [{
-                  maxBarThickness: 10, //px
-                  barThickness: 10, //px
+                  maxBarThickness: 15, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
@@ -182,7 +199,7 @@ MonitoringConsole.Chart.Trace = (function() {
 
    function updateDomSpanDetails(data, span) {
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
-      let model = [
+      let settings = [
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
@@ -198,7 +215,7 @@ MonitoringConsole.Chart.Trace = (function() {
          }
          tags.entries.push({ label: key, input: autoLink(value)});
       }
-      Components.onSettingsUpdate(model);
+      Components.onSettingsUpdate(settings);
    }
 
 
@@ -220,6 +237,16 @@ MonitoringConsole.Chart.Trace = (function() {
       $('#panel-trace').hide();
    }
 
+   function onSortByWallTime() {
+      model.sortBy = (a,b) => a.startTime - b.startTime; // past to recent
+      updateChart();
+   }
+
+   function onSortByDuration() {
+      model.sortBy = (a,b) => b.elapsedTime - a.elapsedTime; // slow to fast
+      updateChart();
+   }
+
    /**
     * Public API below:
     */
@@ -227,5 +254,7 @@ MonitoringConsole.Chart.Trace = (function() {
       onOpenPopup: (series) => onOpenPopup(series),
       onClosePopup: () => onClosePopup(),
       onDataRefresh: () => onDataRefresh(),
+      onSortByWallTime: () => onSortByWallTime(),
+      onSortByDuration: () => onSortByDuration(),
    };
 })();

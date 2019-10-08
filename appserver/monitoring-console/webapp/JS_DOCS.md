@@ -85,7 +85,7 @@ UPDATE               = { widget, data, chart }
 widget               = WIDGET
 data                 = { *:[SERIES] }
 chart                = fn () => Chart
-SERIES               = { series, instance, points, observedMax, observedMin, observedSum, observedValues, observedValueChanges, observedSince, stableCount, stableSince }
+SERIES               = { series, instance, points, observedMax, observedMin, observedSum, observedValues, observedValueChanges, observedSince, stableCount, stableSince, legend }
 series               = string
 instance             = string
 points               = [number]
@@ -97,10 +97,12 @@ observedValueChanges = number
 observedSince        = number
 stableCount          = number
 stableSince          = number
+legend               = LEGEND_ITEM
 ```
 * `Chart` is a chart object created by Chart.js
 * Note that `series` is the actual ID of a stored series that can differ from `widget.series` in case the widget uses a pattern that matches one or more stored series
 * `points` are given in a 1-dimensional array with alternating x and y values (x being the timestamp in ms since 1970)
+* the `SERIES.legend` is set by the client while all other attributes are data send by the server. The details of `LEGEND_ITEM` can be found below.
 
 
 ## Chart Data
@@ -177,15 +179,17 @@ In other words the `type` is an indicator for non generic entries. The provided 
 Describes the model expected by the `Legend` component.
 
 ```
-LEGEND   = [ITEM]
-ITEM     = { label, value, color }
-label    = string
-value    = string | number
-color    = string
+LEGEND          = [LEGEND_ITEM]
+LEGEND_ITEM     = { label, value, color, backgroundColor }
+label           = string
+value           = string | number
+color           = string
+backgroundColor = string
 ```
+* If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
-If `value` is a _string_ only the first word is displayed large.
+
 
 
 ### Navigation API
@@ -200,4 +204,4 @@ id         = string
 active     = boolean
 onChange   = fn (id) => () 
 ```
-`onChange` is called when another page is selected passing the `PAGE_ITEM.id` of the selected page.
+* `onChange` is called when another page is selected passing the `PAGE_ITEM.id` of the selected page.

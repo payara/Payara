@@ -48,75 +48,67 @@ MonitoringConsole.Chart.Bar = (function() {
   const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
-      let labels = [];
       let series = [];
+      let labels = [];
       let zeroToMinValues = [];
       let observedMinToMinValues = [];
       let minToMaxValues = [];
       let maxToObservedMaxValues = [];
       let showObservedMin = widget.options.drawMinLine;
-      let startOfLastMinute = Date.now() - 60000;
+      let lineColors = [];
+      let bgColors = [];
       for (let i = 0; i < response.length; i++) {
-         let seriesResponse = response[i];
-         if (seriesResponse.observedValues > 0) {
-            let points = seriesResponse.points;
-            let min;
-            let max;
-            let count = 0;
-            for (let j = 0; j < points.length; j+=2) {
-               if (points[j] > startOfLastMinute) {
-                  let value = points[j+1];
-                  count++;
-                  min = min === undefined ? value : Math.min(min, value);
-                  max = max === undefined ? value : Math.max(max, value);
-               }
-            }
-            if (min && max) {
-               series.push(seriesResponse.series);
-               let label = widget.series.indexOf('*') < 0 ? '' : seriesResponse.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
-               label += '    x ' + count;
-               labels.push(label);               
-               zeroToMinValues.push(showObservedMin ? seriesResponse.observedMin : min);
-               observedMinToMinValues.push(min - seriesResponse.observedMin);
-               minToMaxValues.push(max - min);
-               maxToObservedMaxValues.push(seriesResponse.observedMax - max);
-            }
-         }
+        let seriesData = response[i];
+        let points = seriesData.points;
+        let min = points[1];
+        let max = points[1];
+        for (let j = 0; j < points.length; j+=2) {
+              let value = points[j+1];
+              min = Math.min(min, value);
+              max = Math.max(max, value);
+        }
+        labels.push(seriesData.series);
+        series.push(seriesData.series);          
+        zeroToMinValues.push(showObservedMin ? seriesData.observedMin : min);
+        observedMinToMinValues.push(min - seriesData.observedMin);
+        minToMaxValues.push(max - min);
+        maxToObservedMaxValues.push(seriesData.observedMax - max);
+        lineColors.push(seriesData.legend.color);
+        bgColors.push(seriesData.legend.backgroundColor);
       }
       let datasets = [];
       let offset = {
         data: zeroToMinValues,
         backgroundColor: 'transparent',
+        borderWidth: {right: 1},
+        borderColor: lineColors,
       };
       datasets.push(offset);
-      let bgColors = Common.backgroundColors();
-      let lineColors = Common.lineColors();
       if (showObservedMin) {
          datasets.push({
             data: observedMinToMinValues,
             backgroundColor: bgColors,
-            borderColor: lineColors,
-            borderWidth: { right: 2 },
+            borderWidth: 0,
          });       
       }
-      offset.borderColor = lineColors;
-      offset.borderWidth = { right: 2 };  
       datasets.push({
          data: minToMaxValues,
          backgroundColor: bgColors,
          borderColor: lineColors,
-         borderWidth: { right: 2 },
+         borderWidth: 1,
+         borderSkipped: false,
       });
       if (widget.options.drawMaxLine) {
          datasets.push({
            data: maxToObservedMaxValues,
            backgroundColor: bgColors,
+           borderWidth: 0,
          }); 
       }
       return {
-         series: series,
-         labels: labels,
-         datasets: datasets,
+        labels: labels,
+        series: series,
+        datasets: datasets,
       };
    }
 
@@ -131,14 +123,13 @@ MonitoringConsole.Chart.Bar = (function() {
                   stacked: true,
                }],
                yAxes: [{
-                  maxBarThickness: 50, //px
+                  maxBarThickness: 15, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
                   stacked: true,
                   ticks: {
-                     mirror: true,
-                     padding: -10,
+                     display: false,
                   }
                }]
             },

@@ -47,8 +47,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="monitoring-console.js?x=g"></script>
-    <link href="monitoring-console.css?x=g" rel="stylesheet" type="text/css">
+    <script src="monitoring-console.js?x=h"></script>
+    <link href="monitoring-console.css?x=h" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
 
@@ -59,7 +59,7 @@
 <div id="panel-grid">
     <div id="panel-iconbar">
         <img src="payara-logo.png" id="logo">
-        <button title="New Page" onclick="MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));">&plus;</button>
+        <button id="newPage" title="New Page" onclick="MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));">&plus;</button>
         <span id="panel-nav"></span>
         <span id="layout-bar">
            <button title="Reset Page to Preset" onclick='MonitoringConsole.View.onPageReset()'>&#10226;</button>
@@ -88,7 +88,11 @@
 <div id='panel-trace'>
   <div id='trace-iconbar'>
     <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onClosePopup();" title="Back">&#9664;</button>
+    &nbsp; &nbsp;
     <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onDataRefresh();" title="Reload">&#10226;</button>
+    &nbsp; &nbsp;
+    <button class='btnIcon'onclick="MonitoringConsole.Chart.Trace.onSortByWallTime();" title="Sort By Wall Time (past to recent)">&#8986;</button>
+    <button class='btnIcon'onclick="MonitoringConsole.Chart.Trace.onSortByDuration();" title="Sort By Duration (slower to faster)">&#128034; &rarr; &#128007;</button>
   </div>
   <div id='trace-chart-box'><canvas id="trace-chart"></canvas></div>
   <div id="trace-legend" style="margin-top: 50px;"></div>

@@ -151,10 +151,17 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
 						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
 						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true } },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
 						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
 					]
-				}
+				},
+				request_tracing: {
+					name: 'Request Tracing',
+					numberOfColumns: 2,
+					widgets: [
+						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+					]
+				},
 			},
 			settings: {},
 	};
@@ -671,6 +678,21 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	function retainLastMinute(data) {
+		let startOfLastMinute = Date.now() - 60000;
+		data.forEach(function(seriesData) {
+			let points = [];
+			for (let i = 0; i < seriesData.points.length; i += 2) {
+				if (seriesData.points[i] >= startOfLastMinute) {
+					points.push(seriesData.points[i]);
+					points.push(seriesData.points[i+1]);
+				}
+			}
+			seriesData.points = points;
+		});
+		return data.filter(seriesData => seriesData.points.length >= 2);
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -695,7 +717,7 @@ MonitoringConsole.Model = (function() {
 				Object.values(widgets).forEach(function(widget) {
 					onDataUpdate({
 						widget: widget,
-						data: response[widget.series],
+						data: retainLastMinute(response[widget.series]),
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -1214,22 +1236,22 @@ MonitoringConsole.Chart.Common = (function() {
       let month = date.getMonth() + 1;
       let year = date.getFullYear();
       let hour = date.getHours();
-      let min = date.getMinutes();
-      let sec = date.getSeconds();
-      let ms = date.getMilliseconds();
+      let min = date.getMinutes().toString().padStart(2, '0');
+      let sec = date.getSeconds().toString().padStart(2, '0');
+      let ms = date.getMilliseconds().toString().padStart(3, '0');
       let now = new Date();
       let diffMs =  now - date;
       let text = `Today ${hour}:${min}:${sec}.${ms}`; 
       if (diffMs < 5000) {
-         return text + '(just now)';
+         return text + ' (just now)';
       }
       if (diffMs < 60 * 1000) { // less then a minute ago
          let diffSecs = diffMs / 1000;
-         return text + '(about '+ diffSecs.toFixed(0) + ' seconds ago)';
+         return text + ' (about '+ diffSecs.toFixed(0) + ' seconds ago)';
       }
       if (diffMs < 60 * 60 * 1000) { // less then an hour ago
          let diffMins = diffMs / (60*1000);
-         return text + '(about '+ diffMins.toFixed(0) + ' minutes ago)';  
+         return text + ' (about '+ diffMins.toFixed(0) + ' minutes ago)';  
       }
       let dayOfMonthNow = now.getDate();
       if (dayOfMonth == dayOfMonthNow) {
@@ -1367,24 +1389,13 @@ MonitoringConsole.Chart.Line = (function() {
    * Convertes a array of points given as one dimensional array with alternativ time value elements 
    * to a 2-dimensional array of points with t and y attribute.
    */
-  function points1Dto2D(points1d, lastMinute) {
+  function points1Dto2D(points1d) {
     if (!points1d)
       return [];
-    if (lastMinute) {
-      let points2d = [];
-      let startOfLastMinute = Date.now() - 60000;
-      for (let i = 0; i < points1d.length; i+=2) {
-        if (points1d[i] > startOfLastMinute)
-          points2d.push({ t: new Date(points1d[i]), y: points1d[i+1] });
-      }
-      return points2d;
-    } else {
-      let points2d = new Array(points1d.length / 2);
-      for (let i = 0; i < points2d.length; i++) {
-        points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
-      }
-      return points2d;      
-    }
+    let points2d = new Array(points1d.length / 2);
+    for (let i = 0; i < points2d.length; i++)
+      points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+    return points2d;      
   }
     
   /**
@@ -1409,8 +1420,8 @@ MonitoringConsole.Chart.Line = (function() {
     return points2d;
   }  
 	
-  function createMinimumLineDataset(seriesResponse, points, lineColor) {
-		let min = seriesResponse.observedMin;
+  function createMinimumLineDataset(seriesData, points, lineColor) {
+		let min = seriesData.observedMin;
 		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
@@ -1424,8 +1435,8 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createMaximumLineDataset(seriesResponse, points, lineColor) {
-  	let max = seriesResponse.observedMax;
+  function createMaximumLineDataset(seriesData, points, lineColor) {
+  	let max = seriesData.observedMax;
 		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
@@ -1438,8 +1449,8 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createAverageLineDataset(seriesResponse, points, lineColor) {
-		let avg = seriesResponse.observedSum / seriesResponse.observedValues;
+  function createAverageLineDataset(seriesData, points, lineColor) {
+		let avg = seriesData.observedSum / seriesData.observedValues;
 		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
@@ -1453,11 +1464,11 @@ MonitoringConsole.Chart.Line = (function() {
 		};
   }
     
-  function createCurrentLineDataset(widget, seriesResponse, points, lineColor, bgColor) {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
 		let pointRadius = widget.options.drawPoints ? 3 : 0;
-    let label = seriesResponse.instance;
+    let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
-      label += ': '+ (seriesResponse.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+      label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
     return {
 			data: points,
 			label: label,
@@ -1472,22 +1483,24 @@ MonitoringConsole.Chart.Line = (function() {
    * Creates one or more lines for a single series dataset related to the widget.
    * A widget might display multiple series in the same graph generating one or more dataset for each of them.
    */
-  function createSeriesDatasets(widget, seriesResponse, lineColor, bgColor) {
-    if (widget.options.perSec && seriesResponse.points.length > 4) {    
+  function createSeriesDatasets(widget, seriesData) {
+    let lineColor = seriesData.legend.color;
+    let bgColor = seriesData.legend.backgroundColor;
+    if (widget.options.perSec && seriesData.points.length > 4) {    
   		//TODO add min/max/avg per sec lines
-      return [ createCurrentLineDataset(widget, seriesResponse, points1Dto2DPerSec(seriesResponse.points), lineColor, bgColor) ];
+      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
   	}
-  	let points = points1Dto2D(seriesResponse.points, true);
+  	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
-  	datasets.push(createCurrentLineDataset(widget, seriesResponse, points, lineColor, bgColor));
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
   	if (points.length > 0 && widget.options.drawAvgLine) {
-			datasets.push(createAverageLineDataset(seriesResponse, points, lineColor));
+			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
-		if (points.length > 0 && widget.options.drawMinLine && seriesResponse.observedMin > 0) {
-			datasets.push(createMinimumLineDataset(seriesResponse, points, lineColor));
+		if (points.length > 0 && widget.options.drawMinLine && seriesData.observedMin > 0) {
+			datasets.push(createMinimumLineDataset(seriesData, points, lineColor));
 		}
 		if (points.length > 0 && widget.options.drawMaxLine) {
-			datasets.push(createMaximumLineDataset(seriesResponse, points, lineColor));
+			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
 	  return datasets;
   }
@@ -1518,8 +1531,7 @@ MonitoringConsole.Chart.Line = (function() {
     let chart = update.chart();
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
-      datasets = datasets.concat(
-          createSeriesDatasets(widget, data[j], Common.lineColor(j), Common.backgroundColor(j)));
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
     }
     chart.data.datasets = datasets;
     chart.update(0);
@@ -1584,75 +1596,67 @@ MonitoringConsole.Chart.Bar = (function() {
   const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
-      let labels = [];
       let series = [];
+      let labels = [];
       let zeroToMinValues = [];
       let observedMinToMinValues = [];
       let minToMaxValues = [];
       let maxToObservedMaxValues = [];
       let showObservedMin = widget.options.drawMinLine;
-      let startOfLastMinute = Date.now() - 60000;
+      let lineColors = [];
+      let bgColors = [];
       for (let i = 0; i < response.length; i++) {
-         let seriesResponse = response[i];
-         if (seriesResponse.observedValues > 0) {
-            let points = seriesResponse.points;
-            let min;
-            let max;
-            let count = 0;
-            for (let j = 0; j < points.length; j+=2) {
-               if (points[j] > startOfLastMinute) {
-                  let value = points[j+1];
-                  count++;
-                  min = min === undefined ? value : Math.min(min, value);
-                  max = max === undefined ? value : Math.max(max, value);
-               }
-            }
-            if (min && max) {
-               series.push(seriesResponse.series);
-               let label = widget.series.indexOf('*') < 0 ? '' : seriesResponse.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
-               label += '    x ' + count;
-               labels.push(label);               
-               zeroToMinValues.push(showObservedMin ? seriesResponse.observedMin : min);
-               observedMinToMinValues.push(min - seriesResponse.observedMin);
-               minToMaxValues.push(max - min);
-               maxToObservedMaxValues.push(seriesResponse.observedMax - max);
-            }
-         }
+        let seriesData = response[i];
+        let points = seriesData.points;
+        let min = points[1];
+        let max = points[1];
+        for (let j = 0; j < points.length; j+=2) {
+              let value = points[j+1];
+              min = Math.min(min, value);
+              max = Math.max(max, value);
+        }
+        labels.push(seriesData.series);
+        series.push(seriesData.series);          
+        zeroToMinValues.push(showObservedMin ? seriesData.observedMin : min);
+        observedMinToMinValues.push(min - seriesData.observedMin);
+        minToMaxValues.push(max - min);
+        maxToObservedMaxValues.push(seriesData.observedMax - max);
+        lineColors.push(seriesData.legend.color);
+        bgColors.push(seriesData.legend.backgroundColor);
       }
       let datasets = [];
       let offset = {
         data: zeroToMinValues,
         backgroundColor: 'transparent',
+        borderWidth: {right: 1},
+        borderColor: lineColors,
       };
       datasets.push(offset);
-      let bgColors = Common.backgroundColors();
-      let lineColors = Common.lineColors();
       if (showObservedMin) {
          datasets.push({
             data: observedMinToMinValues,
             backgroundColor: bgColors,
-            borderColor: lineColors,
-            borderWidth: { right: 2 },
+            borderWidth: 0,
          });       
       }
-      offset.borderColor = lineColors;
-      offset.borderWidth = { right: 2 };  
       datasets.push({
          data: minToMaxValues,
          backgroundColor: bgColors,
          borderColor: lineColors,
-         borderWidth: { right: 2 },
+         borderWidth: 1,
+         borderSkipped: false,
       });
       if (widget.options.drawMaxLine) {
          datasets.push({
            data: maxToObservedMaxValues,
            backgroundColor: bgColors,
+           borderWidth: 0,
          }); 
       }
       return {
-         series: series,
-         labels: labels,
-         datasets: datasets,
+        labels: labels,
+        series: series,
+        datasets: datasets,
       };
    }
 
@@ -1667,14 +1671,13 @@ MonitoringConsole.Chart.Bar = (function() {
                   stacked: true,
                }],
                yAxes: [{
-                  maxBarThickness: 50, //px
+                  maxBarThickness: 15, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
                   stacked: true,
                   ticks: {
-                     mirror: true,
-                     padding: -10,
+                     display: false,
                   }
                }]
             },
@@ -1768,6 +1771,12 @@ MonitoringConsole.Chart.Trace = (function() {
    var chart;
 
    function onDataUpdate(data) {
+      model.data = data;
+      onSortByDuration();
+   }
+
+   function updateChart() {
+      let data = model.data;
       let zeroToMinValues = [];
       let minToMaxValues = [];
       let spans = [];
@@ -1776,7 +1785,7 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
-      data.sort((a,b) => a.startTime - b.startTime);
+      data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
          let startTime = trace.startTime;
@@ -1815,7 +1824,7 @@ MonitoringConsole.Chart.Trace = (function() {
             data: minToMaxValues,
             backgroundColor: bgColors, //'rgba(153, 153, 153, 0.2)',
             borderColor: colors,
-            borderWidth: { right: 3 },
+            borderWidth: {top: 1, right: 1},
          }
       ];
       if (!chart) {
@@ -1868,10 +1877,21 @@ MonitoringConsole.Chart.Trace = (function() {
                xAxes: [{
                   stacked: true,
                   position: 'top',
+                  ticks: {
+                     callback: function(value, index, values) {
+                        if (value > 1000) {
+                           return (value / 1000).toFixed(1)+"s";
+                        }
+                        return value+"ms";
+                     }
+                  },
+                  scaleLabel: {
+                     display: true,
+                     labelString: 'Relative Timeline'
+                  }
                }],
                yAxes: [{
-                  maxBarThickness: 10, //px
-                  barThickness: 10, //px
+                  maxBarThickness: 15, //px
                   barPercentage: 1.0,
                   categoryPercentage: 1.0,
                   borderSkipped: false,
@@ -1898,7 +1918,7 @@ MonitoringConsole.Chart.Trace = (function() {
 
    function updateDomSpanDetails(data, span) {
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
-      let model = [
+      let settings = [
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
@@ -1914,7 +1934,7 @@ MonitoringConsole.Chart.Trace = (function() {
          }
          tags.entries.push({ label: key, input: autoLink(value)});
       }
-      Components.onSettingsUpdate(model);
+      Components.onSettingsUpdate(settings);
    }
 
 
@@ -1936,6 +1956,16 @@ MonitoringConsole.Chart.Trace = (function() {
       $('#panel-trace').hide();
    }
 
+   function onSortByWallTime() {
+      model.sortBy = (a,b) => a.startTime - b.startTime; // past to recent
+      updateChart();
+   }
+
+   function onSortByDuration() {
+      model.sortBy = (a,b) => b.elapsedTime - a.elapsedTime; // slow to fast
+      updateChart();
+   }
+
    /**
     * Public API below:
     */
@@ -1943,6 +1973,8 @@ MonitoringConsole.Chart.Trace = (function() {
       onOpenPopup: (series) => onOpenPopup(series),
       onClosePopup: () => onClosePopup(),
       onDataRefresh: () => onDataRefresh(),
+      onSortByWallTime: () => onSortByWallTime(),
+      onSortByDuration: () => onSortByDuration(),
    };
 })();
 /*
@@ -1999,7 +2031,10 @@ MonitoringConsole.View = (function() {
      */ 
     function updatePageNavigation() {
         let nav = { 
-            onChange: (pageid) => onPageChange(MonitoringConsole.Model.Page.changeTo(pageid)),
+            onChange: function(pageid) {
+                MonitoringConsole.Chart.Trace.onClosePopup();
+                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
+            },
             pages: MonitoringConsole.Model.listPages().map(function(page) {
                 return { label: page.name, id: page.id, active: page.active };
             }),
@@ -2134,7 +2169,7 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let model = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
+        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
             { label: 'General'},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
@@ -2145,7 +2180,7 @@ MonitoringConsole.View = (function() {
             { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
         ]};
         if (widget.type === 'line') {
-            model.entries.push(
+            settings.entries.push(
                 { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
                 { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
                 { label: 'Display Options'},
@@ -2161,7 +2196,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
             );
         }
-        return model;       
+        return settings;       
     }
 
     function createPageSettings() {
@@ -2247,6 +2282,28 @@ MonitoringConsole.View = (function() {
         }
     }
 
+    function createLegend(widget, data) {
+        if (!data)
+            return [{ label: 'No Data', value: '?', color: 'red' }];
+        let legend = [];
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            let label = seriesData.instance;
+            if (widget.series.indexOf('*') > 0) {
+                label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+            }
+            let item = { 
+                label: label, 
+                value: seriesData.points[seriesData.points.length-1], 
+                color: MonitoringConsole.Chart.Common.lineColor(j),
+                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+            };
+            legend.push(item);
+            data[j].legend = item;
+        }
+        return legend;
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -2257,18 +2314,11 @@ MonitoringConsole.View = (function() {
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
         let legendNode = widgetNode.find('.widget-legend-bar').first();
+        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
         if (update.data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
-            let legend = [];
-            for (let j = 0; j < update.data.length; j++) {
-                let data = update.data[j];
-                legend.push({ label: data.instance, value: data.points[data.points.length-1], color: MonitoringConsole.Chart.Common.lineColor(j) });
-            }
-            legendNode.replaceWith(Components.onLegendCreation(legend));
-        } else {
-            let legend = [{ label: 'No Data', value: '?', color: 'red' }];
-            legendNode.replaceWith(Components.onLegendCreation(legend));
         }
+        legendNode.replaceWith(Components.onLegendCreation(legend));
     }
 
     /**

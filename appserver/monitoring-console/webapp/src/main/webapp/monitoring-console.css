@@ -86,10 +86,15 @@ button:hover {
   left: 15px;
   position: absolute;
 }
+#newPage {
+  position: absolute;
+  left: 110px;
+  top: 5px;
+}
 
 #panel-trace {
   position: absolute;
-  top: 0;
+  top: 38px;
   left: 0;
   background-color: #002c3e;
   display: none;
@@ -122,7 +127,7 @@ button:hover {
 	vertical-align: top;
 }
 #chart-container {
-    padding: 0 10px;
+    padding: 0 5px;
 }
 .widget-chart-box {
     position: relative;
@@ -188,7 +193,7 @@ button.btnIcon:hover {
 #chart-grid {
 	width: 100%;
 	table-layout:fixed;
-	border-spacing: 4px;
+	border-spacing: 5px;
     border-collapse: separate;
 }
 #chart-grid td {
@@ -257,7 +262,7 @@ button.btnIcon:hover {
 	display: block;
 }
 #console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
-  width: calc(100% - 385px);
+  width: calc(100% - 390px);
 }
 
 /* HTML Chart Tooltips */
