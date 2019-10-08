@@ -95,12 +95,12 @@ public class PayaraConfig implements Config {
         if(String.class.equals(propertyType)) {
             return (Optional<T>) Optional.ofNullable(strValue);
         }
-        
-        Converter<T> converter = getConverter(propertyType);
-        if (converter == null) {
-            throw new IllegalArgumentException("No converter for class " + propertyType);
+
+        if (strValue == null) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(convertString(strValue, propertyType));
         }
-        return Optional.ofNullable(converter.convert(strValue));
     }
 
     @Override
