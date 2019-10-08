@@ -44,24 +44,24 @@
 <!--"Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
-        <artifactId>tests</artifactId>
+        <artifactId>payara-tests</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>org.glassfish.quicklook</groupId>
     <artifactId>quicklook</artifactId>
     <name>Glassfish Quicklook Bundle</name>
     <description>This pom describes how to run QuickLook tests on the Glassfish Bundle</description>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        
+
         <jruby-all.version>1.5.4</jruby-all.version>
         <jruby-all.classifier>1.3.1</jruby-all.classifier>
         <domain.name>test-domain</domain.name>
@@ -86,12 +86,12 @@
                                 <echo message="${line.separator} ###############################" />
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
                                 <echo message="${line.separator}" />
-                                
-                                
+
+
                                 <if>
                                     <equals arg1="${test.gd}" arg2="true" />
                                     <then>
-                                        
+
                                         <echo>${line.separator}</echo>
                                         <echo>+--------------------------------------------+</echo>
                                         <echo>|                                            |</echo>
@@ -101,16 +101,16 @@
                                         <echo>${line.separator}</echo>
                                         <echo>glassfish.home: ${glassfish.home} </echo>
                                         <echo>domain.name: ${domain.name} </echo>
-                                        
+
                                         <ant dir="." antfile="build.xml" target="all">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                             <property name="domain.name" value="${domain.name}"/>
                                             <property name="jruby-all.version" value="${jruby-all.version}"/>
                                             <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
-                                        </ant>                                        
+                                        </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.wd}" arg2="true" />
                                     <then>
@@ -119,7 +119,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.em}" arg2="true" />
                                     <then>
@@ -128,7 +128,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.ri}" arg2="true" />
                                     <then>
@@ -137,7 +137,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.wd.security}" arg2="true" />
                                     <then>
@@ -146,7 +146,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${start.wd.security}" arg2="true" />
                                     <then>
@@ -155,7 +155,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${stop.wd.security}" arg2="true" />
                                     <then>
@@ -164,7 +164,7 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.gd.security}" arg2="true" />
                                     <then>
@@ -175,14 +175,14 @@
                                         </ant>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <isset property="test.report" />
                                     <then>
                                         <ant dir="." antfile="build.xml" target="report"/>
                                     </then>
                                 </if>
-                                
+
                                 <if>
                                     <equals arg1="${test.debug}" arg2="true" />
                                     <then>
@@ -198,7 +198,7 @@
                         </goals>
                     </execution>
                 </executions>
-                
+
                 <dependencies>
                     <dependency>
                         <groupId>commons-codec</groupId>
@@ -302,56 +302,56 @@
                 <test.report>test-output</test.report>
             </properties>
         </profile>
-        
+
         <profile>
             <id>test_wd</id>
             <properties>
                 <test.wd>true</test.wd>
             </properties>
         </profile>
-        
+
         <profile>
             <id>test_em</id>
             <properties>
                 <test.em>true</test.em>
             </properties>
         </profile>
-        
+
         <profile>
             <id>test_ri</id>
             <properties>
                 <test.ri>true</test.ri>
             </properties>
         </profile>
-        
+
         <profile>
             <id>test_wd_security</id>
             <properties>
                 <test.wd.security>true</test.wd.security>
             </properties>
         </profile>
-        
+
         <profile>
             <id>start_wd_security</id>
             <properties>
                 <start.wd.security>true</start.wd.security>
             </properties>
         </profile>
-        
+
         <profile>
             <id>stop_wd_security</id>
             <properties>
                 <stop.wd.security>true</stop.wd.security>
             </properties>
         </profile>
-        
+
         <profile>
             <id>test_gd_security</id>
             <properties>
                 <test.gd.security>true</test.gd.security>
             </properties>
         </profile>
-        
+
         <profile>
             <id>dev_debug</id>
             <properties>
@@ -359,6 +359,6 @@
             </properties>
         </profile>
     </profiles>
-    
+
 </project>
 
