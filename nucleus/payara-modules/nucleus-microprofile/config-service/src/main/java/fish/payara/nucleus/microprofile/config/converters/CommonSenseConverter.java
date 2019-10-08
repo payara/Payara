@@ -39,11 +39,16 @@
  */
 package fish.payara.nucleus.microprofile.config.converters;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.Converter;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.config.spi.Converter;
+import java.lang.reflect.Modifier;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  *
@@ -51,39 +56,80 @@ import org.eclipse.microprofile.config.spi.Converter;
  */
 public class CommonSenseConverter implements Converter<Object> {
 
+    /**
+     * Return implicit converter for a class following section "Automatic Converters" of the spec, if class has
+     * matching construct
+     *
+     * @param type target type of property
+     * @param <T> target type of property
+     * @return Optional of converter using a method found in the class, empty if none were found
+     */
+    public static <T> Optional<Converter<T>> forClass(Class<T> type) {
+        return Stream.<Supplier<Converter<T>>>of(
+                () -> forMethod(type, "of", String.class),
+                () -> forMethod(type, "valueOf", String.class),
+                () -> forConstructor(type, String.class),
+                () -> forMethod(type, "parse", CharSequence.class))
+                .map(Supplier::get)
+                .filter(converter -> converter != null)
+                .findFirst();
+    }
+
     private Method conversionMethod;
     private Constructor constructor;
     
-    public CommonSenseConverter(Method method) {
+    private CommonSenseConverter(Method method) {
         conversionMethod = method;
     }
     
-    public CommonSenseConverter(Constructor method) {
+    private CommonSenseConverter(Constructor method) {
         constructor = method;
     }
 
     @Override
     public Object convert(String value) {
         if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
-        Object result = null;
 
         if (conversionMethod != null) {
             try {
-                result = conversionMethod.invoke(null, value);
+                return conversionMethod.invoke(null, value);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                // possible result
+                throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
             }
         } else if (constructor != null) {
             try {
-                result = constructor.newInstance(value);
+                return constructor.newInstance(value);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                // possible result
+                throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
             }
         }
-        if (result == null) {
-            throw new IllegalArgumentException("Unable to convert value to type  for value " + value);
+        throw new IllegalStateException("CommonSenseConverter created without constructor or method to call");
+    }
+
+    private static <T> Converter<T> forMethod(Class<T> type, String method, Class<?>... argumentTypes) {
+        try {
+            Method factoryMethod = type.getMethod(method, argumentTypes);
+            if (Modifier.isStatic(factoryMethod.getModifiers()) && Modifier.isPublic(factoryMethod.getModifiers())) {
+                return (Converter<T>) new CommonSenseConverter(factoryMethod);
+            } else {
+                return null;
+            }
+        } catch (NoSuchMethodException | SecurityException e) {
+            return null;
         }
-        return result;
+    }
+
+    private static <T> Converter<T> forConstructor(Class<T> type, Class<?>... argumentTypes) {
+        try {
+            Constructor<T> constructor = type.getConstructor(argumentTypes);
+            if (Modifier.isPublic(constructor.getModifiers())) {
+                return (Converter<T>) new CommonSenseConverter(constructor);
+            } else {
+                return null;
+            }
+        } catch (NoSuchMethodException | SecurityException e) {
+            return null;
+        }
     }
 
 }

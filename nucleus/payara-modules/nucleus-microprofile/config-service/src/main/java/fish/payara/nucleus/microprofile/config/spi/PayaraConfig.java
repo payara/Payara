@@ -40,14 +40,15 @@
 package fish.payara.nucleus.microprofile.config.spi;
 
 import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,10 +58,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
@@ -177,74 +174,60 @@ public class PayaraConfig implements Config {
     }
     
     private <T> Converter<T> getConverter(Class<T> propertyType) {
-        Class type = propertyType;
-        if (type.equals(int.class)) {
-            type = Integer.class;
-        } else if (type.equals(long.class)) {
-            type = Long.class;
-        } else if (type.equals(double.class)) {
-            type = Double.class;
-        } else if (type.equals(float.class)) {
-            type = Float.class;
-        } else if (type.equals(boolean.class)) {
-            type = Boolean.class;
-        }
+        Class type = boxedTypeOf(propertyType);
+
         Converter<T> converter = converters.get(type);
 
+        if (converter != null) {
+            return converter;
+        }
             
-        if (converter == null) {
-            // search for a matching raw type
-            for (Entry<Type, Converter> entry : converters.entrySet()) {
-                Type type1 = entry.getKey();
-                if (type1 instanceof ParameterizedType) {
-                    ParameterizedType ptype = (ParameterizedType)type1;
-                    if (ptype.getRawType().equals(propertyType)) {
-                        converter = entry.getValue();
-                        break;
-                    }
+        // search for a matching raw type
+        for (Entry<Type, Converter> entry : converters.entrySet()) {
+            Type type1 = entry.getKey();
+            if (type1 instanceof ParameterizedType) {
+                ParameterizedType ptype = (ParameterizedType)type1;
+                if (ptype.getRawType().equals(propertyType)) {
+                    return entry.getValue();
                 }
             }
         }
         
-        if (converter == null) {
-            // see if a common sense converter can be created
-            boolean commonSense = true;
-            try {
-                Method m = propertyType.getMethod("of", String.class);
-                converter = (Converter<T>) new CommonSenseConverter(m);
-                converters.put(propertyType, converter);
-                return converter;
-            } catch (NoSuchMethodException | SecurityException ex) {
-                try {
-                    Method m = propertyType.getMethod("valueOf",String.class);
-                    converter = (Converter<T>) new CommonSenseConverter(m);
-                    converters.put(propertyType, converter);
-                    return converter;
-                } catch (NoSuchMethodException | SecurityException ex1) {
-                    try {
-                        Constructor c = propertyType.getConstructor(String.class);
-                        converter = (Converter<T>) new CommonSenseConverter(c);
-                        converters.put(propertyType, converter);
-                        return converter;
-                    } catch (NoSuchMethodException | SecurityException ex2) {
-                        try {
-                            Method m = propertyType.getMethod("parse", CharSequence.class);
-                            converter = (Converter<T>) new CommonSenseConverter(m);
-                            converters.put(propertyType, converter);
-                            return converter;
-                        } catch (NoSuchMethodException | SecurityException ex3) {
-                            commonSense = false;
-                        }
-                    }
-                }
-            }
+        // see if a common sense converter can be created
+        Optional<Converter<T>> commonSenseConverter = CommonSenseConverter.forClass(propertyType);
+        if (commonSenseConverter.isPresent()) {
+            converters.put(propertyType, commonSenseConverter.get());
+            return commonSenseConverter.get();
         }
-        if (converter == null) {
-            throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getCanonicalName());
-        }
-        return converter;
+
+        throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getCanonicalName());
     }
-    
+
+
+
+    private static <T> Class<T> boxedTypeOf(Class<T> type) {
+        if (!type.isPrimitive()) {
+            return type;
+        } else if (type.equals(int.class)) {
+            return (Class<T>) Integer.class;
+        } else if (type.equals(boolean.class)) {
+            return (Class<T>) Boolean.class;
+        } else if (type.equals(long.class)) {
+            return (Class<T>) Long.class;
+        } else if (type.equals(double.class)) {
+            return (Class<T>) Double.class;
+        } else if (type.equals(float.class)) {
+            return (Class<T>) Float.class;
+        } else if (type.equals(byte.class)) {
+            return (Class<T>) Byte.class;
+        } else if (type.equals(char.class)) {
+            return (Class<T>) Character.class;
+        } else if (type.equals(short.class)) {
+            return (Class<T>) Short.class;
+        }
+        return type;
+    }
+
     private <T> T convertString(String value, Class<T> propertyType) {
 
         // if it is an array convert arrays
