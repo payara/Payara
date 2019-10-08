@@ -43,11 +43,6 @@ package org.glassfish.deployment.client;
 import com.sun.enterprise.deployment.deploy.shared.MemoryMappedArchive;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -358,39 +353,9 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     }
 
     private File writeMemoryMappedArchiveToTempFile(MemoryMappedArchive mma, String fileSuffix) throws IOException {
-        File tempFile = File.createTempFile("jsr88-", fileSuffix);
-        BufferedOutputStream bos = null;
-        BufferedInputStream bis = null;
-        int chunkSize = 32 * 1024;
-        long remaining = mma.getArchiveSize();
-        try {
-            bos = new BufferedOutputStream(new FileOutputStream(tempFile));
-            bis = new BufferedInputStream(
-                new ByteArrayInputStream(mma.getByteArray()));
-            while(remaining != 0) {
-                int actual = (remaining < chunkSize) ? (int) remaining : chunkSize;
-                byte[] bytes = new byte[actual];
-                try {
-                    for (int totalCount = 0, count = 0;
-                        count != -1 && totalCount < actual;
-                        totalCount += (count = bis.read(bytes, totalCount, actual - totalCount))) {/**/}
-                    bos.write(bytes);
-                } catch (EOFException eof) {
-                    break;
-                }
-                remaining -= actual;
-            }
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.flush();
-                } finally {
-                   bos.close();
-                }
-            }
-            if (bis != null) {
-                bis.close();
-            }
+        final File tempFile = File.createTempFile("jsr88-", fileSuffix);
+        try (FileOutputStream bos = new FileOutputStream(tempFile)) {
+            bos.write(mma.getByteArray());
         }
         return tempFile;
     }
@@ -586,7 +551,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         String commandName = LIST_SUB_COMPONENTS_COMMAND;
         String[] operands = new String[] { appName };
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, null, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -610,14 +575,14 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                  */
                 commandExecutionException = new IOException("remote command execution failed on the server");
                 commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-                throw (IOException) commandExecutionException;
+                throw commandExecutionException;
             }
             return subModuleInfoList;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -628,7 +593,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         commandParams.put(DFDeploymentProperties.TARGET, target);
         String[] operands = new String[] { moduleName };
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, commandParams, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -656,14 +621,14 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                  */
                 commandExecutionException = new IOException("remote command execution failed on the server");
                 commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-                throw (IOException) commandExecutionException;
+                throw commandExecutionException;
             }
             return enabledAttr;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -674,7 +639,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         String patternParam = "applications.application." + moduleName + ".context-root";
         String[] operands = new String[] {patternParam};
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, null, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -700,14 +665,14 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                         "remote command execution failed on the server");
                 commandExecutionException.initCause(
                         new RuntimeException(mainStatus.getAllStageMessages()));
-                throw (IOException)commandExecutionException;
+                throw commandExecutionException;
             }
             return contextRoot;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -718,7 +683,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         String patternParam = "applications.application." + moduleName + ".*";
         String[] operands = new String[] { patternParam };
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, null, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -741,12 +706,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
              */
             commandExecutionException = new IOException("remote command execution failed on the server");
             commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-            throw (IOException) commandExecutionException;
+            throw commandExecutionException;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -761,7 +726,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         String commandName = "_get-targets";
         String[] operands = new String[] { appName };
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, null, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -786,12 +751,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
              */
             commandExecutionException = new IOException("remote command execution failed on the server");
             commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-            throw (IOException) commandExecutionException;
+            throw commandExecutionException;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -804,7 +769,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         commandParams.put("appname", moduleID);
         String[] operands = new String[] { location };
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, commandParams, operands);
             DFDeploymentStatus ds = commandRunner.run();
@@ -820,13 +785,13 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                  */
                 commandExecutionException = new IOException("remote command execution failed on the server");
                 commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-                throw (IOException) commandExecutionException;
+                throw commandExecutionException;
             }
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException) commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -867,7 +832,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
         commandParams.put("securityEnabled", Boolean.valueOf(securityEnabled));
         DFDeploymentStatus mainStatus = null;
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             DFCommandRunner commandRunner = getDFCommandRunner(commandName, commandParams, null);
             DFDeploymentStatus ds = commandRunner.run();
@@ -890,12 +855,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
              */
             commandExecutionException = new IOException("remote command execution failed on the server");
             commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-            throw (IOException) commandExecutionException;
+            throw commandExecutionException;
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException) commandExecutionException;
+            throw commandExecutionException;
         }
     }
 
@@ -904,7 +869,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<>();
-        Throwable commandExecutionException = null;
+        IOException commandExecutionException = null;
         try {
             Target[] targetImpls = getTargetServers(createTargets(targets));
             for (Target target : targetImpls) {
@@ -933,14 +898,14 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                      */
                     commandExecutionException = new IOException("remote command execution failed on the server");
                     commandExecutionException.initCause(new RuntimeException(mainStatus.getAllStageMessages()));
-                    throw (IOException) commandExecutionException;
+                    throw commandExecutionException;
                 }
             }
         } catch (Throwable ex) {
             if (commandExecutionException == null) {
                 throw new RuntimeException("error submitting remote command", ex);
             }
-            throw (IOException)commandExecutionException;
+            throw commandExecutionException;
         }
         TargetModuleIDImpl[] result = new TargetModuleIDImpl[targetModuleIDList.size()];
         return targetModuleIDList.toArray(result);
