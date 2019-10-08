@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,13 @@
  */
 package fish.payara.nucleus.requesttracing.store;
 
-import com.hazelcast.core.MultiMap;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -54,46 +54,30 @@ import java.util.stream.Collectors;
  */
 public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, Serializable {
 
-    private final String instanceId;
-    private final MultiMap<String, RequestTrace> store;
+    private final Map<UUID, RequestTrace> store;
     private int maxStoreSize;
-    
+
     private final TraceStorageStrategy strategy;
 
-    ClusteredRequestTraceStore(MultiMap<String, RequestTrace> store, String instanceId, TraceStorageStrategy strategy) {
+    ClusteredRequestTraceStore(Map<UUID, RequestTrace> store, TraceStorageStrategy strategy) {
         this.store = store;
-        this.instanceId = instanceId;
         this.maxStoreSize = store.size();
         this.strategy = strategy;
     }
 
     @Override
     public RequestTrace addTrace(RequestTrace trace) {
-        store.put(instanceId, trace);
-        RequestTrace traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize);
-        if (traceToRemove == null) {
-            return null;
-        }
-        store.remove(traceToRemove);
-
-        return traceToRemove;
+        return addTrace(trace, null);
     }
-    
+
     @Override
     public RequestTrace addTrace(RequestTrace trace, RequestTrace traceToRemove) {
-        store.put(instanceId, trace);
+        store.put(trace.getTraceId(), trace);
         traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize, traceToRemove);
         if (traceToRemove == null) {
             return null;
         }
-        
-        Set<String> keys = store.localKeySet();
-        for (String key : keys){
-                if (store.remove(key, trace)){
-                    break;
-                }
-        }
-        
+        store.remove(traceToRemove.getTraceId());
         return traceToRemove;
     }
 
@@ -109,6 +93,9 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
 
     @Override
     public void setSize(int maxSize) {
+        while (store.size() > maxSize) {
+            store.remove(strategy.getTraceForRemoval(getTraces(), maxSize, null).getTraceId());
+        }
         this.maxStoreSize = maxSize;
     }
 
@@ -119,10 +106,8 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
 
     @Override
     public Collection<RequestTrace> emptyStore() {
-        Collection<RequestTrace> traces = new LinkedList<>();
-        
-        store.keySet().forEach((id) -> traces.addAll(store.remove(id)));
-        
+        Collection<RequestTrace> traces = new ArrayList<>(store.values());
+        store.clear();
         return traces;
     }
 
