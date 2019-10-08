@@ -56,7 +56,14 @@
 
     <profiles>
         <profile>
+            <!-- deprecated, remove after replacing with quicklook -->
             <id>ci</id>
+            <modules>
+                <module>quicklook</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>quicklook</id>
             <modules>
                 <module>quicklook</module>
             </modules>
