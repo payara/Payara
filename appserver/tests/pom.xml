@@ -50,7 +50,7 @@
     </parent>
 
     <groupId>fish.payara.server.internal.tests</groupId>
-    <artifactId>tests</artifactId>
+    <artifactId>payara-tests</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Tests related modules</name>
 
