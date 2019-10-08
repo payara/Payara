@@ -207,7 +207,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
        StringBuilder tag = new StringBuilder();
        tag.append(metric.getName());
        for (Entry<String, String> e : metric.getTags().entrySet()) {
-           tag.append('.').append(e.getKey()).append('.').append(e.getValue());
+           tag.append('.').append(e.getKey()).append('.').append(e.getValue().replaceAll(" ", "_"));
        }
        return tag;
     }
