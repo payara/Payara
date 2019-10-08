@@ -52,7 +52,7 @@
     <groupId>fish.payara.server.internal.tests</groupId>
     <artifactId>payara-tests</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Tests related modules</name>
+    <name>Payara Internal Tests</name>
 
     <profiles>
         <profile>
@@ -72,6 +72,20 @@
             <id>payara-samples</id>
             <modules>
                 <module>payara-samples</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test-containers</id>
+            <modules>
+                <module>test-containers</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>FullBuild</id>
+            <modules>
+                <module>quicklook</module>
+                <module>payara-samples</module>
+                <module>test-containers</module>
             </modules>
         </profile>
     </profiles>
