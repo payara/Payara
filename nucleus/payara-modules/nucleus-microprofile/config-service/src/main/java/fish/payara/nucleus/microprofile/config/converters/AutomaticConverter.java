@@ -46,6 +46,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -54,17 +55,21 @@ import java.util.stream.Stream;
  *
  * @author steve
  */
-public class CommonSenseConverter implements Converter<Object> {
+public class AutomaticConverter implements Converter<Object> {
 
     /**
      * Return implicit converter for a class following section "Automatic Converters" of the spec, if class has
      * matching construct
      *
-     * @param type target type of property
+     * @param generalType target type of property
      * @param <T> target type of property
      * @return Optional of converter using a method found in the class, empty if none were found
      */
-    public static <T> Optional<Converter<T>> forClass(Class<T> type) {
+    public static <T> Optional<Converter<T>> forType(Type generalType) {
+        if (!(generalType instanceof Class)) {
+            return Optional.empty();
+        }
+        Class<T> type = (Class<T>)generalType;
         return Stream.<Supplier<Converter<T>>>of(
                 () -> forMethod(type, "of", String.class),
                 () -> forMethod(type, "valueOf", String.class),
@@ -78,11 +83,11 @@ public class CommonSenseConverter implements Converter<Object> {
     private Method conversionMethod;
     private Constructor constructor;
     
-    private CommonSenseConverter(Method method) {
+    private AutomaticConverter(Method method) {
         conversionMethod = method;
     }
     
-    private CommonSenseConverter(Constructor method) {
+    private AutomaticConverter(Constructor method) {
         constructor = method;
     }
 
@@ -110,7 +115,7 @@ public class CommonSenseConverter implements Converter<Object> {
         try {
             Method factoryMethod = type.getMethod(method, argumentTypes);
             if (Modifier.isStatic(factoryMethod.getModifiers()) && Modifier.isPublic(factoryMethod.getModifiers())) {
-                return (Converter<T>) new CommonSenseConverter(factoryMethod);
+                return (Converter<T>) new AutomaticConverter(factoryMethod);
             } else {
                 return null;
             }
@@ -123,7 +128,7 @@ public class CommonSenseConverter implements Converter<Object> {
         try {
             Constructor<T> constructor = type.getConstructor(argumentTypes);
             if (Modifier.isPublic(constructor.getModifiers())) {
-                return (Converter<T>) new CommonSenseConverter(constructor);
+                return (Converter<T>) new AutomaticConverter(constructor);
             } else {
                 return null;
             }

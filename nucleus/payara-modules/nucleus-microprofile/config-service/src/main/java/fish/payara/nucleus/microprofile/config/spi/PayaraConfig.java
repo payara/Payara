@@ -39,13 +39,12 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
+import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +52,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -173,59 +171,57 @@ public class PayaraConfig implements Config {
         return result;
     }
     
-    private <T> Converter<T> getConverter(Class<T> propertyType) {
-        Class type = boxedTypeOf(propertyType);
+    private <T> Converter<T> getConverter(Type propertyType) {
+        Type type = boxedTypeOf(propertyType);
 
         Converter<T> converter = converters.get(type);
 
         if (converter != null) {
             return converter;
         }
-            
-        // search for a matching raw type
-        for (Entry<Type, Converter> entry : converters.entrySet()) {
-            Type type1 = entry.getKey();
-            if (type1 instanceof ParameterizedType) {
-                ParameterizedType ptype = (ParameterizedType)type1;
-                if (ptype.getRawType().equals(propertyType)) {
-                    return entry.getValue();
-                }
-            }
-        }
-        
+
         // see if a common sense converter can be created
-        Optional<Converter<T>> commonSenseConverter = CommonSenseConverter.forClass(propertyType);
-        if (commonSenseConverter.isPresent()) {
-            converters.put(propertyType, commonSenseConverter.get());
-            return commonSenseConverter.get();
+        Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(propertyType);
+        if (automaticConverter.isPresent()) {
+            converters.put(propertyType, automaticConverter.get());
+            return automaticConverter.get();
         }
 
-        throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getCanonicalName());
+        throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getTypeName());
     }
 
 
 
-    private static <T> Class<T> boxedTypeOf(Class<T> type) {
-        if (!type.isPrimitive()) {
+    private static Type boxedTypeOf(Type type) {
+        if (type instanceof Class && !((Class) type).isPrimitive()) {
             return type;
-        } else if (type.equals(int.class)) {
-            return (Class<T>) Integer.class;
-        } else if (type.equals(boolean.class)) {
-            return (Class<T>) Boolean.class;
-        } else if (type.equals(long.class)) {
-            return (Class<T>) Long.class;
-        } else if (type.equals(double.class)) {
-            return (Class<T>) Double.class;
-        } else if (type.equals(float.class)) {
-            return (Class<T>) Float.class;
-        } else if (type.equals(byte.class)) {
-            return (Class<T>) Byte.class;
-        } else if (type.equals(char.class)) {
-            return (Class<T>) Character.class;
-        } else if (type.equals(short.class)) {
-            return (Class<T>) Short.class;
         }
-        return type;
+        if (type == int.class) {
+            return Integer.class;
+        } 
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        } 
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        // That's really strange config variable you got there
+        return Void.class;
     }
 
     private <T> T convertString(String value, Class<T> propertyType) {
