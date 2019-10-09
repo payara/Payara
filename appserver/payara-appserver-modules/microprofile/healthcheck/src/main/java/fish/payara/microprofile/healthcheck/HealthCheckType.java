@@ -39,10 +39,50 @@
  */
 package fish.payara.microprofile.healthcheck;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.enterprise.util.AnnotationLiteral;
+import org.eclipse.microprofile.health.Health;
+import org.eclipse.microprofile.health.Liveness;
+import org.eclipse.microprofile.health.Readiness;
+
 public enum HealthCheckType {
 
-    READINESS,
-    LIVENESS,
-    HEALTH;
+    READINESS("/ready", new AnnotationLiteral<Readiness>() {
+    }),
+    LIVENESS("/live", new AnnotationLiteral<Liveness>() {
+    }),
+    HEALTH(null, new AnnotationLiteral<Health>() {
+    });
+    
+    String path;
+    AnnotationLiteral literal;
+
+    private HealthCheckType(String path, AnnotationLiteral literal) {
+        this.path = path;
+        this.literal = literal;
+    }
+
+    public AnnotationLiteral getLiteral() {
+        return literal;
+    }
+    
+    public static HealthCheckType fromPath(String path) {
+        for (HealthCheckType value : values()) {
+            if (value.path != null && value.path.equals(path)) {
+                return value;
+            }
+        }
+        return HEALTH;
+    }
+ 
+    public static HealthCheckType fromQualifiers(Set<Annotation> qualifiers) {
+        for (HealthCheckType value : values()) {
+            if (qualifiers != null && qualifiers.contains(value.literal)) {
+                return value;
+            }
+        }
+        throw new IllegalStateException("HealthCheckType not found for : " + qualifiers);
+    }
 
 }

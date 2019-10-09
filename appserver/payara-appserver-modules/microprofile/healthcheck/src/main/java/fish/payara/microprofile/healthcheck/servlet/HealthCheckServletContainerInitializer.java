@@ -40,6 +40,10 @@
 package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.HealthCheckType;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
@@ -48,11 +52,9 @@ import java.util.Set;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.util.AnnotationLiteral;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -60,10 +62,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
-import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.Liveness;
-import org.eclipse.microprofile.health.Readiness;
 import org.glassfish.api.invocation.InvocationManager;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -78,13 +77,6 @@ import org.glassfish.internal.api.Globals;
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
 
     private static final Logger LOGGER = Logger.getLogger(HealthCheckServletContainerInitializer.class.getName());
-
-    private static final AnnotationLiteral READINESS = new AnnotationLiteral<Readiness>() {
-    };
-    private static final AnnotationLiteral LIVENESS = new AnnotationLiteral<Liveness>() {
-    };
-    private static final AnnotationLiteral HEALTH = new AnnotationLiteral<Health>() {
-    };
 
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
@@ -141,9 +133,9 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // register it to the HealthCheckService along with the application name
             Set<Bean<?>> beans = new HashSet<>();
 
-            beans.addAll(beanManager.getBeans(HealthCheck.class, READINESS));
-            beans.addAll(beanManager.getBeans(HealthCheck.class, LIVENESS));
-            beans.addAll(beanManager.getBeans(HealthCheck.class, HEALTH));
+            beans.addAll(beanManager.getBeans(HealthCheck.class, READINESS.getLiteral()));
+            beans.addAll(beanManager.getBeans(HealthCheck.class, LIVENESS.getLiteral()));
+            beans.addAll(beanManager.getBeans(HealthCheck.class, HEALTH.getLiteral()));
 
             for (Bean<?> bean : beans) {
                 HealthCheck healthCheck = (HealthCheck) beanManager.getReference(
@@ -152,15 +144,11 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                         beanManager.createCreationalContext(bean)
                 );
 
-                if (bean.getQualifiers().contains(READINESS)) {
-                    healthCheckService.registerReadiness(appName, healthCheck);
-                }
-                if (bean.getQualifiers().contains(LIVENESS)) {
-                    healthCheckService.registerLiveness(appName, healthCheck);
-                }
-                if (bean.getQualifiers().contains(HEALTH)) {
-                    healthCheckService.registerHealth(appName, healthCheck);
-                }
+                healthCheckService.registerHealthCheck(
+                        appName, 
+                        healthCheck, 
+                        HealthCheckType.fromQualifiers(bean.getQualifiers())
+                );
                 healthCheckService.registerClassLoader(
                         appName,
                         healthCheck.getClass().getClassLoader()

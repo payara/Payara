@@ -55,9 +55,6 @@ import org.glassfish.internal.api.Globals;
  */
 public class HealthCheckServlet extends HttpServlet {
 
-    private static final String READINESS_ENDPOINT = "/ready";
-    private static final String LIVENESS_ENDPOINT = "/live";
-
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
@@ -80,13 +77,7 @@ public class HealthCheckServlet extends HttpServlet {
             return;
         }
 
-        if (READINESS_ENDPOINT.equals(request.getPathInfo())) {
-            healthCheckService.performHealthChecks(response, HealthCheckType.READINESS);
-        } else if (LIVENESS_ENDPOINT.equals(request.getPathInfo())) {
-            healthCheckService.performHealthChecks(response, HealthCheckType.LIVENESS);
-        } else {
-            healthCheckService.performHealthChecks(response, HealthCheckType.HEALTH);
-        }
+        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()));
 
     }
 

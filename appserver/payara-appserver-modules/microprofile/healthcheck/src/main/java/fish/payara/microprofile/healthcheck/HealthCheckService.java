@@ -39,6 +39,9 @@
  */
 package fish.payara.microprofile.healthcheck;
 
+import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,6 +60,8 @@ import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import static java.util.logging.Level.WARNING;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.health.HealthCheck;
@@ -92,7 +97,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
     @Inject
     MetricsHealthCheckConfiguration configuration;
 
-    private boolean backwardCompatibilityEnabled;
+    private boolean backwardCompEnabled;
 
     private static final Logger LOG = Logger.getLogger(HealthCheckService.class.getName());
 
@@ -109,7 +114,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
         events.register(this);
-        this.backwardCompatibilityEnabled = ConfigProvider.getConfig()
+        this.backwardCompEnabled = ConfigProvider.getConfig()
                 .getOptionalValue("mp.health.enable-backward-compatibility", Boolean.class)
                 .orElse(false);
     }
@@ -120,11 +125,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
             if (appInfo != null) {
-                readiness.remove(appInfo.getName());
-                liveness.remove(appInfo.getName());
-                health.remove(appInfo.getName());
-                applicationClassLoaders.remove(appInfo.getName());
-                applicationsLoaded.remove(appInfo.getName());
+                String appName = appInfo.getName();
+                readiness.remove(appName);
+                liveness.remove(appName);
+                health.remove(appName);
+                applicationClassLoaders.remove(appName);
+                applicationsLoaded.remove(appName);
             }
         }
 
@@ -146,45 +152,15 @@ public class HealthCheckService implements EventListener, ConfigListener {
     }
 
     /**
-     * Register a Readiness to the Set of HealthChecks to execute when
+     * Register a HealthCheck to the Set of HealthChecks based on appName to execute when
      * performHealthChecks is called.
      *
      * @param appName The name of the application being deployed
      * @param healthCheck The HealthCheck to register
      */
-    public void registerReadiness(String appName, HealthCheck healthCheck) {
-        registerHealthCheck(appName, healthCheck, readiness);
-    }
-
-    /**
-     * Register a Liveness to the Set of HealthChecks to execute when
-     * performHealthChecks is called.
-     *
-     * @param appName The name of the application being deployed
-     * @param healthCheck The HealthCheck to register
-     */
-    public void registerLiveness(String appName, HealthCheck healthCheck) {
-        registerHealthCheck(appName, healthCheck, liveness);
-    }
-
-    /**
-     * Register a Health to the Set of HealthChecks to execute when
-     * performHealthChecks is called.
-     *
-     * @param appName The name of the application being deployed
-     * @param healthCheck The HealthCheck to register
-     */
-    public void registerHealth(String appName, HealthCheck healthCheck) {
-        registerHealthCheck(appName, healthCheck, health);
-    }
-
-    /**
-     * Register a HealthCheck to the Set of HealthChecks based on appName.
-     *
-     * @param appName The name of the application being deployed
-     * @param healthCheck The HealthCheck to register
-     */
-    private void registerHealthCheck(String appName, HealthCheck healthCheck, Map<String, Set<HealthCheck>> healthChecks) {
+    public void registerHealthCheck(String appName, HealthCheck healthCheck, HealthCheckType type) {
+        Map<String, Set<HealthCheck>> healthChecks = getHealthChecks(type);
+        
          // If we don't already have the app registered, we need to create a new Set for it
         if (!healthChecks.containsKey(appName)) {
             // Sync so that we don't get clashes
@@ -220,35 +196,50 @@ public class HealthCheckService implements EventListener, ConfigListener {
             }
         }
     }
+    
+    private Map<String, Set<HealthCheck>> getHealthChecks(HealthCheckType type) {
+        final Map<String, Set<HealthCheck>> healthChecks;
+        if (type == READINESS) {
+            healthChecks = readiness;
+        } else if (type == LIVENESS) {
+            healthChecks = liveness;
+        } else {
+            healthChecks = health;
+        }
+        return healthChecks;
+    }
+    
+        private Map<String, Set<HealthCheck>> getCollectiveHealthChecks(HealthCheckType type){
+        final Map<String, Set<HealthCheck>> healthChecks;
+        if (type == READINESS) {
+            healthChecks = readiness;
+        } else if (type == LIVENESS) {
+            healthChecks = liveness;
+        } else {
+            healthChecks = new HashMap<>(health);
+            BiConsumer<? super String, ? super Set<HealthCheck>> mergeHealthCheckMap
+                    = (key, value) -> healthChecks.merge(key, value, (oldValue, newValue) -> {
+                        oldValue.addAll(newValue);
+                        return oldValue;
+                    });
+            readiness.forEach(mergeHealthCheckMap);
+            liveness.forEach(mergeHealthCheckMap);
+        }
+        return healthChecks;
+    }
 
     /**
      * Execute the call method of every registered HealthCheck and generate the response.
      *
      * @param response The response to return
+     * @param type the type of health check
      * @throws IOException If there's an issue writing the response
      */
     public void performHealthChecks(HttpServletResponse response, HealthCheckType type) throws IOException {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
 
-        final Map<String, Set<HealthCheck>> healthChecks;
-        if (type == HealthCheckType.READINESS) {
-            healthChecks = readiness;
-        } else if (type == HealthCheckType.LIVENESS) {
-            healthChecks = liveness;
-        } else {
-            healthChecks = new HashMap<>(health);
-            readiness.forEach((k, v) -> healthChecks.merge(k, v, (oldValue, newValue) -> {
-                oldValue.addAll(newValue);
-                return oldValue;
-            }));
-            liveness.forEach((k, v) -> healthChecks.merge(k, v, (oldValue, newValue) -> {
-                oldValue.addAll(newValue);
-                return oldValue;
-            }));
-        }
-
         // Iterate over every HealthCheck stored in the Map
-        for (Map.Entry<String, Set<HealthCheck>> healthChecksEntry : healthChecks.entrySet()) {
+        for (Entry<String, Set<HealthCheck>> healthChecksEntry : getCollectiveHealthChecks(type).entrySet()) {
             for (HealthCheck healthCheck : healthChecksEntry.getValue()) {
                 // Execute the call method of the HealthCheck and add its outcome to the set of responses
                 try {
@@ -273,7 +264,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
         // No applications (yet), server is not ready.
         if (applicationsLoaded.isEmpty()) {
             // Application is not yet deployed
-            healthCheckResponses.add(HealthCheckResponse.builder().name("No Application deployed").down().build());
+            healthCheckResponses.add(
+                    HealthCheckResponse.builder()
+                            .name("No Application deployed")
+                            .down()
+                            .build()
+            );
         }
 
         // If we haven't encountered an exception, construct the JSON response
@@ -294,11 +290,10 @@ public class HealthCheckService implements EventListener, ConfigListener {
 
             // Add the name and state
             healthCheckObject.add("name", healthCheckResponse.getName());
-            if(backwardCompatibilityEnabled && type == HealthCheckType.HEALTH) {
-               healthCheckObject.add("state", healthCheckResponse.getState().toString());
-            } else {
-              healthCheckObject.add("status", healthCheckResponse.getState().toString());
-            }
+            healthCheckObject.add(
+                    backwardCompEnabled && type == HEALTH ? "state" : "status",
+                    healthCheckResponse.getState().toString()
+            );
 
             // Add data if present
             JsonObjectBuilder healthCheckData = Json.createObjectBuilder();
@@ -322,13 +317,11 @@ public class HealthCheckService implements EventListener, ConfigListener {
         // Create the final aggregate object
         JsonObjectBuilder responseObject = Json.createObjectBuilder();
 
-        // Set the aggregate outcome
-        String status = httpResponse.getStatus() == 200 ? "UP" : "DOWN";
-        if (backwardCompatibilityEnabled && type == HealthCheckType.HEALTH) {
-            responseObject.add("outcome", status);
-        } else {
-            responseObject.add("status", status);
-        }
+        // Set the aggregate status
+        responseObject.add(
+                backwardCompEnabled && type == HEALTH ? "outcome" : "status",
+                httpResponse.getStatus() == 200 ? "UP" : "DOWN"
+        );
 
         // Add all of the checks
         responseObject.add("checks", checksArray);
