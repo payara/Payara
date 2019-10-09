@@ -49,6 +49,11 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
+
+import fish.payara.monitoring.collect.MonitoringDataCollection;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -125,7 +130,8 @@ import org.jvnet.hk2.config.Transactions;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
-public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, EventListener, FutureProvider<Result<Thread>> {
+public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, EventListener,
+        FutureProvider<Result<Thread>>, MonitoringDataSource {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -141,11 +147,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     
     private static final Logger LOGGER = KernelLoggerInfo.getLogger();
 
-    private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<NetworkProxy>();
+    private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<>();
 
     volatile List<Future<Result<Thread>>> futures;
 
-    Collection<String> hosts = new ArrayList<String>();
+    Collection<String> hosts = new ArrayList<>();
 
     private final GrizzlyMonitoring monitoring;
 
@@ -168,13 +174,24 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             Futures.<Boolean>createSafeFuture();
     // Listeners to be notified once server is in READY state.
     private final Queue<Callable<Void>> serverReadyListeners =
-            new ConcurrentLinkedQueue<Callable<Void>>();
+            new ConcurrentLinkedQueue<>();
     
     public GrizzlyService() {
-        futures = new ArrayList<Future<Result<Thread>>>();
+        futures = new ArrayList<>();
         monitoring = new GrizzlyMonitoring();
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector httpCollector = collector.in("http");
+        httpCollector.prefix("ThreadPool").collectObject(
+                monitoring.getThreadPoolStatsProvider(NETWORK_CONFIG_PREFIX), MonitoringDataCollection::collectObject);
+        httpCollector.prefix("ConnectionQueue").collectObject(
+                monitoring.getConnectionQueueStatsProvider(NETWORK_CONFIG_PREFIX), MonitoringDataCollection::collectObject);
+        httpCollector.prefix("FileCache").collectObject(
+                monitoring.getFileCacheStatsProvider(NETWORK_CONFIG_PREFIX), MonitoringDataCollection::collectObject);
+    }
+
     /**
      * Add the new proxy to our list of proxies.
      * @param proxy new proxy to be added
@@ -352,7 +369,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
 
             closeNetworkProxy(proxy);
         }
-        final Future future = createNetworkProxy(networkListener);
+        final Future<?> future = createNetworkProxy(networkListener);
         removeNetworkProxy(proxy);
 
         if (future == null) {
@@ -550,7 +567,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         try {
             boolean isAtLeastOneProxyStarted = false;
             
-            futures = new ArrayList<Future<Result<Thread>>>();
+            futures = new ArrayList<>();
 
             // Record how long it took for the listeners to start up
             final long startTime = System.currentTimeMillis();
@@ -869,7 +886,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     // get the ports from the http listeners that are associated with 
     // the virtual servers
     private List<AddressInfo> getAddressInfoFromVirtualServers(Collection<String> virtualServers) {
-        List<AddressInfo> addressInfos = new ArrayList<AddressInfo>();
+        List<AddressInfo> addressInfos = new ArrayList<>();
         List<NetworkListener> networkListenerList = config.getNetworkConfig().getNetworkListeners().getNetworkListener();
 
         for (String vs : virtualServers) {

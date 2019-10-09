@@ -44,12 +44,19 @@
  */
 package org.glassfish.web.admin.monitor;
 
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
+
+import fish.payara.monitoring.collect.MonitoringDataCollection;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -60,6 +67,7 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.config.ConfigurationException;
 
 /**
@@ -68,7 +76,7 @@ import org.jvnet.hk2.config.ConfigurationException;
  */
 @Service(name = "http-service")
 @Singleton
-public class HttpServiceStatsProviderBootstrap implements PostConstruct {
+public class HttpServiceStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -77,6 +85,9 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
+    private final Map<String, HttpServiceStatsProvider> httpServiceStatsProviders = new ConcurrentHashMap<>();
+
+    @Override
     public void postConstruct() {
 
         if (config == null) {
@@ -89,16 +100,28 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
 
         HttpService httpService = config.getHttpService();
         for (VirtualServer vs : httpService.getVirtualServer()) {
+            String id = vs.getId();
             StatsProviderManager.register(
                     "http-service",
                     PluginPoint.SERVER,
-                    "http-service/" + vs.getId(),
+                    "http-service/" + id,
                     new VirtualServerInfoStatsProvider(vs));
+            HttpServiceStatsProvider httpServiceStatsProvider = new HttpServiceStatsProvider(id,
+                    vs.getNetworkListeners(), config.getNetworkConfig());
+            httpServiceStatsProviders.put(id, httpServiceStatsProvider);
             StatsProviderManager.register(
                     "http-service",
                     PluginPoint.SERVER,
-                    "http-service/" + vs.getId() + "/request",
-                    new HttpServiceStatsProvider(vs.getId(), vs.getNetworkListeners(), config.getNetworkConfig()));
+                    "http-service/" + id + "/request",
+                    httpServiceStatsProvider);
+        }
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        MonitoringDataCollector http = collector.in("http").prefix("Server");
+        for (HttpServiceStatsProvider provider : httpServiceStatsProviders.values()) {
+            http.collectObject(provider, MonitoringDataCollection::collectObject);
         }
     }
 }

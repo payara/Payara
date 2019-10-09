@@ -85,6 +85,21 @@ public interface MonitoringDataCollector {
      * Helper methods for convenience and consistent tagging.
      */
 
+    default MonitoringDataCollector prefix(CharSequence prefix) {
+        MonitoringDataCollector self = this;
+        return new MonitoringDataCollector() {
+
+            @Override
+            public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
+                return self.tag(name, value);
+            }
+
+            @Override
+            public MonitoringDataCollector collect(CharSequence key, long value) {
+                return self.collect(new StringBuilder(prefix).append(key), value);
+            }
+        };
+    }
 
     /**
      * Same as {@link #collect(CharSequence, long)} except that zero value are ignored and not collected.

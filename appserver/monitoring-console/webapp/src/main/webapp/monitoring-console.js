@@ -681,14 +681,19 @@ MonitoringConsole.Model = (function() {
 	function retainLastMinute(data) {
 		let startOfLastMinute = Date.now() - 60000;
 		data.forEach(function(seriesData) {
-			let points = [];
-			for (let i = 0; i < seriesData.points.length; i += 2) {
-				if (seriesData.points[i] >= startOfLastMinute) {
-					points.push(seriesData.points[i]);
-					points.push(seriesData.points[i+1]);
+			let src = seriesData.points;
+			if (src.length == 4 && src[2] >= startOfLastMinute) {
+				seriesData.points = [src[2] - 60000, src[1], src[2], src[3]];
+			} else {
+				let points = [];
+				for (let i = 0; i < src.length; i += 2) {
+					if (src[i] >= startOfLastMinute) {
+						points.push(src[i]);
+						points.push(src[i+1]);
+					}
 				}
+				seriesData.points = points;				
 			}
-			seriesData.points = points;
 		});
 		return data.filter(seriesData => seriesData.points.length >= 2);
 	}

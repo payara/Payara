@@ -104,10 +104,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
 
     public void registerApplicationStatsProviders(String monitoringName,
             String vsName, List<String> servletNames) {
-
-        // try register again as it may be unregistered
-        registerWebStatsProviders();
-
         //create stats providers for each virtual server 'vsName'
         String node = getNodeString(monitoringName, vsName);
         ConcurrentMap<String, Queue<Object>> statsProviderMap = vsNameToStatsProviderMap.get(vsName);

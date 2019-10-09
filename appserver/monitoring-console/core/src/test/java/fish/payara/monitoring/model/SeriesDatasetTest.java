@@ -265,6 +265,7 @@ public class SeriesDatasetTest {
         assertEquals(1 + 3, set.lastValue());
         assertEquals(2, set.size());
         assertEquals(3, set.getObservedValues());
+        assertEquals(2, set.lastTime());
     }
 
     @Test
@@ -275,8 +276,9 @@ public class SeriesDatasetTest {
         assertTrue(set instanceof PartialDataset);
         set = set.add(2, 4);
         assertEquals(2 + 4, set.lastValue());
-        assertEquals(3, set.size());
+        assertEquals(2, set.size());
         assertEquals(3, set.getObservedValues());
+        assertEquals(2, set.lastTime());
     }
 
     @Test
@@ -295,6 +297,25 @@ public class SeriesDatasetTest {
         assertTrue(set instanceof PartialDataset);
         assertEquals(3 + 5, set.lastValue());
         assertEquals(8, set.getObservedValues());
+        assertEquals(7, set.lastTime());
+    }
+
+    @Test
+    public void partialAddingWithSameTimeSumsValueCycle() {
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 6);
+        set = set.add(1, 1);
+        set = set.add(2, 2);
+        assertTrue(set instanceof PartialDataset);
+        for (int i = 3; i < 100; i++) {
+            String msg = "At point " + i;
+            set = set.add(i, 2);
+            assertEquals(msg, i, set.lastTime());
+            assertEquals(msg, 2, set.lastValue());
+            set = set.add(i, 3);
+            assertEquals(msg, i, set.lastTime());
+            assertEquals(msg, 5, set.lastValue());
+            assertEquals(msg, 2 + ((i - 2) * 2), set.getObservedValues());
+        }
     }
 
     private static void assertValues(SeriesDataset set, long... values) {
