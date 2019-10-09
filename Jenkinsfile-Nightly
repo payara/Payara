@@ -107,10 +107,12 @@ pipeline {
         stage('Run EE8 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install \
-                -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                  sh "mvn -B -V -ff -e clean install \
+                  -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                  -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                  -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -132,10 +134,12 @@ pipeline {
         stage('Run CargoTracker Tests Embedded') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-embedded,payara5"""
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-embedded,payara5"""
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -161,11 +165,13 @@ pipeline {
         stage('Run EE7 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara_domain=${DOMAIN_NAME} \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dpayara_domain=${DOMAIN_NAME} \
+                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -187,8 +193,10 @@ pipeline {
         stage('Run MicroProfile Config TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -200,8 +208,10 @@ pipeline {
         stage('Run MicroProfile Fault Tolerance TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml \
+                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -213,15 +223,18 @@ pipeline {
         stage('Run MicroProfile Health TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f pom.xml -Dpayara.version=${pom.version} -N"
-		sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/pom.xml -Dpayara.version=${pom.version} -N"
-		sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-arquillian-extension/pom.xml \
-                -Dpayara.version=${pom.version} -N"
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean install -f pom.xml -Dpayara.version=${pom.version} -N"
+                		sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/pom.xml -Dpayara.version=${pom.version} -N"
+                		sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-arquillian-extension/pom.xml \
+                    -Dpayara.version=${pom.version} -N"
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -233,15 +246,18 @@ pipeline {
         stage('Run MicroProfile JWT-Auth TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f pom.xml -Dpayara.version=${pom.version} -N"
-		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/pom.xml -Dpayara.version=${pom.version} -N"
-		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-arquillian-extension/pom.xml \
-                -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean install -f pom.xml -Dpayara.version=${pom.version} -N"
+                		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/pom.xml -Dpayara.version=${pom.version} -N"
+                		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-arquillian-extension/pom.xml \
+                    -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-JWT-Auth/tck-runner/pom.xml \
-                -Ppayara-micro-managed,full -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-JWT-Auth/tck-runner/pom.xml \
+                    -Ppayara-micro-managed,full -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -253,8 +269,10 @@ pipeline {
         stage('Run MicroProfile Metrics TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -266,8 +284,10 @@ pipeline {
         stage('Run MicroProfile OpenAPI TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -279,8 +299,10 @@ pipeline {
         stage('Run MicroProfile OpenTracing TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -292,8 +314,10 @@ pipeline {
         stage('Run MicroProfile Rest Client TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean verify -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed \
-                -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "mvn -B -V -ff -e clean verify -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed \
+                    -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
