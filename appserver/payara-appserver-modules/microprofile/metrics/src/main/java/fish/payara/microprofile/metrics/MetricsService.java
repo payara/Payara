@@ -52,13 +52,19 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
+import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Counting;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
+import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -112,12 +118,12 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     @Inject
     ServiceLocator serviceLocator;
-    
+
     @Inject
     private MBeanMetadataHelper helper;
-    
+
     private MetricsServiceConfiguration metricsServiceConfiguration;
-    
+
     private Boolean metricsEnabled;
 
     private Boolean metricsSecure;
@@ -129,7 +135,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
     public MetricsService() {
-        
+
     }
 
     @PostConstruct
@@ -150,72 +156,60 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector metricsCollector = rootCollector.in("metric")
-                .collect("enabled", metricsEnabled)
-                .collect("secure", isSecurityEnabled());
+        if (!isEnabled())
+            return;
+        MonitoringDataCollector metricsCollector = rootCollector.in("metric");
         for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
-            MonitoringDataCollector appCollector = metricsCollector.app(registry.getKey());
+            MonitoringDataCollector appCollector = metricsCollector;
 
             // counters
-            appCollector.type("counter")
-                .collectAll(registry.getValue().getCounters(), (collector, counter) -> collector
-                    .collectObject(counter, MetricsService::collectCounting));
+            for (Entry<MetricID, Counter> counter : registry.getValue().getCounters().entrySet()) {
+                CharSequence metric = asTag(counter.getKey());
+                appCollector.collect(metric, counter.getValue().getCount());
+            }
 
             // gauges
-            appCollector.type("gauge")
-                .collectAll(registry.getValue().getGauges(), (collector, gauge) -> {
-                    Object value = gauge.getValue();
-                    if (value instanceof Number) {
-                        collector.collect("value", ((Number) value));
-                    }
-            });
+            for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
+                CharSequence metric = asTag(gauge.getKey());
+                Object value = gauge.getValue().getValue();
+                if (value instanceof Number) {
+                    appCollector.collect(metric, ((Number) value));
+                }
+            }
+
+            // concurrent gauges
+            for (Entry<MetricID, ConcurrentGauge> gauge : registry.getValue().getConcurrentGauges().entrySet()) {
+                CharSequence metric = asTag(gauge.getKey());
+                    appCollector.collect(metric, gauge.getValue().getCount());
+            }
 
             // histograms
-            appCollector.type("histogram")
-                .collectAll(registry.getValue().getHistograms(), (collector, histogram) -> collector
-                    .collectObject(histogram, MetricsService::collectSampling)
-                    .collectObject(histogram, MetricsService::collectCounting));
+            for (Entry<MetricID, Histogram> histogram : registry.getValue().getHistograms().entrySet()) {
+                CharSequence metric = asTag(histogram.getKey());
+                appCollector.collect(metric, histogram.getValue().getCount());
+            }
 
             // meters
-            appCollector.type("meter")
-                .collectAll(registry.getValue().getMeters(), MetricsService::collectMetered);
+            for (Entry<MetricID, Meter> meter : registry.getValue().getMeters().entrySet()) {
+                CharSequence metric = asTag(meter.getKey());
+                appCollector.collect(metric, meter.getValue().getCount());
+            }
 
             // timers
-            appCollector.type("timer")
-                .collectAll(registry.getValue().getTimers(), (collector, timer) -> collector
-                    .collectObject(timer, MetricsService::collectMetered)
-                    .collectObject(timer, MetricsService::collectSampling));
+            for (Entry<MetricID, Timer> timer : registry.getValue().getTimers().entrySet()) {
+                CharSequence metric = asTag(timer.getKey());
+                appCollector.collect(metric, timer.getValue().getCount());
+            }
         }
     }
 
-    private static void collectCounting(MonitoringDataCollector collector, Counting obj) {
-        collector.collect("count", obj.getCount());
-    }
-
-    private static void collectSampling(MonitoringDataCollector collector, Sampling obj) {
-        Snapshot snapshot = obj.getSnapshot();
-        collector
-            .collect("min", snapshot.getMin())
-            .collect("max", snapshot.getMax())
-            .collect("mean", snapshot.getMean())
-            .collect("median", snapshot.getMedian())
-            .collect("stdDev", snapshot.getStdDev())
-            .collect("75thPercentile", snapshot.get75thPercentile())
-            .collect("95thPercentile", snapshot.get95thPercentile())
-            .collect("95thPercentile", snapshot.get95thPercentile())
-            .collect("98thPercentile", snapshot.get98thPercentile())
-            .collect("99thPercentile", snapshot.get99thPercentile())
-            .collect("999thPercentile", snapshot.get999thPercentile());
-    }
-
-    private static void collectMetered(MonitoringDataCollector collector, Metered obj) {
-        collectCounting(collector, obj);
-        collector
-            .collect("count", obj.getCount())
-            .collect("fifteenMinuteRate", obj.getFifteenMinuteRate())
-            .collect("fiveMinuteRate", obj.getFiveMinuteRate())
-            .collect("oneMinuteRate", obj.getOneMinuteRate())
-            .collect("meanRate", obj.getMeanRate());
+    private static CharSequence asTag(MetricID metric) {
+       StringBuilder tag = new StringBuilder();
+       tag.append(metric.getName());
+       for (Entry<String, String> e : metric.getTags().entrySet()) {
+           tag.append('.').append(e.getKey()).append('.').append(e.getValue());
+       }
+       return tag;
     }
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {

@@ -52,13 +52,13 @@
 
     <target name="get.distribution.type">
         <condition property="full.distribution">
-            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.all"/>
+            <equals arg1="${bundlename}" arg2="fish.payara.extras.embedded.all"/>
         </condition>
         <condition property="web.distribution">
-            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.web"/>
+            <equals arg1="${bundlename}" arg2="fish.payara.extras.embedded.web"/>
         </condition>
         <condition property="nucleus.distribution">
-            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.nucleus"/>
+            <equals arg1="${bundlename}" arg2="fish.payara.extras.embedded.nucleus"/>
         </condition>
     </target>
 

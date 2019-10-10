@@ -78,7 +78,6 @@ public class EventBus implements EventListener, MonitoringDataSource {
     
     private Map<String, TopicListener> messageReceivers;
     
-    
     @PostConstruct
     public void postConstruct() {
         events.register(this);
@@ -87,23 +86,16 @@ public class EventBus implements EventListener, MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector eventCollector = rootCollector.in("event");
-        eventCollector
-            .type("topic").collectAll(messageReceivers, EventBus::collectTopicListener);
+        MonitoringDataCollector eventCollector = rootCollector.in("topic");
         if (hzCore.isEnabled()) {
             HazelcastInstance hz = hzCore.getInstance();
             for (DistributedObject obj : hz.getDistributedObjects()) {
                 if (TopicService.SERVICE_NAME.equals(obj.getServiceName())) {
-                    eventCollector.type("topic").entity(obj.getName())
+                    eventCollector.group(obj.getName())
                         .collectObject(hz.getTopic(obj.getName()).getLocalTopicStats(), LocalTopicStats.class);
                 }
             }
         }
-    }
-
-    private static void collectTopicListener(MonitoringDataCollector collector, TopicListener listener) {
-        collector
-            .collect("receiverCount", listener.getReceiverCount());
     }
 
     /**

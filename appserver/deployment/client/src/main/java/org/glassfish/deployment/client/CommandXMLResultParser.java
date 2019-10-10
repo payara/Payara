@@ -37,71 +37,80 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.client;
 
+import com.sun.enterprise.util.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.logging.Logger;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
  * @author tjquinn
+ * @author David Matejcek null-safe, logging
  */
 public class CommandXMLResultParser {
 
-    static DFDeploymentStatus parse(InputStream is) throws ParserConfigurationException, SAXException, IOException {
+    private static final Logger LOG = Logger.getLogger(CommandXMLResultParser.class.getName());
+
+    static DFDeploymentStatus parse(ByteArrayOutputStream response)
+        throws ParserConfigurationException, SAXException, IOException {
+        if (response == null || response.size() == 0) {
+            throw new IOException("Cannot parse an empty response.");
+        }
         SAXParserFactory pf = SAXParserFactory.newInstance();
         pf.setValidating(true);
         pf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         SAXParser parser = pf.newSAXParser();
-        pf.setValidating(true);
-        pf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        
-        DFDeploymentStatus topStatus = null;
         ResultHandler rh = new ResultHandler();
-        parser.parse(is, rh);
-        
-        topStatus = rh.getTopStatus();
-        
-        return topStatus;
+        try (ByteArrayInputStream is = new ByteArrayInputStream(response.toByteArray())) {
+            parser.parse(is, rh);
+        }
+        return rh.getTopStatus();
     }
-    
+
     private static DFDeploymentStatus.Status exitCodeToStatus(String exitCodeText) {
         return DFDeploymentStatus.Status.valueOf(exitCodeText);
     }
-    
+
     private static class ResultHandler extends DefaultHandler {
 
         private DFDeploymentStatus topStatus;
-        
+
         /** currentLevel will always point to the depl status we are currently working on */
         private DFDeploymentStatus currentLevel;
 
         private String attrToText(Attributes attrs, String attrName) {
             return attrs.getValue(attrName);
         }
-        
+
         private DFDeploymentStatus getTopStatus() {
             return topStatus;
         }
-        
+
         @Override
-        public void startElement(String uri, String localName, String qName,
-                                 Attributes attributes) throws SAXException {
+        public void startElement(String uri, String localName, String qName, Attributes attributes)
+            throws SAXException {
+            LOG.finest(
+                () -> String.format("startElement(uri=%s, localName=%s, qName=%s, attributes)", uri, localName, qName));
             if (qName.equals("action-report")) {
                 /*
                  * If this is the first action-report then the resulting
                  * DFDeploymentStatus will be the top-level one as well as the
                  * current-level one.
                  */
-                if (topStatus == null) { 
+                if (topStatus == null) {
                     currentLevel = topStatus = new DFDeploymentStatus();
                 } else {
                     /*
@@ -124,7 +133,7 @@ public class CommandXMLResultParser {
                 String msg = attrToText(attributes, "message");
                 if (msg != null) {
                     String origMsg = currentLevel.getStageStatusMessage();
-                    msg = currentLevel.getStageStatusMessage() + (origMsg != null && origMsg.length() > 0 ? " " : "") + msg;
+                    msg = currentLevel.getStageStatusMessage() + (StringUtils.ok(origMsg) ? " " : "") + msg;
                     currentLevel.setStageStatusMessage(msg);
                 }
             } else if (qName.equals("property")) {
@@ -134,6 +143,7 @@ public class CommandXMLResultParser {
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
+            LOG.finest(() -> String.format("endElement(uri=%s, localName=%s, qName=%s)", uri, localName, qName));
             if (qName.equals("action-report")) {
                 popLevel();
             } else if (qName.equals("message-part")) {

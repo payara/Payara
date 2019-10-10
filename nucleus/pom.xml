@@ -181,7 +181,7 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.3</mail.version>
+        <mail.version>1.6.4.payara-p1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
@@ -190,8 +190,8 @@
 
         <!-- Other -->
 
-        <hk2.version>2.6.1</hk2.version>
-        <hk2.plugin.version>2.6.1</hk2.plugin.version>
+        <hk2.version>2.6.1.payara-p1</hk2.version>
+        <hk2.plugin.version>2.6.1.payara-p1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>

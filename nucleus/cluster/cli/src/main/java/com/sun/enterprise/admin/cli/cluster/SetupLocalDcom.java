@@ -173,7 +173,7 @@ public final class SetupLocalDcom extends CLICommand {
         if (logger.isLoggable(Level.FINER))
             logger.finer(Strings.get("vld.app.deleted", CPP_APP));
 
-        CPP_APP.deleteOnExit();
+        FileUtils.deleteOnExit(CPP_APP);
 
         // copy it from inside this jar to the file system
         InputStream in = null;
@@ -235,14 +235,14 @@ public final class SetupLocalDcom extends CLICommand {
         if (!programOpts.isInteractive()) {
             throw new CommandException(Strings.get("vld.not.interactive"));
         }
-        
+
         try {
             String answer = lineReader.readLine(String.format("%s:  ",  Strings.get("vld.areyousure")));
             if (!"yes".equalsIgnoreCase(answer)) {
                 throw new CommandException(Strings.get("vld.no"));
             }
         } catch (UserInterruptException | EndOfFileException e) {
-            // Ignore  
+            // Ignore
         }
     }
 }

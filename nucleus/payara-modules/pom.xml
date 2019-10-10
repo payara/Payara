@@ -21,7 +21,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
     file that accompanied this code.
 
-    Modifications:
+    Modifications
     If applicable, add the following below the License Header, with the fields
     enclosed by brackets [] replaced by your own identifying information:
     "Portions Copyright [year] [name of copyright owner]"
@@ -70,6 +70,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>jsr107-repackaged</module>
         <module>payara-executor-service</module>
         <module>opentracing-adapter</module>
+        <module>nucleus-microprofile</module>
     </modules>
     
     <profiles>

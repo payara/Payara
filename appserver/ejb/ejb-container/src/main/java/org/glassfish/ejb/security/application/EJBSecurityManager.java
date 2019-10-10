@@ -112,7 +112,6 @@ public final class EJBSecurityManager implements SecurityManager {
     // contextId id is the same as an appname. This will be used to get
     // a PolicyConfiguration object per application.
     private String contextId;
-    private String codebase;
     private CodeSource codesource;
     private String realmName;
 
@@ -627,10 +626,8 @@ public final class EJBSecurityManager implements SecurityManager {
             }
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("JACC: Context id (id under which all EJB's in application will be created) = " + contextId);
-            _logger.fine("Codebase (module id for ejb " + ejbName + ") = " + codebase);
-        }
+        _logger.fine(() -> "JACC: EJB name = '" + ejbName
+            + "'. Context id (id under which all EJB's in application will be created) = '" + contextId + "'");
         loadPolicyConfiguration(deploymentDescriptor);
         // translate the deployment descriptor to populate the role-ref permission cache
         // addEJBRoleReferenceToCache(deploymentDescriptor);
@@ -692,10 +689,11 @@ public final class EJBSecurityManager implements SecurityManager {
                 StringBuilder pBuf = null;
                 principals = (Principal[]) principalSet.toArray(new Principal[principalSet.size()]);
                 for (int i = 0; i < principals.length; i++) {
-                    if (i == 0)
+                    if (i == 0) {
                         pBuf = new StringBuilder(principals[i].toString());
-                    else
+                    } else {
                         pBuf.append(" " + principals[i].toString());
+                    }
                 }
                 _logger.fine("JACC: returning cached ProtectionDomain - CodeSource: (" + cs + ") PrincipalSet: " + pBuf);
             }

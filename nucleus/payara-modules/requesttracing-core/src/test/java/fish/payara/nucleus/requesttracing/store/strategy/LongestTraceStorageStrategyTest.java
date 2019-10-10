@@ -1,6 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
  * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
@@ -37,47 +35,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.web;
+package fish.payara.nucleus.requesttracing.store.strategy;
 
-import java.math.BigInteger;
-import java.util.Collection;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
-import fish.payara.monitoring.model.SeriesDataset;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class SeriesStatistics {
+import org.junit.Test;
 
-    public static SeriesStatistics[] from(Collection<SeriesDataset> sets) {
-        SeriesStatistics[] stats = new SeriesStatistics[sets.size()];
-        int i = 0;
-        for (SeriesDataset set : sets) {
-            stats[i++] = new SeriesStatistics(set);
-        }
-        return stats;
+import fish.payara.notification.requesttracing.RequestTrace;
+
+/**
+ * Tests the correct behaviour of the {@link LongestTraceStorageStrategy}.
+ *  
+ * @author Jan Bernitt
+ */
+public class LongestTraceStorageStrategyTest extends AbstractStorageStrategyTest {
+
+    public LongestTraceStorageStrategyTest() {
+        super(new LongestTraceStorageStrategy());
     }
 
-    public final String series;
-    public final String instance;
-    public final long[] points;
-    public final long observedMax;
-    public final long observedMin;
-    public final BigInteger observedSum;
-    public final int observedValues;
-    public final int observedValueChanges;
-    public final long observedSince;
-    public final int stableCount;
-    public final long stableSince;
-
-    public SeriesStatistics(SeriesDataset set) {
-        this.instance = set.getInstance();
-        this.series = set.getSeries().toString();
-        this.points = set.points();
-        this.observedMax = set.getObservedMax();
-        this.observedMin = set.getObservedMin();
-        this.observedSum = set.getObservedSum();
-        this.observedValues = set.getObservedValues();
-        this.observedValueChanges = set.getObservedValueChanges();
-        this.observedSince = set.getObservedSince();
-        this.stableCount = set.getStableCount();
-        this.stableSince = set.getStableSince();
+    @Test
+    public void shortestTraceIsRemovedAboveMaxSize() {
+        int maxSize = 10;
+        List<RequestTrace> traces = new ArrayList<>();
+        for (int i = 0; i < maxSize; i++) {
+            traces.add(createTrace(1000000000L * (i+1))); // 1-10sec long traces
+        }
+        List<RequestTrace> added = new ArrayList<>();
+        List<RequestTrace> removed = new ArrayList<>();
+        for (int i = 0; i < maxSize; i++) {
+            RequestTrace newTrace = createTrace(1000000000L * (i+1) - 500000000L); // 0.5-9.5ms long traces
+            added.add(newTrace);
+            traces.add(newTrace);
+            RequestTrace traceForRemoval = strategy.getTraceForRemoval(traces, maxSize, null);
+            assertTrue(traceForRemoval.getElapsedTime() <= newTrace.getElapsedTime());
+            for (int j = 0; j < maxSize; j++) {
+                RequestTrace candidate = traces.get(j);
+                assertSame(candidate, strategy.getTraceForRemoval(traces, maxSize, candidate));
+            }
+            removed.add(traceForRemoval);
+            traces.remove(traceForRemoval);
+        }
+        // remaining elements should be half from the original 10 items, half from the later added ones
+        added.removeAll(removed);
+        assertEquals(maxSize/2, added.size());
     }
 }

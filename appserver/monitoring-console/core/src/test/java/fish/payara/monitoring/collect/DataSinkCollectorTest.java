@@ -44,6 +44,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -114,24 +115,24 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
         // testing objects 
         collector
-            .type("obj")
+            .group("obj")
             .collectObject(null, (col, obj) -> { fail("Should never be called for null object."); })
-            .collectObject("SomeObject", (col, obj) -> col.entity(obj)
+            .collectObject("SomeObject", (col, obj) -> col.tag("sub", obj)
                     .collect("length", obj.length())
                     .collect("mIsAt", obj.indexOf('m')));
 
         // testing collections of objects
         collector
-            .type("obj")
+            .group("obj")
             .collectObjects(null, (col, obj) -> { fail("Should never be called for null object."); })
             .collectObjects(emptyList(), (col, obj) -> { fail("Should never be called for empty list."); })
-            .collectObjects(asList("Foo", "Bar"), (col, obj) -> col.entity(obj)
+            .collectObjects(asList("Foo", "Bar"), (col, obj) -> col.tag("sub", obj)
                     .collect("length", obj.length()));
         collector
-            .type("emptyMapEntry")
+            .group("emptyMapEntry")
             .collectAll(null, (col, obj) -> { fail("Should never be called for null map"); })
             .collectAll(emptyMap(), (col, obj) -> { fail("Should never be called for empty map"); })
-            .type("mapEntry")
+            .group("mapEntry")
             .collectAll(singletonMap("foo", "bar"), (col, value) -> col
                     .collect("valueLength", value.length()));
     }
@@ -167,37 +168,37 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void subFirstHasTag() {
-        assertDataPoint("sub=one subFirst", 4L);
+        assertDataPoint("sub:one subFirst", 4L);
     }
 
     @Test
     public void subChainedHasTag() {
-        assertDataPoint("sub=one subChained", 5L);
+        assertDataPoint("sub:one subChained", 5L);
     }
 
     @Test
     public void subRestartedHasTag() {
-        assertDataPoint("sub=one subRestarted", 6L);
+        assertDataPoint("sub:one subRestarted", 6L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTag() {
-        assertDataPoint("sub=two resubbed", 7L);
+        assertDataPoint("sub:two resubbed", 7L);
     }
 
     @Test
     public void differntTagDoesNotReplaceExistingTag() {
-        assertDataPoint("sub=two subsub=three doubleTagged", 9L);
+        assertDataPoint("sub:two subsub:three doubleTagged", 9L);
     }
 
     @Test
     public void sameSubTagDoesReplaceExistingSubTag() {
-        assertDataPoint("sub=two subsub=four doubleTaggedReplaced", 10L);
+        assertDataPoint("sub:two subsub:four doubleTaggedReplaced", 10L);
     }
 
     @Test
     public void sameTagDoesReplaceExistingTagFromThatTagOn() {
-        assertDataPoint("sub=five reset", 11L);
+        assertDataPoint("sub:five reset", 11L);
     }
 
     @Test
@@ -292,33 +293,25 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
 
     @Test
     public void objectUsesCurrentContext() {
-        assertDataPoint("type=obj entity=SomeObject length", 10L);
-        assertDataPoint("type=obj entity=SomeObject mIsAt", 2L);
+        assertDataPoint("@:obj sub:SomeObject length", 10L);
+        assertDataPoint("@:obj sub:SomeObject mIsAt", 2L);
     }
 
     @Test
     public void objectsRunsConsumerForAllItemsInCollectionWhileUsingTheCurrentContext() {
-        assertDataPoint("type=obj entity=Foo length", 3L);
-        assertDataPoint("type=obj entity=Bar length", 3L);
+        assertDataPoint("@:obj sub:Foo length", 3L);
+        assertDataPoint("@:obj sub:Bar length", 3L);
     }
 
     @Test
-    public void nullOrEmptyMapsDoNotAddSize() {
-        assertNoDataPoint("type=emptyMapEntry size");
-    }
-
-    @Test
-    public void nonEmptyMapsDoAddSize() {
-        assertDataPoint("type=mapEntry size", 1L);
-    }
-
-    @Test
-    public void mapEntriesAddEntityTag() {
-        assertDataPoint("type=mapEntry entity=foo valueLength", 3L);
+    public void mapEntriesAddGroupTag() {
+        assertDataPoint("@:foo valueLength", 3L);
     }
 
     private void assertDataPoint(String key, long value) {
-        assertEquals(value, dataPoints.get(key).longValue());
+        Long actual = dataPoints.get(key);
+        assertNotNull("No value for key: " + key, actual);
+        assertEquals(value, actual.longValue());
     }
 
     private void assertNoDataPoint(String key) {

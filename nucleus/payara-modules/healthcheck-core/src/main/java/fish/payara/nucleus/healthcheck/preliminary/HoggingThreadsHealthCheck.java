@@ -41,8 +41,6 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckHoggingThreadsExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
@@ -68,21 +66,10 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @Service(name = "healthcheck-threads")
 @RunLevel(StartupRunLevel.VAL)
 public class HoggingThreadsHealthCheck
-        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker>
-        implements MonitoringDataSource {
+        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker> {
 
     private final Map<Long, ThreadTimes> threadTimes = new ConcurrentHashMap<>();
     private final AtomicInteger hoggingThreads = new AtomicInteger();
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            collector.in("health-check").type("checker").entity("HOGT")
-                .collect("checksDone", getChecksDone())
-                .collectNonZero("checksFailed", getChecksFailed())
-                .collectNonZero("hoggingThreads", hoggingThreads.get());
-        }
-    }
 
     @PostConstruct
     void postConstruct() {

@@ -1,1 +1,1 @@
-fish.payara.microprofile.opentracing.jaxrs.JaxrsContainerRequestTracingAutoDiscoverable
+fish.payara.microprofile.opentracing.jaxrs.JerseyOpenTracingAutoDiscoverable

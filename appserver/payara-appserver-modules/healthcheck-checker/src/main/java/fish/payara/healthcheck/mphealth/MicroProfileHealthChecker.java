@@ -62,8 +62,6 @@ import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
@@ -72,7 +70,6 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -100,7 +97,7 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(10)
 public class MicroProfileHealthChecker
         extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCheckerConfiguration>
-        implements PostConstruct, MonitoringDataSource {
+        implements PostConstruct {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileHealthChecker.class.getPackage().getName());
     private static final String GET_MP_CONFIG_STRING = "get-microprofile-healthcheck-configuration";
@@ -121,18 +118,6 @@ public class MicroProfileHealthChecker
     private PayaraInstanceImpl payaraMicro;
 
     private final Map<String, Integer> serverHttpStatus = new ConcurrentHashMap<>();
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            MonitoringDataCollector statusCollector = collector.in("health-check").type("checker").entity("MP")
-                    .collect("checksDone", getChecksDone())
-                    .collectNonZero("checksFailed", getChecksFailed());
-            for (Entry<String, Integer> status : serverHttpStatus.entrySet()) {
-                statusCollector.tag("server", status.getKey()).collect("statusCode", status.getValue());
-            }
-        }
-    }
 
     @Override
     public void postConstruct() {
@@ -160,7 +145,7 @@ public class MicroProfileHealthChecker
             String instanceName = server.getName();
             usedInstances.add(instanceName);
 
-            Future taskResult = payaraExecutorService.submit(() -> {
+            Future<?> taskResult = payaraExecutorService.submit(() -> {
 
                 //get the remote server's MP HealthCheck config
                 MetricsHealthCheckConfiguration metricsConfig = server.getConfig().getExtensionByType(MetricsHealthCheckConfiguration.class);
@@ -193,7 +178,7 @@ public class MicroProfileHealthChecker
                 continue;
             }
 
-            Future taskResult = payaraExecutorService.submit(() -> {
+            Future<?> taskResult = payaraExecutorService.submit(() -> {
                 try {
 
                     ClusterCommandResult mpHealthConfigResult = configs.get(instance.getMemberUUID()).get();

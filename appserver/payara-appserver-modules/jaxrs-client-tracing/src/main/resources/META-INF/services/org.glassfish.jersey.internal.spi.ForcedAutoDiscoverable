@@ -38,4 +38,4 @@
 #    holder.
 #
 
-fish.payara.requesttracing.jaxrs.client.mprest.TracingClientListener
+fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingDiscoverable

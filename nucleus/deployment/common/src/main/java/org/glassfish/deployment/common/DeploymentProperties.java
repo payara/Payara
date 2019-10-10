@@ -59,32 +59,36 @@ import java.util.Properties;
  */
 public class DeploymentProperties extends Properties {
 
-    // Declare serialVersionUID for class versioning compatibility
-    // generated using pe build fcs-b50.
-    //
-    // This value should stay the same for all 8.x releases
-    static final long serialVersionUID = -6891581813642829148L;
+    private static final long serialVersionUID = -6891581813642829148L;
 
+    /**
+     * Construct an empty DeploymentProperties
+     */
     public DeploymentProperties() {
         super();
     }
 
-    // construct a DeploymentProperties using the props
-    // passe from client
+    /**
+     * Construct a DeploymentProperties using the props
+     *
+     * @param props
+     */
     public DeploymentProperties(Properties props) {
         super();
         putAll(props);
     }
 
-    // construct a DeploymentProperties using the map
-    // passed from client
-    // 1. For keys defined before AMX time, since different
-    // keys were defined in the DeploymentMgrMBean,
-    // we need to do conversion between the keys
-    // to keep backward compatibilities
-    // 2. For internal keys and the new keys defined after AMX
-    // time, we don't need to do any conversion
-    //
+
+    /**
+     * Construct a DeploymentProperties using the map passed from client
+     * <ol>
+     * <li>For keys defined before AMX time, since different
+     * keys were defined in the DeploymentMgrMBean,
+     * we need to do conversion between the keys
+     * to keep backward compatibilities
+     * <li>For internal keys and the new keys defined after AMX
+     * time, we don't need to do any conversion
+     */
     public DeploymentProperties(Map map) {
         super();
         if (map == null) {
@@ -111,21 +115,24 @@ public class DeploymentProperties extends Properties {
         putAll(props);
     }
 
-    // Construct a map with the keys defined in DeploymentMgrMBean this is used when the ASAPI client
-    // convert the props from the client to a map to invoke DeploymentMgrMBean API
-    
-    // 1. For keys defined before AMX time, since different keys were defined in the DeploymentMgrMBean,
-    // we need to do conversion between the keys to keep backward compatibilities
-    
-    // 2. For internal keys and the new keys defined after AMX time, we don't need to do any conversion
-    //
+
+    /**
+     * Construct a map with the keys defined in DeploymentMgrMBean this is used when the ASAPI
+     * client convert the props from the client to a map to invoke DeploymentMgrMBean API
+     * <ol>
+     * <li>For keys defined before AMX time, since different keys were defined
+     * in the DeploymentMgrMBean, we need to do conversion between the keys to keep backward
+     * compatibilities
+     * <li>For internal keys and the new keys defined after AMX time, we don't need to do any
+     * conversion
+     * </ol>
+     */
     public static Map propsToMap(Properties dProps) {
         Map map = new HashMap();
         if (dProps == null) {
             return map;
         }
-        for (Iterator<Map.Entry<Object, Object>> itr = dProps.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry<Object, Object> entry = itr.next();
+        for (Map.Entry<Object, Object> entry : dProps.entrySet()) {
             String propsKey = (String) entry.getKey();
             String propsValue = (String) entry.getValue();
             String mapKey = (String) keyMap.get(propsKey);
@@ -259,8 +266,9 @@ public class DeploymentProperties extends Properties {
     }
 
     public void setName(String name) {
-        if (name != null)
+        if (name != null) {
             setProperty(NAME, name);
+        }
     }
 
     public String getDescription() {
@@ -352,7 +360,7 @@ public class DeploymentProperties extends Properties {
     }
 
     public Properties getPropertiesForInvoke() {
-        return (Properties) this;
+        return this;
     }
 
     public Properties prune() {
@@ -376,7 +384,7 @@ public class DeploymentProperties extends Properties {
         remove(RESOURCE_TARGET_LIST);
         remove(UPLOAD);
         remove(EXTERNALLY_MANAGED);
-        
+
         return this;
     }
 
@@ -478,8 +486,6 @@ public class DeploymentProperties extends Properties {
 
     // list of keys defined in DeploymentMgrMBean
     public static final String KEY_PREFIX = "X-DeploymentMgr.";
-//    public static final String DEPLOY_OPTION_REDEPLOY_KEY = 
-//        KEY_PREFIX + "Redeploy";
     public static final String DEPLOY_OPTION_FORCE_KEY = KEY_PREFIX + "Force";
     public static final String DEPLOY_OPTION_CASCADE_KEY = KEY_PREFIX + "Cascade";
     public static final String DEPLOY_OPTION_VERIFY_KEY = KEY_PREFIX + "Verify";

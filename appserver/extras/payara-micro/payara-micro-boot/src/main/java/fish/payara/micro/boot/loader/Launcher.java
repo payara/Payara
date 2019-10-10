@@ -65,7 +65,9 @@ public abstract class Launcher {
             if (unpackDir != null) {
                 classLoader = new ExplodedURLClassloader(new File(unpackDir));
             } else {
-                classLoader = new ExplodedURLClassloader();
+                ExplodedURLClassloader tempDirClassloader = new ExplodedURLClassloader();
+                classLoader = tempDirClassloader;
+                tempDirClassloader.registerDeleteOnExit();
             }
         }
         return launch(method, args, getMainClass(), classLoader);

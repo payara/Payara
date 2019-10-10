@@ -39,6 +39,10 @@
  */
 package fish.payara.monitoring.store;
 
+import static fish.payara.monitoring.model.Series.TAG_ASSIGN;
+import static fish.payara.monitoring.model.Series.TAG_SEPARATOR;
+import static fish.payara.monitoring.model.Series.isSpecialTagCharacter;
+
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 
 /**
@@ -47,9 +51,6 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
  * @author Jan Bernitt
  */
 public class SinkDataCollector implements MonitoringDataCollector {
-
-    private static final char TAG_SEPARATOR = ' ';
-    private static final char TAG_ASSIGN = '=';
 
     private final MonitoringDataSink sink;
     private final StringBuilder tags;
@@ -88,17 +89,17 @@ public class SinkDataCollector implements MonitoringDataCollector {
             tagged.append(TAG_SEPARATOR);
         }
         tagged.append(name).append(TAG_ASSIGN);
-        appendEscaped(value, tagged);
+        appendTagValue(value, tagged);
         return new SinkDataCollector(sink, tagged);
     }
 
     /**
      * Makes sure that tag separating characters in values are replaced with underscore.
      */
-    private static void appendEscaped(CharSequence value, StringBuilder tagged) {
+    private static void appendTagValue(CharSequence value, StringBuilder tagged) {
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c != ',' && c != ';' && c != ' ') {
+            if (!isSpecialTagCharacter(c)) {
                 tagged.append(c);
             } else {
                 tagged.append('_');

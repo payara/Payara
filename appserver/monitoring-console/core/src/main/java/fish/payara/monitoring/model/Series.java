@@ -42,6 +42,7 @@ package fish.payara.monitoring.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 /**
  * An immutable structured representation of a data series key parsed into its {@link #tags} and {@link #metric} name.
@@ -50,17 +51,23 @@ import java.util.Arrays;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
+    public static final char TAG_ASSIGN = ':';
+    public static final char TAG_SEPARATOR = ' ';
+    private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
+
+    private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
+
     private final String metric;
     private final String[] tags;
     private final String[] values;
 
     public Series(String key) {
-        String[] parts = key.split("[ ,;]+");
+        String[] parts = key.split(SPLIT_PATTERN);
         this.tags = new String[parts.length - 1];
         this.values = new String[tags.length];
         this.metric = parts[parts.length - 1].intern();
         for (int i = 0; i < parts.length - 1; i++) {
-            int eqIndex = parts[i].indexOf('=');
+            int eqIndex = parts[i].indexOf(TAG_ASSIGN);
             tags[i] = parts[i].substring(0, eqIndex).intern();
             values[i] = parts[i].substring(eqIndex + 1).intern();
         }
@@ -113,9 +120,21 @@ public final class Series implements Comparable<Series>, Serializable {
     public String toString() {
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < tags.length; i++) {
-            str.append(tags[i]).append('=').append(values[i]).append(' ');
+            str.append(tags[i]).append(TAG_ASSIGN).append(values[i]).append(TAG_SEPARATOR);
         }
         str.append(metric);
         return str.toString();
+    }
+
+    public static boolean isSpecialTagCharacter(char c) {
+        if (c == TAG_ASSIGN) {
+            return true;
+        }
+        for (char sep : TAG_SEPARATORS) {
+            if (sep == c) {
+                return true;
+            }
+        }
+        return false;
     }
 }

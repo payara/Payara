@@ -584,7 +584,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                     .collect("end", trace.getEndTime())
                     .collectNonZero("elapsed", trace.getElapsedTime());
             for (RequestTraceSpan span : trace.getTraceSpans()) {
-                traceCollector.entity(span.getId().toString()).tag("op", span.getEventName())
+                traceCollector.group(span.getId().toString()).tag("op", span.getEventName())
                     .collect("start", span.getStartInstant())
                     .collect("end", span.getTraceEndTime())
                     .collectNonZero("duration", span.getSpanDuration())

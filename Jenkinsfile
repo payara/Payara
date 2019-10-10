@@ -4,10 +4,10 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
+    agent any
     options {
         disableConcurrentBuilds()
     }
-    agent any
     tools {
         jdk "zulu-8"
     }

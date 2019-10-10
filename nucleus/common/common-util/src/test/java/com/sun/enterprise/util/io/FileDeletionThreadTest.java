@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,53 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.converters;
+package com.sun.enterprise.util.io;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.config.spi.Converter;
+import org.junit.Before;
+import org.junit.Test;
 
-/**
- *
- * @author steve
- */
-public class CommonSenseConverter implements Converter<Object> {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    private Method conversionMethod;
-    private Constructor constructor;
-    
-    public CommonSenseConverter(Method method) {
-        conversionMethod = method;
-    }
-    
-    public CommonSenseConverter(Constructor method) {
-        constructor = method;
-    }
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-    @Override
-    public Object convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
-        Object result = null;
+public class FileDeletionThreadTest {
 
-        if (conversionMethod != null) {
-            try {
-                result = conversionMethod.invoke(null, value);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                // possible result
-            }
-        } else if (constructor != null) {
-            try {
-                result = constructor.newInstance(value);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                // possible result
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("Unable to convert value to type  for value " + value);
-        }
-        return result;
+    private Path dirToDelete;
+
+    @Before
+    public void setUpNonEmptyDirectoryStructure() throws Exception {
+        dirToDelete = Files.createTempDirectory("deletion-test");
+        final Path file = dirToDelete.resolve("file-l1.txt");
+        Files.createFile(file);
+
+        Path subDirectoryL2 = createNonEmptyDirectory(dirToDelete, "l2");
+        Path subDirectoryL3 = createNonEmptyDirectory(subDirectoryL2, "l3");
+        createNonEmptyDirectory(subDirectoryL3, "l4");
     }
 
+    private Path createNonEmptyDirectory(Path parent, String level) throws IOException {
+        final Path subDirectory = Files.createDirectory(parent.resolve("subDirectory" + level));
+        Files.createFile(subDirectory.resolve("file-" + level + ".txt"));
+        return subDirectory;
+    }
+
+    @Test
+    public void testDirectoryDeletion() {
+        FileDeletionThread fileDeletionThread = new FileDeletionThread();
+        fileDeletionThread.add(dirToDelete.toFile());
+
+        assertThat("Temp directory to delete does not exist.", Files.exists(dirToDelete), is(true));
+        fileDeletionThread.run();
+        assertThat("Temp directory still exists after deletion.", Files.exists(dirToDelete), is(false));
+    }
 }
