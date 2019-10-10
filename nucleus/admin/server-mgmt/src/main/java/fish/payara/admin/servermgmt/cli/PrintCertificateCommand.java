@@ -41,7 +41,7 @@ package fish.payara.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
-import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 
 import java.io.File;
 import java.security.KeyStore;
@@ -66,7 +66,7 @@ import org.jvnet.hk2.annotations.Service;
 /**
  * Prints information about a certificate given in a file.
  * <p>
- * Uses RFC-2253 and the {@link CertificateRealm#OID_MAP} for the principal distinguished name.
+ * Uses RFC-2253 and the {@link OID#getOIDMap()} for the principal distinguished name.
  * The Subject from the output can be directly used for a role mapping when using client
  * certificate authentication, f.e.<br>
  * <code>&lt;principal-name&gt;CN=My Client,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK&lt;/principal-name&gt;</code>
@@ -155,7 +155,7 @@ public class PrintCertificateCommand extends CLICommand {
 
 
     private String toString(final X500Principal principal) {
-        return principal.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
+        return principal.getName(X500Principal.RFC2253, OID.getOIDMap());
     }
 
 

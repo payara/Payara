@@ -79,6 +79,8 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
+
 import java.util.logging.Logger;
 
 /**
@@ -118,7 +120,7 @@ import java.util.logging.Logger;
  */
 @Service
 public final class LDAPRealm extends BaseRealm {
-    // Child logger of javax.enterprise.system.core.security 
+    // Child logger of javax.enterprise.system.core.security
     protected static final Logger groupSearchLogger = Logger.getLogger(_logger.getName() + ".ldaprealm.groupsearch");
 
     // Descriptive string of the authentication type of this realm.
@@ -182,19 +184,10 @@ public final class LDAPRealm extends BaseRealm {
     public static final String SSL = "SSL";
 
     private Map<String, List<String>> groupCache;
-    private Properties ldapBindProps = new Properties();
+    private final Properties ldapBindProps = new Properties();
 
-    /**
-     * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
-     * method may only be called a single time.
-     *
-     * @param props Initialization parameters used by this realm.
-     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
-     *
-     */
     @Override
-    public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
+    protected synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
 
         String url = props.getProperty(PARAM_DIRURL);
@@ -205,10 +198,10 @@ public final class LDAPRealm extends BaseRealm {
             throw new BadRealmException(sm.getString("ldaprealm.badconfig", url, dn, jaasCtx));
         }
 
-        this.setProperty(PARAM_DIRURL, url);
+        setProperty(PARAM_DIRURL, url);
         ldapBindProps.setProperty(Context.PROVIDER_URL, url);
-        this.setProperty(PARAM_USERDN, dn);
-        this.setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
+        setProperty(PARAM_USERDN, dn);
+        setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
         String mode = props.getProperty(PARAM_MODE, MODE_DEFAULT);
         if (!MODE_DEFAULT.equals(mode)) {
@@ -251,7 +244,7 @@ public final class LDAPRealm extends BaseRealm {
             setProperty(PARAM_BINDDN, bindDN);
             ldapBindProps.setProperty(SECURITY_PRINCIPAL, bindDN);
         }
-        
+
         String bindPWD = props.getProperty(PARAM_BINDPWD);
         if (bindPWD != null) {
             // If the password is aliased, de-alias it
@@ -260,7 +253,7 @@ public final class LDAPRealm extends BaseRealm {
             } catch (Exception ex) {
                 _logger.log(WARNING, "ldaprealm.pwd.dealiasing.failed", ex);
             }
-            
+
             setProperty(PARAM_BINDPWD, bindPWD);
             ldapBindProps.setProperty(SECURITY_CREDENTIALS, bindPWD);
         }
@@ -279,18 +272,18 @@ public final class LDAPRealm extends BaseRealm {
 
         String poolSize = Integer.getInteger(PARAM_POOLSIZE, POOLSIZE_DEFAULT).toString();
         String sunPoolSizeStr = props.getProperty(SUN_JNDI_POOL_MAXSIZE, poolSize);
-        
+
         // Precedence rule: SUN_JNDI_POOL_MAXSIZE > PARAM_POOLSIZE > POOLSIZE_DEFAULT
         try {
             sunPoolSizeStr = Integer.valueOf(sunPoolSizeStr).toString();
         } catch (Exception ex) {
             sunPoolSizeStr = poolSize;
         }
-        
+
         if (System.getProperty(SUN_JNDI_POOL_MAXSIZE) == null) {
             System.setProperty(SUN_JNDI_POOL_MAXSIZE, sunPoolSizeStr);
         }
-        this.setProperty(PARAM_POOLSIZE, sunPoolSizeStr);
+        setProperty(PARAM_POOLSIZE, sunPoolSizeStr);
 
         String usePool = props.getProperty(SUN_JNDI_POOL, "true");
         ldapBindProps.setProperty(SUN_JNDI_POOL, usePool);
@@ -363,7 +356,7 @@ public final class LDAPRealm extends BaseRealm {
             LdapName name = new LdapName(userDN); // Ignoring the exception to suppot simple group names as userDN
             // Issue GLASSFISH-19595
             for (Rdn rdn : name.getRdns()) {
-                if (rdn.getType().equalsIgnoreCase("CN")) {
+                if (rdn.getType().equalsIgnoreCase(OID.CN.getName())) {
                     _username = rdn.getValue().toString();
                     break;
                 }
@@ -416,7 +409,7 @@ public final class LDAPRealm extends BaseRealm {
      * does not support this operation.
      */
     @Override
-    public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
+    public Enumeration<String> getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
         List<String> cachedGroups = groupCache.get(username);
         if (cachedGroups == null) {
             // Note : assuming the username is a userDN here
@@ -424,31 +417,23 @@ public final class LDAPRealm extends BaseRealm {
             if (searchedGrps != null) {
                 return Collections.enumeration(searchedGrps);
             }
-            if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "No groups available for: " + username);
-            }
+            _logger.fine(() -> "No groups available for: " + username);
             // we don't load group here as we need to bind ctx to user with
             // password before doing that and password is not available here
             return Collections.emptyEnumeration();
-        } else {
-            if (groupMapper != null) {
-                List<String> result = new LinkedList<>(cachedGroups);
-                for (String grp : cachedGroups) {
-                    result.addAll(this.getMappedGroupNames(grp));
-                }
-                return Collections.enumeration(result);
-            } else {
-                return Collections.enumeration(cachedGroups);
-            }
         }
+        if (groupMapper == null) {
+            return Collections.enumeration(cachedGroups);
+        }
+        List<String> result = new LinkedList<>(cachedGroups);
+        for (String grp : cachedGroups) {
+            result.addAll(this.getMappedGroupNames(grp));
+        }
+        return Collections.enumeration(result);
     }
 
     /**
      * Set group membership info for a user.
-     *
-     * <P>
-     * See bugs 4646133,4646270 on why this is here.
-     *
      */
     private void setGroupNames(String username, String[] groups) {
         groupCache.put(username, new LinkedList<>(Arrays.asList(groups)));
@@ -460,7 +445,7 @@ public final class LDAPRealm extends BaseRealm {
      * @param _username
      * @param _password
      * @return
-     * @throws javax.security.auth.login.LoginException
+     * @throws LoginException
      */
     public String[] findAndBind(String _username, char[] _password) throws LoginException {
         // do search for user, substituting %s for username
@@ -672,7 +657,7 @@ public final class LDAPRealm extends BaseRealm {
             _logger.log(WARNING, "ldaprealm.searcherror", filter);
             _logger.log(WARNING, "security.exception", e);
         }
-        
+
         return groupList;
     }
 
@@ -691,10 +676,11 @@ public final class LDAPRealm extends BaseRealm {
             ctls.setReturningAttributes(targets);
             ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-            NamingEnumeration e = ctx.search(baseDN, filter.replaceAll(Matcher.quoteReplacement("\\"), Matcher.quoteReplacement("\\\\")), ctls);
+            NamingEnumeration<SearchResult> e = ctx.search(baseDN,
+                filter.replaceAll(Matcher.quoteReplacement("\\"), Matcher.quoteReplacement("\\\\")), ctls);
 
             while (e.hasMore()) {
-                SearchResult res = (SearchResult) e.next();
+                SearchResult res = e.next();
                 Attribute grpAttr = res.getAttributes().get(target);
                 int sz = grpAttr.size();
                 for (int i = 0; i < sz; i++) {
@@ -724,7 +710,8 @@ public final class LDAPRealm extends BaseRealm {
     }
 
     /**
-     * Escape special chars in search filter, according to RFC2254
+     * Escape special chars in search filter, according to RFC2254 (The String Representation
+     * of LDAP Search Filters)
      */
     private String RFC2254Encode(String inName) {
 

@@ -68,6 +68,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
@@ -77,7 +78,7 @@ import com.sun.enterprise.server.pluggable.SecuritySupport;
 
 /**
  * Handy class containing static functions.
- * 
+ *
  * @author Harpreet Singh
  * @author Vivek Nagar
  * @author Shing Wai Chan
@@ -85,9 +86,9 @@ import com.sun.enterprise.server.pluggable.SecuritySupport;
 @Service
 @Singleton
 public final class SSLUtils implements PostConstruct {
-    
+
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
-    
+
     public static final String HTTPS_OUTBOUND_KEY_ALIAS = "com.sun.enterprise.security.httpsOutboundKeyAlias";
     private static final String DEFAULT_SSL_PROTOCOL = "TLS";
 
@@ -99,15 +100,16 @@ public final class SSLUtils implements PostConstruct {
     private AppClientSSL appclientSsl;
     private SSLContext sslContext;
 
+    @Override
     public void postConstruct() {
         try {
             // TODO: To check the right implementation once we support EE.
             if (securitySupport == null) {
                 securitySupport = SecuritySupport.getDefaultInstance();
             }
-            
+
             KeyStore[] keyStores = getKeyStores();
-            
+
             if (keyStores != null) {
                 for (KeyStore keyStore : keyStores) {
                     Enumeration<String> aliases = keyStore.aliases();
@@ -122,7 +124,7 @@ public final class SSLUtils implements PostConstruct {
                     }
                 }
             }
-            
+
             mergedTrustStore = mergingTrustStores(securitySupport.getTrustStores());
             getSSLContext(null, null, null);
         } catch (Exception ex) {
@@ -142,10 +144,10 @@ public final class SSLUtils implements PostConstruct {
             if (protocol == null) {
                 protocol = DEFAULT_SSL_PROTOCOL;
             }
-            
+
             sslContext = SSLContext.getInstance(protocol);
             String keyAlias = System.getProperty(HTTPS_OUTBOUND_KEY_ALIAS);
-            
+
             KeyManager[] keyManagers = getKeyManagers(algorithm);
             if (keyAlias != null && keyAlias.length() > 0 && keyManagers != null) {
                 for (int i = 0; i < keyManagers.length; i++) {
@@ -155,13 +157,13 @@ public final class SSLUtils implements PostConstruct {
             sslContext.init(keyManagers, getTrustManagers(trustAlgorithm), null);
 
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            
+
             // See https://github.com/eclipse-ee4j/glassfish/issues/15369
             SSLContext.setDefault(sslContext);
         } catch (Exception e) {
             throw new Error(e);
         }
-        
+
         return sslContext;
     }
 
@@ -233,7 +235,7 @@ public final class SSLUtils implements PostConstruct {
 
     /**
      * Check whether given String is of the form [&lt;TokenName&gt;:]alias where alias is an key entry.
-     * 
+     *
      * @param certNickname
      * @return boolean
      */
@@ -271,7 +273,7 @@ public final class SSLUtils implements PostConstruct {
 
     /**
      * Get a PrivateKeyEntry with certNickName is of the form [&lt;TokenName&gt;:]alias where alias is an key entry.
-     * 
+     *
      * @param certNickname
      * @return PrivateKeyEntry
      */
@@ -318,10 +320,11 @@ public final class SSLUtils implements PostConstruct {
     public static void checkPermission(String key) {
         try {
             // Checking a random permission to check if it is server.
-            if (Util.isEmbeddedServer() || Util.getDefaultHabitat() == null || Util.getInstance().isACC() || Util.getInstance().isNotServerOrACC()) {
+            if (Util.isEmbeddedServer() || Globals.getDefaultHabitat() == null || Util.getInstance().isACC()
+                || Util.getInstance().isNotServerOrACC()) {
                 return;
             }
-            
+
             AccessController.checkPermission(new RuntimePermission("SSLPassword"));
         } catch (AccessControlException e) {
             String message = e.getMessage();
@@ -329,7 +332,7 @@ public final class SSLUtils implements PostConstruct {
             if (message != null) {
                 message = message.replace(e.getPermission().toString(), permission.toString());
             }
-            
+
             throw new AccessControlException(message, permission);
         }
     }
@@ -351,7 +354,7 @@ public final class SSLUtils implements PostConstruct {
         for (int i = 0; i < trustStores.length; i++) {
             Enumeration<String> aliases = trustStores[i].aliases();
             while (aliases.hasMoreElements()) {
-                String alias = (String) aliases.nextElement();
+                String alias = aliases.nextElement();
                 Certificate cert = trustStores[i].getCertificate(alias);
 
                 // Need to preserve the token:alias name format
@@ -373,12 +376,12 @@ public final class SSLUtils implements PostConstruct {
                 }
             }
         }
-        
+
         return mergedStore;
     }
 
     /**
-     * 
+     *
      *
      * @param alias the admin key alias
      * @param protocol the protocol or null, uses "TLS" if this argument is null.
@@ -390,9 +393,9 @@ public final class SSLUtils implements PostConstruct {
 
     /*
      * @param alias the admin key alias
-     * 
+     *
      * @param protocol the protocol or null, uses "TLS" if this argument is null.
-     * 
+     *
      * @return the initialized SSLContext
      */
     public SSLContext getAdminSSLContext(String alias, String protocol) {
@@ -400,9 +403,9 @@ public final class SSLUtils implements PostConstruct {
             if (protocol == null) {
                 protocol = "TLS";
             }
-            
+
             SSLContext adminSSLContextxt = SSLContext.getInstance(protocol);
-            
+
             KeyManager[] keyManagers = getKeyManagers();
             if (alias != null && alias.length() > 0 && keyManagers != null) {
                 for (int i = 0; i < keyManagers.length; i++) {

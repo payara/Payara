@@ -42,10 +42,10 @@
 package com.sun.enterprise.common.iiop.security;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
-import com.sun.enterprise.security.common.Util;
-
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+
+import org.glassfish.internal.api.Globals;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.iiopImportNameError;
 import static java.util.logging.Level.FINE;
@@ -67,14 +67,14 @@ public class GSSUPName {
     public static final char ESCAPE_CHAR = '\\';
     public static final String ESCAPE_STRING = "\\";
 
-    private String username; // username
-    private String realm; // realmname
-    private GSSUtilsContract gssUtils;
+    private final String username; // username
+    private final String realm; // realmname
+    private final GSSUtilsContract gssUtils;
 
     public GSSUPName(String username, String realm) {
         this.username = username;
         this.realm = realm;
-        gssUtils = Util.getDefaultHabitat().getService(GSSUtilsContract.class);
+        gssUtils = Globals.getStaticHabitat().getService(GSSUtilsContract.class);
     }
 
     /**
@@ -88,7 +88,7 @@ public class GSSUPName {
         String name_scope = "";
         byte[] exportedname = null;
 
-        gssUtils = Util.getDefaultHabitat().getService(GSSUtilsContract.class);
+        gssUtils = Globals.getStaticHabitat().getService(GSSUtilsContract.class);
         _logger.log(FINE, "Attempting to create a mechanism specific name from the exported name.");
 
         try {
@@ -188,9 +188,9 @@ public class GSSUPName {
         int at_index = username.indexOf(AT_CHAR);
         int esc_index = username.indexOf(ESCAPE_CHAR);
 
-        if ((at_index == -1) && (esc_index == -1))
+        if ((at_index == -1) && (esc_index == -1)) {
             strbuf = new StringBuilder(username); // just copy - no processing required.
-        else {
+        } else {
 
             // N.B. Order of processing is important
 
@@ -257,8 +257,9 @@ public class GSSUPName {
     public boolean equals(Object o) {
         if (o instanceof GSSUPName) {
             GSSUPName nm = (GSSUPName) o;
-            if (nm.getUser().equals(username) && nm.getRealm().equals(realm))
+            if (nm.getUser().equals(username) && nm.getRealm().equals(realm)) {
                 return true;
+            }
         }
         return false;
     }
