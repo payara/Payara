@@ -3,10 +3,10 @@ def pom
 java.lang.String DOMAIN_NAME='test-domain'
 def payaraBuildNumber
 pipeline {
+    agent any
     options {
         disableConcurrentBuilds()
     }
-    agent any
     environment {
         MP_METRICS_TAGS='tier=integration'
     }
@@ -251,8 +251,7 @@ pipeline {
                 		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/pom.xml -Dpayara.version=${pom.version} -N"
                 		sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-arquillian-extension/pom.xml \
                     -Dpayara.version=${pom.version}"
-                }
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     sh "mvn -B -V -ff -e clean verify -f MicroProfile-JWT-Auth/tck-runner/pom.xml \
