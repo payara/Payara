@@ -108,6 +108,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
     private final List<String> applicationsLoaded = new CopyOnWriteArrayList<>();
 
+    private static final String BACKWARD_COMP_ENABLED_PROPERTY = "MP_HEALTH_BACKWARD_COMPATIBILITY_ENABLED";
+
     @PostConstruct
     public void postConstruct() {
         if (events == null) {
@@ -115,7 +117,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
         events.register(this);
         this.backwardCompEnabled = ConfigProvider.getConfig()
-                .getOptionalValue("mp.health.enable-backward-compatibility", Boolean.class)
+                .getOptionalValue(BACKWARD_COMP_ENABLED_PROPERTY, Boolean.class)
                 .orElse(false);
     }
 
@@ -209,7 +211,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
         return healthChecks;
     }
     
-        private Map<String, Set<HealthCheck>> getCollectiveHealthChecks(HealthCheckType type){
+    private Map<String, Set<HealthCheck>> getCollectiveHealthChecks(HealthCheckType type) {
         final Map<String, Set<HealthCheck>> healthChecks;
         if (type == READINESS) {
             healthChecks = readiness;
