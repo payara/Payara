@@ -238,6 +238,8 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
             } else {
                 disableEjbInvoker(actionReport);
             }
+        } else {
+            actionReport.setMessage("Restart server or re-enable the ejb-invoker service for the change to take effect.");
         }
 
         // If everything has passed, scrap the subaction reports as we don't want to print them out

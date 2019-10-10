@@ -46,6 +46,9 @@ import static com.sun.enterprise.deployment.runtime.web.SunWebApp.HTTPSERVLET_SE
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.util.StringUtils;
 import static fish.payara.ejb.http.admin.Constants.EJB_INVOKER_APP;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import static javax.servlet.http.HttpServletRequest.FORM_AUTH;
@@ -58,13 +61,16 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 /**
  *
  * @author Gaurav Gupta
  */
 @Service(name = "ejb-invoker-service")
 @RunLevel(StartupRunLevel.VAL)
-public class EjbInvokerService implements EventListener {
+public class EjbInvokerService implements EventListener, ConfigListener {
     
     @Inject
     private Events events;
@@ -117,5 +123,15 @@ public class EjbInvokerService implements EventListener {
                 }
             }
         }
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
+        for (PropertyChangeEvent event : events) {
+            unchangedList.add(new UnprocessedChangeEvent(event, "EJB Invoker configuration changed:" + event.getPropertyName()
+                    + " was changed from " + event.getOldValue() + " to " + event.getNewValue()));
+        }
+        return new UnprocessedChangeEvents(unchangedList);
     }
 }
