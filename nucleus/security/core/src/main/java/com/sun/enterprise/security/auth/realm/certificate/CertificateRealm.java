@@ -46,10 +46,8 @@ import static java.util.logging.Level.FINEST;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -69,7 +67,6 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import com.sun.enterprise.security.auth.realm.Realm;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -96,48 +93,17 @@ import com.sun.enterprise.security.auth.realm.Realm;
  * cryptographically valid certificate. Since groups are otherwise not supported by the cert realm, this allows grouping
  * cert users for convenience.
  * </ul>
- *
  */
 @Service
 public final class CertificateRealm extends BaseRealm {
 
-    // Descriptive string of the authentication type of this realm.
+    private static final String COMMON_NAME_AS_PRINCIPAL_NAME = "common-name-as-principal-name";
+
+    /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "certificate";
-    public static final Map<String, String> OID_MAP;
-    static {
-        Map<String, String> oidMapInitialiser = new HashMap<>();
-        oidMapInitialiser.put(OIDs.UID, "UID");
-        oidMapInitialiser.put(OIDs.DC, "DC");
-        oidMapInitialiser.put(OIDs.EMAILADDRESS, "EMAILADDRESS");
-        oidMapInitialiser.put(OIDs.IP, "IP");
-        oidMapInitialiser.put(OIDs.CN, "CN");
-        oidMapInitialiser.put(OIDs.SURNAME, "SURNAME");
-        oidMapInitialiser.put(OIDs.SERIALNUMBER, "SERIALNUMBER");
-        oidMapInitialiser.put(OIDs.C, "C");
-        oidMapInitialiser.put(OIDs.L, "L");
-        oidMapInitialiser.put(OIDs.ST, "ST");
-        oidMapInitialiser.put(OIDs.STREET, "STREET");
-        oidMapInitialiser.put(OIDs.O, "O");
-        oidMapInitialiser.put(OIDs.OU, "OU");
-        oidMapInitialiser.put(OIDs.T, "T");
-        oidMapInitialiser.put(OIDs.GIVENNAME, "GIVENNAME");
-        oidMapInitialiser.put(OIDs.INITIALS, "INITIALS");
-        oidMapInitialiser.put(OIDs.GENERATION, "GENERATION");
-        oidMapInitialiser.put(OIDs.DNQUALIFIER, "DNQUALIFIER");
-        OID_MAP = Collections.unmodifiableMap(oidMapInitialiser);
-    }
 
-    private List<String> defaultGroups = new LinkedList<>();
+    private final List<String> defaultGroups = new LinkedList<>();
 
-    /**
-     * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
-     * method is invoked from Realm during initialization.
-     *
-     * @param props Initialization parameters used by this realm.
-     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
-     *
-     */
     @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
@@ -147,15 +113,15 @@ public final class CertificateRealm extends BaseRealm {
             defaultGroups.addAll(asList(groups));
         }
 
-        String jaasCtx = props.getProperty(Realm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx != null) {
-            setProperty(Realm.JAAS_CONTEXT_PARAM, jaasCtx);
+            setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
-        
+
         // Gets the property from the realm configuration - requires server restart when updating or removing
-        String useCommonName = props.getProperty("common-name-as-principal-name");
+        String useCommonName = props.getProperty(COMMON_NAME_AS_PRINCIPAL_NAME);
         if (useCommonName != null) {
-            setProperty("useCommonName", useCommonName);
+            setProperty(COMMON_NAME_AS_PRINCIPAL_NAME, useCommonName);
         }
     }
 
@@ -191,22 +157,18 @@ public final class CertificateRealm extends BaseRealm {
     }
 
     /**
-     * Returns the name of all the groups that this user belongs to.
-     *
      * @param subject The Subject object for the authentication request.
      * @param callerPrincipal The Principal object from the user certificate.
-     *
+     * @return the name of all the groups that this user belongs to.
      */
     public String authenticate(Subject subject, X500Principal callerPrincipal) {
-        // It is important to use X500Principal.getName() as that will
-        // return the LDAP name in RFC2253
-        String callerPrincipalName = callerPrincipal.getName(X500Principal.RFC2253, OID_MAP);
-
-        // Checks if the property for using common name is set
-        if (Boolean.valueOf(getProperty("useCommonName"))) {
-            callerPrincipalName = extractCN(callerPrincipalName);
+        String dn = callerPrincipal.getName(X500Principal.RFC2253, OID.getOIDMap());
+        final String callerPrincipalName;
+        if (Boolean.valueOf(getProperty(COMMON_NAME_AS_PRINCIPAL_NAME))) {
+            callerPrincipalName = extractCN(dn);
+        } else {
+            callerPrincipalName = dn;
         }
-
         _logger.log(FINEST, "Certificate realm setting up security context for: {0}", callerPrincipalName);
 
         // Optionally add groups that indicate this caller was authenticated via certificates
@@ -224,13 +186,13 @@ public final class CertificateRealm extends BaseRealm {
         // Making authentication final - setting the authenticated caller name in the
         // security context
         SecurityContext.setCurrent(new SecurityContext(callerPrincipalName, subject));
-        
+
         return callerPrincipalName;
     }
-    
+
     private static String extractCN(String dn) {
         try {
-            return (String) 
+            return (String)
                 new LdapName(dn)
                     .getRdns()
                     .stream()
@@ -270,12 +232,11 @@ public final class CertificateRealm extends BaseRealm {
         /**
          * Set the fully qualified module name. The module name consists of the application name (if not a singleton) followed
          * by a '#' and the name of the module.
-         * 
+         *
          * @param moduleID
          */
         public void setModuleID(String moduleID) {
             this.moduleID = moduleID;
         }
     }
-
 }

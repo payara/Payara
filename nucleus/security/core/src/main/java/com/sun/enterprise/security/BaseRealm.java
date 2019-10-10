@@ -61,13 +61,6 @@ import com.sun.enterprise.util.i18n.StringManager;
  * @author Harpreet Singh
  */
 public abstract class BaseRealm extends Realm {
-    /**
-     * Recommended property for keeping JAAS Context of a realm.
-     *
-     * @deprecated Moved to parent class, which actually implements the behaviour
-     */
-    @Deprecated
-    public static final String JAAS_CONTEXT_PARAM = Realm.JAAS_CONTEXT_PARAM;
 
     protected static final StringManager sm = StringManager.getManager(Realm.class);
     private static final String NOT_SUPPORTED = sm.getString("iasrealm.notsupported");
