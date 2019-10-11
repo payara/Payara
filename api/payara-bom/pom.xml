@@ -1,0 +1,250 @@
+<!--
+  ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~    The contents of this file are subject to the terms of either the GNU
+  ~    General Public License Version 2 only ("GPL") or the Common Development
+  ~    and Distribution License("CDDL") (collectively, the "License").  You
+  ~    may not use this file except in compliance with the License.  You can
+  ~    obtain a copy of the License at
+  ~    https://github.com/payara/Payara/blob/master/LICENSE.txt
+  ~    See the License for the specific
+  ~    language governing permissions and limitations under the License.
+  ~
+  ~    When distributing the software, include this License Header Notice in each
+  ~    file and include the License file at glassfish/legal/LICENSE.txt.
+  ~
+  ~    GPL Classpath Exception:
+  ~    The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~    file that accompanied this code.
+  ~
+  ~    Modifications:
+  ~    If applicable, add the following below the License Header, with the fields
+  ~    enclosed by brackets [] replaced by your own identifying information:
+  ~    "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~    Contributor(s):
+  ~    If you wish your version of this file to be governed by only the CDDL or
+  ~    only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~    elects to include this software in this distribution under the [CDDL or GPL
+  ~    Version 2] license."  If you don't indicate a single choice of license, a
+  ~    recipient has the option to distribute your version of this file under
+  ~    either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~    its licensees as provided above.  However, if you add GPL Version 2 code
+  ~    and therefore, elected the GPL Version 2 license, then the option applies
+  ~    only if the new code is made subject to such option by the copyright
+  ~    holder.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.api</groupId>
+        <artifactId>api-parent</artifactId>
+        <version>5.194-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>payara-bom</artifactId>
+    <name>Payara Bill of Materials</name>
+    <packaging>pom</packaging>
+    <description>List of dependencies provided by and compatible with specific Payara Release</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Public artifacts -->
+
+            <!-- APIs -->
+            <dependency>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-api</artifactId>
+                <version>${jakartaee.api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${servlet-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jax-rs-api.impl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta.annotation-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.stream</groupId>
+                <artifactId>stax-api</artifactId>
+                <version>${stax-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${javax.cache-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.compendium</artifactId>
+                <version>5.0.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>6.0.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.enterprise</artifactId>
+                <version>5.0.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
+                <artifactId>org.osgi.dto</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <!-- Tooling -->
+
+            <!-- Implementations -->
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-bom</artifactId>
+                <version>${grizzly.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.inject</groupId>
+                <artifactId>jersey-hk2</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${hibernate.validator-cdi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.el</artifactId>
+                <version>${jakarta.el.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>jakarta.mail</artifactId>
+                <version>${mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-osgi</artifactId>
+                <version>${jaxb-impl.version}</version>
+            </dependency>
+
+
+            <!-- Other libraries -->
+            <dependency>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-bom</artifactId>
+                <version>${hk2.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-kubernetes</artifactId>
+                <version>${hazelcast.kubernetes.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+</project>

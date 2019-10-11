@@ -42,9 +42,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server</groupId>
-        <artifactId>payara-nucleus-parent</artifactId>
+        <artifactId>payara-aggregator</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
     
     <groupId>fish.payara.api</groupId>
@@ -76,17 +75,8 @@
     
     <modules>
         <module>payara-api</module>
+        <module>payara-bom</module>
     </modules>
     
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>jakarta.platform</groupId>
-                <artifactId>jakarta.jakartaee-api</artifactId>
-                <version>${jakartaee.api.version}</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
 </project>
