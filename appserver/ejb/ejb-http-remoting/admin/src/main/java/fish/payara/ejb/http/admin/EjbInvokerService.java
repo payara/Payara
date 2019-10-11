@@ -129,9 +129,14 @@ public class EjbInvokerService implements EventListener, ConfigListener {
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
         for (PropertyChangeEvent event : events) {
+            if ("enabled".equals(event.getPropertyName())){
+                unchangedList.clear();
+                break;
+            }
             unchangedList.add(new UnprocessedChangeEvent(event, "EJB Invoker configuration changed:" + event.getPropertyName()
                     + " was changed from " + event.getOldValue() + " to " + event.getNewValue()));
         }
-        return new UnprocessedChangeEvents(unchangedList);
+        return (unchangedList.size() > 0)
+                ? new UnprocessedChangeEvents(unchangedList) : null;
     }
 }
