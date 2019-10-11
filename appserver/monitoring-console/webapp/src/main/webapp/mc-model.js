@@ -66,7 +66,7 @@ MonitoringConsole.Model = (function() {
 				},
 				request_tracing: {
 					name: 'Request Tracing',
-					numberOfColumns: 2,
+					numberOfColumns: 1,
 					widgets: [
 						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
 					]
@@ -136,6 +136,8 @@ MonitoringConsole.Model = (function() {
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
 			if (!widget.type)
 				widget.type = 'line';
+			if (!widget.unit)
+				widget.unit = 'count';
 			if (!widget.options) {
 				widget.options = { 
 					beginAtZero: true,
@@ -150,6 +152,12 @@ MonitoringConsole.Model = (function() {
 			}
 			if (!widget.grid)
 				widget.grid = {};
+			if (!widget.decorations)
+				widget.decorations = {};
+			if (!widget.decorations.levels)
+				widget.decorations.levels = {};
+			if (!widget.axis)
+				widget.axis = {};
 			return widget;
 		}
 		
@@ -281,7 +289,7 @@ MonitoringConsole.Model = (function() {
 				}
 			}
 			// give the layout a uniform row number
-			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
+			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
 			for (let col = 0; col < numberOfColumns; col++) {
 				while (layout[col].length < maxRows) {
 					layout[col].push(null);
@@ -612,6 +620,31 @@ MonitoringConsole.Model = (function() {
 		return data.filter(seriesData => seriesData.points.length >= 2);
 	}
 
+	function addAssessment(widget, data) {
+		data.forEach(function(seriesData) {
+			let level = 'normal';
+			let levels = widget.decorations.levels;
+			if (levels.reference) {
+				let value = seriesData.points[seriesData.points.length-1];
+				switch (levels.reference) {
+					case 'min': value = seriesData.observedMin; break;
+					case 'max': value = seriesData.observedMax; break;
+					case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+				}
+				let alarming = levels.alarming;
+				let critical = levels.critical;
+				let desc = alarming && critical && critical < alarming;
+				if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+					level = 'alarming';
+				}
+				if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+					level = 'critical';
+				}
+			}
+			seriesData.assessments = { level: level };
+		});
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -634,9 +667,11 @@ MonitoringConsole.Model = (function() {
 			});
 			request.done(function(response) {
 				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					addAssessment(widget, data);
 					onDataUpdate({
 						widget: widget,
-						data: retainLastMinute(response[widget.series]),
+						data: data,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});

@@ -46,6 +46,7 @@
 MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
+    const Units = MonitoringConsole.View.Units;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -193,18 +194,30 @@ MonitoringConsole.View = (function() {
         let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
             { label: 'General'},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Unit', type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
             { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
             { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+
             { label: 'Data'},
-            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+            { label: 'Minimum Line', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+            { label: 'Maximum Line', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
         ]};
         if (widget.type === 'line') {
+            let unit = widget.unit;
             settings.entries.push(
-                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: 'Average Line', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
+                { label: 'Show Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+
+                { label: 'Decorations' },
+                { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+                { label: 'Level Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: widget.decorations.levels.reference, onChange: (widget, selected) => widget.decorations.levels.reference = selected},
+                { label: 'Alarming Level', type: 'value', unit: unit, value: widget.decorations.levels.alarming, onChange: (widget, value) => widget.decorations.levels.alarming = value },
+                { label: 'Critical Level', type: 'value', unit: unit, value: widget.decorations.levels.critical, onChange: (widget, value) => widget.decorations.levels.critical = value },
+
                 { label: 'Display Options'},
+                { label: 'Axis Minimum', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Axis Maximum', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
                 { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
                 { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
                 { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
@@ -307,6 +320,7 @@ MonitoringConsole.View = (function() {
         if (!data)
             return [{ label: 'No Data', value: '?', color: 'red' }];
         let legend = [];
+        let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -315,9 +329,10 @@ MonitoringConsole.View = (function() {
             }
             let item = { 
                 label: label, 
-                value: seriesData.points[seriesData.points.length-1], 
+                value: format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes'), 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                assessments: seriesData.assessments,
             };
             legend.push(item);
             data[j].legend = item;
@@ -349,7 +364,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
+        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -389,6 +404,8 @@ MonitoringConsole.View = (function() {
      * Public API of the View object:
      */
     return {
+        Units: Units,
+        Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received

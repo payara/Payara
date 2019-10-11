@@ -28,14 +28,18 @@ display         = boolean
 ### Widget Model
 
 ```
-WIDGET     = { series, type, target, grid, options }
+WIDGET     = { series, type, unit, target, grid, axis, options, decorations }
 series     = string
 target     = string
 type       = 'line' | 'bar'
+unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 grid       = { item, column, span }
 item       = number
 column     = number
 span       = span
+axis       = { min, max }
+min        = number
+max        = number
 options    = { 
 	drawMinLine:boolean,
 	drawMaxLine:boolean,
@@ -52,11 +56,35 @@ options    = {
 	showLegend:boolean,
 	showTimeLabels:boolean
 }
-
+decorations= { waterline, levels }
+waterline  = number
+levels     = { reference, alarming, critical }
+reference  = 'now' | 'min' | 'max' | 'avg'
+alarming   = number
+critical   = number
 ```
 * `target` is derived from `series` if not present
 * if `type` is not set `'line'` is assumed and set
 * if `options` is ommitted it is initialised setting `beginAtZero` and `autoTimeTicks` to `true`
+
+#### Decorations
+Decorations are visual elements added to a graph that should help the viewer to
+make sense of the numbers shown.
+
+A `waterline` marks a baseline or limit value that should be marked in the graph with a extra line.
+
+The `alarming` and `critical` can be used to to devide the graph into 3 classified areas.
+
+When `alarming` is less then `critical`
+* _normal_ is `alarming` and below
+* _alarming_ is `alarming`-`critical`
+* _critical_ is `critical` and above
+
+When `alarming` is greater then `critical`
+* _normal_ is `alarming` and above
+* _alarming_ is `critical`-`alarming`
+* _critical_ is `critical` and below
+
 
 
 ### Grid Model
@@ -85,7 +113,7 @@ UPDATE               = { widget, data, chart }
 widget               = WIDGET
 data                 = { *:[SERIES] }
 chart                = fn () => Chart
-SERIES               = { series, instance, points, observedMax, observedMin, observedSum, observedValues, observedValueChanges, observedSince, stableCount, stableSince, legend }
+SERIES               = { series, instance, points, observedMax, observedMin, observedSum, observedValues, observedValueChanges, observedSince, stableCount, stableSince, legend, assessments }
 series               = string
 instance             = string
 points               = [number]
@@ -98,11 +126,14 @@ observedSince        = number
 stableCount          = number
 stableSince          = number
 legend               = LEGEND_ITEM
+assessments          = { level }
+level                = 'normal' | 'alarming' | 'critical' | 'error'
 ```
 * `Chart` is a chart object created by Chart.js
 * Note that `series` is the actual ID of a stored series that can differ from `widget.series` in case the widget uses a pattern that matches one or more stored series
 * `points` are given in a 1-dimensional array with alternating x and y values (x being the timestamp in ms since 1970)
-* the `SERIES.legend` is set by the client while all other attributes are data send by the server. The details of `LEGEND_ITEM` can be found below.
+* `SERIES.legend` is set by the client. The details of `LEGEND_ITEM` can be found below.
+* `SERIES.assessments` are set by the client 
 
 
 ## Chart Data
@@ -141,24 +172,26 @@ The general idea of model driven UI components is that a model - usually a JS ob
 Describes the model expected by the `Settings` component.
 
 ```
-SETTINGS = [GROUP]
-GROUP    = { id, caption, entries }
-id 		 = string
-caption  = string
-entries  = [ENTRY]
-ENTRY    = { label, type, input, value, min, max, options, onChange } 
-label    = string
-type     = string
-value    = number | string
-min      = number
-max      = number
-options  = { *:string }
-input    = fn () => string | fn () => jquery | string | jquery
-onChange = fn (widget, newValue) => () | fn (newValue) => ()
+SETTINGS    = [GROUP]
+GROUP       = { id, caption, entries }
+id 		    = string
+caption     = string
+entries     = [ENTRY]
+ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description } 
+label       = string
+type        = string
+unit        = string
+value       = number | string
+min         = number
+max         = number
+options     = { *:string }
+input       = fn () => string | fn () => jquery | string | jquery
+onChange    = fn (widget, newValue) => () | fn (newValue) => ()
+description = string
 ```
-When `caption` is provided this adds a _header_ entry identical to adding a _header_ entry explicitly as first element of the `entries` array.
-
-The `options` object is used as map where the attribute names are the values of the options and the attribute values are the _string_ labels displayed for that option.
+* When `caption` is provided this adds a _header_ entry identical to adding a _header_ entry explicitly as first element of the `entries` array.
+* The `options` object is used as map where the attribute names are the values of the options and the attribute values are the _string_ labels displayed for that option.
+* `description` is optional
 
 Mandatory members of `ENTRY` depend on `type` member. Variants are:
 ```
@@ -166,6 +199,7 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'checkbox' : { label, value, onChange }
 'range'    : { label, value, min, max, onChange }
 'dropdown' : { label, value, options, onChange }
+'value'    : { label, value, unit, onChange }
 ```
 An `ENTRY` with no `type` is a _header_ in case `input` is not defined and a generic component if
 `input` is defined:
@@ -174,21 +208,28 @@ An `ENTRY` with no `type` is a _header_ in case `input` is not defined and a gen
 ```
 In other words the `type` is an indicator for non generic entries. The provided types exist to avoid duplication and consistency for reoccuring input elements. Since `input` could also be just a _string_ generic entries can be used for simple key-value entries.
 
+Settings of type `'value'` are inputs for a number that depends on the `unit` 
+used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
+If no unit is provided or the unit is undefined a plain number is assumed.
 
 ### Legend API
 Describes the model expected by the `Legend` component.
 
 ```
 LEGEND          = [LEGEND_ITEM]
-LEGEND_ITEM     = { label, value, color, backgroundColor }
+LEGEND_ITEM     = { label, value, color, backgroundColor, assessments }
 label           = string
 value           = string | number
 color           = string
 backgroundColor = string
+assessments      = (see UPDATE.assessments)
 ```
 * If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
+* `color` is the color of the line or bar used to indicate the item, 
+* `backgroundColor` is the background color of the line or bar should it use a fill
+* `assessments` help to understand or classify the given value qualitatively 
 
 
 

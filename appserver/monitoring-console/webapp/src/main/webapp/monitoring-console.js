@@ -157,7 +157,7 @@ MonitoringConsole.Model = (function() {
 				},
 				request_tracing: {
 					name: 'Request Tracing',
-					numberOfColumns: 2,
+					numberOfColumns: 1,
 					widgets: [
 						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
 					]
@@ -227,15 +227,28 @@ MonitoringConsole.Model = (function() {
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
 			if (!widget.type)
 				widget.type = 'line';
+			if (!widget.unit)
+				widget.unit = 'count';
 			if (!widget.options) {
 				widget.options = { 
 					beginAtZero: true,
 					autoTimeTicks: true,
 					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
 				};
+			} else {
+				if (!widget.options.hasOwnProperty('beginAtZero'))
+					widget.options.beginAtZero = true;
+				if (!widget.options.hasOwnProperty('autoTimeTicks'))
+					widget.options.autoTimeTicks = true;				
 			}
 			if (!widget.grid)
 				widget.grid = {};
+			if (!widget.decorations)
+				widget.decorations = {};
+			if (!widget.decorations.levels)
+				widget.decorations.levels = {};
+			if (!widget.axis)
+				widget.axis = {};
 			return widget;
 		}
 		
@@ -367,7 +380,7 @@ MonitoringConsole.Model = (function() {
 				}
 			}
 			// give the layout a uniform row number
-			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
+			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
 			for (let col = 0; col < numberOfColumns; col++) {
 				while (layout[col].length < maxRows) {
 					layout[col].push(null);
@@ -698,6 +711,31 @@ MonitoringConsole.Model = (function() {
 		return data.filter(seriesData => seriesData.points.length >= 2);
 	}
 
+	function addAssessment(widget, data) {
+		data.forEach(function(seriesData) {
+			let level = 'normal';
+			let levels = widget.decorations.levels;
+			if (levels.reference) {
+				let value = seriesData.points[seriesData.points.length-1];
+				switch (levels.reference) {
+					case 'min': value = seriesData.observedMin; break;
+					case 'max': value = seriesData.observedMax; break;
+					case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+				}
+				let alarming = levels.alarming;
+				let critical = levels.critical;
+				let desc = alarming && critical && critical < alarming;
+				if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+					level = 'alarming';
+				}
+				if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+					level = 'critical';
+				}
+			}
+			seriesData.assessments = { level: level };
+		});
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -720,9 +758,11 @@ MonitoringConsole.Model = (function() {
 			});
 			request.done(function(response) {
 				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					addAssessment(widget, data);
 					onDataUpdate({
 						widget: widget,
-						data: retainLastMinute(response[widget.series]),
+						data: data,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -963,12 +1003,213 @@ MonitoringConsole.Model = (function() {
 /*jshint esversion: 8 */
 
 /**
+ * Utilities to convert values given in units from and to string.
+ **/
+MonitoringConsole.View.Units = (function() {
+
+   const PERCENT_FACTORS = {
+      '%': 1
+   };
+
+   /**
+    * Factors used for any time unit to milliseconds
+    */
+   const MS_FACTORS = {
+      h: 60 * 60 * 1000, hours: 60 * 60 * 1000,
+      m: 60 * 1000, min: 60 * 1000, mins: 60 * 1000,
+      s: 1000, sec: 1000, secs: 1000,
+      ms: 1,
+      us: 1/1000, μs: 1/1000,
+      ns: 1/1000000,
+      _: [['m', 's', 'ms'], ['s', 'ms'], ['h', 'm', 's'], ['m', 's'], ['h', 'm']]
+   };
+
+   /**
+    * Factors used for any time unit to nanoseconds
+    */
+   const NS_FACTORS = {
+      h: 60 * 60 * 1000 * 1000000, hours: 60 * 60 * 1000 * 1000000,
+      m: 60 * 1000 * 1000000, min: 60 * 1000 * 1000000, mins: 60 * 1000 * 1000000,
+      s: 1000 * 1000000, sec: 1000 * 1000000, secs: 1000 * 1000000,
+      ms: 1000000,
+      us: 1000, μs: 1000,
+      ns: 1,
+      _: [['m', 's', 'ms'], ['s', 'ms'], ['h', 'm', 's'], ['m', 's'], ['h', 'm']]
+   };
+
+   /**
+    * Factors used for any memory unit to bytes
+    */
+   const BYTES_FACTORS = {
+      kb: 1024,
+      mb: 1024 * 1024,
+      gb: 1024 * 1024 * 1024,
+      tb: 1024 * 1024 * 1024 * 1024,
+   };
+
+   function parseNumber(valueAsString, factors) {
+      if (!valueAsString || typeof valueAsString === 'string' && valueAsString.trim() === '')
+         return undefined;
+      let valueAsNumber = Number(valueAsString);
+      if (!Number.isNaN(valueAsNumber))
+         return valueAsNumber;
+      let valueAndUnit = valueAsString.split(/(-?[0-9]+\.?[0-9]*)/);
+      let sum = 0;
+      for (let i = 1; i < valueAndUnit.length; i+=2) {
+         valueAsNumber = Number(valueAndUnit[i].trim());
+         let unit = valueAndUnit[i+1].trim().toLowerCase();
+         let factor = factors[unit];
+         sum += valueAsNumber * factor;               
+      }
+      return sum;
+   }
+
+   function formatDecimal(valueAsNumber) {
+      if (!hasDecimalPlaces(valueAsNumber)) {
+         return Math.round(valueAsNumber).toString();
+      } 
+      let text = valueAsNumber.toFixed(1);
+      return text.endsWith('.0') ? Math.round(valueAsNumber).toString() : text;
+   }
+
+   function formatNumber(valueAsNumber, factors, useDecimals) {
+      if (valueAsNumber === undefined)
+         return undefined;
+      if (!factors)
+         return formatDecimal(valueAsNumber);
+      let largestFactorUnit;
+      let largestFactor = 0;
+      for (let [unit, factor] of Object.entries(factors)) {
+         if (unit != '_' && (valueAsNumber >= 0 && factor > 0 || valueAsNumber < 0 && factor < 0)
+            && (useDecimals && (valueAsNumber / factor) >= 1 || !hasDecimalPlaces(valueAsNumber / factor))
+            && factor > largestFactor) {
+            largestFactor = factor;
+            largestFactorUnit = unit;
+         }
+      }
+      if (!largestFactorUnit) {
+         return formatDecimal(valueAsNumber);
+      }
+      if (useDecimals) {
+         return formatDecimal(valueAsNumber / largestFactor) + largestFactorUnit;
+      }
+      let valueInUnit = Math.round(valueAsNumber / largestFactor);
+      if (factors._) {
+         for (let i = 0; i < factors._.length; i++) {
+            let combination = factors._[i];
+            let rest = valueAsNumber;
+            let text = '';
+            if (combination[combination.length - 1] == largestFactorUnit) {
+               for (let j = 0; j < combination.length; j++) {
+                  let unit = combination[j];
+                  let factor = factors[unit];
+                  let times = Math.floor(rest / factor);
+                  if (times === 0)
+                     break;
+                  rest -= times * factor;
+                  text += times + unit;                      
+               }
+            }
+            if (rest === 0) {
+               return text;
+            }
+         }
+      }
+      // TODO look for a combination that has the found unit as its last member
+      // try if value can eben be expressed as the combination, otherwise try next that might fulfil firs condition
+      return valueInUnit + largestFactorUnit;
+   }
+
+   function hasDecimalPlaces(number) {
+      return number % 1 != 0;
+   }
+
+   /**
+    * Public API below:
+    */
+   return {
+      formatNumber: formatNumber,
+      formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),
+      formatNanoseconds: (valueAsNumber) => formatNumber(valueAsNumber, NS_FACTORS),
+      formatBytes: (valueAsNumber) => formatNumber(valueAsNumber, BYTES_FACTORS),
+      parseNumber: parseNumber,
+      parseMilliseconds: (valueAsString) => parseNumber(valueAsString, MS_FACTORS),
+      parseNanoseconds: (valueAsString) => parseNumber(valueAsString, NS_FACTORS),
+      parseBytes: (valueAsString) => parseNumber(valueAsString, BYTES_FACTORS),
+      converter: function(unit) {
+         return {
+            format: function(valueAsNumber, useDecimals) {
+               switch(unit) {
+                  case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
+                  case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
+                  case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
+                  case 'percent': return formatNumber(valueAsNumber, PERCENT_FACTORS, useDecimals);
+                  default: return formatNumber(valueAsNumber);
+               }
+            },
+            parse: function(valueAsString) {
+               switch(unit) {
+                  case 'ms': return parseNumber(valueAsString, MS_FACTORS);
+                  case 'ns': return parseNumber(valueAsString, NS_FACTORS);
+                  case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
+                  case 'percent': return parseNumber(valueAsString, PERCENT_FACTORS);
+                  default: return parseNumber(valueAsString);
+               }
+            },
+         };
+      }
+   };
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
  * Data/Model driven view components.
  *
  * Each of them gets passed a model which updates the view of the component to the model state.
  **/
 MonitoringConsole.View.Components = (function() {
 
+   const Units = MonitoringConsole.View.Units;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    function element(fn) {
@@ -1029,8 +1270,13 @@ MonitoringConsole.View.Components = (function() {
              });
       }
 
-      function createSliderRow(label, min, max, value, onChange) {
-         return createRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
+      function createRangeRow(label, min, max, value, onChange) {
+         let attributes = {type: 'number', value: value};
+         if (min)
+            attributes.min = min;
+         if (max)
+            attributes.max = max;
+         return createRow(label, () => $('<input/>', attributes)
              .on('input change', function() {  
                  let val = this.valueAsNumber;
                  MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
@@ -1042,6 +1288,20 @@ MonitoringConsole.View.Components = (function() {
          Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
          return createRow(label, () => dropdown);
+      }
+
+      function createValueInputRow(label, value, unit, onChange) {
+         if (unit === 'percent')
+            return createRangeRow(label, 0, 100, value, onChange);
+         if (unit === undefined || unit === 'count')
+            createRangeRow(label, undefined, undefined, value, onChange);
+         let converter = Units.converter(unit);
+         let input = $('<input/>', {type: 'text', value: converter.format(value) });
+         input.on('input change', function() {
+            let val = converter.parse(this.value);
+            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
+         });
+         return createRow(label, input);
       }
 
       function onUpdate(model) {
@@ -1059,12 +1319,14 @@ MonitoringConsole.View.Components = (function() {
                   case 'checkbox':
                      table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
                      break;
-                  case 'range':
-                  case 'slider':
-                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
-                     break;
                   case 'dropdown':
                      table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'range':
+                     table.append(createRangeRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'value':
+                     table.append(createValueInputRow(rowModel.label, rowModel.value, rowModel.unit, rowModel.onChange));
                      break;
                   default:
                      if (rowModel.input) {
@@ -1085,14 +1347,17 @@ MonitoringConsole.View.Components = (function() {
      */ 
     let Legend = (function() {
 
-      function createItem(label, value, color) {
+      function createItem(label, value, color, assessments) {
          let strong = value;
          let normal = '';
          if (typeof value === 'string' && value.indexOf(' ') > 0) {
             strong = value.substring(0, value.indexOf(' '));
             normal = value.substring(value.indexOf(' '));
          }
-         return $('<li/>', {style: 'border-color: '+color+';'})
+         let style = {style: 'border-color: '+color+';'};
+         if (assessments && assessments.level)
+            style.class = 'level-'+assessments.level;
+         return $('<li/>', style)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))
                .append($('<span/>').text(normal));
@@ -1102,7 +1367,7 @@ MonitoringConsole.View.Components = (function() {
          let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
          for (let i = 0; i < model.length; i++) {
             let itemModel = model[i];
-            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color, itemModel.assessments));
          }
          return legend;
       }
@@ -1133,6 +1398,8 @@ MonitoringConsole.View.Components = (function() {
 
       return { onUpdate: onUpdate };
     })();
+
+
 
     /*
      * Public API below:
@@ -1331,6 +1598,7 @@ MonitoringConsole.Chart.Common = (function() {
  */ 
 MonitoringConsole.Chart.Line = (function() {
 	
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
   /**
@@ -1422,52 +1690,36 @@ MonitoringConsole.Chart.Line = (function() {
       let y = (dt / 1000) * dy;
       points2d[i] = { t: new Date(t1), y: y };
     }
+    if (points2d.length === 1)
+      return [{t: new Date(points1d[0]), y: points2d[0].y}, points2d[0]];
     return points2d;
-  }  
+  }
 	
   function createMinimumLineDataset(seriesData, points, lineColor) {
-		let min = seriesData.observedMin;
-		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
-		
-		return {
-			data: minPoints,
-			label: ' min ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [2, 2],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' min ', points, seriesData.observedMin, lineColor, [3, 3]);
   }
     
   function createMaximumLineDataset(seriesData, points, lineColor) {
-  	let max = seriesData.observedMax;
-		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
-		
-		return {
-			data: maxPoints,
-			label: ' max ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			pointRadius: 0
-		};
+  	return createHorizontalLineDataset(' max ', points, seriesData.observedMax, lineColor, [15, 3]);
   }
     
   function createAverageLineDataset(seriesData, points, lineColor) {
-		let avg = seriesData.observedSum / seriesData.observedValues;
-		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
-		
-		return {
-			data: avgPoints,
-			label: ' avg ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [10, 4],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' avg ', points, seriesData.observedSum / seriesData.observedValues, lineColor, [9, 3]);
   }
+
+  function createHorizontalLineDataset(label, points, y, lineColor, dash) {
+    let line = {
+      data: [{t:points[0].t, y:y}, {t:points[points.length-1].t, y:y}],
+      label: label,
+      fill:  false,
+      borderColor: lineColor,
+      borderWidth: 1,
+      pointRadius: 0
+    };
+    if (dash)
+      line.borderDash = dash;
+    return line;
+  }  
     
   function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
 		let pointRadius = widget.options.drawPoints ? 3 : 0;
@@ -1491,7 +1743,7 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.backgroundColor;
-    if (widget.options.perSec && seriesData.points.length > 4) {    
+    if (widget.options.perSec) {    
   		//TODO add min/max/avg per sec lines
       return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
   	}
@@ -1507,6 +1759,9 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
+    if (widget.decorations.waterline) {
+      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    }
 	  return datasets;
   }
 
@@ -1516,16 +1771,26 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-    options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
     options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
     let time = widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
     let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-    options.scales.xAxes[0].ticks.minRotation = rotation;
-    options.scales.xAxes[0].ticks.maxRotation = rotation;
-    options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
+    let yAxis = options.scales.yAxes[0];
+    yAxis.ticks.beginAtZero = widget.options.beginAtZero;
+    let converter = Units.converter(widget.unit);
+    yAxis.ticks.callback = function(value, index, values) {
+      return converter.format(value, widget.unit === 'bytes');
+    };
+    if (widget.axis.min !== undefined)
+      yAxis.ticks.suggestedMin = widget.axis.min;
+    if (widget.axis.max !== undefined)
+      yAxis.ticks.suggestedMax = widget.axis.max;
+    let xAxis = options.scales.xAxes[0];
+    xAxis.ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
+    xAxis.ticks.minRotation = rotation;
+    xAxis.ticks.maxRotation = rotation;
+    xAxis.ticks.display = widget.options.showTimeLabels === true;
     options.elements.line.fill = widget.options.drawFill === true;
     return chart;
   }
@@ -2030,6 +2295,7 @@ MonitoringConsole.Chart.Trace = (function() {
 MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
+    const Units = MonitoringConsole.View.Units;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -2177,18 +2443,30 @@ MonitoringConsole.View = (function() {
         let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
             { label: 'General'},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Unit', type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
             { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
             { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+
             { label: 'Data'},
-            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+            { label: 'Minimum Line', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+            { label: 'Maximum Line', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
         ]};
         if (widget.type === 'line') {
+            let unit = widget.unit;
             settings.entries.push(
-                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: 'Average Line', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
+                { label: 'Show Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+
+                { label: 'Decorations' },
+                { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+                { label: 'Level Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: widget.decorations.levels.reference, onChange: (widget, selected) => widget.decorations.levels.reference = selected},
+                { label: 'Alarming Level', type: 'value', unit: unit, value: widget.decorations.levels.alarming, onChange: (widget, value) => widget.decorations.levels.alarming = value },
+                { label: 'Critical Level', type: 'value', unit: unit, value: widget.decorations.levels.critical, onChange: (widget, value) => widget.decorations.levels.critical = value },
+
                 { label: 'Display Options'},
+                { label: 'Axis Minimum', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Axis Maximum', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
                 { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
                 { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
                 { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
@@ -2291,6 +2569,7 @@ MonitoringConsole.View = (function() {
         if (!data)
             return [{ label: 'No Data', value: '?', color: 'red' }];
         let legend = [];
+        let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -2299,9 +2578,10 @@ MonitoringConsole.View = (function() {
             }
             let item = { 
                 label: label, 
-                value: seriesData.points[seriesData.points.length-1], 
+                value: format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes'), 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                assessments: seriesData.assessments,
             };
             legend.push(item);
             data[j].legend = item;
@@ -2333,7 +2613,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
+        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -2373,6 +2653,8 @@ MonitoringConsole.View = (function() {
      * Public API of the View object:
      */
     return {
+        Units: Units,
+        Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received

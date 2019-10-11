@@ -47,6 +47,7 @@
  **/
 MonitoringConsole.View.Components = (function() {
 
+   const Units = MonitoringConsole.View.Units;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    function element(fn) {
@@ -107,8 +108,13 @@ MonitoringConsole.View.Components = (function() {
              });
       }
 
-      function createSliderRow(label, min, max, value, onChange) {
-         return createRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
+      function createRangeRow(label, min, max, value, onChange) {
+         let attributes = {type: 'number', value: value};
+         if (min)
+            attributes.min = min;
+         if (max)
+            attributes.max = max;
+         return createRow(label, () => $('<input/>', attributes)
              .on('input change', function() {  
                  let val = this.valueAsNumber;
                  MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
@@ -120,6 +126,20 @@ MonitoringConsole.View.Components = (function() {
          Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
          return createRow(label, () => dropdown);
+      }
+
+      function createValueInputRow(label, value, unit, onChange) {
+         if (unit === 'percent')
+            return createRangeRow(label, 0, 100, value, onChange);
+         if (unit === undefined || unit === 'count')
+            createRangeRow(label, undefined, undefined, value, onChange);
+         let converter = Units.converter(unit);
+         let input = $('<input/>', {type: 'text', value: converter.format(value) });
+         input.on('input change', function() {
+            let val = converter.parse(this.value);
+            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
+         });
+         return createRow(label, input);
       }
 
       function onUpdate(model) {
@@ -137,12 +157,14 @@ MonitoringConsole.View.Components = (function() {
                   case 'checkbox':
                      table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
                      break;
-                  case 'range':
-                  case 'slider':
-                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
-                     break;
                   case 'dropdown':
                      table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'range':
+                     table.append(createRangeRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'value':
+                     table.append(createValueInputRow(rowModel.label, rowModel.value, rowModel.unit, rowModel.onChange));
                      break;
                   default:
                      if (rowModel.input) {
@@ -163,14 +185,17 @@ MonitoringConsole.View.Components = (function() {
      */ 
     let Legend = (function() {
 
-      function createItem(label, value, color) {
+      function createItem(label, value, color, assessments) {
          let strong = value;
          let normal = '';
          if (typeof value === 'string' && value.indexOf(' ') > 0) {
             strong = value.substring(0, value.indexOf(' '));
             normal = value.substring(value.indexOf(' '));
          }
-         return $('<li/>', {style: 'border-color: '+color+';'})
+         let style = {style: 'border-color: '+color+';'};
+         if (assessments && assessments.level)
+            style.class = 'level-'+assessments.level;
+         return $('<li/>', style)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))
                .append($('<span/>').text(normal));
@@ -180,7 +205,7 @@ MonitoringConsole.View.Components = (function() {
          let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
          for (let i = 0; i < model.length; i++) {
             let itemModel = model[i];
-            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color, itemModel.assessments));
          }
          return legend;
       }
@@ -211,6 +236,8 @@ MonitoringConsole.View.Components = (function() {
 
       return { onUpdate: onUpdate };
     })();
+
+
 
     /*
      * Public API below:

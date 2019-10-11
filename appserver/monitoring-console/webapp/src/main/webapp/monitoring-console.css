@@ -131,7 +131,6 @@ button:hover {
 }
 .widget-chart-box {
     position: relative;
-    padding-bottom: 50px; /* for legend */
 }
 .btnIcon {
 	float: right;
@@ -307,7 +306,6 @@ table.tags th, table.tags td {
 .widget-legend-bar {
   margin: 0;
   padding: 0 20px;
-  margin-top: -40px;
 }
 .widget-legend-bar li {
   display: inline-block;
@@ -323,6 +321,22 @@ table.tags th, table.tags td {
 .widget-legend-bar li span:first-child {
   display: block;
   font-weight: 300;
+}
+.widget-legend-bar li.level-alarming strong {
+    color: gold;
+    animation: blinker 2s linear infinite;
+}
+.widget-legend-bar li.level-critical strong {
+    color: crimson;
+    animation: blinker 1s linear infinite;
+}
+.widget-legend-bar li.level-error strong {
+    color: red;
+}
+@keyframes blinker {
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Page Navigation */

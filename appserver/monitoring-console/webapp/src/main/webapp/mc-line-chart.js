@@ -45,6 +45,7 @@
  */ 
 MonitoringConsole.Chart.Line = (function() {
 	
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
   /**
@@ -136,52 +137,36 @@ MonitoringConsole.Chart.Line = (function() {
       let y = (dt / 1000) * dy;
       points2d[i] = { t: new Date(t1), y: y };
     }
+    if (points2d.length === 1)
+      return [{t: new Date(points1d[0]), y: points2d[0].y}, points2d[0]];
     return points2d;
-  }  
+  }
 	
   function createMinimumLineDataset(seriesData, points, lineColor) {
-		let min = seriesData.observedMin;
-		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
-		
-		return {
-			data: minPoints,
-			label: ' min ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [2, 2],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' min ', points, seriesData.observedMin, lineColor, [3, 3]);
   }
     
   function createMaximumLineDataset(seriesData, points, lineColor) {
-  	let max = seriesData.observedMax;
-		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
-		
-		return {
-			data: maxPoints,
-			label: ' max ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			pointRadius: 0
-		};
+  	return createHorizontalLineDataset(' max ', points, seriesData.observedMax, lineColor, [15, 3]);
   }
     
   function createAverageLineDataset(seriesData, points, lineColor) {
-		let avg = seriesData.observedSum / seriesData.observedValues;
-		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
-		
-		return {
-			data: avgPoints,
-			label: ' avg ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [10, 4],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' avg ', points, seriesData.observedSum / seriesData.observedValues, lineColor, [9, 3]);
   }
+
+  function createHorizontalLineDataset(label, points, y, lineColor, dash) {
+    let line = {
+      data: [{t:points[0].t, y:y}, {t:points[points.length-1].t, y:y}],
+      label: label,
+      fill:  false,
+      borderColor: lineColor,
+      borderWidth: 1,
+      pointRadius: 0
+    };
+    if (dash)
+      line.borderDash = dash;
+    return line;
+  }  
     
   function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
 		let pointRadius = widget.options.drawPoints ? 3 : 0;
@@ -205,7 +190,7 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.backgroundColor;
-    if (widget.options.perSec && seriesData.points.length > 4) {    
+    if (widget.options.perSec) {    
   		//TODO add min/max/avg per sec lines
       return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
   	}
@@ -221,6 +206,9 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
+    if (widget.decorations.waterline) {
+      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    }
 	  return datasets;
   }
 
@@ -230,16 +218,26 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-    options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
     options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
     let time = widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
     let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-    options.scales.xAxes[0].ticks.minRotation = rotation;
-    options.scales.xAxes[0].ticks.maxRotation = rotation;
-    options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
+    let yAxis = options.scales.yAxes[0];
+    yAxis.ticks.beginAtZero = widget.options.beginAtZero;
+    let converter = Units.converter(widget.unit);
+    yAxis.ticks.callback = function(value, index, values) {
+      return converter.format(value, widget.unit === 'bytes');
+    };
+    if (widget.axis.min !== undefined)
+      yAxis.ticks.suggestedMin = widget.axis.min;
+    if (widget.axis.max !== undefined)
+      yAxis.ticks.suggestedMax = widget.axis.max;
+    let xAxis = options.scales.xAxes[0];
+    xAxis.ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
+    xAxis.ticks.minRotation = rotation;
+    xAxis.ticks.maxRotation = rotation;
+    xAxis.ticks.display = widget.options.showTimeLabels === true;
     options.elements.line.fill = widget.options.drawFill === true;
     return chart;
   }
