@@ -96,8 +96,7 @@ public abstract class AbstractRealm {
      *
      * @param username name of the user in this realm whose group listing is needed.
      * @return enumeration of group names (strings)
-     * @throws InvalidOperationException thrown if the realm does not support this operation - e.g.
-     *             Certificate realm does not support this operation
+     * @throws InvalidOperationException thrown if the realm does not support this operation
      * @throws NoSuchUserException
      */
     public abstract Enumeration<String> getGroupNames(String username) throws InvalidOperationException, NoSuchUserException;

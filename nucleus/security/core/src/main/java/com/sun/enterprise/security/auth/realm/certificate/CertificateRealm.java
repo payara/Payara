@@ -40,19 +40,19 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.certificate;
 
-import static java.util.Arrays.asList;
-import static java.util.logging.Level.FINEST;
-
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.x500.X500Principal;
@@ -64,65 +64,57 @@ import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
-import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 
 /**
  * Realm wrapper for supporting certificate authentication.
- *
  * <P>
- * The certificate realm provides the security-service functionality needed to process a client-cert authentication.
- * Since the SSL processing, and client certificate verification is done by NSS, no authentication is actually done by
- * this realm. It only serves the purpose of being registered as the certificate handler realm and to service group
- * membership requests during web container role checks.
- *
+ * The certificate realm provides the security-service functionality needed to process a client-cert
+ * authentication.
  * <P>
- * There is no JAAS LoginModule corresponding to the certificate realm, therefore this realm does not require the
- * jaas-context configuration parameter to be set. The purpose of a JAAS LoginModule is to implement the actual
- * authentication processing, which for the case of this certificate realm is already done by the time execution gets to
- * Java.
- *
+ * Since the SSL processing, and client certificate verification is done by NSS,
+ * no authentication is actually done by this realm. It only serves the purpose of being registered
+ * as the certificate handler realm and to service group membership requests during web container
+ * role checks.
+ * <P>
+ * There is no JAAS LoginModule corresponding to the certificate realm, therefore this realm does
+ * not require the jaas-context configuration parameter to be set. The purpose of a JAAS LoginModule
+ * is to implement the actual authentication processing, which for the case of this certificate
+ * realm is already done by the time execution gets to Java.
  * <P>
  * The certificate realm needs the following properties in its configuration: None.
- *
  * <P>
- * The following optional attributes can also be specified:
+ * The following optional properties can also be specified:
  * <ul>
- * <li>assign-groups - A comma-separated list of group names which will be assigned to all users who present a
- * cryptographically valid certificate. Since groups are otherwise not supported by the cert realm, this allows grouping
- * cert users for convenience.
+ * <li>assign-groups - a comma-separated list of group names which will be assigned to all users who
+ * present a cryptographically valid certificate.
+ * <li>{@value #COMMON_NAME_AS_PRINCIPAL_NAME} - if true, the CN from the client certificate will be
+ * used as a name of the principal
+ * <li>{@value #DN_PARTS_USED_FOR_GROUPS} a comma-separated list of {@link OID} names whose values
+ * in certificate's distinguished name will be used as a group names.
  * </ul>
  */
 @Service
 public final class CertificateRealm extends BaseRealm {
 
     private static final String COMMON_NAME_AS_PRINCIPAL_NAME = "common-name-as-principal-name";
+    private static final String DN_PARTS_USED_FOR_GROUPS = "dn-parts-used-for-groups";
 
     /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "certificate";
-
-    private final List<String> defaultGroups = new LinkedList<>();
 
     @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
 
-        String[] groups = addAssignGroups(null);
-        if (groups != null && groups.length > 0) {
-            defaultGroups.addAll(asList(groups));
-        }
+        final String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
+        setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
-        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
-        if (jaasCtx != null) {
-            setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
-        }
+        final String useCommonName = props.getProperty(COMMON_NAME_AS_PRINCIPAL_NAME);
+        setProperty(COMMON_NAME_AS_PRINCIPAL_NAME, useCommonName);
 
-        // Gets the property from the realm configuration - requires server restart when updating or removing
-        String useCommonName = props.getProperty(COMMON_NAME_AS_PRINCIPAL_NAME);
-        if (useCommonName != null) {
-            setProperty(COMMON_NAME_AS_PRINCIPAL_NAME, useCommonName);
-        }
+        final String dnPartsForGroup = props.getProperty(DN_PARTS_USED_FOR_GROUPS);
+        setProperty(DN_PARTS_USED_FOR_GROUPS, dnPartsForGroup);
     }
 
     /**
@@ -137,74 +129,85 @@ public final class CertificateRealm extends BaseRealm {
     }
 
     /**
-     * Returns the name of all the groups that this user belongs to.
+     * WARN: does not have access to user's certificate, so it does not return groups based on certificate.
      *
-     * @param username Name of the user in this realm whose group listing is needed.
-     * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
-     * does not support this operation.
-     * @throws com.sun.enterprise.security.auth.realm.NoSuchUserException
-     *
+     * @return enumeration of group names assigned to all users authenticated by this realm.
      */
     @Override
-    public Enumeration<String> getGroupNames(String username) throws NoSuchUserException, InvalidOperationException {
-        // This is called during web container role check, not during
-        // EJB container role cheks... fix RI for consistency.
-
-        // Groups for cert users is empty by default unless some assign-groups
-        // property has been specified (see init()).
-        return Collections.enumeration(defaultGroups);
+    public Enumeration<String> getGroupNames(String username) {
+        String[] groups = addAssignGroups(null);
+        if (groups == null) {
+            return Collections.emptyEnumeration();
+        }
+        return Collections.enumeration(Arrays.asList(groups));
     }
+
 
     /**
      * @param subject The Subject object for the authentication request.
-     * @param callerPrincipal The Principal object from the user certificate.
-     * @return the name of all the groups that this user belongs to.
+     * @param principal The Principal object from the user certificate.
+     * @return principal's name
      */
-    public String authenticate(Subject subject, X500Principal callerPrincipal) {
-        String dn = callerPrincipal.getName(X500Principal.RFC2253, OID.getOIDMap());
-        final String callerPrincipalName;
-        if (Boolean.valueOf(getProperty(COMMON_NAME_AS_PRINCIPAL_NAME))) {
-            callerPrincipalName = extractCN(dn);
-        } else {
-            callerPrincipalName = dn;
-        }
-        _logger.log(FINEST, "Certificate realm setting up security context for: {0}", callerPrincipalName);
+    public String authenticate(Subject subject, X500Principal principal) {
+        _logger.finest(() -> String.format("authenticate(subject=%s, principal=%s)", subject, principal));
 
-        // Optionally add groups that indicate this caller was authenticated via certificates
-        if (defaultGroups != null) {
-            Set<Principal> principalSet = subject.getPrincipals();
-            for (String groupName : defaultGroups) {
-                principalSet.add(new Group(groupName));
-            }
+        final LdapName dn = getLdapName(principal);
+        _logger.log(Level.FINE, "dn={0}", dn);
+        final String principalName = getPrincipalName(dn);
+        _logger.log(Level.FINE, "Certificate realm is setting up security context for principal: {0}", principalName);
+
+        final Enumeration<String> defaultGroups = getGroupNames(principalName);
+        final Set<Principal> principalSet = subject.getPrincipals();
+        while (defaultGroups.hasMoreElements()) {
+            principalSet.add(new Group(defaultGroups.nextElement()));
         }
+        final Set<Group> groupsFromDN = getGroupNamesFromDN(dn);
+        principalSet.addAll(groupsFromDN);
+        _logger.log(Level.FINE, "principalSet: {0}", principalSet);
 
         if (!subject.getPrincipals().isEmpty()) {
-            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(callerPrincipal));
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(principal));
         }
 
-        // Making authentication final - setting the authenticated caller name in the
-        // security context
-        SecurityContext.setCurrent(new SecurityContext(callerPrincipalName, subject));
-
-        return callerPrincipalName;
+        // Making authentication final - setting the authenticated caller name
+        // in the security context
+        SecurityContext.setCurrent(new SecurityContext(principalName, subject));
+        return principalName;
     }
 
-    private static String extractCN(String dn) {
+
+    private LdapName getLdapName(final X500Principal principal) {
         try {
-            return (String)
-                new LdapName(dn)
-                    .getRdns()
-                    .stream()
-                    .filter(rdn -> rdn.getType().equalsIgnoreCase("CN"))
-                    .findFirst()
-                    .orElseThrow(
-                        () -> new IllegalStateException(
-                                "common-name-as-principal-name set to true, but no CN present in " + dn))
-                    .getValue();
+            return new LdapName(principal.getName(X500Principal.RFC2253, OID.getOIDMap()));
         } catch (InvalidNameException e) {
-            throw new IllegalStateException("Exception extracting CN from DN " + dn, e);
+            throw new IllegalStateException("Exception extracting DN from principal:\n" + principal, e);
         }
+    }
+
+
+    private String getPrincipalName(final LdapName distinguishedName) {
+        if (Boolean.parseBoolean(getProperty(COMMON_NAME_AS_PRINCIPAL_NAME))) {
+            return distinguishedName.getRdns().stream().filter(rdn -> rdn.getType().equalsIgnoreCase(OID.CN.getName()))
+                .findFirst() //
+                .orElseThrow(() -> new IllegalStateException(
+                    "common-name-as-principal-name set to true, but no CN present in " + distinguishedName))
+                .getValue().toString();
+        }
+        return distinguishedName.toString();
+    }
+
+
+    private Set<Group> getGroupNamesFromDN(final LdapName distinguishedName) {
+        _logger.log(Level.FINE, "getGroupNamesFromDN(distinguishedName={0})", distinguishedName);
+        final String dnPartsForGroups = getProperty(DN_PARTS_USED_FOR_GROUPS);
+        if (dnPartsForGroups == null) {
+            return Collections.emptySet();
+        }
+        final Set<String> oidNames = OID.toOIDS(dnPartsForGroups.split(GROUPS_SEP)).stream().map(OID::getName)
+            .collect(Collectors.toSet());
+        final Function<Rdn, Group> rdnToGroup = rdn -> new Group(rdn.getValue().toString());
+        return distinguishedName.getRdns().stream().filter(rdn -> oidNames.contains(rdn.getType())).map(rdnToGroup)
+            .collect(Collectors.toSet());
     }
 
     /**
