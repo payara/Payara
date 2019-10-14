@@ -73,13 +73,13 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let model = [];
-            model.push(createPageSettings());
-            model.push(createDataSettings());
+            let settings = [];
+            settings.push(createPageSettings());
+            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(model);
+            Components.onSettingsUpdate(settings);
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -146,9 +146,6 @@ MonitoringConsole.View = (function() {
         let tags = series.substring(0, endOfTags).split(' ');
         let text = '';
         let metricText = toWords(metric);
-        if (widget.options.perSec) {
-            metricText += ' <i>(1/sec)</i>';
-        }
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
@@ -191,45 +188,53 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
-            { label: 'General'},
+        let unit = widget.unit;
+        let thresholds = widget.decorations.thresholds;
+        let settings = [];
+        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
-            { label: 'Unit', type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+            { label: 'Column / Item', input: [
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            ]},             
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
-            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
-
-            { label: 'Data'},
-            { label: 'Minimum Line', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Maximum Line', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-        ]};
-        if (widget.type === 'line') {
-            let unit = widget.unit;
-            settings.entries.push(
-                { label: 'Average Line', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Show Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
-
-                { label: 'Decorations' },
-                { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
-                { label: 'Level Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: widget.decorations.levels.reference, onChange: (widget, selected) => widget.decorations.levels.reference = selected},
-                { label: 'Alarming Level', type: 'value', unit: unit, value: widget.decorations.levels.alarming, onChange: (widget, value) => widget.decorations.levels.alarming = value },
-                { label: 'Critical Level', type: 'value', unit: unit, value: widget.decorations.levels.critical, onChange: (widget, value) => widget.decorations.levels.critical = value },
-
-                { label: 'Display Options'},
-                { label: 'Axis Minimum', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
-                { label: 'Axis Maximum', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
-                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
-                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
-                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
-                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
-                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
-                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
-                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
-                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
-                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
-            );
-        }
+        ]});
+        settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Unit', input: [
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Extra Lines', input: [
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+            ]},
+            { label: 'Display', input: [
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+            ]},
+            { label: 'X-Axis', input: [
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+            ]},            
+            { label: 'Y-Axis', input: [
+                { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
+            ]},
+        ]});
+        settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
+            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Alarming Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
+            ]},
+            { label: 'Critical Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+            ]},                
+            //TODO add color for each threshold
+        ]});
         return settings;       
     }
 
@@ -327,9 +332,12 @@ MonitoringConsole.View = (function() {
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
+            let value = format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes');
+            if (widget.options.perSec)
+                value += ' /s';
             let item = { 
                 label: label, 
-                value: format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes'), 
+                value: value, 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
                 assessments: seriesData.assessments,

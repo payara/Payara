@@ -50,11 +50,6 @@ MonitoringConsole.View.Components = (function() {
    const Units = MonitoringConsole.View.Units;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
-   function element(fn) {
-      let e = $.isFunction(fn) ? fn() : fn;
-      return (typeof e === 'string') ? document.createTextNode(e) : e;
-   }
-
    /**
     * This is the side panel showing the details and settings of widgets
     */
@@ -79,10 +74,6 @@ MonitoringConsole.View.Components = (function() {
          }));
       }
 
-      function createCheckboxRow(label, checked, onChange) {
-         return createRow(label, () => createCheckbox(checked, onChange));
-      }
-
       function createTable(id, caption) {
          let table = $('<table />', { 'class': 'settings', id: id });
          if (caption)
@@ -90,88 +81,91 @@ MonitoringConsole.View.Components = (function() {
          return table;
       }
 
-      function createRow(label, createInput) {
-         return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(element(createInput)));   
+      function createRow(model, inputs) {
+         let components = $.isFunction(inputs) ? inputs() : inputs;
+         if (typeof components === 'string') {
+            components = document.createTextNode(components);
+         }
+         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
-      /**
-      * Creates a checkbox to configure the attributes of a widget.
-      *
-      * @param {boolean} isChecked - if the created checkbox should be checked
-      * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-      */
-      function createCheckbox(isChecked, onChange) {
-         return $("<input/>", { type: 'checkbox', checked: isChecked })
+      function createCheckboxInput(model) {
+         return $("<input/>", { type: 'checkbox', checked: model.value })
              .on('change', function() {
                  let checked = this.checked;
-                 Selection.configure((widget) => onChange(widget, checked));
+                 Selection.configure((widget) => model.onChange(widget, checked));
              });
       }
 
-      function createRangeRow(label, min, max, value, onChange) {
-         let attributes = {type: 'number', value: value};
-         if (min)
-            attributes.min = min;
-         if (max)
-            attributes.max = max;
-         return createRow(label, () => $('<input/>', attributes)
+      function createRangeInput(model) {
+         let attributes = {type: 'number', value: model.value};
+         if (model.min)
+            attributes.min = model.min;
+         if (model.max)
+            attributes.max = model.max;         
+         return $('<input/>', attributes)
              .on('input change', function() {  
                  let val = this.valueAsNumber;
-                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
-             }));
+                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+             });
       }
 
-      function createDropdownRow(label, options, value, onChange) {
+      function createDropdownInput(model) {
          let dropdown = $('<select/>');
-         Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
-         return createRow(label, () => dropdown);
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
+         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         return dropdown;
       }
 
-      function createValueInputRow(label, value, unit, onChange) {
-         if (unit === 'percent')
-            return createRangeRow(label, 0, 100, value, onChange);
-         if (unit === undefined || unit === 'count')
-            createRangeRow(label, undefined, undefined, value, onChange);
-         let converter = Units.converter(unit);
-         let input = $('<input/>', {type: 'text', value: converter.format(value) });
+      function createValueInput(model) {
+         if (model.unit === 'percent')
+            return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
+         let converter = Units.converter(model.unit);
+         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
+            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
          });
-         return createRow(label, input);
+         return input;
+      }
+
+      function createInput(model) {
+         switch (model.type) {
+            case 'checkbox': return createCheckboxInput(model);
+            case 'dropdown': return createDropdownInput(model);
+            case 'range'   : return createRangeInput(model);
+            case 'value'   : return createValueInput(model);
+            default        : return model.input;
+         }
       }
 
       function onUpdate(model) {
          let panel = emptyPanel();
          for (let t = 0; t < model.length; t++) {
-            let tableModel = model[t];
-            let table = createTable(tableModel.id, tableModel.caption);
+            let group = model[t];
+            let table = createTable(group.id, group.caption);
             panel.append(table);
-            for (let r = 0; r < tableModel.entries.length; r++) {
-               let rowModel = tableModel.entries[r];
-               switch (rowModel.type) {
-                  case 'header':
-                     table.append(createHeaderRow(rowModel.label));
-                     break;
-                  case 'checkbox':
-                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'dropdown':
-                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'range':
-                     table.append(createRangeRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'value':
-                     table.append(createValueInputRow(rowModel.label, rowModel.value, rowModel.unit, rowModel.onChange));
-                     break;
-                  default:
-                     if (rowModel.input) {
-                        table.append(createRow(rowModel.label, rowModel.input));
-                     } else {
-                        table.append(createHeaderRow(rowModel.label));
+            for (let r = 0; r < group.entries.length; r++) {
+               let entry = group.entries[r];
+               let type = entry.type;
+               let auto = type === undefined;
+               let input = entry.input;
+               if (type == 'header' || auto && input === undefined) {
+                  table.append(createHeaderRow(entry.label));
+               } else if (!auto) {
+                  table.append(createRow(entry, createInput(entry)));
+               } else {
+                  if (Array.isArray(input)) {
+                     let multiInput = $('<div/>');
+                     for (let i = 0; i < input.length; i++) {
+                        multiInput.append(createInput(input[i]));
+                        if (input[i].label) {
+                           multiInput.append($('<label/>').html(input[i].label));
+                        }                        
                      }
+                     input = multiInput;
+                  }
+                  table.append(createRow(entry, input));
                }
             }
          }
@@ -193,8 +187,10 @@ MonitoringConsole.View.Components = (function() {
             normal = value.substring(value.indexOf(' '));
          }
          let style = {style: 'border-color: '+color+';'};
-         if (assessments && assessments.level)
-            style.class = 'level-'+assessments.level;
+         if (assessments && assessments.status)
+            style.class = 'status-'+assessments.status;
+         if (label === 'server')
+            label = 'DAS';
          return $('<li/>', style)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))

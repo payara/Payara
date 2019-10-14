@@ -46,6 +46,7 @@
 package org.glassfish.web.admin.monitor;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -192,6 +193,16 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         MonitoringDataCollector web = collector.in("web");
         for (Object provider : webContainerStatsProviderQueue) {
             web.collectObject(provider, MonitoringDataCollection::collectObject);
+        }
+        for (ConcurrentMap<String, Queue<Object>> entry : vsNameToStatsProviderMap.values()) {
+            for (Entry<String, Queue<Object>> serverEntry : entry.entrySet()) {
+                String monitoringName = serverEntry.getKey();
+                for (Object provider : serverEntry.getValue()) {
+                    if (provider instanceof RequestStatsProvider) {
+                        web.group(monitoringName).collectObject(provider, MonitoringDataCollection::collectObject);
+                    }
+                }
+            }
         }
     }
 }

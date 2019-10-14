@@ -229,25 +229,20 @@ MonitoringConsole.Model = (function() {
 				widget.type = 'line';
 			if (!widget.unit)
 				widget.unit = 'count';
-			if (!widget.options) {
-				widget.options = { 
-					beginAtZero: true,
-					autoTimeTicks: true,
-					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
-				};
-			} else {
-				if (!widget.options.hasOwnProperty('beginAtZero'))
-					widget.options.beginAtZero = true;
-				if (!widget.options.hasOwnProperty('autoTimeTicks'))
-					widget.options.autoTimeTicks = true;				
-			}
-			if (!widget.grid)
+			if (typeof widget.options !== 'object')
+				widget.options = {};
+			//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
+			if (typeof widget.grid !== 'object')
 				widget.grid = {};
-			if (!widget.decorations)
+			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
-			if (!widget.decorations.levels)
-				widget.decorations.levels = {};
-			if (!widget.axis)
+			if (typeof widget.decorations.thresholds !== 'object')
+				widget.decorations.thresholds = {};
+			if (typeof widget.decorations.thresholds.alarming !== 'object')
+				widget.decorations.thresholds.alarming = {};			
+			if (typeof widget.decorations.thresholds.critical !== 'object')
+				widget.decorations.thresholds.critical = {};			
+			if (typeof widget.axis !== 'object')
 				widget.axis = {};
 			return widget;
 		}
@@ -691,57 +686,116 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	function retainLastMinute(data) {
-		let startOfLastMinute = Date.now() - 60000;
-		data.forEach(function(seriesData) {
-			let src = seriesData.points;
-			if (src.length == 4 && src[2] >= startOfLastMinute) {
-				seriesData.points = [src[2] - 60000, src[1], src[2], src[3]];
-			} else {
-				let points = [];
-				for (let i = 0; i < src.length; i += 2) {
-					if (src[i] >= startOfLastMinute) {
-						points.push(src[i]);
-						points.push(src[i+1]);
+	let Update = (function() {
+
+		function retainLastMinute(data) {
+			let startOfLastMinute = Date.now() - 65000;
+			data.forEach(function(seriesData) {
+				let src = seriesData.points;
+				if (src.length == 4 && src[2] >= startOfLastMinute) {
+					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				} else {
+					let points = [];
+					for (let i = 0; i < src.length; i += 2) {
+						if (src[i] >= startOfLastMinute) {
+							points.push(src[i]);
+							points.push(src[i+1]);
+						}
+					}
+					seriesData.points = points;				
+				}
+			});
+			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function perSecond(data) {
+			data.forEach(function(seriesData) {
+				let points = seriesData.points;
+				if (!points)
+				  return;
+				let pointsPerSec = new Array(points.length - 2);
+				for (let i = 0; i < pointsPerSec.length; i+=2) {
+				  let t0 = points[i];
+				  let t1 = points[i+2];
+				  let y0 = points[i+1];
+				  let y1 = points[i+3];
+				  let dt = t1 - t0;
+				  let dy = y1 - y0;
+				  let y = (dt / 1000) * dy;
+				  pointsPerSec[i] = t1;
+				  pointsPerSec[i+1] = y;				  
+				}
+				if (pointsPerSec.length === 2)
+				  pointsPerSec = [points[0], pointsPerSec[1], pointsPerSec[0], pointsPerSec[1]];
+				seriesData.points = pointsPerSec;
+				//TODO update min/max/avg per sec 
+			});
+		}
+
+		function addAssessment(widget, data) {
+			data.forEach(function(seriesData) {
+				let status = 'normal';
+				let thresholds = widget.decorations.thresholds;
+				if (thresholds.reference && thresholds.reference !== 'off') {
+					let value = seriesData.points[seriesData.points.length-1];
+					switch (thresholds.reference) {
+						case 'min': value = seriesData.observedMin; break;
+						case 'max': value = seriesData.observedMax; break;
+						case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+					}
+					let alarming = thresholds.alarming.value;
+					let critical = thresholds.critical.value;
+					let desc = alarming && critical && critical < alarming;
+					if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+						status = 'alarming';
+					}
+					if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+						status = 'critical';
 					}
 				}
-				seriesData.points = points;				
-			}
-		});
-		return data.filter(seriesData => seriesData.points.length >= 2);
-	}
+				seriesData.assessments = { status: status };
+			});
+		}
 
-	function addAssessment(widget, data) {
-		data.forEach(function(seriesData) {
-			let level = 'normal';
-			let levels = widget.decorations.levels;
-			if (levels.reference) {
-				let value = seriesData.points[seriesData.points.length-1];
-				switch (levels.reference) {
-					case 'min': value = seriesData.observedMin; break;
-					case 'max': value = seriesData.observedMax; break;
-					case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
-				}
-				let alarming = levels.alarming;
-				let critical = levels.critical;
-				let desc = alarming && critical && critical < alarming;
-				if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
-					level = 'alarming';
-				}
-				if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
-					level = 'critical';
-				}
-			}
-			seriesData.assessments = { level: level };
-		});
-	}
+		function createOnSuccess(widgets, onDataUpdate) {
+			return function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.perSec)
+						perSecond(data);
+					addAssessment(widget, data);
+					onDataUpdate({
+						widget: widget,
+						data: data,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		function createOnError(widgets, onDataUpdate) {
+			return function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		return {
+			createOnSuccess: createOnSuccess,
+			createOnError: createOnError,
+		};
+	})();
+
 
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
-			let payload = {
-			};
+			let payload = {};
 			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
@@ -756,25 +810,8 @@ MonitoringConsole.Model = (function() {
 				contentType:"application/json; charset=utf-8",
 				dataType:"json",
 			});
-			request.done(function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					let data = retainLastMinute(response[widget.series]);
-					addAssessment(widget, data);
-					onDataUpdate({
-						widget: widget,
-						data: data,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
-			request.fail(function(jqXHR, textStatus) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
+			request.done(Update.createOnSuccess(widgets, onDataUpdate));
+			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
 		return UI.arrange();
@@ -1212,11 +1249,6 @@ MonitoringConsole.View.Components = (function() {
    const Units = MonitoringConsole.View.Units;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
-   function element(fn) {
-      let e = $.isFunction(fn) ? fn() : fn;
-      return (typeof e === 'string') ? document.createTextNode(e) : e;
-   }
-
    /**
     * This is the side panel showing the details and settings of widgets
     */
@@ -1241,10 +1273,6 @@ MonitoringConsole.View.Components = (function() {
          }));
       }
 
-      function createCheckboxRow(label, checked, onChange) {
-         return createRow(label, () => createCheckbox(checked, onChange));
-      }
-
       function createTable(id, caption) {
          let table = $('<table />', { 'class': 'settings', id: id });
          if (caption)
@@ -1252,88 +1280,91 @@ MonitoringConsole.View.Components = (function() {
          return table;
       }
 
-      function createRow(label, createInput) {
-         return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(element(createInput)));   
+      function createRow(model, inputs) {
+         let components = $.isFunction(inputs) ? inputs() : inputs;
+         if (typeof components === 'string') {
+            components = document.createTextNode(components);
+         }
+         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
-      /**
-      * Creates a checkbox to configure the attributes of a widget.
-      *
-      * @param {boolean} isChecked - if the created checkbox should be checked
-      * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-      */
-      function createCheckbox(isChecked, onChange) {
-         return $("<input/>", { type: 'checkbox', checked: isChecked })
+      function createCheckboxInput(model) {
+         return $("<input/>", { type: 'checkbox', checked: model.value })
              .on('change', function() {
                  let checked = this.checked;
-                 Selection.configure((widget) => onChange(widget, checked));
+                 Selection.configure((widget) => model.onChange(widget, checked));
              });
       }
 
-      function createRangeRow(label, min, max, value, onChange) {
-         let attributes = {type: 'number', value: value};
-         if (min)
-            attributes.min = min;
-         if (max)
-            attributes.max = max;
-         return createRow(label, () => $('<input/>', attributes)
+      function createRangeInput(model) {
+         let attributes = {type: 'number', value: model.value};
+         if (model.min)
+            attributes.min = model.min;
+         if (model.max)
+            attributes.max = model.max;         
+         return $('<input/>', attributes)
              .on('input change', function() {  
                  let val = this.valueAsNumber;
-                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
-             }));
+                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+             });
       }
 
-      function createDropdownRow(label, options, value, onChange) {
+      function createDropdownInput(model) {
          let dropdown = $('<select/>');
-         Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
-         return createRow(label, () => dropdown);
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
+         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         return dropdown;
       }
 
-      function createValueInputRow(label, value, unit, onChange) {
-         if (unit === 'percent')
-            return createRangeRow(label, 0, 100, value, onChange);
-         if (unit === undefined || unit === 'count')
-            createRangeRow(label, undefined, undefined, value, onChange);
-         let converter = Units.converter(unit);
-         let input = $('<input/>', {type: 'text', value: converter.format(value) });
+      function createValueInput(model) {
+         if (model.unit === 'percent')
+            return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
+         let converter = Units.converter(model.unit);
+         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
+            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
          });
-         return createRow(label, input);
+         return input;
+      }
+
+      function createInput(model) {
+         switch (model.type) {
+            case 'checkbox': return createCheckboxInput(model);
+            case 'dropdown': return createDropdownInput(model);
+            case 'range'   : return createRangeInput(model);
+            case 'value'   : return createValueInput(model);
+            default        : return model.input;
+         }
       }
 
       function onUpdate(model) {
          let panel = emptyPanel();
          for (let t = 0; t < model.length; t++) {
-            let tableModel = model[t];
-            let table = createTable(tableModel.id, tableModel.caption);
+            let group = model[t];
+            let table = createTable(group.id, group.caption);
             panel.append(table);
-            for (let r = 0; r < tableModel.entries.length; r++) {
-               let rowModel = tableModel.entries[r];
-               switch (rowModel.type) {
-                  case 'header':
-                     table.append(createHeaderRow(rowModel.label));
-                     break;
-                  case 'checkbox':
-                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'dropdown':
-                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'range':
-                     table.append(createRangeRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'value':
-                     table.append(createValueInputRow(rowModel.label, rowModel.value, rowModel.unit, rowModel.onChange));
-                     break;
-                  default:
-                     if (rowModel.input) {
-                        table.append(createRow(rowModel.label, rowModel.input));
-                     } else {
-                        table.append(createHeaderRow(rowModel.label));
+            for (let r = 0; r < group.entries.length; r++) {
+               let entry = group.entries[r];
+               let type = entry.type;
+               let auto = type === undefined;
+               let input = entry.input;
+               if (type == 'header' || auto && input === undefined) {
+                  table.append(createHeaderRow(entry.label));
+               } else if (!auto) {
+                  table.append(createRow(entry, createInput(entry)));
+               } else {
+                  if (Array.isArray(input)) {
+                     let multiInput = $('<div/>');
+                     for (let i = 0; i < input.length; i++) {
+                        multiInput.append(createInput(input[i]));
+                        if (input[i].label) {
+                           multiInput.append($('<label/>').html(input[i].label));
+                        }                        
                      }
+                     input = multiInput;
+                  }
+                  table.append(createRow(entry, input));
                }
             }
          }
@@ -1355,8 +1386,10 @@ MonitoringConsole.View.Components = (function() {
             normal = value.substring(value.indexOf(' '));
          }
          let style = {style: 'border-color: '+color+';'};
-         if (assessments && assessments.level)
-            style.class = 'level-'+assessments.level;
+         if (assessments && assessments.status)
+            style.class = 'status-'+assessments.status;
+         if (label === 'server')
+            label = 'DAS';
          return $('<li/>', style)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))
@@ -1609,6 +1642,7 @@ MonitoringConsole.Chart.Line = (function() {
       maintainAspectRatio: false,
       scales: {
         xAxes: [{
+          display: true,
           type: 'time',
           gridLines: {
             color: 'rgba(100,100,100,0.3)',
@@ -1619,9 +1653,22 @@ MonitoringConsole.Chart.Line = (function() {
             round: 'second',
           },
           ticks: {
-            callback: getTimeLabel,
-            minRotation: 90,
-            maxRotation: 90,
+            minRotation: 0,
+            maxRotation: 0,
+            callback: function(value, index, values) {
+              if (values.length == 0)
+                return value;
+              let lastIndex = values.length - 1;
+              let reference = new Date(values[lastIndex].value);
+              let isLive = new Date() - reference < 5000; // is within the last 5 secs
+              if (isLive) {
+                return index == 0 ? (((values[lastIndex].value - values[0].value)/1000)+1) +'s ago' : index == lastIndex ? 'now' : undefined;
+              }
+              if (index != 0 && index != lastIndex)
+                return undefined;
+              let time = new Date(values[index].value);
+              return time.getMinutes() + ':'+ time.getSeconds();
+            },
           }
         }],
         yAxes: [{
@@ -1645,17 +1692,6 @@ MonitoringConsole.Chart.Line = (function() {
           data: { datasets: [], },
           options: options,
         });
-  } 
-
-  function getTimeLabel(value, index, values) {
-    if (values.length == 0 || index == 0)
-      return value;
-    let span = values[values.length -1].value - values[0].value;
-    if (span < 120000) { // less then two minutes
-      let lastMinute = new Date(values[index-1].value).getMinutes();
-      return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-    }
-    return value;
   }
 
   /**
@@ -1669,30 +1705,6 @@ MonitoringConsole.Chart.Line = (function() {
     for (let i = 0; i < points2d.length; i++)
       points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
     return points2d;      
-  }
-    
-  /**
-   * Convertes a array of points given as one dimensional array with alternativ time value elements 
-   * to a 2-dimensional array of points with t and y attribute where y reflects the delta between 
-   * nearest 2 points of the input array. This means the result array has one less point as the input.
-   */
-  function points1Dto2DPerSec(points1d) {
-    if (!points1d)
-      return [];
-    let points2d = new Array((points1d.length / 2) - 1);
-    for (let i = 0; i < points2d.length; i++) {
-      let t0 = points1d[i*2];
-      let t1 = points1d[i*2+2];
-      let y0 = points1d[i*2+1];
-      let y1 = points1d[i*2+3];
-      let dt = t1 - t0;
-      let dy = y1 - y0;
-      let y = (dt / 1000) * dy;
-      points2d[i] = { t: new Date(t1), y: y };
-    }
-    if (points2d.length === 1)
-      return [{t: new Date(points1d[0]), y: points2d[0].y}, points2d[0]];
-    return points2d;
   }
 	
   function createMinimumLineDataset(seriesData, points, lineColor) {
@@ -1722,7 +1734,7 @@ MonitoringConsole.Chart.Line = (function() {
   }  
     
   function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
-		let pointRadius = widget.options.drawPoints ? 3 : 0;
+		let pointRadius = widget.options.drawPoints ? 2 : 0;
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
       label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
@@ -1731,7 +1743,7 @@ MonitoringConsole.Chart.Line = (function() {
 			label: label,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 1,
+			borderWidth: 2.5,
       pointRadius: pointRadius,
 		};
   }
@@ -1743,10 +1755,6 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.backgroundColor;
-    if (widget.options.perSec) {    
-  		//TODO add min/max/avg per sec lines
-      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
-  	}
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
@@ -1762,6 +1770,12 @@ MonitoringConsole.Chart.Line = (function() {
     if (widget.decorations.waterline) {
       datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
     }
+    if (widget.decorations.thresholds.alarming.display) {
+      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    }
+    if (widget.decorations.thresholds.critical.display) {
+      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    }
 	  return datasets;
   }
 
@@ -1772,26 +1786,23 @@ MonitoringConsole.Chart.Line = (function() {
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
     options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-    let time = widget.options.drawAnimations ? 1000 : 0;
+    let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
-    let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
     let yAxis = options.scales.yAxes[0];
-    yAxis.ticks.beginAtZero = widget.options.beginAtZero;
     let converter = Units.converter(widget.unit);
     yAxis.ticks.callback = function(value, index, values) {
-      return converter.format(value, widget.unit === 'bytes');
+      let text = converter.format(value, widget.unit === 'bytes');
+      return widget.options.perSec ? text + ' /s' : text;
     };
     if (widget.axis.min !== undefined)
       yAxis.ticks.suggestedMin = widget.axis.min;
     if (widget.axis.max !== undefined)
       yAxis.ticks.suggestedMax = widget.axis.max;
     let xAxis = options.scales.xAxes[0];
-    xAxis.ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-    xAxis.ticks.minRotation = rotation;
-    xAxis.ticks.maxRotation = rotation;
-    xAxis.ticks.display = widget.options.showTimeLabels === true;
-    options.elements.line.fill = widget.options.drawFill === true;
+    xAxis.ticks.source = 'data'; // 'auto' does not allow to put labels at first and last point
+    xAxis.ticks.display = widget.options.noTimeLabels !== true;
+    options.elements.line.fill = widget.options.noFill !== true;
     return chart;
   }
 
@@ -2322,13 +2333,13 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let model = [];
-            model.push(createPageSettings());
-            model.push(createDataSettings());
+            let settings = [];
+            settings.push(createPageSettings());
+            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(model);
+            Components.onSettingsUpdate(settings);
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -2395,9 +2406,6 @@ MonitoringConsole.View = (function() {
         let tags = series.substring(0, endOfTags).split(' ');
         let text = '';
         let metricText = toWords(metric);
-        if (widget.options.perSec) {
-            metricText += ' <i>(1/sec)</i>';
-        }
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
@@ -2440,45 +2448,53 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
-            { label: 'General'},
+        let unit = widget.unit;
+        let thresholds = widget.decorations.thresholds;
+        let settings = [];
+        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
-            { label: 'Unit', type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+            { label: 'Column / Item', input: [
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            ]},             
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
-            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
-
-            { label: 'Data'},
-            { label: 'Minimum Line', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Maximum Line', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-        ]};
-        if (widget.type === 'line') {
-            let unit = widget.unit;
-            settings.entries.push(
-                { label: 'Average Line', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Show Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
-
-                { label: 'Decorations' },
-                { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
-                { label: 'Level Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: widget.decorations.levels.reference, onChange: (widget, selected) => widget.decorations.levels.reference = selected},
-                { label: 'Alarming Level', type: 'value', unit: unit, value: widget.decorations.levels.alarming, onChange: (widget, value) => widget.decorations.levels.alarming = value },
-                { label: 'Critical Level', type: 'value', unit: unit, value: widget.decorations.levels.critical, onChange: (widget, value) => widget.decorations.levels.critical = value },
-
-                { label: 'Display Options'},
-                { label: 'Axis Minimum', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
-                { label: 'Axis Maximum', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
-                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
-                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
-                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
-                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
-                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
-                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
-                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
-                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
-                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
-            );
-        }
+        ]});
+        settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Unit', input: [
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Extra Lines', input: [
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+            ]},
+            { label: 'Display', input: [
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+            ]},
+            { label: 'X-Axis', input: [
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+            ]},            
+            { label: 'Y-Axis', input: [
+                { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
+            ]},
+        ]});
+        settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
+            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Alarming Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
+            ]},
+            { label: 'Critical Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+            ]},                
+            //TODO add color for each threshold
+        ]});
         return settings;       
     }
 
@@ -2576,9 +2592,12 @@ MonitoringConsole.View = (function() {
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
+            let value = format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes');
+            if (widget.options.perSec)
+                value += ' /s';
             let item = { 
                 label: label, 
-                value: format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes'), 
+                value: value, 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
                 assessments: seriesData.assessments,

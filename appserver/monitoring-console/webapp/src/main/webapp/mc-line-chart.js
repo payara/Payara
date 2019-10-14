@@ -56,6 +56,7 @@ MonitoringConsole.Chart.Line = (function() {
       maintainAspectRatio: false,
       scales: {
         xAxes: [{
+          display: true,
           type: 'time',
           gridLines: {
             color: 'rgba(100,100,100,0.3)',
@@ -66,9 +67,22 @@ MonitoringConsole.Chart.Line = (function() {
             round: 'second',
           },
           ticks: {
-            callback: getTimeLabel,
-            minRotation: 90,
-            maxRotation: 90,
+            minRotation: 0,
+            maxRotation: 0,
+            callback: function(value, index, values) {
+              if (values.length == 0)
+                return value;
+              let lastIndex = values.length - 1;
+              let reference = new Date(values[lastIndex].value);
+              let isLive = new Date() - reference < 5000; // is within the last 5 secs
+              if (isLive) {
+                return index == 0 ? (((values[lastIndex].value - values[0].value)/1000)+1) +'s ago' : index == lastIndex ? 'now' : undefined;
+              }
+              if (index != 0 && index != lastIndex)
+                return undefined;
+              let time = new Date(values[index].value);
+              return time.getMinutes() + ':'+ time.getSeconds();
+            },
           }
         }],
         yAxes: [{
@@ -92,17 +106,6 @@ MonitoringConsole.Chart.Line = (function() {
           data: { datasets: [], },
           options: options,
         });
-  } 
-
-  function getTimeLabel(value, index, values) {
-    if (values.length == 0 || index == 0)
-      return value;
-    let span = values[values.length -1].value - values[0].value;
-    if (span < 120000) { // less then two minutes
-      let lastMinute = new Date(values[index-1].value).getMinutes();
-      return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-    }
-    return value;
   }
 
   /**
@@ -116,30 +119,6 @@ MonitoringConsole.Chart.Line = (function() {
     for (let i = 0; i < points2d.length; i++)
       points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
     return points2d;      
-  }
-    
-  /**
-   * Convertes a array of points given as one dimensional array with alternativ time value elements 
-   * to a 2-dimensional array of points with t and y attribute where y reflects the delta between 
-   * nearest 2 points of the input array. This means the result array has one less point as the input.
-   */
-  function points1Dto2DPerSec(points1d) {
-    if (!points1d)
-      return [];
-    let points2d = new Array((points1d.length / 2) - 1);
-    for (let i = 0; i < points2d.length; i++) {
-      let t0 = points1d[i*2];
-      let t1 = points1d[i*2+2];
-      let y0 = points1d[i*2+1];
-      let y1 = points1d[i*2+3];
-      let dt = t1 - t0;
-      let dy = y1 - y0;
-      let y = (dt / 1000) * dy;
-      points2d[i] = { t: new Date(t1), y: y };
-    }
-    if (points2d.length === 1)
-      return [{t: new Date(points1d[0]), y: points2d[0].y}, points2d[0]];
-    return points2d;
   }
 	
   function createMinimumLineDataset(seriesData, points, lineColor) {
@@ -169,7 +148,7 @@ MonitoringConsole.Chart.Line = (function() {
   }  
     
   function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
-		let pointRadius = widget.options.drawPoints ? 3 : 0;
+		let pointRadius = widget.options.drawPoints ? 2 : 0;
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
       label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
@@ -178,7 +157,7 @@ MonitoringConsole.Chart.Line = (function() {
 			label: label,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 1,
+			borderWidth: 2.5,
       pointRadius: pointRadius,
 		};
   }
@@ -190,10 +169,6 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.backgroundColor;
-    if (widget.options.perSec) {    
-  		//TODO add min/max/avg per sec lines
-      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
-  	}
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
@@ -209,6 +184,12 @@ MonitoringConsole.Chart.Line = (function() {
     if (widget.decorations.waterline) {
       datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
     }
+    if (widget.decorations.thresholds.alarming.display) {
+      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    }
+    if (widget.decorations.thresholds.critical.display) {
+      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    }
 	  return datasets;
   }
 
@@ -219,26 +200,23 @@ MonitoringConsole.Chart.Line = (function() {
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
     options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-    let time = widget.options.drawAnimations ? 1000 : 0;
+    let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
-    let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
     let yAxis = options.scales.yAxes[0];
-    yAxis.ticks.beginAtZero = widget.options.beginAtZero;
     let converter = Units.converter(widget.unit);
     yAxis.ticks.callback = function(value, index, values) {
-      return converter.format(value, widget.unit === 'bytes');
+      let text = converter.format(value, widget.unit === 'bytes');
+      return widget.options.perSec ? text + ' /s' : text;
     };
     if (widget.axis.min !== undefined)
       yAxis.ticks.suggestedMin = widget.axis.min;
     if (widget.axis.max !== undefined)
       yAxis.ticks.suggestedMax = widget.axis.max;
     let xAxis = options.scales.xAxes[0];
-    xAxis.ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-    xAxis.ticks.minRotation = rotation;
-    xAxis.ticks.maxRotation = rotation;
-    xAxis.ticks.display = widget.options.showTimeLabels === true;
-    options.elements.line.fill = widget.options.drawFill === true;
+    xAxis.ticks.source = 'data'; // 'auto' does not allow to put labels at first and last point
+    xAxis.ticks.display = widget.options.noTimeLabels !== true;
+    options.elements.line.fill = widget.options.noFill !== true;
     return chart;
   }
 

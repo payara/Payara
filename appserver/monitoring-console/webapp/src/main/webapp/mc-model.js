@@ -138,25 +138,20 @@ MonitoringConsole.Model = (function() {
 				widget.type = 'line';
 			if (!widget.unit)
 				widget.unit = 'count';
-			if (!widget.options) {
-				widget.options = { 
-					beginAtZero: true,
-					autoTimeTicks: true,
-					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
-				};
-			} else {
-				if (!widget.options.hasOwnProperty('beginAtZero'))
-					widget.options.beginAtZero = true;
-				if (!widget.options.hasOwnProperty('autoTimeTicks'))
-					widget.options.autoTimeTicks = true;				
-			}
-			if (!widget.grid)
+			if (typeof widget.options !== 'object')
+				widget.options = {};
+			//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
+			if (typeof widget.grid !== 'object')
 				widget.grid = {};
-			if (!widget.decorations)
+			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
-			if (!widget.decorations.levels)
-				widget.decorations.levels = {};
-			if (!widget.axis)
+			if (typeof widget.decorations.thresholds !== 'object')
+				widget.decorations.thresholds = {};
+			if (typeof widget.decorations.thresholds.alarming !== 'object')
+				widget.decorations.thresholds.alarming = {};			
+			if (typeof widget.decorations.thresholds.critical !== 'object')
+				widget.decorations.thresholds.critical = {};			
+			if (typeof widget.axis !== 'object')
 				widget.axis = {};
 			return widget;
 		}
@@ -600,57 +595,116 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	function retainLastMinute(data) {
-		let startOfLastMinute = Date.now() - 60000;
-		data.forEach(function(seriesData) {
-			let src = seriesData.points;
-			if (src.length == 4 && src[2] >= startOfLastMinute) {
-				seriesData.points = [src[2] - 60000, src[1], src[2], src[3]];
-			} else {
-				let points = [];
-				for (let i = 0; i < src.length; i += 2) {
-					if (src[i] >= startOfLastMinute) {
-						points.push(src[i]);
-						points.push(src[i+1]);
+	let Update = (function() {
+
+		function retainLastMinute(data) {
+			let startOfLastMinute = Date.now() - 65000;
+			data.forEach(function(seriesData) {
+				let src = seriesData.points;
+				if (src.length == 4 && src[2] >= startOfLastMinute) {
+					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				} else {
+					let points = [];
+					for (let i = 0; i < src.length; i += 2) {
+						if (src[i] >= startOfLastMinute) {
+							points.push(src[i]);
+							points.push(src[i+1]);
+						}
+					}
+					seriesData.points = points;				
+				}
+			});
+			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function perSecond(data) {
+			data.forEach(function(seriesData) {
+				let points = seriesData.points;
+				if (!points)
+				  return;
+				let pointsPerSec = new Array(points.length - 2);
+				for (let i = 0; i < pointsPerSec.length; i+=2) {
+				  let t0 = points[i];
+				  let t1 = points[i+2];
+				  let y0 = points[i+1];
+				  let y1 = points[i+3];
+				  let dt = t1 - t0;
+				  let dy = y1 - y0;
+				  let y = (dt / 1000) * dy;
+				  pointsPerSec[i] = t1;
+				  pointsPerSec[i+1] = y;				  
+				}
+				if (pointsPerSec.length === 2)
+				  pointsPerSec = [points[0], pointsPerSec[1], pointsPerSec[0], pointsPerSec[1]];
+				seriesData.points = pointsPerSec;
+				//TODO update min/max/avg per sec 
+			});
+		}
+
+		function addAssessment(widget, data) {
+			data.forEach(function(seriesData) {
+				let status = 'normal';
+				let thresholds = widget.decorations.thresholds;
+				if (thresholds.reference && thresholds.reference !== 'off') {
+					let value = seriesData.points[seriesData.points.length-1];
+					switch (thresholds.reference) {
+						case 'min': value = seriesData.observedMin; break;
+						case 'max': value = seriesData.observedMax; break;
+						case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+					}
+					let alarming = thresholds.alarming.value;
+					let critical = thresholds.critical.value;
+					let desc = alarming && critical && critical < alarming;
+					if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+						status = 'alarming';
+					}
+					if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+						status = 'critical';
 					}
 				}
-				seriesData.points = points;				
-			}
-		});
-		return data.filter(seriesData => seriesData.points.length >= 2);
-	}
+				seriesData.assessments = { status: status };
+			});
+		}
 
-	function addAssessment(widget, data) {
-		data.forEach(function(seriesData) {
-			let level = 'normal';
-			let levels = widget.decorations.levels;
-			if (levels.reference) {
-				let value = seriesData.points[seriesData.points.length-1];
-				switch (levels.reference) {
-					case 'min': value = seriesData.observedMin; break;
-					case 'max': value = seriesData.observedMax; break;
-					case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
-				}
-				let alarming = levels.alarming;
-				let critical = levels.critical;
-				let desc = alarming && critical && critical < alarming;
-				if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
-					level = 'alarming';
-				}
-				if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
-					level = 'critical';
-				}
-			}
-			seriesData.assessments = { level: level };
-		});
-	}
+		function createOnSuccess(widgets, onDataUpdate) {
+			return function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.perSec)
+						perSecond(data);
+					addAssessment(widget, data);
+					onDataUpdate({
+						widget: widget,
+						data: data,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		function createOnError(widgets, onDataUpdate) {
+			return function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		return {
+			createOnSuccess: createOnSuccess,
+			createOnError: createOnError,
+		};
+	})();
+
 
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
-			let payload = {
-			};
+			let payload = {};
 			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
@@ -665,25 +719,8 @@ MonitoringConsole.Model = (function() {
 				contentType:"application/json; charset=utf-8",
 				dataType:"json",
 			});
-			request.done(function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					let data = retainLastMinute(response[widget.series]);
-					addAssessment(widget, data);
-					onDataUpdate({
-						widget: widget,
-						data: data,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
-			request.fail(function(jqXHR, textStatus) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
+			request.done(Update.createOnSuccess(widgets, onDataUpdate));
+			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
 		return UI.arrange();

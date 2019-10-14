@@ -51,17 +51,22 @@ h1 {
 }
 select {
 	width: 100%;
-    max-width: 162px;
-    background: white;
-    padding: 2px 5px;
-    border-radius: 2px;
+  max-width: 162px;
+  background: white;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+input[type=text], input[type=number] {
+	border: 1px solid #ccc;
+  padding: 3px 5px;
+  border-radius: 2px;
 }
 input[type=text] {
-	border: 1px solid #ccc;
-    padding: 3px 5px;
-    border-radius: 2px;
-    width: 150px;
-    max-width: 150px;
+  width: 150px;
+  max-width: 150px;
+}
+input[type=number] {
+  width: 60px;
 }
 canvas {
     position: relative;
@@ -254,6 +259,14 @@ button.btnIcon:hover {
 .settings a, .settings a:visited {
   color: white;
 }
+.settings label {
+  padding-right: 1em;
+  padding-left: 3px;
+  white-space: nowrap;
+}
+.settings div input[type=text] {
+  width: 60px;
+}
 #console #panel-settings {
 	display: none;
 }
@@ -322,15 +335,15 @@ table.tags th, table.tags td {
   display: block;
   font-weight: 300;
 }
-.widget-legend-bar li.level-alarming strong {
+.widget-legend-bar li.status-alarming strong {
     color: gold;
     animation: blinker 2s linear infinite;
 }
-.widget-legend-bar li.level-critical strong {
+.widget-legend-bar li.status-critical strong {
     color: crimson;
     animation: blinker 1s linear infinite;
 }
-.widget-legend-bar li.level-error strong {
+.widget-legend-bar li.status-error strong {
     color: red;
 }
 @keyframes blinker {

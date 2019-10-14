@@ -45,21 +45,15 @@ options    = {
 	drawMaxLine:boolean,
 	drawAvgLine:boolean,
 	perSec:boolean,
-	beginAtZero:boolean,
-	autoTimeTicks:boolean,
 	drawCurves:boolean,
-	drawAnimations:boolean,
-	rotateTimeLabels:boolean,
 	drawPoints:boolean,
-	drawFill:boolean,
-	drawStableLine:boolean,
-	showLegend:boolean,
-	showTimeLabels:boolean
+	noFill:boolean,
+	noTimeLabels:boolean
 }
-decorations= { waterline, levels }
+decorations= { waterline, thresholds }
 waterline  = number
-levels     = { reference, alarming, critical }
-reference  = 'now' | 'min' | 'max' | 'avg'
+thresholds = { reference, alarming, critical }
+reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
 alarming   = number
 critical   = number
 ```
@@ -185,13 +179,13 @@ value       = number | string
 min         = number
 max         = number
 options     = { *:string }
-input       = fn () => string | fn () => jquery | string | jquery
+input       = fn () => string | fn () => jquery | string | jquery | [ENTRY]
 onChange    = fn (widget, newValue) => () | fn (newValue) => ()
 description = string
 ```
 * When `caption` is provided this adds a _header_ entry identical to adding a _header_ entry explicitly as first element of the `entries` array.
 * The `options` object is used as map where the attribute names are the values of the options and the attribute values are the _string_ labels displayed for that option.
-* `description` is optional
+* `description` is optional for any type of `ENTRY`
 
 Mandatory members of `ENTRY` depend on `type` member. Variants are:
 ```
@@ -201,6 +195,10 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'dropdown' : { label, value, options, onChange }
 'value'    : { label, value, unit, onChange }
 ```
+* Settings of type `'value'` are inputs for a number that depends on the `unit` 
+used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
+If no unit is provided or the unit is undefined a plain number is assumed.
+
 An `ENTRY` with no `type` is a _header_ in case `input` is not defined and a generic component if
 `input` is defined:
 ```
@@ -208,9 +206,10 @@ An `ENTRY` with no `type` is a _header_ in case `input` is not defined and a gen
 ```
 In other words the `type` is an indicator for non generic entries. The provided types exist to avoid duplication and consistency for reoccuring input elements. Since `input` could also be just a _string_ generic entries can be used for simple key-value entries.
 
-Settings of type `'value'` are inputs for a number that depends on the `unit` 
-used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
-If no unit is provided or the unit is undefined a plain number is assumed.
+When a generic input is an array of `ENTRY` the entries the `label` is optional.
+When provided the `label` is used before the input component.
+
+
 
 ### Legend API
 Describes the model expected by the `Legend` component.
