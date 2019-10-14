@@ -56,6 +56,7 @@
         <dependencies>
             <!-- Public artifacts -->
 
+
             <!-- APIs -->
             <!-- Aggregate APIs -->
             <dependency>
@@ -140,7 +141,57 @@
                 <version>${microprofile-rest-client.version}</version>
             </dependency>
 
+            <!-- Tooling -->
+            <!-- Arquillian containers -->
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>arquillian-payara-server-remote</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>arquillian-payara-server-embedded</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>arquillian-payara-server-managed</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>arquillian-payara-micro-managed</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>payara-micro-remote</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>payara-micro-deployer</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+                <type>war</type>
+            </dependency>
+
+            <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>payara-client-ee8</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.arquillian</groupId>
+                <artifactId>payara-client-ee7</artifactId>
+                <version>${payara-arquillian-container.version}</version>
+            </dependency>
 
             <!-- Individual APIs -->
             <dependency>
@@ -347,10 +398,6 @@
                 <artifactId>jakarta.jws-api</artifactId>
                 <version>${jakarta.jws-api.version}</version>
             </dependency>
-
-            <!-- Tooling -->
-            <!-- Arquillian containers -->
-
 
             <!-- Implementations -->
             <dependency>
