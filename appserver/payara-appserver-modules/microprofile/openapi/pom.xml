@@ -58,12 +58,10 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
-            <version>${microprofile-openapi.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>

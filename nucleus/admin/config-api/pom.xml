@@ -159,8 +159,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     

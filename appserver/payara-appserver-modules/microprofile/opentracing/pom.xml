@@ -72,12 +72,10 @@ holder.
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
-            <version>${microprofile-opentracing.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -86,7 +84,6 @@ holder.
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
-            <version>${microprofile-rest-client.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>

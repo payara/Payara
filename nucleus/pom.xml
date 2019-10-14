@@ -150,9 +150,6 @@
         <grizzly.npn.version>1.8</grizzly.npn.version>
 
         <!-- Microprofile -->
-        <microprofile-config.version>1.3</microprofile-config.version>
-        <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
-
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
