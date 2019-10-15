@@ -1,5 +1,20 @@
 # Monitoring Console Webapp JavaScript Documentation
 
+## Notation
+Short explanation on the data structure notation used in this document:
+
+* `TYPE = ...`: `TYPE` (all upper case) is defined as...
+* `TYPE = primitve`: having the stated primitive or build in JS type (number, string, boolean)
+* `Type = Date`: having the stated JS class or enumeration (starts with upper case letter)
+* `TYPE = { x, y, ... }`: ... an object with fields `x`, `y`, ...
+* `TYPE = { x:type, y:TYPE, ... }`: ... an object with fields `x`, `y` given their types explicitly - these can either be primitive (lower case) or defined (upper case)
+* `TYPE = { *:type }`: an object which can have any attribte but these do have the given type (again primitive or defined)
+* `TYPE = [ Y ]`: ... an array with elements of type `Y`
+* `TYPE = A | B`: ... either of type `A` or type `B` where both can be any of the other possible notations
+* `TYPE = fn (A, B) => X`: a function accepting type `A` and `B` producing `X` 
+* `Enumeration = 'a' | 'b'`: the possible string constants for the enumeration type
+* `attribute = ...`: same as `TYPE` just that this type of that attribute within the previously defined object type
+
 ## Model Data Structures
 Code can be found in `md-model.js`.
 
@@ -28,7 +43,7 @@ display         = boolean
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, target, grid, axis, options, decorations }
+WIDGET     = { series, type, unit, target, grid, axis, options, decorations, status }
 series     = string
 target     = string
 type       = 'line' | 'bar'
@@ -54,12 +69,22 @@ decorations= { waterline, thresholds }
 waterline  = number
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
-alarming   = number
-critical   = number
+alarming   = THRESHOLD
+critical   = THRESHOLD
+THRESHOLD  = { 
+	value:number, 
+	color:string,
+	display:boolean 
+}
+status     = { *:STAUS }
+STATUS     = { hint }
+hint       = string
 ```
 * `target` is derived from `series` if not present
 * if `type` is not set `'line'` is assumed and set
-* if `options` is ommitted it is initialised setting `beginAtZero` and `autoTimeTicks` to `true`
+* if `options`, `grid`, `decorations` or `THRESHOLD` fields aren't defined they are initialised to `{}`
+* `status` is a map from assessment status (key) to a `STATUS` object to add information on the particular status used to help the user to make sense of the current status. For possible keys are those of `Status`
+
 
 #### Decorations
 Decorations are visual elements added to a graph that should help the viewer to
@@ -99,6 +124,15 @@ widget  = WIDGET
 * `span` is given explicitly as it can differ from the `widget.grid.span` target due to chosen number of columns on the page
 
 
+### Assessment Information
+
+```
+ASSESSMENTS = { status }
+status      = Status
+Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing'
+```
+
+
 ### Update Data Structure
 An update object is assembled when widget chart data is received from the backend and send to the view to update accordingly.
 
@@ -120,14 +154,12 @@ observedSince        = number
 stableCount          = number
 stableSince          = number
 legend               = LEGEND_ITEM
-assessments          = { level }
-level                = 'normal' | 'alarming' | 'critical' | 'error'
+assessments          = ASSESSMENTS
 ```
 * `Chart` is a chart object created by Chart.js
 * Note that `series` is the actual ID of a stored series that can differ from `widget.series` in case the widget uses a pattern that matches one or more stored series
 * `points` are given in a 1-dimensional array with alternating x and y values (x being the timestamp in ms since 1970)
-* `SERIES.legend` is set by the client. The details of `LEGEND_ITEM` can be found below.
-* `SERIES.assessments` are set by the client 
+* `SERIES.legend` and `SERIES.assessments` are set by the client 
 
 
 ## Chart Data
@@ -173,7 +205,7 @@ caption     = string
 entries     = [ENTRY]
 ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description } 
 label       = string
-type        = string
+type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text'
 unit        = string
 value       = number | string
 min         = number
@@ -194,6 +226,7 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'range'    : { label, value, min, max, onChange }
 'dropdown' : { label, value, options, onChange }
 'value'    : { label, value, unit, onChange }
+'text'     : { label, value, onChange }
 ```
 * Settings of type `'value'` are inputs for a number that depends on the `unit` 
 used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
@@ -221,7 +254,7 @@ label           = string
 value           = string | number
 color           = string
 backgroundColor = string
-assessments      = (see UPDATE.assessments)
+assessments     = ASSESSMENTS
 ```
 * If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
@@ -234,6 +267,7 @@ The model creates a new jquery object that must be inserted into the DOM by the 
 
 ### Navigation API
 Describes the model expected by the `Navigation` component.
+This component is the main page navigation at the top.
 
 ```
 NAVIGATION = { pages, onChange }
@@ -245,3 +279,14 @@ active     = boolean
 onChange   = fn (id) => () 
 ```
 * `onChange` is called when another page is selected passing the `PAGE_ITEM.id` of the selected page.
+
+
+### Indicator API
+Describes the model expected by the `Indicator` component.
+This component gives feedback on the status of each widget.
+
+```
+INDOCATOR = { status, text }
+status    = Status
+text      = string
+```

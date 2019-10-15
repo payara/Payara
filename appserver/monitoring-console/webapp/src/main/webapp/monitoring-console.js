@@ -244,6 +244,14 @@ MonitoringConsole.Model = (function() {
 				widget.decorations.thresholds.critical = {};			
 			if (typeof widget.axis !== 'object')
 				widget.axis = {};
+			if (typeof widget.status !== 'object')
+				widget.status = {};
+			if (typeof widget.status.missing !== 'object')
+				widget.status.missing = {};
+			if (typeof widget.status.alarming !== 'object')
+				widget.status.alarming = {};
+			if (typeof widget.status.critical !== 'object')
+				widget.status.critical = {};
 			return widget;
 		}
 		
@@ -1319,7 +1327,12 @@ MonitoringConsole.View.Components = (function() {
       function createValueInput(model) {
          if (model.unit === 'percent')
             return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
-         let converter = Units.converter(model.unit);
+         return createTextInput(model, Units.converter(model.unit));
+      }
+
+      function createTextInput(model, converter) {
+         if (!converter)
+            converter = { format: (str) => str, parse: (str) => str };
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
@@ -1334,6 +1347,7 @@ MonitoringConsole.View.Components = (function() {
             case 'dropdown': return createDropdownInput(model);
             case 'range'   : return createRangeInput(model);
             case 'value'   : return createValueInput(model);
+            case 'text'    : return createTextInput(model);
             default        : return model.input;
          }
       }
@@ -1371,12 +1385,12 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onUpdate: onUpdate };
-    })();
+   })();
 
-    /**
-     * Legend is a generic component showing a number of current values annotated with label and color.
-     */ 
-    let Legend = (function() {
+   /**
+   * Legend is a generic component showing a number of current values annotated with label and color.
+   */ 
+   let Legend = (function() {
 
       function createItem(label, value, color, assessments) {
          let strong = value;
@@ -1397,7 +1411,7 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function onCreation(model) {
-         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         let legend = $('<ol/>',  {'class': 'Legend'});
          for (let i = 0; i < model.length; i++) {
             let itemModel = model[i];
             legend.append(createItem(itemModel.label, itemModel.value, itemModel.color, itemModel.assessments));
@@ -1406,12 +1420,12 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onCreation: onCreation };
-    })();
+   })();
 
-    /**
-     * Component to navigate pages. More a less a dropdown.
-     */
-    let Navigation = (function() {
+   /**
+   * Component to navigate pages. More a less a dropdown.
+   */
+   let Navigation = (function() {
 
       function onUpdate(model) {
          let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
@@ -1430,14 +1444,25 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onUpdate: onUpdate };
+   })();
+
+
+   let Indicator = (function() {
+
+      function onCreation(model) {
+         if (!model.text) {
+            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+         }
+         return $('<div/>', { 'class': 'Indicator status-'+model.status }).text(model.text);
+      }
+
+      return { onCreation: onCreation };
     })();
 
-
-
-    /*
-     * Public API below:
-     */
-    return {
+   /*
+   * Public API below:
+   */
+   return {
       /**
        * Call to update the settings side panel with the given model
        */
@@ -1450,8 +1475,12 @@ MonitoringConsole.View.Components = (function() {
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */
       onLegendCreation: (model) => Legend.onCreation(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onIndicatorCreation: (model) => Indicator.onCreation(model),
       //TODO add id to model and make it an update?
-    };
+   };
 
 })();
 /*
@@ -2369,6 +2398,7 @@ MonitoringConsole.View = (function() {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
                 parent.append(Components.onLegendCreation([]));                
+                parent.append(Components.onIndicatorCreation({}));
             }
         }
         if (widget.selected) {
@@ -2409,12 +2439,14 @@ MonitoringConsole.View = (function() {
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
-            if (tag.startsWith('@:')) {
+            let tagName = tag.substring(0, tag.indexOf(':'));
+            let tagValue = tag.substring(tag.indexOf(':') + 1);
+            if (tagName ===  '@') {
                 grouped = true;
                 text += metricText;
-                text += ': <code>'+tag.substring(2)+'</code> ';
+                text += ': <strong>'+tagValue+'</strong> ';
             } else {
-                text +=' <i>'+tag+'</i> ';
+                text +=' <span>'+tagName+':<strong>'+tagValue+'</strong></span> ';
             }
         }
         if (!grouped)
@@ -2494,6 +2526,11 @@ MonitoringConsole.View = (function() {
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             //TODO add color for each threshold
+        ]});
+        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+            { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
+            { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
+            { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
         ]});
         return settings;       
     }
@@ -2581,9 +2618,12 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegend(widget, data) {
+    function createLegendComponent(widget, data) {
         if (!data)
-            return [{ label: 'No Data', value: '?', color: 'red' }];
+            return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
+        if (Array.isArray(data) && data.length == 0) {
+            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
+        }
         let legend = [];
         let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
@@ -2608,6 +2648,21 @@ MonitoringConsole.View = (function() {
         return legend;
     }
 
+    function createIndicatorComponent(widget, data) {
+        if (!data)
+            return { status: 'error' };
+        if (Array.isArray(data) && data.length == 0)
+            return { status: 'missing', text: widget.status.missing.hint };
+        let status = 'normal';
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
+                status = seriesData.assessments.status;
+        }
+        let statusInfo = widget.status[status] || {};
+        return { status: status, text: statusInfo.hint };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -2615,14 +2670,17 @@ MonitoringConsole.View = (function() {
      */
     function onDataUpdate(update) {
         let widget = update.widget;
+        let data = update.data;
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
-        let legendNode = widgetNode.find('.widget-legend-bar').first();
-        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
-        if (update.data) {
+        let legendNode = widgetNode.find('.Legend').first();
+        let indicatorNode = widgetNode.find('.Indicator').first();
+        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
+        if (data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
         legendNode.replaceWith(Components.onLegendCreation(legend));
+        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
     }
 
     /**

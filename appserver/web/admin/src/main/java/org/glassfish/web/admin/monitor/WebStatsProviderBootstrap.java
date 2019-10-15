@@ -52,14 +52,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollection;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import org.glassfish.hk2.api.PostConstruct;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
@@ -73,6 +76,9 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     private static final String WEB_CONTAINER = "web-container";
 
     private static final String NODE_SEPARATOR = "/";
+
+    @Inject
+    private MonitoringService monitoringService;
 
     // Map of apps and its StatsProvider list
     private ConcurrentMap<String, ConcurrentMap<String, Queue<Object>>> vsNameToStatsProviderMap =
@@ -191,6 +197,10 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     @Override
     public void collect(MonitoringDataCollector collector) {
         MonitoringDataCollector web = collector.in("web");
+        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
+            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getWebContainer())) {
+            return;
+        }
         for (Object provider : webContainerStatsProviderQueue) {
             web.collectObject(provider, MonitoringDataCollection::collectObject);
         }

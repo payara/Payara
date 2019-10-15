@@ -120,7 +120,12 @@ MonitoringConsole.View.Components = (function() {
       function createValueInput(model) {
          if (model.unit === 'percent')
             return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
-         let converter = Units.converter(model.unit);
+         return createTextInput(model, Units.converter(model.unit));
+      }
+
+      function createTextInput(model, converter) {
+         if (!converter)
+            converter = { format: (str) => str, parse: (str) => str };
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
@@ -135,6 +140,7 @@ MonitoringConsole.View.Components = (function() {
             case 'dropdown': return createDropdownInput(model);
             case 'range'   : return createRangeInput(model);
             case 'value'   : return createValueInput(model);
+            case 'text'    : return createTextInput(model);
             default        : return model.input;
          }
       }
@@ -172,12 +178,12 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onUpdate: onUpdate };
-    })();
+   })();
 
-    /**
-     * Legend is a generic component showing a number of current values annotated with label and color.
-     */ 
-    let Legend = (function() {
+   /**
+   * Legend is a generic component showing a number of current values annotated with label and color.
+   */ 
+   let Legend = (function() {
 
       function createItem(label, value, color, assessments) {
          let strong = value;
@@ -198,7 +204,7 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function onCreation(model) {
-         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         let legend = $('<ol/>',  {'class': 'Legend'});
          for (let i = 0; i < model.length; i++) {
             let itemModel = model[i];
             legend.append(createItem(itemModel.label, itemModel.value, itemModel.color, itemModel.assessments));
@@ -207,12 +213,12 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onCreation: onCreation };
-    })();
+   })();
 
-    /**
-     * Component to navigate pages. More a less a dropdown.
-     */
-    let Navigation = (function() {
+   /**
+   * Component to navigate pages. More a less a dropdown.
+   */
+   let Navigation = (function() {
 
       function onUpdate(model) {
          let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
@@ -231,14 +237,25 @@ MonitoringConsole.View.Components = (function() {
       }
 
       return { onUpdate: onUpdate };
+   })();
+
+
+   let Indicator = (function() {
+
+      function onCreation(model) {
+         if (!model.text) {
+            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+         }
+         return $('<div/>', { 'class': 'Indicator status-'+model.status }).text(model.text);
+      }
+
+      return { onCreation: onCreation };
     })();
 
-
-
-    /*
-     * Public API below:
-     */
-    return {
+   /*
+   * Public API below:
+   */
+   return {
       /**
        * Call to update the settings side panel with the given model
        */
@@ -251,7 +268,11 @@ MonitoringConsole.View.Components = (function() {
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */
       onLegendCreation: (model) => Legend.onCreation(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onIndicatorCreation: (model) => Indicator.onCreation(model),
       //TODO add id to model and make it an update?
-    };
+   };
 
 })();

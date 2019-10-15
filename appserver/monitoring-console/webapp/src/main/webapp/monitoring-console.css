@@ -163,17 +163,17 @@ button.btnIcon:hover {
   display: inline-block;
   padding: 1px 5px;
 }
-.widget-title-bar h3 i {
+.widget-title-bar h3 span {
   font-size: 80%;
   font-weight: normal;
   font-style: normal;
   color: #bbb;
   margin-right: 1em;
 }
-.widget-title-bar h3 code {
+.widget-title-bar h3 strong {
   font-style: normal;
-  font-weight: normal;
-  margin-right: 1em;
+  margin-left: 0.5em;
+  color: white;
 }
 #layout-bar {
 	display: inline-block;
@@ -315,35 +315,38 @@ table.tags th, table.tags td {
   margin-right: 5px;
 }
 
-/* Widget Legend Bar */
-.widget-legend-bar {
+/* Widget Legend */
+.Legend {
   margin: 0;
   padding: 0 20px;
 }
-.widget-legend-bar li {
+.Legend li {
   display: inline-block;
   list-style:none;
   padding-left: 5px;
   border-left: 5px solid #ccc;
   margin-right: 20px;
 }
-.widget-legend-bar li strong {
+.Legend li strong {
   font-size: 200%;
   font-weight: bold;
 }
-.widget-legend-bar li span:first-child {
+.Legend li span:first-child {
   display: block;
   font-weight: 300;
 }
-.widget-legend-bar li.status-alarming strong {
+.Legend li.status-missing strong {
+    color: Violet;
+}
+.Legend li.status-alarming strong {
     color: gold;
     animation: blinker 2s linear infinite;
 }
-.widget-legend-bar li.status-critical strong {
+.Legend li.status-critical strong {
     color: crimson;
     animation: blinker 1s linear infinite;
 }
-.widget-legend-bar li.status-error strong {
+.Legend li.status-error strong {
     color: red;
 }
 @keyframes blinker {
@@ -351,6 +354,28 @@ table.tags th, table.tags td {
     opacity: 0.5;
   }
 }
+
+/* Widget Indicator */
+.Indicator {
+  border: 1px solid #ccc;
+  font-weight: bold;
+  padding: 5px 10px;
+  text-align: center;
+  margin: 5px;
+}
+.Indicator.status-missing {
+  border-color: Violet;
+  color: Violet;
+}
+.Indicator.status-alarming {
+  border-color: gold; 
+  color: gold;
+}
+.Indicator.status-critical {
+  border-color: crimson; 
+  color: crimson;
+}
+
 
 /* Page Navigation */
 #panel-nav {

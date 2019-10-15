@@ -109,6 +109,7 @@ MonitoringConsole.View = (function() {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
                 parent.append(Components.onLegendCreation([]));                
+                parent.append(Components.onIndicatorCreation({}));
             }
         }
         if (widget.selected) {
@@ -149,12 +150,14 @@ MonitoringConsole.View = (function() {
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
-            if (tag.startsWith('@:')) {
+            let tagName = tag.substring(0, tag.indexOf(':'));
+            let tagValue = tag.substring(tag.indexOf(':') + 1);
+            if (tagName ===  '@') {
                 grouped = true;
                 text += metricText;
-                text += ': <code>'+tag.substring(2)+'</code> ';
+                text += ': <strong>'+tagValue+'</strong> ';
             } else {
-                text +=' <i>'+tag+'</i> ';
+                text +=' <span>'+tagName+':<strong>'+tagValue+'</strong></span> ';
             }
         }
         if (!grouped)
@@ -234,6 +237,11 @@ MonitoringConsole.View = (function() {
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             //TODO add color for each threshold
+        ]});
+        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+            { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
+            { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
+            { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
         ]});
         return settings;       
     }
@@ -321,9 +329,12 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegend(widget, data) {
+    function createLegendComponent(widget, data) {
         if (!data)
-            return [{ label: 'No Data', value: '?', color: 'red' }];
+            return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
+        if (Array.isArray(data) && data.length == 0) {
+            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
+        }
         let legend = [];
         let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
@@ -348,6 +359,21 @@ MonitoringConsole.View = (function() {
         return legend;
     }
 
+    function createIndicatorComponent(widget, data) {
+        if (!data)
+            return { status: 'error' };
+        if (Array.isArray(data) && data.length == 0)
+            return { status: 'missing', text: widget.status.missing.hint };
+        let status = 'normal';
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
+                status = seriesData.assessments.status;
+        }
+        let statusInfo = widget.status[status] || {};
+        return { status: status, text: statusInfo.hint };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -355,14 +381,17 @@ MonitoringConsole.View = (function() {
      */
     function onDataUpdate(update) {
         let widget = update.widget;
+        let data = update.data;
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
-        let legendNode = widgetNode.find('.widget-legend-bar').first();
-        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
-        if (update.data) {
+        let legendNode = widgetNode.find('.Legend').first();
+        let indicatorNode = widgetNode.find('.Indicator').first();
+        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
+        if (data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
         legendNode.replaceWith(Components.onLegendCreation(legend));
+        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
     }
 
     /**

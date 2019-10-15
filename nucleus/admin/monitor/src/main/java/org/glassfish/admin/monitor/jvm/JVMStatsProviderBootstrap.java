@@ -47,6 +47,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.monitoring.collect.MonitoringDataCollection;

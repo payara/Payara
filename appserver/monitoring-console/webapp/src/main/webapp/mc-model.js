@@ -153,6 +153,14 @@ MonitoringConsole.Model = (function() {
 				widget.decorations.thresholds.critical = {};			
 			if (typeof widget.axis !== 'object')
 				widget.axis = {};
+			if (typeof widget.status !== 'object')
+				widget.status = {};
+			if (typeof widget.status.missing !== 'object')
+				widget.status.missing = {};
+			if (typeof widget.status.alarming !== 'object')
+				widget.status.alarming = {};
+			if (typeof widget.status.critical !== 'object')
+				widget.status.critical = {};
 			return widget;
 		}
 		

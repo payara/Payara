@@ -44,6 +44,7 @@ package com.sun.enterprise.v3.services.impl;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.Result;
@@ -140,6 +141,9 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     private ServiceLocator serviceLocator;
 
     @Inject
+    private MonitoringService monitoringService;
+
+    @Inject
     Transactions transactions;
 
     @Inject
@@ -183,6 +187,10 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
 
     @Override
     public void collect(MonitoringDataCollector collector) {
+        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
+            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getHttpService())) {
+            return;
+        }
         MonitoringDataCollector httpCollector = collector.in("http");
         httpCollector.prefix("ThreadPool").collectObject(
                 monitoring.getThreadPoolStatsProvider(NETWORK_CONFIG_PREFIX), MonitoringDataCollection::collectObject);

@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 
 import fish.payara.monitoring.collect.MonitoringDataCollection;
@@ -80,6 +81,9 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct, Monitor
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
+
+    @Inject
+    private MonitoringService monitoringService;
 
     private static final Logger logger = LogFacade.getLogger();
 
@@ -119,6 +123,10 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct, Monitor
 
     @Override
     public void collect(MonitoringDataCollector collector) {
+        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
+            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getHttpService())) {
+            return;
+        }
         MonitoringDataCollector http = collector.in("http").prefix("Server");
         for (HttpServiceStatsProvider provider : httpServiceStatsProviders.values()) {
             http.collectObject(provider, MonitoringDataCollection::collectObject);
