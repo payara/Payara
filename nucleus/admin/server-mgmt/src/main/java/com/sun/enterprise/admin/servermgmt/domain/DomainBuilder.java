@@ -95,7 +95,7 @@ public class DomainBuilder {
     private final DomainConfig domainConfig;
     private JarFile templateJar;
     private DomainTemplate domainTemplate;
-    private final Properties defaultProertiesValue = new Properties();
+    private final Properties defaultPropertiesValue = new Properties();
     private byte[]  keystoreBytes = null;
     private final Set<String> _extractedEntries = new HashSet<String>();
 
@@ -152,11 +152,11 @@ public class DomainBuilder {
                 stringSubstitutor = StringSubstitutionFactory.createStringSubstitutor(templateJar.getInputStream(je));
                 List<Property> defaultPortSubstituteProperties = stringSubstitutor.getDefaultProperties(PropertyType.PORT);
                 for (Property property : defaultPortSubstituteProperties) {
-                    defaultProertiesValue.setProperty(property.getKey(), property.getValue());
+                    defaultPropertiesValue.setProperty(property.getKey(), property.getValue());
                 }
                 List<Property> defaultStringSubstituteProperties = stringSubstitutor.getDefaultProperties(PropertyType.STRING);
                 for (Property property : defaultStringSubstituteProperties) {
-                    defaultProertiesValue.setProperty(property.getKey(), property.getValue());
+                    defaultPropertiesValue.setProperty(property.getKey(), property.getValue());
                 }
                 _extractedEntries.add(je.getName());
             } else {
@@ -202,7 +202,7 @@ public class DomainBuilder {
             repoManager.checkRepository(domainConfig, false);
 
             // Validate the port values.
-            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultProertiesValue);
+            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPropertiesValue);
             portValidator.validateAndSetPorts();
             setProperties();
             
@@ -218,7 +218,7 @@ public class DomainBuilder {
         Properties domainProperties = domainConfig.getDomainProperties();
         String hazelcastAutoIncrement = getProperty(domainProperties, DomainConfig.K_HAZELCAST_AUTO_INCREMENT,  
                 (String) domainConfig.get(DomainConfig.K_HAZELCAST_AUTO_INCREMENT),
-                defaultProertiesValue.getProperty(SubstitutableTokens.HAZELCAST_AUTO_INCREMENT_TOKEN_NAME));
+                defaultPropertiesValue.getProperty(SubstitutableTokens.HAZELCAST_AUTO_INCREMENT_TOKEN_NAME));
         domainConfig.add(DomainConfig.K_HAZELCAST_AUTO_INCREMENT, Boolean.valueOf(hazelcastAutoIncrement));
 
     }
