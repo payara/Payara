@@ -24,6 +24,7 @@
         <docker.payara.port.admin>4848</docker.payara.port.admin>
         <docker.payara.port.http>8080</docker.payara.port.http>
         <docker.payara.host>payara-test-docker</docker.payara.host>
+        <docker.payara.version>${project.version}</docker.payara.version>
     </properties>
 
     <dependencies>
@@ -100,7 +101,7 @@
         <dependency>
             <groupId>fish.payara.distributions</groupId>
             <artifactId>payara</artifactId>
-            <version>${project.version}</version>
+            <version>${docker.payara.version}</version>
             <type>glassfish-distribution</type>
         </dependency>
     </dependencies>
