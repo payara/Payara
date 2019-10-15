@@ -39,7 +39,6 @@
  */
 package fish.payara.ejb.http.admin;
 
-import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import static com.sun.enterprise.deployment.runtime.web.SunWebApp.HTTPSERVLET_SECURITY_PROVIDER;
@@ -75,9 +74,6 @@ public class EjbInvokerService implements EventListener, ConfigListener {
     @Inject
     private Events events;
     
-    @Inject
-    private SecurityService securityService;
-
     @Inject
     private EjbInvokerConfiguration config;
 
@@ -128,12 +124,16 @@ public class EjbInvokerService implements EventListener, ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
+        if(!Boolean.parseBoolean(config.getEnabled())) {
+            return null;
+        }
         for (PropertyChangeEvent event : events) {
             if ("enabled".equals(event.getPropertyName())){
                 unchangedList.clear();
                 break;
             }
-            unchangedList.add(new UnprocessedChangeEvent(event, "EJB Invoker configuration changed:" + event.getPropertyName()
+            unchangedList.add(new UnprocessedChangeEvent(event, 
+                    "EJB Invoker configuration changed: " + event.getPropertyName()
                     + " was changed from " + event.getOldValue() + " to " + event.getNewValue()));
         }
         return (unchangedList.size() > 0)
