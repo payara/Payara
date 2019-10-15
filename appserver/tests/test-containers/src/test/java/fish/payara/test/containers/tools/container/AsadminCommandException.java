@@ -37,73 +37,24 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tools.env;
+package fish.payara.test.containers.tools.container;
 
-import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
-import org.testcontainers.shaded.org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.testcontainers.shaded.org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * Configuration of the docker environment.
+ * Asadmin command failed.
  * <p>
- * Note: items in each subconfiguration should respect relations between containers, especially
- * ports and hostnames
+ * The message contains also output from the STDERR.
  *
- * @author David Matějček
+ * @author David Matejcek
  */
-public class DockerEnvironmentConfiguration {
+public class AsadminCommandException extends Exception {
 
-    private boolean forceNewPayaraServer;
-
-    private PayaraServerContainerConfiguration payaraServerConfiguration;
-
+    private static final long serialVersionUID = 3754442322468725197L;
 
     /**
-     * @return true to delete prepared docker image and to create it again
+     * @param message short message and output from the STDERR.
      */
-    public boolean isForceNewPayaraServer() {
-        return this.forceNewPayaraServer;
-    }
-
-
-    /**
-     * @param forceNewPayaraServer true to delete prepared docker image and to create it again
-     */
-    public void setForceNewPayaraServer(final boolean forceNewPayaraServer) {
-        this.forceNewPayaraServer = forceNewPayaraServer;
-    }
-
-
-    /**
-     * @return {@link PayaraServerContainerConfiguration} - configuration of the Payara Docker
-     *         container
-     */
-    public PayaraServerContainerConfiguration getPayaraServerConfiguration() {
-        return this.payaraServerConfiguration;
-    }
-
-
-    /**
-     * @param payaraServerConfiguration - configuration of the Payara Docker container
-     */
-    public void setPayaraServerConfiguration(final PayaraServerContainerConfiguration payaraServerConfiguration) {
-        this.payaraServerConfiguration = payaraServerConfiguration;
-    }
-
-
-    /**
-     * @return timeout of preparation of all container images in secodns.
-     */
-    public long getPreparationTimeout() {
-        return this.payaraServerConfiguration.getPreparationTimeout();
-    }
-
-
-    /**
-     * Returns all properties - each property on own line.
-     */
-    @Override
-    public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
+    public AsadminCommandException(final String message) {
+        super(message);
     }
 }

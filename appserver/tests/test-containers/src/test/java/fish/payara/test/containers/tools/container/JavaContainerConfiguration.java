@@ -1,3 +1,42 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ *    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *     The contents of this file are subject to the terms of either the GNU
+ *     General Public License Version 2 only ("GPL") or the Common Development
+ *     and Distribution License("CDDL") (collectively, the "License").  You
+ *     may not use this file except in compliance with the License.  You can
+ *     obtain a copy of the License at
+ *     https://github.com/payara/Payara/blob/master/LICENSE.txt
+ *     See the License for the specific
+ *     language governing permissions and limitations under the License.
+ *
+ *     When distributing the software, include this License Header Notice in each
+ *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ *     GPL Classpath Exception:
+ *     The Payara Foundation designates this particular file as subject to the "Classpath"
+ *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *     file that accompanied this code.
+ *
+ *     Modifications:
+ *     If applicable, add the following below the License Header, with the fields
+ *     enclosed by brackets [] replaced by your own identifying information:
+ *     "Portions Copyright [year] [name of copyright owner]"
+ *
+ *     Contributor(s):
+ *     If you wish your version of this file to be governed by only the CDDL or
+ *     only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *     elects to include this software in this distribution under the [CDDL or GPL
+ *     Version 2] license."  If you don't indicate a single choice of license, a
+ *     recipient has the option to distribute your version of this file under
+ *     either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *     its licensees as provided above.  However, if you add GPL Version 2 code
+ *     and therefore, elected the GPL Version 2 license, then the option applies
+ *     only if the new code is made subject to such option by the copyright
+ *     holder.
+ */
 package fish.payara.test.containers.tools.container;
 
 import java.io.File;
@@ -17,9 +56,7 @@ public class JavaContainerConfiguration {
     private String downloadedDockerImageName;
     private long preparationTimeout = 60L;
     private File pomFile;
-    private String configDirectoryOnClasspath = "";
     private File testOutputDirectory;
-    private File payaraServerDirectory;
 
     private String host;
     private int adminPort;
@@ -30,6 +67,7 @@ public class JavaContainerConfiguration {
     private String xmx;
     private String xss;
 
+    private File mainApplicationDirectory;
     private String jaCoCoVersion;
     private File jaCoCoReportDirectory;
 
@@ -96,33 +134,6 @@ public class JavaContainerConfiguration {
 
 
     /**
-     * @return directory on classpath with the configuration files for docker container.
-     */
-    public String getConfigDirectoryOnClasspath() {
-        return this.configDirectoryOnClasspath;
-    }
-
-
-    /**
-     * Sets the directory on classpath used as a root for file system mapping of files
-     * into the docker container.
-     *
-     * @param configDirectoryOnClasspath f.e. "server-side/"
-     */
-    public void setConfigDirectoryOnClasspath(String configDirectoryOnClasspath) {
-        this.configDirectoryOnClasspath = configDirectoryOnClasspath;
-    }
-
-
-    /**
-     * @return main configuration directory of the Java application in the container
-     */
-    public File getConfigDirectoryInDocker() {
-        return new File(getPayaraDirectoryInDocker(), "/glassfish/domains/domain/config");
-    }
-
-
-    /**
      * Used to locate the test classes copyied into the container.
      *
      * @return path to the compiled test classes directory
@@ -139,34 +150,6 @@ public class JavaContainerConfiguration {
      */
     public void setTestOutputDirectory(final File testOutputDirectory) {
         this.testOutputDirectory = testOutputDirectory;
-    }
-
-
-    /**
-     * @return path to the directory for the classpath dependencies of the Java application
-     *         on the local filesystem.
-     */
-    public File getPayaraServerDirectory() {
-        return this.payaraServerDirectory;
-    }
-
-
-    /**
-     * @param payaraServerDirectory path to the directory for the classpath dependencies
-     *            of the Java application on the local filesystem.
-     */
-    public void setPayaraServerDirectory(final File payaraServerDirectory) {
-        this.payaraServerDirectory = payaraServerDirectory;
-    }
-
-
-    /**
-     * WARNING: don't use this path on local filesystem, it is intended for docker!
-     *
-     * @return path to the directory for the classpath dependencies in the docker filesystem.
-     */
-    public File getPayaraDirectoryInDocker() {
-        return new File("/payara5");
     }
 
 
@@ -289,6 +272,32 @@ public class JavaContainerConfiguration {
         this.xss = xss;
     }
 
+
+    /**
+     * @return path to the main directory of the Java application on the local filesystem.
+     */
+    public File getMainApplicationDirectory() {
+        return this.mainApplicationDirectory;
+    }
+
+
+    /**
+     * @param mainApplicationDirectory path to the main directory of the Java application on the
+     *            local filesystem.
+     */
+    public void setMainApplicationDirectory(final File mainApplicationDirectory) {
+        this.mainApplicationDirectory = mainApplicationDirectory;
+    }
+
+
+    /**
+     * WARNING: don't use this path on local filesystem, it is intended for docker!
+     *
+     * @return path to the directory for the classpath dependencies in the docker filesystem.
+     */
+    public File getMainApplicationDirectoryInDocker() {
+        return new File("/java-application");
+    }
 
     /**
      * @return true if JaCoCo properties are all set. False otherwise.
