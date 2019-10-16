@@ -230,7 +230,7 @@ button.btnIcon:hover {
 /**
  * Widget Settings (Sizes and Visibility)
  */
-#panel-settings {
+#Settings {
     width: 380px;
     padding: 0;
     vertical-align: top;
@@ -238,39 +238,39 @@ button.btnIcon:hover {
     top: 5px;
     right: 10px;
 }
-.settings {
+#Settings table {
     background-color: #002433;
     padding: 10px;
     margin-top: 5px;
     width: 100%;
 }
-.settings th {
+#Settings table th {
   cursor: pointer;
   font-weight: normal;
 }
-.settings tr:first-child th {
+#Settings table tr:first-child th {
   font-weight: bold;
   border-bottom: 1px solid #bbb;
 }
-.settings td:first-child {
+#Settings table td:first-child {
   width: 120px;
   vertical-align: top;
 }
-.settings a, .settings a:visited {
+#Settings a, #Settings a:visited {
   color: white;
 }
-.settings label {
+#Settings label {
   padding-right: 1em;
   padding-left: 3px;
   white-space: nowrap;
 }
-.settings div input[type=text] {
+#Settings table div input[type=text] {
   width: 60px;
 }
-#console #panel-settings {
+#console #Settings {
 	display: none;
 }
-#console.state-show-settings #panel-settings {
+#console.state-show-settings #Settings {
 	display: block;
 }
 #console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
@@ -385,13 +385,13 @@ table.tags th, table.tags td {
 
 
 /* Page Navigation */
-#panel-nav {
+#Navigation {
   position: relative;
   left: 50%;
   transform: translateX(-50%);
   display: inline-block;  
 }
-#page-nav-dropdown {
+#Navigation select {
   background-color: #002c3e;
   padding: 5px;
   border-width: 0;
@@ -401,7 +401,7 @@ table.tags th, table.tags td {
   max-width: 400px;
 }
 
-#panel-nav h2 {
+#Navigation h2 {
   min-width: 100px;
   font-weight: bold;
   font-size: 140%;

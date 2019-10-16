@@ -1337,10 +1337,11 @@ MonitoringConsole.View.Components = (function() {
    let Settings = (function() {
 
       function emptyPanel() {
-         return $('#panel-settings').empty();
+         return $('#Settings').empty();
       }
 
-      function createHeaderRow(caption) {
+      function createHeaderRow(model) {
+         let caption = model.label;
          return $('<tr/>').append($('<th/>', {colspan: 2})
              .html(caption)
              .click(function() {
@@ -1355,10 +1356,10 @@ MonitoringConsole.View.Components = (function() {
          }));
       }
 
-      function createTable(id, caption) {
-         let table = $('<table />', { 'class': 'settings', id: id });
-         if (caption)
-            table.append(createHeaderRow(caption));
+      function createTable(model) {
+         let table = $('<table />', { id: model.id });
+         if (model.caption)
+            table.append(createHeaderRow({ label: model.caption }));
          return table;
       }
 
@@ -1430,7 +1431,7 @@ MonitoringConsole.View.Components = (function() {
          let panel = emptyPanel();
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
-            let table = createTable(group.id, group.caption);
+            let table = createTable(group);
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
                let entry = group.entries[r];
@@ -1438,7 +1439,7 @@ MonitoringConsole.View.Components = (function() {
                let auto = type === undefined;
                let input = entry.input;
                if (type == 'header' || auto && input === undefined) {
-                  table.append(createHeaderRow(entry.label));
+                  table.append(createHeaderRow(entry));
                } else if (!auto) {
                   table.append(createRow(entry, createInput(entry)));
                } else {
@@ -1466,19 +1467,25 @@ MonitoringConsole.View.Components = (function() {
    */ 
    let Legend = (function() {
 
-      function createItem(label, value, color, assessments) {
+      function createItem(model) {
+         let label = model.label;
+         let value = model.value;
+         let color = model.color;
+         let assessments = model.assessments;
          let strong = value;
          let normal = '';
          if (typeof value === 'string' && value.indexOf(' ') > 0) {
             strong = value.substring(0, value.indexOf(' '));
             normal = value.substring(value.indexOf(' '));
          }
-         let style = {style: 'border-color: '+color+';'};
+         let attrs = { style: 'border-color: ' + color + ';' };
          if (assessments && assessments.status)
-            style.class = 'status-'+assessments.status;
-         if (label === 'server')
-            label = 'DAS';
-         return $('<li/>', style)
+            attrs.class = 'status-' + assessments.status;
+         if (label === 'server') { // special rule for DAS
+            label = 'DAS'; 
+            attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
+         }
+         return $('<li/>', attrs)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))
                .append($('<span/>').text(normal));
@@ -1487,8 +1494,7 @@ MonitoringConsole.View.Components = (function() {
       function onCreation(model) {
          let legend = $('<ol/>',  {'class': 'Legend'});
          for (let i = 0; i < model.length; i++) {
-            let itemModel = model[i];
-            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color, itemModel.assessments));
+            legend.append(createItem(model[i]));
          }
          return legend;
       }
@@ -1502,7 +1508,7 @@ MonitoringConsole.View.Components = (function() {
    let Navigation = (function() {
 
       function onUpdate(model) {
-         let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
+         let dropdown = $('<select/>');
          dropdown.change(() => model.onChange(dropdown.val()));
          for (let i = 0; i < model.pages.length; i++) {
             let pageModel = model.pages[i];
@@ -1511,7 +1517,7 @@ MonitoringConsole.View.Components = (function() {
                dropdown.val(pageModel.id);
             }
          }
-         let nav = $("#panel-nav"); 
+         let nav = $("#Navigation"); 
          nav.empty();
          nav.append(dropdown);
          return dropdown;
@@ -2411,7 +2417,7 @@ MonitoringConsole.Chart.Trace = (function() {
 /*jshint esversion: 8 */
 
 /**
- *
+ * Main API to update or manipulate the view of the generic page.
  **/
 MonitoringConsole.View = (function() {
 
@@ -2453,15 +2459,6 @@ MonitoringConsole.View = (function() {
         } else {
             panelConsole.removeClass('state-show-settings');
         }
-    }
-
-    function createWidgetLegend(widget) {
-        return $('<ol/>',  {'class': 'widget-legend-bar'});
-    }
-
-    function createWidgetLegendItem(data, color) {
-        let value = data.points[data.points.length-1];
-        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
     }
 
     function updateDomOfWidget(parent, widget) {

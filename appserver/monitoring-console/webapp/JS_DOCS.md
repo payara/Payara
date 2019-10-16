@@ -15,6 +15,7 @@ Short explanation on the data structure notation used in this document:
 * `Enumeration = 'a' | 'b'`: the possible string constants for the enumeration type
 * `attribute = ...`: same as `TYPE` just that this type of that attribute within the previously defined object type
 
+
 ## Model Data Structures
 Code can be found in `md-model.js`.
 
@@ -124,14 +125,6 @@ widget  = WIDGET
 * `span` is given explicitly as it can differ from the `widget.grid.span` target due to chosen number of columns on the page
 
 
-### Assessment Information
-
-```
-ASSESSMENTS = { status }
-status      = Status
-Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing'
-```
-
 
 ### Update Data Structure
 An update object is assembled when widget chart data is received from the backend and send to the view to update accordingly.
@@ -186,6 +179,16 @@ value    = number
 ``` 
 * multiple bars are created by an `BAR_DATA` array with multiple `value`s. 
 * stacked bars are created by multiple _datasets_ (Chart.js ) each holding same number of values.
+
+
+### Assessment Information
+Assessments are evaluations made by the client to classify the data based on a widgets configuration.
+
+```
+ASSESSMENTS = { status }
+status      = Status
+Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing'
+```
 
 
 

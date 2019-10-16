@@ -41,7 +41,7 @@
 /*jshint esversion: 8 */
 
 /**
- *
+ * Main API to update or manipulate the view of the generic page.
  **/
 MonitoringConsole.View = (function() {
 
@@ -83,15 +83,6 @@ MonitoringConsole.View = (function() {
         } else {
             panelConsole.removeClass('state-show-settings');
         }
-    }
-
-    function createWidgetLegend(widget) {
-        return $('<ol/>',  {'class': 'widget-legend-bar'});
-    }
-
-    function createWidgetLegendItem(data, color) {
-        let value = data.points[data.points.length-1];
-        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
     }
 
     function updateDomOfWidget(parent, widget) {
