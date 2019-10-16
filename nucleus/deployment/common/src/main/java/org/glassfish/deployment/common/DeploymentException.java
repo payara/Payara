@@ -67,7 +67,7 @@ public class DeploymentException extends RuntimeException
             // the DeploymentException travels between processes and needs
             // to be serializable as well as all sub or chained exception.
             // Therefore, I use the setStackTrace to chain instead of initCause
-            super(t.getMessage());
+            super(t.getMessage() + " (t.getClass().getName())");
             setStackTrace(t.getStackTrace());
 	}
 	public DeploymentException(String s, Throwable t) 
@@ -76,7 +76,7 @@ public class DeploymentException extends RuntimeException
             // the DeploymentException travels between processes and needs
             // to be serializable as well as all sub or chained exception.
             // Therefore, I use the setStackTrace to chain instead of initCause            
-	    super(s + " -- " + t.getMessage());
+	    super(s + " -- " + t.getMessage() + " (t.getClass().getName())");
             this.setStackTrace(t.getStackTrace());
 	}
 }
