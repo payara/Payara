@@ -574,7 +574,9 @@ public class ASURLClassLoader
 
                 // add to class path of this class loader
                 try {
-                    appendURL(newFile);
+                    if (newFile.exists()) {
+                        appendURL(newFile);
+                    }
                 } catch (MalformedURLException ex) {
                     _logger.log(Level.SEVERE, CULoggerInfo.exceptionInASURLClassLoader, ex);
                 }
