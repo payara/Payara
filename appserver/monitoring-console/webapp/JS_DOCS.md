@@ -60,7 +60,7 @@ options    = {
 	drawMaxLine:boolean,
 	drawAvgLine:boolean,
 	perSec:boolean,
-	drawCurves:boolean,
+	noCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
 	noTimeLabels:boolean

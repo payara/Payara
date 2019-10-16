@@ -162,10 +162,31 @@ MonitoringConsole.View.Units = (function() {
       return number % 1 != 0;
    }
 
+   function formatTime(hourOrDateOrTimestamp, minute, second) {
+      if (typeof hourOrDateOrTimestamp === 'number' && hourOrDateOrTimestamp > 24) { // assume timestamp
+         hourOrDateOrTimestamp = new Date(hourOrDateOrTimestamp);
+      }
+      if (typeof hourOrDateOrTimestamp === 'object') { // assume Date
+         minute = hourOrDateOrTimestamp.getMinutes();
+         second = hourOrDateOrTimestamp.getSeconds();
+         hourOrDateOrTimestamp = hourOrDateOrTimestamp.getHours();
+      }
+      let str = as2digits(hourOrDateOrTimestamp);
+      str += ':' + as2digits(minute ? minute : 0);
+      if (second)
+         str += ':' +  as2digits(second);
+      return str;
+   }
+
+   function as2digits(number) {
+      return number.toString().padStart(2, '0');
+   }
+
    /**
     * Public API below:
     */
    return {
+      formatTime: formatTime,
       formatNumber: formatNumber,
       formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),
       formatNanoseconds: (valueAsNumber) => formatNumber(valueAsNumber, NS_FACTORS),

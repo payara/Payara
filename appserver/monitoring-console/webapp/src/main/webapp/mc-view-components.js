@@ -246,7 +246,8 @@ MonitoringConsole.View.Components = (function() {
          if (!model.text) {
             return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
          }
-         return $('<div/>', { 'class': 'Indicator status-'+model.status }).text(model.text);
+         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
       }
 
       return { onCreation: onCreation };

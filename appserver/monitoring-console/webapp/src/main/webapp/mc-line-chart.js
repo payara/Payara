@@ -80,8 +80,7 @@ MonitoringConsole.Chart.Line = (function() {
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
-              let time = new Date(values[index].value);
-              return time.getMinutes() + ':'+ time.getSeconds();
+              return Units.formatTime(new Date(values[index].value));
             },
           }
         }],
@@ -199,7 +198,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
+    options.elements.line.tension = widget.options.noCurves ? 0 : 0.4;
     let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;

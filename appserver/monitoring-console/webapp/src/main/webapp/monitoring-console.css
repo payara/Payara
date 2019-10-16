@@ -375,6 +375,13 @@ table.tags th, table.tags td {
   border-color: crimson; 
   color: crimson;
 }
+.Indicator b {
+  color: white;
+  white-space: nowrap;
+}
+.Indicator i {
+  white-space: nowrap;
+}
 
 
 /* Page Navigation */

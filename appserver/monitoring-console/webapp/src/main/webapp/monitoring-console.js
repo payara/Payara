@@ -142,26 +142,79 @@ MonitoringConsole.Model = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
+	const TEXT_HTTP_HIGH = "Requires *HTTP monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'HTTP Service'* to *'HIGH'*.";
+	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
+	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
 					name: 'Core',
 					numberOfColumns: 3,
 					widgets: [
-						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
-						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
-						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
-						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
+							grid: { item: 0, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
+						{ series: 'ns:jvm CpuUsage', unit: 'percent',
+							grid: { item: 1, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
+						{ series: 'ns:jvm ThreadCount', unit: 'count',  
+							grid: { item: 0, column: 1, span: 1}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { item: 1, column: 1, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:web RequestCount', unit: 'count',
+							grid: { item: 0, column: 2, span: 1}, 
+							options: { perSec: true },
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
+						{ series: 'ns:web ActiveSessions', unit: 'count',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
 				request_tracing: {
 					name: 'Request Tracing',
 					numberOfColumns: 1,
 					widgets: [
-						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
+							grid: { item: 0, column: 0, span: 1 }, 
+							axis: { min: 0, max: 5000 },
+							options: { drawMinLine: true },
+							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
 					]
 				},
+				http: {
+					name: 'HTTP',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
+							grid: { column: 0, item: 0},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { column: 0, item: 1},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount2xx', unit: 'count', 
+							grid: { column: 1, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount3xx', unit: 'count', 
+							grid: { column: 1, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount4xx', unit: 'count', 
+							grid: { column: 2, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount5xx', unit: 'count', 
+							grid: { column: 2, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+					]
+				}
 			},
 			settings: {},
 	};
@@ -1169,10 +1222,31 @@ MonitoringConsole.View.Units = (function() {
       return number % 1 != 0;
    }
 
+   function formatTime(hourOrDateOrTimestamp, minute, second) {
+      if (typeof hourOrDateOrTimestamp === 'number' && hourOrDateOrTimestamp > 24) { // assume timestamp
+         hourOrDateOrTimestamp = new Date(hourOrDateOrTimestamp);
+      }
+      if (typeof hourOrDateOrTimestamp === 'object') { // assume Date
+         minute = hourOrDateOrTimestamp.getMinutes();
+         second = hourOrDateOrTimestamp.getSeconds();
+         hourOrDateOrTimestamp = hourOrDateOrTimestamp.getHours();
+      }
+      let str = as2digits(hourOrDateOrTimestamp);
+      str += ':' + as2digits(minute ? minute : 0);
+      if (second)
+         str += ':' +  as2digits(second);
+      return str;
+   }
+
+   function as2digits(number) {
+      return number.toString().padStart(2, '0');
+   }
+
    /**
     * Public API below:
     */
    return {
+      formatTime: formatTime,
       formatNumber: formatNumber,
       formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),
       formatNanoseconds: (valueAsNumber) => formatNumber(valueAsNumber, NS_FACTORS),
@@ -1453,7 +1527,8 @@ MonitoringConsole.View.Components = (function() {
          if (!model.text) {
             return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
          }
-         return $('<div/>', { 'class': 'Indicator status-'+model.status }).text(model.text);
+         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
       }
 
       return { onCreation: onCreation };
@@ -1695,8 +1770,7 @@ MonitoringConsole.Chart.Line = (function() {
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
-              let time = new Date(values[index].value);
-              return time.getMinutes() + ':'+ time.getSeconds();
+              return Units.formatTime(new Date(values[index].value));
             },
           }
         }],
@@ -1814,7 +1888,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
+    options.elements.line.tension = widget.options.noCurves ? 0 : 0.4;
     let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
@@ -1903,6 +1977,7 @@ MonitoringConsole.Chart.Line = (function() {
  */ 
 MonitoringConsole.Chart.Bar = (function() {
 
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
@@ -1979,6 +2054,12 @@ MonitoringConsole.Chart.Bar = (function() {
             scales: {
                xAxes: [{
                   stacked: true,
+                  ticks: {
+                    callback: function(value, index, values) {
+                      let converter = Units.converter(widget.unit);
+                      return converter.format(converter.parse(value));
+                    },
+                  },                 
                }],
                yAxes: [{
                   maxBarThickness: 15, //px
@@ -2006,7 +2087,7 @@ MonitoringConsole.Chart.Bar = (function() {
    }
 
    function onConfigUpdate(widget, chart) {
-      let options = chart.options;
+      let options = chart.options; 
       return chart;
    }
 
@@ -2504,7 +2585,7 @@ MonitoringConsole.View = (function() {
             { label: 'Display', input: [
                 { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
@@ -2632,7 +2713,13 @@ MonitoringConsole.View = (function() {
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
-            let value = format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes');
+            let points = seriesData.points;
+            let avgOffN = widget.options.perSec ? Math.min(points.length / 2, 4) : 1;
+            let avg = 0;
+            for (let n = 0; n < avgOffN; n++)
+                avg += points[points.length - 1 - (n * 2)];
+            avg /= avgOffN;
+            let value = format(avg, widget.unit === 'bytes');
             if (widget.options.perSec)
                 value += ' /s';
             let item = { 

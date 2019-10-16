@@ -51,26 +51,79 @@ MonitoringConsole.Model = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
+	const TEXT_HTTP_HIGH = "Requires *HTTP monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'HTTP Service'* to *'HIGH'*.";
+	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
+	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
 					name: 'Core',
 					numberOfColumns: 3,
 					widgets: [
-						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
-						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
-						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
-						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
+							grid: { item: 0, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
+						{ series: 'ns:jvm CpuUsage', unit: 'percent',
+							grid: { item: 1, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
+						{ series: 'ns:jvm ThreadCount', unit: 'count',  
+							grid: { item: 0, column: 1, span: 1}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { item: 1, column: 1, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:web RequestCount', unit: 'count',
+							grid: { item: 0, column: 2, span: 1}, 
+							options: { perSec: true },
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
+						{ series: 'ns:web ActiveSessions', unit: 'count',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
 				request_tracing: {
 					name: 'Request Tracing',
 					numberOfColumns: 1,
 					widgets: [
-						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
+							grid: { item: 0, column: 0, span: 1 }, 
+							axis: { min: 0, max: 5000 },
+							options: { drawMinLine: true },
+							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
 					]
 				},
+				http: {
+					name: 'HTTP',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
+							grid: { column: 0, item: 0},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { column: 0, item: 1},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount2xx', unit: 'count', 
+							grid: { column: 1, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount3xx', unit: 'count', 
+							grid: { column: 1, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount4xx', unit: 'count', 
+							grid: { column: 2, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount5xx', unit: 'count', 
+							grid: { column: 2, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+					]
+				}
 			},
 			settings: {},
 	};

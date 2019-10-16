@@ -215,7 +215,7 @@ MonitoringConsole.View = (function() {
             { label: 'Display', input: [
                 { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
@@ -343,7 +343,13 @@ MonitoringConsole.View = (function() {
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
-            let value = format(seriesData.points[seriesData.points.length-1], widget.unit === 'bytes');
+            let points = seriesData.points;
+            let avgOffN = widget.options.perSec ? Math.min(points.length / 2, 4) : 1;
+            let avg = 0;
+            for (let n = 0; n < avgOffN; n++)
+                avg += points[points.length - 1 - (n * 2)];
+            avg /= avgOffN;
+            let value = format(avg, widget.unit === 'bytes');
             if (widget.options.perSec)
                 value += ' /s';
             let item = { 
