@@ -76,7 +76,7 @@ public final class DockerEnvironmentConfigurationParser {
         cfg.setDownloadedDockerImageName(properties.getString("docker.payara.image.base"));
         cfg.setPreparationTimeout(properties.getLong("docker.images.timeoutInSeconds", 60));
 
-        cfg.setMainApplicationDirectory(properties.getFile("docker.payara.directory"));
+        cfg.setMainApplicationDirectory(properties.getFile("docker.payara.sharedDirectory"));
         cfg.setTestOutputDirectory(properties.getFile("build.testOutputDirectory"));
         cfg.setPomFile(properties.getFile("build.pomFile"));
 

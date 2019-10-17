@@ -13,7 +13,7 @@
 
     <properties>
         <docker.images.timeoutInSeconds>600</docker.images.timeoutInSeconds>
-        <docker.payara.directory>${project.build.directory}/payara5</docker.payara.directory>
+        <docker.payara.directory.shared>${project.build.directory}/shared</docker.payara.directory.shared>
 <!--         <docker.payara.image.base>ubuntu:19.04</docker.payara.image.base> -->
         <docker.payara.image.base>debian:9.11-slim</docker.payara.image.base>
         <docker.payara.image.forceNew>false</docker.payara.image.forceNew>
@@ -82,9 +82,15 @@
             <version>1.7.28</version>
             <scope>test</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.28</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
             <version>1.7.28</version>
             <scope>test</scope>
         </dependency>
@@ -239,12 +245,14 @@
                         <id>copy-dependencies</id>
                         <phase>generate-test-resources</phase>
                         <goals>
-                            <goal>unpack-dependencies</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <outputDirectory>${docker.payara.directory.shared}</outputDirectory>
                             <includeArtifactIds>payara</includeArtifactIds>
                             <includeTypes>glassfish-distribution</includeTypes>
+                            <stripClassifier>true</stripClassifier>
+                            <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
                 </executions>

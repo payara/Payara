@@ -82,7 +82,7 @@ public final class TestConfiguration {
 
         this.buildDirectory = properties.getFile("build.directory");
 
-        this.payaraDirectory = properties.getFile("docker.payara.directory");
+        this.payaraDirectory = new File(properties.getFile("docker.payara.sharedDirectory"), "payara5");
         this.payaraHost = properties.getString("docker.payara.host");
         this.payaraPort = properties.getInt("docker.payara.port", 0);
         this.payaraUsername = properties.getString("docker.payara.username");

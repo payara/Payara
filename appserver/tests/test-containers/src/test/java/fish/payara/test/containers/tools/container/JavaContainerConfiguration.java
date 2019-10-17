@@ -59,9 +59,7 @@ public class JavaContainerConfiguration {
     private File testOutputDirectory;
 
     private String host;
-    private int adminPort;
     private int httpPort;
-    private int httpsPort;
 
     private int systemMemory;
     private String xms;
@@ -171,22 +169,6 @@ public class JavaContainerConfiguration {
 
 
     /**
-     * @return internal port of the admin endpoint in the docker container.
-     */
-    public int getAdminPort() {
-        return this.adminPort;
-    }
-
-
-    /**
-     * @param port the internal httpPort of the admine endpoint in the docker container
-     */
-    public void setAdminPort(final int port) {
-        this.adminPort = port;
-    }
-
-
-    /**
      * @return internal http port used by applications in the docker container.
      */
     public int getHttpPort() {
@@ -199,22 +181,6 @@ public class JavaContainerConfiguration {
      */
     public void setHttpPort(final int port) {
         this.httpPort = port;
-    }
-
-
-    /**
-     * @return internal https port used by applications in the docker container.
-     */
-    public int getHttpsPort() {
-        return this.httpsPort;
-    }
-
-
-    /**
-     * @param port the internal https port used by applications in the docker container
-     */
-    public void setHttpsPort(final int port) {
-        this.httpsPort = port;
     }
 
 
@@ -313,7 +279,7 @@ public class JavaContainerConfiguration {
      * @return path to the directory for the classpath dependencies in the docker filesystem.
      */
     public File getMainApplicationDirectoryInDocker() {
-        return new File("/java-application");
+        return new File("/shared");
     }
 
     /**

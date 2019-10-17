@@ -42,6 +42,7 @@ package fish.payara.test.containers.tools.container;
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +116,10 @@ public class PayaraServerDockerImageManager
     @Override
     protected StringBuilder getCommand() {
         final StringBuilder command = super.getCommand();
+        command.append(" && ls -la ").append(getConfiguration().getMainApplicationDirectoryInDocker());
+        command.append(" && rm -rf ").append(getConfiguration().getPayaraMainDirectoryInDocker()); //
+        command.append(" && unzip ").append(getConfiguration().getPayaraZipFileInDocker()) //
+            .append(" -d ").append(getConfiguration().getMainApplicationDirectoryInDocker());
         if (getConfiguration().isJaCoCoEnabled()) {
             // FIXME: to lib/domain directory!
             command.append(" && unzip -o ").append(getConfiguration().getMainApplicationDirectoryInDocker())
@@ -122,7 +127,7 @@ public class PayaraServerDockerImageManager
                 .append(" \"jacocoagent.jar\" -d ").append(getConfiguration().getMainApplicationDirectoryInDocker()); //
         }
         command.append(" && ls -la ").append(
-            new File(getConfiguration().getMainApplicationDirectoryInDocker(), "glassfish/domains/domain1/config")); //
+            new File(getConfiguration().getPayaraMainDirectoryInDocker(), "glassfish/domains/domain1/config")); //
 
         final File asadmin = getConfiguration().getAsadminFileInDocker();
         command.append(" && ").append(asadmin) //
@@ -136,6 +141,13 @@ public class PayaraServerDockerImageManager
         command.append(" && echo '" + PAYARA_DOCKER_IMAGE_STARTED + "'");
         command.append(" && sleep infinity"); //
         return command;
+    }
+
+
+    @Override
+    protected List<Integer> getExposedInternalPorts() {
+        final PayaraServerContainerConfiguration cfg = getConfiguration();
+        return Arrays.asList(cfg.getHttpPort(), cfg.getHttpsPort(), cfg.getAdminPort());
     }
 
 

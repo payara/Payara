@@ -43,6 +43,7 @@ import com.github.dockerjava.api.model.Ulimit;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,7 +197,7 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
         }
         container.withNetwork(getNetwork()); //
         container.withNetworkMode("bridge");
-        container.withExposedPorts(this.cfg.getAdminPort(), this.cfg.getHttpPort(), this.cfg.getHttpsPort()); //
+        container.withExposedPorts(getExposedInternalPorts().stream().toArray(Integer[]::new)); //
         container.withEnv("TZ", "UTC").withEnv("LC_ALL", "en_US.UTF-8"); //
         container.withCreateContainerCmdModifier(cmd -> {
             // see https://github.com/zpapez/docker-java/wiki
@@ -207,6 +208,14 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
         }); //
 
         container.withCommand("/bin/sh", "-c", getCommand().toString()); //
+    }
+
+
+    /**
+     * @return list of internal ports which will be mapped to host port numbers.
+     */
+    protected List<Integer> getExposedInternalPorts() {
+        return Arrays.asList(getConfiguration().getHttpPort());
     }
 
 

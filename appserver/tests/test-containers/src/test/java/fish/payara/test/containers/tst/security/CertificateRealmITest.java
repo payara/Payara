@@ -98,6 +98,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
+ * Note: use <code>-Djavax.net.debug=all</code> from the command line to watch whole fun under it
+ * all :-)
+ *
  * @author David Matejcek
  * @author Arjan Tijms
  */
@@ -118,8 +121,6 @@ public class CertificateRealmITest extends DockerITest {
     @BeforeAll
     public static void initEnvironment() throws Exception {
         LOG.info("initEnvironment()");
-
-        initSslLogging();
 
         final KeyPair clientKeyPair = createKeyPair();
         final X509Certificate clientCertificate = createClientCertificate(clientKeyPair);
@@ -268,14 +269,5 @@ public class CertificateRealmITest extends DockerITest {
         manager.putEntry("client", new PrivateKeyEntry(privateKey, new Certificate[] {certificate}),
             new PasswordProtection(KS_PASSWORD.toCharArray()));
         return manager;
-    }
-
-
-    private static void initSslLogging() {
-        if (LoggerFactory.getLogger("javax.net.debug").isDebugEnabled()) {
-            System.setProperty("javax.net.debug", "ssl:handshake");
-            System.getProperties().put("org.apache.commons.logging.simplelog.defaultlog", "debug");
-
-        }
     }
 }

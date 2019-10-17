@@ -50,12 +50,56 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
 
     private static final String JACOCO_DOCKER_PAYARA_SERVER_EXEC_FILE = "jacoco-docker-payara-server.exec";
 
+    private int adminPort;
+    private int httpsPort;
 
-    @Override
-    public File getMainApplicationDirectoryInDocker() {
-        return new File("/payara5");
+
+    /**
+     * @return internal port of the admin endpoint in the docker container.
+     */
+    public int getAdminPort() {
+        return this.adminPort;
     }
 
+
+    /**
+     * @param port the internal httpPort of the admine endpoint in the docker container
+     */
+    public void setAdminPort(final int port) {
+        this.adminPort = port;
+    }
+
+
+    /**
+     * @return internal https port used by applications in the docker container.
+     */
+    public int getHttpsPort() {
+        return this.httpsPort;
+    }
+
+
+    /**
+     * @param port the internal https port used by applications in the docker container
+     */
+    public void setHttpsPort(final int port) {
+        this.httpsPort = port;
+    }
+
+
+    /**
+     * @return zip file containing application server in docker container
+     */
+    public File getPayaraZipFileInDocker() {
+        return new File(getMainApplicationDirectoryInDocker(), "payara.zip");
+    }
+
+
+    /**
+     * @return directory containing unpacked application server in docker container
+     */
+    public File getPayaraMainDirectoryInDocker() {
+        return new File(getMainApplicationDirectoryInDocker(), "payara5");
+    }
 
     /**
      * @return output file in docker container (path to the
@@ -71,7 +115,7 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      * @return absolute path to the asadmin command
      */
     public File getAsadminFileInDocker() {
-        return new File(getMainApplicationDirectoryInDocker(), "/bin/asadmin");
+        return new File(getPayaraMainDirectoryInDocker(), "/bin/asadmin");
     }
 
 
@@ -79,7 +123,7 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      * @return absolute path to the passwordfile.txt
      */
     public File getPasswordFileInDocker() {
-        return new File("/payara5/glassfish/domains/domain1/config/passwordfile.txt");
+        return new File(getMainApplicationDirectoryInDocker(), "passwordfile.txt");
     }
 
 
@@ -87,6 +131,6 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      * @return absolute path to the passwordfile used to change the default empty password
      */
     public File getPasswordFileForChangeInDocker() {
-        return new File("/payara5/glassfish/domains/domain1/config/passwordfile-change.txt");
+        return new File(getMainApplicationDirectoryInDocker(), "passwordfile-change.txt");
     }
 }

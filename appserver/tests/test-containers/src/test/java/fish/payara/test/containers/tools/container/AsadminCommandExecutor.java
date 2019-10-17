@@ -84,7 +84,8 @@ public class AsadminCommandExecutor {
     public void exec(final String command, final String... arguments) throws AsadminCommandException {
         LOG.debug("exec(command={}, arguments={})", command, arguments);
         Objects.requireNonNull(command, "command");
-        final String[] args = concat(of(container.getAsadminPath()), of(defaultArgs), of(command), of(arguments));
+        final String asadmin = container.getAsadmin().getAbsolutePath();
+        final String[] args = concat(of(asadmin), of(defaultArgs), of(command), of(arguments));
         try {
             final ExecResult result = container.execInContainer(CHARSET, args);
             final int exitCode = result.getExitCode();

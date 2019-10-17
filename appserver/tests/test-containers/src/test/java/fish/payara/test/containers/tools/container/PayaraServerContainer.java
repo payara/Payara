@@ -53,7 +53,6 @@ import org.testcontainers.containers.GenericContainer;
  */
 public class PayaraServerContainer extends GenericContainer<PayaraServerContainer> {
 
-    private static final String PATH_ASADMIN = "/payara5/bin/asadmin";
     private final PayaraServerContainerConfiguration configuration;
     private final RestClientCache clientCache;
 
@@ -75,8 +74,8 @@ public class PayaraServerContainer extends GenericContainer<PayaraServerContaine
     /**
      * @return absolute path to asadmin command file in the container.
      */
-    public String getAsadminPath() {
-        return PATH_ASADMIN;
+    public File getAsadmin() {
+        return new File(configuration.getPayaraMainDirectoryInDocker(), "bin/asadmin");
     }
 
 
