@@ -196,7 +196,7 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
         }
         container.withNetwork(getNetwork()); //
         container.withNetworkMode("bridge");
-        container.withExposedPorts(this.cfg.getAdminPort(), this.cfg.getHttpPort()); //
+        container.withExposedPorts(this.cfg.getAdminPort(), this.cfg.getHttpPort(), this.cfg.getHttpsPort()); //
         container.withEnv("TZ", "UTC").withEnv("LC_ALL", "en_US.UTF-8"); //
         container.withCreateContainerCmdModifier(cmd -> {
             // see https://github.com/zpapez/docker-java/wiki

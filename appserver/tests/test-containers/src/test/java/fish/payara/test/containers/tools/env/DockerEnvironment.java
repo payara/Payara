@@ -44,7 +44,6 @@ import fish.payara.test.containers.tools.container.PayaraServerDockerImageManage
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,6 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container.ExecResult;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 
 /**
@@ -91,6 +89,7 @@ public class DockerEnvironment implements AutoCloseable {
         }
 
         environment = new DockerEnvironment(cfg);
+        LOG.info("DockerEnvironment initialized: {}", environment);
         return environment;
     }
 
@@ -130,7 +129,7 @@ public class DockerEnvironment implements AutoCloseable {
 
         // STEP2: Create and start containers sequentionally (respect dependencies!)
         this.payaraContainer = fbServerMgr.start();
-        logContainerStarted(this.payaraContainer);
+        logPayaraContainerStarted(this.payaraContainer);
         this.startupTime = LocalDateTime.now();
     }
 
@@ -161,11 +160,8 @@ public class DockerEnvironment implements AutoCloseable {
     }
 
 
-    /**
-     * @return basic URI of applications, for example: http://host:port/basicContext
-     */
-    public URI getBaseUri() {
-        return this.payaraContainer.getBaseUri();
+    public PayaraServerContainer getPayaraContainer() {
+        return this.payaraContainer;
     }
 
 
@@ -187,18 +183,18 @@ public class DockerEnvironment implements AutoCloseable {
     }
 
 
-    private static void logContainerStarted(final GenericContainer<?> container) {
+    private static void logPayaraContainerStarted(final PayaraServerContainer container) {
         LOG.info("\n" //
             + "========================================\n"
             + "{}(name: '{}') started, you can use this urls:\n"
-            + "https://{}:{}\n"
-            + "http://{}:{}\n"
+            + "{}\n"
+            + "{}\n"
+            + "{}\n"
             + "========================================", //
-            container.getClass().getSimpleName(), container.getContainerInfo().getName(),
-            container.getContainerIpAddress(),
-            container.getMappedPort(4848),
-            container.getContainerIpAddress(),
-            container.getMappedPort(8080));
+            container.getClass().getSimpleName(), container.getContainerInfo().getName(), //
+            container.getAdminUrl(), //
+            container.getHttpUrl(), //
+            container.getHttpsUrl());
     }
 
 

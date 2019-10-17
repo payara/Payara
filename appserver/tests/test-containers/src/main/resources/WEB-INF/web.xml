@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/** Copyright Payara Services Limited **/
+-->
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Public resources</web-resource-name>
+            <url-pattern>/public/*</url-pattern>
+            <url-pattern>/BouncyServlet/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>CNServlet</web-resource-name>
+            <url-pattern>/cn</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>payara-role-CN</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>EmailGroupServlet</web-resource-name>
+            <url-pattern>/emailgroup</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>payara-role-email</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>PayaraNotPermittedServlet</web-resource-name>
+            <url-pattern>/inaccessible</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>payara-role-another</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <!-- no realm name: use default realm for this auth method -->
+        <auth-method>CLIENT-CERT</auth-method>
+    </login-config>
+
+    <security-role>
+        <role-name>payara-role-CN</role-name>
+    </security-role>
+    <security-role>
+        <role-name>payara-role-email</role-name>
+    </security-role>
+    <security-role>
+        <role-name>payara-role-another</role-name>
+    </security-role>
+</web-app>

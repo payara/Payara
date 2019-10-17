@@ -56,6 +56,7 @@ public final class TestConfiguration {
     private static final TestConfiguration CONFIGURATION = new TestConfiguration();
 
     private final File buildDirectory;
+    private final File payaraDirectory;
 
     private final String payaraHost;
     private final int payaraPort;
@@ -81,6 +82,7 @@ public final class TestConfiguration {
 
         this.buildDirectory = properties.getFile("build.directory");
 
+        this.payaraDirectory = properties.getFile("docker.payara.directory");
         this.payaraHost = properties.getString("docker.payara.host");
         this.payaraPort = properties.getInt("docker.payara.port", 0);
         this.payaraUsername = properties.getString("docker.payara.username");
@@ -128,6 +130,14 @@ public final class TestConfiguration {
      */
     public File getBuildDirectory() {
         return this.buildDirectory;
+    }
+
+
+    /**
+     * @return path to the Payara directory
+     */
+    public File getPayaraDirectory() {
+        return this.payaraDirectory;
     }
 
 

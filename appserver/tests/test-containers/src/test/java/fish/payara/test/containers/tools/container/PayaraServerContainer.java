@@ -43,11 +43,7 @@ import fish.payara.test.containers.tools.rs.RestClientCache;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 /**
@@ -57,11 +53,9 @@ import org.testcontainers.containers.GenericContainer;
  */
 public class PayaraServerContainer extends GenericContainer<PayaraServerContainer> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PayaraServerContainer.class);
     private static final String PATH_ASADMIN = "/payara5/bin/asadmin";
     private final PayaraServerContainerConfiguration configuration;
     private final RestClientCache clientCache;
-    private URI adminUri;
 
 
     /**
@@ -79,29 +73,44 @@ public class PayaraServerContainer extends GenericContainer<PayaraServerContaine
 
 
     /**
-     * @return basic URI of the admin GUI, for example: http://payara-domain:4848
-     */
-    public URI getBaseUri() {
-        // lazy init is needed because uri is valid only when the container is running
-        if (this.adminUri == null) {
-            try {
-                final URL url = new URL("http", getContainerIpAddress(), getMappedPort(8080), "");
-                this.adminUri = url.toURI();
-                LOG.info("Payara domain uri base for requests: {}", this.adminUri);
-            } catch (final MalformedURLException | URISyntaxException e) {
-                throw new IllegalStateException("Could not initialize the adminUri", e);
-            }
-        }
-
-        return this.adminUri;
-    }
-
-
-    /**
      * @return absolute path to asadmin command file in the container.
      */
     public String getAsadminPath() {
         return PATH_ASADMIN;
+    }
+
+
+    /**
+     * @return {@link URL}, where tests can access the domain admin port.
+     */
+    public URL getAdminUrl() {
+        return getExternalUrl("https", configuration.getAdminPort());
+    }
+
+
+    /**
+     * @return {@link URL}, where tests can access the appllication HTTP port.
+     */
+    public URL getHttpUrl() {
+        return getExternalUrl("http", configuration.getHttpPort());
+    }
+
+
+    /**
+     * @return {@link URL}, where tests can access the application HTTPS port.
+     */
+    public URL getHttpsUrl() {
+        return getExternalUrl("https", configuration.getHttpsPort());
+    }
+
+
+    private URL getExternalUrl(String protocol, int internalPort) {
+        try {
+            return new URL(protocol, getContainerIpAddress(), getMappedPort(internalPort), "/");
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(
+                "Could not create external url for protocol '" + protocol + "' and port " + internalPort, e);
+        }
     }
 
 

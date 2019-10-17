@@ -44,6 +44,8 @@ import fish.payara.test.containers.tools.env.TestConfiguration;
 import fish.payara.test.containers.tools.rs.RestClientCache;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -66,7 +68,6 @@ public abstract class DockerITest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerITest.class);
 
-    private static DockerEnvironment dockerEnvironment;
     private static RestClientCache clientCache;
 
 
@@ -76,10 +77,9 @@ public abstract class DockerITest {
      * @throws Exception
      */
     @BeforeAll
-    public static void initEnvironment() throws Exception {
-        LOG.info("initEnvironment()");
-        dockerEnvironment = DockerEnvironment.getInstance();
-        assertNotNull(dockerEnvironment, "dockerEnvironment");
+    public static void initDockerEnvironmentAndRestClientCache() throws Exception {
+        LOG.info("initDockerEnvironmentAndRestClientCache()");
+        assertNotNull(DockerEnvironment.getInstance(), "dockerEnvironment");
         clientCache = new RestClientCache();
     }
 
@@ -99,7 +99,7 @@ public abstract class DockerITest {
      * @return actual {@link DockerEnvironment} instance.
      */
     public static DockerEnvironment getDockerEnvironment() {
-        return dockerEnvironment;
+        return DockerEnvironment.getInstance();
     }
 
 
@@ -115,7 +115,7 @@ public abstract class DockerITest {
      * @return basic URI of the application, for example: http://host:port/basicContext
      */
     public static URI getBaseUri() {
-        return dockerEnvironment.getBaseUri();
+        return toUri(DockerEnvironment.getInstance().getPayaraContainer().getHttpUrl());
     }
 
 
@@ -125,7 +125,7 @@ public abstract class DockerITest {
      *         http://host:port/basicContext/something
      */
     public static URI getBaseUri(final String context) {
-        return URI.create(dockerEnvironment.getBaseUri() + context);
+        return URI.create(getBaseUri() + context);
     }
 
 
@@ -188,5 +188,14 @@ public abstract class DockerITest {
             target = target.path(urlContextPart);
         }
         return target;
+    }
+
+
+    private static URI toUri(final URL url) {
+        try {
+            return url == null ? null : url.toURI();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid url: " + url, e);
+        }
     }
 }

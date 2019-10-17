@@ -61,6 +61,7 @@ public class JavaContainerConfiguration {
     private String host;
     private int adminPort;
     private int httpPort;
+    private int httpsPort;
 
     private int systemMemory;
     private String xms;
@@ -198,6 +199,22 @@ public class JavaContainerConfiguration {
      */
     public void setHttpPort(final int port) {
         this.httpPort = port;
+    }
+
+
+    /**
+     * @return internal https port used by applications in the docker container.
+     */
+    public int getHttpsPort() {
+        return this.httpsPort;
+    }
+
+
+    /**
+     * @param port the internal https port used by applications in the docker container
+     */
+    public void setHttpsPort(final int port) {
+        this.httpsPort = port;
     }
 
 

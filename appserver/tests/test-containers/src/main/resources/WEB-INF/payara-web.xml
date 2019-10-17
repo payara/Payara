@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN" "https://raw.githubusercontent.com/payara/Payara-Server-Documentation/master/schemas/payara-web-app_4.dtd">
+<payara-web-app>
+
+    <security-role-mapping>
+        <role-name>payara-role-CN</role-name>
+        <!-- not covered by tests, realm would need to set the common-name-as-principal-name to true -->
+        <principal-name>Payara The Fish</principal-name>
+        <!-- principal name must match this string exactly -->
+        <principal-name>EMAILADDRESS=payara@payara.fish,C=ID,O=payara-o,OU=payara-ou,CN=Payara The Fish</principal-name>
+    </security-role-mapping>
+
+    <security-role-mapping>
+        <role-name>payara-role-email</role-name>
+        <group-name>payara@payara.fish</group-name>
+    </security-role-mapping>
+
+    <security-role-mapping>
+        <role-name>payara-role-another</role-name>
+        <principal-name>Golden Fish</principal-name>
+    </security-role-mapping>
+</payara-web-app>

@@ -123,14 +123,16 @@ public class PayaraServerDockerImageManager
         }
         command.append(" && ls -la ").append(
             new File(getConfiguration().getMainApplicationDirectoryInDocker(), "glassfish/domains/domain1/config")); //
-        command.append(" && ").append(getConfiguration().getAsadminFileInDocker()) //
+
+        final File asadmin = getConfiguration().getAsadminFileInDocker();
+        command.append(" && ").append(asadmin) //
             .append(" --user admin --passwordfile ").append(getConfiguration().getPasswordFileForChangeInDocker()) //
             .append(" change-admin-password");
-        command.append(" && ").append(getConfiguration().getAsadminFileInDocker()).append(" start-domain domain1");
-        command.append(" && ").append(getConfiguration().getAsadminFileInDocker()) //
+        command.append(" && ").append(asadmin).append(" start-domain domain1");
+        command.append(" && ").append(asadmin) //
             .append(" --user admin --passwordfile ").append(getConfiguration().getPasswordFileInDocker()) //
             .append(" enable-secure-admin");
-        command.append(" && ").append(getConfiguration().getAsadminFileInDocker()).append(" restart-domain domain1");
+        command.append(" && ").append(asadmin).append(" restart-domain domain1");
         command.append(" && echo '" + PAYARA_DOCKER_IMAGE_STARTED + "'");
         command.append(" && sleep infinity"); //
         return command;
