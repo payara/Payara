@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 abstract class PrincipalInfoPrintingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    public static final String[] ROLES = {"payara-role-CN", "payara-role-email", "payara-role-another"};
+    public static final String[] ROLES = //
+        {"payara-role-principal-cn", "payara-role-principal-dn", "payara-role-email", "payara-role-another"};
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

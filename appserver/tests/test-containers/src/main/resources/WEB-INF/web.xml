@@ -20,7 +20,8 @@
             <url-pattern>/cn</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>payara-role-CN</role-name>
+            <role-name>payara-role-principal-cn</role-name>
+            <role-name>payara-role-principal-dn</role-name>
         </auth-constraint>
     </security-constraint>
     <security-constraint>
@@ -48,7 +49,10 @@
     </login-config>
 
     <security-role>
-        <role-name>payara-role-CN</role-name>
+        <role-name>payara-role-principal-cn</role-name>
+    </security-role>
+    <security-role>
+        <role-name>payara-role-principal-dn</role-name>
     </security-role>
     <security-role>
         <role-name>payara-role-email</role-name>

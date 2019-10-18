@@ -130,6 +130,7 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
 
             payara.asAdmin("show-component-status", applicationName);
 
+            // FIXME: use real context obtained from the server
             httpContext.add(new Servlet(applicationName, applicationName));
             final List<String> modules = getModuleNames(applicationName, deployer);
             LOG.info("modules: {}", modules);

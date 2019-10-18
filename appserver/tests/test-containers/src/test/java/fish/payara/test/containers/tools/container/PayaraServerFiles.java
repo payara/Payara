@@ -84,20 +84,37 @@ public class PayaraServerFiles {
         return Paths.get(getMainDirectory().getAbsolutePath(), "glassfish", "domains", "domain1").toFile();
     }
 
+
+    /**
+     * @return keystore.jks of the domain1
+     */
+    public File getKeyStoreFile() {
+        return getDomainDirectory().toPath().resolve(Paths.get("config", "keystore.jks")).toFile();
+    }
+
+
+    /**
+     * @return cacerts.jks of the domain1
+     */
+
+    public File getTrustStoreFile() {
+        return getDomainDirectory().toPath().resolve(Paths.get("config", "cacerts.jks")).toFile();
+    }
+
+
     /**
      * @return keystore.jks of the domain1
      */
     // FIXME: move passwords to one place!
     public KeyStoreManager getKeyStore() {
-        final File keystore = getDomainDirectory().toPath().resolve(Paths.get("config", "keystore.jks")).toFile();
-        return new KeyStoreManager(keystore, KeyStoreType.JKS, "changeit");
+        return new KeyStoreManager(getKeyStoreFile(), KeyStoreType.JKS, "changeit");
     }
+
 
     /**
      * @return cacerts.jks of the domain1
      */
     public KeyStoreManager getTrustStore() {
-        final File keystore = getDomainDirectory().toPath().resolve(Paths.get("config", "cacerts.jks")).toFile();
-        return new KeyStoreManager(keystore, KeyStoreType.JKS, "changeit");
+        return new KeyStoreManager(getTrustStoreFile(), KeyStoreType.JKS, "changeit");
     }
 }

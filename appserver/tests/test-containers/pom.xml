@@ -41,6 +41,8 @@
         </maven.test.jvmoptions>
         <failsafe.argLine>${maven.test.jvmoptions}</failsafe.argLine>
         <surefire.argLine>${maven.test.jvmoptions}</surefire.argLine>
+
+        <slf4j.version>1.7.28</slf4j.version>
     </properties>
 
     <dependencyManagement>
@@ -71,33 +73,27 @@
 
     <dependencies>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.28</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.28</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.28</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.28</version>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
             <scope>test</scope>
         </dependency>
 
@@ -129,12 +125,6 @@
         <dependency>
             <groupId>io.github.zforgo.arquillian.junit5</groupId>
             <artifactId>arquillian-junit5-container</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.zforgo.arquillian.junit5</groupId>
-            <artifactId>arquillian-junit5-core</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>

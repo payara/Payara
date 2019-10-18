@@ -87,7 +87,6 @@ public class DockerEnvironment implements AutoCloseable {
         if (environment != null) {
             throw new IllegalStateException("Environment already created.");
         }
-
         environment = new DockerEnvironment(cfg);
         LOG.info("DockerEnvironment initialized: {}", environment);
         return environment;
@@ -160,6 +159,9 @@ public class DockerEnvironment implements AutoCloseable {
     }
 
 
+    /**
+     * @return initialized docker container with the Payara domain inside.
+     */
     public PayaraServerContainer getPayaraContainer() {
         return this.payaraContainer;
     }

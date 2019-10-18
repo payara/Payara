@@ -48,6 +48,8 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -57,6 +59,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * JUnit extension; logs test durations and manages environment startup and shutdown.
@@ -78,6 +81,12 @@ public class DockerITestExtension
     private Namespace namespaceClass;
     private Namespace namespaceMethod;
 
+    static {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        LogManager.getLogManager().reset();
+        LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);
+        SLF4JBridgeHandler.install();
+    }
 
     @Override
     public void beforeAll(final ExtensionContext context) throws Exception {
