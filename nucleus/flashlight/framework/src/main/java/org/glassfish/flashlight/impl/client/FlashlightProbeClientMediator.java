@@ -204,7 +204,6 @@ public class FlashlightProbeClientMediator
                 logger.log(Level.SEVERE, BAD_TRANSFORM, ex);
             }
         }
-        ProbeProviderClassFileTransformer.transformAll();
     }
 
     /**

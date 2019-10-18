@@ -75,13 +75,13 @@ public class ProbeClientMethodHandleImpl
     public synchronized void enable() {
         probe.addInvoker(clientMethodInvoker);
         enabled = true;
-        ProbeProviderClassFileTransformer.transform(probe.getProviderClazz());
+        ProbeProviderClassFileTransformer.update(probe.getProviderClazz());
     }
 
     @Override
     public synchronized void disable() {
         probe.removeInvoker(clientMethodInvoker);
         enabled = false;
-        ProbeProviderClassFileTransformer.untransform(probe.getProviderClazz());
+        ProbeProviderClassFileTransformer.update(probe.getProviderClazz());
     }
 }
