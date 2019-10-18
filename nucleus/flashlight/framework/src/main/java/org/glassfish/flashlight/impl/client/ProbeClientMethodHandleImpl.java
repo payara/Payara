@@ -50,10 +50,10 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 public class ProbeClientMethodHandleImpl
         implements ProbeClientMethodHandle {
 
-    private int clientMethodId;
+    private final int clientMethodId;
+    private final ProbeClientInvoker clientMethodInvoker;
+    private final FlashlightProbe probe;
     private boolean enabled = true;
-    private ProbeClientInvoker clientMethodInvoker;
-    private FlashlightProbe probe;
 
     public ProbeClientMethodHandleImpl(int id, ProbeClientInvoker invoker, FlashlightProbe probe) {
         this.clientMethodId = id;

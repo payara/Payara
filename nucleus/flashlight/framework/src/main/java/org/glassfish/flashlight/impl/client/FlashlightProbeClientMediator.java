@@ -87,7 +87,7 @@ public class FlashlightProbeClientMediator
     private AtomicInteger clientIdGenerator =
             new AtomicInteger(0);
     private static ConcurrentHashMap<Integer, Object> clients =
-            new ConcurrentHashMap<Integer, Object>();
+            new ConcurrentHashMap<>();
 
     @Override
     public void postConstruct() {
@@ -114,8 +114,8 @@ public class FlashlightProbeClientMediator
     @Override
     public Collection<ProbeClientMethodHandle> registerListener(Object listener, String invokerId) {
 
-        List<ProbeClientMethodHandle> pcms = new ArrayList<ProbeClientMethodHandle>();
-        List<FlashlightProbe> probesRequiringClassTransformation = new ArrayList<FlashlightProbe>();
+        List<ProbeClientMethodHandle> pcms = new ArrayList<>();
+        List<FlashlightProbe> probesRequiringClassTransformation = new ArrayList<>();
         if (invokerId != null) {
             invokerId = FlashlightUtils.getUniqueInvokerId(invokerId);
         }
@@ -127,8 +127,8 @@ public class FlashlightProbeClientMediator
 
     public Collection<ProbeClientMethodHandle> registerDTraceListener(FlashlightProbeProvider propro) {
 
-        List<ProbeClientMethodHandle> pcms = new ArrayList<ProbeClientMethodHandle>();
-        List<FlashlightProbe> probesRequiringClassTransformation = new ArrayList<FlashlightProbe>();
+        List<ProbeClientMethodHandle> pcms = new ArrayList<>();
+        List<FlashlightProbe> probesRequiringClassTransformation = new ArrayList<>();
 
         Object listener = registerDTraceListener(propro, pcms, probesRequiringClassTransformation);
         transformProbes(listener, probesRequiringClassTransformation);
@@ -194,7 +194,7 @@ public class FlashlightProbeClientMediator
         clients.put(clientID, listener);
 
         for (FlashlightProbe probe : probes) {
-            Class clz = probe.getProviderClazz();
+            Class<?> clz = probe.getProviderClazz();
             ProbeProviderClassFileTransformer transformer =
                     ProbeProviderClassFileTransformer.getInstance(clz);
             try {
@@ -218,7 +218,7 @@ public class FlashlightProbeClientMediator
      */
     private List<MethodProbe> handleListenerAnnotations(Class listenerClass, String invokerId) {
 
-        List<MethodProbe> mp = new LinkedList<MethodProbe>();
+        List<MethodProbe> mp = new LinkedList<>();
 
         for (Method method : listenerClass.getMethods()) {
             ProbeListener probeAnn = method.getAnnotation(ProbeListener.class);
