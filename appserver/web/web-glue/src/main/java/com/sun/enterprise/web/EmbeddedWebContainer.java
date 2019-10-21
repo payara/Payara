@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -166,29 +166,29 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     /**
      * Create a web module/application.
      *
-     * @param ctxPath  Context path for the web module
+     * @param ctxPath Context path for the web module
      * @param location Absolute pathname to the web module directory
      * @param defaultWebXmlLocation Location of default-web.xml
      */
     public Context createContext(String id,
-                                 String ctxPath,
-                                 File location,
-                                 String defaultContextXmlLocation,
-                                 String defaultWebXmlLocation, 
-                                 boolean useDOLforDeployment,
-                                 WebModuleConfig wmInfo) {
+            String ctxPath,
+            File location,
+            String defaultContextXmlLocation,
+            String defaultWebXmlLocation,
+            boolean useDOLforDeployment,
+            WebModuleConfig wmInfo) {
 
         File configFile = null;
         // check contextPath.xml and /META-INF/context.xml if not found
         if (ctxPath.equals("")) {
-            configFile = new File(getCatalinaHome()+"/config", "ROOT.xml");
+            configFile = new File(getCatalinaHome() + "/config", "ROOT.xml");
         } else {
-            configFile = new File(getCatalinaHome()+"/config", ctxPath+".xml");
+            configFile = new File(getCatalinaHome() + "/config", ctxPath + ".xml");
         }
         if (!configFile.exists()) {
             configFile = new File(location, Constants.WEB_CONTEXT_XML);
         }
-        
+
         WebModule context = new WebModule(services);
         context.setID(id);
         context.setWebContainer(webContainer);
@@ -210,16 +210,58 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         if (configFile.exists()) {
             context.setConfigFile(configFile.getAbsolutePath());
         }
-            
+
+        addLifecycleListeners(context, defaultContextXmlLocation, defaultWebXmlLocation, useDOLforDeployment, wmInfo);
+
+        context.addContainerListener(
+                new WebContainerListener(invocationManager, injectionManager, validationNamingProxy));
+
+        for (WebModuleDecorator d : services.<WebModuleDecorator>getAllServices(WebModuleDecorator.class)) {
+            d.decorate(context);
+        }
+
+        // TODO: monitoring should also hook in via WebModuleDecorator
+        //context.addInstanceListener(
+        //    "com.sun.enterprise.admin.monitor.callflow.WebContainerListener");
+        return context;
+    }
+
+    /**
+     * Update a web module/application.
+     *
+     * @param context
+     * @param defaultContextXmlLocation
+     * @param defaultWebXmlLocation Location of default-web.xml
+     * @param useDOLforDeployment
+     * @param wmInfo
+     */
+    public void updateContext(WebModule context,
+            String defaultContextXmlLocation,
+            String defaultWebXmlLocation,
+            boolean useDOLforDeployment,
+            WebModuleConfig wmInfo) {
+
+        context.setWebModuleConfig(wmInfo);
+        context.setWebBundleDescriptor(wmInfo.getDescriptor());
+        context.removeLifecycleListeners();
+        addLifecycleListeners(context, defaultContextXmlLocation, defaultWebXmlLocation, useDOLforDeployment, wmInfo);
+    }
+
+    private void addLifecycleListeners(WebModule context,
+            String defaultContextXmlLocation,
+            String defaultWebXmlLocation,
+            boolean useDOLforDeployment,
+            WebModuleConfig wmInfo) {
+
         ContextConfig config;
-        if (useDOLforDeployment) {            
+        if (useDOLforDeployment) {
             config = new WebModuleContextConfig(services);
-            ((WebModuleContextConfig)config).setDescriptor(
-                wmInfo.getDescriptor());
+            ((WebModuleContextConfig) config).setDescriptor(
+                    wmInfo.getDescriptor());
         } else {
             config = new ContextConfig();
         }
-        
+
         config.setDefaultContextXml(defaultContextXmlLocation);
         config.setDefaultWebXml(defaultWebXmlLocation);
         context.addLifecycleListener(config);
@@ -227,21 +269,8 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         // TODO: should any of those become WebModuleDecorator, too?
         context.addLifecycleListener(new WebModuleListener(webContainer, wmInfo.getDescriptor()));
 
-        context.addContainerListener(
-                new WebContainerListener(invocationManager, injectionManager, validationNamingProxy));
-
-        for( WebModuleDecorator d : services.<WebModuleDecorator>getAllServices(WebModuleDecorator.class)) {
-            d.decorate(context);
-        }
-
-        // TODO: monitoring should also hook in via WebModuleDecorator
-        //context.addInstanceListener(
-        //    "com.sun.enterprise.admin.monitor.callflow.WebContainerListener");
-        
-        return context;
     }
 
-         
     /**
      * Util method to load classes that might get compiled after this class is
      * compiled.
