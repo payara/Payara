@@ -88,6 +88,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
+import org.hamcrest.core.IsEqual;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -103,6 +107,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.collection.ArrayMatching.arrayContainingInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -113,20 +118,24 @@ import static org.junit.jupiter.api.Assertions.fail;
  * all!
  *
  * @author David Matejcek
- * @author Arjan Tijms
  */
 @ExtendWith(ArquillianExtension.class)
 public class CertificateRealmITest extends DockerITest {
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateRealmITest.class);
     private static final String KS_PASSWORD = "changeit";
+    private static final String DN_CLIENT = "CN=Payara The Fish, OU=payara-ou, O=payara-o, C=ID,"
+        + " EMAILADDRESS=payara@payara.fish, DC=, DC=Payara1, DC=Payara2";
+    private static final int RESPONSE_LINE_COUNT = 6;
 
     @ArquillianResource
     private static URL base;
     private static URL baseHttps;
 
-    private static WebClient webClient;
     private static KeyStoreManager clientKeyStore;
+    private static KeyStoreManager clientTrustStore;
+    private static File clientTrustStoreFile;
+    private WebClient webClient;
 
 
     @BeforeAll
@@ -149,26 +158,31 @@ public class CertificateRealmITest extends DockerITest {
 
     @BeforeEach
     public void init() throws Exception {
-        if (webClient != null) {
-            return;
+        if (baseHttps == null) {
+            baseHttps = new URL(getDockerEnvironment().getPayaraContainer().getHttpsUrl(), base.getPath());
+            LOG.debug("Using baseHttps={} and client key store from: {}", baseHttps, clientKeyStore);
+
+            final X509Certificate[] serverCertificateChain = getServerCertificateChain();
+            LOG.debug("Received server certificates: \n{}", (Object) serverCertificateChain);
+            assertThat("Received server certificate chain", serverCertificateChain.length, IsEqual.equalTo(1));
+
+            clientTrustStore = createClientTrustStore(serverCertificateChain[0]);
+            clientTrustStoreFile = File.createTempFile("trust-store", clientTrustStore.getKeyStoreType().name());
+            clientTrustStore.save(clientTrustStoreFile);
         }
-        webClient = new WebClient();
-        baseHttps = new URL(getDockerEnvironment().getPayaraContainer().getHttpsUrl(), base.getPath());
+
+        assertNotNull(clientTrustStoreFile, "Client trust store is not initialized.");
+        this.webClient = new WebClient();
         LOG.debug("Using baseHttps={} and client key store from: {}", baseHttps, clientKeyStore);
 
-        // Client -> Server : the key store's private keys and certificates are used to sign
-        // and sent a reply to the server
+        // Client -> Server: the key store's private keys and certificates are used to sign
+        // and send a reply to the server
         try (ByteArrayInputStream is = new ByteArrayInputStream(clientKeyStore.toBytes())) {
             webClient.getOptions().setSSLClientCertificate(is, KS_PASSWORD, clientKeyStore.getKeyStoreType().name());
         }
-
-        final KeyStoreManager clientTrustStore = createClientTrustStore(getServerCertificateChain());
-        final File clientTrustStoreFile = File.createTempFile("trust-store", clientTrustStore.getKeyStoreType().name());
-        clientTrustStore.save(clientTrustStoreFile);
-        webClient.getOptions().setSSLTrustStore(clientTrustStoreFile.toURI().toURL(), KS_PASSWORD,
+        this.webClient.getOptions().setSSLTrustStore(clientTrustStoreFile.toURI().toURL(), KS_PASSWORD,
             clientTrustStore.getKeyStoreType().name());
-
-        webClient.getOptions().setTimeout(10000);
+        this.webClient.getOptions().setTimeout(10000);
     }
 
 
@@ -178,19 +192,20 @@ public class CertificateRealmITest extends DockerITest {
      * @throws Exception
      */
     @Test
-    public void publicServlet() throws Exception {
+    public void publicServletWithDefaults() throws Exception {
         final TextPage page = webClient.getPage(new URL(baseHttps, "public"));
         final String outputContent = page.getContent();
-        LOG.info("outputContent: " + outputContent);
+        LOG.info("Servlet response: \n{}", outputContent);
         assertNotNull(outputContent, "output");
         final String[] lines = outputContent.split("\n");
-        assertEquals(5, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
+        assertEquals(RESPONSE_LINE_COUNT, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
         assertAll( //
             () -> assertEquals("principal=null", lines[0], "principal name"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-cn)=false", lines[1], "isInRole"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-dn)=false", lines[2], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-email)=false", lines[3], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[4], "isInRole") //
+            () -> assertEquals("request.isUserInRole(payara-role-dc)=false", lines[3], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-email)=false", lines[4], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[5], "isInRole") //
         );
     }
 
@@ -201,21 +216,21 @@ public class CertificateRealmITest extends DockerITest {
      * @throws Exception
      */
     @Test
-    public void cnServletDefaultRealm() throws Exception {
+    public void cnServletWithDefaultPrincipal() throws Exception {
         final TextPage page = webClient.getPage(new URL(baseHttps, "cn"));
         final String outputContent = page.getContent();
-        LOG.info("outputContent: " + outputContent);
+        LOG.info("Servlet response: \n{}", outputContent);
         assertNotNull("output", outputContent);
         final String[] lines = outputContent.split("\n");
-        assertEquals(5, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
+        assertEquals(RESPONSE_LINE_COUNT, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
         assertAll( //
-            () -> assertEquals(
-                "principal=EMAILADDRESS=payara@payara.fish,C=ID,O=payara-o,OU=payara-ou,CN=Payara The Fish", lines[0],
-                "principal name"),
+            () -> assertThat("principal name", lines[0], startsWith("principal=")),
+            () -> assertThat("principal name", lines[0].substring("principal=".length()), principalName()),
             () -> assertEquals("request.isUserInRole(payara-role-principal-cn)=false", lines[1], "isInRole"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-dn)=true", lines[2], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-email)=false", lines[3], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[4], "isInRole") //
+            () -> assertEquals("request.isUserInRole(payara-role-dc)=false", lines[3], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-email)=false", lines[4], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[5], "isInRole") //
         );
     }
 
@@ -227,46 +242,76 @@ public class CertificateRealmITest extends DockerITest {
      * @throws Exception
      */
     @Test
-    public void cnServletWithCNPrincipalAndEmailRole() throws Exception {
+    public void cnServletWithCnPrincipalAndEmailRole() throws Exception {
         setRealmProperties("EMAILADDRESS", true);
         final TextPage page = webClient.getPage(new URL(baseHttps, "cn"));
         final String outputContent = page.getContent();
-        LOG.info("outputContent: " + outputContent);
+        LOG.info("Servlet response: \n{}", outputContent);
         assertNotNull("output", outputContent);
         final String[] lines = outputContent.split("\n");
-        assertEquals(5, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
+        assertEquals(RESPONSE_LINE_COUNT, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
         assertAll( //
             () -> assertEquals("principal=Payara The Fish", lines[0], "principal name"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-cn)=true", lines[1], "isInRole"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-dn)=false", lines[2], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-email)=true", lines[3], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[4], "isInRole") //
+            () -> assertEquals("request.isUserInRole(payara-role-dc)=false", lines[3], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-email)=true", lines[4], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[5], "isInRole") //
         );
     }
 
 
     /**
-     * Shall pass only with dn-parts-used-for-groups=EMAILADDRESS,...
+     * Shall pass only with dn-parts-used-for-groups=EMAILADDRESS,DC and
+     * common-name-as-principal-name=true.
+     * <p>
+     * Note that DC can have multiple values.
      *
      * @throws Exception
      */
     @Test
-    public void emailGroupServletWithDnParts() throws Exception {
+    public void cnServletWithCnPrincipalAndEmailAndDcRole() throws Exception {
+        setRealmProperties("EMAILADDRESS,DC", true);
+        final TextPage page = webClient.getPage(new URL(baseHttps, "cn"));
+        final String outputContent = page.getContent();
+        LOG.info("Servlet response: \n{}", outputContent);
+        assertNotNull("output", outputContent);
+        final String[] lines = outputContent.split("\n");
+        assertEquals(RESPONSE_LINE_COUNT, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
+        assertAll( //
+            () -> assertEquals("principal=Payara The Fish", lines[0], "principal name"),
+            () -> assertEquals("request.isUserInRole(payara-role-principal-cn)=true", lines[1], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-principal-dn)=false", lines[2], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-dc)=true", lines[3], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-email)=true", lines[4], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[5], "isInRole") //
+        );
+    }
+
+    /**
+     * Shall pass only with dn-parts-used-for-groups=EMAILADDRESS,...
+     * <p>
+     * ST is used as group - but it is not mapped to role. It should not be a problem.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void emailGroupServletWithDefaultPrincipalAndEmailRole() throws Exception {
         setRealmProperties("EMAILADDRESS,ST", false);
         final TextPage page = webClient.getPage(new URL(baseHttps, "emailgroup"));
         final String outputContent = page.getContent();
-        LOG.info("outputContent: " + outputContent);
+        LOG.info("Servlet response: \n{}", outputContent);
         assertNotNull("output", outputContent);
         final String[] lines = outputContent.split("\n");
-        assertEquals(5, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
+        assertEquals(RESPONSE_LINE_COUNT, lines.length, () -> "outputContent.lines.count: \n" + outputContent);
         assertAll( //
-            () -> assertEquals(
-                "principal=EMAILADDRESS=payara@payara.fish,C=ID,O=payara-o,OU=payara-ou,CN=Payara The Fish", lines[0],
-                "principal name"),
+            () -> assertThat("principal name", lines[0], startsWith("principal=")),
+            () -> assertThat("principal name", lines[0].substring("principal=".length()), principalName()),
             () -> assertEquals("request.isUserInRole(payara-role-principal-cn)=false", lines[1], "isInRole"),
             () -> assertEquals("request.isUserInRole(payara-role-principal-dn)=true", lines[2], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-email)=true", lines[3], "isInRole"),
-            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[4], "isInRole") //
+            () -> assertEquals("request.isUserInRole(payara-role-dc)=false", lines[3], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-email)=true", lines[4], "isInRole"),
+            () -> assertEquals("request.isUserInRole(payara-role-another)=false", lines[5], "isInRole") //
         );
     }
 
@@ -277,14 +322,15 @@ public class CertificateRealmITest extends DockerITest {
      * @throws Exception
      */
     @Test
-    public void emailGroupServletDefaultRealm() throws Exception {
+    public void emailGroupServletWithDefaultPrincipal() throws Exception {
         try {
             final TextPage page = webClient.getPage(new URL(baseHttps, "emailgroup"));
-            fail("Exception expected, but received response: \n" + page);
+            fail("Exception expected, but received response: \n" + page.getContent());
         } catch (FailingHttpStatusCodeException e) {
             assertThat("Exception message", e.getMessage(), startsWith("403 Forbidden"));
         }
     }
+
 
 
     /**
@@ -295,8 +341,8 @@ public class CertificateRealmITest extends DockerITest {
     @Test
     public void inaccessibleNonExistingServlet() throws Exception {
         try {
-            final String response = webClient.getPage(new URL(baseHttps, "inaccessible"));
-            fail("Exception expected, but received response: \n" + response);
+            final TextPage response = webClient.getPage(new URL(baseHttps, "inaccessible"));
+            fail("Exception expected, but received response: \n" + response.getContent());
         } catch (FailingHttpStatusCodeException e) {
             assertThat("Exception message", e.getMessage(), startsWith("403 Forbidden"));
         }
@@ -320,15 +366,13 @@ public class CertificateRealmITest extends DockerITest {
     }
 
 
+    /**
+     * Cleanup after each test
+     */
     @AfterEach
-    public void resetRealm() {
+    public void reset() {
         LOG.debug("resetRealm()");
         setRealmProperties("", false);
-    }
-
-
-    @AfterAll
-    public static void cleanup() throws IOException {
         if (webClient != null) {
             webClient.getCookieManager().clearCookies();
             webClient.close();
@@ -336,7 +380,16 @@ public class CertificateRealmITest extends DockerITest {
     }
 
 
+    @AfterAll
+    public static void deleteTempFiles() throws IOException {
+        if (clientTrustStoreFile != null) {
+            clientTrustStoreFile.delete();
+        }
+    }
+
+
     private static void setRealmProperties(final String dnParts, final boolean cnAsPrincipal) {
+        LOG.trace("setRealmProperties(dnParts={}, cnAsPrincipal={})", dnParts, cnAsPrincipal);
         final PayaraServerContainer payara = DockerEnvironment.getInstance().getPayaraContainer();
         final String prefix = "configs.config.server-config.security-service.auth-realm.certificate.property.";
         payara.asAdmin("set", prefix + "dn-parts-used-for-groups=" + dnParts);
@@ -357,16 +410,15 @@ public class CertificateRealmITest extends DockerITest {
 
     private static X509Certificate createClientCertificate(final KeyPair keys) {
         try {
-            final X500Name dn = new X500Name(
-                "CN=Payara The Fish, OU=payara-ou, O=payara-o, C=ID, EMAILADDRESS=payara@payara.fish");
             final Instant now = Instant.now();
             final Provider provider = new BouncyCastleProvider();
             final JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256WithRSA");
             signerBuilder.setProvider(provider);
             final ContentSigner signer = signerBuilder.build(keys.getPrivate());
+            final X500Name x500Name = new X500Name(DN_CLIENT);
             final X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder( //
-                dn, BigInteger.ONE, Date.from(now), Date.from(now.plus(1, ChronoUnit.DAYS)), //
-                dn, SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded()));
+                x500Name, BigInteger.ONE, Date.from(now), Date.from(now.plus(1, ChronoUnit.DAYS)), //
+                x500Name, SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded()));
             return new JcaX509CertificateConverter().setProvider(provider)
                 .getCertificate(certificateBuilder.build(signer));
         } catch (final CertificateException | OperatorCreationException e) {
@@ -377,6 +429,7 @@ public class CertificateRealmITest extends DockerITest {
 
     private static KeyStoreManager createClientKeyStore(final PrivateKey privateKey,
         final X509Certificate certificate) {
+        LOG.debug("createClientKeyStore(privateKey=\n{}\n, certificate=\n{}\n)", privateKey, certificate);
         final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.PKCS12, KS_PASSWORD);
         manager.putEntry("client", new PrivateKeyEntry(privateKey, new Certificate[] {certificate}),
             new PasswordProtection(KS_PASSWORD.toCharArray()));
@@ -384,18 +437,16 @@ public class CertificateRealmITest extends DockerITest {
     }
 
 
-    private static KeyStoreManager createClientTrustStore(final X509Certificate[] certificates) {
-        LOG.debug("createClientTrustStore(certificates={})", (Object) certificates);
+    private static KeyStoreManager createClientTrustStore(final X509Certificate certificate) {
+        LOG.debug("createClientTrustStore(certificates=\n{}\n)", certificate);
         final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.PKCS12, KS_PASSWORD);
-        for (X509Certificate certificate : certificates) {
-            manager.putTrusted("localhost", certificate);
-        }
+        manager.putTrusted("localhost", certificate);
         return manager;
     }
 
 
     private static X509Certificate[] getServerCertificateChain() throws IOException, GeneralSecurityException {
-        X509TrustManager trustAllCerts = new X509TrustManager() {
+        final X509TrustManager trustAllCerts = new X509TrustManager() {
 
             @Override
             public X509Certificate[] getAcceptedIssuers() {
@@ -405,11 +456,13 @@ public class CertificateRealmITest extends DockerITest {
 
             @Override
             public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                // trust true
             }
 
 
             @Override
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                // trust true
             }
         };
 
@@ -417,12 +470,41 @@ public class CertificateRealmITest extends DockerITest {
         sc.init(null, new TrustManager[] {trustAllCerts}, new SecureRandom());
         final HttpsURLConnection conn = (HttpsURLConnection) baseHttps.openConnection();
         try {
+            // all host names accepted
             conn.setHostnameVerifier((hostname, session) -> true);
             conn.setSSLSocketFactory(sc.getSocketFactory());
             conn.connect();
             return (X509Certificate[]) conn.getServerCertificates();
         } finally {
             conn.disconnect();
+        }
+    }
+
+
+    private static PrincipalNameMatcher principalName() {
+        return new PrincipalNameMatcher();
+    }
+
+    private static final class PrincipalNameMatcher extends TypeSafeMatcher<String> {
+
+        private final Matcher<String[]> matcher = arrayContainingInAnyOrder(DN_CLIENT.split(", "));
+
+
+        @Override
+        public boolean matchesSafely(final String item) {
+            if (item == null || item.length() == 0) {
+                return false;
+            }
+
+            final String[] fields = item.split(",");
+            return matcher.matches(fields);
+        }
+
+
+        @Override
+        public void describeTo(final Description description) {
+            description.appendText("principal name ");
+            description.appendValue(DN_CLIENT);
         }
     }
 }

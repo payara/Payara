@@ -8,7 +8,12 @@
 
     <security-role-mapping>
         <role-name>payara-role-principal-dn</role-name>
-        <principal-name>EMAILADDRESS=payara@payara.fish,C=ID,O=payara-o,OU=payara-ou,CN=Payara The Fish</principal-name>
+        <principal-name>DC=Payara2,DC=Payara1,DC=,EMAILADDRESS=payara@payara.fish,C=ID,O=payara-o,OU=payara-ou,CN=Payara The Fish</principal-name>
+    </security-role-mapping>
+
+    <security-role-mapping>
+        <role-name>payara-role-dc</role-name>
+        <group-name>Payara1</group-name>
     </security-role-mapping>
 
     <security-role-mapping>

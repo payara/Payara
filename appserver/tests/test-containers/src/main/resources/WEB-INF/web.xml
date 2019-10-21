@@ -22,6 +22,7 @@
         <auth-constraint>
             <role-name>payara-role-principal-cn</role-name>
             <role-name>payara-role-principal-dn</role-name>
+            <role-name>payara-role-dc</role-name>
         </auth-constraint>
     </security-constraint>
     <security-constraint>
@@ -53,6 +54,9 @@
     </security-role>
     <security-role>
         <role-name>payara-role-principal-dn</role-name>
+    </security-role>
+    <security-role>
+        <role-name>payara-role-dc</role-name>
     </security-role>
     <security-role>
         <role-name>payara-role-email</role-name>
