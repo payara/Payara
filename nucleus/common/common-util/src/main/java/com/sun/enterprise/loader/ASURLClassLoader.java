@@ -203,19 +203,7 @@ public class ASURLClassLoader
 
             // closes the jar handles and sets the url entries to null
             for (URLEntry u : this.urlSet) {
-                if (u.zip != null) {
-                    try {
-                        u.zip.reallyClose();
-                    } catch (IOException ioe) {
-                        _logger.log(Level.INFO,
-                                CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, u.source),
-                                ioe);
-                    }
-                }
-                if (u.table != null) {
-                    u.table.clear();
-                    u.table = null;
-                }
+                u.close();
             }
 
             closeOpenStreams();
@@ -937,7 +925,7 @@ public class ASURLClassLoader
         volatile boolean isJar  = false;
 
         /** ensure thread visibility by making it 'volatile'  */
-        volatile Map<String,String> table = null;
+        private volatile Map<String,String> table = null;
 
         /** ProtectionDomain with signers if jar is signed,
             ensure thread visibility by making it 'volatile'  */
@@ -1133,6 +1121,21 @@ public class ASURLClassLoader
             }
         }
 
+        public void close() {
+            if (zip != null) {
+                try {
+                    zip.reallyClose();
+                } catch (IOException ioe) {
+                    _logger.log(Level.INFO,
+                            CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, source),
+                            ioe);
+                }
+            }
+            if (table != null) {
+                table.clear();
+                table = null;
+            }
+        }
     }
 
     /**
