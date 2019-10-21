@@ -81,7 +81,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
     private final WeakReference<Class<?>> providerClassRef;
     private final String providerClassName;
     private final Map<String, FlashlightProbe> probes = new ConcurrentHashMap<>();
-    private AtomicBoolean faggedForUpdate = new AtomicBoolean(false);
+    private AtomicBoolean flaggedForUpdate = new AtomicBoolean(false);
     private boolean transformerAdded = false;
     private int count = 0;  // Only used for debug so we can look at the before/after class dumps for each iteration
     ///////////////  static variables  //////////////////
@@ -117,7 +117,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
                 while (true) {
                     Thread.sleep(200); // wait first so triggering calls flag first before the update runs 
                     for (ProbeProviderClassFileTransformer transformer : instances.values()) {
-                        if (transformer.faggedForUpdate.get()) {
+                        if (transformer.flaggedForUpdate.get()) {
                             transformer.runUpdate();
                         }
                     }
@@ -133,13 +133,13 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
     }
 
     private void update() {
-        faggedForUpdate.set(true);
+        flaggedForUpdate.set(true);
         // make sure a updater is running
         updater.updateAndGet(thread -> thread != null && thread.isAlive() ? thread : newUpdater());
     }
 
     private final void runUpdate() {
-        faggedForUpdate.set(false);
+        flaggedForUpdate.set(false);
         Class<?> providerClass = providerClassRef.get();
         if (providerClass == null) {
             if (Log.getLogger().isLoggable(Level.FINER))
