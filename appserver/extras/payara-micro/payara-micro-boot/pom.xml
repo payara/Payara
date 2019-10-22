@@ -51,6 +51,17 @@
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro Boot</name>
     <description>Payara Micro Edition Boot</description>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
