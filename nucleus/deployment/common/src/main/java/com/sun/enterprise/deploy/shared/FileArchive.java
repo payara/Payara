@@ -54,7 +54,10 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -631,31 +634,61 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     void getListOfFiles(File directory, List<String> files, List embeddedArchives, final Logger logger) {
         if(archive == null || directory == null || !directory.isDirectory())
             return;
-        final File[] fileList = directory.listFiles();
-        if (fileList == null) {
-            deplLogger.log(Level.WARNING,
-                           FILE_LIST_FAILURE,
-                           directory.getAbsolutePath());
-             return;
-        }
-        for (File aList : fileList) {
-            String fileName = aList.getAbsolutePath().substring(archive.getAbsolutePath().length() + 1);
-            fileName = fileName.replace(File.separatorChar, '/');
-            if (!aList.isDirectory()) {
-                if (!fileName.equals(JarFile.MANIFEST_NAME) && isEntryValid(fileName, logger)) {
-                    files.add(fileName);
-                }
-            } else if (isEntryValid(fileName, logger)) {
-                files.add(fileName); // Add entry corresponding to the directory also to the list
-                if (embeddedArchives != null) {
-                    if (!embeddedArchives.contains(fileName)) {
-                        getListOfFiles(aList, files, null, logger);
+        try {
+            Path archiveRoot = archive.toPath();
+            Path root = directory.toPath();
+            int embeddedLimit = root.getNameCount()+1;
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if (dir.equals(root)) {
+                        return FileVisitResult.CONTINUE;
                     }
-                } else {
-                    getListOfFiles(aList, files, null, logger);
+                    String fileName = getFilename(dir);
+                    if (isEntryValid(fileName, logger)) {
+                        files.add(fileName); // Add entry corresponding to the directory also to the list
+                        // embedded archives are only checked at first level
+                        if (embeddedArchives != null && dir.getNameCount() <= embeddedLimit
+                                && embeddedArchives.contains(fileName)) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
                 }
-            }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    String fileName = getFilename(file);
+                    if (!fileName.equals(JarFile.MANIFEST_NAME) && isEntryValid(fileName, logger)) {
+                        files.add(fileName);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                private String getFilename(Path file) {
+                    String fileName = archiveRoot.relativize(file).toString();
+                    fileName = fileName.replace(File.separatorChar, '/');
+                    return fileName;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    logListFailure(exc, directory);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            logListFailure(e, directory);
         }
+    }
+
+    private void logListFailure(IOException exc, File directory) {
+        deplLogger.log(Level.WARNING,
+                FILE_LIST_FAILURE,
+                new Object[]{directory.getAbsolutePath(), exc});
     }
 
     /** @return true if this archive abstraction supports overwriting of elements
