@@ -53,11 +53,13 @@ import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.net.*;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -924,8 +926,7 @@ public class ASURLClassLoader
             ensure thread visibility by making it 'volatile'  */
         volatile boolean isJar  = false;
 
-        /** ensure thread visibility by making it 'volatile'  */
-        private volatile Map<String,String> table = null;
+        private Predicate<String> presenceCheck;
 
         /** ProtectionDomain with signers if jar is signed,
             ensure thread visibility by making it 'volatile'  */
@@ -943,88 +944,21 @@ public class ASURLClassLoader
 
                 if (isJar) {
                     zip = new ProtectedJarFile(file);
+                    // negative lookups in jar are cheap
+                    presenceCheck = (any) -> true;
+                } else {
+                    Path path = file.toPath();
+                    presenceCheck = (item) -> DirWatcher.hasItem(path, item);
+                    DirWatcher.register(path);
                 }
 
-                table = new ConcurrentHashMap<>();
             } catch (URISyntaxException use) {
                 throw new IOException(use);
             }
         }
 
-        private void fillTable(File f, Map<String, String> t, String parent) throws IOException {
-            String localName = (parent.equals("")) ? "" : parent + "/";
-            File[] children = f.listFiles();
-            if (children != null) {
-                for (File aChildren : children) {
-                    processFile(aChildren, t, localName);
-                }
-            }
-        }
-
-        /**
-         *Adds a file (or, if a directory, the directory's contents) to the table
-         *of files this loader knows about.
-         *<p>
-         *Invokes fillTable for subdirectories which in turn invokes processFile
-         *recursively.
-         *@param fileToProcess the File to be processed
-         *@param t the Map that holds the files the loader knows about
-         *@param parentLocalName prefix to be used for the full path; should be
-         *non-empty only for recursive invocations
-         *@throws IOException in case of errors working with the fileToProcess
-         */
-        private void processFile(File fileToProcess, Map<String, String> t, String parentLocalName) throws IOException {
-            String key = parentLocalName + fileToProcess.getName();
-            if (fileToProcess.isFile()) {
-                t.put(key, key);
-            } else if (fileToProcess.isDirectory()) {
-                fillTable(fileToProcess, t, key);
-            }
-        }
-
-
         boolean hasItem(String item) {
-            // in the case of ejbc stub compilation, asurlclassloader is created before stubs
-            // gets generated, thus we need to return true for this case.
-            if (table.isEmpty()) {
-                return true;
-            }
-
-            /*
-             *Even with the previous special handling, a file could be created
-             *in a directory after the loader was created and its table of
-             *URLEntry names populated.  So check the table first and, if
-             *the target item is not there and this URLEntry is for a directory, look for
-             *the file.  If the file is now present but was not when the loader
-             *was created, add an entry for the file in the table.
-             */
-            String target = item;
-            // special handling
-            if (item.startsWith("./")) {
-                target = item.substring(2);
-            }
-
-            boolean result = table.containsKey(target);
-            if ( ! result && ! isJar) {
-                /*
-                 *If the file exists now then it has been added to the directory since the
-                 *loader was created.  Add it to the table of files we
-                 *know about.
-                 */
-                File targetFile = privilegedCheckForFile(target);
-                if (targetFile != null) {
-                    try {
-                        processFile(targetFile, table, "");
-                        result = true;
-                    } catch (IOException ioe) {
-                        _logger.log(Level.SEVERE,
-                                CULoggerInfo.getString(CULoggerInfo.exceptionProcessingFile, target, file.getAbsolutePath()),
-                                ioe);
-                        return false;
-                    }
-                }
-            }
-            return result;
+            return presenceCheck.test(item);
         }
 
         /**
@@ -1131,9 +1065,8 @@ public class ASURLClassLoader
                             ioe);
                 }
             }
-            if (table != null) {
-                table.clear();
-                table = null;
+            if (isJar) {
+                DirWatcher.unregister(file.toPath());
             }
         }
     }
