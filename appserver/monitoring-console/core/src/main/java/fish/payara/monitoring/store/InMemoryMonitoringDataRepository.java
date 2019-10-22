@@ -76,6 +76,8 @@ import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -198,6 +200,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
                 collectedSources++;
                 source.collect(collector);
             } catch (RuntimeException e) {
+                Logger.getLogger("monitoring-console-core").log(Level.FINE, "Error collecting metrics", e);
                 failedSources++;
                 // ignore and continue with next
             }

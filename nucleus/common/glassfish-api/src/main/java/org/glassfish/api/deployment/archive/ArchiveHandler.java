@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment.archive;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.jar.Manifest;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Contract;
-
-import java.io.IOException;
-import java.util.jar.Manifest;
-import java.util.List;
-import java.net.URI;
 
 /**
  * ArchiveHandlers are handling certain archive type. An archive has a unique type which is usually defines how
@@ -84,6 +84,8 @@ public interface ArchiveHandler {
     public String getDefaultApplicationName(ReadableArchive archive);
 
     public String getDefaultApplicationName(ReadableArchive archive, DeploymentContext context);
+    
+    public String getDefaultApplicationName(ReadableArchive archive, DeploymentContext context, String originalAppName);
 
     /**
      * Returns the version identifier by which the specified archive can be

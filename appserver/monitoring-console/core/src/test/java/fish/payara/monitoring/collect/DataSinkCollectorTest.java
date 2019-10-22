@@ -93,6 +93,7 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
             .collect("plainAfterSub", 8)
             .tag("ignoredTagSinceNull", null).collect("plainIgnoredTag", 13L)
             .tag("igniredTagSinceEmpty", "").collect("plainIgnoredEmptyTag", 14L);
+        collector.tag("complex", "sp aced; str,\u1F408ange").collect("sub", 1);
 
         // testing simple value conversion
         collector
@@ -199,6 +200,11 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
     @Test
     public void sameTagDoesReplaceExistingTagFromThatTagOn() {
         assertDataPoint("sub:five reset", 11L);
+    }
+    
+    @Test
+    public void tagwithUnusualCharacters() {
+        assertDataPoint("complex:sp_aced__str_\u1F408ange sub", 1);
     }
 
     @Test
