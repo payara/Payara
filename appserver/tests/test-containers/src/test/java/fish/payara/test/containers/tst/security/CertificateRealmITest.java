@@ -74,6 +74,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -136,6 +137,7 @@ public class CertificateRealmITest extends DockerITest {
     private static KeyStoreManager clientTrustStore;
     private static File clientTrustStoreFile;
     private WebClient webClient;
+    private static final AtomicInteger ix = new AtomicInteger();
 
 
     @BeforeAll
@@ -368,20 +370,24 @@ public class CertificateRealmITest extends DockerITest {
 
     /**
      * Cleanup after each test
+     *
+     * @throws Exception
      */
     @AfterEach
-    public void reset() {
+    public void reset() throws Exception {
+        // allow docker to flush logs
+        Thread.yield();
         LOG.debug("resetRealm()");
         setRealmProperties("", false);
         if (webClient != null) {
-            webClient.getCookieManager().clearCookies();
             webClient.close();
         }
+        Thread.yield();
     }
 
 
     @AfterAll
-    public static void deleteTempFiles() throws IOException {
+    public static void deleteTempFiles() throws Exception {
         if (clientTrustStoreFile != null) {
             clientTrustStoreFile.delete();
         }
@@ -393,7 +399,11 @@ public class CertificateRealmITest extends DockerITest {
         final PayaraServerContainer payara = DockerEnvironment.getInstance().getPayaraContainer();
         final String prefix = "configs.config.server-config.security-service.auth-realm.certificate.property.";
         payara.asAdmin("set", prefix + "dn-parts-used-for-groups=" + dnParts);
-        payara.asAdmin("set", prefix + "common-name-as-principal-name=" + (cnAsPrincipal ? "true" : ""));
+        payara.asAdmin("set", prefix + "common-name-as-principal-name=" + cnAsPrincipal);
+        // HACK for PAYARA-4230 - only first change is reflected, following are ignored.
+        // this line creates always a new property, so realm will be reconfigured.
+        payara.asAdmin("set", prefix + "_hack" + ix.getAndIncrement() + "=" + (cnAsPrincipal ? "true" : "false"));
+        Thread.yield();
     }
 
 

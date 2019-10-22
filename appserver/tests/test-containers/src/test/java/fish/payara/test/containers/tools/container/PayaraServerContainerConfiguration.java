@@ -40,6 +40,7 @@
 package fish.payara.test.containers.tools.container;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * Configuration for the {@link PayaraServerContainer}
@@ -100,6 +101,25 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
     public File getPayaraMainDirectoryInDocker() {
         return new File(getMainApplicationDirectoryInDocker(), "payara5");
     }
+
+
+    /**
+     * @return logging.properties in docker
+     */
+    public File getPayaraLoggingPropertiesInDocker() {
+        return getPayaraMainDirectoryInDocker().toPath()
+            .resolve(Paths.get("glassfish", "domains", "domain1", "config", "logging.properties")).toFile();
+    }
+
+
+    /**
+     * @return server.log in docker
+     */
+    public File getPayaraServerLogInDocker() {
+        return getPayaraMainDirectoryInDocker().toPath()
+            .resolve(Paths.get("glassfish", "domains", "domain1", "logs", "server.log")).toFile();
+    }
+
 
     /**
      * @return output file in docker container (path to the

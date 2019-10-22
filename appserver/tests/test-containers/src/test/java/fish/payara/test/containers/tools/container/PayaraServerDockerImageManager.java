@@ -126,6 +126,7 @@ public class PayaraServerDockerImageManager
                 .append("/org.jacoco.agent-").append(getConfiguration().getJaCoCoVersion()).append(".jar")
                 .append(" \"jacocoagent.jar\" -d ").append(getConfiguration().getMainApplicationDirectoryInDocker()); //
         }
+        command.append(" && cp /logging.properties ").append(getConfiguration().getPayaraLoggingPropertiesInDocker());
         command.append(" && ls -la ").append(
             new File(getConfiguration().getPayaraMainDirectoryInDocker(), "glassfish/domains/domain1/config")); //
 
@@ -139,7 +140,7 @@ public class PayaraServerDockerImageManager
             .append(" enable-secure-admin");
         command.append(" && ").append(asadmin).append(" restart-domain domain1");
         command.append(" && echo '" + PAYARA_DOCKER_IMAGE_STARTED + "'");
-        command.append(" && sleep infinity"); //
+        command.append(" && tail -F ").append(getConfiguration().getPayaraServerLogInDocker()); //
         return command;
     }
 
@@ -165,6 +166,11 @@ public class PayaraServerDockerImageManager
             forClasspathResource("server-side/passwordfile-change.txt"));
         files.put(getConfiguration().getPasswordFileInDocker().getAbsolutePath(),
             forClasspathResource("server-side/passwordfile.txt"));
+        // we cannot copy file into payara directories before they would be created,
+        // so we will separate this action into two steps:
+        // 1) share file with the container
+        // 2) copy shared file after we unzip the payara server to the correct place.
+        files.put("/logging.properties", forClasspathResource("server-side/logging.properties"));
         return files;
     }
 
