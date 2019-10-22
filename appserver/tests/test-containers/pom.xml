@@ -115,10 +115,13 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- deployment-client is not tested here, but used as real test dependency, -->
+        <!-- that's why we use some stable and reliable version -->
+        <!-- FIXME: change version after the release, 5.193.1 is not in repos and older are broken -->
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client</artifactId>
-            <version>${docker.payara.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- WARNING: unreleased locally built dependency! -->
