@@ -1065,7 +1065,7 @@ public class ASURLClassLoader
                             ioe);
                 }
             }
-            if (isJar) {
+            if (!isJar) {
                 DirWatcher.unregister(file.toPath());
             }
         }
