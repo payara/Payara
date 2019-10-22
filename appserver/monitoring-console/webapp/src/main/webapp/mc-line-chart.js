@@ -208,10 +208,8 @@ MonitoringConsole.Chart.Line = (function() {
       let text = converter.format(value, widget.unit === 'bytes');
       return widget.options.perSec ? text + ' /s' : text;
     };
-    if (widget.axis.min !== undefined)
-      yAxis.ticks.suggestedMin = widget.axis.min;
-    if (widget.axis.max !== undefined)
-      yAxis.ticks.suggestedMax = widget.axis.max;
+    yAxis.ticks.suggestedMin = widget.axis.min;
+    yAxis.ticks.suggestedMax = widget.axis.max;
     let xAxis = options.scales.xAxes[0];
     xAxis.ticks.source = 'data'; // 'auto' does not allow to put labels at first and last point
     xAxis.ticks.display = widget.options.noTimeLabels !== true;
