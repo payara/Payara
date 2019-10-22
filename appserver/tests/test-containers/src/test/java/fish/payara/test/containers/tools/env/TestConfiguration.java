@@ -56,6 +56,7 @@ public final class TestConfiguration {
     private static final TestConfiguration CONFIGURATION = new TestConfiguration();
 
     private final File buildDirectory;
+    private final File classDirectory;
     private final File payaraDirectory;
 
     private final String payaraHost;
@@ -64,6 +65,7 @@ public final class TestConfiguration {
     private final String payaraPassword;
     private final int jerseyClientConnectionTimeout;
     private final int jerseyClientReadTimeout;
+
 
 
     /**
@@ -81,6 +83,7 @@ public final class TestConfiguration {
         final Properties properties = new Properties("test.properties");
 
         this.buildDirectory = properties.getFile("build.directory");
+        this.classDirectory = properties.getFile("class.directory");
 
         this.payaraDirectory = new File(properties.getFile("docker.payara.sharedDirectory"), "payara5");
         this.payaraHost = properties.getString("docker.payara.host");
@@ -130,6 +133,14 @@ public final class TestConfiguration {
      */
     public File getBuildDirectory() {
         return this.buildDirectory;
+    }
+
+
+    /**
+     * @return path to the directory with compiled classes and resources
+     */
+    public File getClassDirectory() {
+        return this.classDirectory;
     }
 
 

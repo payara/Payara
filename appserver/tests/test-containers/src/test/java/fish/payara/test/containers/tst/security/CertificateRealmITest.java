@@ -47,7 +47,7 @@ import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerFiles;
 import fish.payara.test.containers.tools.env.DockerEnvironment;
 import fish.payara.test.containers.tools.env.TestConfiguration;
-import fish.payara.test.containers.tools.junit.DockerITest;
+import fish.payara.test.containers.tools.junit.DockerITestExtension;
 import fish.payara.test.containers.tools.security.KeyStoreManager;
 import fish.payara.test.containers.tools.security.KeyStoreType;
 import fish.payara.test.containers.tst.security.war.servlets.PublicServlet;
@@ -59,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -120,8 +121,9 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * @author David Matejcek
  */
+@ExtendWith(DockerITestExtension.class)
 @ExtendWith(ArquillianExtension.class)
-public class CertificateRealmITest extends DockerITest {
+public class CertificateRealmITest {
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateRealmITest.class);
     private static final String KS_PASSWORD = "changeit";
@@ -133,11 +135,31 @@ public class CertificateRealmITest extends DockerITest {
     private static URL base;
     private static URL baseHttps;
 
+    private static TestConfiguration testConfiguration;
     private static KeyStoreManager clientKeyStore;
     private static KeyStoreManager clientTrustStore;
     private static File clientTrustStoreFile;
-    private WebClient webClient;
     private static final AtomicInteger ix = new AtomicInteger();
+
+    private WebClient webClient;
+
+
+    @Deployment(testable = false)
+    public static WebArchive createDeployment() throws Exception {
+        LOG.info("createDeployment()");
+
+        testConfiguration = TestConfiguration.getInstance();
+        final File webInfDir = testConfiguration.getClassDirectory().toPath()
+            .resolve(Paths.get("security", "war", "servlets", "WEB-INF")).toFile();
+        final WebArchive war = ShrinkWrap.create(WebArchive.class).addPackage(PublicServlet.class.getPackage()) //
+            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
+            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
+            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
+        ;
+
+        LOG.info(war.toString(true));
+        return war;
+    }
 
 
     @BeforeAll
@@ -148,7 +170,7 @@ public class CertificateRealmITest extends DockerITest {
         final X509Certificate clientCertificate = createClientCertificate(clientKeyPair);
         clientKeyStore = createClientKeyStore(clientKeyPair.getPrivate(), clientCertificate);
 
-        final PayaraServerFiles payaraFiles = new PayaraServerFiles(getTestConfiguration().getPayaraDirectory());
+        final PayaraServerFiles payaraFiles = new PayaraServerFiles(testConfiguration.getPayaraDirectory());
         final KeyStoreManager payaraTrustStore = payaraFiles.getTrustStore();
         payaraTrustStore.putTrusted("TestCert", clientCertificate);
         payaraTrustStore.save(payaraFiles.getTrustStoreFile());
@@ -161,7 +183,8 @@ public class CertificateRealmITest extends DockerITest {
     @BeforeEach
     public void init() throws Exception {
         if (baseHttps == null) {
-            baseHttps = new URL(getDockerEnvironment().getPayaraContainer().getHttpsUrl(), base.getPath());
+            final DockerEnvironment dockerEnvironment = DockerEnvironment.getInstance();
+            baseHttps = new URL(dockerEnvironment.getPayaraContainer().getHttpsUrl(), base.getPath());
             LOG.debug("Using baseHttps={} and client key store from: {}", baseHttps, clientKeyStore);
 
             final X509Certificate[] serverCertificateChain = getServerCertificateChain();
@@ -348,23 +371,6 @@ public class CertificateRealmITest extends DockerITest {
         } catch (FailingHttpStatusCodeException e) {
             assertThat("Exception message", e.getMessage(), startsWith("403 Forbidden"));
         }
-    }
-
-
-    @Deployment(testable = false)
-    public static WebArchive createDeployment() throws Exception {
-        LOG.info("createDeployment()");
-
-        final TestConfiguration cfg = getTestConfiguration();
-        final File webInfDir = new File(cfg.getBuildDirectory() + "/classes/WEB-INF");
-        final WebArchive war = ShrinkWrap.create(WebArchive.class).addPackage(PublicServlet.class.getPackage()) //
-            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
-            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
-            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
-        ;
-
-        LOG.info(war.toString(true));
-        return war;
     }
 
 

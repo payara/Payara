@@ -48,6 +48,7 @@ import fish.payara.test.containers.tools.junit.DockerITestExtension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.enterprise.deploy.spi.Target;
@@ -81,10 +82,12 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
 
     private DockerEnvironment environment;
 
+
     @Override
     public Class<PayaraDockerContainerConfiguration> getConfigurationClass() {
         return PayaraDockerContainerConfiguration.class;
     }
+
 
     @Override
     public void setup(final PayaraDockerContainerConfiguration configuration) {
@@ -97,28 +100,30 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
         }
     }
 
+
     @Override
     public void start() throws LifecycleException {
         LOG.debug("start()");
     }
 
+
     @Override
     public void stop() throws LifecycleException {
-        LOG.trace("stop()");
+        LOG.debug("stop()");
     }
+
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
         return new ProtocolDescription("Servlet 3.0");
     }
 
+
     @Override
     public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
         LOG.debug("deploy(archive={})", archive);
-        if (archive == null) {
-            throw new IllegalArgumentException("archive must not be null");
-        }
 
+        Objects.requireNonNull(archive, "archive must not be null");
         final String applicationName = createDeploymentName(archive.getName());
         final PayaraServerContainer payara = environment.getPayaraContainer();
         final RemoteDeploymentFacility deployer = connect(payara);
@@ -145,29 +150,40 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
     }
 
 
-    private List<String> getModuleNames(final String applicationName, final RemoteDeploymentFacility deployer) {
+    @Override
+    public void undeploy(final Archive<?> archive) throws DeploymentException {
+        LOG.debug("undeploy(archive={})", archive);
+        Objects.requireNonNull(archive, "archive must not be null");
+        final String applicationName = createDeploymentName(archive.getName());
+        final PayaraServerContainer payara = environment.getPayaraContainer();
+        final RemoteDeploymentFacility deployer = connect(payara);
         try {
-            return deployer.getSubModuleInfoForJ2EEApplication(applicationName);
-        } catch (final IOException e) {
-            throw new IllegalStateException("Could not get names of submodules", e);
+            final Target[] targets = new Target[] {deployer.createTarget("server")};
+            final DFProgressObject progressObject = deployer.undeploy(targets, applicationName);
+            final DFDeploymentStatus deploymentStatus = progressObject.waitFor();
+            LOG.info("Deployment status: {}", deploymentStatus);
+            if (deploymentStatus.getStatus() == DFDeploymentStatus.Status.FAILURE) {
+                throw new DeploymentException("Deployment failed!" + deploymentStatus.getAllStageMessages());
+            }
+        } finally {
+            deployer.disconnect();
         }
     }
 
-    @Override
-    public void undeploy(final Archive<?> archive) throws DeploymentException {
-        // TODO Not implemented yet!
-
-    }
 
     @Override
     public void deploy(final Descriptor descriptor) throws DeploymentException {
+        LOG.debug("deploy(descriptor={})", descriptor);
         throw new UnsupportedOperationException("Not implemented");
     }
 
+
     @Override
     public void undeploy(final Descriptor descriptor) throws DeploymentException {
+        LOG.debug("undeploy(descriptor={})", descriptor);
         throw new UnsupportedOperationException("Not implemented");
     }
+
 
     private String createDeploymentName(final String archiveName) {
         String correctedName = archiveName;
@@ -223,6 +239,15 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
             }
         } catch (final IOException e) {
             throw new DeploymentException("Deployment failed!", e);
+        }
+    }
+
+
+    private List<String> getModuleNames(final String applicationName, final RemoteDeploymentFacility deployer) {
+        try {
+            return deployer.getSubModuleInfoForJ2EEApplication(applicationName);
+        } catch (final IOException e) {
+            throw new IllegalStateException("Could not get names of submodules", e);
         }
     }
 }
