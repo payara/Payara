@@ -52,6 +52,7 @@ import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -115,9 +116,13 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
         Thread t = new Thread(() -> {
             try {
                 while (true) {
-                    Thread.sleep(200); // wait first so triggering calls flag first before the update runs 
-                    for (ProbeProviderClassFileTransformer transformer : instances.values()) {
-                        if (transformer.flaggedForUpdate.get()) {
+                    Thread.sleep(200); // wait first so triggering calls flag first before the update runs
+                    Iterator<ProbeProviderClassFileTransformer> iter = instances.values().iterator();
+                    while (iter.hasNext()) {
+                        ProbeProviderClassFileTransformer transformer = iter.next();
+                        if (transformer.providerClassRef.get() == null) {
+                            iter.remove();
+                        } else if (transformer.flaggedForUpdate.get()) {
                             transformer.runUpdate();
                         }
                     }
