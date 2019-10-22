@@ -118,7 +118,8 @@ public class StatsProviderRegistry {
     }
 
     List<StatsProviderRegistryElement> getStatsProviderRegistryElement(String configElement) {
-        return (this.configToRegistryElementMap.get(configElement));
+        List<StatsProviderRegistryElement> plain = configToRegistryElementMap.get(configElement);
+        return plain == null ? Collections.emptyList() : new ArrayList<>(plain);
     }
 
     Collection<StatsProviderRegistryElement> getSpreList() {
