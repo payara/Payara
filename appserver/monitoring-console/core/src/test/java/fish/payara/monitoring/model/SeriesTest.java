@@ -18,7 +18,7 @@ public class SeriesTest {
         Series series = new Series("SimpleName");
         assertEquals("SimpleName", series.toString());
         assertEquals(0, series.tagCount());
-        assertEquals("SimpleName", series.metric);
+        assertEquals("SimpleName", series.getMetric());
         assertFalse(series.isPattern());
     }
 
@@ -27,7 +27,7 @@ public class SeriesTest {
         Series series = new Series("*");
         assertEquals("*", series.toString());
         assertEquals(0, series.tagCount());
-        assertEquals("*", series.metric);
+        assertEquals("*", series.getMetric());
         assertTrue(series.isPattern());
     }
 
@@ -38,7 +38,7 @@ public class SeriesTest {
         assertEquals(1, series.tagCount());
         assertEquals("ns", series.key(0));
         assertEquals("namespace", series.value(0));
-        assertEquals("NamespacedName", series.metric);
+        assertEquals("NamespacedName", series.getMetric());
         assertFalse(series.isPattern());
     }
 
@@ -51,7 +51,7 @@ public class SeriesTest {
         assertEquals("namespace", series.value(0));
         assertEquals("@", series.key(1));
         assertEquals("group", series.value(1));
-        assertEquals("GroupedName", series.metric);
+        assertEquals("GroupedName", series.getMetric());
         assertFalse(series.isPattern());
     }
 
@@ -64,7 +64,7 @@ public class SeriesTest {
         assertEquals("namespace", series.value(0));
         assertEquals("@", series.key(1));
         assertEquals("*", series.value(1));
-        assertEquals("WildCardName", series.metric);
+        assertEquals("WildCardName", series.getMetric());
         assertTrue(series.isPattern());
     }
 

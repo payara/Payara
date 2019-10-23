@@ -802,7 +802,7 @@ MonitoringConsole.Model = (function() {
 			let type = widget.type;
 			widgetUpdate(widget);
 			if (widget.type === type) {
-				Charts.update(widget, );
+				Charts.update(widget);
 			} else {
 				Charts.destroy(widget.series);
 			}

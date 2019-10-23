@@ -235,9 +235,10 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 dc.addModuleMetaData(extension);
             }
         }
-
-        addModuleConfig(dc, application);
-
+        Boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
+        if (!Boolean.TRUE.equals(hotDeploy)) {
+            addModuleConfig(dc, application);
+        }
         validateKeepStateOption(dc, params, application);
 
         return application;

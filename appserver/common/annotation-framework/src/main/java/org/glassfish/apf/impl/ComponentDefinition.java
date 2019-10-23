@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -116,17 +116,13 @@ public class ComponentDefinition implements ComponentInfo {
      */
     private void initializeConstructors() {
         for (Class cl : classes) {
-            for (Constructor constr : cl.getConstructors()) {
-                constructors.add(constr);           
-            }
+            constructors.addAll(Arrays.asList(cl.getConstructors()));
         }
     }
 
     private void initializeFields() {
         for (Class cl : classes) {
-            for (Field f : cl.getDeclaredFields()) {
-                fields.add(f);           
-            }
+            fields.addAll(Arrays.asList(cl.getDeclaredFields()));
         }
     }
 
