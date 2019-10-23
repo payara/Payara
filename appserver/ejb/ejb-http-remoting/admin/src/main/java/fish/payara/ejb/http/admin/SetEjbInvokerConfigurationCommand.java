@@ -198,8 +198,7 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
             actionReport.failure(LOGGER, "Failed to update EJB Invoker configuration", ex);
         }
 
-        if (Boolean.parseBoolean(config.getEnabled())
-                && Boolean.parseBoolean(config.getSecurityEnabled())) {
+        if (Boolean.parseBoolean(config.getSecurityEnabled())) {
 
             // If the required message security provider is not present, create it
             if (StringUtils.ok(config.getAuthModuleClass())) {
@@ -238,7 +237,7 @@ public class SetEjbInvokerConfigurationCommand implements AdminCommand {
             } else {
                 disableEjbInvoker(actionReport);
             }
-        } else {
+        } else if(Boolean.parseBoolean(config.getEnabled())) {
             actionReport.setMessage("Restart server or re-enable the ejb-invoker service for the change to take effect.");
         }
 
