@@ -43,7 +43,7 @@
 <!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-<hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+<hazelcast-runtime-configuration start-port="%%%HAZELCAST_DAS_PORT%%%" das-port="%%%HAZELCAST_START_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
       <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">

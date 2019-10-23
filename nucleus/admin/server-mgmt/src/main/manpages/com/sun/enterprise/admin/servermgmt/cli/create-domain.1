@@ -13,6 +13,9 @@ SYNOPSIS
            [--domaindir domaindir]
            [--savemasterpassword={false|true}]
            [--usemasterpassword={false|true}]
+           [--hazelcastdasport hazelcastdasport]
+           [--hazelcaststartport hazelcaststartport]
+           [--hazelcastautoincrement={false|true}]
            [--domainproperties (name=value)[:name=value]*]
            [--keytooloptions (name=value)[:name=value]*]
            [--savelogin={false|true}]
@@ -106,6 +109,10 @@ OPTIONS
 
            *   Felix shell service port for OSGi module management: portbase +
                66
+           
+           *   Hazelcast DAS port: portbase + 49
+           
+           *   Hazelcast Start port: portbase + 59
 
            When the --portbase option is specified, the output of this
            subcommand includes a complete list of used ports.
@@ -186,6 +193,33 @@ OPTIONS
            If the --savemasterpassword option is true, this option is also
            true, regardless of the value that is specified on the command
            line.
+        
+       --hazelcastdasport
+           The port to run Hazelcast on for the DAS. If this port is busy, 
+           the port specified will be incremented until a valid port is found.
+           The --hazelcastdasport option cannot be used with the --portbase 
+           option. The default value is 4900.
+
+           The --hazelcastdasport option overrides the hazelcast.das.port 
+           property of the --domainproperties option.
+        
+       --hazelcaststartport
+           The port the other Payara Server instances use to run Hazelcast on. 
+           If this port is busy, the port specified will be incremented until 
+           a valid port is found. The --hazelcaststartport option cannot be 
+           used with the --portbase option. The default value is 5900.
+
+           The --hazelcaststartport option overrides the hazelcast.start.port 
+           property of the --domainproperties option.
+
+       --hazelcastautoincrement
+           By default the cluster uses the next unoccupied port that is 
+           available starting with the start port. When auto-increment is 
+           turned off an occupied start port results in a startup failure 
+           instead.
+
+           The --hazelcastautoincrement option overrides the 
+           hazelcast.auto.increment property of the --domainproperties option.
 
        --domainproperties
            Setting the optional name/value pairs overrides the default values
@@ -270,6 +304,36 @@ OPTIONS
                UNIX, creating sockets that listen on ports 1-1024 requires
                superuser privileges.
 
+           hazelcast.das.port
+               This property specifies the port number of the port that is 
+               used to run Hazelcast on for the DAS. If this port is busy, the 
+               port specified will be incremented until a valid port is found. 
+               Valid values are 1-65535. On UNIX, creating sockets that listen 
+               on ports 1-1024 requires superuser privileges.
+           
+               The hazelcast.das.port property is overridden by the 
+               --hazelcastdasport option.
+
+           hazelcast.start.port
+               This property specifies the port number of the port the other 
+               Payara Server instances use to run Hazelcast on. If this port is 
+               busy, the port specified will be incremented until a valid port 
+               is found. Valid values are 1-65535. On UNIX, creating sockets 
+               that listen on ports 1-1024 requires superuser privileges.
+           
+               The hazelcast.start.port property is overridden by the 
+               --hazelcaststartport option.
+
+           hazelcast.auto.increment
+               This property specifies whether or not to use the next unoccupied
+               port that is available starting with the start port. When 
+               auto-increment is turned off an occupied start port results in a 
+               startup failure instead.
+               
+               
+               The hazelcast.auto.increment property is overridden by the 
+               --hazelcastautoincrement option.
+
        --keytooloptions
            Specifies an optional list of name-value pairs of keytool options
            for a self-signed server certificate. The certificate is generated
@@ -347,6 +411,8 @@ EXAMPLES
                Using default port 3920 for IIOP_MUTUALAUTH.
                Using default port 8686 for JMX_ADMIN.
                Using default port 6666 for OSGI_SHELL.
+               Using default port 4900 for Hazelcast DAS.
+               Using default port 5900 for Hazelcast Start.
                Distinguished Name of the self-signed X.509 Server Certificate is:
                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
                No domain initializers found, bypassing customization step
@@ -371,6 +437,8 @@ EXAMPLES
                Using default port 3920 for IIOP_MUTUALAUTH.
                Using default port 8686 for JMX_ADMIN.
                Using default port 6666 for OSGI_SHELL.
+               Using default port 4900 for Hazelcast DAS.
+               Using default port 5900 for Hazelcast Start.
                Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
                No domain initializers found, bypassing customization step
@@ -396,6 +464,8 @@ EXAMPLES
                Using default port 3920 for IIOP_MUTUALAUTH.
                Using default port 8686 for JMX_ADMIN.
                Using default port 6666 for OSGI_SHELL.
+               Using default port 4900 for Hazelcast DAS.
+               Using default port 5900 for Hazelcast Start.
                Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
                No domain initializers found, bypassing customization step
@@ -426,6 +496,8 @@ EXAMPLES
                Using default port 3920 for IIOP_MUTUALAUTH.
                Using default port 8686 for JMX_ADMIN.
                Using default port 6666 for OSGI_SHELL.
+               Using default port 4900 for Hazelcast DAS.
+               Using default port 5900 for Hazelcast Start.
                Distinguished Name of the self-signed X.509 Server Certificate is:
                [CN=trio,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
                No domain initializers found, bypassing customization step
