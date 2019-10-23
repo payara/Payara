@@ -40,8 +40,6 @@
 
 package com.sun.enterprise.loader;
 
-import com.sun.enterprise.util.CULoggerInfo;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -49,16 +47,14 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 
 /**
  * Determine if classpath item exists in given root folder.
@@ -83,17 +79,16 @@ class ItemChecker extends WatchProcessor {
             return;
         }
         try {
-            this.prefixes = readPrefixes();
+            this.prefixes = AccessController.doPrivileged((PrivilegedExceptionAction<Set<String>>)this::readPrefixes);
             if (prefixes.isEmpty()) {
                 LOGGER.fine(() -> "Registering watch for " + root);
             } else {
                 LOGGER.fine(() -> "Will lookup classes in " + root + " for "+prefixes);
             }
-            this.registered = true;
             if (prefixes.isEmpty() || lateRegistration) {
-                root.register(watchService, ENTRY_CREATE);
+                doRegister();
             }
-        } catch (IOException e) {
+        } catch (PrivilegedActionException e) {
             LOGGER.log(Level.WARNING, e, () -> "Failed to register watcher for " + root);
         }
     }

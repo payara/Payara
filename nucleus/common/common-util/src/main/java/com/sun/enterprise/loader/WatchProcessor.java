@@ -44,7 +44,12 @@ import com.sun.enterprise.util.CULoggerInfo;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,13 +75,18 @@ class WatchProcessor {
 
     protected void register() {
         if (!registered) {
+            doRegister();
+        }
+    }
+
+    protected void doRegister() {
+        try {
+            // we only care when a file is added to the directory
+            AccessController.doPrivileged(
+                    (PrivilegedExceptionAction<WatchKey>) () -> root.register(watchService, ENTRY_CREATE));
             registered = true;
-            try {
-                // we only care when a file is added to the directory
-                root.register(watchService, ENTRY_CREATE);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, e, () -> "Failed to register watcher for " + root);
-            }
+        } catch (PrivilegedActionException e) {
+            LOGGER.log(Level.WARNING, e, () -> "Failed to register watcher for " + root);
         }
     }
 

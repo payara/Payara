@@ -65,6 +65,35 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
  */
 class DirWatcher {
     /**
+     * Verify if item might be present under given path.
+     *
+     * @param parent root path of classloader. Should be registered beforehand
+     * @param item classpath item to look for
+     * @return false if the item is definetely not present in the path
+     */
+    static boolean hasItem(Path parent, String item) {
+        return forPath(parent).hasItem0(parent, item);
+    }
+
+    /**
+     * Register root path for scanning.
+     * This is pre
+     * @param path
+     * @throws IOException
+     */
+    static void register(Path path) throws IOException {
+        forPath(path).register0(path);
+    }
+
+    static void unregister(Path path) {
+        forPath(path).unregister0(path);
+    }
+
+    private static DirWatcher forPath(Path path) {
+        return PER_FS.computeIfAbsent(path.getFileSystem(), DirWatcher::new);
+    }
+
+    /**
      * Per filesystem instance.
      */
     private static final Map<FileSystem, DirWatcher> PER_FS = new ConcurrentHashMap<>();
@@ -77,7 +106,7 @@ class DirWatcher {
     private DirWatcher(FileSystem fileSystem) {
         try {
             this.watchService = fileSystem.newWatchService();
-        } catch (IOException e) {
+        } catch (IOException | UnsupportedOperationException e) {
             throw new IllegalArgumentException("Filesystem WatchService is unavailable", e);
         }
     }
@@ -175,32 +204,4 @@ class DirWatcher {
         }
     }
 
-    private static DirWatcher forPath(Path path) {
-        return PER_FS.computeIfAbsent(path.getFileSystem(), DirWatcher::new);
-    }
-
-    /**
-     * Verify if item might be present under given path.
-     *
-     * @param parent root path of classloader. Should be registered beforehand
-     * @param item classpath item to look for
-     * @return false if the item is definetely not present in the path
-     */
-    static boolean hasItem(Path parent, String item) {
-        return forPath(parent).hasItem0(parent, item);
-    }
-
-    /**
-     * Register root path for scanning.
-     * This is pre
-     * @param path
-     * @throws IOException
-     */
-    static void register(Path path) throws IOException {
-        forPath(path).register0(path);
-    }
-
-    static void unregister(Path path) {
-        forPath(path).unregister0(path);
-    }
 }

@@ -961,40 +961,6 @@ public class ASURLClassLoader
             return presenceCheck.test(item);
         }
 
-        /**
-         *Returns a File object for the requested path within the URLEntry.
-         *<p>
-         *Runs privileged because user code could trigger invocations of this
-         *method.
-         *@param targetPath the relative path to look for
-         *@return File object for the requested file; null if it does not exist or
-         *in case of error
-         */
-        private File privilegedCheckForFile(final String targetPath) {
-            /*
-             *Check for the file existence with privs, because this code can
-             *be invoked from user code which may not otherwise have access
-             *to the directories of interest.
-             */
-            try {
-                return AccessController.doPrivileged((PrivilegedExceptionAction<File>) () -> {
-                    File targetFile = new File(file, targetPath);
-                    if ( ! targetFile.exists()) {
-                        targetFile = null;
-                    }
-                    return targetFile;
-                });
-            } catch (PrivilegedActionException pae) {
-                /*
-                 *Log any exception and return false.
-                 */
-                _logger.log(Level.SEVERE,
-                        CULoggerInfo.getString(CULoggerInfo.exceptionCheckingFile, targetPath, file.getAbsolutePath()),
-                        pae.getCause());
-                return null;
-            }
-        }
-
           /**
            * Sets ProtectionDomain with CodeSource including Signers in
            * Entry for use in call to defineClass.
