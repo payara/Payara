@@ -329,7 +329,7 @@ MonitoringConsole.Model = (function() {
 			return page;
 		}
 		
-		function doImport(userInterface) {
+		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
@@ -342,15 +342,19 @@ MonitoringConsole.Model = (function() {
 				for (let i = 0; i < importedPages.length; i++) {
 					try {
 						let page = sanityCheckPage(importedPages[i]);
-						pages[page.id] = page;
+						if (replaceExisting || pages[page.id] === undefined) {
+							pages[page.id] = page;
+						}
 					} catch (ex) {
 					}
 				}
 			} else {
 				for (let [id, page] of Object.entries(importedPages)) {
 					try {
-						page.id = id;
-						pages[id] = sanityCheckPage(page); 
+						if (replaceExisting || pages[id] === undefined) {
+							page.id = id;
+							pages[id] = sanityCheckPage(page); 
+						}
 					} catch (ex) {
 					}
 				}
@@ -491,10 +495,10 @@ MonitoringConsole.Model = (function() {
 					let file = userInterface[0];
 					if (file) {
 						let json = await readTextFile(file);
-						doImport(JSON.parse(json));
+						doImport(JSON.parse(json), true);
 					}
 				} else {
-					doImport(userInterface);
+					doImport(userInterface, true);
 				}
 				if (onImportComplete)
 					onImportComplete();
@@ -506,7 +510,9 @@ MonitoringConsole.Model = (function() {
 			load: function() {
 				let localStorage = window.localStorage;
 				let ui = localStorage.getItem(LOCAL_UI_KEY);
-				doImport(ui ? JSON.parse(ui) : JSON.parse(JSON.stringify(UI_PRESETS)));
+				if (ui)
+				doImport(JSON.parse(ui), true);
+				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
 				return pages[currentPageId];
 			},
 			
@@ -893,7 +899,7 @@ MonitoringConsole.Model = (function() {
 			let type = widget.type;
 			widgetUpdate(widget);
 			if (widget.type === type) {
-				Charts.update(widget, );
+				Charts.update(widget);
 			} else {
 				Charts.destroy(widget.series);
 			}
