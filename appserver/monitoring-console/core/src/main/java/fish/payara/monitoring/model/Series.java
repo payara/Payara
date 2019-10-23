@@ -58,7 +58,7 @@ public final class Series implements Comparable<Series>, Serializable {
 
     private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
 
-    public final String metric;
+    private final String metric;
     private final String[] tags;
     private final String[] values;
 
@@ -72,6 +72,10 @@ public final class Series implements Comparable<Series>, Serializable {
             tags[i] = parts[i].substring(0, eqIndex).intern();
             values[i] = parts[i].substring(eqIndex + 1).intern();
         }
+    }
+
+    public String getMetric() {
+        return metric;
     }
 
     public int tagCount() {
