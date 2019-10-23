@@ -72,7 +72,7 @@ class DirWatcher {
      * @return false if the item is definetely not present in the path
      */
     static boolean hasItem(Path parent, String item) {
-        return forPath(parent).hasItem0(parent, item);
+        return forPath(parent).hasFilesystemItem(parent, item);
     }
 
     /**
@@ -82,11 +82,11 @@ class DirWatcher {
      * @throws IOException
      */
     static void register(Path path) throws IOException {
-        forPath(path).register0(path);
+        forPath(path).registerInFilesystem(path);
     }
 
     static void unregister(Path path) {
-        forPath(path).unregister0(path);
+        forPath(path).unregisterFromFilesystem(path);
     }
 
     private static DirWatcher forPath(Path path) {
@@ -111,7 +111,7 @@ class DirWatcher {
         }
     }
 
-    private void register0(Path path) throws IOException {
+    private void registerInFilesystem(Path path) throws IOException {
         if (Files.notExists(path)) {
             // Quite often the root path doesn't even exist yet (and registering for watch would fail)
             // In such case we register watcher for parent directory so it would register the main watcher
@@ -123,7 +123,7 @@ class DirWatcher {
         }
     }
 
-    private boolean hasItem0(Path parent, String item) {
+    private boolean hasFilesystemItem(Path parent, String item) {
         syncWatches();
         WatchProcessor checker = processors.get(parent);
         if (checker == null || !(checker instanceof ItemChecker)) {
@@ -176,13 +176,20 @@ class DirWatcher {
         }
     }
 
+    private void unregisterFromFilesystem(Path path) {
+        WatchProcessor processor = processors.remove(path);
+        if (processor != null) {
+            processor.cancelled();
+        }
+    }
+
     class ParentWatcher extends WatchProcessor {
+
 
         ParentWatcher(Path p, WatchService watchService) {
             super(p, watchService);
             register();
         }
-
         @Override
         protected boolean created(Path filename) {
             LOGGER.info(() -> "In parent directory "+root+": created "+filename);
@@ -197,11 +204,5 @@ class DirWatcher {
         }
     }
 
-    private void unregister0(Path path) {
-        WatchProcessor processor = processors.remove(path);
-        if (processor != null) {
-            processor.cancelled();
-        }
-    }
 
 }

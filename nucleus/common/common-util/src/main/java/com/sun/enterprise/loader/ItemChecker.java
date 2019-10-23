@@ -85,8 +85,9 @@ class ItemChecker extends WatchProcessor {
             } else {
                 LOGGER.fine(() -> "Will lookup classes in " + root + " for "+prefixes);
             }
+            registered = true;
             if (prefixes.isEmpty() || lateRegistration) {
-                doRegister();
+                registerFilesystemWatch();
             }
         } catch (PrivilegedActionException e) {
             LOGGER.log(Level.WARNING, e, () -> "Failed to register watcher for " + root);
