@@ -91,8 +91,10 @@ public class EventBus implements EventListener, MonitoringDataSource {
             HazelcastInstance hz = hzCore.getInstance();
             for (DistributedObject obj : hz.getDistributedObjects()) {
                 if (TopicService.SERVICE_NAME.equals(obj.getServiceName())) {
+                    LocalTopicStats stats = hz.getTopic(obj.getName()).getLocalTopicStats();
                     eventCollector.group(obj.getName())
-                        .collectObject(hz.getTopic(obj.getName()).getLocalTopicStats(), LocalTopicStats.class);
+                        .collect("PublishedCount", stats.getPublishOperationCount())
+                        .collect("ReceiveedCount", stats.getReceiveOperationCount());
                 }
             }
         }

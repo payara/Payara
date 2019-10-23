@@ -45,29 +45,22 @@
  **/
 MonitoringConsole.View = (function() {
 
+    const Components = MonitoringConsole.View.Components;
+
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = $("#pagesTabs"); 
-        nav.empty();
-        MonitoringConsole.Model.listPages().forEach(function(page) {
-            let tabId = page.id + '-tab';
-            let css = "page-tab" + (page.active ? ' page-selected' : '');
-            let pageTab = $('<span/>', {id: tabId, "class": css, text: page.name});
-            if (page.active) {
-                pageTab.click(function() {
-                    MonitoringConsole.Model.Settings.toggle();
-                    updatePageAndSelectionSettings();
-                });
-            } else {
-                pageTab.click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)));                
-            }
-            nav.append(pageTab);
-        });
-        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
-        addPage.click(() => onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')));
-        nav.append(addPage);
+        let nav = { 
+            onChange: function(pageid) {
+                MonitoringConsole.Chart.Trace.onClosePopup();
+                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
+            },
+            pages: MonitoringConsole.Model.listPages().map(function(page) {
+                return { label: page.name, id: page.id, active: page.active };
+            }),
+        };
+        Components.onNavigationUpdate(nav);
     }
 
     /**
@@ -79,17 +72,48 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let panelSettings = $('#panel-settings');
-            panelSettings
-                .empty()
-                .append($('<button/>', { title: 'Delete current page', 'class': 'btnIcon btnClose' }).html('&times;').click(MonitoringConsole.View.onPageDelete))
-                .append(createPageSettings())
-                .append(createDataSettings());
+            let model = [];
+            model.push(createPageSettings());
+            model.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                panelSettings.append(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
+            Components.onSettingsUpdate(model);
         } else {
             panelConsole.removeClass('state-show-settings');
+        }
+    }
+
+    function createWidgetLegend(widget) {
+        return $('<ol/>',  {'class': 'widget-legend-bar'});
+    }
+
+    function createWidgetLegendItem(data, color) {
+        let value = data.points[data.points.length-1];
+        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
+    }
+
+    function updateDomOfWidget(parent, widget) {
+        if (!parent) {
+            parent = $('#widget-'+widget.target);
+            if (!parent) {
+                return; // can't update
+            }
+        }
+        if (parent.children().length == 0) {
+            let previousParent = $('#widget-'+widget.target);
+            if (previousParent.length > 0 && previousParent.children().length > 0) {
+                previousParent.children().appendTo(parent);
+            } else {
+                parent.append(createWidgetToolbar(widget));
+                parent.append(createWidgetTargetContainer(widget));
+                parent.append(Components.onLegendCreation([]));                
+            }
+        }
+        if (widget.selected) {
+            parent.addClass('chart-selected');
+        } else {
+            parent.removeClass('chart-selected');
         }
     }
 
@@ -97,88 +121,103 @@ MonitoringConsole.View = (function() {
      * Each chart needs to be in a relative positioned box to allow responsive sizing.
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
-    function createWidgetTargetContainer(cell) {
-        let boxId = cell.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length > 0)
-            return box.first();
-        box = $('<div/>', { id: boxId, "class": "chart-box" });
-        let win = $(window);
-        box.append($('<canvas/>',{ id: cell.widget.target }));
-        return box;
+    function createWidgetTargetContainer(widget) {
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+            .append($('<canvas/>',{ id: widget.target }));
     }
 
-    function camelCaseToWords(str) {
-        return str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+    function toWords(str) {
+        // camel case to words
+        let res = str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+        if (res.indexOf('.') > 0) {
+            // dots to words with upper casing each word
+            return res.replace(/\.([a-z])/g, " $1").split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+        }
+        return res;
     }
 
     function formatSeriesName(widget) {
         let series = widget.series;
         let endOfTags = series.lastIndexOf(' ');
-        let text = endOfTags <= 0 
-           ? camelCaseToWords(series) 
-           : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
+        let metric = endOfTags <= 0 ? series : series.substring(endOfTags + 1);
+        if (endOfTags <= 0 )
+            return toWords(metric);
+        let tags = series.substring(0, endOfTags).split(' ');
+        let text = '';
+        let metricText = toWords(metric);
         if (widget.options.perSec) {
-            text += ' <i>(per second)</i>';
+            metricText += ' <i>(1/sec)</i>';
         }
+        let grouped = false;
+        for (let i = 0; i < tags.length; i++) {
+            let tag = tags[i];
+            if (tag.startsWith('@:')) {
+                grouped = true;
+                text += metricText;
+                text += ': <code>'+tag.substring(2)+'</code> ';
+            } else {
+                text +=' <i>'+tag+'</i> ';
+            }
+        }
+        if (!grouped)
+            text += metricText;
         return text;
     }
 
-    function createWidgetToolbar(cell) {
-        let series = cell.widget.series;
-        return $('<div/>', {"class": "caption-bar"})
-            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
-                .click(() => onWidgetToolbarClick(cell.widget)))
-            .append(createToolbarButton('Remove chart from page', '&times;', onWidgetDelete))
-            .append(createToolbarButton('Enlarge this chart', '&plus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&minus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&#9655;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&#9665;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+    function createWidgetToolbar(widget, expanded) {
+        let series = widget.series;
+        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
+            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
+            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
+            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
+            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
+            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
+            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
+            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
+            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
+            ;
+        return $('<div/>', {"class": "widget-title-bar"})
+            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
+                .click(() => onWidgetToolbarClick(widget)))
+            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
+            .append(settings));
     }
 
     function createToolbarButton(title, icon, onClick) {
         return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
     }
 
-    /**
-     * Creates a checkbox to configure the attributes of a widget.
-     *
-     * @param {boolean} isChecked - if the created checkbox should be checked
-     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-     */
-    function createConfigurationCheckbox(isChecked, onChange) {
-        return $("<input/>", { type: 'checkbox', checked: isChecked })
-            .on('change', function() {
-                let checked = this.checked;
-                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
-            });
-    }
-
-    function createSettingsSliderRow(label, min, max, value, onChange) {
-        return createSettingsRow(label, () => $('<input/>', {type: 'range', min:min, max:max, value: value})
-            .on('input', function() {  
-                let val = this.valueAsNumber;
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
-            }));
-    }
 
     function createWidgetSettings(widget) {
-        return createSettingsTable('settings-widget')
-            .append(createSettingsHeaderRow('Render Options'))
-            .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
-            .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
-            .append(createSettingsCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
-            .append(createSettingsCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
-            .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
-            .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
-            .append(createSettingsHeaderRow('Chart Options'))
-            .append(createSettingsCheckboxRow('Show Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
-            .append(createSettingsCheckboxRow('Show Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
-            .append(createSettingsCheckboxRow('Show Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))
-            .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
-            .append(createSettingsHeaderRow('Layout'))
-            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
-            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1));
+        let options = widget.options;
+        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
+            { label: 'General'},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
+            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            { label: 'Data'},
+            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+        ]};
+        if (widget.type === 'line') {
+            settings.entries.push(
+                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
+                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: 'Display Options'},
+                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
+                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
+                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
+                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
+                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
+                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
+                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
+                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
+            );
+        }
+        return settings;       
     }
 
     function createPageSettings() {
@@ -198,65 +237,52 @@ MonitoringConsole.View = (function() {
                 }
                 lastNs = ns;
             });
-        });            
-        return createSettingsTable('settings-page')
-            .append(createSettingsHeaderRow('Page'))
-            .append(createSettingsRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
+        });
+        let widgetSeries = $('<input />', {type: 'text'});
+        widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
+        
+        return { id: 'settings-page', caption: 'Page', entries: [
+            { label: 'Name', input: () => 
+                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
                 .on("propertychange change keyup paste input", function() {
                     if (MonitoringConsole.Model.Page.rename(this.value)) {
                         updatePageNavigation();                        
                     }
-                })))
-            .append(createSettingsRow('Widgets', () => $('<span/>')
+                })
+            },
+            { label: 'Widgets', input: () => 
+                $('<span/>')
                 .append(widgetsSelection)
+                .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetsSelection.val()))))
-                ));
+                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
+            },
+        ]};
     }
 
     function createDataSettings() {
         let instanceSelection = $('<select />', {multiple: true});
         $.getJSON("api/instances/", function(instances) {
             for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
+                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
             }
         });
-        return createSettingsTable('settings-data')
-            .append(createSettingsHeaderRow('Data'))
-            .append(createSettingsRow('Instances', () => instanceSelection));
+        return { id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Instances', input: instanceSelection }
+        ]};
     }
 
-    function createSettingsHeaderRow(caption) {
-        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}).click(function() {
-            let tr = $(this).closest('tr').next();
-            while (tr.length > 0 && !tr.children('th').length > 0) {
-                tr.children().toggle();
-                tr = tr.next();
-            }
-        }));
-    }
-
-    function createSettingsCheckboxRow(label, checked, onChange) {
-        return createSettingsRow(label, () => createConfigurationCheckbox(checked, onChange));
-    }
-
-    function createSettingsTable(id) {
-        return $('<table />', { 'class': 'settings', id: id });
-    }
-
-    function createSettingsRow(label, createInput) {
-        return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(createInput()));   
-    }
+    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
-        onWidgetUpdate(widget);
+        updateDomOfWidget(undefined, widget);
         updatePageAndSelectionSettings();
     }
 
-    function onWidgetDelete() {
+    function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
             onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
@@ -277,52 +303,43 @@ MonitoringConsole.View = (function() {
         }
     }
 
+    function createLegend(widget, data) {
+        if (!data)
+            return [{ label: 'No Data', value: '?', color: 'red' }];
+        let legend = [];
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            let label = seriesData.instance;
+            if (widget.series.indexOf('*') > 0) {
+                label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+            }
+            let item = { 
+                label: label, 
+                value: seriesData.points[seriesData.points.length-1], 
+                color: MonitoringConsole.Chart.Common.lineColor(j),
+                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+            };
+            legend.push(item);
+            data[j].legend = item;
+        }
+        return legend;
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
      * Depending on the update different content is rendered within a chart box.
      */
     function onDataUpdate(update) {
-        let boxId = update.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length == 0) {
-            if (console && console.log)
-                console.log('WARN: Box for chart ' + update.widget.series + ' not ready.');
-            return;
-        }
-        let td = box.closest('.widget');
+        let widget = update.widget;
+        updateDomOfWidget(undefined, widget);
+        let widgetNode = $('#widget-'+widget.target);
+        let legendNode = widgetNode.find('.widget-legend-bar').first();
+        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
         if (update.data) {
-            td.children('.status-nodata').hide();
-            let points = update.data[0].points;
-            if (points.length == 4 && points[1] === points[3] && !update.widget.options.perSec) {
-                if (td.children('.stable').length == 0) {
-                    let info = $('<div/>', { 'class': 'stable' });
-                    info.append($('<span/>', { text: points[1] }));
-                    td.append(info);
-                    box.hide();
-                }
-            } else {
-                td.children('.stable').remove();
-                box.show();
-                MonitoringConsole.LineChart.onDataUpdate(update);
-            }
-        } else {
-            td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
+            MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        
-        onWidgetUpdate(update.widget);
-    }
-
-    /**
-     * Called when changes to the widget require to update the view of the widget (non data related changes)
-     */
-    function onWidgetUpdate(widget) {
-        let container = $('#' + widget.target + '-box').closest('.widget');
-        if (widget.selected) {
-            container.addClass('chart-selected');
-        } else {
-            container.removeClass('chart-selected');
-        }
+        legendNode.replaceWith(Components.onLegendCreation(legend));
     }
 
     /**
@@ -332,19 +349,15 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
-                    td.append(createWidgetToolbar(cell));
-                    let status = $('<div/>', { "class": 'status-nodata'});
-                    status.append($('<div/>', {text: 'No Data'}));
-                    td.append(status);
-                    td.append(createWidgetTargetContainer(cell));
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
                     tr.append($("<td/>", { 'class': 'widget', style: 'height: '+rowHeight+'px;'}));                  
@@ -365,6 +378,13 @@ MonitoringConsole.View = (function() {
         updatePageAndSelectionSettings();
     }
 
+    function onOpenWidgetSettings(series) {
+        MonitoringConsole.Model.Page.Widgets.Selection.clear();
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
+        MonitoringConsole.Model.Settings.open();
+        updatePageAndSelectionSettings();
+    }
+
     /**
      * Public API of the View object:
      */
@@ -379,7 +399,7 @@ MonitoringConsole.View = (function() {
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
-        onPageImport: () => MonitoringConsole.Model.importPages(this.files, onPageChange),
+        onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
         onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
@@ -389,5 +409,6 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();
             }
         },
+        onOpenWidgetSettings: (series) => onOpenWidgetSettings(series),
     };
 })();

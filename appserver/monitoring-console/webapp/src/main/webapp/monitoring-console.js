@@ -41,6 +41,7 @@
 /*jshint esversion: 8 */
 
 Chart.defaults.global.defaultFontColor = "#fff";
+Chart.defaults.global.tooltips.enabled = false;
 
 /**
  * The different parts of the Monitoring Console are added as the below properties by the individual files.
@@ -49,15 +50,44 @@ var MonitoringConsole =  {
    /**
     * Functions to update the actual HTML page of the MC
     **/
-	View: undefined,
+	View: {},
    /**
     * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
     **/ 
-	Model: undefined,
+	Model: {},
    /**
-    * Functions specifically to take the data and prepare the display of a line chart using the underlying charting library. 
+    * Functions specifically to take the data and prepare the display particular chart type using the underlying charting library.
+    *
+    * Each of the type objects below shares the same public API that is used by Model and View to apply the model to the chart to update the view properly.
     **/
-	LineChart: undefined,
+	Chart: {
+
+    /**
+     * A collection of general adapter functions for the underlying chart library
+     */ 
+    Common: {},
+   /**
+    * Line chart adapter API for monitoring series data
+    **/
+    Line: {},
+   /**
+    * Bar chart adapter API for monitoring series data
+    **/
+    Bar: {},
+
+    /**
+     * Trace 'gantt chart' like API, this is not a strict adapter API as the other two as the data to populate this is specific to traces
+     */
+    Trace: {},
+
+  }
+};
+MonitoringConsole.Chart.getAPI = function(widget) {
+  switch (widget.type) {
+    default:
+    case 'line': return MonitoringConsole.Chart.Line;
+    case 'bar': return MonitoringConsole.Chart.Bar;
+  }
 };
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -121,13 +151,22 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
 						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
 						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true } },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
 						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
 					]
-				}
+				},
+				request_tracing: {
+					name: 'Request Tracing',
+					numberOfColumns: 2,
+					widgets: [
+						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+					]
+				},
 			},
 			settings: {},
 	};
+
+	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
 
 	function getPageId(name) {
     	return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
@@ -186,10 +225,13 @@ MonitoringConsole.Model = (function() {
 		function sanityCheckWidget(widget) {
 			if (!widget.target)
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
+			if (!widget.type)
+				widget.type = 'line';
 			if (!widget.options) {
 				widget.options = { 
 					beginAtZero: true,
 					autoTimeTicks: true,
+					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
 				};
 			}
 			if (!widget.grid)
@@ -473,9 +515,8 @@ MonitoringConsole.Model = (function() {
 				let selected = series
 					? [pages[currentPageId].widgets[series]]
 					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
-				selected.forEach(widget => widgetUpdate.call(window, widget));
+				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
-				return selected;
 			},
 			
 			select: function(series) {
@@ -540,35 +581,7 @@ MonitoringConsole.Model = (function() {
 				chart.destroy();
 			}
 		}
-		
-		/**
-		 * Basically translates the MC level configuration options to Chart.js options
-		 */
-		function syncOptions(widget, chart) {
-			let options = chart.options;
-			options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-			options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-			options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-			let time = widget.options.drawAnimations ? 1000 : 0;
-			options.animation.duration = time;
-			options.responsiveAnimationDuration = time;
-	    	let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-	    	options.scales.xAxes[0].ticks.minRotation = rotation;
-	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
-	    	options.legend.display = widget.options.showLegend === true;
-		}
 
-		function getTimeLabel(value, index, values) {
-			if (values.length == 0 || index == 0)
-				return value;
-			let span = values[values.length -1].value - values[0].value;
-			if (span < 120000) { // less then two minutes
-				let lastMinute = new Date(values[index-1].value).getMinutes();
-				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-			}
-			return value;
-      	}
-		
 		return {
 			/**
 			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
@@ -578,51 +591,7 @@ MonitoringConsole.Model = (function() {
 				let chart = charts[series];
 				if (chart)
 					return chart;
-				chart = new Chart(widget.target, {
-					type: 'line',
-					data: {
-						datasets: [],
-					},
-					options: {
-						scales: {
-							xAxes: [{
-								type: 'time',
-								gridLines: {
-									color: 'rgba(100,100,100,0.3)',
-									lineWidth: 0.5,
-								},
-								time: {
-									minUnit: 'second',
-									round: 'second',
-								},
-								ticks: {
-									callback: getTimeLabel,
-									minRotation: 90,
-									maxRotation: 90,
-								}
-							}],
-							yAxes: [{
-								display: true,
-								gridLines: {
-									color: 'rgba(100,100,100,0.7)',
-									lineWidth: 0.5,
-								},
-								ticks: {
-									beginAtZero: widget.options.beginAtZero,
-									precision:0, // no decimal places in labels
-								},
-							}],
-						},
-				        legend: {
-				            labels: {
-				                filter: function(item, chart) {
-				                	return !item.text.startsWith(" ");
-				                }
-				            }
-				        }
-					},
-				});
-				syncOptions(widget, chart);
+				chart = MonitoringConsole.Chart.getAPI(widget).onCreation(widget);			
 				charts[series] = chart;
 				return chart;
 			},
@@ -638,7 +607,7 @@ MonitoringConsole.Model = (function() {
 			update: function(widget) {
 				let chart = charts[widget.series];
 				if (chart) {
-					syncOptions(widget, chart);
+					MonitoringConsole.Chart.getAPI(widget).onConfigUpdate(widget, chart);
 					chart.update();
 				}
 			},
@@ -709,6 +678,21 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	function retainLastMinute(data) {
+		let startOfLastMinute = Date.now() - 60000;
+		data.forEach(function(seriesData) {
+			let points = [];
+			for (let i = 0; i < seriesData.points.length; i += 2) {
+				if (seriesData.points[i] >= startOfLastMinute) {
+					points.push(seriesData.points[i]);
+					points.push(seriesData.points[i+1]);
+				}
+			}
+			seriesData.points = points;
+		});
+		return data.filter(seriesData => seriesData.points.length >= 2);
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -716,7 +700,7 @@ MonitoringConsole.Model = (function() {
 			let payload = {
 			};
 			let instances = $('#cfgInstances').val();
-			payload.series = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
 					instances: instances
@@ -733,7 +717,7 @@ MonitoringConsole.Model = (function() {
 				Object.values(widgets).forEach(function(widget) {
 					onDataUpdate({
 						widget: widget,
-						data: response[widget.series],
+						data: retainLastMinute(response[widget.series]),
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -752,13 +736,25 @@ MonitoringConsole.Model = (function() {
 	}
 
 	function doConfigureSelection(widgetUpdate) {
-		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate));
 		return UI.arrange();
 	}
 
 	function doConfigureWidget(series, widgetUpdate) {
-		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate), series);
 		return UI.arrange();
+	}
+
+	function createWidgetUpdate(widgetUpdate) {
+		return function(widget) {
+			let type = widget.type;
+			widgetUpdate(widget);
+			if (widget.type === type) {
+				Charts.update(widget, );
+			} else {
+				Charts.destroy(widget.series);
+			}
+		};
 	}
 
 	/**
@@ -847,8 +843,10 @@ MonitoringConsole.Model = (function() {
 			Widgets: {
 				
 				add: function(series) {
-					UI.addWidget(series);
-					Interval.tick();
+					if (series.trim()) {
+						UI.addWidget(series);
+						Interval.tick();
+					}
 					return UI.arrange();
 				},
 				
@@ -872,6 +870,14 @@ MonitoringConsole.Model = (function() {
 	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
 	                }
+	            }),
+
+				moveUp: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item = 0;
+	            }),
+
+	            moveDown: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item += 1.1;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {
@@ -951,27 +957,471 @@ MonitoringConsole.Model = (function() {
 
 /*jshint esversion: 8 */
 
-MonitoringConsole.LineChart = (function() {
+/**
+ * Data/Model driven view components.
+ *
+ * Each of them gets passed a model which updates the view of the component to the model state.
+ **/
+MonitoringConsole.View.Components = (function() {
+
+   const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
+
+   function element(fn) {
+      let e = $.isFunction(fn) ? fn() : fn;
+      return (typeof e === 'string') ? document.createTextNode(e) : e;
+   }
+
+   /**
+    * This is the side panel showing the details and settings of widgets
+    */
+   let Settings = (function() {
+
+      function emptyPanel() {
+         return $('#panel-settings').empty();
+      }
+
+      function createHeaderRow(caption) {
+         return $('<tr/>').append($('<th/>', {colspan: 2})
+             .html(caption)
+             .click(function() {
+                 let tr = $(this).closest('tr').next();
+                 let toggleAll = tr.children('th').length > 0;
+                 while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+                     if (tr.children('th').length == 0) {
+                         tr.children().toggle();                    
+                     }
+                     tr = tr.next();
+                 }
+         }));
+      }
+
+      function createCheckboxRow(label, checked, onChange) {
+         return createRow(label, () => createCheckbox(checked, onChange));
+      }
+
+      function createTable(id, caption) {
+         let table = $('<table />', { 'class': 'settings', id: id });
+         if (caption)
+            table.append(createHeaderRow(caption));
+         return table;
+      }
+
+      function createRow(label, createInput) {
+         return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(element(createInput)));   
+      }
+
+      /**
+      * Creates a checkbox to configure the attributes of a widget.
+      *
+      * @param {boolean} isChecked - if the created checkbox should be checked
+      * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
+      */
+      function createCheckbox(isChecked, onChange) {
+         return $("<input/>", { type: 'checkbox', checked: isChecked })
+             .on('change', function() {
+                 let checked = this.checked;
+                 Selection.configure((widget) => onChange(widget, checked));
+             });
+      }
+
+      function createSliderRow(label, min, max, value, onChange) {
+         return createRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
+             .on('input change', function() {  
+                 let val = this.valueAsNumber;
+                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
+             }));
+      }
+
+      function createDropdownRow(label, options, value, onChange) {
+         let dropdown = $('<select/>');
+         Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
+         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
+         return createRow(label, () => dropdown);
+      }
+
+      function onUpdate(model) {
+         let panel = emptyPanel();
+         for (let t = 0; t < model.length; t++) {
+            let tableModel = model[t];
+            let table = createTable(tableModel.id, tableModel.caption);
+            panel.append(table);
+            for (let r = 0; r < tableModel.entries.length; r++) {
+               let rowModel = tableModel.entries[r];
+               switch (rowModel.type) {
+                  case 'header':
+                     table.append(createHeaderRow(rowModel.label));
+                     break;
+                  case 'checkbox':
+                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'range':
+                  case 'slider':
+                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
+                     break;
+                  case 'dropdown':
+                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
+                     break;
+                  default:
+                     if (rowModel.input) {
+                        table.append(createRow(rowModel.label, rowModel.input));
+                     } else {
+                        table.append(createHeaderRow(rowModel.label));
+                     }
+               }
+            }
+         }
+      }
+
+      return { onUpdate: onUpdate };
+    })();
+
+    /**
+     * Legend is a generic component showing a number of current values annotated with label and color.
+     */ 
+    let Legend = (function() {
+
+      function createItem(label, value, color) {
+         let strong = value;
+         let normal = '';
+         if (typeof value === 'string' && value.indexOf(' ') > 0) {
+            strong = value.substring(0, value.indexOf(' '));
+            normal = value.substring(value.indexOf(' '));
+         }
+         return $('<li/>', {style: 'border-color: '+color+';'})
+               .append($('<span/>').text(label))
+               .append($('<strong/>').text(strong))
+               .append($('<span/>').text(normal));
+      }
+
+      function onCreation(model) {
+         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         for (let i = 0; i < model.length; i++) {
+            let itemModel = model[i];
+            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+         }
+         return legend;
+      }
+
+      return { onCreation: onCreation };
+    })();
+
+    /**
+     * Component to navigate pages. More a less a dropdown.
+     */
+    let Navigation = (function() {
+
+      function onUpdate(model) {
+         let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
+         dropdown.change(() => model.onChange(dropdown.val()));
+         for (let i = 0; i < model.pages.length; i++) {
+            let pageModel = model.pages[i];
+            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
+            if (pageModel.active) {
+               dropdown.val(pageModel.id);
+            }
+         }
+         let nav = $("#panel-nav"); 
+         nav.empty();
+         nav.append(dropdown);
+         return dropdown;
+      }
+
+      return { onUpdate: onUpdate };
+    })();
+
+    /*
+     * Public API below:
+     */
+    return {
+      /**
+       * Call to update the settings side panel with the given model
+       */
+      onSettingsUpdate: (model) => Settings.onUpdate(model),
+      /**
+       * Call to update the top page navigation with the given model
+       */
+      onNavigationUpdate: (model) => Navigation.onUpdate(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onLegendCreation: (model) => Legend.onCreation(model),
+      //TODO add id to model and make it an update?
+    };
+
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+MonitoringConsole.Chart.Common = (function() {
+
+   const DEFAULT_BG_COLORS = [
+      'rgba(240, 152, 27, 0.2)',
+      'rgba(0, 140, 196, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(255, 206, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(255, 159, 64, 0.2)'
+   ];
+   const DEFAULT_LINE_COLORS = [
+      'rgba(240, 152, 27, 1)',
+      'rgba(0, 140, 196, 1)',
+      'rgba(153, 102, 255, 1)',
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)',
+      'rgba(255, 159, 64, 1)'
+   ];
+
+   function createCustomTooltipFunction(createHtmlTooltip) {
+      return function(tooltipModel) {
+        let tooltip = $('#chartjs-tooltip');
+        if (tooltipModel.opacity === 0) {
+          tooltip.css({opacity: 0}); // without this the tooptip sticks and is not removed when moving the mouse away
+          return;
+        }
+        tooltipModel.opacity = 1;
+        $(tooltip).empty().append(createHtmlTooltip(tooltipModel.dataPoints));
+        var position = this._chart.canvas.getBoundingClientRect(); // `this` will be the overall tooltip
+        tooltip.css({opacity: 1, left: position.left + tooltipModel.caretX, top: position.top + tooltipModel.caretY - 20});
+      };
+   }
+
+   function formatDate(date) {
+      if (typeof date === 'number') {
+         date = new Date(date);
+      }
+      let dayOfMonth = date.getDate();
+      let month = date.getMonth() + 1;
+      let year = date.getFullYear();
+      let hour = date.getHours();
+      let min = date.getMinutes().toString().padStart(2, '0');
+      let sec = date.getSeconds().toString().padStart(2, '0');
+      let ms = date.getMilliseconds().toString().padStart(3, '0');
+      let now = new Date();
+      let diffMs =  now - date;
+      let text = `Today ${hour}:${min}:${sec}.${ms}`; 
+      if (diffMs < 5000) {
+         return text + ' (just now)';
+      }
+      if (diffMs < 60 * 1000) { // less then a minute ago
+         let diffSecs = diffMs / 1000;
+         return text + ' (about '+ diffSecs.toFixed(0) + ' seconds ago)';
+      }
+      if (diffMs < 60 * 60 * 1000) { // less then an hour ago
+         let diffMins = diffMs / (60*1000);
+         return text + ' (about '+ diffMins.toFixed(0) + ' minutes ago)';  
+      }
+      let dayOfMonthNow = now.getDate();
+      if (dayOfMonth == dayOfMonthNow) {
+         return text;
+      }
+      if (dayOfMonthNow - 1 == dayOfMonth) {
+         return `Yesterday ${hour}:${min}:${sec}.${ms}`; 
+      }
+      return `${dayOfMonth}.${month}.${year} ${hour}:${min}:${sec}.${ms}`; 
+   }
+
+   /**
+    * Public API below:
+    */
+   return {
+      /**
+       * @param {function} createHtmlTooltip - a function that given dataPoints (see Chartjs docs) returns the tooltip HTML jQuery object
+       */
+      createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
+      formatDate: (date) => formatDate(date),
+      backgroundColor: (n) => DEFAULT_BG_COLORS[n],
+      backgroundColors: () => DEFAULT_BG_COLORS,
+      lineColor: (n) => DEFAULT_LINE_COLORS[n],
+      lineColors: () => DEFAULT_LINE_COLORS,
+   };
+
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
+ * Adapter to line charts of Chart.js
+ */ 
+MonitoringConsole.Chart.Line = (function() {
 	
-	const DEFAULT_BG_COLORS = [
-        'rgba(153, 102, 255, 0.2)',
-        'rgba(255, 99, 132, 0.2)',
-        'rgba(54, 162, 235, 0.2)',
-        'rgba(255, 206, 86, 0.2)',
-        'rgba(75, 192, 192, 0.2)',
-        'rgba(255, 159, 64, 0.2)'
-    ];
-    const DEFAULT_LINE_COLORS = [
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(255, 159, 64, 1)'
-    ];	
+  const Common = MonitoringConsole.Chart.Common;
+
+  /**
+   * This is like a constant but it needs to yield new objects for each chart.
+   */
+  function onCreation(widget) {
+    let options = {
+      maintainAspectRatio: false,
+      scales: {
+        xAxes: [{
+          type: 'time',
+          gridLines: {
+            color: 'rgba(100,100,100,0.3)',
+            lineWidth: 0.5,
+          },
+          time: {
+            minUnit: 'second',
+            round: 'second',
+          },
+          ticks: {
+            callback: getTimeLabel,
+            minRotation: 90,
+            maxRotation: 90,
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            color: 'rgba(100,100,100,0.7)',
+            lineWidth: 0.5,
+          },
+          ticks: {
+            beginAtZero: true,
+            precision:0, // no decimal places in labels
+          },
+        }],
+      },
+      legend: {
+          display: false,
+      }
+    };
+    return new Chart(widget.target, {
+          type: 'line',
+          data: { datasets: [], },
+          options: options,
+        });
+  } 
+
+  function getTimeLabel(value, index, values) {
+    if (values.length == 0 || index == 0)
+      return value;
+    let span = values[values.length -1].value - values[0].value;
+    if (span < 120000) { // less then two minutes
+      let lastMinute = new Date(values[index-1].value).getMinutes();
+      return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+    }
+    return value;
+  }
+
+  /**
+   * Convertes a array of points given as one dimensional array with alternativ time value elements 
+   * to a 2-dimensional array of points with t and y attribute.
+   */
+  function points1Dto2D(points1d) {
+    if (!points1d)
+      return [];
+    let points2d = new Array(points1d.length / 2);
+    for (let i = 0; i < points2d.length; i++)
+      points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+    return points2d;      
+  }
+    
+  /**
+   * Convertes a array of points given as one dimensional array with alternativ time value elements 
+   * to a 2-dimensional array of points with t and y attribute where y reflects the delta between 
+   * nearest 2 points of the input array. This means the result array has one less point as the input.
+   */
+  function points1Dto2DPerSec(points1d) {
+    if (!points1d)
+      return [];
+    let points2d = new Array((points1d.length / 2) - 1);
+    for (let i = 0; i < points2d.length; i++) {
+      let t0 = points1d[i*2];
+      let t1 = points1d[i*2+2];
+      let y0 = points1d[i*2+1];
+      let y1 = points1d[i*2+3];
+      let dt = t1 - t0;
+      let dy = y1 - y0;
+      let y = (dt / 1000) * dy;
+      points2d[i] = { t: new Date(t1), y: y };
+    }
+    return points2d;
+  }  
 	
-    function createMinimumLineDataset(data, points, lineColor) {
-		let min = data.observedMin;
+  function createMinimumLineDataset(seriesData, points, lineColor) {
+		let min = seriesData.observedMin;
 		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
@@ -983,10 +1433,10 @@ MonitoringConsole.LineChart = (function() {
 			borderDash: [2, 2],
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createMaximumLineDataset(data, points, lineColor) {
-    	let max = data.observedMax;
+  function createMaximumLineDataset(seriesData, points, lineColor) {
+  	let max = seriesData.observedMax;
 		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
@@ -997,10 +1447,10 @@ MonitoringConsole.LineChart = (function() {
 			borderWidth: 1,
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createAverageLineDataset(data, points, lineColor) {
-		let avg = data.observedSum / data.observedValues;
+  function createAverageLineDataset(seriesData, points, lineColor) {
+		let avg = seriesData.observedSum / seriesData.observedValues;
 		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
@@ -1012,78 +1462,520 @@ MonitoringConsole.LineChart = (function() {
 			borderDash: [10, 4],
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createMainLineDataset(data, points, lineColor, bgColor) {
-		return {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
+		let pointRadius = widget.options.drawPoints ? 3 : 0;
+    let label = seriesData.instance;
+    if (widget.series.indexOf('*') > 0)
+      label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+    return {
 			data: points,
-			label: data.instance,
+			label: label,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 1
+			borderWidth: 1,
+      pointRadius: pointRadius,
 		};
-    }
+  }
     
-    function createInstancePoints(points1d) {
-    	if (!points1d)
-    		return [];
-    	let points2d = new Array(points1d.length / 2);
-		for (let i = 0; i < points2d.length; i++) {
-			points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+  /**
+   * Creates one or more lines for a single series dataset related to the widget.
+   * A widget might display multiple series in the same graph generating one or more dataset for each of them.
+   */
+  function createSeriesDatasets(widget, seriesData) {
+    let lineColor = seriesData.legend.color;
+    let bgColor = seriesData.legend.backgroundColor;
+    if (widget.options.perSec && seriesData.points.length > 4) {    
+  		//TODO add min/max/avg per sec lines
+      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
+  	}
+  	let points = points1Dto2D(seriesData.points);
+  	let datasets = [];
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
+  	if (points.length > 0 && widget.options.drawAvgLine) {
+			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
-		return points2d;
-    }
-    
-    function createInstancePerSecPoints(points1d) {
-    	if (!points1d)
-    		return [];
-    	let points2d = new Array((points1d.length / 2) - 1);
-    	for (let i = 0; i < points2d.length; i++) {
-    		let t0 = points1d[i*2];
-    		let t1 = points1d[i*2+2];
-    		let y0 = points1d[i*2+1];
-    		let y1 = points1d[i*2+3];
-    		let dt = t1 - t0;
-    		let dy = y1 - y0;
-    		let y = (dt / 1000) * dy;
-    		points2d[i] = { t: new Date(t1), y: y };
-    	}
-    	return points2d;
-    }
-    
-    function createInstanceDatasets(widget, data, lineColor, bgColor) {
-    	if (widget.options.perSec) {
-    		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
-    	}
-    	let points = createInstancePoints(data.points);
-    	let datasets = [];
-    	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
-    	if (points.length > 0 && widget.options.drawAvgLine) {
-			datasets.push(createAverageLineDataset(data, points, lineColor));
-		}
-		if (points.length > 0 && widget.options.drawMinLine && data.observedMin > 0) {
-			datasets.push(createMinimumLineDataset(data, points, lineColor));
+		if (points.length > 0 && widget.options.drawMinLine && seriesData.observedMin > 0) {
+			datasets.push(createMinimumLineDataset(seriesData, points, lineColor));
 		}
 		if (points.length > 0 && widget.options.drawMaxLine) {
-			datasets.push(createMaximumLineDataset(data, points, lineColor));
+			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-		return datasets;
+	  return datasets;
+  }
+
+  /**
+   * Should be called whenever the configuration of the widget changes in way that needs to be transfered to the chart options.
+   * Basically translates the MC level configuration options to Chart.js options
+   */
+  function onConfigUpdate(widget, chart) {
+    let options = chart.options;
+    options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
+    options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
+    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
+    let time = widget.options.drawAnimations ? 1000 : 0;
+    options.animation.duration = time;
+    options.responsiveAnimationDuration = time;
+    let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
+    options.scales.xAxes[0].ticks.minRotation = rotation;
+    options.scales.xAxes[0].ticks.maxRotation = rotation;
+    options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
+    options.elements.line.fill = widget.options.drawFill === true;
+    return chart;
+  }
+
+  function onDataUpdate(update) {
+    let data = update.data;
+    let widget = update.widget;
+    let chart = update.chart();
+    let datasets = [];
+    for (let j = 0; j < data.length; j++) {
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
     }
-    
+    chart.data.datasets = datasets;
+    chart.update(0);
+  }
+  
+  /**
+   * Public API if this chart type (same for all types).
+   */
 	return {
-		onDataUpdate: function(update) {
-			let data = update.data;
-			let widget = update.widget;
-			let chart = update.chart();
-			let datasets = [];
-			for (let j = 0; j < data.length; j++) {
-				datasets = datasets.concat(
-						createInstanceDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
-			}
-			chart.data.datasets = datasets;
-			chart.update(0);
-		}
+    onCreation: (widget) => onConfigUpdate(widget, onCreation(widget)),
+    onConfigUpdate: (widget, chart) => onConfigUpdate(widget, chart),
+    onDataUpdate: (update) => onDataUpdate(update),
 	};
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
+ * Adapter to horizontal bar charts of Chart.js
+ */ 
+MonitoringConsole.Chart.Bar = (function() {
+
+  const Common = MonitoringConsole.Chart.Common;
+
+   function createData(widget, response) {
+      let series = [];
+      let labels = [];
+      let zeroToMinValues = [];
+      let observedMinToMinValues = [];
+      let minToMaxValues = [];
+      let maxToObservedMaxValues = [];
+      let showObservedMin = widget.options.drawMinLine;
+      let lineColors = [];
+      let bgColors = [];
+      for (let i = 0; i < response.length; i++) {
+        let seriesData = response[i];
+        let points = seriesData.points;
+        let min = points[1];
+        let max = points[1];
+        for (let j = 0; j < points.length; j+=2) {
+              let value = points[j+1];
+              min = Math.min(min, value);
+              max = Math.max(max, value);
+        }
+        labels.push(seriesData.series);
+        series.push(seriesData.series);          
+        zeroToMinValues.push(showObservedMin ? seriesData.observedMin : min);
+        observedMinToMinValues.push(min - seriesData.observedMin);
+        minToMaxValues.push(max - min);
+        maxToObservedMaxValues.push(seriesData.observedMax - max);
+        lineColors.push(seriesData.legend.color);
+        bgColors.push(seriesData.legend.backgroundColor);
+      }
+      let datasets = [];
+      let offset = {
+        data: zeroToMinValues,
+        backgroundColor: 'transparent',
+        borderWidth: {right: 1},
+        borderColor: lineColors,
+      };
+      datasets.push(offset);
+      if (showObservedMin) {
+         datasets.push({
+            data: observedMinToMinValues,
+            backgroundColor: bgColors,
+            borderWidth: 0,
+         });       
+      }
+      datasets.push({
+         data: minToMaxValues,
+         backgroundColor: bgColors,
+         borderColor: lineColors,
+         borderWidth: 1,
+         borderSkipped: false,
+      });
+      if (widget.options.drawMaxLine) {
+         datasets.push({
+           data: maxToObservedMaxValues,
+           backgroundColor: bgColors,
+           borderWidth: 0,
+         }); 
+      }
+      return {
+        labels: labels,
+        series: series,
+        datasets: datasets,
+      };
+   }
+
+   function onCreation(widget) {
+      return new Chart(widget.target, {
+         type: 'horizontalBar',
+         data: { datasets: [] },
+         options: {
+            maintainAspectRatio: false,
+            scales: {
+               xAxes: [{
+                  stacked: true,
+               }],
+               yAxes: [{
+                  maxBarThickness: 15, //px
+                  barPercentage: 1.0,
+                  categoryPercentage: 1.0,
+                  borderSkipped: false,
+                  stacked: true,
+                  ticks: {
+                     display: false,
+                  }
+               }]
+            },
+            legend: {
+               display: false,
+            },
+            onClick: function (event) {
+               let bar = this.getElementsAtEventForMode(event, "y", 1)[0];
+               let series = bar._chart.config.data.series[bar._index]; 
+               if (series.startsWith('ns:trace ') && series.endsWith(' Duration')) {
+                  MonitoringConsole.Chart.Trace.onOpenPopup(series);
+               }
+            }
+         }
+      });
+   }
+
+   function onConfigUpdate(widget, chart) {
+      let options = chart.options;
+      return chart;
+   }
+
+   function onDataUpdate(update) {
+      let data = update.data;
+      let widget = update.widget;
+      let chart = update.chart();
+      chart.data = createData(widget, data);
+      chart.update(0);
+   }
+
+  /**
+   * Public API if this chart type (same for all types).
+   */
+   return {
+      onCreation: (widget) => onConfigUpdate(widget, onCreation(widget)),
+      onConfigUpdate: (widget, chart) => onConfigUpdate(widget, chart),
+      onDataUpdate: (update) => onDataUpdate(update),
+   };
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
+ * Horizontal bar charts of Chart.js as used for the gantt chart like trace details view
+ */ 
+MonitoringConsole.Chart.Trace = (function() {
+
+   const Components = MonitoringConsole.View.Components;
+   const Common = MonitoringConsole.Chart.Common;
+
+   var model = {};
+   var chart;
+
+   function onDataUpdate(data) {
+      model.data = data;
+      onSortByDuration();
+   }
+
+   function updateChart() {
+      let data = model.data;
+      let zeroToMinValues = [];
+      let minToMaxValues = [];
+      let spans = [];
+      let labels = [];
+      let operations = {};
+      let colorCounter = 0;
+      let colors = [];
+      let bgColors = [];
+      data.sort(model.sortBy);
+      for (let i = 0; i < data.length; i++) {
+         let trace = data[i]; 
+         let startTime = trace.startTime;
+         for (let j = 0; j < trace.spans.length; j++) {
+            let span = trace.spans[j];
+            spans.push(span);
+            zeroToMinValues.push(span.startTime - startTime);
+            minToMaxValues.push(span.endTime - span.startTime);
+            labels.push(span.operation);
+            if (!operations[span.operation]) {
+               operations[span.operation] = {
+                  color: Common.lineColor(colorCounter),
+                  bgColor: Common.backgroundColor(colorCounter++),
+                  count: 1,
+                  duration: span.endTime - span.startTime,
+               };
+            } else {
+               let op = operations[span.operation];
+               op.count += 1;
+               op.duration += span.endTime - span.startTime;
+            }
+            colors.push(operations[span.operation].color);
+            bgColors.push(operations[span.operation].bgColor);
+         }
+         spans.push(null);
+         zeroToMinValues.push(0);
+         minToMaxValues.push(0);
+         labels.push('');
+         colors.push('transparent');
+         bgColors.push('transparent');
+      }
+      let datasets = [ {
+            data: zeroToMinValues,
+            backgroundColor: 'transparent',
+         }, {
+            data: minToMaxValues,
+            backgroundColor: bgColors, //'rgba(153, 153, 153, 0.2)',
+            borderColor: colors,
+            borderWidth: {top: 1, right: 1},
+         }
+      ];
+      if (!chart) {
+         chart = onCreation();
+      }
+      let legend = [];
+      for (let [label, operationData] of Object.entries(operations)) {
+         legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
+      }
+      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-chart-box').height(10 * spans.length + 30);
+      chart.data = { 
+         datasets: datasets,
+         spans: spans,
+         labels: labels,
+      };
+      chart.options.onClick = function(event)  {
+        updateDomSpanDetails(data, spans[this.getElementsAtEventForMode(event, "y", 1)[0]._index]); 
+      };
+      addCustomTooltip(chart, spans);
+      chart.update(0);
+   }
+
+   function autoLink(text) {
+      if (text.startsWith('http://') || text.startsWith('https://'))
+         return $('<a/>', { href: text, text: text});
+      return $(document.createTextNode(text));
+   }
+
+   function addCustomTooltip(chart, spans) {
+      chart.options.tooltips.custom = Common.createCustomTooltipFunction(function(dataPoints) {
+         let index = dataPoints[0].index;
+         let span = spans[index];
+         let body = $('<div/>', {'class': 'Tooltip'});
+         body
+            .append($('<div/>').text("ID: "+span.id))
+            .append($('<div/>').text("Start: "+Common.formatDate(span.startTime)))
+            .append($('<div/>').text("End: "+Common.formatDate(span.endTime)));
+         return body;
+      });      
+   }
+
+   function onCreation() {
+      return new Chart('trace-chart', {
+         type: 'horizontalBar',
+         data: { datasets: [] },
+         options: {
+            maintainAspectRatio: false,
+            scales: {
+               xAxes: [{
+                  stacked: true,
+                  position: 'top',
+                  ticks: {
+                     callback: function(value, index, values) {
+                        if (value > 1000) {
+                           return (value / 1000).toFixed(1)+"s";
+                        }
+                        return value+"ms";
+                     }
+                  },
+                  scaleLabel: {
+                     display: true,
+                     labelString: 'Relative Timeline'
+                  }
+               }],
+               yAxes: [{
+                  maxBarThickness: 15, //px
+                  barPercentage: 1.0,
+                  categoryPercentage: 1.0,
+                  borderSkipped: false,
+                  stacked: true,
+                  gridLines: {
+                     display:false
+                  },
+                  ticks: {
+                     display: false,
+                  },
+               }]
+            },
+            legend: {
+               display: false,
+            },
+            tooltips: {
+               enabled: false,
+               position: 'nearest',
+               filter: (tooltipItem) => tooltipItem.datasetIndex > 0, // remove offsets (not considered data, just necessary to offset the visible bars)
+            },
+         }
+      });
+   }
+
+   function updateDomSpanDetails(data, span) {
+      let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
+      let settings = [
+         { id: 'settings-span', caption: 'Span' , entries: [
+            { label: 'ID', input: span.id},
+            { label: 'Operation', input: span.operation},
+            { label: 'Start', input: Common.formatDate(new Date(span.startTime))},
+            { label: 'End', input:  Common.formatDate(new Date(span.endTime))},
+            { label: 'Duration', input: (span.duration / 1000000) + 'ms'},
+         ]},
+         tags,
+      ];
+      for (let [key, value] of Object.entries(span.tags)) {
+         if (value.startsWith('[') && value.endsWith(']')) {
+            value = value.slice(1,-1);
+         }
+         tags.entries.push({ label: key, input: autoLink(value)});
+      }
+      Components.onSettingsUpdate(settings);
+   }
+
+
+   function onDataRefresh() {
+      $.getJSON("api/trace/data/"+model.series, onDataUpdate);
+   }
+
+   function onOpenPopup(series) {
+      $('#panel-trace').show();
+      model.series = series;
+      onDataRefresh();
+   }
+
+   function onClosePopup() {
+      if (chart) {
+         chart.destroy();
+         chart = undefined;
+      }
+      $('#panel-trace').hide();
+   }
+
+   function onSortByWallTime() {
+      model.sortBy = (a,b) => a.startTime - b.startTime; // past to recent
+      updateChart();
+   }
+
+   function onSortByDuration() {
+      model.sortBy = (a,b) => b.elapsedTime - a.elapsedTime; // slow to fast
+      updateChart();
+   }
+
+   /**
+    * Public API below:
+    */
+   return {
+      onOpenPopup: (series) => onOpenPopup(series),
+      onClosePopup: () => onClosePopup(),
+      onDataRefresh: () => onDataRefresh(),
+      onSortByWallTime: () => onSortByWallTime(),
+      onSortByDuration: () => onSortByDuration(),
+   };
 })();
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -1132,29 +2024,22 @@ MonitoringConsole.LineChart = (function() {
  **/
 MonitoringConsole.View = (function() {
 
+    const Components = MonitoringConsole.View.Components;
+
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = $("#pagesTabs"); 
-        nav.empty();
-        MonitoringConsole.Model.listPages().forEach(function(page) {
-            let tabId = page.id + '-tab';
-            let css = "page-tab" + (page.active ? ' page-selected' : '');
-            let pageTab = $('<span/>', {id: tabId, "class": css, text: page.name});
-            if (page.active) {
-                pageTab.click(function() {
-                    MonitoringConsole.Model.Settings.toggle();
-                    updatePageAndSelectionSettings();
-                });
-            } else {
-                pageTab.click(() => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)));                
-            }
-            nav.append(pageTab);
-        });
-        let addPage = $('<span/>', {id: 'addPageTab', 'class': 'page-tab'}).html('&plus;');
-        addPage.click(() => onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')));
-        nav.append(addPage);
+        let nav = { 
+            onChange: function(pageid) {
+                MonitoringConsole.Chart.Trace.onClosePopup();
+                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
+            },
+            pages: MonitoringConsole.Model.listPages().map(function(page) {
+                return { label: page.name, id: page.id, active: page.active };
+            }),
+        };
+        Components.onNavigationUpdate(nav);
     }
 
     /**
@@ -1166,17 +2051,48 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let panelSettings = $('#panel-settings');
-            panelSettings
-                .empty()
-                .append($('<button/>', { title: 'Delete current page', 'class': 'btnIcon btnClose' }).html('&times;').click(MonitoringConsole.View.onPageDelete))
-                .append(createPageSettings())
-                .append(createDataSettings());
+            let model = [];
+            model.push(createPageSettings());
+            model.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                panelSettings.append(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
+            Components.onSettingsUpdate(model);
         } else {
             panelConsole.removeClass('state-show-settings');
+        }
+    }
+
+    function createWidgetLegend(widget) {
+        return $('<ol/>',  {'class': 'widget-legend-bar'});
+    }
+
+    function createWidgetLegendItem(data, color) {
+        let value = data.points[data.points.length-1];
+        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
+    }
+
+    function updateDomOfWidget(parent, widget) {
+        if (!parent) {
+            parent = $('#widget-'+widget.target);
+            if (!parent) {
+                return; // can't update
+            }
+        }
+        if (parent.children().length == 0) {
+            let previousParent = $('#widget-'+widget.target);
+            if (previousParent.length > 0 && previousParent.children().length > 0) {
+                previousParent.children().appendTo(parent);
+            } else {
+                parent.append(createWidgetToolbar(widget));
+                parent.append(createWidgetTargetContainer(widget));
+                parent.append(Components.onLegendCreation([]));                
+            }
+        }
+        if (widget.selected) {
+            parent.addClass('chart-selected');
+        } else {
+            parent.removeClass('chart-selected');
         }
     }
 
@@ -1184,88 +2100,103 @@ MonitoringConsole.View = (function() {
      * Each chart needs to be in a relative positioned box to allow responsive sizing.
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
-    function createWidgetTargetContainer(cell) {
-        let boxId = cell.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length > 0)
-            return box.first();
-        box = $('<div/>', { id: boxId, "class": "chart-box" });
-        let win = $(window);
-        box.append($('<canvas/>',{ id: cell.widget.target }));
-        return box;
+    function createWidgetTargetContainer(widget) {
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+            .append($('<canvas/>',{ id: widget.target }));
     }
 
-    function camelCaseToWords(str) {
-        return str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+    function toWords(str) {
+        // camel case to words
+        let res = str.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+        if (res.indexOf('.') > 0) {
+            // dots to words with upper casing each word
+            return res.replace(/\.([a-z])/g, " $1").split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+        }
+        return res;
     }
 
     function formatSeriesName(widget) {
         let series = widget.series;
         let endOfTags = series.lastIndexOf(' ');
-        let text = endOfTags <= 0 
-           ? camelCaseToWords(series) 
-           : '<i>'+series.substring(0, endOfTags)+'</i> '+camelCaseToWords(series.substring(endOfTags + 1));
+        let metric = endOfTags <= 0 ? series : series.substring(endOfTags + 1);
+        if (endOfTags <= 0 )
+            return toWords(metric);
+        let tags = series.substring(0, endOfTags).split(' ');
+        let text = '';
+        let metricText = toWords(metric);
         if (widget.options.perSec) {
-            text += ' <i>(per second)</i>';
+            metricText += ' <i>(1/sec)</i>';
         }
+        let grouped = false;
+        for (let i = 0; i < tags.length; i++) {
+            let tag = tags[i];
+            if (tag.startsWith('@:')) {
+                grouped = true;
+                text += metricText;
+                text += ': <code>'+tag.substring(2)+'</code> ';
+            } else {
+                text +=' <i>'+tag+'</i> ';
+            }
+        }
+        if (!grouped)
+            text += metricText;
         return text;
     }
 
-    function createWidgetToolbar(cell) {
-        let series = cell.widget.series;
-        return $('<div/>', {"class": "caption-bar"})
-            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(cell.widget))
-                .click(() => onWidgetToolbarClick(cell.widget)))
-            .append(createToolbarButton('Remove chart from page', '&times;', onWidgetDelete))
-            .append(createToolbarButton('Enlarge this chart', '&plus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&minus;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&#9655;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&#9665;', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))));
+    function createWidgetToolbar(widget, expanded) {
+        let series = widget.series;
+        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
+            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
+            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
+            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
+            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
+            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
+            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
+            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
+            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
+            ;
+        return $('<div/>', {"class": "widget-title-bar"})
+            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
+                .click(() => onWidgetToolbarClick(widget)))
+            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
+            .append(settings));
     }
 
     function createToolbarButton(title, icon, onClick) {
         return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
     }
 
-    /**
-     * Creates a checkbox to configure the attributes of a widget.
-     *
-     * @param {boolean} isChecked - if the created checkbox should be checked
-     * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-     */
-    function createConfigurationCheckbox(isChecked, onChange) {
-        return $("<input/>", { type: 'checkbox', checked: isChecked })
-            .on('change', function() {
-                let checked = this.checked;
-                MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, checked));
-            });
-    }
-
-    function createSettingsSliderRow(label, min, max, value, onChange) {
-        return createSettingsRow(label, () => $('<input/>', {type: 'range', min:min, max:max, value: value})
-            .on('input', function() {  
-                let val = this.valueAsNumber;
-                onPageUpdate(MonitoringConsole.Model.Page.Widgets.Selection.configure((widget) => onChange(widget, val)));
-            }));
-    }
 
     function createWidgetSettings(widget) {
-        return createSettingsTable('settings-widget')
-            .append(createSettingsHeaderRow('Render Options'))
-            .append(createSettingsCheckboxRow('Per Second', widget.options.perSec, (widget, checked) => widget.options.perSec = checked))
-            .append(createSettingsCheckboxRow('Begin at Zero', widget.options.beginAtZero, (widget, checked) => widget.options.beginAtZero = checked))
-            .append(createSettingsCheckboxRow('Automatic Labels', widget.options.autoTimeTicks, (widget, checked) => widget.options.autoTimeTicks = checked))
-            .append(createSettingsCheckboxRow('Use Bezier Curves', widget.options.drawCurves, (widget, checked) => widget.options.drawCurves = checked))
-            .append(createSettingsCheckboxRow('Use Animations', widget.options.drawAnimations, (widget, checked) => widget.options.drawAnimations = checked))
-            .append(createSettingsCheckboxRow('Label X-Axis at 90°', widget.options.rotateTimeLabels, (widget, checked) => widget.options.rotateTimeLabels = checked))
-            .append(createSettingsHeaderRow('Chart Options'))
-            .append(createSettingsCheckboxRow('Show Average', widget.options.drawAvgLine, (widget, checked) => widget.options.drawAvgLine = checked))
-            .append(createSettingsCheckboxRow('Show Minimum', widget.options.drawMinLine, (widget, checked) => widget.options.drawMinLine = checked))
-            .append(createSettingsCheckboxRow('Show Maximum', widget.options.drawMaxLine, (widget, checked) => widget.options.drawMaxLine = checked))
-            .append(createSettingsCheckboxRow('Show Legend', widget.options.showLegend, (widget, checked) => widget.options.showLegend = checked))
-            .append(createSettingsHeaderRow('Layout'))
-            .append(createSettingsSliderRow('Span', 1, 4, widget.grid.span || 1, (widget, value) => widget.grid.span = value))
-            .append(createSettingsSliderRow('Column', 1, 4, 1 + (widget.grid.column || 0), (widget, value) => widget.grid.column = value - 1));
+        let options = widget.options;
+        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
+            { label: 'General'},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
+            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            { label: 'Data'},
+            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+        ]};
+        if (widget.type === 'line') {
+            settings.entries.push(
+                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
+                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: 'Display Options'},
+                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
+                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
+                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
+                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
+                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
+                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
+                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
+                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
+            );
+        }
+        return settings;       
     }
 
     function createPageSettings() {
@@ -1285,65 +2216,52 @@ MonitoringConsole.View = (function() {
                 }
                 lastNs = ns;
             });
-        });            
-        return createSettingsTable('settings-page')
-            .append(createSettingsHeaderRow('Page'))
-            .append(createSettingsRow('Name', () => $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
+        });
+        let widgetSeries = $('<input />', {type: 'text'});
+        widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
+        
+        return { id: 'settings-page', caption: 'Page', entries: [
+            { label: 'Name', input: () => 
+                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
                 .on("propertychange change keyup paste input", function() {
                     if (MonitoringConsole.Model.Page.rename(this.value)) {
                         updatePageNavigation();                        
                     }
-                })))
-            .append(createSettingsRow('Widgets', () => $('<span/>')
+                })
+            },
+            { label: 'Widgets', input: () => 
+                $('<span/>')
                 .append(widgetsSelection)
+                .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetsSelection.val()))))
-                ));
+                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
+            },
+        ]};
     }
 
     function createDataSettings() {
         let instanceSelection = $('<select />', {multiple: true});
         $.getJSON("api/instances/", function(instances) {
             for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}))
+                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
             }
         });
-        return createSettingsTable('settings-data')
-            .append(createSettingsHeaderRow('Data'))
-            .append(createSettingsRow('Instances', () => instanceSelection));
+        return { id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Instances', input: instanceSelection }
+        ]};
     }
 
-    function createSettingsHeaderRow(caption) {
-        return $('<tr/>').append($('<th/>', {colspan: 2, text: caption}).click(function() {
-            let tr = $(this).closest('tr').next();
-            while (tr.length > 0 && !tr.children('th').length > 0) {
-                tr.children().toggle();
-                tr = tr.next();
-            }
-        }));
-    }
-
-    function createSettingsCheckboxRow(label, checked, onChange) {
-        return createSettingsRow(label, () => createConfigurationCheckbox(checked, onChange));
-    }
-
-    function createSettingsTable(id) {
-        return $('<table />', { 'class': 'settings', id: id });
-    }
-
-    function createSettingsRow(label, createInput) {
-        return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(createInput()));   
-    }
+    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
-        onWidgetUpdate(widget);
+        updateDomOfWidget(undefined, widget);
         updatePageAndSelectionSettings();
     }
 
-    function onWidgetDelete() {
+    function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
             onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
@@ -1364,52 +2282,43 @@ MonitoringConsole.View = (function() {
         }
     }
 
+    function createLegend(widget, data) {
+        if (!data)
+            return [{ label: 'No Data', value: '?', color: 'red' }];
+        let legend = [];
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            let label = seriesData.instance;
+            if (widget.series.indexOf('*') > 0) {
+                label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+            }
+            let item = { 
+                label: label, 
+                value: seriesData.points[seriesData.points.length-1], 
+                color: MonitoringConsole.Chart.Common.lineColor(j),
+                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+            };
+            legend.push(item);
+            data[j].legend = item;
+        }
+        return legend;
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
      * Depending on the update different content is rendered within a chart box.
      */
     function onDataUpdate(update) {
-        let boxId = update.widget.target + '-box';
-        let box = $('#'+boxId);
-        if (box.length == 0) {
-            if (console && console.log)
-                console.log('WARN: Box for chart ' + update.widget.series + ' not ready.');
-            return;
-        }
-        let td = box.closest('.widget');
+        let widget = update.widget;
+        updateDomOfWidget(undefined, widget);
+        let widgetNode = $('#widget-'+widget.target);
+        let legendNode = widgetNode.find('.widget-legend-bar').first();
+        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
         if (update.data) {
-            td.children('.status-nodata').hide();
-            let points = update.data[0].points;
-            if (points.length == 4 && points[1] === points[3] && !update.widget.options.perSec) {
-                if (td.children('.stable').length == 0) {
-                    let info = $('<div/>', { 'class': 'stable' });
-                    info.append($('<span/>', { text: points[1] }));
-                    td.append(info);
-                    box.hide();
-                }
-            } else {
-                td.children('.stable').remove();
-                box.show();
-                MonitoringConsole.LineChart.onDataUpdate(update);
-            }
-        } else {
-            td.children('.status-nodata').width(box.width()-10).height(box.height()-10).show();
+            MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        
-        onWidgetUpdate(update.widget);
-    }
-
-    /**
-     * Called when changes to the widget require to update the view of the widget (non data related changes)
-     */
-    function onWidgetUpdate(widget) {
-        let container = $('#' + widget.target + '-box').closest('.widget');
-        if (widget.selected) {
-            container.addClass('chart-selected');
-        } else {
-            container.removeClass('chart-selected');
-        }
+        legendNode.replaceWith(Components.onLegendCreation(legend));
     }
 
     /**
@@ -1419,19 +2328,15 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns);
+        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
-                    td.append(createWidgetToolbar(cell));
-                    let status = $('<div/>', { "class": 'status-nodata'});
-                    status.append($('<div/>', {text: 'No Data'}));
-                    td.append(status);
-                    td.append(createWidgetTargetContainer(cell));
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
                     tr.append($("<td/>", { 'class': 'widget', style: 'height: '+rowHeight+'px;'}));                  
@@ -1452,6 +2357,13 @@ MonitoringConsole.View = (function() {
         updatePageAndSelectionSettings();
     }
 
+    function onOpenWidgetSettings(series) {
+        MonitoringConsole.Model.Page.Widgets.Selection.clear();
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
+        MonitoringConsole.Model.Settings.open();
+        updatePageAndSelectionSettings();
+    }
+
     /**
      * Public API of the View object:
      */
@@ -1466,7 +2378,7 @@ MonitoringConsole.View = (function() {
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
-        onPageImport: () => MonitoringConsole.Model.importPages(this.files, onPageChange),
+        onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
         onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
@@ -1476,5 +2388,6 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();
             }
         },
+        onOpenWidgetSettings: (series) => onOpenWidgetSettings(series),
     };
 })();

@@ -60,8 +60,6 @@ import java.lang.management.MemoryUsage;
 public class HeapMemoryUsageHealthCheck
         extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
 
-    private volatile MemoryUsage heap;
-
     @PostConstruct
     void postConstruct() {
         postConstruct(this, HeapMemoryUsageChecker.class);
@@ -81,7 +79,7 @@ public class HeapMemoryUsageHealthCheck
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
-        heap = memBean.getHeapMemoryUsage();
+        MemoryUsage heap = memBean.getHeapMemoryUsage();
 
         String heapValueText = String.format("heap: init: %s, used: %s, committed: %s, max.: %s",
                 prettyPrintBytes(heap.getInit()),

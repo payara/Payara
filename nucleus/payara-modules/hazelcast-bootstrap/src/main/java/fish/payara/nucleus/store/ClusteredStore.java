@@ -93,8 +93,11 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
                     if (config.isStatisticsEnabled()) {
                         IMap<Object, Object> map = hz.getMap(obj.getName());
                         if (map != null) {
+                            LocalMapStats stats = map.getLocalMapStats();
                             collector.in("map").group(map.getName())
-                                .collectObject(map.getLocalMapStats(), LocalMapStats.class);
+                                .collect("GetCount", stats.getGetOperationCount())
+                                .collect("PutCount", stats.getPutOperationCount())
+                                .collect("EntryCount", stats.getOwnedEntryCount());
                         }
                     }
                 }

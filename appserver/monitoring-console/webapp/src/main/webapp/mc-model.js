@@ -60,13 +60,22 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
 						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
 						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true } },
+						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
 						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
 					]
-				}
+				},
+				request_tracing: {
+					name: 'Request Tracing',
+					numberOfColumns: 2,
+					widgets: [
+						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+					]
+				},
 			},
 			settings: {},
 	};
+
+	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
 
 	function getPageId(name) {
     	return name.replace(/[^-a-zA-Z0-9]/g, '_').toLowerCase();
@@ -125,10 +134,13 @@ MonitoringConsole.Model = (function() {
 		function sanityCheckWidget(widget) {
 			if (!widget.target)
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
+			if (!widget.type)
+				widget.type = 'line';
 			if (!widget.options) {
 				widget.options = { 
 					beginAtZero: true,
 					autoTimeTicks: true,
+					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
 				};
 			}
 			if (!widget.grid)
@@ -412,9 +424,8 @@ MonitoringConsole.Model = (function() {
 				let selected = series
 					? [pages[currentPageId].widgets[series]]
 					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
-				selected.forEach(widget => widgetUpdate.call(window, widget));
+				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
-				return selected;
 			},
 			
 			select: function(series) {
@@ -479,35 +490,7 @@ MonitoringConsole.Model = (function() {
 				chart.destroy();
 			}
 		}
-		
-		/**
-		 * Basically translates the MC level configuration options to Chart.js options
-		 */
-		function syncOptions(widget, chart) {
-			let options = chart.options;
-			options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-			options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-			options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-			let time = widget.options.drawAnimations ? 1000 : 0;
-			options.animation.duration = time;
-			options.responsiveAnimationDuration = time;
-	    	let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-	    	options.scales.xAxes[0].ticks.minRotation = rotation;
-	    	options.scales.xAxes[0].ticks.maxRotation = rotation;
-	    	options.legend.display = widget.options.showLegend === true;
-		}
 
-		function getTimeLabel(value, index, values) {
-			if (values.length == 0 || index == 0)
-				return value;
-			let span = values[values.length -1].value - values[0].value;
-			if (span < 120000) { // less then two minutes
-				let lastMinute = new Date(values[index-1].value).getMinutes();
-				return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-			}
-			return value;
-      	}
-		
 		return {
 			/**
 			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
@@ -517,51 +500,7 @@ MonitoringConsole.Model = (function() {
 				let chart = charts[series];
 				if (chart)
 					return chart;
-				chart = new Chart(widget.target, {
-					type: 'line',
-					data: {
-						datasets: [],
-					},
-					options: {
-						scales: {
-							xAxes: [{
-								type: 'time',
-								gridLines: {
-									color: 'rgba(100,100,100,0.3)',
-									lineWidth: 0.5,
-								},
-								time: {
-									minUnit: 'second',
-									round: 'second',
-								},
-								ticks: {
-									callback: getTimeLabel,
-									minRotation: 90,
-									maxRotation: 90,
-								}
-							}],
-							yAxes: [{
-								display: true,
-								gridLines: {
-									color: 'rgba(100,100,100,0.7)',
-									lineWidth: 0.5,
-								},
-								ticks: {
-									beginAtZero: widget.options.beginAtZero,
-									precision:0, // no decimal places in labels
-								},
-							}],
-						},
-				        legend: {
-				            labels: {
-				                filter: function(item, chart) {
-				                	return !item.text.startsWith(" ");
-				                }
-				            }
-				        }
-					},
-				});
-				syncOptions(widget, chart);
+				chart = MonitoringConsole.Chart.getAPI(widget).onCreation(widget);			
 				charts[series] = chart;
 				return chart;
 			},
@@ -577,7 +516,7 @@ MonitoringConsole.Model = (function() {
 			update: function(widget) {
 				let chart = charts[widget.series];
 				if (chart) {
-					syncOptions(widget, chart);
+					MonitoringConsole.Chart.getAPI(widget).onConfigUpdate(widget, chart);
 					chart.update();
 				}
 			},
@@ -648,6 +587,21 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	function retainLastMinute(data) {
+		let startOfLastMinute = Date.now() - 60000;
+		data.forEach(function(seriesData) {
+			let points = [];
+			for (let i = 0; i < seriesData.points.length; i += 2) {
+				if (seriesData.points[i] >= startOfLastMinute) {
+					points.push(seriesData.points[i]);
+					points.push(seriesData.points[i+1]);
+				}
+			}
+			seriesData.points = points;
+		});
+		return data.filter(seriesData => seriesData.points.length >= 2);
+	}
+
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
@@ -655,7 +609,7 @@ MonitoringConsole.Model = (function() {
 			let payload = {
 			};
 			let instances = $('#cfgInstances').val();
-			payload.series = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
 					instances: instances
@@ -672,7 +626,7 @@ MonitoringConsole.Model = (function() {
 				Object.values(widgets).forEach(function(widget) {
 					onDataUpdate({
 						widget: widget,
-						data: response[widget.series],
+						data: retainLastMinute(response[widget.series]),
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -691,13 +645,25 @@ MonitoringConsole.Model = (function() {
 	}
 
 	function doConfigureSelection(widgetUpdate) {
-		UI.configureWidget(widgetUpdate).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate));
 		return UI.arrange();
 	}
 
 	function doConfigureWidget(series, widgetUpdate) {
-		UI.configureWidget(widgetUpdate, series).forEach(Charts.update);
+		UI.configureWidget(createWidgetUpdate(widgetUpdate), series);
 		return UI.arrange();
+	}
+
+	function createWidgetUpdate(widgetUpdate) {
+		return function(widget) {
+			let type = widget.type;
+			widgetUpdate(widget);
+			if (widget.type === type) {
+				Charts.update(widget);
+			} else {
+				Charts.destroy(widget.series);
+			}
+		};
 	}
 
 	/**
@@ -786,8 +752,10 @@ MonitoringConsole.Model = (function() {
 			Widgets: {
 				
 				add: function(series) {
-					UI.addWidget(series);
-					Interval.tick();
+					if (series.trim()) {
+						UI.addWidget(series);
+						Interval.tick();
+					}
 					return UI.arrange();
 				},
 				
@@ -811,6 +779,14 @@ MonitoringConsole.Model = (function() {
 	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
 	                }
+	            }),
+
+				moveUp: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item = 0;
+	            }),
+
+	            moveDown: (series) => doConfigureWidget(series, function(widget) {
+                    widget.grid.item += 1.1;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {

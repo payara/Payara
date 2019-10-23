@@ -80,6 +80,43 @@ button {
 button:hover {
 	background-color: #F1A232;
 }
+#logo {
+  height: 30px;
+  top: 5px;
+  left: 15px;
+  position: absolute;
+}
+#newPage {
+  position: absolute;
+  left: 110px;
+  top: 5px;
+}
+
+#panel-trace {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  background-color: #002c3e;
+  display: none;
+  z-index: 110;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+#trace-chart-box {
+  position: relative;
+  background-color: #002433;
+  clear: both;
+  padding: 10px;
+}
+#trace-iconbar {
+  margin-bottom: 5px;
+}
+#trace-iconbar .btnIcon {
+  float: none;
+}
 #grid-console {
     position: relative;
     border-spacing: 0;
@@ -90,63 +127,49 @@ button:hover {
 	vertical-align: top;
 }
 #chart-container {
-    padding: 0 10px;
+    padding: 0 5px;
 }
-.chart-box {
+.widget-chart-box {
     position: relative;
+    padding-bottom: 50px; /* for legend */
 }
 .btnIcon {
 	float: right;
 	z-index: 101;
-    position: relative;
-    margin: 0;
-    margin-left: 5px;
-    padding: 0;
-    color: #bbb;
-    background-color: transparent;
-    font-weight: bold;
-}
-.btnIcon:first-of-type {
-	margin-left: 15px;
+  margin: 0;
+  margin-left: 5px;
+  padding: 0;
+  color: #bbb;
+  background-color: transparent;
+  font-weight: bold;
 }
 button.btnIcon:hover {
     color: white;
     background-color: transparent;
 }
-.caption-bar h3 {
-	font-size: 100%;
-    font-weight: bold;
-    margin: 0;
-    cursor: pointer;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 75%;
-    display: inline-block;
-    padding: 1px 5px;
+.widget-title-bar h3 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 0;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 75%;
+  display: inline-block;
+  padding: 1px 5px;
 }
-.caption-bar h3 i {
-    font-weight: normal;
-    font-style: normal;
-    color: #bbb;
+.widget-title-bar h3 i {
+  font-size: 80%;
+  font-weight: normal;
+  font-style: normal;
+  color: #bbb;
+  margin-right: 1em;
 }
-#pagesTabs .page-tab {
-    display: inline-block;
-    padding: 4px 1em;
-    margin: 1px;
-    font-weight: normal;
-    cursor: pointer;
-    line-height: 1em;
-    border: 1px solid #666;
-    border-top-width: 0;
-    color: #bbb;
-}
-#pagesTabs .page-tab.page-selected {
-    color: white;
-    font-weight: bold;
-    border: 1px solid white;
-    border-top-width: 0;
-    padding-bottom: 6px;
+.widget-title-bar h3 code {
+  font-style: normal;
+  font-weight: normal;
+  margin-right: 1em;
 }
 #layout-bar {
 	display: inline-block;
@@ -156,7 +179,6 @@ button.btnIcon:hover {
 }
 #panel-iconbar {
 	padding: 0 10px;
-	margin-bottom: 5px;
 }
 #panel-iconbar button {
 	color: #bbb;
@@ -171,7 +193,7 @@ button.btnIcon:hover {
 #chart-grid {
 	width: 100%;
 	table-layout:fixed;
-	border-spacing: 4px;
+	border-spacing: 5px;
     border-collapse: separate;
 }
 #chart-grid td {
@@ -183,24 +205,6 @@ button.btnIcon:hover {
 #chart-grid td.chart-selected h3 {
     color: #00618A;
     background-color: white;
-}
-.status-nodata {
-	display: none;
-	position: absolute;
-	font-weight: bold;
-	font-size: 200%;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    z-index: 101;
-    border: 5px solid orangered;
-}
-.status-nodata div {
-	position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    margin-top: -1em;
 }
 .stable {
 	background-color: rgba(153, 102, 255, 0.2);
@@ -225,9 +229,6 @@ button.btnIcon:hover {
 #panel-settings {
     width: 380px;
     padding: 0;
-    background-image: url("payara-server-logo.png");
-    background-repeat: no-repeat;
-    background-position: 0 10px;
     vertical-align: top;
     position: absolute;
     top: 5px;
@@ -239,15 +240,20 @@ button.btnIcon:hover {
     margin-top: 5px;
     width: 100%;
 }
-button.btnClose + .settings {
-    margin-top: 210px;
-}
 .settings th {
-    border-bottom: 1px solid #bbb;
-    cursor: pointer;
+  cursor: pointer;
+  font-weight: normal;
+}
+.settings tr:first-child th {
+  font-weight: bold;
+  border-bottom: 1px solid #bbb;
 }
 .settings td:first-child {
-    width: 120px;
+  width: 120px;
+  vertical-align: top;
+}
+.settings a, .settings a:visited {
+  color: white;
 }
 #console #panel-settings {
 	display: none;
@@ -255,6 +261,94 @@ button.btnClose + .settings {
 #console.state-show-settings #panel-settings {
 	display: block;
 }
-#console.state-show-settings #panel-grid {
-  width: calc(100% - 385px);
+#console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
+  width: calc(100% - 390px);
+}
+
+/* HTML Chart Tooltips */
+#chartjs-tooltip {
+  position: absolute;
+  background-color: #002c3e;
+  padding: 5px;
+  width: 400px;
+}
+table.tags {
+  width: 100%;
+}
+table.tags th {
+  text-align: left;
+  width: 25%;
+}
+table.tags th, table.tags td {
+  background-color: #002433;
+}
+
+/* Widget Settings Toolbar */
+.widget-settings-bar {
+  display:none; 
+  position: absolute; 
+  background-color: #002c3e;
+  white-space: nowrap;
+  padding: 10px;
+  z-index: 150;
+  width: 120px;
+  margin-left: -140px;
+  margin-top: 20px;    
+}
+.widget-settings-bar button {
+  float: left;
+  margin-bottom: 5px;
+}
+.widget-settings-bar button::first-letter {
+  margin-right: 5px;
+}
+
+/* Widget Legend Bar */
+.widget-legend-bar {
+  margin: 0;
+  padding: 0 20px;
+  margin-top: -40px;
+}
+.widget-legend-bar li {
+  display: inline-block;
+  list-style:none;
+  padding-left: 5px;
+  border-left: 5px solid #ccc;
+  margin-right: 20px;
+}
+.widget-legend-bar li strong {
+  font-size: 200%;
+  font-weight: bold;
+}
+.widget-legend-bar li span:first-child {
+  display: block;
+  font-weight: 300;
+}
+
+/* Page Navigation */
+#panel-nav {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;  
+}
+#page-nav-dropdown {
+  background-color: #002c3e;
+  padding: 5px;
+  border-width: 0;
+  color: white;
+  font-size: 160%;
+  font-weight: bold;
+  max-width: 400px;
+}
+
+#panel-nav h2 {
+  min-width: 100px;
+  font-weight: bold;
+  font-size: 140%;
+  display: inline-block;
+  margin: 0;
+  margin-top: 5px;
+  padding: 0;
+  cursor: pointer;
 }

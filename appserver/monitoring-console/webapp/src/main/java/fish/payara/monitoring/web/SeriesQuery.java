@@ -39,7 +39,20 @@
  */
 package fish.payara.monitoring.web;
 
-public class Query {
+import fish.payara.monitoring.model.Series;
 
-    public SeriesRequest[] series;
+/**
+ * A query for a particular {@link Series} or set of {@link Series} by giving its {@link #series} name or pattern
+ * and the {@link #instances} to include in the result data.
+ */
+public class SeriesQuery {
+
+    /**
+     * The name or pattern of the series (* can be used as wild-card for tag values)
+     */
+    public String series;
+    /**
+     * What instances to include in the result, an empty or null set includes all available sets
+     */
+    public String[] instances;
 }

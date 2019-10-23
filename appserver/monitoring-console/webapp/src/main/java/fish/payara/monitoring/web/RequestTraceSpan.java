@@ -39,46 +39,26 @@
  */
 package fish.payara.monitoring.web;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import fish.payara.monitoring.model.SeriesDataset;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 
-public final class SeriesResponse {
+public class RequestTraceSpan {
 
-    public static List<SeriesResponse> from(Collection<SeriesDataset> sets) {
-        List<SeriesResponse> stats = new ArrayList<>(sets.size());
-        for (SeriesDataset set : sets) {
-            stats.add(new SeriesResponse(set));
-        }
-        return stats;
-    }
+    public final UUID id;
+    public final String operation;
+    public final long startTime;
+    public final long endTime;
+    public final long duration;
+    public final Map<String, String> tags;
 
-    public final String series;
-    public final String instance;
-    public final long[] points;
-    public final long observedMax;
-    public final long observedMin;
-    public final BigInteger observedSum;
-    public final int observedValues;
-    public final int observedValueChanges;
-    public final long observedSince;
-    public final int stableCount;
-    public final long stableSince;
-
-    public SeriesResponse(SeriesDataset set) {
-        this.instance = set.getInstance();
-        this.series = set.getSeries().toString();
-        this.points = set.points();
-        this.observedMax = set.getObservedMax();
-        this.observedMin = set.getObservedMin();
-        this.observedSum = set.getObservedSum();
-        this.observedValues = set.getObservedValues();
-        this.observedValueChanges = set.getObservedValueChanges();
-        this.observedSince = set.getObservedSince();
-        this.stableCount = set.getStableCount();
-        this.stableSince = set.getStableSince();
+    public RequestTraceSpan(fish.payara.notification.requesttracing.RequestTraceSpan span) {
+       this.id = span.getId();
+       this.operation = RequestTracingService.stripPackageName(span.getEventName());
+       this.startTime = span.getTimeOccured();
+       this.endTime = span.getTraceEndTime().toEpochMilli();
+       this.duration = span.getSpanDuration();
+       this.tags = span.getSpanTags();
     }
 }

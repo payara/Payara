@@ -40,27 +40,107 @@
 
 /*jshint esversion: 8 */
 
-MonitoringConsole.LineChart = (function() {
+/**
+ * Adapter to line charts of Chart.js
+ */ 
+MonitoringConsole.Chart.Line = (function() {
 	
-	const DEFAULT_BG_COLORS = [
-        'rgba(153, 102, 255, 0.2)',
-        'rgba(255, 99, 132, 0.2)',
-        'rgba(54, 162, 235, 0.2)',
-        'rgba(255, 206, 86, 0.2)',
-        'rgba(75, 192, 192, 0.2)',
-        'rgba(255, 159, 64, 0.2)'
-    ];
-    const DEFAULT_LINE_COLORS = [
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(255, 159, 64, 1)'
-    ];	
+  const Common = MonitoringConsole.Chart.Common;
+
+  /**
+   * This is like a constant but it needs to yield new objects for each chart.
+   */
+  function onCreation(widget) {
+    let options = {
+      maintainAspectRatio: false,
+      scales: {
+        xAxes: [{
+          type: 'time',
+          gridLines: {
+            color: 'rgba(100,100,100,0.3)',
+            lineWidth: 0.5,
+          },
+          time: {
+            minUnit: 'second',
+            round: 'second',
+          },
+          ticks: {
+            callback: getTimeLabel,
+            minRotation: 90,
+            maxRotation: 90,
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            color: 'rgba(100,100,100,0.7)',
+            lineWidth: 0.5,
+          },
+          ticks: {
+            beginAtZero: true,
+            precision:0, // no decimal places in labels
+          },
+        }],
+      },
+      legend: {
+          display: false,
+      }
+    };
+    return new Chart(widget.target, {
+          type: 'line',
+          data: { datasets: [], },
+          options: options,
+        });
+  } 
+
+  function getTimeLabel(value, index, values) {
+    if (values.length == 0 || index == 0)
+      return value;
+    let span = values[values.length -1].value - values[0].value;
+    if (span < 120000) { // less then two minutes
+      let lastMinute = new Date(values[index-1].value).getMinutes();
+      return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
+    }
+    return value;
+  }
+
+  /**
+   * Convertes a array of points given as one dimensional array with alternativ time value elements 
+   * to a 2-dimensional array of points with t and y attribute.
+   */
+  function points1Dto2D(points1d) {
+    if (!points1d)
+      return [];
+    let points2d = new Array(points1d.length / 2);
+    for (let i = 0; i < points2d.length; i++)
+      points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+    return points2d;      
+  }
+    
+  /**
+   * Convertes a array of points given as one dimensional array with alternativ time value elements 
+   * to a 2-dimensional array of points with t and y attribute where y reflects the delta between 
+   * nearest 2 points of the input array. This means the result array has one less point as the input.
+   */
+  function points1Dto2DPerSec(points1d) {
+    if (!points1d)
+      return [];
+    let points2d = new Array((points1d.length / 2) - 1);
+    for (let i = 0; i < points2d.length; i++) {
+      let t0 = points1d[i*2];
+      let t1 = points1d[i*2+2];
+      let y0 = points1d[i*2+1];
+      let y1 = points1d[i*2+3];
+      let dt = t1 - t0;
+      let dy = y1 - y0;
+      let y = (dt / 1000) * dy;
+      points2d[i] = { t: new Date(t1), y: y };
+    }
+    return points2d;
+  }  
 	
-    function createMinimumLineDataset(data, points, lineColor) {
-		let min = data.observedMin;
+  function createMinimumLineDataset(seriesData, points, lineColor) {
+		let min = seriesData.observedMin;
 		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
 		
 		return {
@@ -72,10 +152,10 @@ MonitoringConsole.LineChart = (function() {
 			borderDash: [2, 2],
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createMaximumLineDataset(data, points, lineColor) {
-    	let max = data.observedMax;
+  function createMaximumLineDataset(seriesData, points, lineColor) {
+  	let max = seriesData.observedMax;
 		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
 		
 		return {
@@ -86,10 +166,10 @@ MonitoringConsole.LineChart = (function() {
 			borderWidth: 1,
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createAverageLineDataset(data, points, lineColor) {
-		let avg = data.observedSum / data.observedValues;
+  function createAverageLineDataset(seriesData, points, lineColor) {
+		let avg = seriesData.observedSum / seriesData.observedValues;
 		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
 		
 		return {
@@ -101,76 +181,87 @@ MonitoringConsole.LineChart = (function() {
 			borderDash: [10, 4],
 			pointRadius: 0
 		};
-    }
+  }
     
-    function createMainLineDataset(data, points, lineColor, bgColor) {
-		return {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
+		let pointRadius = widget.options.drawPoints ? 3 : 0;
+    let label = seriesData.instance;
+    if (widget.series.indexOf('*') > 0)
+      label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+    return {
 			data: points,
-			label: data.instance,
+			label: label,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 1
+			borderWidth: 1,
+      pointRadius: pointRadius,
 		};
-    }
+  }
     
-    function createInstancePoints(points1d) {
-    	if (!points1d)
-    		return [];
-    	let points2d = new Array(points1d.length / 2);
-		for (let i = 0; i < points2d.length; i++) {
-			points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
+  /**
+   * Creates one or more lines for a single series dataset related to the widget.
+   * A widget might display multiple series in the same graph generating one or more dataset for each of them.
+   */
+  function createSeriesDatasets(widget, seriesData) {
+    let lineColor = seriesData.legend.color;
+    let bgColor = seriesData.legend.backgroundColor;
+    if (widget.options.perSec && seriesData.points.length > 4) {    
+  		//TODO add min/max/avg per sec lines
+      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
+  	}
+  	let points = points1Dto2D(seriesData.points);
+  	let datasets = [];
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
+  	if (points.length > 0 && widget.options.drawAvgLine) {
+			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
-		return points2d;
-    }
-    
-    function createInstancePerSecPoints(points1d) {
-    	if (!points1d)
-    		return [];
-    	let points2d = new Array((points1d.length / 2) - 1);
-    	for (let i = 0; i < points2d.length; i++) {
-    		let t0 = points1d[i*2];
-    		let t1 = points1d[i*2+2];
-    		let y0 = points1d[i*2+1];
-    		let y1 = points1d[i*2+3];
-    		let dt = t1 - t0;
-    		let dy = y1 - y0;
-    		let y = (dt / 1000) * dy;
-    		points2d[i] = { t: new Date(t1), y: y };
-    	}
-    	return points2d;
-    }
-    
-    function createInstanceDatasets(widget, data, lineColor, bgColor) {
-    	if (widget.options.perSec) {
-    		return [ createMainLineDataset(data, createInstancePerSecPoints(data.points), lineColor, bgColor) ];
-    	}
-    	let points = createInstancePoints(data.points);
-    	let datasets = [];
-    	datasets.push(createMainLineDataset(data, points, lineColor, bgColor));
-    	if (points.length > 0 && widget.options.drawAvgLine) {
-			datasets.push(createAverageLineDataset(data, points, lineColor));
-		}
-		if (points.length > 0 && widget.options.drawMinLine && data.observedMin > 0) {
-			datasets.push(createMinimumLineDataset(data, points, lineColor));
+		if (points.length > 0 && widget.options.drawMinLine && seriesData.observedMin > 0) {
+			datasets.push(createMinimumLineDataset(seriesData, points, lineColor));
 		}
 		if (points.length > 0 && widget.options.drawMaxLine) {
-			datasets.push(createMaximumLineDataset(data, points, lineColor));
+			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-		return datasets;
+	  return datasets;
+  }
+
+  /**
+   * Should be called whenever the configuration of the widget changes in way that needs to be transfered to the chart options.
+   * Basically translates the MC level configuration options to Chart.js options
+   */
+  function onConfigUpdate(widget, chart) {
+    let options = chart.options;
+    options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
+    options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
+    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
+    let time = widget.options.drawAnimations ? 1000 : 0;
+    options.animation.duration = time;
+    options.responsiveAnimationDuration = time;
+    let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
+    options.scales.xAxes[0].ticks.minRotation = rotation;
+    options.scales.xAxes[0].ticks.maxRotation = rotation;
+    options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
+    options.elements.line.fill = widget.options.drawFill === true;
+    return chart;
+  }
+
+  function onDataUpdate(update) {
+    let data = update.data;
+    let widget = update.widget;
+    let chart = update.chart();
+    let datasets = [];
+    for (let j = 0; j < data.length; j++) {
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
     }
-    
+    chart.data.datasets = datasets;
+    chart.update(0);
+  }
+  
+  /**
+   * Public API if this chart type (same for all types).
+   */
 	return {
-		onDataUpdate: function(update) {
-			let data = update.data;
-			let widget = update.widget;
-			let chart = update.chart();
-			let datasets = [];
-			for (let j = 0; j < data.length; j++) {
-				datasets = datasets.concat(
-						createInstanceDatasets(widget, data[j], DEFAULT_LINE_COLORS[j], DEFAULT_BG_COLORS[j]));
-			}
-			chart.data.datasets = datasets;
-			chart.update(0);
-		}
+    onCreation: (widget) => onConfigUpdate(widget, onCreation(widget)),
+    onConfigUpdate: (widget, chart) => onConfigUpdate(widget, chart),
+    onDataUpdate: (update) => onDataUpdate(update),
 	};
 })();

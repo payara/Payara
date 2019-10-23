@@ -254,6 +254,49 @@ public class SeriesDatasetTest {
         assertArrayEquals(new long[] { 2000L, 1L, 4000L, 1L, 5000L, 0L, 7000L, 2L, 8000L, 2L, 9500L, 6L }, perSecond);
     }
 
+    @Test
+    public void constantAddingWithSameTimeSumsValue() {
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
+        set = set.add(1, 1);
+        set = set.add(2, 1);
+        assertTrue(set instanceof ConstantDataset);
+        set = set.add(2, 3);
+        assertTrue(set instanceof PartialDataset);
+        assertEquals(1 + 3, set.lastValue());
+        assertEquals(2, set.size());
+        assertEquals(3, set.getObservedValues());
+    }
+
+    @Test
+    public void partialAddingWithSameTimeSumsValue() {
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
+        set = set.add(1, 1);
+        set = set.add(2, 2);
+        assertTrue(set instanceof PartialDataset);
+        set = set.add(2, 4);
+        assertEquals(2 + 4, set.lastValue());
+        assertEquals(3, set.size());
+        assertEquals(3, set.getObservedValues());
+    }
+
+    @Test
+    public void stableAddingWithSameTimeSumsValue() {
+        SeriesDataset set = new EmptyDataset(INSTANCE, SERIES, 3);
+        set = set.add(1, 1);
+        set = set.add(2, 2);
+        assertTrue(set instanceof PartialDataset);
+        set = set.add(3, 3);
+        set = set.add(4, 3);
+        set = set.add(5, 3);
+        set = set.add(6, 3);
+        set = set.add(7, 3);
+        assertTrue(set instanceof StableDataset);
+        set = set.add(7, 5);
+        assertTrue(set instanceof PartialDataset);
+        assertEquals(3 + 5, set.lastValue());
+        assertEquals(8, set.getObservedValues());
+    }
+
     private static void assertValues(SeriesDataset set, long... values) {
         assertValues(set, true, values);
     }

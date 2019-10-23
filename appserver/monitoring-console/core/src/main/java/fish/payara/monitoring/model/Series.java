@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
+    private static final char QUERY_WILDCARD = '*';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
@@ -71,6 +72,50 @@ public final class Series implements Comparable<Series>, Serializable {
             tags[i] = parts[i].substring(0, eqIndex).intern();
             values[i] = parts[i].substring(eqIndex + 1).intern();
         }
+    }
+
+    public String getMetric() {
+        return metric;
+    }
+
+    public int tagCount() {
+        return tags.length;
+    }
+
+    public String key(int index) {
+        return tags[index];
+    }
+
+    public String value(int index) {
+        return values[index];
+    }
+
+    public boolean isPattern() {
+        if (isWildCard(metric)) {
+            return true;
+        }
+        for (int i = 0; i < values.length; i++) {
+            if (isWildCard(values[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWildCard(String str) {
+        return str.length() == 1 && str.charAt(0) == QUERY_WILDCARD;
+    }
+
+    public boolean matches(Series other) {
+        if (tagCount() != other.tagCount() || !isWildCard(metric) && !metric.equals(other.metric)) {
+            return false;
+        }
+        for (int i = 0; i < tags.length; i++) {
+            if (!tags[i].equals(other.tags[i]) || !isWildCard(values[i]) && !values[i].equals(other.values[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -127,7 +172,7 @@ public final class Series implements Comparable<Series>, Serializable {
     }
 
     public static boolean isSpecialTagCharacter(char c) {
-        if (c == TAG_ASSIGN) {
+        if (c == TAG_ASSIGN || c == QUERY_WILDCARD) {
             return true;
         }
         for (char sep : TAG_SEPARATORS) {

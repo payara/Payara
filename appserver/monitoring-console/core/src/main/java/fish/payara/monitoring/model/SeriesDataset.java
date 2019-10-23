@@ -190,7 +190,7 @@ public abstract class SeriesDataset implements Serializable {
         return true;
     }
 
-    public boolean isStableZero() {
+    public final boolean isStableZero() {
         return isStable() && lastValue() == 0L;
     }
 

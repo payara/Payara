@@ -39,8 +39,10 @@
  */
 package fish.payara.monitoring.web;
 
-public final class SeriesRequest {
+/**
+ * A container for a full request consisting of one or more {@link SeriesQuery}s.
+ */
+public class SeriesRequest {
 
-    public String series;
-    public String[] instances;
+    public SeriesQuery[] queries;
 }
