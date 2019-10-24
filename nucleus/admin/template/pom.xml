@@ -104,7 +104,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/endpoints/ejb-invoker</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/endpoints/__ejb-invoker</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

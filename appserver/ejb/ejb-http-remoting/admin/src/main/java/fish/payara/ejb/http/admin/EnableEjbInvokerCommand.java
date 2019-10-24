@@ -49,6 +49,10 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import javax.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import static fish.payara.ejb.http.admin.Constants.DEFAULT_ENDPOINT;
+import static fish.payara.ejb.http.admin.Constants.EJB_INVOKER_APP;
+import static fish.payara.ejb.http.admin.Constants.ENDPOINTS_DIR;
+import java.nio.file.Path;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -64,63 +68,69 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This command enables the EJB invoker endpoint and optionally allows it to set an
- * alternative context root.
- * 
+ * This command enables the EJB invoker endpoint and optionally allows it to set
+ * an alternative context root.
+ *
  * <p>
- * This happens by the deploying a small application in <code>/domains/[domain]/endpoints/ejb-invoker</code>
- * which by default is not deployed. The default context root of this application is 
+ * This happens by the deploying a small application in
+ * <code>/domains/[domain]/endpoints/__ejb-invoker</code> which by default is
+ * not deployed. The default context root of this application is
  * <code>/ejb-invoker</code>.
- * 
+ *
  * @author Arjan Tijms
  *
  */
+@Deprecated
 @Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG, DEPLOYMENT_GROUP })
+@TargetType({DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG, DEPLOYMENT_GROUP})
 public class EnableEjbInvokerCommand implements AdminCommand {
 
-    private final String ENDPOINT = "endpoints/ejb-invoker";
-    
-    @Param(name = "contextRoot", primary = true, optional = true)
+    @Param(name = "contextRoot", primary = true, optional = true, defaultValue = DEFAULT_ENDPOINT)
     private String contextRoot;
-    
+
     @Param(optional = true)
     public String target;
-    
+
     @Inject
     private ServerEnvironment serverEnvironment;
-    
+
     @Inject
     private ServiceLocator serviceLocator;
 
     @Inject
     private Domain domain;
-    
+
     @Override
     public void execute(AdminCommandContext context) {
+
+        Path endPointsPath = serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINTS_DIR);
+        Path ejbInvokerPath = endPointsPath.resolve(EJB_INVOKER_APP);
+
         AutoDeploymentOperation autoDeploymentOperation = AutoDeploymentOperation.newInstance(
                 serviceLocator,
-                serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINT).toFile(), 
+                ejbInvokerPath.toFile(),
                 getDefaultVirtualServer(),
                 target,
                 contextRoot
-                );
-        
-        if (domain.getApplications().getApplication("ejb-invoker") == null) {
+        );
+
+        if (domain.getApplications().getApplication(EJB_INVOKER_APP) == null) {
             AutodeploymentStatus deploymentStatus = autoDeploymentOperation.run();
             ActionReport report = context.getActionReport();
             report.setActionExitCode(deploymentStatus.getExitCode());
         } else {
             ActionReport report = context.getActionReport();
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
-            report.setMessage("EJB Invoker is already deployed on at least one target, please edit it as you would a " +
-                    "normal application using the create-application-ref, delete-application-ref, " +
-                    "or update-application-ref commands");
+            report.setMessage("EJB Invoker is already deployed on at least one target, please edit it as you would a "
+                    + "normal application using the create-application-ref, delete-application-ref, "
+                    + "or update-application-ref commands");
         }
+        context.getActionReport().setMessage("\nenable-ejb-invoker command is deprecated."
+                + "\nPlease use the 'set-ejb-invoker-configuration --enabled=true' asadmin command to enable the service.");
     }
-    
+
     private String getDefaultVirtualServer() {
         // XXX write this?
         return null;
