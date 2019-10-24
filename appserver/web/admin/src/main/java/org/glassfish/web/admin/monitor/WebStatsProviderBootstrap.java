@@ -46,19 +46,23 @@
 package org.glassfish.web.admin.monitor;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollection;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import org.glassfish.hk2.api.PostConstruct;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
@@ -72,6 +76,9 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     private static final String WEB_CONTAINER = "web-container";
 
     private static final String NODE_SEPARATOR = "/";
+
+    @Inject
+    private MonitoringService monitoringService;
 
     // Map of apps and its StatsProvider list
     private ConcurrentMap<String, ConcurrentMap<String, Queue<Object>>> vsNameToStatsProviderMap =
@@ -104,10 +111,6 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
 
     public void registerApplicationStatsProviders(String monitoringName,
             String vsName, List<String> servletNames) {
-
-        // try register again as it may be unregistered
-        registerWebStatsProviders();
-
         //create stats providers for each virtual server 'vsName'
         String node = getNodeString(monitoringName, vsName);
         ConcurrentMap<String, Queue<Object>> statsProviderMap = vsNameToStatsProviderMap.get(vsName);
@@ -194,8 +197,22 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
     @Override
     public void collect(MonitoringDataCollector collector) {
         MonitoringDataCollector web = collector.in("web");
+        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
+            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getWebContainer())) {
+            return;
+        }
         for (Object provider : webContainerStatsProviderQueue) {
             web.collectObject(provider, MonitoringDataCollection::collectObject);
+        }
+        for (ConcurrentMap<String, Queue<Object>> entry : vsNameToStatsProviderMap.values()) {
+            for (Entry<String, Queue<Object>> serverEntry : entry.entrySet()) {
+                String monitoringName = serverEntry.getKey();
+                for (Object provider : serverEntry.getValue()) {
+                    if (provider instanceof RequestStatsProvider) {
+                        web.group(monitoringName).collectObject(provider, MonitoringDataCollection::collectObject);
+                    }
+                }
+            }
         }
     }
 }

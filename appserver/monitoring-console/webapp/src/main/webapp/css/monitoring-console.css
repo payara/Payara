@@ -51,17 +51,22 @@ h1 {
 }
 select {
 	width: 100%;
-    max-width: 162px;
-    background: white;
-    padding: 2px 5px;
-    border-radius: 2px;
+  max-width: 162px;
+  background: white;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+input[type=text], input[type=number] {
+	border: 1px solid #ccc;
+  padding: 3px 5px;
+  border-radius: 2px;
 }
 input[type=text] {
-	border: 1px solid #ccc;
-    padding: 3px 5px;
-    border-radius: 2px;
-    width: 150px;
-    max-width: 150px;
+  width: 150px;
+  max-width: 150px;
+}
+input[type=number] {
+  width: 60px;
 }
 canvas {
     position: relative;
@@ -131,7 +136,6 @@ button:hover {
 }
 .widget-chart-box {
     position: relative;
-    padding-bottom: 50px; /* for legend */
 }
 .btnIcon {
 	float: right;
@@ -159,17 +163,17 @@ button.btnIcon:hover {
   display: inline-block;
   padding: 1px 5px;
 }
-.widget-title-bar h3 i {
+.widget-title-bar h3 span {
   font-size: 80%;
   font-weight: normal;
   font-style: normal;
   color: #bbb;
   margin-right: 1em;
 }
-.widget-title-bar h3 code {
+.widget-title-bar h3 strong {
   font-style: normal;
-  font-weight: normal;
-  margin-right: 1em;
+  margin-left: 0.5em;
+  color: white;
 }
 #layout-bar {
 	display: inline-block;
@@ -226,7 +230,7 @@ button.btnIcon:hover {
 /**
  * Widget Settings (Sizes and Visibility)
  */
-#panel-settings {
+#Settings {
     width: 380px;
     padding: 0;
     vertical-align: top;
@@ -234,31 +238,39 @@ button.btnIcon:hover {
     top: 5px;
     right: 10px;
 }
-.settings {
+#Settings table {
     background-color: #002433;
     padding: 10px;
     margin-top: 5px;
     width: 100%;
 }
-.settings th {
+#Settings table th {
   cursor: pointer;
   font-weight: normal;
 }
-.settings tr:first-child th {
+#Settings table tr:first-child th {
   font-weight: bold;
   border-bottom: 1px solid #bbb;
 }
-.settings td:first-child {
+#Settings table td:first-child {
   width: 120px;
   vertical-align: top;
 }
-.settings a, .settings a:visited {
+#Settings a, #Settings a:visited {
   color: white;
 }
-#console #panel-settings {
+#Settings label {
+  padding-right: 1em;
+  padding-left: 3px;
+  white-space: nowrap;
+}
+#Settings table div input[type=text] {
+  width: 60px;
+}
+#console #Settings {
 	display: none;
 }
-#console.state-show-settings #panel-settings {
+#console.state-show-settings #Settings {
 	display: block;
 }
 #console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
@@ -303,36 +315,83 @@ table.tags th, table.tags td {
   margin-right: 5px;
 }
 
-/* Widget Legend Bar */
-.widget-legend-bar {
+/* Widget Legend */
+.Legend {
   margin: 0;
   padding: 0 20px;
-  margin-top: -40px;
 }
-.widget-legend-bar li {
+.Legend li {
   display: inline-block;
   list-style:none;
   padding-left: 5px;
   border-left: 5px solid #ccc;
   margin-right: 20px;
 }
-.widget-legend-bar li strong {
+.Legend li strong {
   font-size: 200%;
   font-weight: bold;
 }
-.widget-legend-bar li span:first-child {
+.Legend li span:first-child {
   display: block;
   font-weight: 300;
 }
+.Legend li.status-missing strong {
+    color: Violet;
+}
+.Legend li.status-alarming strong {
+    color: gold;
+    animation: blinker 2s linear infinite;
+}
+.Legend li.status-critical strong {
+    color: crimson;
+    animation: blinker 1s linear infinite;
+}
+.Legend li.status-error strong {
+    color: red;
+}
+@keyframes blinker {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Widget Indicator */
+.Indicator {
+  border: 1px solid #ccc;
+  font-weight: bold;
+  padding: 5px 10px;
+  text-align: center;
+  margin: 5px;
+}
+.Indicator.status-missing {
+  border-color: Violet;
+  color: Violet;
+}
+.Indicator.status-alarming {
+  border-color: gold; 
+  color: gold;
+}
+.Indicator.status-critical {
+  border-color: crimson; 
+  color: crimson;
+}
+.Indicator b {
+  color: white;
+  white-space: nowrap;
+}
+.Indicator i {
+  white-space: nowrap;
+}
+
 
 /* Page Navigation */
-#panel-nav {
+#Navigation {
   position: relative;
   left: 50%;
   transform: translateX(-50%);
   display: inline-block;  
 }
-#page-nav-dropdown {
+#Navigation select {
   background-color: #002c3e;
   padding: 5px;
   border-width: 0;
@@ -342,7 +401,7 @@ table.tags th, table.tags td {
   max-width: 400px;
 }
 
-#panel-nav h2 {
+#Navigation h2 {
   min-width: 100px;
   font-weight: bold;
   font-size: 140%;

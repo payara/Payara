@@ -45,6 +45,7 @@
  */ 
 MonitoringConsole.Chart.Bar = (function() {
 
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
@@ -121,6 +122,12 @@ MonitoringConsole.Chart.Bar = (function() {
             scales: {
                xAxes: [{
                   stacked: true,
+                  ticks: {
+                    callback: function(value, index, values) {
+                      let converter = Units.converter(widget.unit);
+                      return converter.format(converter.parse(value));
+                    },
+                  },                 
                }],
                yAxes: [{
                   maxBarThickness: 15, //px
@@ -148,7 +155,7 @@ MonitoringConsole.Chart.Bar = (function() {
    }
 
    function onConfigUpdate(widget, chart) {
-      let options = chart.options;
+      let options = chart.options; 
       return chart;
    }
 

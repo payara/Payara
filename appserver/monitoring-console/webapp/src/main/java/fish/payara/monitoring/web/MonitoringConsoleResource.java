@@ -97,6 +97,8 @@ public class MonitoringConsoleResource {
                 } else {
                     res.put(key, SeriesResponse.from(value));
                 }
+            } else {
+                res.put(key, new ArrayList<>());
             }
         }
         return res;

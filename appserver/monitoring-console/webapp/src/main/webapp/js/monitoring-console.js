@@ -142,26 +142,79 @@ MonitoringConsole.Model = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
+	const TEXT_HTTP_HIGH = "Requires *HTTP monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'HTTP Service'* to *'HIGH'*.";
+	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
+	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
 					name: 'Core',
 					numberOfColumns: 3,
 					widgets: [
-						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
-						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
-						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
-						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
+							grid: { item: 0, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
+						{ series: 'ns:jvm CpuUsage', unit: 'percent',
+							grid: { item: 1, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
+						{ series: 'ns:jvm ThreadCount', unit: 'count',  
+							grid: { item: 0, column: 1, span: 1}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { item: 1, column: 1, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:web RequestCount', unit: 'count',
+							grid: { item: 0, column: 2, span: 1}, 
+							options: { perSec: true },
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
+						{ series: 'ns:web ActiveSessions', unit: 'count',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
 				request_tracing: {
 					name: 'Request Tracing',
-					numberOfColumns: 2,
+					numberOfColumns: 1,
 					widgets: [
-						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
+							grid: { item: 0, column: 0, span: 1 }, 
+							axis: { min: 0, max: 5000 },
+							options: { drawMinLine: true },
+							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
 					]
 				},
+				http: {
+					name: 'HTTP',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
+							grid: { column: 0, item: 0},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { column: 0, item: 1},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount2xx', unit: 'count', 
+							grid: { column: 1, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount3xx', unit: 'count', 
+							grid: { column: 1, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount4xx', unit: 'count', 
+							grid: { column: 2, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount5xx', unit: 'count', 
+							grid: { column: 2, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+					]
+				}
 			},
 			settings: {},
 	};
@@ -227,15 +280,31 @@ MonitoringConsole.Model = (function() {
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
 			if (!widget.type)
 				widget.type = 'line';
-			if (!widget.options) {
-				widget.options = { 
-					beginAtZero: true,
-					autoTimeTicks: true,
-					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
-				};
-			}
-			if (!widget.grid)
+			if (!widget.unit)
+				widget.unit = 'count';
+			if (typeof widget.options !== 'object')
+				widget.options = {};
+			//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
+			if (typeof widget.grid !== 'object')
 				widget.grid = {};
+			if (typeof widget.decorations !== 'object')
+				widget.decorations = {};
+			if (typeof widget.decorations.thresholds !== 'object')
+				widget.decorations.thresholds = {};
+			if (typeof widget.decorations.thresholds.alarming !== 'object')
+				widget.decorations.thresholds.alarming = {};			
+			if (typeof widget.decorations.thresholds.critical !== 'object')
+				widget.decorations.thresholds.critical = {};			
+			if (typeof widget.axis !== 'object')
+				widget.axis = {};
+			if (typeof widget.status !== 'object')
+				widget.status = {};
+			if (typeof widget.status.missing !== 'object')
+				widget.status.missing = {};
+			if (typeof widget.status.alarming !== 'object')
+				widget.status.alarming = {};
+			if (typeof widget.status.critical !== 'object')
+				widget.status.critical = {};
 			return widget;
 		}
 		
@@ -260,7 +329,7 @@ MonitoringConsole.Model = (function() {
 			return page;
 		}
 		
-		function doImport(userInterface) {
+		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
@@ -273,15 +342,19 @@ MonitoringConsole.Model = (function() {
 				for (let i = 0; i < importedPages.length; i++) {
 					try {
 						let page = sanityCheckPage(importedPages[i]);
-						pages[page.id] = page;
+						if (replaceExisting || pages[page.id] === undefined) {
+							pages[page.id] = page;
+						}
 					} catch (ex) {
 					}
 				}
 			} else {
 				for (let [id, page] of Object.entries(importedPages)) {
 					try {
-						page.id = id;
-						pages[id] = sanityCheckPage(page); 
+						if (replaceExisting || pages[id] === undefined) {
+							page.id = id;
+							pages[id] = sanityCheckPage(page); 
+						}
 					} catch (ex) {
 					}
 				}
@@ -367,7 +440,7 @@ MonitoringConsole.Model = (function() {
 				}
 			}
 			// give the layout a uniform row number
-			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
+			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
 			for (let col = 0; col < numberOfColumns; col++) {
 				while (layout[col].length < maxRows) {
 					layout[col].push(null);
@@ -422,10 +495,10 @@ MonitoringConsole.Model = (function() {
 					let file = userInterface[0];
 					if (file) {
 						let json = await readTextFile(file);
-						doImport(JSON.parse(json));
+						doImport(JSON.parse(json), true);
 					}
 				} else {
-					doImport(userInterface);
+					doImport(userInterface, true);
 				}
 				if (onImportComplete)
 					onImportComplete();
@@ -437,7 +510,9 @@ MonitoringConsole.Model = (function() {
 			load: function() {
 				let localStorage = window.localStorage;
 				let ui = localStorage.getItem(LOCAL_UI_KEY);
-				doImport(ui ? JSON.parse(ui) : JSON.parse(JSON.stringify(UI_PRESETS)));
+				if (ui)
+				doImport(JSON.parse(ui), true);
+				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
 				return pages[currentPageId];
 			},
 			
@@ -678,27 +753,116 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	function retainLastMinute(data) {
-		let startOfLastMinute = Date.now() - 60000;
-		data.forEach(function(seriesData) {
-			let points = [];
-			for (let i = 0; i < seriesData.points.length; i += 2) {
-				if (seriesData.points[i] >= startOfLastMinute) {
-					points.push(seriesData.points[i]);
-					points.push(seriesData.points[i+1]);
+	let Update = (function() {
+
+		function retainLastMinute(data) {
+			let startOfLastMinute = Date.now() - 65000;
+			data.forEach(function(seriesData) {
+				let src = seriesData.points;
+				if (src.length == 4 && src[2] >= startOfLastMinute) {
+					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				} else {
+					let points = [];
+					for (let i = 0; i < src.length; i += 2) {
+						if (src[i] >= startOfLastMinute) {
+							points.push(src[i]);
+							points.push(src[i+1]);
+						}
+					}
+					seriesData.points = points;				
 				}
-			}
-			seriesData.points = points;
-		});
-		return data.filter(seriesData => seriesData.points.length >= 2);
-	}
+			});
+			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function perSecond(data) {
+			data.forEach(function(seriesData) {
+				let points = seriesData.points;
+				if (!points)
+				  return;
+				let pointsPerSec = new Array(points.length - 2);
+				for (let i = 0; i < pointsPerSec.length; i+=2) {
+				  let t0 = points[i];
+				  let t1 = points[i+2];
+				  let y0 = points[i+1];
+				  let y1 = points[i+3];
+				  let dt = t1 - t0;
+				  let dy = y1 - y0;
+				  let y = (dt / 1000) * dy;
+				  pointsPerSec[i] = t1;
+				  pointsPerSec[i+1] = y;				  
+				}
+				if (pointsPerSec.length === 2)
+				  pointsPerSec = [points[0], pointsPerSec[1], pointsPerSec[0], pointsPerSec[1]];
+				seriesData.points = pointsPerSec;
+				//TODO update min/max/avg per sec 
+			});
+		}
+
+		function addAssessment(widget, data) {
+			data.forEach(function(seriesData) {
+				let status = 'normal';
+				let thresholds = widget.decorations.thresholds;
+				if (thresholds.reference && thresholds.reference !== 'off') {
+					let value = seriesData.points[seriesData.points.length-1];
+					switch (thresholds.reference) {
+						case 'min': value = seriesData.observedMin; break;
+						case 'max': value = seriesData.observedMax; break;
+						case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+					}
+					let alarming = thresholds.alarming.value;
+					let critical = thresholds.critical.value;
+					let desc = alarming && critical && critical < alarming;
+					if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+						status = 'alarming';
+					}
+					if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+						status = 'critical';
+					}
+				}
+				seriesData.assessments = { status: status };
+			});
+		}
+
+		function createOnSuccess(widgets, onDataUpdate) {
+			return function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.perSec)
+						perSecond(data);
+					addAssessment(widget, data);
+					onDataUpdate({
+						widget: widget,
+						data: data,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		function createOnError(widgets, onDataUpdate) {
+			return function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		return {
+			createOnSuccess: createOnSuccess,
+			createOnError: createOnError,
+		};
+	})();
+
 
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
-			let payload = {
-			};
+			let payload = {};
 			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
@@ -713,23 +877,8 @@ MonitoringConsole.Model = (function() {
 				contentType:"application/json; charset=utf-8",
 				dataType:"json",
 			});
-			request.done(function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						data: retainLastMinute(response[widget.series]),
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
-			request.fail(function(jqXHR, textStatus) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
+			request.done(Update.createOnSuccess(widgets, onDataUpdate));
+			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
 		return UI.arrange();
@@ -750,7 +899,7 @@ MonitoringConsole.Model = (function() {
 			let type = widget.type;
 			widgetUpdate(widget);
 			if (widget.type === type) {
-				Charts.update(widget, );
+				Charts.update(widget);
 			} else {
 				Charts.destroy(widget.series);
 			}
@@ -958,18 +1107,235 @@ MonitoringConsole.Model = (function() {
 /*jshint esversion: 8 */
 
 /**
+ * Utilities to convert values given in units from and to string.
+ **/
+MonitoringConsole.View.Units = (function() {
+
+   const PERCENT_FACTORS = {
+      '%': 1
+   };
+
+   /**
+    * Factors used for any time unit to milliseconds
+    */
+   const MS_FACTORS = {
+      h: 60 * 60 * 1000, hours: 60 * 60 * 1000,
+      m: 60 * 1000, min: 60 * 1000, mins: 60 * 1000,
+      s: 1000, sec: 1000, secs: 1000,
+      ms: 1,
+      us: 1/1000, μs: 1/1000,
+      ns: 1/1000000,
+      _: [['m', 's', 'ms'], ['s', 'ms'], ['h', 'm', 's'], ['m', 's'], ['h', 'm']]
+   };
+
+   /**
+    * Factors used for any time unit to nanoseconds
+    */
+   const NS_FACTORS = {
+      h: 60 * 60 * 1000 * 1000000, hours: 60 * 60 * 1000 * 1000000,
+      m: 60 * 1000 * 1000000, min: 60 * 1000 * 1000000, mins: 60 * 1000 * 1000000,
+      s: 1000 * 1000000, sec: 1000 * 1000000, secs: 1000 * 1000000,
+      ms: 1000000,
+      us: 1000, μs: 1000,
+      ns: 1,
+      _: [['m', 's', 'ms'], ['s', 'ms'], ['h', 'm', 's'], ['m', 's'], ['h', 'm']]
+   };
+
+   /**
+    * Factors used for any memory unit to bytes
+    */
+   const BYTES_FACTORS = {
+      kb: 1024,
+      mb: 1024 * 1024,
+      gb: 1024 * 1024 * 1024,
+      tb: 1024 * 1024 * 1024 * 1024,
+   };
+
+   function parseNumber(valueAsString, factors) {
+      if (!valueAsString || typeof valueAsString === 'string' && valueAsString.trim() === '')
+         return undefined;
+      let valueAsNumber = Number(valueAsString);
+      if (!Number.isNaN(valueAsNumber))
+         return valueAsNumber;
+      let valueAndUnit = valueAsString.split(/(-?[0-9]+\.?[0-9]*)/);
+      let sum = 0;
+      for (let i = 1; i < valueAndUnit.length; i+=2) {
+         valueAsNumber = Number(valueAndUnit[i].trim());
+         let unit = valueAndUnit[i+1].trim().toLowerCase();
+         let factor = factors[unit];
+         sum += valueAsNumber * factor;               
+      }
+      return sum;
+   }
+
+   function formatDecimal(valueAsNumber) {
+      if (!hasDecimalPlaces(valueAsNumber)) {
+         return Math.round(valueAsNumber).toString();
+      } 
+      let text = valueAsNumber.toFixed(1);
+      return text.endsWith('.0') ? Math.round(valueAsNumber).toString() : text;
+   }
+
+   function formatNumber(valueAsNumber, factors, useDecimals) {
+      if (valueAsNumber === undefined)
+         return undefined;
+      if (!factors)
+         return formatDecimal(valueAsNumber);
+      let largestFactorUnit;
+      let largestFactor = 0;
+      for (let [unit, factor] of Object.entries(factors)) {
+         if (unit != '_' && (valueAsNumber >= 0 && factor > 0 || valueAsNumber < 0 && factor < 0)
+            && (useDecimals && (valueAsNumber / factor) >= 1 || !hasDecimalPlaces(valueAsNumber / factor))
+            && factor > largestFactor) {
+            largestFactor = factor;
+            largestFactorUnit = unit;
+         }
+      }
+      if (!largestFactorUnit) {
+         return formatDecimal(valueAsNumber);
+      }
+      if (useDecimals) {
+         return formatDecimal(valueAsNumber / largestFactor) + largestFactorUnit;
+      }
+      let valueInUnit = Math.round(valueAsNumber / largestFactor);
+      if (factors._) {
+         for (let i = 0; i < factors._.length; i++) {
+            let combination = factors._[i];
+            let rest = valueAsNumber;
+            let text = '';
+            if (combination[combination.length - 1] == largestFactorUnit) {
+               for (let j = 0; j < combination.length; j++) {
+                  let unit = combination[j];
+                  let factor = factors[unit];
+                  let times = Math.floor(rest / factor);
+                  if (times === 0)
+                     break;
+                  rest -= times * factor;
+                  text += times + unit;                      
+               }
+            }
+            if (rest === 0) {
+               return text;
+            }
+         }
+      }
+      // TODO look for a combination that has the found unit as its last member
+      // try if value can eben be expressed as the combination, otherwise try next that might fulfil firs condition
+      return valueInUnit + largestFactorUnit;
+   }
+
+   function hasDecimalPlaces(number) {
+      return number % 1 != 0;
+   }
+
+   function formatTime(hourOrDateOrTimestamp, minute, second) {
+      if (typeof hourOrDateOrTimestamp === 'number' && hourOrDateOrTimestamp > 24) { // assume timestamp
+         hourOrDateOrTimestamp = new Date(hourOrDateOrTimestamp);
+      }
+      if (typeof hourOrDateOrTimestamp === 'object') { // assume Date
+         minute = hourOrDateOrTimestamp.getMinutes();
+         second = hourOrDateOrTimestamp.getSeconds();
+         hourOrDateOrTimestamp = hourOrDateOrTimestamp.getHours();
+      }
+      let str = as2digits(hourOrDateOrTimestamp);
+      str += ':' + as2digits(minute ? minute : 0);
+      if (second)
+         str += ':' +  as2digits(second);
+      return str;
+   }
+
+   function as2digits(number) {
+      return number.toString().padStart(2, '0');
+   }
+
+   /**
+    * Public API below:
+    */
+   return {
+      formatTime: formatTime,
+      formatNumber: formatNumber,
+      formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),
+      formatNanoseconds: (valueAsNumber) => formatNumber(valueAsNumber, NS_FACTORS),
+      formatBytes: (valueAsNumber) => formatNumber(valueAsNumber, BYTES_FACTORS),
+      parseNumber: parseNumber,
+      parseMilliseconds: (valueAsString) => parseNumber(valueAsString, MS_FACTORS),
+      parseNanoseconds: (valueAsString) => parseNumber(valueAsString, NS_FACTORS),
+      parseBytes: (valueAsString) => parseNumber(valueAsString, BYTES_FACTORS),
+      converter: function(unit) {
+         return {
+            format: function(valueAsNumber, useDecimals) {
+               switch(unit) {
+                  case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
+                  case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
+                  case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
+                  case 'percent': return formatNumber(valueAsNumber, PERCENT_FACTORS, useDecimals);
+                  default: return formatNumber(valueAsNumber);
+               }
+            },
+            parse: function(valueAsString) {
+               switch(unit) {
+                  case 'ms': return parseNumber(valueAsString, MS_FACTORS);
+                  case 'ns': return parseNumber(valueAsString, NS_FACTORS);
+                  case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
+                  case 'percent': return parseNumber(valueAsString, PERCENT_FACTORS);
+                  default: return parseNumber(valueAsString);
+               }
+            },
+         };
+      }
+   };
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
  * Data/Model driven view components.
  *
  * Each of them gets passed a model which updates the view of the component to the model state.
  **/
 MonitoringConsole.View.Components = (function() {
 
+   const Units = MonitoringConsole.View.Units;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
-
-   function element(fn) {
-      let e = $.isFunction(fn) ? fn() : fn;
-      return (typeof e === 'string') ? document.createTextNode(e) : e;
-   }
 
    /**
     * This is the side panel showing the details and settings of widgets
@@ -977,10 +1343,11 @@ MonitoringConsole.View.Components = (function() {
    let Settings = (function() {
 
       function emptyPanel() {
-         return $('#panel-settings').empty();
+         return $('#Settings').empty();
       }
 
-      function createHeaderRow(caption) {
+      function createHeaderRow(model) {
+         let caption = model.label;
          return $('<tr/>').append($('<th/>', {colspan: 2})
              .html(caption)
              .click(function() {
@@ -995,123 +1362,159 @@ MonitoringConsole.View.Components = (function() {
          }));
       }
 
-      function createCheckboxRow(label, checked, onChange) {
-         return createRow(label, () => createCheckbox(checked, onChange));
-      }
-
-      function createTable(id, caption) {
-         let table = $('<table />', { 'class': 'settings', id: id });
-         if (caption)
-            table.append(createHeaderRow(caption));
+      function createTable(model) {
+         let table = $('<table />', { id: model.id });
+         if (model.caption)
+            table.append(createHeaderRow({ label: model.caption }));
          return table;
       }
 
-      function createRow(label, createInput) {
-         return $('<tr/>').append($('<td/>').text(label)).append($('<td/>').append(element(createInput)));   
+      function createRow(model, inputs) {
+         let components = $.isFunction(inputs) ? inputs() : inputs;
+         if (typeof components === 'string') {
+            components = document.createTextNode(components);
+         }
+         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
-      /**
-      * Creates a checkbox to configure the attributes of a widget.
-      *
-      * @param {boolean} isChecked - if the created checkbox should be checked
-      * @param {function} onChange - a function accepting two arguments: the updated widget and the checked state of the checkbox after a change
-      */
-      function createCheckbox(isChecked, onChange) {
-         return $("<input/>", { type: 'checkbox', checked: isChecked })
+      function createCheckboxInput(model) {
+         return $("<input/>", { type: 'checkbox', checked: model.value })
              .on('change', function() {
                  let checked = this.checked;
-                 Selection.configure((widget) => onChange(widget, checked));
+                 Selection.configure((widget) => model.onChange(widget, checked));
              });
       }
 
-      function createSliderRow(label, min, max, value, onChange) {
-         return createRow(label, () => $('<input/>', {type: 'number', min:min, max:max, value: value})
+      function createRangeInput(model) {
+         let attributes = {type: 'number', value: model.value};
+         if (model.min)
+            attributes.min = model.min;
+         if (model.max)
+            attributes.max = model.max;         
+         return $('<input/>', attributes)
              .on('input change', function() {  
                  let val = this.valueAsNumber;
-                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, val)));
-             }));
+                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+             });
       }
 
-      function createDropdownRow(label, options, value, onChange) {
+      function createDropdownInput(model) {
          let dropdown = $('<select/>');
-         Object.keys(options).forEach(option => dropdown.append($('<option/>', {text:options[option], value:option, selected: value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => onChange(widget, dropdown.val()))));
-         return createRow(label, () => dropdown);
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
+         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         return dropdown;
+      }
+
+      function createValueInput(model) {
+         if (model.unit === 'percent')
+            return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
+         return createTextInput(model, Units.converter(model.unit));
+      }
+
+      function createTextInput(model, converter) {
+         if (!converter)
+            converter = { format: (str) => str, parse: (str) => str };
+         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
+         input.on('input change', function() {
+            let val = converter.parse(this.value);
+            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+         });
+         return input;
+      }
+
+      function createInput(model) {
+         switch (model.type) {
+            case 'checkbox': return createCheckboxInput(model);
+            case 'dropdown': return createDropdownInput(model);
+            case 'range'   : return createRangeInput(model);
+            case 'value'   : return createValueInput(model);
+            case 'text'    : return createTextInput(model);
+            default        : return model.input;
+         }
       }
 
       function onUpdate(model) {
          let panel = emptyPanel();
          for (let t = 0; t < model.length; t++) {
-            let tableModel = model[t];
-            let table = createTable(tableModel.id, tableModel.caption);
+            let group = model[t];
+            let table = createTable(group);
             panel.append(table);
-            for (let r = 0; r < tableModel.entries.length; r++) {
-               let rowModel = tableModel.entries[r];
-               switch (rowModel.type) {
-                  case 'header':
-                     table.append(createHeaderRow(rowModel.label));
-                     break;
-                  case 'checkbox':
-                     table.append(createCheckboxRow(rowModel.label, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'range':
-                  case 'slider':
-                     table.append(createSliderRow(rowModel.label, rowModel.min, rowModel.max, rowModel.value, rowModel.onChange));
-                     break;
-                  case 'dropdown':
-                     table.append(createDropdownRow(rowModel.label, rowModel.options, rowModel.value, rowModel.onChange));
-                     break;
-                  default:
-                     if (rowModel.input) {
-                        table.append(createRow(rowModel.label, rowModel.input));
-                     } else {
-                        table.append(createHeaderRow(rowModel.label));
+            for (let r = 0; r < group.entries.length; r++) {
+               let entry = group.entries[r];
+               let type = entry.type;
+               let auto = type === undefined;
+               let input = entry.input;
+               if (type == 'header' || auto && input === undefined) {
+                  table.append(createHeaderRow(entry));
+               } else if (!auto) {
+                  table.append(createRow(entry, createInput(entry)));
+               } else {
+                  if (Array.isArray(input)) {
+                     let multiInput = $('<div/>');
+                     for (let i = 0; i < input.length; i++) {
+                        multiInput.append(createInput(input[i]));
+                        if (input[i].label) {
+                           multiInput.append($('<label/>').html(input[i].label));
+                        }                        
                      }
+                     input = multiInput;
+                  }
+                  table.append(createRow(entry, input));
                }
             }
          }
       }
 
       return { onUpdate: onUpdate };
-    })();
+   })();
 
-    /**
-     * Legend is a generic component showing a number of current values annotated with label and color.
-     */ 
-    let Legend = (function() {
+   /**
+   * Legend is a generic component showing a number of current values annotated with label and color.
+   */ 
+   let Legend = (function() {
 
-      function createItem(label, value, color) {
+      function createItem(model) {
+         let label = model.label;
+         let value = model.value;
+         let color = model.color;
+         let assessments = model.assessments;
          let strong = value;
          let normal = '';
          if (typeof value === 'string' && value.indexOf(' ') > 0) {
             strong = value.substring(0, value.indexOf(' '));
             normal = value.substring(value.indexOf(' '));
          }
-         return $('<li/>', {style: 'border-color: '+color+';'})
+         let attrs = { style: 'border-color: ' + color + ';' };
+         if (assessments && assessments.status)
+            attrs.class = 'status-' + assessments.status;
+         if (label === 'server') { // special rule for DAS
+            label = 'DAS'; 
+            attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
+         }
+         return $('<li/>', attrs)
                .append($('<span/>').text(label))
                .append($('<strong/>').text(strong))
                .append($('<span/>').text(normal));
       }
 
       function onCreation(model) {
-         let legend = $('<ol/>',  {'class': 'widget-legend-bar'});
+         let legend = $('<ol/>',  {'class': 'Legend'});
          for (let i = 0; i < model.length; i++) {
-            let itemModel = model[i];
-            legend.append(createItem(itemModel.label, itemModel.value, itemModel.color));
+            legend.append(createItem(model[i]));
          }
          return legend;
       }
 
       return { onCreation: onCreation };
-    })();
+   })();
 
-    /**
-     * Component to navigate pages. More a less a dropdown.
-     */
-    let Navigation = (function() {
+   /**
+   * Component to navigate pages. More a less a dropdown.
+   */
+   let Navigation = (function() {
 
       function onUpdate(model) {
-         let dropdown = $('<select/>', {id: 'page-nav-dropdown'});
+         let dropdown = $('<select/>');
          dropdown.change(() => model.onChange(dropdown.val()));
          for (let i = 0; i < model.pages.length; i++) {
             let pageModel = model.pages[i];
@@ -1120,19 +1523,33 @@ MonitoringConsole.View.Components = (function() {
                dropdown.val(pageModel.id);
             }
          }
-         let nav = $("#panel-nav"); 
+         let nav = $("#Navigation"); 
          nav.empty();
          nav.append(dropdown);
          return dropdown;
       }
 
       return { onUpdate: onUpdate };
+   })();
+
+
+   let Indicator = (function() {
+
+      function onCreation(model) {
+         if (!model.text) {
+            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+         }
+         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
+      }
+
+      return { onCreation: onCreation };
     })();
 
-    /*
-     * Public API below:
-     */
-    return {
+   /*
+   * Public API below:
+   */
+   return {
       /**
        * Call to update the settings side panel with the given model
        */
@@ -1145,8 +1562,12 @@ MonitoringConsole.View.Components = (function() {
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */
       onLegendCreation: (model) => Legend.onCreation(model),
+      /**
+       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       */
+      onIndicatorCreation: (model) => Indicator.onCreation(model),
       //TODO add id to model and make it an update?
-    };
+   };
 
 })();
 /*
@@ -1326,6 +1747,7 @@ MonitoringConsole.Chart.Common = (function() {
  */ 
 MonitoringConsole.Chart.Line = (function() {
 	
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
   /**
@@ -1336,6 +1758,7 @@ MonitoringConsole.Chart.Line = (function() {
       maintainAspectRatio: false,
       scales: {
         xAxes: [{
+          display: true,
           type: 'time',
           gridLines: {
             color: 'rgba(100,100,100,0.3)',
@@ -1346,9 +1769,21 @@ MonitoringConsole.Chart.Line = (function() {
             round: 'second',
           },
           ticks: {
-            callback: getTimeLabel,
-            minRotation: 90,
-            maxRotation: 90,
+            minRotation: 0,
+            maxRotation: 0,
+            callback: function(value, index, values) {
+              if (values.length == 0)
+                return value;
+              let lastIndex = values.length - 1;
+              let reference = new Date(values[lastIndex].value);
+              let isLive = new Date() - reference < 5000; // is within the last 5 secs
+              if (isLive) {
+                return index == 0 ? (((values[lastIndex].value - values[0].value)/1000)+1) +'s ago' : index == lastIndex ? 'now' : undefined;
+              }
+              if (index != 0 && index != lastIndex)
+                return undefined;
+              return Units.formatTime(new Date(values[index].value));
+            },
           }
         }],
         yAxes: [{
@@ -1372,17 +1807,6 @@ MonitoringConsole.Chart.Line = (function() {
           data: { datasets: [], },
           options: options,
         });
-  } 
-
-  function getTimeLabel(value, index, values) {
-    if (values.length == 0 || index == 0)
-      return value;
-    let span = values[values.length -1].value - values[0].value;
-    if (span < 120000) { // less then two minutes
-      let lastMinute = new Date(values[index-1].value).getMinutes();
-      return new Date(values[index].value).getMinutes() != lastMinute ? value : ''+new Date(values[index].value).getSeconds();
-    }
-    return value;
   }
 
   /**
@@ -1397,75 +1821,35 @@ MonitoringConsole.Chart.Line = (function() {
       points2d[i] = { t: new Date(points1d[i*2]), y: points1d[i*2+1] };
     return points2d;      
   }
-    
-  /**
-   * Convertes a array of points given as one dimensional array with alternativ time value elements 
-   * to a 2-dimensional array of points with t and y attribute where y reflects the delta between 
-   * nearest 2 points of the input array. This means the result array has one less point as the input.
-   */
-  function points1Dto2DPerSec(points1d) {
-    if (!points1d)
-      return [];
-    let points2d = new Array((points1d.length / 2) - 1);
-    for (let i = 0; i < points2d.length; i++) {
-      let t0 = points1d[i*2];
-      let t1 = points1d[i*2+2];
-      let y0 = points1d[i*2+1];
-      let y1 = points1d[i*2+3];
-      let dt = t1 - t0;
-      let dy = y1 - y0;
-      let y = (dt / 1000) * dy;
-      points2d[i] = { t: new Date(t1), y: y };
-    }
-    return points2d;
-  }  
 	
   function createMinimumLineDataset(seriesData, points, lineColor) {
-		let min = seriesData.observedMin;
-		let minPoints = [{t:points[0].t, y:min}, {t:points[points.length-1].t, y:min}];
-		
-		return {
-			data: minPoints,
-			label: ' min ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [2, 2],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' min ', points, seriesData.observedMin, lineColor, [3, 3]);
   }
     
   function createMaximumLineDataset(seriesData, points, lineColor) {
-  	let max = seriesData.observedMax;
-		let maxPoints = [{t:points[0].t, y:max}, {t:points[points.length-1].t, y:max}];
-		
-		return {
-			data: maxPoints,
-			label: ' max ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			pointRadius: 0
-		};
+  	return createHorizontalLineDataset(' max ', points, seriesData.observedMax, lineColor, [15, 3]);
   }
     
   function createAverageLineDataset(seriesData, points, lineColor) {
-		let avg = seriesData.observedSum / seriesData.observedValues;
-		let avgPoints = [{t:points[0].t, y:avg}, {t:points[points.length-1].t, y:avg}];
-		
-		return {
-			data: avgPoints,
-			label: ' avg ',
-			fill:  false,
-			borderColor: lineColor,
-			borderWidth: 1,
-			borderDash: [10, 4],
-			pointRadius: 0
-		};
+		return createHorizontalLineDataset(' avg ', points, seriesData.observedSum / seriesData.observedValues, lineColor, [9, 3]);
   }
+
+  function createHorizontalLineDataset(label, points, y, lineColor, dash) {
+    let line = {
+      data: [{t:points[0].t, y:y}, {t:points[points.length-1].t, y:y}],
+      label: label,
+      fill:  false,
+      borderColor: lineColor,
+      borderWidth: 1,
+      pointRadius: 0
+    };
+    if (dash)
+      line.borderDash = dash;
+    return line;
+  }  
     
   function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
-		let pointRadius = widget.options.drawPoints ? 3 : 0;
+		let pointRadius = widget.options.drawPoints ? 2 : 0;
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
       label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
@@ -1474,7 +1858,7 @@ MonitoringConsole.Chart.Line = (function() {
 			label: label,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 1,
+			borderWidth: 2.5,
       pointRadius: pointRadius,
 		};
   }
@@ -1486,10 +1870,6 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.backgroundColor;
-    if (widget.options.perSec && seriesData.points.length > 4) {    
-  		//TODO add min/max/avg per sec lines
-      return [ createCurrentLineDataset(widget, seriesData, points1Dto2DPerSec(seriesData.points), lineColor, bgColor) ];
-  	}
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
@@ -1502,6 +1882,15 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
+    if (widget.decorations.waterline) {
+      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    }
+    if (widget.decorations.thresholds.alarming.display) {
+      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    }
+    if (widget.decorations.thresholds.critical.display) {
+      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    }
 	  return datasets;
   }
 
@@ -1511,17 +1900,22 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.scales.yAxes[0].ticks.beginAtZero = widget.options.beginAtZero;
-    options.scales.xAxes[0].ticks.source = widget.options.autoTimeTicks ? 'auto' : 'data';
-    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
-    let time = widget.options.drawAnimations ? 1000 : 0;
+    options.elements.line.tension = widget.options.noCurves ? 0 : 0.4;
+    let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
-    let rotation = widget.options.rotateTimeLabels ? 90 : undefined;
-    options.scales.xAxes[0].ticks.minRotation = rotation;
-    options.scales.xAxes[0].ticks.maxRotation = rotation;
-    options.scales.xAxes[0].ticks.display = widget.options.showTimeLabels === true;
-    options.elements.line.fill = widget.options.drawFill === true;
+    let yAxis = options.scales.yAxes[0];
+    let converter = Units.converter(widget.unit);
+    yAxis.ticks.callback = function(value, index, values) {
+      let text = converter.format(value, widget.unit === 'bytes');
+      return widget.options.perSec ? text + ' /s' : text;
+    };
+    yAxis.ticks.suggestedMin = widget.axis.min;
+    yAxis.ticks.suggestedMax = widget.axis.max;
+    let xAxis = options.scales.xAxes[0];
+    xAxis.ticks.source = 'data'; // 'auto' does not allow to put labels at first and last point
+    xAxis.ticks.display = widget.options.noTimeLabels !== true;
+    options.elements.line.fill = widget.options.noFill !== true;
     return chart;
   }
 
@@ -1593,6 +1987,7 @@ MonitoringConsole.Chart.Line = (function() {
  */ 
 MonitoringConsole.Chart.Bar = (function() {
 
+  const Units = MonitoringConsole.View.Units;
   const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
@@ -1669,6 +2064,12 @@ MonitoringConsole.Chart.Bar = (function() {
             scales: {
                xAxes: [{
                   stacked: true,
+                  ticks: {
+                    callback: function(value, index, values) {
+                      let converter = Units.converter(widget.unit);
+                      return converter.format(converter.parse(value));
+                    },
+                  },                 
                }],
                yAxes: [{
                   maxBarThickness: 15, //px
@@ -1696,7 +2097,7 @@ MonitoringConsole.Chart.Bar = (function() {
    }
 
    function onConfigUpdate(widget, chart) {
-      let options = chart.options;
+      let options = chart.options; 
       return chart;
    }
 
@@ -2020,11 +2421,12 @@ MonitoringConsole.Chart.Trace = (function() {
 /*jshint esversion: 8 */
 
 /**
- *
+ * Main API to update or manipulate the view of the generic page.
  **/
 MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
+    const Units = MonitoringConsole.View.Units;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -2051,25 +2453,16 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let model = [];
-            model.push(createPageSettings());
-            model.push(createDataSettings());
+            let settings = [];
+            settings.push(createPageSettings());
+            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(model);
+            Components.onSettingsUpdate(settings);
         } else {
             panelConsole.removeClass('state-show-settings');
         }
-    }
-
-    function createWidgetLegend(widget) {
-        return $('<ol/>',  {'class': 'widget-legend-bar'});
-    }
-
-    function createWidgetLegendItem(data, color) {
-        let value = data.points[data.points.length-1];
-        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
     }
 
     function updateDomOfWidget(parent, widget) {
@@ -2087,6 +2480,7 @@ MonitoringConsole.View = (function() {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
                 parent.append(Components.onLegendCreation([]));                
+                parent.append(Components.onIndicatorCreation({}));
             }
         }
         if (widget.selected) {
@@ -2124,18 +2518,17 @@ MonitoringConsole.View = (function() {
         let tags = series.substring(0, endOfTags).split(' ');
         let text = '';
         let metricText = toWords(metric);
-        if (widget.options.perSec) {
-            metricText += ' <i>(1/sec)</i>';
-        }
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
-            if (tag.startsWith('@:')) {
+            let tagName = tag.substring(0, tag.indexOf(':'));
+            let tagValue = tag.substring(tag.indexOf(':') + 1);
+            if (tagName ===  '@') {
                 grouped = true;
                 text += metricText;
-                text += ': <code>'+tag.substring(2)+'</code> ';
+                text += ': <strong>'+tagValue+'</strong> ';
             } else {
-                text +=' <i>'+tag+'</i> ';
+                text +=' <span>'+tagName+':<strong>'+tagValue+'</strong></span> ';
             }
         }
         if (!grouped)
@@ -2169,33 +2562,58 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
-            { label: 'General'},
+        let unit = widget.unit;
+        let thresholds = widget.decorations.thresholds;
+        let settings = [];
+        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Column / Item', input: [
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            ]},             
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
-            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
-            { label: 'Data'},
-            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-        ]};
-        if (widget.type === 'line') {
-            settings.entries.push(
-                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
-                { label: 'Display Options'},
-                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
-                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
-                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
-                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
-                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
-                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
-                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
-                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
-                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
-            );
-        }
+        ]});
+        settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Unit', input: [
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Extra Lines', input: [
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+            ]},
+            { label: 'Display', input: [
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
+            ]},
+            { label: 'X-Axis', input: [
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+            ]},            
+            { label: 'Y-Axis', input: [
+                { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
+            ]},
+        ]});
+        settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
+            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Alarming Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
+            ]},
+            { label: 'Critical Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+            ]},                
+            //TODO add color for each threshold
+        ]});
+        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+            { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
+            { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
+            { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
+        ]});
         return settings;       
     }
 
@@ -2282,26 +2700,55 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegend(widget, data) {
+    function createLegendComponent(widget, data) {
         if (!data)
-            return [{ label: 'No Data', value: '?', color: 'red' }];
+            return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
+        if (Array.isArray(data) && data.length == 0) {
+            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
+        }
         let legend = [];
+        let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
+            let points = seriesData.points;
+            let avgOffN = widget.options.perSec ? Math.min(points.length / 2, 4) : 1;
+            let avg = 0;
+            for (let n = 0; n < avgOffN; n++)
+                avg += points[points.length - 1 - (n * 2)];
+            avg /= avgOffN;
+            let value = format(avg, widget.unit === 'bytes');
+            if (widget.options.perSec)
+                value += ' /s';
             let item = { 
                 label: label, 
-                value: seriesData.points[seriesData.points.length-1], 
+                value: value, 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                assessments: seriesData.assessments,
             };
             legend.push(item);
             data[j].legend = item;
         }
         return legend;
+    }
+
+    function createIndicatorComponent(widget, data) {
+        if (!data)
+            return { status: 'error' };
+        if (Array.isArray(data) && data.length == 0)
+            return { status: 'missing', text: widget.status.missing.hint };
+        let status = 'normal';
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
+                status = seriesData.assessments.status;
+        }
+        let statusInfo = widget.status[status] || {};
+        return { status: status, text: statusInfo.hint };
     }
 
     /**
@@ -2311,14 +2758,17 @@ MonitoringConsole.View = (function() {
      */
     function onDataUpdate(update) {
         let widget = update.widget;
+        let data = update.data;
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
-        let legendNode = widgetNode.find('.widget-legend-bar').first();
-        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
-        if (update.data) {
+        let legendNode = widgetNode.find('.Legend').first();
+        let indicatorNode = widgetNode.find('.Indicator').first();
+        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
+        if (data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
         legendNode.replaceWith(Components.onLegendCreation(legend));
+        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
     }
 
     /**
@@ -2328,7 +2778,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
+        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -2368,6 +2818,8 @@ MonitoringConsole.View = (function() {
      * Public API of the View object:
      */
     return {
+        Units: Units,
+        Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received

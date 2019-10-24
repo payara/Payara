@@ -51,26 +51,79 @@ MonitoringConsole.Model = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
+	const TEXT_HTTP_HIGH = "Requires *HTTP monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'HTTP Service'* to *'HIGH'*.";
+	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
+	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
 					name: 'Core',
 					numberOfColumns: 3,
 					widgets: [
-						{ series: 'ns:jvm HeapUsage',      grid: { item: 0, column: 0, span: 1} },
-						{ series: 'ns:jvm CpuUsage',       grid: { item: 1, column: 0, span: 1} },
-						{ series: 'ns:jvm ThreadCount',    grid: { item: 0, column: 1, span: 1} },
-						{ series: 'ns:web RequestCount',   grid: { item: 0, column: 2, span: 1}, options: { perSec: true, autoTimeTicks: true, beginAtZero: true } },
-						{ series: 'ns:web ActiveSessions', grid: { item: 1, column: 2, span: 1} },
+						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
+							grid: { item: 0, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
+						{ series: 'ns:jvm CpuUsage', unit: 'percent',
+							grid: { item: 1, column: 0, span: 1}, 
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
+						{ series: 'ns:jvm ThreadCount', unit: 'count',  
+							grid: { item: 0, column: 1, span: 1}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { item: 1, column: 1, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:web RequestCount', unit: 'count',
+							grid: { item: 0, column: 2, span: 1}, 
+							options: { perSec: true },
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
+						{ series: 'ns:web ActiveSessions', unit: 'count',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
 				request_tracing: {
 					name: 'Request Tracing',
-					numberOfColumns: 2,
+					numberOfColumns: 1,
 					widgets: [
-						{series: 'ns:trace @:* Duration', type: 'bar', grid: {item: 0, column: 0, span: 1}, options: { drawMinLine: true }}
+						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
+							grid: { item: 0, column: 0, span: 1 }, 
+							axis: { min: 0, max: 5000 },
+							options: { drawMinLine: true },
+							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
 					]
 				},
+				http: {
+					name: 'HTTP',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
+							grid: { column: 0, item: 0},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+							grid: { column: 0, item: 1},
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount2xx', unit: 'count', 
+							grid: { column: 1, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount3xx', unit: 'count', 
+							grid: { column: 1, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount4xx', unit: 'count', 
+							grid: { column: 2, item: 0},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ServerCount5xx', unit: 'count', 
+							grid: { column: 2, item: 1},
+							options: { perSec: true },
+							status: { missing : { hint: TEXT_HTTP_HIGH }}},
+					]
+				}
 			},
 			settings: {},
 	};
@@ -136,15 +189,31 @@ MonitoringConsole.Model = (function() {
 				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
 			if (!widget.type)
 				widget.type = 'line';
-			if (!widget.options) {
-				widget.options = { 
-					beginAtZero: true,
-					autoTimeTicks: true,
-					//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
-				};
-			}
-			if (!widget.grid)
+			if (!widget.unit)
+				widget.unit = 'count';
+			if (typeof widget.options !== 'object')
+				widget.options = {};
+			//TODO no data can be a good thing (a series hopefully does not come up => render differently to "No Data" => add a config for that switch)
+			if (typeof widget.grid !== 'object')
 				widget.grid = {};
+			if (typeof widget.decorations !== 'object')
+				widget.decorations = {};
+			if (typeof widget.decorations.thresholds !== 'object')
+				widget.decorations.thresholds = {};
+			if (typeof widget.decorations.thresholds.alarming !== 'object')
+				widget.decorations.thresholds.alarming = {};			
+			if (typeof widget.decorations.thresholds.critical !== 'object')
+				widget.decorations.thresholds.critical = {};			
+			if (typeof widget.axis !== 'object')
+				widget.axis = {};
+			if (typeof widget.status !== 'object')
+				widget.status = {};
+			if (typeof widget.status.missing !== 'object')
+				widget.status.missing = {};
+			if (typeof widget.status.alarming !== 'object')
+				widget.status.alarming = {};
+			if (typeof widget.status.critical !== 'object')
+				widget.status.critical = {};
 			return widget;
 		}
 		
@@ -169,7 +238,7 @@ MonitoringConsole.Model = (function() {
 			return page;
 		}
 		
-		function doImport(userInterface) {
+		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
@@ -182,15 +251,19 @@ MonitoringConsole.Model = (function() {
 				for (let i = 0; i < importedPages.length; i++) {
 					try {
 						let page = sanityCheckPage(importedPages[i]);
-						pages[page.id] = page;
+						if (replaceExisting || pages[page.id] === undefined) {
+							pages[page.id] = page;
+						}
 					} catch (ex) {
 					}
 				}
 			} else {
 				for (let [id, page] of Object.entries(importedPages)) {
 					try {
-						page.id = id;
-						pages[id] = sanityCheckPage(page); 
+						if (replaceExisting || pages[id] === undefined) {
+							page.id = id;
+							pages[id] = sanityCheckPage(page); 
+						}
 					} catch (ex) {
 					}
 				}
@@ -276,7 +349,7 @@ MonitoringConsole.Model = (function() {
 				}
 			}
 			// give the layout a uniform row number
-			let maxRows = Math.max(numberOfColumns, layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur));
+			let maxRows = layout.map(column => column.length).reduce((acc, cur) => acc ? Math.max(acc, cur) : cur);
 			for (let col = 0; col < numberOfColumns; col++) {
 				while (layout[col].length < maxRows) {
 					layout[col].push(null);
@@ -331,10 +404,10 @@ MonitoringConsole.Model = (function() {
 					let file = userInterface[0];
 					if (file) {
 						let json = await readTextFile(file);
-						doImport(JSON.parse(json));
+						doImport(JSON.parse(json), true);
 					}
 				} else {
-					doImport(userInterface);
+					doImport(userInterface, true);
 				}
 				if (onImportComplete)
 					onImportComplete();
@@ -346,7 +419,9 @@ MonitoringConsole.Model = (function() {
 			load: function() {
 				let localStorage = window.localStorage;
 				let ui = localStorage.getItem(LOCAL_UI_KEY);
-				doImport(ui ? JSON.parse(ui) : JSON.parse(JSON.stringify(UI_PRESETS)));
+				if (ui)
+				doImport(JSON.parse(ui), true);
+				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
 				return pages[currentPageId];
 			},
 			
@@ -587,27 +662,116 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
-	function retainLastMinute(data) {
-		let startOfLastMinute = Date.now() - 60000;
-		data.forEach(function(seriesData) {
-			let points = [];
-			for (let i = 0; i < seriesData.points.length; i += 2) {
-				if (seriesData.points[i] >= startOfLastMinute) {
-					points.push(seriesData.points[i]);
-					points.push(seriesData.points[i+1]);
+	let Update = (function() {
+
+		function retainLastMinute(data) {
+			let startOfLastMinute = Date.now() - 65000;
+			data.forEach(function(seriesData) {
+				let src = seriesData.points;
+				if (src.length == 4 && src[2] >= startOfLastMinute) {
+					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				} else {
+					let points = [];
+					for (let i = 0; i < src.length; i += 2) {
+						if (src[i] >= startOfLastMinute) {
+							points.push(src[i]);
+							points.push(src[i+1]);
+						}
+					}
+					seriesData.points = points;				
 				}
-			}
-			seriesData.points = points;
-		});
-		return data.filter(seriesData => seriesData.points.length >= 2);
-	}
+			});
+			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function perSecond(data) {
+			data.forEach(function(seriesData) {
+				let points = seriesData.points;
+				if (!points)
+				  return;
+				let pointsPerSec = new Array(points.length - 2);
+				for (let i = 0; i < pointsPerSec.length; i+=2) {
+				  let t0 = points[i];
+				  let t1 = points[i+2];
+				  let y0 = points[i+1];
+				  let y1 = points[i+3];
+				  let dt = t1 - t0;
+				  let dy = y1 - y0;
+				  let y = (dt / 1000) * dy;
+				  pointsPerSec[i] = t1;
+				  pointsPerSec[i+1] = y;				  
+				}
+				if (pointsPerSec.length === 2)
+				  pointsPerSec = [points[0], pointsPerSec[1], pointsPerSec[0], pointsPerSec[1]];
+				seriesData.points = pointsPerSec;
+				//TODO update min/max/avg per sec 
+			});
+		}
+
+		function addAssessment(widget, data) {
+			data.forEach(function(seriesData) {
+				let status = 'normal';
+				let thresholds = widget.decorations.thresholds;
+				if (thresholds.reference && thresholds.reference !== 'off') {
+					let value = seriesData.points[seriesData.points.length-1];
+					switch (thresholds.reference) {
+						case 'min': value = seriesData.observedMin; break;
+						case 'max': value = seriesData.observedMax; break;
+						case 'avg': value = seriesData.observedSum / seriesData.observedValues; break;
+					}
+					let alarming = thresholds.alarming.value;
+					let critical = thresholds.critical.value;
+					let desc = alarming && critical && critical < alarming;
+					if (alarming && ((!desc && value >= alarming) || (desc && value <= alarming))) {
+						status = 'alarming';
+					}
+					if (critical && ((!desc && value >= critical) || (desc && value <= critical))) {
+						status = 'critical';
+					}
+				}
+				seriesData.assessments = { status: status };
+			});
+		}
+
+		function createOnSuccess(widgets, onDataUpdate) {
+			return function(response) {
+				Object.values(widgets).forEach(function(widget) {
+					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.perSec)
+						perSecond(data);
+					addAssessment(widget, data);
+					onDataUpdate({
+						widget: widget,
+						data: data,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		function createOnError(widgets, onDataUpdate) {
+			return function(jqXHR, textStatus) {
+				Object.values(widgets).forEach(function(widget) {
+					onDataUpdate({
+						widget: widget,
+						chart: () => Charts.getOrCreate(widget),
+					});
+				});
+			};
+		}
+
+		return {
+			createOnSuccess: createOnSuccess,
+			createOnError: createOnError,
+		};
+	})();
+
 
 	function doInit(onDataUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
-			let payload = {
-			};
+			let payload = {};
 			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
@@ -622,23 +786,8 @@ MonitoringConsole.Model = (function() {
 				contentType:"application/json; charset=utf-8",
 				dataType:"json",
 			});
-			request.done(function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						data: retainLastMinute(response[widget.series]),
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
-			request.fail(function(jqXHR, textStatus) {
-				Object.values(widgets).forEach(function(widget) {
-					onDataUpdate({
-						widget: widget,
-						chart: () => Charts.getOrCreate(widget),
-					});
-				});
-			});
+			request.done(Update.createOnSuccess(widgets, onDataUpdate));
+			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
 		return UI.arrange();

@@ -41,11 +41,12 @@
 /*jshint esversion: 8 */
 
 /**
- *
+ * Main API to update or manipulate the view of the generic page.
  **/
 MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
+    const Units = MonitoringConsole.View.Units;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -72,25 +73,16 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
-            let model = [];
-            model.push(createPageSettings());
-            model.push(createDataSettings());
+            let settings = [];
+            settings.push(createPageSettings());
+            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
-                model.push(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(model);
+            Components.onSettingsUpdate(settings);
         } else {
             panelConsole.removeClass('state-show-settings');
         }
-    }
-
-    function createWidgetLegend(widget) {
-        return $('<ol/>',  {'class': 'widget-legend-bar'});
-    }
-
-    function createWidgetLegendItem(data, color) {
-        let value = data.points[data.points.length-1];
-        return $('<li/>', {style: 'border-color: '+color+';'}).append($('<span/>').text(data.instance)).append($('<span/>').text(value));
     }
 
     function updateDomOfWidget(parent, widget) {
@@ -108,6 +100,7 @@ MonitoringConsole.View = (function() {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
                 parent.append(Components.onLegendCreation([]));                
+                parent.append(Components.onIndicatorCreation({}));
             }
         }
         if (widget.selected) {
@@ -145,18 +138,17 @@ MonitoringConsole.View = (function() {
         let tags = series.substring(0, endOfTags).split(' ');
         let text = '';
         let metricText = toWords(metric);
-        if (widget.options.perSec) {
-            metricText += ' <i>(1/sec)</i>';
-        }
         let grouped = false;
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
-            if (tag.startsWith('@:')) {
+            let tagName = tag.substring(0, tag.indexOf(':'));
+            let tagValue = tag.substring(tag.indexOf(':') + 1);
+            if (tagName ===  '@') {
                 grouped = true;
                 text += metricText;
-                text += ': <code>'+tag.substring(2)+'</code> ';
+                text += ': <strong>'+tagValue+'</strong> ';
             } else {
-                text +=' <i>'+tag+'</i> ';
+                text +=' <span>'+tagName+':<strong>'+tagValue+'</strong></span> ';
             }
         }
         if (!grouped)
@@ -190,33 +182,58 @@ MonitoringConsole.View = (function() {
 
     function createWidgetSettings(widget) {
         let options = widget.options;
-        let settings = { id: 'settings-widget', caption: formatSeriesName(widget), entries: [
-            { label: 'General'},
+        let unit = widget.unit;
+        let thresholds = widget.decorations.thresholds;
+        let settings = [];
+        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Column / Item', input: [
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
+                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+            ]},             
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
-            { label: 'Column', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-            { label: 'Item', type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
-            { label: 'Data'},
-            { label: 'Add Minimum', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-            { label: 'Add Maximum', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-        ]};
-        if (widget.type === 'line') {
-            settings.entries.push(
-                { label: 'Add Average', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},
-                { label: 'Per Second', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
-                { label: 'Display Options'},
-                { label: 'Begin at Zero', type: 'checkbox', value: options.beginAtZero, onChange: (widget, checked) => options.beginAtZero = checked},
-                { label: 'Automatic Labels', type: 'checkbox', value: options.autoTimeTicks, onChange: (widget, checked) => options.autoTimeTicks = checked},
-                { label: 'Use Bezier Curves', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
-                { label: 'Use Animations', type: 'checkbox', value: options.drawAnimations, onChange: (widget, checked) => options.drawAnimations = checked},
-                { label: 'Label X-Axis at 90°', type: 'checkbox', value: options.rotateTimeLabels, onChange: (widget, checked) => options.rotateTimeLabels = checked},
-                { label: 'Show Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Show Fill', type: 'checkbox', value: options.drawFill, onChange: (widget, checked) => options.drawFill = checked},
-                { label: 'Show Stabe', type: 'checkbox', value: options.drawStableLine, onChange: (widget, checked) => options.drawStableLine = checked},
-                { label: 'Show Legend', type: 'checkbox', value: options.showLegend, onChange: (widget, checked) => options.showLegend = checked},
-                { label: 'Show Time Labels', type: 'checkbox', value: options.showTimeLabels, onChange: (widget, checked) => options.showTimeLabels = checked},
-            );
-        }
+        ]});
+        settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Unit', input: [
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Extra Lines', input: [
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+            ]},
+            { label: 'Display', input: [
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
+            ]},
+            { label: 'X-Axis', input: [
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+            ]},            
+            { label: 'Y-Axis', input: [
+                { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
+                { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
+            ]},
+        ]});
+        settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
+            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Alarming Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
+            ]},
+            { label: 'Critical Threshold', input: [
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+            ]},                
+            //TODO add color for each threshold
+        ]});
+        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+            { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
+            { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
+            { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
+        ]});
         return settings;       
     }
 
@@ -303,26 +320,55 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegend(widget, data) {
+    function createLegendComponent(widget, data) {
         if (!data)
-            return [{ label: 'No Data', value: '?', color: 'red' }];
+            return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
+        if (Array.isArray(data) && data.length == 0) {
+            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
+        }
         let legend = [];
+        let format = Units.converter(widget.unit).format;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
             if (widget.series.indexOf('*') > 0) {
                 label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
             }
+            let points = seriesData.points;
+            let avgOffN = widget.options.perSec ? Math.min(points.length / 2, 4) : 1;
+            let avg = 0;
+            for (let n = 0; n < avgOffN; n++)
+                avg += points[points.length - 1 - (n * 2)];
+            avg /= avgOffN;
+            let value = format(avg, widget.unit === 'bytes');
+            if (widget.options.perSec)
+                value += ' /s';
             let item = { 
                 label: label, 
-                value: seriesData.points[seriesData.points.length-1], 
+                value: value, 
                 color: MonitoringConsole.Chart.Common.lineColor(j),
                 backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                assessments: seriesData.assessments,
             };
             legend.push(item);
             data[j].legend = item;
         }
         return legend;
+    }
+
+    function createIndicatorComponent(widget, data) {
+        if (!data)
+            return { status: 'error' };
+        if (Array.isArray(data) && data.length == 0)
+            return { status: 'missing', text: widget.status.missing.hint };
+        let status = 'normal';
+        for (let j = 0; j < data.length; j++) {
+            let seriesData = data[j];
+            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
+                status = seriesData.assessments.status;
+        }
+        let statusInfo = widget.status[status] || {};
+        return { status: status, text: statusInfo.hint };
     }
 
     /**
@@ -332,14 +378,17 @@ MonitoringConsole.View = (function() {
      */
     function onDataUpdate(update) {
         let widget = update.widget;
+        let data = update.data;
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-'+widget.target);
-        let legendNode = widgetNode.find('.widget-legend-bar').first();
-        let legend = createLegend(widget, update.data); // OBS this has side effect of setting .legend attribute in series data
-        if (update.data) {
+        let legendNode = widgetNode.find('.Legend').first();
+        let indicatorNode = widgetNode.find('.Indicator').first();
+        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
+        if (data) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
         legendNode.replaceWith(Components.onLegendCreation(legend));
+        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
     }
 
     /**
@@ -349,7 +398,7 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / numberOfColumns) - 10; // padding is subtracted
+        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
@@ -389,6 +438,8 @@ MonitoringConsole.View = (function() {
      * Public API of the View object:
      */
     return {
+        Units: Units,
+        Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
