@@ -58,7 +58,9 @@ public class ConfigProviderResolverSync extends ConfigProviderResolver {
         try {
             if (ConfigProviderResolverImpl.initialized.await(5, TimeUnit.SECONDS)) {
                 // the real resolver initialized, and have set the right instance already
-                return ConfigProviderResolver.instance();
+                // but it might have done it at unfortunate moment where it was overwritten by this instance
+                ConfigProviderResolver.setInstance(ConfigProviderResolverImpl.instance);
+                return ConfigProviderResolverImpl.instance;
             } else {
                 // we log and throw, as these exceptions might get swallowed as
                 // java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.microprofile.config.ConfigProvider

@@ -119,6 +119,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
 
     static final CountDownLatch initialized = new CountDownLatch(1);
+    static volatile ConfigProviderResolver instance;
 
     @Inject
     private InvocationManager invocationManager;
@@ -146,6 +147,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     @PostConstruct
     public void postConstruct() {
         ConfigProviderResolver.setInstance(this);
+        instance = this;
         initialized.countDown();
     }
 
