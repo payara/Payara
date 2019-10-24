@@ -33,13 +33,15 @@ name            = string
 id              = string
 numberOfColumns = number
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display }
+settings        = { display, home }
 display         = boolean
+home            = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
 * `widgets` can be ommitted for an empty page
 * `numberOfColumns` can be ommitted
 * `widgets` is allowed to be an array - if so it is made into an object using each widget's `series` for the attribute name
+* `home` is the `PAGE.id` of the currently shown page
 
 ### Widget Model
 
@@ -289,7 +291,7 @@ Describes the model expected by the `Indicator` component.
 This component gives feedback on the status of each widget.
 
 ```
-INDOCATOR = { status, text }
+INDICATOR = { status, text }
 status    = Status
 text      = string
 ```

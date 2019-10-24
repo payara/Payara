@@ -125,7 +125,6 @@ MonitoringConsole.Model = (function() {
 					]
 				}
 			},
-			settings: {},
 	};
 
 	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
@@ -155,8 +154,6 @@ MonitoringConsole.Model = (function() {
 		 * General settings for the user interface
 		 */
 		var settings = {};
-		
-		var currentPageId;
 		
 		/**
 		 * Makes sure the page data structure has all required attributes.
@@ -222,7 +219,7 @@ MonitoringConsole.Model = (function() {
 		}
 		
 		function doDeselect() {
-			Object.values(pages[currentPageId].widgets)
+			Object.values(pages[settings.home].widgets)
 				.forEach(widget => widget.selected = false);
 		}
 		
@@ -234,7 +231,7 @@ MonitoringConsole.Model = (function() {
 				throw "A page with name "+name+" already exist";
 			let page = sanityCheckPage({name: name});
 			pages[page.id] = page;
-			currentPageId = page.id;
+			settings.home = page.id;
 			return page;
 		}
 		
@@ -268,8 +265,8 @@ MonitoringConsole.Model = (function() {
 					}
 				}
 			}
-			if (Object.keys(pages).length > 0) {
-				currentPageId = Object.keys(pages)[0];
+			if (settings.home === undefined && Object.keys(pages).length > 0) {
+				settings.home = Object.keys(pages)[0];
 			}
 			doStore();
 			return true;
@@ -294,7 +291,7 @@ MonitoringConsole.Model = (function() {
       	}
 
       	function doLayout(columns) {
-			let page = pages[currentPageId];
+			let page = pages[settings.home];
 			if (!page)
 				return [];
 			if (columns)
@@ -382,12 +379,12 @@ MonitoringConsole.Model = (function() {
 		
 		return {
 			currentPage: function() {
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			listPages: function() {
 				return Object.values(pages).map(function(page) { 
-					return { id: page.id, name: page.name, active: page.id === currentPageId };
+					return { id: page.id, name: page.name, active: page.id === settings.home };
 				});
 			},
 			
@@ -422,7 +419,7 @@ MonitoringConsole.Model = (function() {
 				if (ui)
 				doImport(JSON.parse(ui), true);
 				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			/**
@@ -437,12 +434,12 @@ MonitoringConsole.Model = (function() {
 				let pageId = getPageId(name);
 				if (pages[pageId])
 					return false;
-				let page = pages[currentPageId];
+				let page = pages[settings.home];
 				page.name = name;
 				page.id = pageId;
 				pages[pageId] = page;
-				delete pages[currentPageId];
-				currentPageId = pageId;
+				delete pages[settings.home];
+				settings.home = pageId;
 				doStore();
 				return true;
 			},
@@ -455,16 +452,16 @@ MonitoringConsole.Model = (function() {
 				let pageIds = Object.keys(pages);
 				if (pageIds.length <= 1)
 					return undefined;
-				delete pages[currentPageId];
-				currentPageId = pageIds[0];
-				return pages[currentPageId];
+				delete pages[settings.home];
+				settings.home = pageIds[0];
+				return pages[settings.home];
 			},
 
 			resetPage: function() {
 				let presets = UI_PRESETS;
-				if (presets && presets.pages && presets.pages[currentPageId]) {
-					let preset = presets.pages[currentPageId];
-					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
+				if (presets && presets.pages && presets.pages[settings.home]) {
+					let preset = presets.pages[settings.home];
+					pages[settings.home] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
 					doStore();
 					return true;
 				}
@@ -474,12 +471,12 @@ MonitoringConsole.Model = (function() {
 			switchPage: function(pageId) {
 				if (!pages[pageId])
 					return undefined;
-				currentPageId = pageId;
-				return pages[currentPageId];
+				settings.home = pageId;
+				return pages[settings.home];
 			},
 			
 			removeWidget: function(series) {
-				let widgets = pages[currentPageId].widgets;
+				let widgets = pages[settings.home].widgets;
 				if (series && widgets) {
 					delete widgets[series];
 				}
@@ -489,7 +486,7 @@ MonitoringConsole.Model = (function() {
 				if (typeof series !== 'string')
 					throw 'configuration object requires string property `series`';
 				doDeselect();
-				let widgets = pages[currentPageId].widgets;
+				let widgets = pages[settings.home].widgets;
 				let widget = { series: series };
 				widgets[series] = sanityCheckWidget(widget);
 				widget.selected = true;
@@ -497,14 +494,14 @@ MonitoringConsole.Model = (function() {
 			
 			configureWidget: function(widgetUpdate, series) {
 				let selected = series
-					? [pages[currentPageId].widgets[series]]
-					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
+					? [pages[settings.home].widgets[series]]
+					: Object.values(pages[settings.home].widgets).filter(widget => widget.selected);
 				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
 			},
 			
 			select: function(series) {
-				let widget = pages[currentPageId].widgets[series];
+				let widget = pages[settings.home].widgets[series];
 				widget.selected = widget.selected !== true;
 				doStore();
 				return widget.selected === true;
@@ -516,7 +513,7 @@ MonitoringConsole.Model = (function() {
 			},
 			
 			selected: function() {
-				return Object.values(pages[currentPageId].widgets)
+				return Object.values(pages[settings.home].widgets)
 					.filter(widget => widget.selected)
 					.map(widget => widget.series);
 			},
@@ -533,8 +530,8 @@ MonitoringConsole.Model = (function() {
 			
 			showSettings: function() {
 				return settings.display === true
-					|| Object.keys(pages[currentPageId].widgets).length == 0
-					|| Object.values(pages[currentPageId].widgets).filter(widget => widget.selected).length > 0;
+					|| Object.keys(pages[settings.home].widgets).length == 0
+					|| Object.values(pages[settings.home].widgets).filter(widget => widget.selected).length > 0;
 			},
 			openSettings: function() {
 				settings.display = true;
