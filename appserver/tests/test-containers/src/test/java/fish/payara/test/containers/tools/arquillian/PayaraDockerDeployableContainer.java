@@ -77,9 +77,9 @@ import org.slf4j.LoggerFactory;
  * @author David Matejcek
  */
 public class PayaraDockerDeployableContainer implements DeployableContainer<PayaraDockerContainerConfiguration> {
-
     private static final Logger LOG = LoggerFactory.getLogger(PayaraDockerDeployableContainer.class);
 
+    private static final String APP_CONTEXT_ROOT = "/";
     private DockerEnvironment environment;
 
 
@@ -130,16 +130,15 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
         try {
             deploy(applicationName, archive, deployer);
 
-            final HTTPContext httpContext = new HTTPContext(payara.getContainerIpAddress(),
-                payara.getHttpUrl().getPort());
-
             payara.asAdmin("show-component-status", applicationName);
 
             // FIXME: use real context obtained from the server
-            httpContext.add(new Servlet(applicationName, applicationName));
+            final HTTPContext httpContext = new HTTPContext(payara.getContainerIpAddress(),
+                payara.getHttpUrl().getPort());
+
+            httpContext.add(new Servlet(applicationName, APP_CONTEXT_ROOT));
             final List<String> modules = getModuleNames(applicationName, deployer);
             LOG.info("modules: {}", modules);
-
 
             final ProtocolMetaData protocolMetaData = new ProtocolMetaData();
             protocolMetaData.addContext(httpContext);
@@ -224,6 +223,8 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
         options.setForce(true);
         options.setUpload(true);
         options.setTarget("server");
+        // FIXME: find way to define the context!
+        options.setContextRoot(APP_CONTEXT_ROOT);
         final Properties props = new Properties();
         props.setProperty("keepSessions", "true");
         options.setProperties(props);

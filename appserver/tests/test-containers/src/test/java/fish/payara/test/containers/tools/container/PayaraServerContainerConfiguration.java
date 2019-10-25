@@ -40,6 +40,7 @@
 package fish.payara.test.containers.tools.container;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -50,6 +51,7 @@ import java.nio.file.Paths;
 public class PayaraServerContainerConfiguration extends JavaContainerConfiguration {
 
     private static final String JACOCO_DOCKER_PAYARA_SERVER_EXEC_FILE = "jacoco-docker-payara-server.exec";
+    private static final Path PATH_PAYARA_TO_DOMAIN = Paths.get("glassfish", "domains", "domain1");
 
     private int adminPort;
     private int httpsPort;
@@ -88,6 +90,36 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
 
 
     /**
+     * @return directory containing domain directory
+     */
+    public File getPayaraDomainDirectory() {
+        return getMainApplicationDirectory().toPath().resolve("payara5").resolve(PATH_PAYARA_TO_DOMAIN).toFile();
+    }
+
+
+    /**
+     * @return directory containing domain directory in docker container
+     */
+    public File getPayaraDomainDirectoryInDocker() {
+        return getPayaraMainDirectoryInDocker().toPath().resolve(PATH_PAYARA_TO_DOMAIN).toFile();
+    }
+
+
+    /**
+     * @return directory containing domain lib directory
+     */
+    public File getPayaraDomainLibDirectory() {
+        return new File(getPayaraDomainDirectory(), "lib");
+    }
+
+    /**
+     * @return directory containing domain lib directory in docker container
+     */
+    public File getPayaraDomainLibDirectoryInDocker() {
+        return new File(getPayaraDomainDirectoryInDocker(), "lib");
+    }
+
+    /**
      * @return zip file containing application server in docker container
      */
     public File getPayaraZipFileInDocker() {
@@ -107,8 +139,7 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      * @return logging.properties in docker
      */
     public File getPayaraLoggingPropertiesInDocker() {
-        return getPayaraMainDirectoryInDocker().toPath()
-            .resolve(Paths.get("glassfish", "domains", "domain1", "config", "logging.properties")).toFile();
+        return getPayaraDomainDirectoryInDocker().toPath().resolve(Paths.get("config", "logging.properties")).toFile();
     }
 
 
@@ -116,8 +147,7 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      * @return server.log in docker
      */
     public File getPayaraServerLogInDocker() {
-        return getPayaraMainDirectoryInDocker().toPath()
-            .resolve(Paths.get("glassfish", "domains", "domain1", "logs", "server.log")).toFile();
+        return getPayaraDomainDirectoryInDocker().toPath().resolve(Paths.get("logs", "server.log")).toFile();
     }
 
 

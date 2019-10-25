@@ -27,6 +27,14 @@
         <docker.payara.host>payara-test-docker</docker.payara.host>
         <docker.payara.version>${project.version}</docker.payara.version>
 
+        <docker.mysql.image.forceNew>false</docker.mysql.image.forceNew>
+        <docker.mysql.image.base>mysql:8.0.18</docker.mysql.image.base>
+        <docker.mysql.host>tc-mysql</docker.mysql.host>
+        <docker.mysql.memory.totalInGB>1</docker.mysql.memory.totalInGB>
+        <docker.mysql.port>3306</docker.mysql.port>
+        <docker.mysql.user>mysql</docker.mysql.user>
+        <docker.mysql.password>mysqlpassword</docker.mysql.password>
+
         <maven.test.jvmoptions.memory.sizes>-Xss512k -Xms256m -Xmx1g -XX:MaxDirectMemorySize=512m</maven.test.jvmoptions.memory.sizes>
         <maven.test.jvmoptions.memory.gc>-verbose:gc -XX:+UseG1GC -XX:+UseStringDeduplication</maven.test.jvmoptions.memory.gc>
         <maven.test.jvmoptions.display>-Djava.awt.headless=true</maven.test.jvmoptions.display>
@@ -131,6 +139,12 @@
             <version>0.1.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-persistence-dbunit</artifactId>
+            <version>1.0.0.Alpha7</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -170,7 +184,25 @@
             <!-- depends on JUnit4 -->
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>[1.12.2]</version>
+            <version>1.12.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>1.12.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.18</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>2.6.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -184,17 +216,42 @@
             <artifactId>jersey-media-json-jackson</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jettison</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- If we skip this dependency, jersey-client throws java.lang.IllegalStateException: InjectionManagerFactory not found. -->
+        <!-- With that we must have META-INF/beans.xml in src/test/resources -->
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-cdi2-se</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
+            <version>3.0.5.Final</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -218,6 +275,9 @@
                     <include>log4j.properties</include>
                     <include>server-side/**</include>
                     <include>META-INF/**</include>
+                    <include>*.xml</include>
+                    <include>*.json</include>
+                    <include>*.sql</include>
                 </includes>
                 <filtering>false</filtering>
             </testResource>

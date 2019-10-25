@@ -196,7 +196,7 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
                 this.cfg.getJaCoCoReportDirectoryInDocker().getAbsolutePath(), READ_WRITE);
         }
         container.withNetwork(getNetwork()); //
-        container.withNetworkMode("bridge");
+//        container.withNetworkMode("bridge");
         container.withExposedPorts(getExposedInternalPorts().stream().toArray(Integer[]::new)); //
         container.withEnv("TZ", "UTC").withEnv("LC_ALL", "en_US.UTF-8"); //
         container.withCreateContainerCmdModifier(cmd -> {

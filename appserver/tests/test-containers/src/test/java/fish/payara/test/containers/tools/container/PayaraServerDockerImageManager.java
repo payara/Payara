@@ -63,17 +63,6 @@ public class PayaraServerDockerImageManager
 
     private static final String PAYARA_DOCKER_IMAGE_STARTED = "xxxxxxxxxxx PAYARA DOCKER IMAGE STARTED xxxxxxxxxxx";
 
-
-    /**
-     * Creates the manager with Docker's default network.
-     *
-     * @param cfg
-     */
-    public PayaraServerDockerImageManager(final PayaraServerContainerConfiguration cfg) {
-        this(null, cfg);
-    }
-
-
     /**
      * Creates the manager.
      *

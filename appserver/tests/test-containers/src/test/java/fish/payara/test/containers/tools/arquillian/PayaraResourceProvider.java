@@ -39,26 +39,35 @@
  */
 package fish.payara.test.containers.tools.arquillian;
 
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.core.spi.LoadableExtension;
+import java.lang.reflect.Method;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 /**
- * Automatically detected extension loaded by the Arquillian after it finds META-INF/services file
- * with the name of this class.
- *
  * @author David Matejcek
  */
-public class PayaraDockerArquillianExtension implements LoadableExtension {
-    private static final Logger LOG = LoggerFactory.getLogger(PayaraDockerArquillianExtension.class);
+public class PayaraResourceProvider implements TestEnricher {
+    private static final Logger LOG = LoggerFactory.getLogger(PayaraResourceProvider.class);
 
     @Override
-    public void register(final ExtensionBuilder builder) {
-        LOG.debug("register(builder={})", builder);
-        builder.service(DeployableContainer.class, PayaraDockerDeployableContainer.class);
-        builder.service(TestEnricher.class, PayaraResourceProvider.class);
+    public void enrich(Object testCase) {
+        LOG.debug("enrich(testCase={})", testCase);
+
+    }
+
+    @Override
+    public Object[] resolve(Method method) {
+        LOG.debug("resolve(method={})", method);
+        try {
+            return new Object[] {new InitialContext()};
+        } catch (NamingException e) {
+            throw new IllegalStateException("BAAAAAD", e);
+        }
     }
 }

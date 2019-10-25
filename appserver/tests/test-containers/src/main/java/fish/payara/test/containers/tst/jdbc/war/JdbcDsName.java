@@ -37,28 +37,16 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tools.arquillian;
-
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.test.spi.TestEnricher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package fish.payara.test.containers.tst.jdbc.war;
 
 
 /**
- * Automatically detected extension loaded by the Arquillian after it finds META-INF/services file
- * with the name of this class.
- *
  * @author David Matejcek
  */
-public class PayaraDockerArquillianExtension implements LoadableExtension {
-    private static final Logger LOG = LoggerFactory.getLogger(PayaraDockerArquillianExtension.class);
+public class JdbcDsName {
+    public static final String JDBC_DS_1 = "jdbc/dsa1";
+    public static final String JDBC_DS_2 = "jdbc/dsa2";
 
-    @Override
-    public void register(final ExtensionBuilder builder) {
-        LOG.debug("register(builder={})", builder);
-        builder.service(DeployableContainer.class, PayaraDockerDeployableContainer.class);
-        builder.service(TestEnricher.class, PayaraResourceProvider.class);
-    }
+    public static final String JDBC_DS_3 = "jdbc/dsd1";
+    public static final String JDBC_DS_4 = "jdbc/dsd2";
 }

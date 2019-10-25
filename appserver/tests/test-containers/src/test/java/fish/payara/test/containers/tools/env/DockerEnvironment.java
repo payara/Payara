@@ -39,6 +39,7 @@
  */
 package fish.payara.test.containers.tools.env;
 
+import fish.payara.test.containers.tools.container.MySQLDockerImageManager;
 import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerDockerImageManager;
 
@@ -54,7 +55,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.Container.ExecResult;
+import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 
 /**
@@ -71,8 +74,12 @@ public class DockerEnvironment implements AutoCloseable {
     /** Docker network */
     private final Network network;
     private final PayaraServerContainer payaraContainer;
+    private final MySQLContainer<?> mySQLContainer;
 
     private final LocalDateTime startupTime;
+
+    private final DockerEnvironmentConfiguration cfg;
+
 
 
     /**
@@ -111,13 +118,27 @@ public class DockerEnvironment implements AutoCloseable {
 
         // STEP1: Create images (they will be cached)
         LOG.info("Using docker environment configuration:\n{}", cfg);
+        this.cfg = cfg;
         this.network = Network.newNetwork();
 
         final List<CompletableFuture<Void>> parallelFutures = new ArrayList<>();
 
-        final PayaraServerDockerImageManager fbServerMgr = //
+        final PayaraServerDockerImageManager payaraServerMgr = //
             new PayaraServerDockerImageManager(this.network, cfg.getPayaraServerConfiguration());
-        parallelFutures.add(CompletableFuture.runAsync(() -> fbServerMgr.prepareImage(cfg.isForceNewPayaraServer())));
+        parallelFutures.add(CompletableFuture.runAsync(() -> payaraServerMgr.prepareImage(cfg.isForceNewPayaraServer())));
+
+
+        final MySQLDockerImageManager mysqlMgr;
+        if (cfg.isUseMySqlContainer()) {
+            mysqlMgr = new MySQLDockerImageManager(network, cfg.getMySQLServerConfiguration());
+            parallelFutures.add(CompletableFuture.runAsync(() -> mysqlMgr.prepareImage(cfg.isForceNewMySQLServer())));
+        } else {
+            if (cfg.getMySQLServerConfiguration().getPort() <= 0) {
+                throw new IllegalStateException("Cannot expose invalid database port in the docker network.");
+            }
+            Testcontainers.exposeHostPorts(cfg.getMySQLServerConfiguration().getPort());
+            mysqlMgr = null;
+        }
 
         try {
             CompletableFuture.allOf(parallelFutures.toArray(new CompletableFuture[parallelFutures.size()]))
@@ -127,9 +148,19 @@ public class DockerEnvironment implements AutoCloseable {
         }
 
         // STEP2: Create and start containers sequentionally (respect dependencies!)
-        this.payaraContainer = fbServerMgr.start();
+        if (mysqlMgr == null) {
+            this.mySQLContainer = null;
+        } else {
+            this.mySQLContainer = mysqlMgr.start();
+        }
+        this.payaraContainer = payaraServerMgr.start();
         logPayaraContainerStarted(this.payaraContainer);
         this.startupTime = LocalDateTime.now();
+    }
+
+
+    public DockerEnvironmentConfiguration getConfiguration() {
+        return this.cfg;
     }
 
 
@@ -164,6 +195,14 @@ public class DockerEnvironment implements AutoCloseable {
      */
     public PayaraServerContainer getPayaraContainer() {
         return this.payaraContainer;
+    }
+
+
+    /**
+     * @return initialized docker container with the MySQL server inside.
+     */
+    public MySQLContainer<?> getMySqlcontainer() {
+        return this.mySQLContainer;
     }
 
 

@@ -39,6 +39,7 @@
  */
 package fish.payara.test.containers.tools.env;
 
+import fish.payara.test.containers.tools.container.MySQLContainerConfiguration;
 import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
 import fish.payara.test.containers.tools.properties.Properties;
 
@@ -67,6 +68,9 @@ public final class DockerEnvironmentConfigurationParser {
         final DockerEnvironmentConfiguration cfg = new DockerEnvironmentConfiguration();
         cfg.setPayaraServerConfiguration(parseServerConfiguration(properties));
         cfg.setForceNewPayaraServer(properties.getBoolean("docker.payara.image.forceNew", false));
+        cfg.setForceNewMySQLServer(properties.getBoolean("docker.mysql.image.forceNew", false));
+        cfg.setUseMySqlContainer(properties.getBoolean("docker.mysql.useDocker", false));
+        cfg.setMySQLServerConfiguration(parseMySqlContainerConfiguration(properties));
         return cfg;
     }
 
@@ -92,6 +96,25 @@ public final class DockerEnvironmentConfigurationParser {
 
         cfg.setJaCoCoReportDirectory(properties.getFile("jacoco.reportDirectory"));
         cfg.setJaCoCoVersion(properties.getString("jacoco.version"));
+        return cfg;
+    }
+
+
+    /**
+     * Parses the configuration from the the docker.mysql.* properties.
+     *
+     * @param properties
+     * @return new {@link MySQLContainerConfiguration}
+     */
+    private static MySQLContainerConfiguration parseMySqlContainerConfiguration(final Properties properties) {
+        final MySQLContainerConfiguration cfg = new MySQLContainerConfiguration();
+        cfg.setDbPassword(properties.getString("docker.mysql.password"));
+        cfg.setDbUser(properties.getString("docker.mysql.user"));
+        cfg.setDownloadedDockerImageName(properties.getString("docker.mysql.image.base"));
+        cfg.setHostName(properties.getString("docker.mysql.host"));
+        cfg.setPort(properties.getInt("docker.mysql.port", 0));
+        cfg.setSystemMemory(properties.getInt("docker.mysql.memory.totalInGB", 0));
+        cfg.setWorkingDirectory(properties.getFile("docker.mysql.workingDirectory"));
         return cfg;
     }
 }

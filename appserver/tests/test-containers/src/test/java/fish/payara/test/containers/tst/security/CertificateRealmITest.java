@@ -151,8 +151,10 @@ public class CertificateRealmITest {
         testConfiguration = TestConfiguration.getInstance();
         final File webInfDir = testConfiguration.getClassDirectory().toPath()
             .resolve(Paths.get("security", "war", "servlets", "WEB-INF")).toFile();
-        final WebArchive war = ShrinkWrap.create(WebArchive.class).addPackage(PublicServlet.class.getPackage()) //
+        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
+            .addPackage(PublicServlet.class.getPackage()) //
             .addAsWebInfResource(new File(webInfDir, "web.xml")) //
+            // glassfish-web.xml must be ignored by the server, because of payara-web.xml
             .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
             .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
         ;

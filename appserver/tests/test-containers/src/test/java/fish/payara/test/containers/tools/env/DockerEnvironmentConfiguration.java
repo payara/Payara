@@ -39,7 +39,9 @@
  */
 package fish.payara.test.containers.tools.env;
 
+import fish.payara.test.containers.tools.container.MySQLContainerConfiguration;
 import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
+
 import org.testcontainers.shaded.org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.testcontainers.shaded.org.apache.commons.lang.builder.ToStringStyle;
 
@@ -54,8 +56,11 @@ import org.testcontainers.shaded.org.apache.commons.lang.builder.ToStringStyle;
 public class DockerEnvironmentConfiguration {
 
     private boolean forceNewPayaraServer;
+    private boolean forceNewMySQLServer;
+    private boolean isUseMySqlContainer;
 
     private PayaraServerContainerConfiguration payaraServerConfiguration;
+    private MySQLContainerConfiguration mySqlConfiguration;
 
 
     /**
@@ -90,6 +95,48 @@ public class DockerEnvironmentConfiguration {
         this.payaraServerConfiguration = payaraServerConfiguration;
     }
 
+
+    public void setUseMySqlContainer(boolean isUseMySqlContainer) {
+        this.isUseMySqlContainer = isUseMySqlContainer;
+    }
+
+
+    public boolean isUseMySqlContainer() {
+        return this.isUseMySqlContainer;
+    }
+
+
+    /**
+     * @return true to delete prepared docker image and to create it again
+     */
+    public boolean isForceNewMySQLServer() {
+        return this.forceNewMySQLServer;
+    }
+
+
+    /**
+     * @param forceNewMySQLServer true to delete prepared docker image and to create it again
+     */
+    public void setForceNewMySQLServer(final boolean forceNewMySQLServer) {
+        this.forceNewMySQLServer = forceNewMySQLServer;
+    }
+
+
+    /**
+     * @return {@link MySQLContainerConfiguration} - configuration of the MySQL Docker
+     *         container
+     */
+    public MySQLContainerConfiguration getMySQLServerConfiguration() {
+        return this.mySqlConfiguration;
+    }
+
+
+    /**
+     * @param mySqlConfiguration - configuration of the MySQL Docker container
+     */
+    public void setMySQLServerConfiguration(final MySQLContainerConfiguration mySqlConfiguration) {
+        this.mySqlConfiguration = mySqlConfiguration;
+    }
 
     /**
      * @return timeout of preparation of all container images in secodns.
