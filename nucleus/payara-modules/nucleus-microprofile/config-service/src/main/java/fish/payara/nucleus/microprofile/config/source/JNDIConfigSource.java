@@ -86,9 +86,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
         try {
             InitialContext ctx = new InitialContext();
             Object jndiObj = ctx.lookup(propertyName);
-            if (jndiObj.getClass().isAssignableFrom(String.class)) {
-                result = String.class.cast(jndiObj);
-            }
+            result = jndiObj.toString();
         } catch (NamingException ex) {
             // ignore who cares we don;t have the property but another source may
         }
