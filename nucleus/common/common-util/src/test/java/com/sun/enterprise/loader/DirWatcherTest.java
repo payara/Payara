@@ -43,17 +43,15 @@ package com.sun.enterprise.loader;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Supplier;
 
 import static com.sun.enterprise.loader.DirWatcher.hasItem;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.createDirectory;
 import static java.nio.file.Files.createFile;
 import static java.nio.file.Files.createTempDirectory;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class DirWatcherTest {
 
@@ -73,61 +71,80 @@ public class DirWatcherTest {
 
         DirWatcher.register(root);
 
-        assertTrue("root item should be found", hasItem(root, "file1"));
-        assertTrue("root item should be found", hasItem(root, "file2"));
-        assertFalse("non existing method should not be found", hasItem(root, "file3"));
-        assertFalse("empty directory should be ignored", hasItem(root, "com/empty/file3"));
-        assertTrue("existing shallow item should be found", hasItem(root, "com/actually/file3"));
-        assertTrue("existing deep item should be found", hasItem(root, "com/actually/used/file4"));
-        assertTrue("deep item should be guessed to exist if other items exist", hasItem(root, "com/actually/used/file5"));
+        assertTrue("root item should be found", () -> hasItem(root, "file1"));
+        assertTrue("root item should be found", () -> hasItem(root, "file2"));
+        assertFalse("non existing method should not be found", () -> hasItem(root, "file3"));
+        assertFalse("empty directory should be ignored", () -> hasItem(root, "com/empty/file3"));
+        assertTrue("existing shallow item should be found", () -> hasItem(root, "com/actually/file3"));
+        assertTrue("existing deep item should be found", () -> hasItem(root, "com/actually/used/file4"));
+        assertTrue("deep item should be guessed to exist if other items exist", () -> hasItem(root, "com/actually/used/file5"));
 
-        assertTrue("META-INF entry should be found", hasItem(root, "META-INF/services/javax.service.type"));
-        assertTrue("existing shallow item should be found", hasItem(root, "META-INF/beans.xml"));
+        assertTrue("META-INF entry should be found", () -> hasItem(root, "META-INF/services/javax.service.type"));
+        assertTrue("existing shallow item should be found", () -> hasItem(root, "META-INF/beans.xml"));
     }
 
     @Test
     public void itemsFoundAsTheyAreAdded() throws IOException {
         Path root = createTempDirectory(Paths.get("target") , "watch");
         DirWatcher.register(root);
-        assertFalse("non-existing root item should not be found", hasItem(root, "file1"));
+        assertFalse("non-existing root item should not be found", () -> hasItem(root, "file1"));
         createFile(root.resolve("file1"));
         createFile(root.resolve("file2"));
-        assertTrue("root item should be found", hasItem(root, "file1"));
-        assertTrue("root item should be found", hasItem(root, "file2"));
+        assertTrue("root item should be found", () -> hasItem(root, "file1"));
+        assertTrue("root item should be found", () -> hasItem(root, "file2"));
 
         createDirectories(root.resolve("com/empty/"));
 
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/empty"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/empty/reallyEmpty"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty/reallyEmpty"));
 
         createDirectories(root.resolve("com/actually/"));
         createFile(root.resolve("com/actually/file3"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/actually/file3"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/actually/file3"));
 
         createDirectories(root.resolve("META-INF/services"));
         createFile(root.resolve("META-INF/beans.xml"));
         createFile(root.resolve("META-INF/services/javax.service.type"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "META-INF/services/javax.service.type"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "META-INF/beans.xml"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "META-INF/services/javax.service.type"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "META-INF/beans.xml"));
     }
 
     @Test
     public void itemsFoundIfRootDoesNotExist() throws IOException {
         Path root = createTempDirectory(Paths.get("target") , "watch").resolve("later");
         DirWatcher.register(root);
-        assertFalse("non-existing root item should not be found", hasItem(root, "file1"));
+        assertFalse("non-existing root item should not be found", () -> hasItem(root, "file1"));
 
         createDirectory(root);
         createFile(root.resolve("file1"));
         createFile(root.resolve("file2"));
-        assertTrue("root item should be found", hasItem(root, "file1"));
-        assertTrue("root item should be found", hasItem(root, "file2"));
+        assertTrue("root item should be found", () -> hasItem(root, "file1"));
+        assertTrue("root item should be found", () -> hasItem(root, "file2"));
 
         createDirectories(root.resolve("com/empty/"));
 
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/empty"));
-        assertTrue("only first level is considered for items added after registration", hasItem(root, "com/empty/reallyEmpty"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty/reallyEmpty"));
+    }
+
+    static void assertTrue(String message, Supplier<Boolean> test) {
+        for(int i=0; i<5; i++) { // watch service takes some time to react, so let's make few attempts before giving up
+            Boolean result = test.get();
+            if (result) {
+                return;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // let's ignore it for the moment
+            }
+        }
+        throw new AssertionError(message);
+    }
+
+    static void assertFalse(String message, Supplier<Boolean> test) {
+        assertTrue(message, () -> !test.get());
     }
 }
