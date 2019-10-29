@@ -91,11 +91,6 @@ button:hover {
   left: 15px;
   position: absolute;
 }
-#newPage {
-  position: absolute;
-  left: 110px;
-  top: 5px;
-}
 
 #panel-trace {
   position: absolute;
@@ -110,17 +105,14 @@ button:hover {
   box-sizing: border-box;
   margin-bottom: 40px;
 }
-#trace-chart-box {
-  position: relative;
+#trace-widget {
   background-color: #002433;
-  clear: both;
+  position: relative;
   padding: 10px;
 }
-#trace-iconbar {
-  margin-bottom: 5px;
-}
-#trace-iconbar .btnIcon {
-  float: none;
+#trace-chart-box {
+  position: relative;
+  clear: both;
 }
 #grid-console {
     position: relative;
@@ -137,19 +129,8 @@ button:hover {
 .widget-chart-box {
     position: relative;
 }
-.btnIcon {
-	float: right;
-	z-index: 101;
-  margin: 0;
-  margin-left: 5px;
-  padding: 0;
-  color: #bbb;
-  background-color: transparent;
-  font-weight: bold;
-}
-button.btnIcon:hover {
-    color: white;
-    background-color: transparent;
+.widget-title-bar {
+  position: relative;
 }
 .widget-title-bar h3 {
   font-size: 130%;
@@ -174,25 +155,6 @@ button.btnIcon:hover {
   font-style: normal;
   margin-left: 0.5em;
   color: white;
-}
-#layout-bar {
-	display: inline-block;
-	float: right;
-	text-align: right;
-	width: 50%;
-}
-#panel-iconbar {
-	padding: 0 10px;
-}
-#panel-iconbar button {
-	color: #bbb;
-    background-color: transparent;
-    padding: 5px;
-    font-size: 14px;
-    letter-spacing: -2px;
-}
-#panel-iconbar button:hover {
-	color: white;
 }	
 #chart-grid {
 	width: 100%;
@@ -225,6 +187,10 @@ button.btnIcon:hover {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+#panel-grid {
+  position: relative;
 }
 
 /**
@@ -410,4 +376,53 @@ table.tags th, table.tags td {
   margin-top: 5px;
   padding: 0;
   cursor: pointer;
+}
+
+/* Menus */
+#Menu {
+  margin-top: 10px;
+}
+.Menu {
+  float: right;
+  font-size: 14px;
+  overflow: hidden;
+}
+.Menu strong {
+  display: inline-block;
+  min-width: 20px;
+  text-align: left;
+}
+.Menu button {
+  color: #bbb;
+  background-color: transparent;
+  padding: 5px;
+}
+.Menu button:hover {
+  color: white;
+  background-color: transparent;
+}
+.Menu .Item {
+  cursor: pointer;
+  padding: 0 0.75em;
+  float: left;
+}
+.Menu .Item a {
+  display: block;
+}
+.Menu .Group button {
+  float: none;
+  display: block;
+  white-space: nowrap;
+}
+.Menu .Group {
+  display: none;
+  position: absolute;
+  z-index: 101;
+  background-color: #002c3e;
+  overflow: hidden;
+  border: 1px solid #aaa;
+  transform: translateX(-40%);
+}
+.Menu .Item:hover .Group {
+  display: block;
 }

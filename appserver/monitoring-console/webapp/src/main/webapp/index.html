@@ -47,37 +47,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 
-    <script src="js/monitoring-console.js?x=x"></script>
-    <link href="css/monitoring-console.css?x=x" rel="stylesheet" type="text/css">
+    <script src="js/monitoring-console.js?x=y"></script>
+    <link href="css/monitoring-console.css?x=y" rel="stylesheet" type="text/css">
 </head>
 <body id="console">
 
 <input type="file" id="cfgImport" accept=".json" style="display:none" oninput="MonitoringConsole.View.onPageImport(this.files);">
 
-<button title='Delete current page' onclick="MonitoringConsole.View.onPageDelete();" class='btnIcon' style='padding: 10px;'>&times;</button>
-
 <div id="panel-grid">
     <div id="panel-iconbar">
         <img src="payara-logo.png" id="logo">
-        <button id="newPage" title="New Page" onclick="MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)'));">&plus;</button>
         <span id="Navigation"></span>
-        <span id="layout-bar">
-           <button title="Reset Page to Preset" onclick='MonitoringConsole.View.onPageReset()'>&#10226;</button>
-           <button title="Import Configuration..." onclick="$('#cfgImport').click();">&#128229;</button>
-           <button title="Export Configuration..." onclick="MonitoringConsole.View.onPageExport();">&#128228;</button>
-           &nbsp; &nbsp;
-           <button title="Pause Data Update" onclick="MonitoringConsole.Model.Refresh.pause();">&#9208;</button>
-           <button title="Resume Data Update" onclick="MonitoringConsole.Model.Refresh.resume();">&#9654;</button>
-           <button title="Slow Data Update" onclick="MonitoringConsole.Model.Refresh.slow();">&#128034;</button>
-           <button title="Fast Data Update" onclick="MonitoringConsole.Model.Refresh.fast();">&#128007;</button>
-           &nbsp; &nbsp;
-           <button onclick='MonitoringConsole.View.onPageLayoutChange(1);' title="Use one column layout">&#11034;</button> 
-           <button onclick='MonitoringConsole.View.onPageLayoutChange(2);' title="Use two column layout">&#11034; &#11034;</button> 
-           <button onclick='MonitoringConsole.View.onPageLayoutChange(3);' title="Use three column layout">&#11034; &#11034; &#11034;</button>
-           <button onclick='MonitoringConsole.View.onPageLayoutChange(4);' title="Use four column layout">&#11034; &#11034; &#11034; &#11034;</button>
-           &nbsp; &nbsp;
-           <button title="Show/Hide Settings" onclick="MonitoringConsole.View.onPageMenu()">&#9881;</button>
-        </span>
+        <span id="Menu"></span>
     </div>
 
     <div id="chart-container"></div>
@@ -86,16 +67,11 @@
 <div id="Settings"></div>
 
 <div id='panel-trace'>
-  <div id='trace-iconbar'>
-    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onClosePopup();" title="Back">&#9664;</button>
-    &nbsp; &nbsp;
-    <button class='btnIcon' onclick="MonitoringConsole.Chart.Trace.onDataRefresh();" title="Reload">&#10226;</button>
-    &nbsp; &nbsp;
-    <button class='btnIcon'onclick="MonitoringConsole.Chart.Trace.onSortByWallTime();" title="Sort By Wall Time (past to recent)">&#8986;</button>
-    <button class='btnIcon'onclick="MonitoringConsole.Chart.Trace.onSortByDuration();" title="Sort By Duration (slower to faster)">&#128034; &rarr; &#128007;</button>
+  <div id='trace-widget'>
+    <div id='trace-menu'></div>
+    <div id='trace-chart-box'><canvas id="trace-chart"></canvas></div>
+    <div id="trace-legend" style="margin-top: 10px;"></div>
   </div>
-  <div id='trace-chart-box'><canvas id="trace-chart"></canvas></div>
-  <div id="trace-legend" style="margin-top: 10px;"></div>
   <div id="chartjs-tooltip"></div>
 </div>
 

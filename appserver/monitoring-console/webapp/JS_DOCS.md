@@ -295,3 +295,23 @@ INDICATOR = { status, text }
 status    = Status
 text      = string
 ```
+
+
+### MENU API
+Describes the model expected by the `MENU` component that is used for any of the text + icon menus or toolbars.
+
+```
+MENU         = { id, groups }
+groups       = [BUTTON_GROUP | BUTTON]
+BUTTON_GROUP = { icon, label, description, items }
+items        = [BUTTON]
+BUTTON       = { icon, label, description, disabled, onClick }
+icon         = string
+label        = string
+description  = string
+disabled     = boolean
+onClick      = fn () => ()
+```
+* `id` is optional
+* `description` is optional
+* if item in `MENU` array has `items` it is a `BUTTON_GROUP` otherwise it is a `BUTTON`

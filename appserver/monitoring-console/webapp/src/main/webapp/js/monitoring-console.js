@@ -1505,48 +1505,98 @@ MonitoringConsole.View.Components = (function() {
       return { onCreation: onCreation };
    })();
 
-   /**
-   * Component to navigate pages. More a less a dropdown.
+  /**
+  * Component to navigate pages. More a less a dropdown.
+  */
+  let Navigation = (function() {
+
+    function onUpdate(model) {
+       let dropdown = $('<select/>');
+       dropdown.change(() => model.onChange(dropdown.val()));
+       for (let i = 0; i < model.pages.length; i++) {
+          let pageModel = model.pages[i];
+          dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
+          if (pageModel.active) {
+             dropdown.val(pageModel.id);
+          }
+       }
+       let nav = $("#Navigation"); 
+       nav.empty();
+       nav.append(dropdown);
+       return dropdown;
+    }
+
+    return { onUpdate: onUpdate };
+  })();
+
+  /**
+   * Component drawn for each widget legend item to indicate data status.
    */
-   let Navigation = (function() {
+  let Indicator = (function() {
 
-      function onUpdate(model) {
-         let dropdown = $('<select/>');
-         dropdown.change(() => model.onChange(dropdown.val()));
-         for (let i = 0; i < model.pages.length; i++) {
-            let pageModel = model.pages[i];
-            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
-            if (pageModel.active) {
-               dropdown.val(pageModel.id);
-            }
-         }
-         let nav = $("#Navigation"); 
-         nav.empty();
-         nav.append(dropdown);
-         return dropdown;
-      }
+    function onCreation(model) {
+       if (!model.text) {
+          return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+       }
+       let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+       return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
+    }
 
-      return { onUpdate: onUpdate };
-   })();
+    return { onCreation: onCreation };
+  })();
 
-
-   let Indicator = (function() {
-
-      function onCreation(model) {
-         if (!model.text) {
-            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
-         }
-         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
-         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
-      }
-
-      return { onCreation: onCreation };
-    })();
-
-   /*
-   * Public API below:
+  /**
+   * Component for any of the text+icon menus/toolbars.
    */
-   return {
+  let Menu = (function() {
+
+    function onCreation(model) {
+      let attrs = { 'class': 'Menu' };
+      if (model.id)
+        attrs.id = model.id;
+      let menu = $('<span/>', attrs);
+      let groups = model.groups;
+      for (let g = 0; g < groups.length; g++) {
+        let group = groups[g];
+        if (group.items) {
+          let groupBox = $('<span/>', { class: 'Group' });
+          let groupButton = $('<span/>', { class: 'Item' })
+            .append($('<a/>').html(createText(group)))
+            .append(groupBox)
+            ;
+          menu.append(groupButton);
+          for (let b = 0; b < group.items.length; b++) {
+            groupBox.append(createButton(group.items[b]));
+          }          
+        } else {
+          menu.append(createButton(group).addClass('Item'));
+        }
+      }
+      return menu;
+    }
+
+    function createText(button) {
+      let text = '';
+      if (button.icon)
+        text += '<strong>'+button.icon+'</strong>';
+      if (button.label)
+        text += button.label;
+      return text;
+    }
+
+    function createButton(button) {
+      return $('<button/>', { title: button.description })
+            .html(createText(button))
+            .click(button.onClick);
+    }
+
+    return { onCreation: onCreation };
+  })();
+
+  /*
+  * Public API below:
+  */
+  return {
       /**
        * Call to update the settings side panel with the given model
        */
@@ -1560,11 +1610,15 @@ MonitoringConsole.View.Components = (function() {
        */
       onLegendCreation: (model) => Legend.onCreation(model),
       /**
-       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       * Returns a jquery indicator element reflecting the given model to be inserted into the DOM
        */
       onIndicatorCreation: (model) => Indicator.onCreation(model),
+      /**
+       * Returns a jquery menu element reflecting the given model to inserted into the DOM
+       */
+      onMenuCreation: (model) => Menu.onCreation(model),
       //TODO add id to model and make it an update?
-   };
+  };
 
 })();
 /*
@@ -1752,6 +1806,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onCreation(widget) {
     let options = {
+      responsive: true,
       maintainAspectRatio: false,
       scales: {
         xAxes: [{
@@ -2315,6 +2370,8 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function updateDomSpanDetails(data, span) {
+      if (!span)
+         return;
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
       let settings = [
          { id: 'settings-span', caption: 'Span' , entries: [
@@ -2343,6 +2400,15 @@ MonitoringConsole.Chart.Trace = (function() {
    function onOpenPopup(series) {
       $('#panel-trace').show();
       model.series = series;
+      let menu = { id: 'TraceMenu', groups: [
+         { icon: '&#10226;', description: 'Reload', onClick: onDataRefresh },
+         { label: 'Sorting...', items: [
+            { icon: '&#8986;', label: 'Sort By Wall Time (past to recent)', onClick: onSortByWallTime },
+            { icon: '&#128034; &rarr; &#128007;', label: 'Sort By Duration (slower to faster)', onClick: onSortByDuration },
+         ]},
+         { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
+      ]};
+      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
       onDataRefresh();
    }
 
@@ -2441,6 +2507,32 @@ MonitoringConsole.View = (function() {
         Components.onNavigationUpdate(nav);
     }
 
+    function updateMenu() {
+        let menu = { id: 'Menu', groups: [
+            { label: 'Page...', items: [
+                { label: 'New...', icon: '&plus;', description: 'Add a new blank page...', onClick: () => MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')) },
+                { label: 'Delete', icon: '&times;', description: 'Delete current page', onClick: MonitoringConsole.View.onPageDelete },
+                { label: 'Reset', icon: '&#10226;', description: 'Reset Page to Preset', onClick: MonitoringConsole.View.onPageReset },
+                { label: 'Import...', icon: '&#128229;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
+                { label: 'Export...', icon: '&#128228;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },
+            ]},
+            { label: 'Refresh...', items: [
+                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Update', onClick: MonitoringConsole.Model.Refresh.pause },
+                { label: 'Resume', icon: '&#9654;', description: 'Resume Data Update', onClick: MonitoringConsole.Model.Refresh.resume },
+                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Update', onClick: MonitoringConsole.Model.Refresh.slow },
+                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Update', onClick: MonitoringConsole.Model.Refresh.fast },
+            ]},
+            { label: 'Layout...', items: [
+                { label: '1 Column', icon: '&#11034;', description: 'Use one column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(1) },
+                { label: ' 2 Columns', icon: '&#11034;&#11034;', description: 'Use two column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(2) },
+                { label: ' 3 Columns', icon: '&#11034;&#11034;&#11034;', description: 'Use three column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(3) },
+                { label: ' 4 Columns', icon: '&#11034;&#11034;&#11034;&#11034;', description: 'Use four column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(4) },
+            ]},
+            { description: 'Toggle Side Panel', icon: '&#9881;', description: 'Show/Hide Settings', onClick: MonitoringConsole.View.onPageMenu },
+        ]};
+        $('#Menu').replaceWith(Components.onMenuCreation(menu));
+    }
+
     /**
      * Updates the DOM with the page and selection settings so it reflects current model state
      */ 
@@ -2535,27 +2627,24 @@ MonitoringConsole.View = (function() {
 
     function createWidgetToolbar(widget, expanded) {
         let series = widget.series;
-        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
-            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
-            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
-            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
-            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
-            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
-            ;
+        let menu = { groups: [
+            { icon: '&#9881;', items: [
+                { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
+                { icon: '&ltri;&rtri;', label: 'Larger', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series)) },
+                { icon: '&rtri;&ltri;', label: 'Samller', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series)) },
+                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
+                { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
+                { icon: '&triangle;', label: 'Move Up', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series)) },
+                { icon: '&dtri;', label: 'Move Down', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series)) },
+                { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
+            ]},
+        ]};
         return $('<div/>', {"class": "widget-title-bar"})
             .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
-            .append(settings));
+            .append(Components.onMenuCreation(menu))
+            ;
     }
-
-    function createToolbarButton(title, icon, onClick) {
-        return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
-    }
-
 
     function createWidgetSettings(widget) {
         let options = widget.options;
@@ -2802,6 +2891,7 @@ MonitoringConsole.View = (function() {
         onPageUpdate(layout);
         updatePageNavigation();
         updatePageAndSelectionSettings();
+        updateMenu();
     }
 
     function onOpenWidgetSettings(series) {
@@ -2820,9 +2910,7 @@ MonitoringConsole.View = (function() {
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
-            onPageUpdate(MonitoringConsole.Model.init(onDataUpdate));
-            updatePageAndSelectionSettings();
-            updatePageNavigation();
+            onPageChange(MonitoringConsole.Model.init(onDataUpdate));
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
