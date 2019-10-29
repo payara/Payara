@@ -39,6 +39,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] Payara Foundation and/or affiliates
 
 AS_INSTALL=`dirname "$0"`/..
 
@@ -55,4 +56,11 @@ if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
 
-exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
+./jdkcheck
+
+if [ checkEndorsedAvailable = true ]
+then 
+    exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
+else
+    exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.ws-api.jar" com.sun.tools.ws.WsImport "$@"
+fi

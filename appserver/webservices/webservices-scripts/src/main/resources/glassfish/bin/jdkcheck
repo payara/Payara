@@ -3,7 +3,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) Payara Foundation and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,14 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2019] Payara Foundation and/or affiliates
 
-AS_INSTALL=`dirname "$0"`/..
-
-case "`uname`" in
-  CYGWIN*) AS_INSTALL=`cygpath --windows $AS_INSTALL`
-esac
-
-AS_INSTALL_LIB="$AS_INSTALL/modules"
-. "${AS_INSTALL}/config/asenv.conf"
-JAVA=java
-
-#Depends upon Java from ../config/asenv.conf
-if [ ${AS_JAVA} ]; then
-    JAVA=${AS_JAVA}/bin/java
-fi
-
-./jdkcheck
-
-if [ checkEndorsedAvailable = true ]
-then 
-    exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsGen "$@"
-else
-    exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.ws-api.jar" com.sun.tools.ws.WsGen "$@"
-fi
+# Checks the version of Java installed, if it is 9+ then endorsed is not available
+checkEndorsedAvailable () {
+    local ver=$("$JAVA" -version 2>&1 >/dev/null| sed -e 's/.*version "\(.*\)"\(.*\)/\1/; 1q')
+    if [ $ver = "1."* ]
+    then
+        true;
+    else
+        false;
+    fi
+}
