@@ -222,30 +222,6 @@ MonitoringConsole.View.Components = (function() {
    })();
 
   /**
-  * Component to navigate pages. More a less a dropdown.
-  */
-  let Navigation = (function() {
-
-    function onUpdate(model) {
-       let dropdown = $('<select/>');
-       dropdown.change(() => model.onChange(dropdown.val()));
-       for (let i = 0; i < model.pages.length; i++) {
-          let pageModel = model.pages[i];
-          dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
-          if (pageModel.active) {
-             dropdown.val(pageModel.id);
-          }
-       }
-       let nav = $("#Navigation"); 
-       nav.empty();
-       nav.append(dropdown);
-       return dropdown;
-    }
-
-    return { onUpdate: onUpdate };
-  })();
-
-  /**
    * Component drawn for each widget legend item to indicate data status.
    */
   let Indicator = (function() {
@@ -276,16 +252,25 @@ MonitoringConsole.View.Components = (function() {
         let group = groups[g];
         if (group.items) {
           let groupBox = $('<span/>', { class: 'Group' });
-          let groupButton = $('<span/>', { class: 'Item' })
-            .append($('<a/>').html(createText(group)))
+          let groupLabel = $('<a/>').html(createText(group));
+          let groupItem = $('<span/>', { class: 'Item' })
+            .append(groupLabel)
             .append(groupBox)
             ;
-          menu.append(groupButton);
-          for (let b = 0; b < group.items.length; b++) {
-            groupBox.append(createButton(group.items[b]));
+          if (group.clickable) {
+            groupLabel
+              .click(group.items.find(e => e.hidden !== true && e.disabled !== true).onClick)
+              .addClass('clickable');
+          }
+          menu.append(groupItem);
+          for (let i = 0; i < group.items.length; i++) {
+            let item = group.items[i];
+            if (item.hidden !== true)
+              groupBox.append(createButton(item));
           }          
         } else {
-          menu.append(createButton(group).addClass('Item'));
+          if (group.hidden !== true)
+            menu.append(createButton(group).addClass('Item'));
         }
       }
       return menu;
@@ -297,13 +282,19 @@ MonitoringConsole.View.Components = (function() {
         text += '<strong>'+button.icon+'</strong>';
       if (button.label)
         text += button.label;
+      if (button.label && button.items)
+        text += " &#9013;";
       return text;
     }
 
     function createButton(button) {
-      return $('<button/>', { title: button.description })
+      let attrs = { title: button.description };
+      if (button.disabled)
+        attrs.disabled = true;
+      return $('<button/>', attrs)
             .html(createText(button))
-            .click(button.onClick);
+            .click(button.onClick)
+            .addClass('clickable');
     }
 
     return { onCreation: onCreation };
@@ -317,10 +308,6 @@ MonitoringConsole.View.Components = (function() {
        * Call to update the settings side panel with the given model
        */
       onSettingsUpdate: (model) => Settings.onUpdate(model),
-      /**
-       * Call to update the top page navigation with the given model
-       */
-      onNavigationUpdate: (model) => Navigation.onUpdate(model),
       /**
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */

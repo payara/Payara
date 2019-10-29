@@ -229,10 +229,10 @@ MonitoringConsole.Chart.Trace = (function() {
       $('#panel-trace').show();
       model.series = series;
       let menu = { id: 'TraceMenu', groups: [
-         { icon: '&#10226;', description: 'Reload', onClick: onDataRefresh },
-         { label: 'Sorting...', items: [
-            { icon: '&#8986;', label: 'Sort By Wall Time (past to recent)', onClick: onSortByWallTime },
-            { icon: '&#128034; &rarr; &#128007;', label: 'Sort By Duration (slower to faster)', onClick: onSortByDuration },
+         { icon: '&#128472;', description: 'Refresh', onClick: onDataRefresh },
+         { label: 'Sorting', items: [
+            { icon: '&#9202;', label: 'Sort By Wall Time (past to recent)', onClick: onSortByWallTime },
+            { icon: '&#8987;', label: 'Sort By Duration (slower to faster)', onClick: onSortByDuration },
          ]},
          { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
       ]};

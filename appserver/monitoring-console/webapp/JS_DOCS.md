@@ -269,23 +269,6 @@ The model creates a new jquery object that must be inserted into the DOM by the 
 * `assessments` help to understand or classify the given value qualitatively 
 
 
-
-### Navigation API
-Describes the model expected by the `Navigation` component.
-This component is the main page navigation at the top.
-
-```
-NAVIGATION = { pages, onChange }
-pages      = [PAGE_ITEM]
-PAGE_ITEM  = { label, id, active }
-label      = string
-id         = string
-active     = boolean
-onChange   = fn (id) => () 
-```
-* `onChange` is called when another page is selected passing the `PAGE_ITEM.id` of the selected page.
-
-
 ### Indicator API
 Describes the model expected by the `Indicator` component.
 This component gives feedback on the status of each widget.
@@ -303,13 +286,15 @@ Describes the model expected by the `MENU` component that is used for any of the
 ```
 MENU         = { id, groups }
 groups       = [BUTTON_GROUP | BUTTON]
-BUTTON_GROUP = { icon, label, description, items }
+BUTTON_GROUP = { icon, label, description, clickable, items }
 items        = [BUTTON]
-BUTTON       = { icon, label, description, disabled, onClick }
+clickable    = boolean
+BUTTON       = { icon, label, description, disabled, hidden, onClick }
 icon         = string
 label        = string
 description  = string
 disabled     = boolean
+hidden       = boolean
 onClick      = fn () => ()
 ```
 * `id` is optional

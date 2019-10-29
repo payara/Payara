@@ -242,7 +242,7 @@ MonitoringConsole.Model = (function() {
 			let isPagesOnly = !userInterface.pages || !userInterface.settings;
 			if (!isPagesOnly)
 				settings = userInterface.settings;
-			let importedPages = isPagesOnly ? userInterface : userInterface.pages;
+			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
 				for (let i = 0; i < importedPages.length; i++) {
@@ -467,6 +467,11 @@ MonitoringConsole.Model = (function() {
 				}
 				return false;
 			},
+
+			hasPreset: function() {
+				let presets = UI_PRESETS;
+				return presets && presets.pages && presets.pages[settings.home];
+			},
 			
 			switchPage: function(pageId) {
 				if (!pages[pageId])
@@ -653,9 +658,8 @@ MonitoringConsole.Model = (function() {
 				}
 			},
 			
-			pause: function() {
-				doPause();
-			},
+			pause: doPause,
+			isPaused: () => intervalFn === undefined,
 		};
 	})();
 	
@@ -838,6 +842,7 @@ MonitoringConsole.Model = (function() {
 			resume: () => Interval.resume(2000),
 			slow: () => Interval.resume(4000),
 			fast: () => Interval.resume(1000),
+			isPaused: Interval.isPaused,
 		},
 		
 		Settings: {
@@ -878,6 +883,8 @@ MonitoringConsole.Model = (function() {
 				}
 				return UI.arrange();
 			},
+
+			hasPreset: UI.hasPreset,
 			
 			changeTo: function(pageId) {
 				if (UI.switchPage(pageId)) {

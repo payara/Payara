@@ -52,40 +52,46 @@ MonitoringConsole.View = (function() {
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = { 
-            onChange: function(pageid) {
-                MonitoringConsole.Chart.Trace.onClosePopup();
-                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
-            },
-            pages: MonitoringConsole.Model.listPages().map(function(page) {
-                return { label: page.name, id: page.id, active: page.active };
-            }),
-        };
-        Components.onNavigationUpdate(nav);
+        let pages = MonitoringConsole.Model.listPages();
+        let activePage = pages.find(page => page.active);
+        let items = pages.filter(page => !page.active).map(function(page) {
+            return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
+        });
+        let nav = { id: 'Navigation', groups: [
+            {label: activePage.name, items: items }
+        ]};
+        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
     }
 
     function updateMenu() {
+        let hasPreset = MonitoringConsole.Model.Page.hasPreset();
+        let isPaused = MonitoringConsole.Model.Refresh.isPaused();
+        let settingsOpen = MonitoringConsole.Model.Settings.isDispayed();
+        let toggleSettings = function() { MonitoringConsole.View.onPageMenu(); updateMenu(); };
         let menu = { id: 'Menu', groups: [
-            { label: 'Page...', items: [
-                { label: 'New...', icon: '&plus;', description: 'Add a new blank page...', onClick: () => MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')) },
-                { label: 'Delete', icon: '&times;', description: 'Delete current page', onClick: MonitoringConsole.View.onPageDelete },
-                { label: 'Reset', icon: '&#10226;', description: 'Reset Page to Preset', onClick: MonitoringConsole.View.onPageReset },
-                { label: 'Import...', icon: '&#128229;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
-                { label: 'Export...', icon: '&#128228;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },
+            { icon: '&#128463;', label: 'Page', items: [
+                { label: 'New...', icon: '&#128459;', description: 'Add a new blank page...', onClick: () => MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')) },
+                { label: 'Delete', icon: '&times;', description: 'Delete current page', disabled: hasPreset, onClick: MonitoringConsole.View.onPageDelete },
+                { label: 'Reset', icon: '&#128260;', description: 'Reset Page to Preset', disabled: !hasPreset, onClick: MonitoringConsole.View.onPageReset },
             ]},
-            { label: 'Refresh...', items: [
-                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Update', onClick: MonitoringConsole.Model.Refresh.pause },
-                { label: 'Resume', icon: '&#9654;', description: 'Resume Data Update', onClick: MonitoringConsole.Model.Refresh.resume },
-                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Update', onClick: MonitoringConsole.Model.Refresh.slow },
-                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Update', onClick: MonitoringConsole.Model.Refresh.fast },
+            { icon: '&#128472;', label: 'Auto-Refresh', clickable: true, items: [
+                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Update', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); } },
+                { label: 'Resume', icon: '&#9654;', description: 'Resume Normal Data Update', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); } },
+                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Update', onClick: function() { MonitoringConsole.Model.Refresh.slow(); updateMenu(); } },
+                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Update', onClick: function() { MonitoringConsole.Model.Refresh.fast(); updateMenu(); } },
             ]},
-            { label: 'Layout...', items: [
+            { icon: '&#9707;', label: 'Layout', items: [
                 { label: '1 Column', icon: '&#11034;', description: 'Use one column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(1) },
                 { label: ' 2 Columns', icon: '&#11034;&#11034;', description: 'Use two column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(2) },
                 { label: ' 3 Columns', icon: '&#11034;&#11034;&#11034;', description: 'Use three column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(3) },
                 { label: ' 4 Columns', icon: '&#11034;&#11034;&#11034;&#11034;', description: 'Use four column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(4) },
             ]},
-            { description: 'Toggle Side Panel', icon: '&#9881;', description: 'Show/Hide Settings', onClick: MonitoringConsole.View.onPageMenu },
+            { icon: '&#9881;', label: 'Settings', clickable: true, items: [
+                { label: 'Hide', icon: '&times;', hidden: !settingsOpen, onClick: toggleSettings },
+                { label: 'Show', icon: '&plus;', hidden: settingsOpen, onClick: toggleSettings },
+                { label: 'Import...', icon: '&#9111;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
+                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
+            ]},
         ]};
         $('#Menu').replaceWith(Components.onMenuCreation(menu));
     }
@@ -445,6 +451,7 @@ MonitoringConsole.View = (function() {
      * Method to call when page changes to update UI elements accordingly
      */
     function onPageChange(layout) {
+        MonitoringConsole.Chart.Trace.onClosePopup();
         onPageUpdate(layout);
         updatePageNavigation();
         updatePageAndSelectionSettings();

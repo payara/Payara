@@ -352,30 +352,11 @@ table.tags th, table.tags td {
 
 /* Page Navigation */
 #Navigation {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-block;  
-}
-#Navigation select {
-  background-color: #002c3e;
-  padding: 5px;
-  border-width: 0;
-  color: white;
-  font-size: 160%;
+  float: left;
+  margin-left: 40%;
+  margin-top: 6px;
   font-weight: bold;
-  max-width: 400px;
-}
-
-#Navigation h2 {
-  min-width: 100px;
-  font-weight: bold;
-  font-size: 140%;
-  display: inline-block;
-  margin: 0;
-  margin-top: 5px;
-  padding: 0;
-  cursor: pointer;
+  font-size: 20px;
 }
 
 /* Menus */
@@ -401,9 +382,12 @@ table.tags th, table.tags td {
   color: white;
   background-color: transparent;
 }
+.Menu button:disabled {
+  color: #888;
+  cursor: not-allowed;
+}
 .Menu .Item {
-  cursor: pointer;
-  padding: 0 0.75em;
+  padding: 2px 0.75em;
   float: left;
 }
 .Menu .Item a {
@@ -417,12 +401,17 @@ table.tags th, table.tags td {
 .Menu .Group {
   display: none;
   position: absolute;
-  z-index: 101;
+  z-index: 200;
   background-color: #002c3e;
   overflow: hidden;
   border: 1px solid #aaa;
-  transform: translateX(-40%);
 }
 .Menu .Item:hover .Group {
   display: block;
+}
+.widget .Menu .Group {
+  margin-left: -85px;
+}
+.Menu .clickable {
+  cursor: pointer;
 }
