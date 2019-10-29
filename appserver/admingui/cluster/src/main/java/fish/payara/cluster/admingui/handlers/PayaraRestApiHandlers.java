@@ -60,6 +60,10 @@ import static org.glassfish.admingui.common.util.RestUtil.buildChildEntityList;
  */
 public class PayaraRestApiHandlers {
 
+    /**
+     * Method that returns a List of the nodes within the domain, ignoring TEMP nodes.
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.getNodesList",
             input = {
                     @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
@@ -92,6 +96,10 @@ public class PayaraRestApiHandlers {
         }
     }
 
+    /**
+     * Method that gets the nodes list for the navigation side bar, ignoring TEMP nodes.
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.getNodesListNavTree",
             input = {
                     @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
@@ -126,6 +134,10 @@ public class PayaraRestApiHandlers {
         }
     }
 
+    /**
+     * Method that returns a List of names of the nodes within the domain, ignoring TEMP nodes
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.getNodeNamesList",
             input = {
                     @HandlerInput(name = "parentEndpoint", type = String.class, required = true),

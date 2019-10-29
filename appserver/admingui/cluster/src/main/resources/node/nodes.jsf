@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates.] -->
+
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
