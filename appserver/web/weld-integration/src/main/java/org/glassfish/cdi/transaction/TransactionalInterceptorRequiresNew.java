@@ -132,16 +132,16 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                             "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                             "encountered exception during commit " + exception,
                             exception);
-                }
-
-                if (suspendedTransaction != null) {
-                    try {
-                        getTransactionManager().resume(suspendedTransaction);
-                    } catch (Exception exception) {
-                        throw new TransactionalException(
-                                "Managed bean with Transactional annotation and TxType of REQUIRED " +
-                                "encountered exception during resume " + exception,
-                                exception);
+                } finally {
+                    if (suspendedTransaction != null) {
+                        try {
+                            getTransactionManager().resume(suspendedTransaction);
+                        } catch (Exception exception) {
+                            throw new TransactionalException(
+                                    "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                                    "encountered exception during resume " + exception,
+                                    exception);
+                        }
                     }
                 }
             }
