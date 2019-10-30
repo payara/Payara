@@ -34,9 +34,14 @@ id              = string
 numberOfColumns = number
 rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display, home }
+settings        = { display, home, refresh, rotation }
 display         = boolean
 home            = string
+refresh         = { paused, interval }
+rotation        = { enabled, interval }
+paused          = boolean
+enabled         = boolean
+interval        = number
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
 * `widgets` can be ommitted for an empty page

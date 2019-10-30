@@ -577,6 +577,24 @@ MonitoringConsole.Model = (function() {
 						doStore();
 					}
 				}
+			},
+
+			Refresh: {
+				isPaused: () => settings.refresh && settings.refresh.paused,
+				paused: function(paused) {
+					settings.refresh.paused = paused;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.refresh)
+						settings.refresh = {};
+					if (duration == undefined)
+						return settings.refresh.interval;
+					if (typeof duration === 'number') {
+						settings.refresh.interval = duration;
+						doStore();
+					}
+				}
 			}
 		};
 	})();
@@ -631,12 +649,12 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	const DEFAULT_INTERVAL = 2;
+
 	/**
 	 * Internal API for data loading from server
 	 */
 	var Interval = (function() {
-		
-		const DEFAULT_INTERVAL = 2000;
 		
 	    /**
 	     * {function} - a function called with no extra arguments when interval tick occured
@@ -649,14 +667,27 @@ MonitoringConsole.Model = (function() {
 		var intervalFn;
 		
 		/**
-		 * {number} - tick interval in milliseconds
+		 * {number} - tick interval in seconds
 		 */
 		var refreshInterval = DEFAULT_INTERVAL;
 		
-		function doPause() {
+		function pause() {
 			if (intervalFn) {
 				clearInterval(intervalFn);
 				intervalFn = undefined;
+			}
+		}
+
+		function resume(atRefreshInterval) {
+			onIntervalTick();
+			if (atRefreshInterval && atRefreshInterval != refreshInterval) {
+				pause();
+				refreshInterval = atRefreshInterval;
+			}
+			if (refreshInterval === 0)
+				refreshInterval = DEFAULT_INTERVAL;
+			if (intervalFn === undefined) {
+				intervalFn = setInterval(onIntervalTick, refreshInterval * 1000);
 			}
 		}
 		
@@ -676,21 +707,16 @@ MonitoringConsole.Model = (function() {
 			/**
 			 * Causes an immediate invocation of the tick target function and makes sure an interval is present or started
 			 */
-			resume: function(atRefreshInterval) {
-				onIntervalTick();
-				if (atRefreshInterval && atRefreshInterval != refreshInterval) {
-					doPause();
-					refreshInterval = atRefreshInterval;
-				}
-				if (refreshInterval === 0)
-					refreshInterval = DEFAULT_INTERVAL;
-				if (intervalFn === undefined) {
-					intervalFn = setInterval(onIntervalTick, refreshInterval);
-				}
-			},
+			resume: resume,
 			
-			pause: doPause,
+			pause: pause,
 			isPaused: () => intervalFn === undefined,
+
+			interval: function(duration) {
+				if (duration === undefined)
+					return refreshInterval;
+				resume(duration);
+			}
 		};
 	})();
 
@@ -854,8 +880,14 @@ MonitoringConsole.Model = (function() {
 			request.done(Update.createOnSuccess(widgets, onDataUpdate));
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
-		Interval.resume();
+		if (UI.Refresh.interval() === undefined) {
+			UI.Refresh.interval(DEFAULT_INTERVAL);
+		}
+		Interval.resume(UI.Refresh.interval());
 		Rotation.init(() => onPageUpdate(doSwitchPage()));
+		if (UI.Rotation.isEnabled()) {
+			Rotation.resume(UI.Rotation.interval());	
+		}
 		return UI.arrange();
 	}
 
@@ -911,11 +943,34 @@ MonitoringConsole.Model = (function() {
 		 * API to control the chart refresh interval.
 		 */
 		Refresh: {
-			pause: Interval.pause,
-			resume: () => Interval.resume(2000),
-			slow: () => Interval.resume(4000),
-			fast: () => Interval.resume(1000),
-			isPaused: Interval.isPaused,
+			pause: function() { 
+				Interval.pause();
+				UI.Refresh.paused(true);
+			},
+			paused: function(paused) {
+				if (paused === undefined)
+					return UI.Refresh.isPaused();
+				UI.Refresh.paused(paused);
+				if (paused) {
+					Interval.pause();
+				} else {
+					Interval.resume(UI.Refresh.interval());
+				}
+			},
+			isPaused: UI.Refresh.isPaused,
+			resume: function(duration) {
+				if (duration !== undefined) {
+					UI.Refresh.interval(duration);
+				}
+				UI.Refresh.paused(false);
+				Interval.resume(UI.Refresh.interval());
+			},
+			interval: function(duration) {
+				if (duration === undefined)
+					return UI.Refresh.interval();
+				UI.Refresh.interval(duration);
+				Interval.resume(UI.Refresh.interval());				
+			},
 		},
 		
 		Settings: {

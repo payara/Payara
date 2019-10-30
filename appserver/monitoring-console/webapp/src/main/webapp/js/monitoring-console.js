@@ -668,6 +668,24 @@ MonitoringConsole.Model = (function() {
 						doStore();
 					}
 				}
+			},
+
+			Refresh: {
+				isPaused: () => settings.refresh && settings.refresh.paused,
+				paused: function(paused) {
+					settings.refresh.paused = paused;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.refresh)
+						settings.refresh = {};
+					if (duration == undefined)
+						return settings.refresh.interval;
+					if (typeof duration === 'number') {
+						settings.refresh.interval = duration;
+						doStore();
+					}
+				}
 			}
 		};
 	})();
@@ -722,12 +740,12 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	const DEFAULT_INTERVAL = 2;
+
 	/**
 	 * Internal API for data loading from server
 	 */
 	var Interval = (function() {
-		
-		const DEFAULT_INTERVAL = 2000;
 		
 	    /**
 	     * {function} - a function called with no extra arguments when interval tick occured
@@ -740,14 +758,27 @@ MonitoringConsole.Model = (function() {
 		var intervalFn;
 		
 		/**
-		 * {number} - tick interval in milliseconds
+		 * {number} - tick interval in seconds
 		 */
 		var refreshInterval = DEFAULT_INTERVAL;
 		
-		function doPause() {
+		function pause() {
 			if (intervalFn) {
 				clearInterval(intervalFn);
 				intervalFn = undefined;
+			}
+		}
+
+		function resume(atRefreshInterval) {
+			onIntervalTick();
+			if (atRefreshInterval && atRefreshInterval != refreshInterval) {
+				pause();
+				refreshInterval = atRefreshInterval;
+			}
+			if (refreshInterval === 0)
+				refreshInterval = DEFAULT_INTERVAL;
+			if (intervalFn === undefined) {
+				intervalFn = setInterval(onIntervalTick, refreshInterval * 1000);
 			}
 		}
 		
@@ -767,21 +798,16 @@ MonitoringConsole.Model = (function() {
 			/**
 			 * Causes an immediate invocation of the tick target function and makes sure an interval is present or started
 			 */
-			resume: function(atRefreshInterval) {
-				onIntervalTick();
-				if (atRefreshInterval && atRefreshInterval != refreshInterval) {
-					doPause();
-					refreshInterval = atRefreshInterval;
-				}
-				if (refreshInterval === 0)
-					refreshInterval = DEFAULT_INTERVAL;
-				if (intervalFn === undefined) {
-					intervalFn = setInterval(onIntervalTick, refreshInterval);
-				}
-			},
+			resume: resume,
 			
-			pause: doPause,
+			pause: pause,
 			isPaused: () => intervalFn === undefined,
+
+			interval: function(duration) {
+				if (duration === undefined)
+					return refreshInterval;
+				resume(duration);
+			}
 		};
 	})();
 
@@ -945,8 +971,14 @@ MonitoringConsole.Model = (function() {
 			request.done(Update.createOnSuccess(widgets, onDataUpdate));
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
-		Interval.resume();
+		if (UI.Refresh.interval() === undefined) {
+			UI.Refresh.interval(DEFAULT_INTERVAL);
+		}
+		Interval.resume(UI.Refresh.interval());
 		Rotation.init(() => onPageUpdate(doSwitchPage()));
+		if (UI.Rotation.isEnabled()) {
+			Rotation.resume(UI.Rotation.interval());	
+		}
 		return UI.arrange();
 	}
 
@@ -1002,11 +1034,34 @@ MonitoringConsole.Model = (function() {
 		 * API to control the chart refresh interval.
 		 */
 		Refresh: {
-			pause: Interval.pause,
-			resume: () => Interval.resume(2000),
-			slow: () => Interval.resume(4000),
-			fast: () => Interval.resume(1000),
-			isPaused: Interval.isPaused,
+			pause: function() { 
+				Interval.pause();
+				UI.Refresh.paused(true);
+			},
+			paused: function(paused) {
+				if (paused === undefined)
+					return UI.Refresh.isPaused();
+				UI.Refresh.paused(paused);
+				if (paused) {
+					Interval.pause();
+				} else {
+					Interval.resume(UI.Refresh.interval());
+				}
+			},
+			isPaused: UI.Refresh.isPaused,
+			resume: function(duration) {
+				if (duration !== undefined) {
+					UI.Refresh.interval(duration);
+				}
+				UI.Refresh.paused(false);
+				Interval.resume(UI.Refresh.interval());
+			},
+			interval: function(duration) {
+				if (duration === undefined)
+					return UI.Refresh.interval();
+				UI.Refresh.interval(duration);
+				Interval.resume(UI.Refresh.interval());				
+			},
 		},
 		
 		Settings: {
@@ -2617,11 +2672,12 @@ MonitoringConsole.View = (function() {
                 { label: 'Delete', icon: '&times;', description: 'Delete current page', disabled: hasPreset, onClick: MonitoringConsole.View.onPageDelete },
                 { label: 'Reset', icon: '&#128260;', description: 'Reset Page to Preset', disabled: !hasPreset, onClick: MonitoringConsole.View.onPageReset },
             ]},
-            { icon: '&#128472;', label: 'Auto-Refresh', clickable: true, items: [
-                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Update', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); } },
-                { label: 'Resume', icon: '&#9654;', description: 'Resume Normal Data Update', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); } },
-                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Update', onClick: function() { MonitoringConsole.Model.Refresh.slow(); updateMenu(); } },
-                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Update', onClick: function() { MonitoringConsole.Model.Refresh.fast(); updateMenu(); } },
+            { icon: '&#128472;', label: 'Data Refresh', clickable: true, items: [
+                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Refresh', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); updateSettings(); } },
+                { label: 'Unpause', icon: '&#9654;', description: 'Unpause Data Refresh', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); updateSettings(); } },
+                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(4); updateMenu(); updateSettings(); } },
+                { label: 'Normal', icon: '&#128008;', description: 'Normal Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(2); updateMenu(); updateSettings(); } },
+                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(1); updateMenu(); updateSettings(); } },
             ]},
             { icon: '&#9707;', label: 'Layout', items: [
                 { label: '1 Column', icon: '&#11034;', description: 'Use one column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(1) },
@@ -2642,7 +2698,7 @@ MonitoringConsole.View = (function() {
     /**
      * Updates the DOM with the page and selection settings so it reflects current model state
      */ 
-    function updatePageAndSelectionSettings() {
+    function updateSettings() {
         let panelConsole = $('#console');
         if (MonitoringConsole.Model.Settings.isDispayed()) {
             if (!panelConsole.hasClass('state-show-settings')) {
@@ -2755,6 +2811,10 @@ MonitoringConsole.View = (function() {
 
     function createGlobalSettings() {
         return { id: 'settings-global', caption: 'Global', entries: [
+            { label: 'Data Refresh', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
+                { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
+            ]},
             { label: 'Page Rotation', input: [
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
@@ -2879,7 +2939,7 @@ MonitoringConsole.View = (function() {
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
         updateDomOfWidget(undefined, widget);
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     function onWidgetDelete(series) {
@@ -3008,7 +3068,7 @@ MonitoringConsole.View = (function() {
         MonitoringConsole.Chart.Trace.onClosePopup();
         onPageUpdate(layout);
         updatePageNavigation();
-        updatePageAndSelectionSettings();
+        updateSettings();
         updateMenu();
     }
 
@@ -3016,7 +3076,7 @@ MonitoringConsole.View = (function() {
         MonitoringConsole.Model.Page.Widgets.Selection.clear();
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
         MonitoringConsole.Model.Settings.open();
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     /**
@@ -3035,7 +3095,7 @@ MonitoringConsole.View = (function() {
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
         onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
-        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
+        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updateSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
         onPageDelete: function() {
             if (window.confirm("Do you really want to delete the current page?")) { 
