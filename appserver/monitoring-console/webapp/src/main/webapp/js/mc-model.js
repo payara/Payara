@@ -504,10 +504,26 @@ MonitoringConsole.Model = (function() {
 				if (typeof series !== 'string')
 					throw 'configuration object requires string property `series`';
 				doDeselect();
-				let widgets = pages[settings.home].widgets;
+				let layout = doLayout();
+				let page = pages[settings.home];
+				let widgets = page.widgets;
 				let widget = { series: series };
 				widgets[series] = sanityCheckWidget(widget);
 				widget.selected = true;
+				// automatically fill most empty column
+				let usedCells = new Array(layout.length);
+				for (let i = 0; i < usedCells.length; i++) {
+					usedCells[i] = 0;
+					for (let j = 0; j < layout[i].length; j++) {
+						let cell = layout[i][j];
+						if (cell === undefined || cell !== null && typeof cell === 'object')
+							usedCells[i]++;
+					}
+				}
+				let indexOfLeastUsedCells = usedCells.reduce((iMin, x, i, arr) => x < arr[iMin] ? i : iMin, 0);
+				widget.grid.column = indexOfLeastUsedCells;
+				widget.grid.item = 100;
+				doStore();
 			},
 			
 			configureWidget: function(widgetUpdate, series) {
