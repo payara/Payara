@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -57,7 +58,7 @@ import javax.inject.Singleton;
 @Singleton
 public class RestSessionManager {
     private final SecureRandom randomGenerator = new SecureRandom();
-    private Map<String, SessionData> activeSessions = new ConcurrentHashMap<String, SessionData>(); //To guard against parallel mutation corrupting the map
+    private final Map<String, SessionData> activeSessions = new ConcurrentHashMap<String, SessionData>(); //To guard against parallel mutation corrupting the map
 
     // package/private to help minimize the chances of someone instantiating this directly
     RestSessionManager() {
@@ -76,7 +77,7 @@ public class RestSessionManager {
 
     public Subject authenticate(final String sessionId, final String remoteAddress) {
         Subject result = null;
-        boolean authenticated = false;
+        boolean authenticated;
         purgeInactiveSessions();
 
         if(sessionId != null) {
@@ -129,10 +130,10 @@ public class RestSessionManager {
 
     private static class SessionData{
         /** IP address of client as obtained from Grizzly request */
-        private String clientAddress;
+        private final String clientAddress;
         private long lastAccessedTime = System.currentTimeMillis();
         private final long inactiveSessionLifeTime;
-        private final static String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
+        private static final String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
         private final boolean disableRemoteAddressValidation = Boolean.getBoolean(DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME);
         private final Subject subject;
 

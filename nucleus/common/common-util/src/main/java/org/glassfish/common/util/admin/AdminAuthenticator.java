@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.common.util.admin;
 
 import java.util.List;
@@ -55,7 +57,7 @@ public interface AdminAuthenticator {
     public static final String REST_TOKEN_NAME = "REST_TOKEN";
     public static final String REMOTE_ADDR_NAME = "REMOTE_ADDR";
     
-    static enum AuthenticatorType {
+    enum AuthenticatorType {
             PRINCIPAL,
             REST_TOKEN,
             ADMIN_TOKEN,

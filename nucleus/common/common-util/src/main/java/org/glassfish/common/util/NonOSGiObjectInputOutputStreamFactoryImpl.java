@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util;
 
@@ -48,25 +49,26 @@ import java.io.*;
 public class NonOSGiObjectInputOutputStreamFactoryImpl
         implements ObjectInputOutputStreamFactory
 {
-    public ObjectInputStream createObjectInputStream(InputStream in)
-            throws IOException
+    @Override
+    public ObjectInputStream createObjectInputStream(InputStream in) throws IOException
     {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         return new ObjectInputStreamWithLoader(in, loader);
     }
 
-    public ObjectOutputStream createObjectOutputStream(OutputStream out)
-            throws IOException
+    @Override
+    public ObjectOutputStream createObjectOutputStream(OutputStream out) throws IOException
     {
         return new ObjectOutputStream(out);
     }
 
-    public Class<?> resolveClass(ObjectInputStream in, ObjectStreamClass desc)
-            throws IOException, ClassNotFoundException
+    @Override
+    public Class<?> resolveClass(ObjectInputStream in, ObjectStreamClass desc) throws IOException, ClassNotFoundException
     {        
         return null;
     }
 
+    @Override
     public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
     {
         return;
