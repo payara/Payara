@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -41,22 +41,24 @@ package fish.payara.opentracing.jaxws;
 
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
+
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.TextMap;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.opentracing.Traced;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.webservices.monitoring.MonitorContext;
-import org.glassfish.webservices.monitoring.MonitorFilter;
-import org.jvnet.hk2.annotations.Service;
+
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
@@ -69,13 +71,15 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.xml.soap.SOAPException;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Logger;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.opentracing.Traced;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.webservices.monitoring.MonitorContext;
+import org.glassfish.webservices.monitoring.MonitorFilter;
+import org.jvnet.hk2.annotations.Service;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
 import static io.opentracing.tag.Tags.COMPONENT;
@@ -105,14 +109,14 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
     @Inject
     private ServiceLocator serviceLocator;
-    
+
     @Inject
     private RequestTracingService requestTracing;
-    
+
     @Inject
     private OpenTracingService openTracing;
-    
-  
+
+
     // Before method invocation
     @Override
     public void filterRequest(Packet pipeRequest, MonitorContext monitorContext) {
@@ -121,16 +125,16 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
             // Get the Traced annotation from the target method if CDI is initialised
             Traced tracedAnnotation = getTraceAnnotation(monitorContext);
-            
+
             // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
             // pattern and a traced annotation set to true (via annotation or config override)
             if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
-                
+
                 // Get the application's tracer instance
                 Tracer tracer = getTracer();
-                
+
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-                
+
                 // Create a Span and instrument it with details about the request
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
                         .withTag(SPAN_KIND.getKey(), SPAN_KIND_SERVER)
@@ -156,7 +160,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
             }
         }
     }
-    
+
     // After method invocation
     @Override
     public void filterResponse(Packet pipeRequest, Packet pipeResponse, MonitorContext monitorContext) {
@@ -175,10 +179,10 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                         if (activeScope == null) {
                             return;
                         }
-                        
+
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeRequest);
-                        
+
                         Span activeSpan = activeScope.span();
                         activeSpan.setTag(HTTP_STATUS.getKey(), statusInfo.getStatusCode());
 
@@ -188,7 +192,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                             activeSpan.log(singletonMap("event", "error"));
 
                             // If there's an attached exception, add it to the span
-                            
+
                             Message message = pipeResponse.getMessage();
                             if (message != null && message.isFault()) {
                                 activeSpan.log(singletonMap("error.object", getErrorObject(message)));
@@ -200,20 +204,20 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         } finally {
             // If there's an attached error on the response, log the exception
             Message message = pipeResponse.getMessage();
-            
+
             if (message != null && message.isFault()) {
                 Object errorObject = getErrorObject(message);
-                
+
                 if (errorObject != null) {
                    // TODO: have an actual detail formatter for fault
                     logger.log(SEVERE, getErrorObject(message).toString());
                 }
             }
-            
+
         }
 
     }
-    
+
     private Object getErrorObject(Message message) {
         try {
             return message.copy().readAsSOAPMessage().getSOAPBody().getFault();
@@ -231,9 +235,9 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
      */
     private String determineOperationName(Packet pipeRequest, MonitorContext monitorContext, Traced tracedAnnotation) {
         HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-        
+
         if (tracedAnnotation != null) {
-            String operationName = (String) 
+            String operationName =
                 OpenTracingJaxwsCdiUtils
                     .getConfigOverrideValue(
                         Traced.class, "operationName", monitorContext, String.class)
@@ -248,7 +252,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
             return operationName;
         }
-        
+
         // If there is no @Traced annotation
         Config config = getConfig();
 
@@ -263,7 +267,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
             // If the provider is set to "http-path" and the class-level @WebService annotation is actually present
             if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
-                
+
                 String operationName = httpRequest.getMethod() + ":";
 
                 operationName += "/" + classLevelAnnotation.name();
@@ -276,37 +280,36 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 return operationName;
             }
         }
-        
+
         // TODO: consider the WSDL info in MonitorContext?
-        
+
 
         // If we haven't returned by now, just go with the default ("class-method")
         return createFallbackName(httpRequest, monitorContext);
     }
-    
+
     private String createFallbackName(HttpServletRequest httpRequest, MonitorContext monitorContext) {
-        return 
-            httpRequest.getMethod() + ":" + 
+        return
+            httpRequest.getMethod() + ":" +
             monitorContext.getImplementationClass().getCanonicalName() + "." +
             monitorContext.getCallInfo().getMethod().getName();
     }
-    
+
     private boolean shouldTrace(Packet pipeRequest) {
         HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-        
+
         return shouldTrace(httpRequest.getContextPath());
     }
-    
+
     private boolean shouldTrace(MonitorContext monitorContext, Traced tracedAnnotation) {
         if (tracedAnnotation == null) {
             // No annotation present means we trace
             return true;
         }
-        
-        return (Boolean) 
-            OpenTracingJaxwsCdiUtils
-                .getConfigOverrideValue(Traced.class, "value", monitorContext, boolean.class)
-                .orElse(tracedAnnotation.value());
+
+        return OpenTracingJaxwsCdiUtils
+            .getConfigOverrideValue(Traced.class, "value", monitorContext, boolean.class)
+            .orElse(tracedAnnotation.value());
     }
 
     /**
@@ -343,23 +346,23 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         return true;
     }
-    
+
     private boolean isTraceInProgress() {
         return requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress();
     }
-    
+
     private Response.StatusType getResponseStatus(Packet pipeRequest, Packet pipeResponse) {
-        
+
         Integer statusCode = (Integer) pipeResponse.get(HTTP_RESPONSE_CODE);
-        
+
         if (statusCode == null || statusCode.equals(0)) {
             HttpServletResponse httpResponse = (HttpServletResponse) pipeRequest.get(SERVLET_RESPONSE);
             statusCode = httpResponse.getStatus();
         }
-        
+
         return Response.Status.fromStatusCode(statusCode);
     }
-    
+
     private Throwable getResponseException(MonitorContext monitorContext, Packet pipeResponse) {
         return monitorContext
                 .getSeiModel()
@@ -367,7 +370,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 .deserializeResponse(pipeResponse.copy(true), monitorContext.getCallInfo())
                 .getException();
     }
-    
+
     private Traced getTraceAnnotation(MonitorContext monitorContext) {
      // Check if CDI has been initialised by trying to get the BeanManager
         BeanManager beanManager = getBeanManager();
@@ -376,44 +379,44 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         if (beanManager != null) {
             return OpenTracingJaxwsCdiUtils.getAnnotation(beanManager, Traced.class, monitorContext);
         }
-        
+
         return null;
     }
-    
+
     private BeanManager getBeanManager() {
         try {
             return CDI.current().getBeanManager();
         } catch (IllegalStateException ise) {
             // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
-            logger.log(FINE, "Error getting Bean Manager, presumably due to this application not using CDI", 
+            logger.log(FINE, "Error getting Bean Manager, presumably due to this application not using CDI",
                     ise);
         }
-        
+
         return null;
     }
-    
+
     private Config getConfig() {
         try {
             return ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
             logger.log(INFO, "No config could be found", ex);
         }
-        
+
         return null;
     }
-    
+
     private Tracer getTracer() {
         return openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
     }
-    
+
     private MultivaluedMap<String, String> getHeaders(HttpServletRequest httpRequest) {
-        
+
         MultivaluedMap<String, String> headerMap = new MultivaluedHashMap<>();
-        
+
         for (String headerName : list(httpRequest.getHeaderNames())) {
             headerMap.addAll(headerName, list(httpRequest.getHeaders(headerName)));
         }
-        
+
         return headerMap;
     }
 
@@ -426,7 +429,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         /**
          * Initialises this object with the MultivaluedMap to wrap.
-         * 
+         *
          * @param map The MultivaluedMap to convert to a TextMap
          */
         public MultivaluedMapToTextMap(MultivaluedMap<String, String> map) {
@@ -448,7 +451,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
     /**
      * Helper Class used for iterating over the MultivaluedMapToTextMap class.
-     * 
+     *
      * @param <K> The map key class
      * @param <V> The map value class
      */
@@ -461,7 +464,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         /**
          * Initialise the iterator to use on this map.
-         * 
+         *
          * @param multiValuesEntrySet The map to initialise the iterator from.
          */
         public MultivaluedMapIterator(Set<Map.Entry<K, List<V>>> multiValuesEntrySet) {
@@ -496,5 +499,5 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         }
 
     }
-    
+
 }

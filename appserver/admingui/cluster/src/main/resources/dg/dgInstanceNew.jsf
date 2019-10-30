@@ -67,6 +67,7 @@
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config", result="#{requestScope.tmpList}");
         listRemove(list="#{requestScope.tmpList}" value="server-config" result="#{pageSession.configsList}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
+        setPageSessionAttribute(key="autoNameSelected" value="#{false}");
     />
     </event>
 #include "/cluster/shared/instanceNew.inc"

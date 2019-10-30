@@ -46,9 +46,9 @@ import com.sun.enterprise.security.util.IASSecurityException;
 
 /**
  * This class contains all abstract methods of a Payara Realm.
- * 
+ *
  * @see Realm
- * 
+ *
  * @author Arjan Tijms
  */
 public abstract class AbstractRealm {
@@ -62,12 +62,12 @@ public abstract class AbstractRealm {
      * @return description of the kind of authentication that is directly supported by this realm.
      */
     public abstract String getAuthType();
-    
+
     /**
      * Returns names of all the users in this particular realm.
      *
      * @return enumeration of user names (strings)
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     public abstract Enumeration<String> getUserNames() throws BadRealmException;
 
@@ -75,10 +75,10 @@ public abstract class AbstractRealm {
      * Returns the information recorded about a particular named user.
      *
      * @param name name of the user whose information is desired
-     * 
+     *
      * @return the user object
-     * @exception NoSuchUserException if the user doesn't exist
-     * @exception BadRealmException if realm data structures are bad
+     * @throws NoSuchUserException if the user doesn't exist
+     * @throws BadRealmException if realm data structures are bad
      */
     public abstract User getUser(String name) throws NoSuchUserException, BadRealmException;
 
@@ -86,45 +86,44 @@ public abstract class AbstractRealm {
      * Returns names of all the groups in this particular realm.
      *
      * @return enumeration of group names (strings)
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     public abstract Enumeration<String> getGroupNames() throws BadRealmException;
+
 
     /**
      * Returns the name of all the groups that this user belongs to
      *
      * @param username name of the user in this realm whose group listing is needed.
-     * 
      * @return enumeration of group names (strings)
-     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g.
-     * Certificate realm does not support this operation
+     * @throws InvalidOperationException thrown if the realm does not support this operation
      * @throws NoSuchUserException
      */
     public abstract Enumeration<String> getGroupNames(String username) throws InvalidOperationException, NoSuchUserException;
 
-    
-    
+
+
     // ---[ User management methods ]------------------------------------------------
-    
-    
+
+
     /**
      * @return true if the realm implementation support User Management (add, update, remove user)
      */
     public abstract boolean supportsUserManagement();
- 
+
     /**
      * Adds new user to file realm. User cannot exist already.
      *
      * @param name User name.
      * @param password Cleartext password for the user.
      * @param groupList List of groups to which user belongs.
-     * 
+     *
      * @throws BadRealmException If there are problems adding user.
      * @throws IASSecurityException
      *
      */
     public abstract void addUser(String name, char[] password, String[] groupList) throws BadRealmException, IASSecurityException;
-    
+
     /**
      * Update data for an existing user. User must exist.
      *
@@ -134,37 +133,37 @@ public abstract class AbstractRealm {
      * @param password Cleartext password for the user. If non-null the user password is changed to this
      * value. If null, the original password is retained.
      * @param groups Array of groups to which user belongs.
-     * 
+     *
      * @throws BadRealmException If there are problems adding user.
      * @throws NoSuchUserException If user does not exist.
      * @throws IASSecurityException
      *
      */
     public abstract void updateUser(String name, String newName, char[] password, String[] groups) throws NoSuchUserException, BadRealmException, IASSecurityException;
-    
+
     /**
      * Remove user from file realm. User must exist.
      *
      * @param name User name.
-     * 
+     *
      * @throws NoSuchUserException If user does not exist.
      * @throws BadRealmException
      *
      */
     public abstract void removeUser(String name) throws NoSuchUserException, BadRealmException;
-    
+
     /**
      * Persist the realm data to permanent storage
      *
      * @throws com.sun.enterprise.security.auth.realm.BadRealmException
      */
     public abstract void persist() throws BadRealmException;
-    
+
     /**
      * Refreshes the realm data so that new users/groups are visible.
      *
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     public abstract void refresh() throws BadRealmException;
-    
+
 }

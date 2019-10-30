@@ -771,4 +771,14 @@ public class StringUtils {
     public static String nvl(String str) {
         return str == null ? "" : str;
     }
+
+    public static String trimQuotes(String value) {
+        final int length = value.length();
+        if (length > 1
+                && ((value.startsWith("\"") && value.endsWith("\"") && value.substring(1, length - 1).indexOf('"') == -1)
+                || (value.startsWith("'") && value.endsWith("'") && value.substring(1, length - 1).indexOf('\'') == -1))) {
+            value = value.substring(1, length - 1);
+        }
+        return value;
+    }
 }

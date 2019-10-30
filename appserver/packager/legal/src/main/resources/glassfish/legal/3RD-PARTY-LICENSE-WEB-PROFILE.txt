@@ -37,7 +37,6 @@ Hibernate Validator 5.0
 Classmate 0.80
 IBM Batch
 Dependency Injection 1.0
-Google-collections guava 1.0
 JType 0.1.0
 IzPack 4.3.3
 ant-contrib 1.0b5

@@ -6,7 +6,7 @@ ENV PAYARA_HOME=${WORK_DIR}/payara5 \
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="LocalDockerNode1" \
-    PAYARA_INSTANCE_NAME="LocalDockerInstance1"
+    PAYARA_INSTANCE_NAME=""
 ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 # Create and set the Payara user and working directory owned by the new user

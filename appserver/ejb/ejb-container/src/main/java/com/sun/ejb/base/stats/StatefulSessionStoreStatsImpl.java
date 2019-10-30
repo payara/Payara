@@ -43,8 +43,8 @@ package com.sun.ejb.base.stats;
 
 import com.sun.ejb.spi.stats.MonitorableSFSBStoreManager;
 import com.sun.enterprise.admin.monitor.stats.*;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.RangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.RangeStatistic;
 
 /**
  * Implementation of StatefulSessionStoreStats

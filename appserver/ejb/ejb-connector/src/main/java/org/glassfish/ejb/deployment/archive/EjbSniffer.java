@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyrigh [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.archive;
 
 import org.glassfish.internal.deployment.GenericSniffer;
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
-import com.sun.enterprise.module.common_impl.AbstractModulesRegistryImpl;
+import com.sun.enterprise.module.HK2Module;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;

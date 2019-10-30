@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,16 @@
  */
 package fish.payara.nucleus.store;
 
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.map.impl.MapService;
+import com.hazelcast.monitor.LocalMapStats;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
@@ -61,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster-store")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredStore implements EventListener {
+public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
     
     @Inject
@@ -74,7 +82,29 @@ public class ClusteredStore implements EventListener {
     public void postConstruct() {
         events.register(this);
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (hzCore.isEnabled()) {
+            HazelcastInstance hz = hzCore.getInstance();
+            for (DistributedObject obj : hz.getDistributedObjects()) {
+                if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
+                    MapConfig config = hz.getConfig().getMapConfig(obj.getName());
+                    if (config.isStatisticsEnabled()) {
+                        IMap<Object, Object> map = hz.getMap(obj.getName());
+                        if (map != null) {
+                            LocalMapStats stats = map.getLocalMapStats();
+                            collector.in("map").group(map.getName())
+                                .collect("GetCount", stats.getGetOperationCount())
+                                .collect("PutCount", stats.getPutOperationCount())
+                                .collect("EntryCount", stats.getOwnedEntryCount());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public String getInstanceId() {
         return hzCore.getUUID();
     }

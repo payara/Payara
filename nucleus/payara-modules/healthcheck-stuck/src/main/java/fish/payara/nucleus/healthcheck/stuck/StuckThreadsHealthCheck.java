@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,7 @@ import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -62,40 +63,42 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "healthcheck-stuck")
 @RunLevel(StartupRunLevel.VAL)
-public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThreadExecutionOptions,
-        StuckThreadsChecker>{
-    
+public class StuckThreadsHealthCheck extends
+        BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker> {
+
     @Inject
     StuckThreadsStore stuckThreadsStore;
-    
+
     @Inject
     StuckThreadsChecker checker;
-    
+
+    private final Map<ThreadInfo, Long> stuckThreads = new ConcurrentHashMap<>();
+
     @PostConstruct
     void postConstruct() {
         postConstruct(this, StuckThreadsChecker.class);
     }
-    
+
     @Override
-    public HealthCheckResult doCheck() {
-        
+    protected HealthCheckResult doCheckInternal() {
+        stuckThreads.clear();
         HealthCheckResult result = new HealthCheckResult();
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        
+
         Long thresholdNanos = TimeUnit.NANOSECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
-        
+
         ConcurrentHashMap<Long, Long> threads = stuckThreadsStore.getThreads();
         for (Long thread : threads.keySet()){
             Long timeHeld = threads.get(thread);
             if (timeHeld > thresholdNanos){
                 ThreadInfo info = bean.getThreadInfo(thread, Integer.MAX_VALUE);
                 if (info != null){//check thread hasn't died already
+                    stuckThreads.put(info, timeHeld);
                     result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString()));
-                    
                 }
             }
         }
-        
+
         return result;
     }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 /*
  * $Header: /cvs/glassfish/appserv-api/src/java/com/sun/appserv/management/util/jmx/stringifier/ModelMBeanNotificationInfoStringifier.java,v 1.2 2007/05/05 05:31:05 tcfujii Exp $
@@ -45,10 +46,14 @@
  */
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-public final class ModelMBeanNotificationInfoStringifier
-        extends MBeanNotificationInfoStringifier 
-{
-    public final static MBeanNotificationInfoStringifier DEFAULT = new MBeanNotificationInfoStringifier();
+/**
+ * Creates a String representation of an {@link MBeanNotificationInfo}
+ * @author tcfujii
+ * @since 2007/05/05
+ * @version 1.2
+ */
+public final class ModelMBeanNotificationInfoStringifier extends MBeanNotificationInfoStringifier {
+    public static final MBeanNotificationInfoStringifier DEFAULT = new MBeanNotificationInfoStringifier();
 
     public ModelMBeanNotificationInfoStringifier()
     {

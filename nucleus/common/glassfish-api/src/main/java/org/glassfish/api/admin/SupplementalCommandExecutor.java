@@ -56,9 +56,9 @@ import java.util.*;
 @Contract
 public interface SupplementalCommandExecutor {
     
-    public Collection<SupplementalCommand> listSuplementalCommands(String commandName);
+    public Collection<SupplementalCommand> listSupplementalCommands(String commandName);
 
-    public ActionReport.ExitCode execute(Collection<SupplementalCommand> suplementals, Supplemental.Timing time,
+    public ActionReport.ExitCode execute(Collection<SupplementalCommand> supplementals, Supplemental.Timing time,
                              AdminCommandContext context, ParameterMap parameters, 
                              MultiMap<String, File> optionFileMap);
     

@@ -128,5 +128,3 @@ public interface SystemInfo extends AMXProxy, Singleton, Utility
     public Map<String, Long> getPerformanceMillis();
 
 }
-
-

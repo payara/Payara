@@ -41,7 +41,7 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -98,10 +98,10 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
-import org.glassfish.hk2.external.org.objectweb.asm.ClassWriter;
-import org.glassfish.hk2.external.org.objectweb.asm.FieldVisitor;
-import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -932,7 +932,7 @@ public class CompositeUtil {
                     final String paramName = values.getKey();
                     Object paramValue = values.getValue();
                     if (Class.class.isAssignableFrom(paramValue.getClass())) {
-                        paramValue = org.glassfish.hk2.external.org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
+                        paramValue = org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
                     }
                     if (paramValue.getClass().isArray() && (Array.getLength(paramValue) == 0)) {
                         continue;

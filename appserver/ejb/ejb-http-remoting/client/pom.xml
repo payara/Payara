@@ -44,9 +44,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.ejb.http</groupId>
+        <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.extras</groupId>
@@ -61,6 +61,14 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -84,6 +92,33 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
@@ -180,7 +215,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.http</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-http-endpoint</artifactId>
             <version>${project.version}</version>
             <classifier>tester</classifier>

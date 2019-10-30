@@ -79,9 +79,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
-import org.glassfish.internal.api.ServerContext;
 
 import org.jvnet.hk2.config.types.Property;
 
@@ -575,12 +574,12 @@ public final class GlassFishORBManager {
 
                 if( processType.isServer()) {
 
-                    Module corbaOrbModule = null;
+                    HK2Module corbaOrbModule = null;
 
                     // start glassfish-corba-orb bundle
                     ModulesRegistry modulesRegistry = services.getService(ModulesRegistry.class);
 
-                    for(Module m : modulesRegistry.getModules()) {
+                    for(HK2Module m : modulesRegistry.getModules()) {
                         if( m.getName().equals("org.glassfish.corba.glassfish-corba-orb") ) {
                             corbaOrbModule = m;
                             break;

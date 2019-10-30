@@ -1,0 +1,413 @@
+/* 
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+body {
+    background-color: #002c3e;
+    font: 13px/1.231 helvetica,clean,sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+	font-size: 21px;
+    font-weight: bold;
+}
+select {
+	width: 100%;
+  max-width: 162px;
+  background: white;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+input[type=text], input[type=number] {
+	border: 1px solid #ccc;
+  padding: 3px 5px;
+  border-radius: 2px;
+}
+input[type=text] {
+  width: 150px;
+  max-width: 150px;
+}
+input[type=number] {
+  width: 60px;
+}
+canvas {
+    position: relative;
+}
+button {
+    padding: 5px 1em;
+    margin: 0 1px;
+    font-weight: normal;
+    background-color: #F0981B;
+    border-width: 0;
+    color: white;
+    border-radius: 2px;
+    cursor: pointer;
+    line-height: 1.0;
+}
+button:hover {
+	background-color: #F1A232;
+}
+#logo {
+  height: 30px;
+  top: 5px;
+  left: 15px;
+  position: absolute;
+}
+#newPage {
+  position: absolute;
+  left: 110px;
+  top: 5px;
+}
+
+#panel-trace {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  background-color: #002c3e;
+  display: none;
+  z-index: 110;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+#trace-chart-box {
+  position: relative;
+  background-color: #002433;
+  clear: both;
+  padding: 10px;
+}
+#trace-iconbar {
+  margin-bottom: 5px;
+}
+#trace-iconbar .btnIcon {
+  float: none;
+}
+#grid-console {
+    position: relative;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+.console-area {
+	padding: 5px 10px;
+	vertical-align: top;
+}
+#chart-container {
+    padding: 0 5px;
+}
+.widget-chart-box {
+    position: relative;
+}
+.btnIcon {
+	float: right;
+	z-index: 101;
+  margin: 0;
+  margin-left: 5px;
+  padding: 0;
+  color: #bbb;
+  background-color: transparent;
+  font-weight: bold;
+}
+button.btnIcon:hover {
+    color: white;
+    background-color: transparent;
+}
+.widget-title-bar h3 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 0;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 75%;
+  display: inline-block;
+  padding: 1px 5px;
+}
+.widget-title-bar h3 span {
+  font-size: 80%;
+  font-weight: normal;
+  font-style: normal;
+  color: #bbb;
+  margin-right: 1em;
+}
+.widget-title-bar h3 strong {
+  font-style: normal;
+  margin-left: 0.5em;
+  color: white;
+}
+#layout-bar {
+	display: inline-block;
+	float: right;
+	text-align: right;
+	width: 50%;
+}
+#panel-iconbar {
+	padding: 0 10px;
+}
+#panel-iconbar button {
+	color: #bbb;
+    background-color: transparent;
+    padding: 5px;
+    font-size: 14px;
+    letter-spacing: -2px;
+}
+#panel-iconbar button:hover {
+	color: white;
+}	
+#chart-grid {
+	width: 100%;
+	table-layout:fixed;
+	border-spacing: 5px;
+    border-collapse: separate;
+}
+#chart-grid td {
+    background-color: #002433;
+    padding: 10px;
+    vertical-align: top;
+    border: 2px solid #002433;
+}
+#chart-grid td.chart-selected h3 {
+    color: #00618A;
+    background-color: white;
+}
+.stable {
+	background-color: rgba(153, 102, 255, 0.2);
+	border: 1px solid rgba(153, 102, 255, 1);
+	font-size: 50px;
+	font-weight: bold;
+	color: rgba(153, 102, 255, 1);
+    text-align: center;
+    height: 90%;
+}
+.stable span {
+	position: relative;
+	float: left;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/**
+ * Widget Settings (Sizes and Visibility)
+ */
+#Settings {
+    width: 380px;
+    padding: 0;
+    vertical-align: top;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+#Settings table {
+    background-color: #002433;
+    padding: 10px;
+    margin-top: 5px;
+    width: 100%;
+}
+#Settings table th {
+  cursor: pointer;
+  font-weight: normal;
+}
+#Settings table tr:first-child th {
+  font-weight: bold;
+  border-bottom: 1px solid #bbb;
+}
+#Settings table td:first-child {
+  width: 120px;
+  vertical-align: top;
+}
+#Settings a, #Settings a:visited {
+  color: white;
+}
+#Settings label {
+  padding-right: 1em;
+  padding-left: 3px;
+  white-space: nowrap;
+}
+#Settings table div input[type=text] {
+  width: 60px;
+}
+#console #Settings {
+	display: none;
+}
+#console.state-show-settings #Settings {
+	display: block;
+}
+#console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
+  width: calc(100% - 390px);
+}
+
+/* HTML Chart Tooltips */
+#chartjs-tooltip {
+  position: absolute;
+  background-color: #002c3e;
+  padding: 5px;
+  width: 400px;
+}
+table.tags {
+  width: 100%;
+}
+table.tags th {
+  text-align: left;
+  width: 25%;
+}
+table.tags th, table.tags td {
+  background-color: #002433;
+}
+
+/* Widget Settings Toolbar */
+.widget-settings-bar {
+  display:none; 
+  position: absolute; 
+  background-color: #002c3e;
+  white-space: nowrap;
+  padding: 10px;
+  z-index: 150;
+  width: 120px;
+  margin-left: -140px;
+  margin-top: 20px;    
+}
+.widget-settings-bar button {
+  float: left;
+  margin-bottom: 5px;
+}
+.widget-settings-bar button::first-letter {
+  margin-right: 5px;
+}
+
+/* Widget Legend */
+.Legend {
+  margin: 0;
+  padding: 0 20px;
+}
+.Legend li {
+  display: inline-block;
+  list-style:none;
+  padding-left: 5px;
+  border-left: 5px solid #ccc;
+  margin-right: 20px;
+}
+.Legend li strong {
+  font-size: 200%;
+  font-weight: bold;
+}
+.Legend li span:first-child {
+  display: block;
+  font-weight: 300;
+}
+.Legend li.status-missing strong {
+    color: Violet;
+}
+.Legend li.status-alarming strong {
+    color: gold;
+    animation: blinker 2s linear infinite;
+}
+.Legend li.status-critical strong {
+    color: crimson;
+    animation: blinker 1s linear infinite;
+}
+.Legend li.status-error strong {
+    color: red;
+}
+@keyframes blinker {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Widget Indicator */
+.Indicator {
+  border: 1px solid #ccc;
+  font-weight: bold;
+  padding: 5px 10px;
+  text-align: center;
+  margin: 5px;
+}
+.Indicator.status-missing {
+  border-color: Violet;
+  color: Violet;
+}
+.Indicator.status-alarming {
+  border-color: gold; 
+  color: gold;
+}
+.Indicator.status-critical {
+  border-color: crimson; 
+  color: crimson;
+}
+.Indicator b {
+  color: white;
+  white-space: nowrap;
+}
+.Indicator i {
+  white-space: nowrap;
+}
+
+
+/* Page Navigation */
+#Navigation {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;  
+}
+#Navigation select {
+  background-color: #002c3e;
+  padding: 5px;
+  border-width: 0;
+  color: white;
+  font-size: 160%;
+  font-weight: bold;
+  max-width: 400px;
+}
+
+#Navigation h2 {
+  min-width: 100px;
+  font-weight: bold;
+  font-size: 140%;
+  display: inline-block;
+  margin: 0;
+  margin-top: 5px;
+  padding: 0;
+  cursor: pointer;
+}

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.util;
 
 import javax.management.*;
@@ -62,6 +64,7 @@ public final class UnregistrationListener implements NotificationListener {
         // DO NOT listen here; thread-safety problem
     }
 
+    @Override
     public void handleNotification(final Notification notifIn, final Object handback) {
         if (notifIn instanceof MBeanServerNotification) {
             final MBeanServerNotification notif = (MBeanServerNotification) notifIn;
@@ -71,10 +74,6 @@ public final class UnregistrationListener implements NotificationListener {
                 mLatch.countDown();
             }
         }
-    }
-
-    private static void cdebug(final String s) {
-        System.out.println(s);
     }
 
     /**

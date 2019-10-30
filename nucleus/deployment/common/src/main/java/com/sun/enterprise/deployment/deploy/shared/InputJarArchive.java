@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
-import java.net.MalformedURLException;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -311,20 +310,13 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         JarFile jf = null;
         try {
             File file = new File(uri);
-            if (file.exists()) {
-                jf = new JarFile(file);
-            }
+            jf = new JarFile(file);
         } catch(IOException e) {
-            deplLogger.log(Level.WARNING,
-                           FILE_OPEN_FAILURE,
-                           new Object[]{uri});
+            deplLogger.log(Level.WARNING, FILE_OPEN_FAILURE, new Object[]{uri});
             // add the additional information about the path
             // since the IOException from jdk doesn't include that info
-            String additionalInfo = localStrings.getString(
-                "enterprise.deployment.invalid_zip_file", uri);
-            deplLogger.log(Level.WARNING,
-                           INVALID_ZIP_FILE,
-                           new Object[] { e.getLocalizedMessage(), additionalInfo } );
+            String additionalInfo = localStrings.getString("enterprise.deployment.invalid_zip_file", uri);
+            deplLogger.log(Level.WARNING, INVALID_ZIP_FILE, new Object[] { e.getLocalizedMessage(), additionalInfo } );
         }
         return jf;
     }       
@@ -446,8 +438,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private EntryEnumeration createEntryEnumeration(
-            final boolean topLevelDirectoriesOnly) throws FileNotFoundException, IOException {
+    private EntryEnumeration createEntryEnumeration(final boolean topLevelDirectoriesOnly) throws FileNotFoundException, IOException {
         final JarEntrySource source = (parentArchive == null ?
             new ArchiveJarEntrySource(uri) :
             new SubarchiveJarEntrySource(parentArchive.jarFile, uri));

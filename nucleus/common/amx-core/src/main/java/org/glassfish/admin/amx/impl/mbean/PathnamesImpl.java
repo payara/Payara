@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.impl.mbean;
 
@@ -94,14 +94,10 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
 
         final String parentPath = parser.parentPath();
 
-        //cdebug( "resolvePath: " + parser.toString() + ", parentPath = " + parentPath );
-
         // fixed query based on the path, which will find all MBeans with that parent path
         final String props = Util.makeProp(PARENT_PATH_KEY, Util.quoteIfNeeded(parentPath));
         final ObjectName pattern = JMXUtil.newObjectNamePattern(getObjectName().getDomain(), props);
         final Set<ObjectName> s = getMBeanServer().queryNames(pattern, null);
-
-        //cdebug( "resolvePath: " + path + " = query for parent path: " + pattern + " yields children: " + s.size() );
 
         ObjectName objectName = null;
         final String type = parser.type();
@@ -111,8 +107,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             if (type.equals(Util.getTypeProp(child))) {
                 final String nameProp = Util.getNameProp(child);
 
-                //cdebug( "type match for " + path + ", objectName = " + child);
-
                 if (nameProp == null) {
                     if (name == null) {
                         // no name, we matched on type alone
@@ -120,7 +114,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                         break;
                     }
                     // badly formed: a name is specified, but none is present for this type
-                    //cdebug( "A name is specified in path, but the type has none: path = " + path + ", objectName = " + child);
                     continue;
                 }
 
@@ -143,7 +136,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                     objectName = child;
                     break;
                 }
-            }  //cdebug( "No match on type: " + type + " != " + Util.getTypeProp(child) );
+            }
 
         }
 
@@ -154,7 +147,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         }
 
         if (objectName != null) {
-            //cdebug( "Matched " + path + " to " + objectName);
             mPathnameCache.put(path, objectName);
         }
 
@@ -327,20 +319,3 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         return buf.toString();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

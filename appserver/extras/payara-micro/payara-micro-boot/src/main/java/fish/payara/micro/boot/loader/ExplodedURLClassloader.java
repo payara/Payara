@@ -42,12 +42,16 @@ package fish.payara.micro.boot.loader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -60,9 +64,10 @@ import java.util.logging.Logger;
 public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     private final File explodedDir;
-    private boolean deleteOnExit = false;
     private static final String JAR_DOMAIN_DIR = "MICRO-INF/runtime/";
     private static final String LIB_DOMAIN_DIR = "MICRO-INF/lib/";
+
+    private List<File> filesForDeletion;
 
     public ExplodedURLClassloader(File explodeTo) throws IOException {
         super(new URL[0]);
@@ -73,16 +78,33 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     public ExplodedURLClassloader() throws IOException {
         super(new URL[0]);
-        File directory;
-        directory = File.createTempFile("payaramicro-rt", "tmp");
+        File directory = File.createTempFile("payaramicro-rt", "tmp");
         System.setProperty("fish.payara.micro.tmpdir", directory.getAbsolutePath());
         if (!directory.delete() || !directory.mkdir()) { // convert the file into a directory.
             throw new IOException("Unable to create temporary runtime directory");
         }
-        deleteOnExit = true;
-        directory.deleteOnExit();
+        filesForDeletion = new ArrayList<>();
+        registerForDeletion(directory);
         explodedDir = directory;
         explodeJars();
+    }
+
+    void registerDeleteOnExit() {
+        if (!isDeleteOnExit()) {
+            return;
+        }
+        try {
+            // FileUtils is loaded from this classloader, therefore we cannot invoke it directly
+            Class<?> fileUtils = this.loadClass("com.sun.enterprise.util.io.FileUtils");
+            Method deleteOnExitMethod = fileUtils.getDeclaredMethod("deleteOnExit", File.class);
+            for (File f : filesForDeletion) {
+                deleteOnExitMethod.invoke(null, f);
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Logger.getLogger(ExplodedURLClassloader.class.getName())
+                    .log(Level.WARNING, "Unable to register temp directory "+explodedDir+" for deletion", e);
+        }
+        filesForDeletion = null;
     }
 
     private void explodeJars() throws IOException {
@@ -90,16 +112,12 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         // create a runtime jar directory
         File runtimeDir = new File(explodedDir, "runtime");
         runtimeDir.mkdirs();
-        if (deleteOnExit) {
-            runtimeDir.deleteOnExit();
-        }
+        registerForDeletion(runtimeDir);
 
         // create a lib directory
         File libDir = new File(explodedDir,"lib");
         libDir.mkdirs();
-        if (deleteOnExit) {
-            libDir.deleteOnExit();
-        }
+        registerForDeletion(libDir);
 
         // sets the system property used in the server.policy file for permissions
         System.setProperty("fish.payara.micro.UnpackDir", explodedDir.getAbsolutePath());
@@ -110,7 +128,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         if (src != null) {
             try {
                 // find the root jar
-                String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
+                String[] jars = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
                 try (JarFile jar = new JarFile(file)) {
@@ -126,9 +144,7 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
 
                         if (fileName != null) {
                             File outputFile = new File(runtimeDir, fileName);
-                            if (deleteOnExit) {
-                                outputFile.deleteOnExit();
-                            }
+                            registerForDeletion(outputFile);
                             super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 
 
@@ -148,6 +164,16 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
             }
         }
 
+    }
+
+    private void registerForDeletion(File file) {
+        if (isDeleteOnExit()) {
+            filesForDeletion.add(file);
+        }
+    }
+
+    private boolean isDeleteOnExit() {
+        return filesForDeletion != null;
     }
 
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -133,7 +134,13 @@ public class CreateInstanceCommand implements AdminCommand {
     
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
-    
+
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
+
+    @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
+    private boolean extraTerse;
+
     @Param(name = "instance_name", primary = true)
     private String instance;
     
@@ -196,11 +203,15 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
-        if (theNode.isLocal()) {
-            validateInstanceDirUnique(report, context);
-            if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
-                // If we couldn't update domain.xml then stop!
-                return;
+        if (autoName) {
+            instance = PayaraServerNameGenerator.validateInstanceNameUnique(instance, context);
+        } else {
+            if (theNode.isLocal()) {
+                validateInstanceDirUnique(report, context);
+                if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
+                    // If we couldn't update domain.xml then stop!
+                    return;
+                }
             }
         }
 
@@ -263,6 +274,10 @@ public class CreateInstanceCommand implements AdminCommand {
         } else {
             // Then go create the instance filesystem on the node
             createInstanceFilesystem();
+        }
+
+        if (extraTerse) {
+            report.setMessage(instance);
         }
     }
 

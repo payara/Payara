@@ -39,10 +39,11 @@
  */
 package fish.payara.nucleus.eventbus;
 
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -53,6 +54,11 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.monitor.LocalTopicStats;
+import com.hazelcast.topic.impl.TopicService;
+
 /**
  * A Hazelcast based Event Bus for Payara
  * @author steve
@@ -60,7 +66,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-event-bus")
 @RunLevel(StartupRunLevel.VAL)
-public class EventBus implements EventListener {
+public class EventBus implements EventListener, MonitoringDataSource {
     
     private static final Logger logger = Logger.getLogger(EventBus.class.getCanonicalName());
     
@@ -72,13 +78,28 @@ public class EventBus implements EventListener {
     
     private Map<String, TopicListener> messageReceivers;
     
-    
     @PostConstruct
     public void postConstruct() {
         events.register(this);
         messageReceivers = new ConcurrentHashMap<>(2);
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        MonitoringDataCollector eventCollector = rootCollector.in("topic");
+        if (hzCore.isEnabled()) {
+            HazelcastInstance hz = hzCore.getInstance();
+            for (DistributedObject obj : hz.getDistributedObjects()) {
+                if (TopicService.SERVICE_NAME.equals(obj.getServiceName())) {
+                    LocalTopicStats stats = hz.getTopic(obj.getName()).getLocalTopicStats();
+                    eventCollector.group(obj.getName())
+                        .collect("PublishedCount", stats.getPublishOperationCount())
+                        .collect("ReceiveedCount", stats.getReceiveOperationCount());
+                }
+            }
+        }
+    }
+
     /**
      * Sends out a message to all listeners in the Hazelcast sluster that are
      * listening to the topic

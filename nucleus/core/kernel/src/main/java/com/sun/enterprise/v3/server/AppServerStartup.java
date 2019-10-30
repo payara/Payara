@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.server;
 
 
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -443,21 +443,21 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         StringBuilder sb = new StringBuilder("Module Status Report Begins\n");
         // first started :
 
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()== ModuleState.READY) {
                 sb.append(m).append("\n");
             }
         }
         sb.append("\n");
         // then resolved
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()== ModuleState.RESOLVED) {
                 sb.append(m).append("\n");
             }
         }
         sb.append("\n");
         // finally installed
-        for (Module m : registry.getModules()) {
+        for (HK2Module m : registry.getModules()) {
             if (m.getState()!= ModuleState.READY && m.getState()!=ModuleState.RESOLVED) {
                 sb.append(m).append("\n");
             }

@@ -46,11 +46,11 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-static-shell-frag</artifactId>
     <name>Embedded GlassFish Static Shell dist. fragment</name>
     <modelVersion>4.0.0</modelVersion>

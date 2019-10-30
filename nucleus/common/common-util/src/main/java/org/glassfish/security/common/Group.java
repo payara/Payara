@@ -37,29 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 /**
- * This class implements the EJB concept of a Group. A Group is a privilege attribute that several Principals share. Or,
- * in in other words, several Principals belong to a same group.
+ * This class implements the EJB concept of a Group. A Group is a privilege attribute that several
+ * Principals share. Or, in in other words, several Principals belong to a same group.
+ * <p>
+ * Two Group instances are equal if they have the same name.
  *
  * @author Harish Prabandham
  */
 public class Group extends PrincipalImpl {
-    
+
+    private static final long serialVersionUID = -3087471149205106412L;
+
+    /**
+     * @param name - a name of the group
+     */
     public Group(String name) {
         super(name);
     }
 
+    @Override
     public boolean equals(Object other) {
         if (other instanceof Group) {
             return getName().equals(((Group) other).getName());
         }
-        
+
         return false;
     }
 
+    @Override
     public int hashCode() {
         return getName().hashCode();
     }

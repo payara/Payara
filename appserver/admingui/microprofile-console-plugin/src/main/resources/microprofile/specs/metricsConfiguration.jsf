@@ -112,6 +112,11 @@
             <sun:checkbox id="securityEnabled" selected="#{pageSession.securityEnabled}"
                           selectedValue="true" />
         </sun:property>
+        <sun:property id="rolesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.metrics.configuration.roles}"
+                      helpText="$resource{i18n_microprofile.metrics.configuration.rolesHelp}">
+            <sun:textField id="roles" maxLength="250" text="#{pageSession.valueMap['roles']}"/>
+        </sun:property>
         <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.metrics.configuration.dynamic}"  
                       helpText="$resource{i18n_microprofile.metrics.configuration.dynamicHelp}">
@@ -131,7 +136,7 @@
                          immediate="#{true}" multiple="#{true}" rows="$int{4}"
                          labels="$pageSession{virtualServersAvailable}" >
                 <!beforeCreate
-                    getVsForDeployment(result="#{pageSession.virtualServersList}");
+                    getVsForDeployment(targetConfig="#{pageSession.configName}" result="#{pageSession.virtualServersList}");
                     getListBoxOptions(
                     availableList="#{pageSession.virtualServersList}",
                     selectedCommaString="#{pageSession.valueMap['virtualServers']}",

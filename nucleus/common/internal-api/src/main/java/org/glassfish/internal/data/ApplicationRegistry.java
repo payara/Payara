@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
 
 import org.jvnet.hk2.annotations.Service;
+
 import javax.inject.Singleton;
 
 import java.util.HashMap;
@@ -62,7 +63,7 @@ import org.glassfish.internal.deployment.Deployment;
 @Singleton
 public class ApplicationRegistry {
 
-    private Map<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
+    private Map<String, ApplicationInfo> apps = new HashMap<>();
     private final Map<String, Deployment.ApplicationDeployment> transientDeployments = new HashMap<>();
 
     public synchronized void add(String name, ApplicationInfo info) {
@@ -100,4 +101,5 @@ public class ApplicationRegistry {
     public Deployment.ApplicationDeployment getTransient(String appName) {
         return transientDeployments.get(appName);
     }
+
 }

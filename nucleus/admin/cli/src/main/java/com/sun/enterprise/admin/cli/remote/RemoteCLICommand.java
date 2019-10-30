@@ -729,7 +729,7 @@ public class RemoteCLICommand extends CLICommand {
     @Override
     protected void inject() throws CommandException {
         try {
-            super.prevalidate();
+            super.inject();
         }
         catch (CommandValidationException ex) {
             reExecuteAfterMetadataUpdate();
@@ -1018,16 +1018,12 @@ public class RemoteCLICommand extends CLICommand {
      * in the <INSTALL_ROOT>/modules directory.
      */
     private static synchronized ClassLoader getModuleClassLoader() {
-        if (moduleClassLoader != null)
-            return moduleClassLoader;
-        try {
-            File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File modulesDir = new File(installDir, "modules");
-            moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
+        if (moduleClassLoader != null) {
             return moduleClassLoader;
         }
-        catch (IOException ioex) {
-            return null;
-        }
+        File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        File modulesDir = new File(installDir, "modules");
+        moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
+        return moduleClassLoader;
     }
 }

@@ -43,10 +43,10 @@ package com.sun.ejb.base.stats;
 
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.enterprise.admin.monitor.stats.GenericStatsImpl;
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.Statistic;
-import org.glassfish.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.BoundedRangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.Statistic;
+import javax.management.j2ee.statistics.Stats;
 
 import java.util.logging.Logger;
 

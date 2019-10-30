@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
+
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
@@ -63,14 +64,16 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
  */
 @Service(name = "healthcheck-cpool")
 @RunLevel(10)
-public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions,
-        ConnectionPoolChecker> {
+public class ConnectionPoolHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker> {
 
     @Inject
     private Domain domain;
@@ -81,11 +84,14 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
     @Inject
     private PoolManager poolManager;
 
+    private final Map<String, PoolStatus> status = new ConcurrentHashMap<>();
+
     @PostConstruct
     void postConstruct() {
         postConstruct(this, ConnectionPoolChecker.class);
     }
 
+    @Override
     public HealthCheckConnectionPoolExecutionOptions constructOptions(ConnectionPoolChecker checker) {
         return new HealthCheckConnectionPoolExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),
@@ -102,7 +108,8 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
+        status.clear();
         HealthCheckResult result = new HealthCheckResult();
         Collection<JdbcResource> allJdbcResources = getAllJdbcResources();
         for (JdbcResource resource : allJdbcResources) {
@@ -125,6 +132,7 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
     private void evaluatePoolUsage(HealthCheckResult result, PoolInfo poolInfo) {
         PoolStatus poolStatus = poolManager.getPoolStatus(poolInfo);
         if (poolStatus != null) {
+            status.put(poolInfo.getName(), poolStatus);
             long usedConnection = poolStatus.getNumConnUsed();
             long freeConnection = poolStatus.getNumConnFree();
             long totalConnection = usedConnection + freeConnection;
@@ -139,7 +147,7 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
     }
 
     private Collection<JdbcResource> getAllJdbcResources() {
-        Collection<JdbcResource> allResources = new ArrayList<JdbcResource>();
+        Collection<JdbcResource> allResources = new ArrayList<>();
         Collection<JdbcResource> jdbcResources = domain.getResources().getResources(JdbcResource.class);
         allResources.addAll(jdbcResources);
         for (Application app : applications.getApplications()) {

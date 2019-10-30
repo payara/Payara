@@ -41,6 +41,19 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.logging.Level;
+
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.cli.LocalServerCommand;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -50,15 +63,10 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.InstanceDirs;
 import com.sun.enterprise.util.io.ServerDirs;
 import com.sun.enterprise.util.net.NetUtils;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-
-import java.io.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-import java.util.logging.Level;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.UserInterruptException;
 
@@ -671,7 +679,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         if (nodeDirChild == null)
             return null;
 
-        File mp = new File(new File(nodeDirChild,"agent"), "master-password");
+        File mp = new File(new File(nodeDirChild,"agent"), MASTERPASSWORD_FILE);
         if (!mp.canRead()) {
             return null;
         }

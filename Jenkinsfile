@@ -4,10 +4,10 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
+    agent any
     options {
         disableConcurrentBuilds()
     }
-    agent any
     tools {
         jdk "zulu-8"
     }
@@ -42,6 +42,7 @@ pipeline {
         }
         stage('Setup for Quicklook Tests') {
             steps {
+                sh "rm *.zip"
                 setupDomain()
             }
         }
@@ -58,6 +59,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
@@ -67,7 +69,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -88,6 +90,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
@@ -97,7 +100,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -124,7 +127,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -146,6 +149,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }

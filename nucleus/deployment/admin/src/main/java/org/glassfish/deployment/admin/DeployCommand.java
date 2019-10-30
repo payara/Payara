@@ -41,65 +41,60 @@
 
 package org.glassfish.deployment.admin;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.versioning.VersioningService;
+import org.glassfish.deployment.versioning.VersioningSyntaxException;
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.*;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.SpanSequence;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.jvnet.hk2.annotations.Contract;
-import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Transaction;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
-import org.glassfish.deployment.versioning.VersioningSyntaxException;
-import org.glassfish.deployment.versioning.VersioningUtils;
-
-import org.glassfish.deployment.versioning.VersioningService;
 
 /**
  * Deploy command
@@ -163,7 +158,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private File safeCopyOfAltDD = null;
     private File safeCopyOfRuntimeAltDD = null;
     private File originalPathValue;
-    private List<String> previousTargets = new ArrayList<String>();
+    private List<String> previousTargets = new ArrayList<>();
     private Properties previousVirtualServers = new Properties();
     private Properties previousEnabledAttributes = new Properties();
     private Logger logger;
@@ -259,7 +254,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             deployment.validateSpecifiedTarget(target);
 
-            span.start(DeploymentTracing.AppStage.INIT_ARCHIVE_HANDLER);
+            span.start(DeploymentTracing.AppStage.OPENING_ARCHIVE, "ArchiveHandler");
 
             archiveHandler = deployment.getArchiveHandler(archive, type);
 
@@ -268,7 +263,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 return false;
             }
 
-            span.start(DeploymentTracing.AppStage.CREATE_DEPLOY_CONTEXT, "Initial");
+            span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
 
             // create an initial  context
             initialContext = new DeploymentContextImpl(report, archive, this, env);
@@ -278,6 +273,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             span.finish();
 
+            span.start(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.INITIAL_CONTEXT_CREATED.type());
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
             span.start(DeploymentTracing.AppStage.DETERMINE_APP_NAME);
@@ -306,7 +302,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
 
                 if (isModuleDescriptorAvailable) {
-                    name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
+                    name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext, name);
                 }
             }
 
@@ -407,14 +403,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             ApplicationConfigInfo savedAppConfig
                     = new ApplicationConfigInfo(apps.getModule(Application.class, name));
-            Properties undeployProps = handleRedeploy(name, report, context);
+            Properties undeployProps = null;
+            if (!hotDeploy) {
+                undeployProps = handleRedeploy(name, report, context);
+            }
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
 
             // clean up any left over repository files
             if (!keepreposdir.booleanValue()) {
-                span.start(DeploymentTracing.AppStage.CLEANUP, "Repository Files");
+                span.start(DeploymentTracing.AppStage.CLEANUP, "applications");
                 final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
                 if (reposDir.exists()) {
                     for (int i = 0; i < domain.getApplications().getApplications().size(); i++) {
@@ -467,7 +466,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
             }
 
-            span.start(DeploymentTracing.AppStage.CREATE_DEPLOY_CONTEXT, "Full");
+            span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Full");
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
@@ -497,11 +496,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 validateDeploymentProperties(properties, deploymentContext);
             }
 
-            span.start(DeploymentTracing.AppStage.CLEANUP, "Generated files");
+            span.start(DeploymentTracing.AppStage.CLEANUP, "generated");
             // clean up any generated files
             deploymentContext.clean();
 
-            span.start(DeploymentTracing.AppStage.DEPLOY);
+            span.start(DeploymentTracing.AppStage.PREPARE, "ServerConfig");
             Properties appProps = deploymentContext.getAppProps();
             /*
              * If the app's location is within the domain's directory then
@@ -530,17 +529,18 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             savedAppConfig.store(appProps);
 
+            deploymentContext.addTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, hotDeploy);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_VIRTUAL_SERVERS, previousVirtualServers);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);
-            Transaction t = deployment.prepareAppConfigChanges(deploymentContext);
+            Transaction tx = deployment.prepareAppConfigChanges(deploymentContext);
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
-            if(!loadOnly) {
-                span.start(DeploymentTracing.AppStage.INITIALIZE);
+            if (deplResult != null && !loadOnly) {
+                // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
-            ApplicationInfo appInfo = deplResult.appInfo;
+            ApplicationInfo appInfo = deplResult != null ? deplResult.appInfo : null;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -562,14 +562,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     downloadableArtifacts.record(appProps);
                     generatedArtifacts.record(appProps);
 
-                    // Set the application deploy time
                     timeTakenToDeploy = timing.elapsed();
-                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
-
                     deploymentTimeMillis = System.currentTimeMillis();
-                    deploymentContext.getTransientAppMetaData("application", Application.class).setTimeDeployed(Long.toString(deploymentTimeMillis));
-                    // register application information in domain.xml
-                    deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
+                    if (!hotDeploy) {
+                        Application application = deploymentContext.getTransientAppMetaData("application", Application.class);
+                        // Set the application deploy time
+                        application.setDeploymentTime(Long.toString(timeTakenToDeploy));
+                        application.setTimeDeployed(Long.toString(deploymentTimeMillis));
+
+                        // register application information in domain.xml
+                        deployment.registerAppInDomainXML(appInfo, deploymentContext, tx);
+                    }
                     if (retrieve != null) {
                         retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false, name);
                     }
@@ -614,7 +617,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         path.getAbsolutePath()), e);
             }
 
-            structuredTracing.print(System.out);
+            if (structuredTracing.isEnabled()) {
+                structuredTracing.print(System.out);
+            }
 
             if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                 // Set the app name in the result so that embedded deployer can retrieve it.

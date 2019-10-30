@@ -237,7 +237,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
      */
     @Override
     public void setLinkName(String linkName) {
-        ejbLink = (String)TranslatedConfigView.getTranslatedValue(linkName);
+        ejbLink = TranslatedConfigView.expandValue(linkName);
     }
     /**
      * return the jndi name of the bean to which I refer.
@@ -276,7 +276,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 
     @Override
     public void setLookupName(String l) {
-        lookupName = (String)TranslatedConfigView.getTranslatedValue(l);
+        lookupName = TranslatedConfigView.expandValue(l);
     }
 
     @Override

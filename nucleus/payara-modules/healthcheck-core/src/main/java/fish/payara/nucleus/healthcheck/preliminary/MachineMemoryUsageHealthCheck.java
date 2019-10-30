@@ -64,7 +64,8 @@ import java.util.List;
  */
 @Service(name = "healthcheck-machinemem")
 @RunLevel(StartupRunLevel.VAL)
-public class MachineMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker> {
+public class MachineMemoryUsageHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker> {
 
     private static final String MEMTOTAL = "MemTotal:";
     private static final String MEMFREE = "MemFree:";
@@ -90,7 +91,7 @@ public class MachineMemoryUsageHealthCheck extends BaseThresholdHealthCheck<Heal
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
         if (isLinux()) {
             return doCheckLinux();
         }

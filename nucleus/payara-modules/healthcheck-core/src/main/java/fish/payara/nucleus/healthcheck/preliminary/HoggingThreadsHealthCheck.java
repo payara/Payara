@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,8 +53,10 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 
@@ -63,10 +65,11 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-threads")
 @RunLevel(StartupRunLevel.VAL)
-public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions,
-        HoggingThreadsChecker> {
+public class HoggingThreadsHealthCheck
+        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker> {
 
-    private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
+    private final Map<Long, ThreadTimes> threadTimes = new ConcurrentHashMap<>();
+    private final AtomicInteger hoggingThreads = new AtomicInteger();
 
     @PostConstruct
     void postConstruct() {
@@ -87,10 +90,8 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
     }
 
     @Override
-    public HealthCheckResult doCheck() {
-        if (!getOptions().isEnabled()) {
-            return null;
-        }
+    protected HealthCheckResult doCheckInternal() {
+        hoggingThreads.set(0);
         HealthCheckResult result = new HealthCheckResult();
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
@@ -137,6 +138,7 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
                         times.setInitialStartUserTime(System.nanoTime());
                     }
                     if (times.getRetryCount() >= options.getRetryCount()) {
+                        hoggingThreads.incrementAndGet();
                         result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
                                 "Thread with <id-name>: " + id + "-" + times.getName() +
                                         " is a hogging thread for the last " +

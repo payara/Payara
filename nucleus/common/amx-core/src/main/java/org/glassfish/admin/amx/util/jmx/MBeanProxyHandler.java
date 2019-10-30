@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -44,7 +45,6 @@ import org.glassfish.admin.amx.util.AMXDebug;
 import org.glassfish.admin.amx.util.ObjectUtil;
 import org.glassfish.admin.amx.util.Output;
 import org.glassfish.admin.amx.util.StringUtil;
-import org.glassfish.admin.amx.util.ClassUtil;
 
 import javax.management.*;
 import java.io.IOException;
@@ -60,15 +60,15 @@ javax.management.MBeanServerInvocationHandler is thread-safe</b>
  */
 public class MBeanProxyHandler extends MBeanServerInvocationHandler
 {
-    protected final static String GET = "get";
+    protected static final String GET = "get";
 
-    protected final static String SET = "set";
+    protected static final String SET = "set";
 
-    protected final static String IS = "is";
+    protected static final String IS = "is";
 
-    protected final static int GET_PREFIX_LENGTH = GET.length();
+    protected static final int GET_PREFIX_LENGTH = GET.length();
 
-    protected final static int IS_PREFIX_LENGTH = IS.length();
+    protected static final int IS_PREFIX_LENGTH = IS.length();
 
     /** MBeanInfo we first obtained */
     protected final MBeanInfo mInitialMBeanInfo;
@@ -135,7 +135,6 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
         super(conn, objectName);
 
         mDebug = AMXDebug.getInstance().getOutput(getClass().getName());
-        //debugMethod( "MBeanProxyHandler", objectName );
         mTargetValid = true;
 
         if (mbeanInfo != null)
@@ -157,46 +156,35 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
         mHashCode = this.hashCode();
     }
 
-    public boolean isInvariantMBeanInfo()
-    {
+    public boolean isInvariantMBeanInfo() {
         final Object value = mInitialMBeanInfo.getDescriptor().getFieldValue("immutableInfo");
         return Boolean.parseBoolean("" + value);
     }
 
-    public String interfaceName()
-    {
-        final String value = (String) getMBeanInfo().getDescriptor().getFieldValue("interfaceName");
-        return value;
+    public String interfaceName() {
+        return (String) getMBeanInfo().getDescriptor().getFieldValue("interfaceName");
     }
 
-    public final void targetUnregistered()
-    {
+    public final void targetUnregistered() {
         debugMethod(getObjectName().toString(), "targetUnregistered");
         mTargetValid = false;
     }
 
-    public final void connectionBad()
-    {
+    public final void connectionBad()    {
         debugMethod("connectionBad");
         mTargetValid = false;
     }
 
     /** return true if the MBean is local (in process) */
-    public boolean isLocal()
-    {
+    public boolean isLocal() {
         return getMBeanServerConnection() instanceof MBeanServer;
     }
 
-    public final boolean isValid()
-    {
-        if (mTargetValid)
-        {
-            try
-            {
+    public final boolean isValid() {
+        if (mTargetValid) {
+            try {
                 mTargetValid = getMBeanServerConnection().isRegistered(getObjectName());
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 debug("checkValid: connection failed");
                 mTargetValid = false;
             }
@@ -204,8 +192,7 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
         return (mTargetValid);
     }
 
-    public synchronized Logger getProxyLogger()
-    {
+    public synchronized Logger getProxyLogger() {
         return Logger.getLogger(this.getClass().getName());
     }
 
@@ -232,14 +219,10 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
         return info;
     }
 
-    public MBeanInfo getMBeanInfo()
-    {
-        try
-        {
+    public MBeanInfo getMBeanInfo() {
+        try {
             return (_getMBeanInfo());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -309,29 +292,19 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
 
         return (results);
     }
-
-    private final String LOG_LEVEL_NAME = "LogLevel";
-
-    protected void postGetAttributeHook(
-            final String name,
-            final Object value)
-    {
+    
+    protected void postGetAttributeHook(final String name, final Object value)
+    { //no-op for overridng in subclasses
     }
 
-    protected void postGetAttributesHook(
-            final String[] requested,
-            final AttributeList actual)
-    {
+    protected void postGetAttributesHook(final String[] requested, final AttributeList actual) { //no-op for overridng in subclasses
     }
 
-    protected void postSetAttributeHook(final Attribute attr)
-    {
+    protected void postSetAttributeHook(final Attribute attr){
     }
 
-    protected void postSetAttributesHook(
-            final AttributeList requested,
-            final AttributeList actual)
-    {
+    protected void postSetAttributesHook(final AttributeList requested, final AttributeList actual) {
+        //no-op for overridng in subclasses
     }
 
     /**  JMX direct invoke */
@@ -349,12 +322,8 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
     <p>
     For anything else, the behavior of MBeanServerInvocationHandler is used.
      */
-    public Object invoke(
-            Object proxy,
-            Method method,
-            Object[] args)
-            throws java.lang.Throwable
-    {
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws java.lang.Throwable {
         final String methodName = method.getName();
         final int numArgs = args == null ? 0 : args.length;
 
@@ -367,70 +336,52 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
 
         boolean handled = false;
 
-        if (methodName.equals("getObjectName"))
-        {
+        if (methodName.equals("getObjectName")) {
+            
             handled = true;
             result = getObjectName();
-        }
-        else if (methodName.equals("getMBeanInfo") && numArgs == 0)
-        {
+        } else if (methodName.equals("getMBeanInfo") && numArgs == 0) {
+            
             handled = true;
             result = getMBeanInfo();
-        }
-        else if ((isGetter || isSetter))
-        {
+        } else if ((isGetter || isSetter)) {
+            
             handled = true;
 
             final String javaName = extractAttributeNameFromMethod(methodName);
 
             String attributeName = javaName;
 
-            //trace( "MBeanProxyHandler.invoke: mapped attribute: " + javaName + " => " + attributeName );
-
-            if (isGetter)
-            {
+            if (isGetter) {
                 result = getAttribute(attributeName);
-            }
-            else
-            {
-                final Attribute attr = new Attribute(attributeName, args[ 0]);
+            } else {
+                final Attribute attr = new Attribute(attributeName, args[0]);
                 setAttribute(attr);
             }
-        }
-        else if (methodName.indexOf("etAttribute") == 1)
-        {
+        } else if (methodName.indexOf("etAttribute") == 1) {
+            
             handled = true;
 
             // likely one of getAttribute(), getAttributes(), setAttribute(), setAttributes()
-
-            //p( "MBeanProxyHandler.invoke: " + method.getName() + " " + numArgs + " args." );
-            if (JMXUtil.isGetAttribute(method))
-            {
-                final String attrName = (String) args[ 0];
+            if (JMXUtil.isGetAttribute(method)) {
+                
+                final String attrName = (String) args[0];
                 result = getAttribute(attrName);
-            }
-            else if (JMXUtil.isGetAttributes(method))
-            {
-                final String[] attrNames = (String[]) args[ 0];
+            } else if (JMXUtil.isGetAttributes(method)) {
+                final String[] attrNames = (String[]) args[0];
                 result = getAttributes(attrNames);
-            }
-            else if (JMXUtil.isSetAttribute(method))
-            {
-                final Attribute attr = (Attribute) args[ 0];
+            } else if (JMXUtil.isSetAttribute(method)) {
+                final Attribute attr = (Attribute) args[0];
                 setAttribute(attr);
-            }
-            else if (JMXUtil.isSetAttributes(method))
-            {
-                final AttributeList requested = (AttributeList) args[ 0];
+            } else if (JMXUtil.isSetAttributes(method)) {
+                final AttributeList requested = (AttributeList) args[0];
                 result = setAttributes(requested);
-            }
-            else
-            {
+            } else {
                 handled = false;
             }
-        }
-        else if (methodName.equals("hashCode"))
-        {
+            
+        } else if (methodName.equals("hashCode")) {
+            
             /*
             java.lang.reflect.Proxy will route all calls through invoke(),
             even hashCode().  To avoid newing up an Integer every time,
@@ -440,20 +391,15 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
              */
             result = mHashCode;
             handled = true;
-        }
-        else if (methodName.equals("toString"))
-        {
+        } else if (methodName.equals("toString")) {
             result = "proxy to " + getObjectName();
             handled = true;
-        }
-        else if (methodName.equals("equals") && numArgs == 1)
-        {
-            result = this.equals(args[ 0]);
+        } else if (methodName.equals("equals") && numArgs == 1) {
+            result = this.equals(args[0]);
             handled = true;
         }
 
-        if (!handled)
-        {
+        if (!handled) {
             debugMethod(getObjectName().toString(), "super.invoke",
                     method.getName(), args);
 
@@ -501,8 +447,3 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
     }
 
 }
-
-
-
-
-

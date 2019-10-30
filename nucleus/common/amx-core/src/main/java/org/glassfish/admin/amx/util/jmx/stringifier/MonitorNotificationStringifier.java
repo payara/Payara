@@ -37,16 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import javax.management.monitor.MonitorNotification;
 
-public class MonitorNotificationStringifier extends NotificationStringifier
-{
-    public static final MonitorNotificationStringifier DEFAULT =
-            new MonitorNotificationStringifier();
+/**
+ * Creates a String representation of an {@link MonitorNotification}
+ * @see Object#toString() 
+ */
+public class MonitorNotificationStringifier extends NotificationStringifier {
+    public static final MonitorNotificationStringifier DEFAULT = new MonitorNotificationStringifier();
 
     public MonitorNotificationStringifier()
     {
@@ -75,22 +77,3 @@ public class MonitorNotificationStringifier extends NotificationStringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * UtilHandlers.java
@@ -48,10 +48,7 @@
 
 package org.glassfish.admingui.common.handlers;
 
-import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.RestUtil;
-import org.glassfish.admin.rest.utils.JsonUtil;
-
+import com.sun.enterprise.util.JDK;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -61,7 +58,6 @@ import com.sun.jsftemplating.layout.descriptors.LayoutElement;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerDefinition;
 import com.sun.jsftemplating.util.FileUtil;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -76,32 +72,32 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map;
 import java.util.logging.Level;
-
 import javax.faces.component.UIViewRoot;
+import org.glassfish.admin.rest.utils.JsonUtil;
+import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.admingui.common.util.JSONUtil;
+import org.glassfish.admingui.common.util.RestUtil;
 
 /**
  *
  * @author Jennifer Chou
  */
 public class UtilHandlers {
-    
+
     /** Creates a new instance of UtilHandlers */
     public UtilHandlers() {
     }
-    
 
-    
-    
     /**
-     *	<p> Adds the specified (signed) amount of time to the given calendar 
+     *	<p> Adds the specified (signed) amount of time to the given calendar
      *      field, based on the calendar's rules and returns the resulting Date.
      *      See <code>java.util.GregorianCalendar</code> add(int field, int amount). </p>
      *
-     *  <p> Input value: "Field" -- Type: <code>Integer</code> 
+     *  <p> Input value: "Field" -- Type: <code>Integer</code>
      *          - <code>java.util.Calendar</code> field</p>
      *  <p> Input value: "Amount" -- Type: <code>Integer</code>
      *          - the amount of date or time to be added to the field.</p>
@@ -119,15 +115,15 @@ public class UtilHandlers {
         int amount = ((Integer) handlerCtx.getInputValue("Amount"));
         GregorianCalendar cal = new GregorianCalendar();
         cal.add(field, amount);
-        handlerCtx.setOutputValue("Date", cal.getTime());        
+        handlerCtx.setOutputValue("Date", cal.getTime());
     }
-    
+
     /**
-     *	<p> Creates a new File instance by converting the given pathname string 
-     *      into an abstract pathname. If the given string is the empty string, 
+     *	<p> Creates a new File instance by converting the given pathname string
+     *      into an abstract pathname. If the given string is the empty string,
      *      then the result is the empty abstract pathname. </p>
      *
-     *  <p> Input value: "Pathname" -- Type: <code>String</code> 
+     *  <p> Input value: "Pathname" -- Type: <code>String</code>
      *  <p> Output value: "File" -- Type: <code>java.io.File</code></p>
      *	@param	handlerCtx	The HandlerContext.
      */
@@ -138,7 +134,7 @@ public class UtilHandlers {
             @HandlerOutput(name="File", type=File.class)})
     public static void getFile(HandlerContext handlerCtx) {
         String pathname = (String) handlerCtx.getInputValue("Pathname");
-        handlerCtx.setOutputValue("File", pathname != null ? new File(pathname) : null);        
+        handlerCtx.setOutputValue("File", pathname != null ? new File(pathname) : null);
     }
 
     /**
@@ -158,7 +154,7 @@ public class UtilHandlers {
 	  Ajax request. :(  Therefor the following is commented out.  On
 	  10/6/2009 rlubke fixed this, we need to adjust the JS to handle a
 	  direct response then this can be enabled.
-	 
+
 	    FacesContext facesCtx = ctx.getFacesContext();
 	    UIViewRoot root = new UIViewRoot();
 	    root.setRenderKitId("dummy");
@@ -206,13 +202,13 @@ public class UtilHandlers {
 	// Set the output
 	ctx.setOutputValue("content", content);
     }
-    
+
     /**
-     *	<p> Returns the name of the file or directory denoted by this abstract 
-     *      pathname. This is just the last name in the pathname's name sequence. 
+     *	<p> Returns the name of the file or directory denoted by this abstract
+     *      pathname. This is just the last name in the pathname's name sequence.
      *      If the pathname's name sequence is empty, then the empty string is returned. </p>
      *
-     *  <p> Input value: "File" -- Type: <code>java.io.File</code> 
+     *  <p> Input value: "File" -- Type: <code>java.io.File</code>
      *  <p> Output value: "Name" -- Type: <code>String</code></p>
      *	@param	handlerCtx	The HandlerContext.
      */
@@ -245,7 +241,7 @@ public class UtilHandlers {
     /**
      *	<p> Returns the value to which the input map maps the input key. </p>
      *
-     *  <p> Input value: "Map" -- Type: <code>java.util.Map</code> 
+     *  <p> Input value: "Map" -- Type: <code>java.util.Map</code>
      *  <p> Input value: "Key" -- Type: <code>Object</code>
      *  <p> Output value: "Value" -- Type: <code>Object</code></p>
      *	@param	handlerCtx	The HandlerContext.
@@ -259,7 +255,7 @@ public class UtilHandlers {
     public static void mapGet(HandlerContext handlerCtx) {
         Map map = (Map) handlerCtx.getInputValue("Map");
         Object key = (Object) handlerCtx.getInputValue("Key");
-        handlerCtx.setOutputValue("Value", (Object) map.get(key));        
+        handlerCtx.setOutputValue("Value", (Object) map.get(key));
     }
 
     @Handler(id="mapJoin",
@@ -348,7 +344,7 @@ public class UtilHandlers {
      * <p> Input list: "list" -- Type: <code>java.util.List</code>
      * <p> Input value: "value" -- Type: <code>java.lang.Object</code>
      * <p> Input value: "index" -- Type: <code>Integer</code>
-     * 
+     *
      * @param handlerCtx The HandlerContext
      */
     @Handler(id="listAdd",
@@ -423,10 +419,10 @@ public class UtilHandlers {
         List list = (List) handlerCtx.getInputValue("list");
         int index = (Integer) handlerCtx.getInputValue("index");
 
-        if (list != null && index >= 0 && index < list.size()) {       
+        if (list != null && index >= 0 && index < list.size()) {
             handlerCtx.setOutputValue("result", list.get(index));
         }
-        
+
     }
 
     /**
@@ -464,7 +460,7 @@ public class UtilHandlers {
         List list = (List)handlerCtx.getInputValue("list");
         List list2 = (List)handlerCtx.getInputValue("list2");
         if (list == null) {
-            list = new ArrayList();            
+            list = new ArrayList();
         }
         if (list2 != null) {
             for(Object one : list2) {
@@ -498,7 +494,7 @@ public class UtilHandlers {
     /**
      *	<p> Compare if 2 objects is equal </p>
      *
-     *  <p> Input value: "obj1" -- Type: <code>Object</code> 
+     *  <p> Input value: "obj1" -- Type: <code>Object</code>
      *  <p> Input value: "obj2" -- Type: <code>Object</code>
      *  <p> Output value: "equal" -- Type: <code>Object</code></p>
      *	@param	handlerCtx	The HandlerContext.
@@ -519,9 +515,9 @@ public class UtilHandlers {
             if (obj2 == null)
                 ret = true;
         }
-        handlerCtx.setOutputValue("objEqual", ret);        
+        handlerCtx.setOutputValue("objEqual", ret);
     }
-    
+
     /**
      * <p> This method displays the save successful message when the page refresh.
      * @param handlerCtx The HandlerContext.
@@ -531,7 +527,7 @@ public class UtilHandlers {
         GuiUtil.prepareSuccessful(handlerCtx);
     }
 
-    /** 
+    /**
      * <p> This method sets the attributes that will be used by the alert component
      *     display the message to user.
      *     If type is not specifed, it will be 'info' by default.
@@ -588,7 +584,7 @@ public class UtilHandlers {
             handlerCtx.setOutputValue("output", "");
             return;
         }
-        
+
         if (GuiUtil.isEmpty(scheme))
             scheme = "UTF-8";
         try{
@@ -603,7 +599,7 @@ public class UtilHandlers {
         }
      }
 
-    
+
     @Handler(id="roundTo2DecimalPoint",
     input={
         @HandlerInput(name="input", type=Double.class)},
@@ -700,7 +696,7 @@ public class UtilHandlers {
         }
         handlerCtx.setOutputValue("commaString", commaString);
     }
-    
+
     @Handler(id = "convertListToCommaString",
     input = {
         @HandlerInput(name = "list", type = List.class, required = true)},
@@ -726,7 +722,7 @@ public class UtilHandlers {
         ArrayList<String> resolvedTokens = new ArrayList();
 
         String endPoint = (String)handlerCtx.getInputValue("endPoint");
-        for (String token : tokens) 
+        for (String token : tokens)
             resolvedTokens.add(RestUtil.resolveToken(endPoint, token));
         handlerCtx.setOutputValue("resolvedTokens", resolvedTokens);
     }
@@ -801,7 +797,7 @@ public class UtilHandlers {
         handlerCtx.setOutputValue("result", output);
     }
 
-    
+
      //This is the reserve of the above method.
     //We want to separator and display each jar in one line in the text box.
     @Handler(id = "formatStringsforDisplay",
@@ -810,7 +806,7 @@ public class UtilHandlers {
     output = {
         @HandlerOutput(name = "formattedString", type = String.class)})
     public static void formatStringsforDisplay(HandlerContext handlerCtx) {
-        
+
         String values = (String) handlerCtx.getInputValue("string");
         if (values == null || GuiUtil.isEmpty(values.trim())) {
             handlerCtx.setOutputValue("formattedString", "");
@@ -828,7 +824,7 @@ public class UtilHandlers {
 
         }
     }
-    
+
     //This converts any tab/NL etc to ${path.separator} before passing to backend for setting.
     //In domain.xml, it will be written out like  c:foo.jar${path.separator}c:bar.jar
     @Handler(id = "formatPathSeperatorStringsforSaving",
@@ -849,7 +845,7 @@ public class UtilHandlers {
             }
         }
         handlerCtx.setOutputValue("formattedString", token.toString());
-    }    
+    }
 
     /**
      *
@@ -885,7 +881,7 @@ public class UtilHandlers {
      *  <p> Input value: "end" -- Type: <code>Integer</code> End index.
      *  <p> Input value: "varName" -- Type: <code>String</code>  Variable to be replaced in the for loop by the index.
      *	@param	handlerCtx	The HandlerContext.
-     * @return 
+     * @return
      */
     @Handler(id="forLoop",
     	input={
@@ -921,7 +917,7 @@ public class UtilHandlers {
      *	    keyed by the value you supplied for 'var'.  You must also specify
      *	    the <code>List&lt;Object&gt;</code> to iterate over.</p>
      * @param handlerCtx
-     * @return 
+     * @return
      */
     @Handler(id="foreach",
 	input={
@@ -984,7 +980,7 @@ public class UtilHandlers {
         Object xx = map.values();
         handlerCtx.setOutputValue("values", xx);
     }
-    
+
     @Handler(id = "convertStrToBoolean",
     input = {
         @HandlerInput(name = "str", type = String.class, required = true)},
@@ -1091,9 +1087,9 @@ public class UtilHandlers {
         Object obj = ((Object) handlerCtx.getInputValue("obj"));
         handlerCtx.setOutputValue("json", JsonUtil.getJsonValue(obj).toString());
     }
-    
+
     @Handler(id="gf.createPropertyString",
-            input={ 
+            input={
                 @HandlerInput(name="properties", type=List.class, required=true)
             },
             output={
@@ -1112,10 +1108,10 @@ public class UtilHandlers {
                     ;
             sep = ":";
         }
-        
+
         handlerCtx.setOutputValue("string", sb.toString());
     }
-    
+
 
 
     /* This is copied from within javaToJSON() */
@@ -1160,23 +1156,36 @@ public class UtilHandlers {
                     break;
                 default:
                     // Check if we should unicode escape this...
-                    if ((ch > 0x7e) || (ch < 0x20)) {
-                        builder.append("\\u");
-                        chStr = Integer.toHexString(ch);
-                        len = chStr.length();
-                        for (int idx=4; idx > len; idx--) {
-                            // Add leading 0's
-                            builder.append('0');
-                        }
-                        builder.append(chStr);
-                    } else {
-                        builder.append(ch);
-                    }
+                    JSONUtil.appendUnicodeEscaped(ch, builder);
                     break;
             }
             ch = it.next();
         }
         return builder.toString();
+    }
+
+    @Handler(id = "py.getJavaVendor",
+            output = {
+                @HandlerOutput(name = "javaVendor", type = String.class)}
+    )
+    public static void getJavaVendor(HandlerContext handlerCtx) {
+        handlerCtx.setOutputValue("javaVendor", JDK.getVendor());
+    }
+
+    @Handler(id = "py.getJdkMajorVersion",
+            output = {
+                @HandlerOutput(name = "jdkMajorVersion", type = Integer.class)}
+    )
+    public static void getJdkMajorVersion(HandlerContext handlerCtx) {
+        handlerCtx.setOutputValue("jdkMajorVersion", JDK.getMajor());
+    }
+
+    @Handler(id = "py.getJdkUpdateVersion",
+            output = {
+                @HandlerOutput(name = "jdkUpdateVersion", type = Integer.class)}
+    )
+    public static void getJdkUpdateVersion(HandlerContext handlerCtx) {
+        handlerCtx.setOutputValue("jdkUpdateVersion", JDK.getUpdate());
     }
 
     private static final String PATH_SEPARATOR = "${path.separator}";

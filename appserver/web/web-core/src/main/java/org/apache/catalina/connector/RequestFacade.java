@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import com.sun.enterprise.security.web.integration.WebPrincipal;
@@ -870,13 +870,6 @@ public class RequestFacade implements HttpServletRequest {
 
         if (request == null) {
             throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
-        }
-
-        // PAYARA-917 WELD Request Beans access the Request Facade directly not via the
-        // wrapper class when requests are forwarded
-        String forwardedPath = (String) request.getAttribute("fish.payara.servlet.dispatchPath");
-        if (forwardedPath != null) {
-            return forwardedPath;
         }
 
         return request.getServletPath();

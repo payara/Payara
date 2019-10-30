@@ -39,14 +39,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.hk2</groupId>
+        <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>config-types</artifactId>
@@ -100,7 +100,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.hk2</groupId>
+            <groupId>fish.payara.server.internal.hk2</groupId>
             <artifactId>hk2-config</artifactId>
             <version>${project.version}</version>
         </dependency>

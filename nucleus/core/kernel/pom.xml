@@ -45,9 +45,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.core</groupId>
+        <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>kernel</artifactId>
@@ -131,32 +131,32 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-services</artifactId>
             <version>${project.version}</version>
         </dependency>
 		<!--dependency>
-			<groupId>org.glassfish.main.common</groupId>
+			<groupId>fish.payara.server.internal.common</groupId>
 			<artifactId>stats77</artifactId>
 			<version>${project.version}</version>
 		</dependency-->
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -170,28 +170,28 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.flashlight</groupId>
+            <groupId>fish.payara.server.internal.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -209,23 +209,23 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>logging</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 	<dependency>
-		<groupId>org.glassfish.main.core</groupId>
+		<groupId>fish.payara.server.internal.core</groupId>
 		<artifactId>api-exporter</artifactId>
 		<version>${project.version}</version>
 	</dependency>
@@ -236,12 +236,12 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -258,7 +258,11 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
         </dependency>
-        
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>tiger-types</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     
     <profiles>

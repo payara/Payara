@@ -2689,6 +2689,9 @@ public final class StatefulSessionContainer
      */
 
     private void deserializeContext(SessionContextImpl ctx) throws Exception {
+        if (ctx == null) {
+            return;
+        }
         Object ejb = ctx.getEJB();
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "StatefulSessionContainer.deserializeData: " + ((ejb == null) ? null : ejb.getClass()));

@@ -45,23 +45,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Writer;
+
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -79,6 +64,11 @@ public class FileUtils  {
     private static final Logger LOGGER = CULoggerInfo.getLogger();
     private static final LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
+    private static final FileDeletionThread FILE_DELETION_ON_EXIT = new FileDeletionThread();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(FILE_DELETION_ON_EXIT);
+    }
 
     public static void setFileProperties()
     {
@@ -535,8 +525,25 @@ public class FileUtils  {
      * @param f file to delete
      */
     public static void deleteFileNowOrLater(File f) {
-        if(!deleteFile(f))
-            f.deleteOnExit();
+        if(!deleteFile(f)) {
+            deleteOnExit(f);
+        }
+    }
+
+    /**
+     * Deletes the provided file by registering a shutdown hook with the
+     * Java Runtime. Non-empty directories will be deleted recursively.
+     *
+     * @param f the file to delete on JVM shutdown
+     */
+    public static void deleteOnExit(File f) {
+        if (f != null) {
+            final SecurityManager securityManager = System.getSecurityManager();
+            if (securityManager != null) {
+                securityManager.checkDelete(f.getAbsolutePath());
+            }
+            FILE_DELETION_ON_EXIT.add(f);
+        }
     }
 
     /**
@@ -785,7 +792,9 @@ public class FileUtils  {
             LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
-        if (f != null) f.deleteOnExit(); // just in case
+        if (f != null) {
+            deleteOnExit(f); // just in case
+        }
         return f;
     }
 

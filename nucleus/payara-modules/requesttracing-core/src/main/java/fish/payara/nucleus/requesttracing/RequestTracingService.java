@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,8 @@ import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
@@ -83,6 +85,7 @@ import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,7 +99,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
-public class RequestTracingService implements EventListener, ConfigListener {
+public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
     
@@ -155,7 +158,13 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     private RequestTraceStoreInterface historicRequestTraceStore;
     private RequestTraceStoreInterface requestTraceStore;
-    
+
+    /**
+     * Hold the last not yet collected traces. The size of the queue is limited by removing oldest element in case it
+     * gets larger than a fixed limit before adding a new trace to the queue.
+     */
+    private final ConcurrentLinkedQueue<RequestTrace> uncollectedTraces = new ConcurrentLinkedQueue<>();
+
     /**
      * The filter which determines whether to sample a given request
      */
@@ -235,6 +244,13 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
 
         if (executionOptions != null && executionOptions.isEnabled()) {
+            if (executionOptions.getAdaptiveSamplingEnabled()) {
+                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
+                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
+            } else {
+                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
+            }
+
             // Set up the historic request trace store if enabled
             if (executionOptions.isHistoricTraceStoreEnabled()) {
                 historicRequestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), true);
@@ -270,13 +286,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
                         0, period, TimeUnit.SECONDS);
             }
             
-            if (executionOptions.getAdaptiveSamplingEnabled()) {
-                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
-                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
-            } else {
-                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
-            }
-
             logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
         }
     }
@@ -434,7 +443,12 @@ public class RequestTracingService implements EventListener, ConfigListener {
                     return;
                 }
             }
+            // collect any trace exceeding the threshold
+            if (uncollectedTraces.size() > 50) {
+                uncollectedTraces.poll();
+            }
             RequestTrace requestTrace = requestEventStore.getTrace();
+            uncollectedTraces.add(requestTrace);
             
             Runnable addTask = () -> {
                 RequestTrace removedTrace = requestTraceStore.addTrace(requestTrace);
@@ -548,4 +562,39 @@ public class RequestTracingService implements EventListener, ConfigListener {
         return requestTraceStore;
     }
 
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        MonitoringDataCollector tracingCollector = rootCollector.in("trace");
+        RequestTrace trace = uncollectedTraces.poll();
+        while (trace != null) {
+            collectTrace(tracingCollector, trace);
+            trace = uncollectedTraces.poll();
+        }
+    }
+
+    private static void collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace) {
+        try {
+            UUID traceId = trace.getTraceId();
+            if (traceId != null) {
+                String group = metricGroupName(trace);
+                long duration = trace.getTraceSpans().getFirst().getSpanDuration() / 1000000;
+                tracingCollector.group(group).collect("Duration", duration);
+            }
+        } catch (Exception ex) {
+            logger.log(Level.FINE, "Failed to collect trace", ex);
+        }
+    }
+
+    public static String metricGroupName(RequestTrace trace) {
+        return stripPackageName(trace.getTraceSpans().getLast().getEventName());
+    }
+
+    public static String stripPackageName(String eventName) {
+        int javaMethodDot = eventName.lastIndexOf('.');
+        int httpMethodDivider = eventName.indexOf(':');
+        return javaMethodDot < 0 || httpMethodDivider < 0
+                ? eventName
+                : eventName.substring(0, httpMethodDivider) + "_"
+                        + eventName.substring(eventName.lastIndexOf('.', javaMethodDot - 1) + 1);
+    }
 }

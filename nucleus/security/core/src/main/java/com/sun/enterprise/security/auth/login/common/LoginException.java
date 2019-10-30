@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login.common;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -52,7 +52,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * @author Harish Prabandham
  * @author Harpreet Singh
  */
-
 public class LoginException extends SecurityException {
 
     private static final long serialVersionUID = 9193349381731567723L;
@@ -64,16 +63,26 @@ public class LoginException extends SecurityException {
     /**
      * Create a new LoginException object with the given message
      *
-     * @param The message indicating why authentication failed.
+     * @param message indicating why authentication failed.
      */
     public LoginException(String message) {
         super(message);
     }
 
     /**
+     * Create a new LoginException object with the given message
+     *
+     * @param message indicating why authentication failed.
+     * @param cause original cause
+     */
+    public LoginException(String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
      * Create a new LoginException object with the given authentication value.
      *
-     * @param a status boolean
+     * @param as status boolean
      */
     public LoginException(boolean as) {
         super(localStrings.getLocalString("enterprise.security.login_failed", "Login Failed."));
@@ -81,7 +90,7 @@ public class LoginException extends SecurityException {
     }
 
     /**
-     * Returns the status of the Authentication.
+     * @return the status of the Authentication.
      */
     public boolean getStatus() {
         return status;

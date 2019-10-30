@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -127,28 +128,7 @@ public final class SetUtil
         return (set);
     }
 
-    /*
-    public static <T> Set<T>
-    newSet(
-    final T m1,
-    final T m2,
-    final T m3 )
-    {
-    final HashSet<T>	set	= new HashSet<T>();
-
-    set.add( m1 );
-    set.add( m2 );
-    set.add( m3 );
-
-    return( set );
-    }
-     */
-    public static <T> Set<T> newSet(
-            final T m1,
-            final T m2,
-            final T m3,
-            final T m4)
-    {
+    public static <T> Set<T> newSet(final T m1, final T m2, final T m3, final T m4) {
         final HashSet<T> set = new HashSet<T>();
 
         set.add(m1);
@@ -241,19 +221,6 @@ public final class SetUtil
         return Collections.unmodifiableSet(newStringSet(args));
     }
 
-    /*
-    public static Set<String>
-    newStringSet( final Object... args)
-    {
-    final Set<String>   set   = new HashSet<String>();
-
-    for( final Object o : args )
-    {
-    set.add( o == null ? null : "" + o );
-    }
-    return set;
-    }
-     */
     public static <T> Set<T> newTypedSet(final T... args)
     {
         final Set<T> set = new HashSet<T>();
@@ -336,26 +303,3 @@ public final class SetUtil
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

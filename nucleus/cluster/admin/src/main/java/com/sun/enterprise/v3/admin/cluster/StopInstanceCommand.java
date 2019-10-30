@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -161,9 +161,23 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             return;
         }
 
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        report.setMessage(Strings.get("stop.instance.success",
+        String nodeName = instance.getNodeRef();
+        Node node = nodes.getNode(nodeName);
+
+        if (node.getType().equals("DOCKER")) {
+            stopDockerContainer(nodeName, instanceName, context);
+        }
+
+        // If we've got any sub-command failures, log a warning
+        if (context.getActionReport().hasFailures()) {
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setMessage(Strings.get("stop.instance.warning",
                     instanceName));
+        } else {
+            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setMessage(Strings.get("stop.instance.success",
+                    instanceName));
+        }
 
         if (kill) {
             // If we killed then stop-local-instance already waited for death
@@ -175,8 +189,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // if localhost check if files exists
         // else if SSH check if file exists  on remote system
         // else can't check anything else.
-        String nodeName = instance.getNodeRef();
-        Node node = nodes.getNode(nodeName);
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
         if (node.isLocal()){
@@ -379,5 +391,17 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             fullCommand.append(s);
         }
         return fullCommand.toString().trim();
+    }
+
+    private void stopDockerContainer(String nodeName, String instanceName, AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", nodeName);
+        parameterMap.add("instanceName", instanceName);
+
+        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "_stop-docker-container", adminCommandContext.getActionReport().addSubActionsReport(),
+                adminCommandContext.getSubject()).parameters(parameterMap).execute();
     }
 }

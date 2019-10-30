@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,9 +38,6 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
@@ -75,6 +72,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 
@@ -160,7 +158,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                         + configuration.getHistoricalTraceStoreSize() + "\n");
             }
 
-            if (!Strings.isNullOrEmpty(configuration.getHistoricalTraceStoreTimeout())) {
+            if (StringUtils.ok(configuration.getHistoricalTraceStoreTimeout())) {
                 mainActionReport.appendMessage("Health Check Historical Tracing Store Timeout in Seconds: "
                         + configuration.getHistoricalTraceStoreTimeout() + "\n");
             }
@@ -179,12 +177,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         mainActionReport.setExtraProperties(mainExtraProps);
 
         if (!configuration.getNotifierList().isEmpty()) {
-            List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
-                @Override
-                public Class<Notifier> apply(Notifier input) {
-                    return resolveNotifierClass(input);
-                }
-            });
+            List<Class<Notifier>> notifierClassList = configuration.getNotifierList().stream().map((input) -> {
+                return resolveNotifierClass(input);
+            }).collect(Collectors.toList());
 
             Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {

@@ -56,15 +56,11 @@ package fish.payara.microprofile.metrics.cdi;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -185,9 +181,9 @@ public class MetricsHelper {
     public MetricID metricIDOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
         if (annotated instanceof AnnotatedMember) {
-            return metricIDOf((AnnotatedMember<?>) annotated, ip.getMember().getDeclaringClass());
+            return metricIDOf(annotated, ip.getMember().getDeclaringClass());
         } else if (annotated instanceof AnnotatedParameter) {
-            return metricIDOf((AnnotatedParameter<?>) annotated, ip.getMember().getDeclaringClass());
+            return metricIDOf(annotated, ip.getMember().getDeclaringClass());
         } else {
             throw new IllegalArgumentException("Unable to retrieve metric name for injection point [" + ip + "], only members and parameters are supported");
         }

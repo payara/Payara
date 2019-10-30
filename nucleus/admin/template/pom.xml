@@ -45,9 +45,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.admin</groupId>
+        <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-domain</artifactId>
@@ -60,7 +60,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.ejb.http</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-http-endpoint</artifactId>
             <version>${project.version}</version>
             <type>war</type>
@@ -99,12 +99,12 @@
                                 </artifactItem>
 
                                 <artifactItem>
-                                    <groupId>fish.payara.ejb.http</groupId>
+                                    <groupId>fish.payara.server.internal.ejb</groupId>
                                     <artifactId>ejb-http-endpoint</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/endpoints/ejb-invoker</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/endpoints/__ejb-invoker</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

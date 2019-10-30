@@ -69,7 +69,7 @@
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/deployment-groups/list-deployment-groups" method="GET" result="#{requestScope.respAllDeploymentGroups}");
         setPageSessionAttribute(key="allDeploymentGroups", value="#{requestScope.respAllDeploymentGroups.data.extraProperties.listOfDeploymentGroups}");
         setAttribute(key="one" value="$int{1}");
-	setAttribute(key="deploymentGroupSize" value="#{pageSession.dgList.size()}");
+	    setAttribute(key="deploymentGroupSize" value="#{pageSession.dgList.size()}");
 
         if (#{requestScope.deploymentGroupSize}>#{requestScope.one}){
             setPageSessionAttribute(key="showDeploymentGroupSection",  value="#{true}");
@@ -82,6 +82,8 @@
         if (#{requestScope.deploymentGroupSize}=#{requestScope.one}){
             setPageSessionAttribute(key="showDeploymentGroupSection",  value="#{false}");
         }
+
+        setPageSessionAttribute(key="autoNameSelected" value="#{false}");
         />
 </event>
 #include "/cluster/shared/instanceNew.inc"

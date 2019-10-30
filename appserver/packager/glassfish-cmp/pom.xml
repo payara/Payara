@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-cmp</artifactId>
     <name>Glassfish CMP Package</name>
@@ -122,47 +122,47 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-ejb-mapping</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-support-ejb</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-support-sqlstore</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-utility</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-model</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-generator-database</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-enhancer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence.cmp</groupId>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
             <artifactId>cmp-scripts</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -172,7 +172,7 @@
             <artifactId>dbschema-repackaged</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>antlr-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

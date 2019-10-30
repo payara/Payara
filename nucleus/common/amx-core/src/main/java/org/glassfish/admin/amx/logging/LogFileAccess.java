@@ -145,17 +145,3 @@ public interface LogFileAccess
     @ManagedOperation(impact=MBeanOperationInfo.ACTION)
     public void rotateLogFile( @Param(name="key") String key );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -45,9 +45,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.extras</groupId>
+        <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>javaee-pom</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <name>GlassFish javaee.jar </name>
@@ -58,10 +58,10 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-	                <manifestEntries>
-                      <Class-Path>../modules/jakarta.servlet-api.jar ../modules/javax.annotation-api.jar ../modules/jakarta.ejb-api.jar ../modules/jakarta.transaction-api.jar ../modules/javax.enterprise.deploy-api.jar ../modules/javax.management.j2ee-api.jar ../modules/jakarta.resource-api.jar ../modules/jakarta.security.auth.message-api.jar ../modules/jakarta.security.jacc-api.jar ../modules/webservices-osgi.jar ../modules/jaxb-osgi.jar ../modules/jakarta.xml.bind-api.jar ../modules/webservices-api-osgi.jar ../modules/javax.xml.rpc-api.jar ../modules/javax.xml.registry-api.jar ../modules/jakarta.mail.jar ../modules/jakarta.faces.jar ../modules/javax.servlet.jsp-api.jar ../modules/javax.el.jar ../modules/javax.servlet.jsp.jstl-api.jar ../modules/jakarta.persistence.jar ../modules/jakarta.jms-api.jar ../modules/hibernate-validator.jar ../modules/cdi-api.jar ../../mq/lib/jaxm-api.jar ../modules/jakarta.ws.rs-api.jar ../modules/jakarta.json.jar ../modules/javax.websocket-api.jar ../modules/javax.enterprise.concurrent-api.jar ../modules/javax.batch-api.jar</Class-Path>
-	                    <GlassFish-ServerExcluded>true</GlassFish-ServerExcluded>
-	                </manifestEntries>
+                  <manifestEntries>
+                      <Class-Path>../modules/jakarta.servlet-api.jar ../modules/jakarta.annotation-api.jar ../modules/jakarta.ejb-api.jar ../modules/jakarta.transaction-api.jar ../modules/javax.enterprise.deploy-api.jar ../modules/javax.management.j2ee-api.jar ../modules/jakarta.resource-api.jar ../modules/jakarta.security.auth.message-api.jar ../modules/jakarta.security.jacc-api.jar ../modules/webservices-osgi.jar ../modules/jaxb-osgi.jar ../modules/jakarta.xml.bind-api.jar ../modules/webservices-api-osgi.jar ../modules/javax.xml.rpc-api.jar ../modules/javax.xml.registry-api.jar ../modules/jakarta.mail.jar ../modules/jakarta.faces.jar ../modules/javax.servlet.jsp-api.jar ../modules/javax.el.jar ../modules/javax.servlet.jsp.jstl-api.jar ../modules/jakarta.persistence.jar ../modules/jakarta.jms-api.jar ../modules/hibernate-validator.jar ../modules/cdi-api.jar ../../mq/lib/jaxm-api.jar ../modules/jakarta.ws.rs-api.jar ../modules/jakarta.json.jar ../modules/javax.websocket-api.jar ../modules/javax.enterprise.concurrent-api.jar ../modules/javax.batch-api.jar</Class-Path>
+                      <GlassFish-ServerExcluded>true</GlassFish-ServerExcluded>
+                  </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

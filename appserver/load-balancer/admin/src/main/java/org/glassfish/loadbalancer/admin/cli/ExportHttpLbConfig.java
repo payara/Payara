@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Service;
@@ -87,12 +88,12 @@ import javax.inject.Inject;
 @I18n("export.http.lb.config")
 @RestEndpoints({
     @RestEndpoint(configBean=LbConfig.class,
-        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET 
-        path="export-http-lb-config", 
+        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET
+        path="export-http-lb-config",
         description="export-http-lb-config"),
     @RestEndpoint(configBean=LoadBalancer.class,
-        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET 
-        path="export-http-lb-config", 
+        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET
+        path="export-http-lb-config",
         description="export-http-lb-config",
         params={
             @RestParam(name="lbname", value="$parent")
@@ -185,7 +186,7 @@ public class ExportHttpLbConfig implements AdminCommand {
             File tmpLbXmlFile = null;
             if (retrieveFile) {
                 tmpLbXmlFile = File.createTempFile("load-balancer", ".xml");
-                tmpLbXmlFile.deleteOnExit();
+                FileUtils.deleteOnExit(tmpLbXmlFile);
             } else {
                 if (lbConfigFile.exists()) {
                     String msg = LbLogUtil.getStringManager().getString(
@@ -225,7 +226,7 @@ public class ExportHttpLbConfig implements AdminCommand {
                 }
             }
         }
-    
+
 
     private void retrieveLbConfig(AdminCommandContext context, File lbConfigFile,
                                   File tmpLbXmlFile) throws Exception {

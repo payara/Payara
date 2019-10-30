@@ -48,17 +48,16 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.StringUtils;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLResolver;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -237,6 +236,7 @@ public class MiniXmlParser {
 
     public static class JvmOption {
         public final String option;
+        public final Optional<String> vendor;
         public final Optional<JDK.Version> minVersion;
         public final Optional<JDK.Version> maxVersion;
 
@@ -253,12 +253,20 @@ public class MiniXmlParser {
         public JvmOption(String option) {
             Matcher matcher = PATTERN.matcher(option);
             if (matcher.matches()) {
-                this.minVersion = Optional.ofNullable(JDK.getVersion(matcher.group(1)));
+                if (matcher.group(1).contains("-")) {
+                    String[] parts = matcher.group(1).split("-");
+                    this.vendor = Optional.ofNullable(parts[0]);
+                    this.minVersion = Optional.ofNullable(JDK.getVersion(parts[1]));
+                } else {
+                    this.vendor = Optional.empty();
+                    this.minVersion = Optional.ofNullable(JDK.getVersion(matcher.group(1)));
+                }
+
                 this.maxVersion = Optional.ofNullable(JDK.getVersion(matcher.group(2)));
                 this.option = matcher.group(3);
-            }
-            else {
+            } else {
                 this.option = option;
+                this.vendor = Optional.empty();
                 this.minVersion = Optional.empty();
                 this.maxVersion = Optional.empty();
             }
@@ -266,6 +274,7 @@ public class MiniXmlParser {
 
         public JvmOption(String option, String minVersion, String maxVersion) {
             this.option = option;
+            this.vendor = Optional.empty();
             this.minVersion = Optional.ofNullable(JDK.getVersion(minVersion));
             this.maxVersion = Optional.ofNullable(JDK.getVersion(maxVersion));
         }

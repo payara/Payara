@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.admin;
 
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
@@ -88,7 +89,7 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     /**
      * @return a String value defines the attached virtual servers.
      */
-    @Attribute(dataType = String.class)
+    @Attribute(defaultValue = "", dataType = String.class)
     String getVirtualServers();
     void setVirtualServers(String value) throws PropertyVetoException;
 
@@ -98,5 +99,12 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getSecurityEnabled();
     void setSecurityEnabled(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the roles.
+     */
+    @Attribute(defaultValue = DEFAULT_GROUP_NAME, dataType = String.class)
+    String getRoles();
+    void setRoles(String value) throws PropertyVetoException;
 
 }

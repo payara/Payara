@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployapi;
 
@@ -44,90 +45,111 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 
+import org.glassfish.deployment.client.TargetOwner;
+
 /**
  * Implements the {@link TargetModuleID} interface from JSR-88, representing the
  * presence of a given module on a given {@link Target}.
  * <p>
  * This implementation is independent of the {@link TargetOwner} that owns the
  * corresponding Target.
- * 
+ *
  * @author tjquinn
  */
 public class TargetModuleIDImpl implements TargetModuleID {
 
-    private TargetImpl target;
-    private String moduleID;
+    private final TargetImpl target;
+    private final String moduleID;
     private TargetModuleIDImpl parent;
     private TargetModuleIDImpl[] children = new TargetModuleIDImpl[0];
     private ModuleType moduleType;
-    
+
+
     /**
      * Creates a new implementation object of TargetModuleID.
      * <p>
      * Normally this constructor should be used only by implementations of
-     * TargetOwner.  Other code will normally retrieve TargetModuleID objects
-     * from other methods that create them as part of their work (such as 
+     * TargetOwner. Other code will normally retrieve TargetModuleID objects
+     * from other methods that create them as part of their work (such as
      * deployment, for example).
+     *
      * @param target the target on which the module resides
      * @param moduleID the name of the module
      * @param parent the higher-level TargetModuleIDImpl (if this object represents
-     * a submodule of a module that is deployed to a Target)
-     * @param children TargetModuleIDImpl objects representing the submodules 
-     * of this module as deployed to the Target
+     *            a submodule of a module that is deployed to a Target)
+     * @param children TargetModuleIDImpl objects representing the submodules
+     *            of this module as deployed to the Target
      */
-    public TargetModuleIDImpl(
-            TargetImpl target, 
-            String moduleID, 
-            TargetModuleIDImpl parent, 
-            TargetModuleIDImpl[] children) {
+    public TargetModuleIDImpl(TargetImpl target, String moduleID, TargetModuleIDImpl parent,
+        TargetModuleIDImpl[] children) {
         this.target = target;
         this.moduleID = moduleID;
         this.parent = parent;
         this.children = children;
     }
-    
+
+
     /**
      * Creates a new implementation object of TargetModuleId with no parent
      * and no children.
+     *
      * @param target the target on which the module resides
      * @param moduleID the name of the module
      */
     public TargetModuleIDImpl(TargetImpl target, String moduleID) {
         this(target, moduleID, null, new TargetModuleIDImpl[0]);
     }
+
+
     /**
      * Returns the Target on which the module is deployed.
-     * @return the Target
+     *
+     * @return the {@link TargetImpl}
      */
+    @Override
     public Target getTarget() {
         return target;
     }
 
+
+    /**
+     * Returns the Target on which the module is deployed.
+     *
+     * @return the {@link TargetImpl}
+     */
     public TargetImpl getTargetImpl() {
         return target;
     }
-    
+
+
     /**
      * Returns the name of the module that is deployed to a given Target.
+     *
      * @return the module name
      */
+    @Override
     public String getModuleID() {
         return moduleID;
     }
 
+
     /**
-     * Returns the URL for running the Web module, if this TargetModuleID 
+     * Returns the URL for running the Web module, if this TargetModuleID
      * represents a Web module or submodule on a Target.
+     *
      * @return the URL
      */
+    @Override
     public String getWebURL() {
         return target.getOwner().getWebURL(this);
     }
 
+
     /**
      * Sets the URL for running the Web module, if this TargetModuleID
      * represents a Web module or submodule on a Target.
-     * @param the webURL
+     *
+     * @param webURL
      */
     public void setWebURL(String webURL) {
         target.getOwner().setWebURL(this, webURL);
@@ -137,27 +159,32 @@ public class TargetModuleIDImpl implements TargetModuleID {
     /**
      * Returns the TargetModuleID for the containing module on the Target, if
      * this TargetModuleID represents a submodule.
+     *
      * @return the parent TargetModuleID
      */
+    @Override
     public TargetModuleID getParentTargetModuleID() {
         return parent;
     }
 
+
     /**
-     * Returns the TargetModuleIDs representing submodules of this module 
+     * Returns the TargetModuleIDs representing submodules of this module
      * deployed to the Target.
+     *
      * @return the child TargetModuleID objects
      */
+    @Override
     public TargetModuleID[] getChildTargetModuleID() {
         return children;
     }
+
 
     /**
      * Add a child TargetModuleID to this TargetModuleID
      */
     public void addChildTargetModuleID(TargetModuleIDImpl child) {
-        TargetModuleIDImpl[] newChildren = 
-            new TargetModuleIDImpl[children.length+1];
+        TargetModuleIDImpl[] newChildren = new TargetModuleIDImpl[children.length + 1];
 
         System.arraycopy(children, 0, newChildren, 0, children.length);
 
@@ -168,6 +195,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
         child.setParentTargetModuleID(this);
     }
 
+
     /**
      * Sets the parent TargetModuleID
      */
@@ -175,13 +203,16 @@ public class TargetModuleIDImpl implements TargetModuleID {
         this.parent = parent;
     }
 
+
     /**
      * Sets the module type for this deployed module
-     * @param the module type
+     *
+     * @param moduleType {@link ModuleType}
      */
     public void setModuleType(ModuleType moduleType) {
         this.moduleType = moduleType;
     }
+
 
     /**
      * @return the module type of this deployed module
@@ -190,4 +221,12 @@ public class TargetModuleIDImpl implements TargetModuleID {
         return moduleType;
     }
 
+
+    /**
+     * Returns {@link #getModuleID()}.
+     */
+    @Override
+    public String toString() {
+        return getModuleID();
+    }
 }

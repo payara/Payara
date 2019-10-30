@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-common</artifactId>
     <version>4.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>

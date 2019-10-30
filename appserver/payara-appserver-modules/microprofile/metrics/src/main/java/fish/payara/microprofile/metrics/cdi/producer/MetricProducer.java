@@ -58,7 +58,6 @@ import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @Dependent
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class MetricProducer {
 
     @Inject

@@ -46,30 +46,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>5</version>
-        <relativePath />
+        <groupId>fish.payara.server</groupId>
+        <artifactId>payara-aggregator</artifactId>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
     <url>https://github.com/payara/Payara</url>
-
-    <scm>
-        <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>https://github.com/payara/Payara/tree/master</url>
-        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.193-SNAPSHOT</tag>
-    </scm>
-
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/payara/Payara/issues</url>
-    </issueManagement>
 
     <licenses>
       <license>
@@ -80,16 +65,6 @@
       </license>
     </licenses>
 
-
-    <developers>
-        <developer>
-            <name>Payara Team</name>
-            <email>info@payara.fish</email>
-            <organization>Payara Foundation</organization>
-            <organizationUrl>http://www.payara.fish</organizationUrl>
-        </developer>
-    </developers>
-
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
         <repository>
@@ -99,54 +74,6 @@
             <id>central</id>
             <name>Central Repository</name>
             <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-releases</id>
-            <name>Java.net Releases Repositories</name>
-            <url>https://maven.java.net/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-staging</id>
-            <name>Java.net Staging Repositories</name>
-            <url>https://maven.java.net/content/repositories/staging</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-promoted</id>
-            <name>Java.net Promoted Repositories</name>
-            <url>https://maven.java.net/content/repositories/promoted/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-1074</id>
-            <name>Java.net orgglassfish-1074 Repositories</name>
-            <url>https://maven.java.net/content/repositories/orgglassfish-1074/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </repository>
 
         <repository>
@@ -162,79 +89,45 @@
             </snapshots>
         </repository>
 
-        <!--  
-        <repository>
-           <id>payara-patched-externals-local</id>
-           <name>Payara Patched Externals local</name>
-           <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-        -->
-
         <repository>
            <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>false</enabled>
-            	</snapshots>
+             <name>Payara Patched Externals</name>
+             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+             <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
+             <releases>
+                 <enabled>true</enabled>
+             </releases>
+              <snapshots>
+                  <enabled>false</enabled>
+              </snapshots>
         </repository>
 
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>jvnet-nexus-promoted</id>
-            <name>Java.net Promoted Repositories</name>
-            <url>https://maven.java.net/content/repositories/promoted/</url>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-           <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>true</enabled>
-            	</snapshots>
         </pluginRepository>
     </pluginRepositories>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <build.id>${build.number}</build.id> <!-- on Hudson and RE, this gets replaced by real build ID -->
+        <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
+        <build.id>${build.number}</build.id>
         <jdk.version>1.8.0</jdk.version>
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
 
-        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
-        <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
-        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
-        <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.remote.resources.plugin.version>1.6.0</maven.remote.resources.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
@@ -245,13 +138,9 @@
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
-        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
-        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
         <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
 
         <deploy.skip>true</deploy.skip>
@@ -265,7 +154,7 @@
 
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
-        
+
         <!-- Microprofile -->
         <microprofile-config.version>1.3</microprofile-config.version>
         <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
@@ -273,7 +162,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.payara-p4</jersey.version>
+        <jersey.version>2.29.1.payara-p1</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -292,17 +181,17 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.3</mail.version>
+        <mail.version>1.6.4.payara-p1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
-        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+        <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
 
 
         <!-- Other -->
 
-        <hk2.version>2.5.0-b61.payara-p3</hk2.version>
-        <hk2.plugin.version>2.5.0-b61.payara-p3</hk2.plugin.version>
+        <hk2.version>2.6.1.payara-p1</hk2.version>
+        <hk2.plugin.version>2.6.1.payara-p1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>
@@ -323,18 +212,18 @@
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
-        
+
         <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.24</snakeyaml.version>
 
         <jsonp.version>1.1.5</jsonp.version>
 
         <mimepull.version>1.9.11</mimepull.version>
-        
+
         <opentracing.version>0.31.0</opentracing.version>
 
         <jline.version>3.11.0</jline.version>
@@ -358,7 +247,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>7.0</asm.version>
+        <asm.version>7.2</asm.version>
         <ha-api.version>3.1.12</ha-api.version>
         <hazelcast.version>3.12</hazelcast.version>
         <hazelcast.kubernetes.version>1.3.1</hazelcast.kubernetes.version>
@@ -367,13 +256,12 @@
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
-        <guava.version>19.0</guava.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
 
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
@@ -647,7 +535,7 @@
                             <exclude>**/Q*.*</exclude>
                         </excludes>
                     </configuration>
-                    
+
                     <executions>
                         <execution>
                             <id>default-prepare-agent</id>
@@ -734,11 +622,10 @@
                     </execution>
                 </executions>
             </plugin>
-	    -->
+      -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-resource</id>
@@ -828,7 +715,6 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
-                <version>2.5.0-b53</version>
                 <configuration>
                     <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
@@ -1052,9 +938,9 @@ Parent is ${project.parent}</echo>
             </dependency>
 
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax.annotation-api.version}</version>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta.annotation-api.version}</version>
             </dependency>
 
             <dependency>
@@ -1347,6 +1233,26 @@ Parent is ${project.parent}</echo>
                 <version>${asm.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-analysis</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-tree</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-util</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jvnet.hudson</groupId>
                 <artifactId>trilead-ssh2</artifactId>
                 <version>${trilead-ssh2.version}</version>
@@ -1378,19 +1284,9 @@ Parent is ${project.parent}</echo>
                 <version>1.13</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>asm-repackaged</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${javassist.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.cache</groupId>
@@ -1417,6 +1313,19 @@ Parent is ${project.parent}</echo>
                 <artifactId>jaxb-osgi</artifactId>
                 <version>${jaxb-impl.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.62</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>1.62</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1427,8 +1336,8 @@ Parent is ${project.parent}</echo>
                 <module>tests</module>
             </modules>
         </profile>
-    
-        
+
+
         <profile>
             <id>default</id>
             <activation>
@@ -1484,7 +1393,7 @@ Parent is ${project.parent}</echo>
                             </configuration>
                             <dependencies>
                                 <dependency>
-                                    <groupId>org.glassfish.main</groupId>
+                                    <groupId>fish.payara.server.internal</groupId>
                                     <artifactId>copyright</artifactId>
                                     <version>${project.version}</version>
                                 </dependency>
@@ -1494,7 +1403,7 @@ Parent is ${project.parent}</echo>
                 </pluginManagement>
             </build>
         </profile>
-        
+
         <profile>
             <id>embed-source</id>
             <build>
@@ -1514,7 +1423,7 @@ Parent is ${project.parent}</echo>
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>release-phase2</id>
             <build>
@@ -1680,7 +1589,7 @@ Parent is ${project.parent}</echo>
             <optional>true</optional>
         </dependency>
     </dependencies>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -1705,5 +1614,5 @@ Parent is ${project.parent}</echo>
             </plugin>
         </plugins>
     </reporting>
-    
+
 </project>

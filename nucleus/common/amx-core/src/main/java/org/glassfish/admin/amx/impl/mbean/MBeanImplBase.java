@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import org.glassfish.admin.amx.util.AMXDebug;
@@ -56,8 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
-Absolute base impl class. Should contain only core functionality,
-nothing to do with appserver specifics.
+ * Absolute base impl class. Should contain only core functionality,
+ * nothing to do with appserver specifics.
  */
 public abstract class MBeanImplBase
         implements MBeanRegistration, NotificationSender {
@@ -104,7 +106,7 @@ public abstract class MBeanImplBase
     @return an empty array
     Subclass may wish to override this.
      */
-    synchronized protected final NotificationEmitterSupport getNotificationEmitter() {
+    protected final synchronized NotificationEmitterSupport getNotificationEmitter() {
         if (mNotificationEmitter == null) {
             mNotificationEmitter = new NotificationEmitterSupport(true);
         }
@@ -137,6 +139,7 @@ public abstract class MBeanImplBase
         getNotificationEmitter().removeNotificationListener(listener, filter, handback);
     }
 
+    @Override
     public void sendNotification(final Notification notification) {
         getNotificationEmitter().sendNotification(notification);
     }
@@ -325,10 +328,8 @@ public abstract class MBeanImplBase
         return (StringUtil.quote("" + o));
     }
 
-    public ObjectName preRegister(
-            final MBeanServer server,
-            final ObjectName nameIn)
-            throws Exception {
+    @Override
+    public ObjectName preRegister(final MBeanServer server, final ObjectName nameIn) throws Exception {
         assert (nameIn != null);
         mServer = server;
         mSelfObjectName = nameIn;
@@ -340,11 +341,12 @@ public abstract class MBeanImplBase
     protected void postRegisterHook(final Boolean registrationSucceeded) {
     }
 
+    @Override
     public final void postRegister(final Boolean registrationSucceeded) {
-        if (registrationSucceeded.booleanValue()) {
-            getMBeanLogger().finest("postRegister: " + getObjectName());
+        if (registrationSucceeded) {
+            getMBeanLogger().log(Level.FINEST, "postRegister: {0}", getObjectName());
         } else {
-            getMBeanLogger().finest("postRegister: FAILURE: " + getObjectName());
+            getMBeanLogger().log(Level.FINEST, "postRegister: FAILURE: {0}", getObjectName());
         }
 
         postRegisterHook(registrationSucceeded);
@@ -354,9 +356,10 @@ public abstract class MBeanImplBase
             throws Exception {
     }
 
+    @Override
     public final void preDeregister()
             throws Exception {
-        getMBeanLogger().finest("preDeregister: " + getObjectName());
+        getMBeanLogger().log(Level.FINEST, "preDeregister: {0}", getObjectName());
 
         preDeregisterHook();
     }
@@ -364,8 +367,9 @@ public abstract class MBeanImplBase
     protected void postDeregisterHook() {
     }
 
+    @Override
     public final void postDeregister() {
-        getMBeanLogger().finest("postDeregister: " + getObjectName());
+        getMBeanLogger().log(Level.FINEST, "postDeregister: {0}", getObjectName());
 
         postDeregisterHook();
 
@@ -454,24 +458,4 @@ public abstract class MBeanImplBase
         }
     }
 
-    protected boolean sleepMillis(final long millis) {
-        boolean interrupted = false;
-
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.interrupted();
-            interrupted = true;
-        }
-
-        return interrupted;
-    }
 }
-
-
-
-
-
-
-
-

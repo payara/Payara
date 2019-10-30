@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
@@ -12,7 +12,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.distributions</groupId>
+            <groupId>fish.payara.server.internal</groupId>
             <artifactId>payara</artifactId>
             <version>${project.version}</version>
             <type>glassfish-distribution</type>
@@ -34,7 +34,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>fish.payara.distributions</groupId>
+                                    <groupId>fish.payara.server.internal</groupId>
                                     <artifactId>payara</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
@@ -57,7 +57,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>payaraserver-node</repository>
+                    <repository>payara/server-node</repository>
                     <dockerfile>src/main/resources/payaraserver-node/Dockerfile</dockerfile>
                     <buildArgs>
                         <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>

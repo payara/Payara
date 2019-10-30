@@ -40,6 +40,7 @@
 package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.HealthCheckType;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -53,7 +54,7 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage
  */
 public class HealthCheckServlet extends HttpServlet {
-    
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
@@ -75,11 +76,9 @@ public class HealthCheckServlet extends HttpServlet {
             response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service is disabled");
             return;
         }
-        if (!request.isSecure() && healthCheckService.isSecurityEnabled()) {
-            response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service security is enabled");
-            return;
-        }
-        healthCheckService.performHealthChecks(response);
+
+        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()));
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -118,7 +117,7 @@ public class HealthCheckServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "HealthCheck Endpoint";
     }// </editor-fold>
 
 }

@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.TimeStatistic;
-import org.glassfish.j2ee.statistics.Statistic;
+
+import javax.management.j2ee.statistics.TimeStatistic;
+import javax.management.j2ee.statistics.Statistic;
 
 
 /** An implementation of {@link MutableTimeStatistic} that eases the various
@@ -87,6 +89,7 @@ public class MutableTimeStatisticImpl implements TimeStatistic, MutableTimeStati
 	 * </ul>
 	 * @param       current     long indicating time in whatever unit this statistic is calculated
 	 */
+        @Override
 	public void incrementCount(long current) {
         if (methodCount == 0) {
             total = max = min = current;
@@ -106,6 +109,7 @@ public class MutableTimeStatisticImpl implements TimeStatistic, MutableTimeStati
 	 * and Total time of execution is considered. </li>
 	 * </ul>
 	 */
+        @Override
 	public void reset() {
 		methodCount         = initial.getCount();
 		min                 = initial.getMinTime();
@@ -119,6 +123,7 @@ public class MutableTimeStatisticImpl implements TimeStatistic, MutableTimeStati
 	 * of this instance.
 	 * @return an instance of {@link TimeStatistic}
 	 */
+        @Override
 	public Statistic unmodifiableView() {
 		return ( new TimeStatisticImpl(
 		this.methodCount,
@@ -133,42 +138,52 @@ public class MutableTimeStatisticImpl implements TimeStatistic, MutableTimeStati
 		);
 	}
 	
+        @Override
 	public Statistic modifiableView() {
 		return ( this );
 	}
 	
+        @Override
 	public long getCount() {
 		return ( this.methodCount);
 	}
 	
+        @Override
 	public String getDescription() {
 		return ( initial.getDescription() );
 	}
 	
+        @Override
 	public long getLastSampleTime() {
 		return ( this.lastSampleTime );
 	}
 	
+        @Override
 	public long getMaxTime() {
 		return ( this.max );
 	}
 	
+        @Override
 	public long getMinTime() {
 		return ( this.min );
 	}
 	
+        @Override
 	public String getName() {
 		return ( initial.getName() );
 	}
 	
+        @Override
 	public long getStartTime() {
 		return ( initial.getStartTime() );
 	}
 	
+        @Override
 	public long getTotalTime() {
 		return ( this.total );
 	}
 	
+        @Override
 	public String getUnit() {
 		return ( initial.getUnit() );
 	}

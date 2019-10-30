@@ -37,16 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.GetSetModularityHelper;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -62,7 +64,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.kernel.KernelLoggerInfo;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 

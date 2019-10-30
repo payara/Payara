@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -70,9 +71,7 @@ be made on the number of listeners, and the number of listeners of each type</li
 <p>
 For async use, a shared sender thread is used for all Notifications.
  */
-public final class NotificationEmitterSupport
-        extends NotificationBroadcasterSupport
-{
+public final class NotificationEmitterSupport extends NotificationBroadcasterSupport {
     private final boolean mAsyncDelivery;
 
     private static volatile SenderThread sSenderThread = null;
@@ -81,9 +80,7 @@ public final class NotificationEmitterSupport
 
     private final NotificationListenerTracking mListeners;
 
-    public NotificationEmitterSupport(
-            final boolean asyncDelivery)
-    {
+    public NotificationEmitterSupport(final boolean asyncDelivery) {
         mAsyncDelivery = asyncDelivery;
 
         mListenerTypeCounts = Collections.synchronizedMap(new HashMap<String, Integer>());
@@ -91,16 +88,8 @@ public final class NotificationEmitterSupport
         mListeners = new NotificationListenerTracking(true);
     }
 
-    public void cleanup()
-    {
+    public void cleanup() {
         // NO-OP with the shared SenderThread
-        /*
-        if ( mSenderThread != null )
-        {
-        mSenderThread.quit();
-        mSenderThread	= null;
-        }
-         */
     }
 
     /**
@@ -145,8 +134,6 @@ public final class NotificationEmitterSupport
         return (resultCount);
     }
 
-    private static final String[] NO_TYPES = new String[0];
-
     private static final String WILDCARD_TYPE = "***";
 
     private static final String[] ALL_TYPES = new String[]
@@ -165,7 +152,7 @@ public final class NotificationEmitterSupport
         MBeanServerNotification.UNREGISTRATION_NOTIFICATION,
     };
 
-    private final Integer COUNT_1 = Integer.valueOf(1);
+    private final Integer COUNT_1 = 1;
 
     private void incrementListenerCountForType(final String type)
     {
@@ -173,7 +160,7 @@ public final class NotificationEmitterSupport
         {
             final Integer count = mListenerTypeCounts.get(type);
 
-            final Integer newCount = (count == null) ? COUNT_1 : Integer.valueOf(count.intValue() + 1);
+            final Integer newCount = (count == null) ? COUNT_1 : count + 1;
 
             mListenerTypeCounts.put(type, newCount);
         }
@@ -189,14 +176,11 @@ public final class NotificationEmitterSupport
                 throw new IllegalArgumentException(type);
             }
 
-            final int oldValue = count.intValue();
-            if (oldValue == 1)
-            {
+            final int oldValue = count;
+            if (oldValue == 1) {
                 mListenerTypeCounts.remove(type);
-            }
-            else
-            {
-                mListenerTypeCounts.put(type, Integer.valueOf(oldValue - 1));
+            } else {
+                mListenerTypeCounts.put(type, oldValue - 1);
             }
         }
     }
@@ -455,11 +439,3 @@ public final class NotificationEmitterSupport
 
     }
 }
-
-
-
-
-
-
-
-

@@ -156,13 +156,3 @@ public interface RuntimeRoot extends AMXProxy, Utility, Singleton
     @Description("Whether the server was started with --debug")
     public boolean isStartedInDebugMode();
 }
-
-
-
-
-
-
-
-
-
-

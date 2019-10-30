@@ -46,9 +46,9 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.core</groupId>
+        <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.193-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
     <artifactId>glassfish</artifactId>
@@ -110,7 +110,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.common</groupId>
+                                    <groupId>fish.payara.server.internal.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -153,7 +153,7 @@
                 part of distribution. Making it a compile scoped dependency forces this jar
                 to be part of all distribution.
             -->
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -163,7 +163,7 @@
           <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
