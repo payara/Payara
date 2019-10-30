@@ -221,7 +221,7 @@
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
             <artifactId>pfl-dynamic</artifactId>
-	    <optional>true</optional>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.orb</groupId>
@@ -246,6 +246,10 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

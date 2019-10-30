@@ -46,8 +46,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	      <groupId>fish.payara.server.internal.web</groupId>
-    	  <artifactId>web</artifactId>
+        <groupId>fish.payara.server.internal.web</groupId>
+        <artifactId>web</artifactId>
         <version>5.202-SNAPSHOT</version>
     </parent>
 
@@ -203,9 +203,14 @@
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
-             <groupId>jakarta.xml.ws</groupId>
-             <artifactId>jakarta.xml.ws-api</artifactId>
-         </dependency>
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>

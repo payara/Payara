@@ -45,7 +45,6 @@
         <artifactId>microprofile</artifactId>
         <version>5.202-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-fault-tolerance</artifactId>
     <name>Microprofile - Fault Tolerance</name>
     <description>Implementation of MicroProfile Fault Tolerance API</description>
@@ -101,6 +100,10 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

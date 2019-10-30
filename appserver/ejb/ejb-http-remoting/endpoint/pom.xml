@@ -50,11 +50,11 @@
 
     <artifactId>ejb-http-endpoint</artifactId>
     <packaging>war</packaging>
-    
+
     <name>EJB - HTTP Endpoint</name>
     <description>
         This module contains the endpoint that services HTTP commands from the client (fish.payara.ejb.http:ejb-http-client) and looks EJBs up and invokes them.
-        
+
         It contains a mini web application that is picked up by the domain template (fish.payara.server.internal.admin:nucleus-domain) which places it in the
         glassfish/domains/[domainname]/endpoints/__ejb-invoker folder.
     </description>
@@ -103,9 +103,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.glassfish.jersey.media</groupId>
-          <artifactId>jersey-media-json-binding</artifactId>
-          <scope>test</scope>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-binding</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>
@@ -128,6 +128,10 @@
             <artifactId>jersey-container-servlet</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -136,10 +140,10 @@
               <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>
-                      <id>test-jar</id> 
-                      <phase>package</phase> 
+                      <id>test-jar</id>
+                      <phase>package</phase>
                       <goals>
-                        <goal>jar</goal> 
+                        <goal>jar</goal>
                       </goals>
                       <configuration>
                         <classifier>tester</classifier>

@@ -49,10 +49,10 @@
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
         <version>5.202-SNAPSHOT</version>
-    </parent>    
+    </parent>
     <artifactId>concurrent-impl</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Concurrent Implementation Module</name>
 
     <dependencies>
@@ -119,12 +119,6 @@
             <artifactId>javax.enterprise.concurrent</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>3.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
@@ -143,6 +137,17 @@
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

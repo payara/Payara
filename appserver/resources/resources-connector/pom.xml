@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>resources-connector</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Resources Connector</name>
     <description>Connector (glue) module for resources infrastructure</description>
 
@@ -99,22 +99,22 @@
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
@@ -126,6 +126,10 @@
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -40,7 +40,6 @@
 
 package org.glassfish.concurrent.runtime;
 
-import org.easymock.EasyMock;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
@@ -49,7 +48,6 @@ import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.glassfish.enterprise.concurrent.internal.ManagedThreadPoolExecutor;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

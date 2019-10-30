@@ -47,10 +47,10 @@
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
         <version>5.202-SNAPSHOT</version>
-    </parent>    
+    </parent>
     <artifactId>deployment-client</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Deployment Client Classes and Interfaces</name>
 
     <developers>
@@ -94,7 +94,7 @@
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-cli</artifactId>
             <version>${project.version}</version>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>jakarta.enterprise.deploy</groupId>
             <artifactId>jakarta.enterprise.deploy-api</artifactId>
@@ -108,6 +108,11 @@
           <groupId>org.glassfish.annotations</groupId>
           <artifactId>logging-annotation-processor</artifactId>
           <optional>true</optional>
-        </dependency>        
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>

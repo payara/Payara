@@ -52,7 +52,7 @@
     <artifactId>admin-cli</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>admin-cli</name>
-    
+
     <developers>
         <developer>
             <id>bnevins</id>
@@ -61,7 +61,7 @@
             <roles>
                 <role>developer</role>
             </roles>
-        </developer>        
+        </developer>
         <developer>
             <id>tmueller</id>
             <name>Tom Mueller</name>
@@ -124,7 +124,7 @@
             </plugin>
         </plugins>
     </build>
- 
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -134,7 +134,7 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
-        </dependency>  
+        </dependency>
         <dependency>
             <groupId>org.jvnet.mimepull</groupId>
             <artifactId>mimepull</artifactId>
@@ -170,6 +170,11 @@
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-osgi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

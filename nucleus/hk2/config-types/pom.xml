@@ -52,7 +52,7 @@
     <artifactId>config-types</artifactId>
     <name>HK2 config types</name>
     <packaging>glassfish-jar</packaging>
-    
+
     <build>
         <plugins>
            <plugin>
@@ -71,7 +71,6 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
-                <version>2.5.0-b53</version>
                 <configuration>
                     <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
@@ -107,6 +106,10 @@
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-common</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Deployment Related Common Classes</name>
 
     <developers>
@@ -61,7 +61,7 @@
             <url>http://blogs.sun.com/misty</url>
             <organization>Oracle, Inc.</organization>
             <roles>
-            	<role>lead</role>
+              <role>lead</role>
                 <role>developer</role>
             </roles>
         </developer>
@@ -83,7 +83,7 @@
                 <role>developer</role>
             </roles>
         </developer>
-    </developers>       
+    </developers>
     <build>
         <plugins>
             <plugin>
@@ -95,7 +95,7 @@
                            <probe-provider-class-names>org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
-                </configuration>            
+                </configuration>
              </plugin>
         </plugins>
     </build>
@@ -109,7 +109,7 @@
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-	    <dependency>
+      <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
@@ -128,15 +128,20 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.glassfish.annotations</groupId>
-          <artifactId>logging-annotation-processor</artifactId>
-          <optional>true</optional>
-        </dependency>        
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
    </dependencies>
 </project>

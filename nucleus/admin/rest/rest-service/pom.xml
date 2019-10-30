@@ -44,25 +44,25 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
         <version>5.202-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>rest-service</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>GlassFish Admin REST Service</name>
-    
+
     <description>Rest Interface for GlassFish Management and Monitoring</description>
-    
+
     <dependencies>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>gf-restadmin-connector</artifactId>
@@ -151,7 +151,7 @@
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>asadmin-audit</artifactId>
@@ -178,9 +178,14 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
-    
-    <build> 
+
+    <build>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>

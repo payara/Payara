@@ -50,7 +50,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-naming</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Glassfish Naming</name>
 
     <developers>
@@ -71,7 +71,7 @@
                 <role>developer</role>
             </roles>
         </developer>
-    </developers>       
+    </developers>
 
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
@@ -101,6 +101,10 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
    </dependencies>
 </project>

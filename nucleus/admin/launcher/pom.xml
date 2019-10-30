@@ -72,7 +72,7 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>logging</artifactId>
@@ -82,6 +82,10 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

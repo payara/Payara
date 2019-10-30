@@ -51,7 +51,7 @@
     </parent>
     <artifactId>cluster-cli</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>cluster-cli</name>
 
     <properties>
@@ -135,6 +135,10 @@
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>ssl-impl</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

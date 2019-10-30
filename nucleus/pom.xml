@@ -1241,14 +1241,6 @@ Parent is ${project.parent}</echo>
         </profile>
     </profiles>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 
     <reporting>
         <plugins>

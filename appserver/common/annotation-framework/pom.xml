@@ -51,7 +51,7 @@
     </parent>
     <artifactId>annotation-framework</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish Java EE Annotation Framework</name>
 
     <developers>
@@ -76,7 +76,7 @@
         </developer>
     </developers>
     <build>
-    	<sourceDirectory>src/main/java</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>src/main/java/org/glassfish/apf</directory>
@@ -110,6 +110,10 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

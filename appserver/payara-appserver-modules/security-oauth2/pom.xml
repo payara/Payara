@@ -49,7 +49,7 @@
     <artifactId>oauth2-client-integration</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>OAuth 2 Client Integration</name>
-    
+
     <developers>
         <developer>
             <name>Jonathan Coustick</name>
@@ -60,12 +60,11 @@
             </roles>
         </developer>
     </developers>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -115,8 +114,16 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-    
+
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -139,15 +146,6 @@
                 </executions>
             </plugin>
         </plugins>
-        
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
-    
+
 </project>

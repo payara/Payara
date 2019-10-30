@@ -50,7 +50,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>admin-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>admin-core</name>
     <description>Admin Core</description>
 
@@ -65,22 +65,24 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- test dependencies -->
         <dependency>
             <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-            <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
