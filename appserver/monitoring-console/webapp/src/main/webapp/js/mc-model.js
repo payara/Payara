@@ -863,11 +863,10 @@ MonitoringConsole.Model = (function() {
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
-					instances: instances
+					instances: undefined, // all
 				}; 
 			});
 			let request = $.ajax({

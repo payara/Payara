@@ -109,7 +109,6 @@ MonitoringConsole.View = (function() {
             let settings = [];
             settings.push(createGlobalSettings());
             settings.push(createPageSettings());
-            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
@@ -321,20 +320,6 @@ MonitoringConsole.View = (function() {
             },
         ]};
     }
-
-    function createDataSettings() {
-        let instanceSelection = $('<select />', {multiple: true});
-        $.getJSON("api/instances/", function(instances) {
-            for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
-            }
-        });
-        return { id: 'settings-data', caption: 'Data', entries: [
-            { label: 'Instances', input: instanceSelection }
-        ]};
-    }
-
-    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
