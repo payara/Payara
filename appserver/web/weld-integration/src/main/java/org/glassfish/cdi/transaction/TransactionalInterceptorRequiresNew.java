@@ -109,43 +109,60 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
             }
 
             Object proceed = null;
-
+            Exception exception = null;
             try {
                 proceed = proceed(ctx);
-            } finally {
+            } catch (Exception proceedException) {
+                exception = proceedException;
+            }
+
+            // Complete the transaction
+            try {
+                TransactionManager tm = getTransactionManager();
+                if (tm instanceof TransactionManagerHelper) {
+                    ((TransactionManagerHelper) tm).postInvokeTx(false, true);
+                }
+
+                // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
+                if (getTransactionManager().getTransaction().getStatus() == STATUS_MARKED_ROLLBACK) {
+                    getTransactionManager().rollback();
+                } else {
+                    getTransactionManager().commit();
+                }
+            } catch (Exception completeTransactionException) {
+                _logger.log(FINE, CDI_JTA_MBREQNEWCT, completeTransactionException);
+
+                TransactionalException newException = new TransactionalException(
+                        "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                        "encountered exception during commit " + completeTransactionException,
+                        completeTransactionException);
+                if (exception != null) {
+                    newException.addSuppressed(exception);
+                }
+                exception = newException;
+            }
+
+            // Resume suspended transaction
+            if (suspendedTransaction != null) {
                 try {
-                    TransactionManager tm = getTransactionManager();
-                    if (tm instanceof TransactionManagerHelper) {
-                        ((TransactionManagerHelper) tm).postInvokeTx(false, true);
-                    }
+                    getTransactionManager().resume(suspendedTransaction);
+                } catch (Exception resumeTransactionException) {
+                    _logger.log(FINE, CDI_JTA_MBREQNEWRT, resumeTransactionException);
 
-                    // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
-                    if (getTransactionManager().getTransaction().getStatus() == STATUS_MARKED_ROLLBACK) {
-                        getTransactionManager().rollback();
-                    } else {
-                        getTransactionManager().commit();
+                    TransactionalException newException = new TransactionalException(
+                            "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                            "encountered exception during resume " + resumeTransactionException,
+                            resumeTransactionException);
+                    if (exception != null) {
+                        newException.addSuppressed(exception);
                     }
-                } catch (Exception exception) {
-                    _logger.log(FINE, CDI_JTA_MBREQNEWCT, exception);
-
-                    throw new TransactionalException(
-                            "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
-                            "encountered exception during commit " + exception,
-                            exception);
-                } finally {
-                    if (suspendedTransaction != null) {
-                        try {
-                            getTransactionManager().resume(suspendedTransaction);
-                        } catch (Exception exception) {
-                            throw new TransactionalException(
-                                    "Managed bean with Transactional annotation and TxType of REQUIRED " +
-                                    "encountered exception during resume " + exception,
-                                    exception);
-                        }
-                    }
+                    exception = newException;
                 }
             }
 
+            if (exception != null) {
+                throw exception;
+            }
             return proceed;
 
         } finally {
