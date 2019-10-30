@@ -2658,6 +2658,18 @@ MonitoringConsole.Chart.Trace = (function() {
  **/
 MonitoringConsole.View = (function() {
 
+    const NS_TEXTS = {
+        web: 'Web Statistics',
+        http: 'HTTP Statistics',
+        jvm: 'JVM Statistics',
+        metric: 'MP Metrics',
+        trace: 'Request Tracing',
+        map: 'Cluster Map Storage Statistics',
+        topic: 'Cluster Topic IO Statistics',
+        mc: 'Monitoring Console Internals',
+        other: 'Other',
+    };
+
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
 
@@ -2894,21 +2906,41 @@ MonitoringConsole.View = (function() {
     }
 
     function createPageSettings() {
-        let widgetsSelection = $('<select/>');
-        MonitoringConsole.Model.listSeries(function(names) {
-            let lastNs;
-            $.each(names, function() {
-                let key = this; //.replace(/ /g, ',');
-                let ns =  this.substring(3, this.indexOf(' '));
-                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
-                if (ns == lastNs) {
-                    widgetsSelection.find('optgroup').last().append($option);
-                } else {
-                    let group = $('<optgroup/>').attr('label', ns);
-                    group.append($option);
-                    widgetsSelection.append(group);
-                }
-                lastNs = ns;
+        let nsSelection = $('<select/>');
+        nsSelection.append($('<option/>').val('-').text('(Please Select)'));
+        nsSelection.on('mouseenter focus', function() {
+            if (nsSelection.children().length == 1) {
+                 let nsAdded = [];
+                 MonitoringConsole.Model.listSeries(function(names) {
+                    $.each(names, function() {
+                        let key = this;
+                        let ns =  this.substring(3, this.indexOf(' '));
+                        if (NS_TEXTS[ns] === undefined) {
+                            ns = 'other';
+                        }
+                        if (nsAdded.indexOf(ns) < 0) {
+                            nsAdded.push(ns);
+                            nsSelection.append($('<option/>').val(ns).text(NS_TEXTS[ns]));
+                        }
+                    });
+                });
+            }
+        });
+        let widgetsSelection = $('<select/>').attr('disabled', true);
+        nsSelection.change(function() {
+            widgetsSelection.empty();
+            MonitoringConsole.Model.listSeries(function(names) {
+                $.each(names, function() {
+                    let key = this;
+                    let ns =  this.substring(3, this.indexOf(' '));
+                    if (NS_TEXTS[ns] === undefined) {
+                        ns = 'other';
+                    }
+                    if (ns === nsSelection.val()) {
+                        widgetsSelection.append($("<option />").val(key).text(this.substring(this.indexOf(' '))));                        
+                    }
+                });
+                widgetsSelection.attr('disabled', false);
             });
         });
         let widgetSeries = $('<input />', {type: 'text'});
@@ -2926,6 +2958,7 @@ MonitoringConsole.View = (function() {
             { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
             { label: 'Widgets', input: () => 
                 $('<span/>')
+                .append(nsSelection)
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
