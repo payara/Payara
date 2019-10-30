@@ -28,10 +28,11 @@ state changes in case of relead.
 ```
 UI              = { pages, settings }
 pages           = { *: PAGE }
-PAGE            = { name, id, numberOfColumns, widgets }
+PAGE            = { name, id, numberOfColumns, rotate, widgets }
 name            = string
 id              = string
 numberOfColumns = number
+rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
 settings        = { display, home }
 display         = boolean

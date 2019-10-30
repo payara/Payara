@@ -256,6 +256,8 @@ MonitoringConsole.Model = (function() {
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
 				page.numberOfColumns = 1;
+			if (page.rotate === undefined)
+				page.rotate = true;
 			// make widgets from array to object if needed
 			if (Array.isArray(page.widgets)) {
 				let widgets = {};
@@ -565,10 +567,21 @@ MonitoringConsole.Model = (function() {
 			},
 			
 			switchPage: function(pageId) {
+				if (pageId === undefined) { // rotate to next page from current page
+					let pageIds = Object.values(pages).filter(page => page.rotate).map(page => page.id);
+					pageId = pageIds[(pageIds.indexOf(settings.home) + 1) % pageIds.length];
+				}
 				if (!pages[pageId])
 					return undefined;
 				settings.home = pageId;
 				return pages[settings.home];
+			},
+
+			rotatePage: function(rotate) {
+				if (rotate === undefined)
+					return pages[settings.home].rotate;
+				pages[settings.home].rotate = rotate;
+				doStore();
 			},
 			
 			removeWidget: function(series) {
@@ -638,6 +651,24 @@ MonitoringConsole.Model = (function() {
 				doDeselect();
 				doStore();
 			},
+
+			Rotation: {
+				isEnabled: () => settings.rotation && settings.rotation.enabled,
+				enabled: function(enabled) {
+					settings.rotation.enabled = enabled === undefined ? true : enabled;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.rotation)
+						settings.rotation = {};
+					if (duration === undefined)
+						return settings.rotation.interval;
+					if (typeof duration === 'number') {
+						settings.rotation.interval = duration;
+						doStore();
+					}
+				}
+			}
 		};
 	})();
 	
@@ -753,7 +784,40 @@ MonitoringConsole.Model = (function() {
 			isPaused: () => intervalFn === undefined,
 		};
 	})();
+
+	/**
+	 * Internal API for the page rotation interval handling.
+	 */ 
+	let Rotation = (function() {
+
+	    /**
+	     * {function} - a function called with no extra arguments when interval tick occured
+	     */
+	    var onIntervalTick;
+
+		/**
+		 * {function} - underlying interval function causing the ticks to occur
+		 */
+		var intervalFn;
+
+		return {
+
+			init: function(onIntervalFn) {
+				onIntervalTick = onIntervalFn;
+			},
+
+			resume: function(atRefreshInterval) {
+				if (intervalFn)
+					clearInterval(intervalFn); // free old 
+				if (atRefreshInterval)
+					intervalFn = setInterval(onIntervalTick, atRefreshInterval * 1000);
+			}
+		};
+	})();
 	
+	/**
+	 * Internal API for creating data update messages send to the view from server responses.
+	 */ 
 	let Update = (function() {
 
 		function retainLastMinute(data) {
@@ -859,7 +923,7 @@ MonitoringConsole.Model = (function() {
 	})();
 
 
-	function doInit(onDataUpdate) {
+	function doInit(onDataUpdate, onPageUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
@@ -882,6 +946,7 @@ MonitoringConsole.Model = (function() {
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
+		Rotation.init(() => onPageUpdate(doSwitchPage()));
 		return UI.arrange();
 	}
 
@@ -905,6 +970,14 @@ MonitoringConsole.Model = (function() {
 				Charts.destroy(widget.series);
 			}
 		};
+	}
+
+	function doSwitchPage(pageId) {
+		if (UI.switchPage(pageId)) {
+			Charts.clear();
+			Interval.tick();
+		}
+		return UI.arrange();		
 	}
 
 	/**
@@ -941,6 +1014,20 @@ MonitoringConsole.Model = (function() {
 			open: UI.openSettings,
 			close: UI.closeSettings,
 			toggle: () => UI.showSettings() ? UI.closeSettings() : UI.openSettings(),
+			
+			Rotation: {
+				isEnabled: UI.Rotation.isEnabled,
+				enabled: function(enabled) {
+					UI.Rotation.enabled(enabled);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				},
+				interval: function(duration) {
+					if (duration === undefined)
+						return UI.Rotation.interval();
+					UI.Rotation.interval(duration);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				}
+			}
 		},
 		
 		/**
@@ -951,6 +1038,7 @@ MonitoringConsole.Model = (function() {
 			id: () => UI.currentPage().id,
 			name: () => UI.currentPage().name,
 			rename: UI.renamePage,
+			rotate: UI.rotatePage,
 			isEmpty: () => (Object.keys(UI.currentPage().widgets).length === 0),
 			
 			create: function(name) {
@@ -978,11 +1066,7 @@ MonitoringConsole.Model = (function() {
 			hasPreset: UI.hasPreset,
 			
 			changeTo: function(pageId) {
-				if (UI.switchPage(pageId)) {
-					Charts.clear();
-					Interval.tick();
-				}
-				return UI.arrange();
+				return doSwitchPage(pageId);
 			},
 			
 			/**
@@ -1117,6 +1201,16 @@ MonitoringConsole.View.Units = (function() {
 
    const PERCENT_FACTORS = {
       '%': 1
+   };
+
+   /**
+    * Factors used for any time unit to milliseconds
+    */
+   const SEC_FACTORS = {
+      h: 60 * 60, hours: 60 * 60,
+      m: 60, min: 60, mins: 60,
+      s: 1, sec: 1, secs: 1,
+      _: [['h', 'm', 's'], ['m', 's'], ['h', 'm']]
    };
 
    /**
@@ -1269,6 +1363,7 @@ MonitoringConsole.View.Units = (function() {
          return {
             format: function(valueAsNumber, useDecimals) {
                switch(unit) {
+                  case 'sec': return formatNumber(valueAsNumber, SEC_FACTORS, useDecimals); 
                   case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
                   case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
                   case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
@@ -1278,6 +1373,7 @@ MonitoringConsole.View.Units = (function() {
             },
             parse: function(valueAsString) {
                switch(unit) {
+                  case 'sec': return parseNumber(valueAsString, SEC_FACTORS);
                   case 'ms': return parseNumber(valueAsString, MS_FACTORS);
                   case 'ns': return parseNumber(valueAsString, NS_FACTORS);
                   case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
@@ -1367,26 +1463,30 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTable(model) {
-         let table = $('<table />', { id: model.id });
-         if (model.caption)
-            table.append(createHeaderRow({ label: model.caption }));
-         return table;
+        let table = $('<table />', { id: model.id });
+        if (model.caption)
+          table.append(createHeaderRow({ label: model.caption }));
+        return table;
       }
 
       function createRow(model, inputs) {
-         let components = $.isFunction(inputs) ? inputs() : inputs;
-         if (typeof components === 'string') {
+        let components = $.isFunction(inputs) ? inputs() : inputs;
+        if (typeof components === 'string') {
             components = document.createTextNode(components);
-         }
-         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        }
+        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-         return $("<input/>", { type: 'checkbox', checked: model.value })
-             .on('change', function() {
-                 let checked = this.checked;
-                 Selection.configure((widget) => model.onChange(widget, checked));
-             });
+        return $("<input/>", { type: 'checkbox', checked: model.value })
+          .on('change', function() {
+            let checked = this.checked;
+            if (model.onChange.length == 2) {
+              Selection.configure((widget) => model.onChange(widget, checked)); 
+            } else if (model.onChange.length == 1) {
+              model.onChange(checked);
+            }
+          });
       }
 
       function createRangeInput(model) {
@@ -1421,7 +1521,11 @@ MonitoringConsole.View.Components = (function() {
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+            if (model.onChange.length == 2) {
+              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
+            } else if (model.onChange.length == 1) {
+              model.onChange(val);
+            }
          });
          return input;
       }
@@ -2545,6 +2649,7 @@ MonitoringConsole.View = (function() {
                 panelConsole.addClass('state-show-settings');                
             }
             let settings = [];
+            settings.push(createGlobalSettings());
             settings.push(createPageSettings());
             settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
@@ -2648,6 +2753,15 @@ MonitoringConsole.View = (function() {
             ;
     }
 
+    function createGlobalSettings() {
+        return { id: 'settings-global', caption: 'Global', entries: [
+            { label: 'Page Rotation', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
+                { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
+            ]},
+        ]};
+    }
+
     function createWidgetSettings(widget) {
         let options = widget.options;
         let unit = widget.unit;
@@ -2735,6 +2849,7 @@ MonitoringConsole.View = (function() {
                     }
                 })
             },
+            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
             { label: 'Widgets', input: () => 
                 $('<span/>')
                 .append(widgetsSelection)
@@ -2913,7 +3028,7 @@ MonitoringConsole.View = (function() {
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
-            onPageChange(MonitoringConsole.Model.init(onDataUpdate));
+            onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),

@@ -221,6 +221,7 @@ button:hover {
 #Settings table td:first-child {
   width: 120px;
   vertical-align: top;
+  padding-top: 5px;
 }
 #Settings a, #Settings a:visited {
   color: white;

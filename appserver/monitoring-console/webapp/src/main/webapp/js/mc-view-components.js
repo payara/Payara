@@ -76,26 +76,30 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTable(model) {
-         let table = $('<table />', { id: model.id });
-         if (model.caption)
-            table.append(createHeaderRow({ label: model.caption }));
-         return table;
+        let table = $('<table />', { id: model.id });
+        if (model.caption)
+          table.append(createHeaderRow({ label: model.caption }));
+        return table;
       }
 
       function createRow(model, inputs) {
-         let components = $.isFunction(inputs) ? inputs() : inputs;
-         if (typeof components === 'string') {
+        let components = $.isFunction(inputs) ? inputs() : inputs;
+        if (typeof components === 'string') {
             components = document.createTextNode(components);
-         }
-         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        }
+        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-         return $("<input/>", { type: 'checkbox', checked: model.value })
-             .on('change', function() {
-                 let checked = this.checked;
-                 Selection.configure((widget) => model.onChange(widget, checked));
-             });
+        return $("<input/>", { type: 'checkbox', checked: model.value })
+          .on('change', function() {
+            let checked = this.checked;
+            if (model.onChange.length == 2) {
+              Selection.configure((widget) => model.onChange(widget, checked)); 
+            } else if (model.onChange.length == 1) {
+              model.onChange(checked);
+            }
+          });
       }
 
       function createRangeInput(model) {
@@ -130,7 +134,11 @@ MonitoringConsole.View.Components = (function() {
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+            if (model.onChange.length == 2) {
+              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
+            } else if (model.onChange.length == 1) {
+              model.onChange(val);
+            }
          });
          return input;
       }

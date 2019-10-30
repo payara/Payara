@@ -106,6 +106,7 @@ MonitoringConsole.View = (function() {
                 panelConsole.addClass('state-show-settings');                
             }
             let settings = [];
+            settings.push(createGlobalSettings());
             settings.push(createPageSettings());
             settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
@@ -209,6 +210,15 @@ MonitoringConsole.View = (function() {
             ;
     }
 
+    function createGlobalSettings() {
+        return { id: 'settings-global', caption: 'Global', entries: [
+            { label: 'Page Rotation', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
+                { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
+            ]},
+        ]};
+    }
+
     function createWidgetSettings(widget) {
         let options = widget.options;
         let unit = widget.unit;
@@ -296,6 +306,7 @@ MonitoringConsole.View = (function() {
                     }
                 })
             },
+            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
             { label: 'Widgets', input: () => 
                 $('<span/>')
                 .append(widgetsSelection)
@@ -474,7 +485,7 @@ MonitoringConsole.View = (function() {
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
-            onPageChange(MonitoringConsole.Model.init(onDataUpdate));
+            onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),

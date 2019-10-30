@@ -165,6 +165,8 @@ MonitoringConsole.Model = (function() {
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
 				page.numberOfColumns = 1;
+			if (page.rotate === undefined)
+				page.rotate = true;
 			// make widgets from array to object if needed
 			if (Array.isArray(page.widgets)) {
 				let widgets = {};
@@ -474,10 +476,21 @@ MonitoringConsole.Model = (function() {
 			},
 			
 			switchPage: function(pageId) {
+				if (pageId === undefined) { // rotate to next page from current page
+					let pageIds = Object.values(pages).filter(page => page.rotate).map(page => page.id);
+					pageId = pageIds[(pageIds.indexOf(settings.home) + 1) % pageIds.length];
+				}
 				if (!pages[pageId])
 					return undefined;
 				settings.home = pageId;
 				return pages[settings.home];
+			},
+
+			rotatePage: function(rotate) {
+				if (rotate === undefined)
+					return pages[settings.home].rotate;
+				pages[settings.home].rotate = rotate;
+				doStore();
 			},
 			
 			removeWidget: function(series) {
@@ -547,6 +560,24 @@ MonitoringConsole.Model = (function() {
 				doDeselect();
 				doStore();
 			},
+
+			Rotation: {
+				isEnabled: () => settings.rotation && settings.rotation.enabled,
+				enabled: function(enabled) {
+					settings.rotation.enabled = enabled === undefined ? true : enabled;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.rotation)
+						settings.rotation = {};
+					if (duration === undefined)
+						return settings.rotation.interval;
+					if (typeof duration === 'number') {
+						settings.rotation.interval = duration;
+						doStore();
+					}
+				}
+			}
 		};
 	})();
 	
@@ -662,7 +693,40 @@ MonitoringConsole.Model = (function() {
 			isPaused: () => intervalFn === undefined,
 		};
 	})();
+
+	/**
+	 * Internal API for the page rotation interval handling.
+	 */ 
+	let Rotation = (function() {
+
+	    /**
+	     * {function} - a function called with no extra arguments when interval tick occured
+	     */
+	    var onIntervalTick;
+
+		/**
+		 * {function} - underlying interval function causing the ticks to occur
+		 */
+		var intervalFn;
+
+		return {
+
+			init: function(onIntervalFn) {
+				onIntervalTick = onIntervalFn;
+			},
+
+			resume: function(atRefreshInterval) {
+				if (intervalFn)
+					clearInterval(intervalFn); // free old 
+				if (atRefreshInterval)
+					intervalFn = setInterval(onIntervalTick, atRefreshInterval * 1000);
+			}
+		};
+	})();
 	
+	/**
+	 * Internal API for creating data update messages send to the view from server responses.
+	 */ 
 	let Update = (function() {
 
 		function retainLastMinute(data) {
@@ -768,7 +832,7 @@ MonitoringConsole.Model = (function() {
 	})();
 
 
-	function doInit(onDataUpdate) {
+	function doInit(onDataUpdate, onPageUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
@@ -791,6 +855,7 @@ MonitoringConsole.Model = (function() {
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
 		Interval.resume();
+		Rotation.init(() => onPageUpdate(doSwitchPage()));
 		return UI.arrange();
 	}
 
@@ -814,6 +879,14 @@ MonitoringConsole.Model = (function() {
 				Charts.destroy(widget.series);
 			}
 		};
+	}
+
+	function doSwitchPage(pageId) {
+		if (UI.switchPage(pageId)) {
+			Charts.clear();
+			Interval.tick();
+		}
+		return UI.arrange();		
 	}
 
 	/**
@@ -850,6 +923,20 @@ MonitoringConsole.Model = (function() {
 			open: UI.openSettings,
 			close: UI.closeSettings,
 			toggle: () => UI.showSettings() ? UI.closeSettings() : UI.openSettings(),
+			
+			Rotation: {
+				isEnabled: UI.Rotation.isEnabled,
+				enabled: function(enabled) {
+					UI.Rotation.enabled(enabled);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				},
+				interval: function(duration) {
+					if (duration === undefined)
+						return UI.Rotation.interval();
+					UI.Rotation.interval(duration);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				}
+			}
 		},
 		
 		/**
@@ -860,6 +947,7 @@ MonitoringConsole.Model = (function() {
 			id: () => UI.currentPage().id,
 			name: () => UI.currentPage().name,
 			rename: UI.renamePage,
+			rotate: UI.rotatePage,
 			isEmpty: () => (Object.keys(UI.currentPage().widgets).length === 0),
 			
 			create: function(name) {
@@ -887,11 +975,7 @@ MonitoringConsole.Model = (function() {
 			hasPreset: UI.hasPreset,
 			
 			changeTo: function(pageId) {
-				if (UI.switchPage(pageId)) {
-					Charts.clear();
-					Interval.tick();
-				}
-				return UI.arrange();
+				return doSwitchPage(pageId);
 			},
 			
 			/**
