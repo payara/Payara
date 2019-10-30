@@ -2929,7 +2929,7 @@ MonitoringConsole.View = (function() {
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
+                    .click(() => onPageChange(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
             },
         ]};
     }
@@ -2944,7 +2944,7 @@ MonitoringConsole.View = (function() {
 
     function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
+            onPageChange(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
     }
 
