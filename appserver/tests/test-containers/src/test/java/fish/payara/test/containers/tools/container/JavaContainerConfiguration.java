@@ -54,6 +54,7 @@ import org.testcontainers.shaded.org.apache.commons.lang.builder.ToStringStyle;
 public class JavaContainerConfiguration {
 
     private String downloadedDockerImageName;
+    private String jdkPackageId;
     private long preparationTimeout = 60L;
     private File pomFile;
     private File testOutputDirectory;
@@ -74,7 +75,7 @@ public class JavaContainerConfiguration {
      * Returns a name of the available public docker image name that will be downloaded and cached
      * by the Docker, and used to create own docker image used as a base image for tests.
      *
-     * @return f.e. debian:9.5-slim or ubuntu:19.04
+     * @return ie. debian:9.5-slim or ubuntu:19.04
      */
     public String getDownloadedDockerImageName() {
         return this.downloadedDockerImageName;
@@ -85,10 +86,26 @@ public class JavaContainerConfiguration {
      * Sets a name of the available public docker image name that will be downloaded and cached
      * by the Docker, and used to create own docker image used as a base image for tests.
      *
-     * @param dockerImageName f.e. debian:9.5-slim or ubuntu:19.04
+     * @param dockerImageName ie. debian:9.5-slim or ubuntu:19.04
      */
     public void setDownloadedDockerImageName(final String dockerImageName) {
         this.downloadedDockerImageName = dockerImageName;
+    }
+
+
+    /**
+     * @return name of the package known to OS installer, ie. openjdk-11-jdk-headless
+     */
+    public String getJdkPackageId() {
+        return jdkPackageId;
+    }
+
+
+    /**
+     * @param jdkPackageId name of the package known to OS installer, ie. openjdk-11-jdk-headless
+     */
+    public void setJdkPackageId(String jdkPackageId) {
+        this.jdkPackageId = jdkPackageId;
     }
 
 

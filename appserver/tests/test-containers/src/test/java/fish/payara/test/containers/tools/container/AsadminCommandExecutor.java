@@ -79,9 +79,11 @@ public class AsadminCommandExecutor {
      *
      * @param command - command name - must not be null.
      * @param arguments - command arguments - nullable.
-     * @throws AsadminCommandException
+     * @return standard output
+     * @throws AsadminCommandException - if the command exit code was not zero; message contains
+     *             error output
      */
-    public void exec(final String command, final String... arguments) throws AsadminCommandException {
+    public String exec(final String command, final String... arguments) throws AsadminCommandException {
         LOG.debug("exec(command={}, arguments={})", command, arguments);
         Objects.requireNonNull(command, "command");
         final String asadmin = container.getAsadmin().getAbsolutePath();
@@ -92,7 +94,7 @@ public class AsadminCommandExecutor {
             LOG.debug("args={}, exitCode={},\nstdout:\n{}\nstderr:\n{}", args, exitCode, result.getStdout(),
                 result.getStderr());
             if (exitCode == 0) {
-                return;
+                return result.getStdout();
             }
             throw new AsadminCommandException(
                 "Execution of command '" + command + "' failed with: \n" + result.getStderr());

@@ -51,6 +51,7 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -69,7 +70,7 @@ import static org.testcontainers.utility.MountableFile.forClasspathResource;
  * @param <C> Supported {@link JavaContainerConfiguration} type
  * @author David Matějček
  */
-public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C extends JavaContainerConfiguration>
+public abstract class JavaDockerImageManager<T extends FixedHostPortGenericContainer<T>, C extends JavaContainerConfiguration>
     extends DockerImageManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(JavaDockerImageManager.class);
@@ -140,18 +141,27 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
     @Override
     public String getInstallCommand() {
         return "true" //
-            + " && cat /etc/hosts && cat /etc/resolv.conf" //
+            + " && mkdir -p /usr/share/man/man1" //
+            // add repositories and useful software
             + " && apt-get update" //
-            + " && apt-get -y install netcat net-tools inetutils-ping unzip zip locales psmisc wget gnupg lsb-core" //
-            + " && sed -i -e 's/# cs_CZ.UTF-8 UTF-8/cs_CZ.UTF-8 UTF-8/' /etc/locale.gen"//
+            + " && apt-get -y install"
+            + " netcat net-tools inetutils-ping wget gnupg lsb-release curl"
+//            + " software-properties-common" //
+            + " locales psmisc"
+            + " unzip zip"
+//            + " && apt-key adv --fetch-keys https://download.docker.com/linux/debian/gpg" ///
+//            + " && add-apt-repository \"deb https://download.docker.com/linux/debian $(lsb_release -cs) stable\"" //
+//            + " && apt-get update" //
+            + " && apt-get -y install"
+//            + " docker-ce containerd.io"
+//            + " docker-ce-cli"
+            + " openjdk-11-jdk-headless" //
+            + " && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*" //
+            // support locales
             + " && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen"//
             + " && locale-gen" //
-            + " && export LANG=\"cs_CZ.UTF-8\"" //
-            + " && export LANGUAGE=\"cs_CZ.UTF-8\"" //
-            + " && mkdir -p /usr/share/man/man1" //
-            + " && apt-get -y install openjdk-8-jdk-headless" //
-            + " && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*" //
-            + " && adduser " + USERNAME //
+//            + " && groupadd docker"
+            + " && adduser "/*--ingroup docker,root "*/ + USERNAME //
         ;
     }
 
@@ -185,6 +195,8 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
         }
         container.withFileSystemBind(this.cfg.getMainApplicationDirectory().getAbsolutePath(),
             this.cfg.getMainApplicationDirectoryInDocker().getAbsolutePath(), READ_WRITE); //
+        // this allows to use host's docker inside the docker container.
+//        container.withFileSystemBind("/var/run/docker.sock", "/var/run/docker.sock");
         if (this.cfg.isJaCoCoEnabled()) {
             final File jaCoCoReportDirectory = requireNonNull(getConfiguration().getJaCoCoReportDirectory(),
                 "configuration.jaCoCoReportDirectory");
@@ -246,7 +258,9 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
             command.append(" && nc -v -z -w 1 ") //
                 .append(hostAndPort.getHost()).append(' ').append(hostAndPort.getPort());
         }
+        command.append(" && export LANG=\"en_US.UTF-8\"").append(" && export LANGUAGE=\"en_US.UTF-8\""); //
         command.append(" && (env | sort) && locale"); //
+        command.append(" && cat /etc/hosts && cat /etc/resolv.conf"); //
         command.append(" && hostname && netstat -r -n && netstat -ln"); //
         return command;
     }

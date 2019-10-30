@@ -78,6 +78,7 @@ public final class DockerEnvironmentConfigurationParser {
     private static PayaraServerContainerConfiguration parseServerConfiguration(final Properties properties) {
         final PayaraServerContainerConfiguration cfg = new PayaraServerContainerConfiguration();
         cfg.setDownloadedDockerImageName(properties.getString("docker.payara.image.base"));
+        cfg.setJdkPackageId(properties.getString("docker.payara.jdkPackageId"));
         cfg.setPreparationTimeout(properties.getLong("docker.images.timeoutInSeconds", 60));
 
         cfg.setMainApplicationDirectory(properties.getFile("docker.payara.sharedDirectory"));

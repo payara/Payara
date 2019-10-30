@@ -119,6 +119,15 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
         return new File(getPayaraDomainDirectoryInDocker(), "lib");
     }
 
+
+    /**
+     * @return zip file containing application server in docker container
+     */
+    public File getPayaraZipFile() {
+        return new File(getMainApplicationDirectory(), "payara.zip");
+    }
+
+
     /**
      * @return zip file containing application server in docker container
      */
@@ -171,6 +180,14 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
 
     /**
      * @return absolute path to the passwordfile.txt
+     */
+    public File getPasswordFile() {
+        return new File(getMainApplicationDirectory(), "passwordfile.txt");
+    }
+
+
+    /**
+     * @return absolute path to the passwordfile.txt in docker container
      */
     public File getPasswordFileInDocker() {
         return new File(getMainApplicationDirectoryInDocker(), "passwordfile.txt");

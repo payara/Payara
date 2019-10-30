@@ -39,20 +39,29 @@
  */
 package fish.payara.test.containers.tools.container;
 
+import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.model.ContainerNetwork;
+
 import fish.payara.test.containers.tools.rs.RestClientCache;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.testcontainers.containers.GenericContainer;
+import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.Testcontainers;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 
 /**
  * Payara server started as docker container.
  *
  * @author David Matějček
  */
-public class PayaraServerContainer extends GenericContainer<PayaraServerContainer> {
+public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraServerContainer> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PayaraServerContainer.class);
     private final PayaraServerContainerConfiguration configuration;
     private final RestClientCache clientCache;
 
@@ -128,17 +137,29 @@ public class PayaraServerContainer extends GenericContainer<PayaraServerContaine
 
 
     /**
+     * @return IP address usable in container network
+     */
+    public String getVirtualNetworkIpAddress() {
+        final Collection<ContainerNetwork> networks = getContainerInfo().getNetworkSettings().getNetworks().values();
+        LOG.trace("networks: {}", networks);
+        return networks.stream().filter(n -> n.getNetworkID().equals(getNetwork().getId())).findAny()
+            .map(ContainerNetwork::getIpAddress).orElse("127.0.0.1");
+    }
+
+
+    /**
      * Executes asadmin without need to access to a running domain.
      *
      * @param command - command name
      * @param arguments - arguments. Can be null.
+     * @return standard output
      */
-    public void asLocalAdmin(final String command, final String... arguments) {
+    public String asLocalAdmin(final String command, final String... arguments) {
         try {
             // FIXME: --echo breaks change-admin-password
             final String[] defaultArgs = new String[] {"--terse"};
             final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
-            executor.exec(command, arguments);
+            return executor.exec(command, arguments);
         } catch (AsadminCommandException e) {
             throw new IllegalStateException(e);
         }
@@ -151,15 +172,42 @@ public class PayaraServerContainer extends GenericContainer<PayaraServerContaine
      * @param command - command name
      * @param arguments - arguments. Can be null and should not contain parameters used before
      *            the command.
+     * @return standard ouptut
      */
-    public void asAdmin(final String command, final String... arguments) {
+    public String asAdmin(final String command, final String... arguments) {
         try {
             final String[] defaultArgs = new String[] {"--terse", "--user", "admin", //
                 "--passwordfile", this.configuration.getPasswordFileInDocker().getAbsolutePath()};
             final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
-            executor.exec(command, arguments);
+            return executor.exec(command, arguments);
         } catch (AsadminCommandException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+
+    /**
+     * Calls hosts docker on port 2376. The port must be exposed into container with the
+     * {@link Testcontainers#exposeHostPorts(int...)} before the container is created.
+     *
+     * @param path
+     * @param json
+     * @return stdout
+     */
+    public String docker(final String path, final String json) {
+        LOG.debug("docker(path={}, json=\n{}\n)", path, json);
+        try {
+            final ExecResult result = execInContainer( //
+                "curl", "-sS", //
+                "-H", "Accept: application/json", "-H", "Content-Type: application/json", //
+                "-i", "http://host.testcontainers.internal:2376/" + path, //
+                "--data", json);
+            if (result.getExitCode() != 0) {
+                throw new DockerClientException(result.getStderr());
+            }
+            return result.getStdout();
+        } catch (final UnsupportedOperationException | IOException | InterruptedException e) {
+            throw new IllegalStateException("Could not execute docker command via curl.", e);
         }
     }
 }

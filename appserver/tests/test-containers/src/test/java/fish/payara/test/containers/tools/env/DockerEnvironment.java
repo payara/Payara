@@ -122,6 +122,7 @@ public class DockerEnvironment implements AutoCloseable {
         this.network = Network.newNetwork();
 
         final List<CompletableFuture<Void>> parallelFutures = new ArrayList<>();
+        Testcontainers.exposeHostPorts(2376);
 
         final PayaraServerDockerImageManager payaraServerMgr = //
             new PayaraServerDockerImageManager(this.network, cfg.getPayaraServerConfiguration());
@@ -130,13 +131,13 @@ public class DockerEnvironment implements AutoCloseable {
 
         final MySQLDockerImageManager mysqlMgr;
         if (cfg.isUseMySqlContainer()) {
-            mysqlMgr = new MySQLDockerImageManager(network, cfg.getMySQLServerConfiguration());
+            mysqlMgr = new MySQLDockerImageManager(this.network, cfg.getMySQLServerConfiguration());
             parallelFutures.add(CompletableFuture.runAsync(() -> mysqlMgr.prepareImage(cfg.isForceNewMySQLServer())));
-        } else {
-            if (cfg.getMySQLServerConfiguration().getPort() <= 0) {
-                throw new IllegalStateException("Cannot expose invalid database port in the docker network.");
-            }
+        } else if (cfg.getMySQLServerConfiguration().getPort() > 0) {
             Testcontainers.exposeHostPorts(cfg.getMySQLServerConfiguration().getPort());
+            mysqlMgr = null;
+        } else {
+            LOG.debug("MySQL docker is not configured.");
             mysqlMgr = null;
         }
 
@@ -159,6 +160,9 @@ public class DockerEnvironment implements AutoCloseable {
     }
 
 
+    /**
+     * @return configuration of the environment, which was provided in constructor.
+     */
     public DockerEnvironmentConfiguration getConfiguration() {
         return this.cfg;
     }
