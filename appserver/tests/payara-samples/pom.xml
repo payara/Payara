@@ -7,10 +7,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server</groupId>
-        <artifactId>payara-aggregator</artifactId>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>payara-tests</artifactId>
         <version>5.201-SNAPSHOT</version>
-        <relativePath>../../../</relativePath>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -53,6 +52,21 @@
         <module>classpath</module>
     </modules>
 
+    <repositories>
+        <!-- omnifaces jacc-provider is not in any other repository -->
+        <repository>
+            <id>payara-eclipse</id>
+            <name>Payara Eclipse</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/eclipse</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- DO NOT ADD DEPENDENCIES -->
     </dependencies>
@@ -62,8 +76,7 @@
             <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-bom</artifactId>
-                <!-- A workaround for case when module redefines its version (rest-monitoring-war) -->
-                <version>${project.parent.version}</version>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -85,6 +98,11 @@
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-micro</artifactId>
+                <version>${payara.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.extras</groupId>
+                <artifactId>payara-micro-boot</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
@@ -110,24 +128,6 @@
 
             <!-- Testing Dependencies -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-core</artifactId>
-                <version>1.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-library</artifactId>
-                <version>1.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.valid4j</groupId>
                 <artifactId>http-matchers</artifactId>
                 <version>1.1</version>
@@ -150,37 +150,37 @@
                 <version>1.4.197</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.main.security</groupId>
+                <groupId>fish.payara.server.internal.security</groupId>
                 <artifactId>security</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.main.common</groupId>
+                <groupId>fish.payara.server.internal.common</groupId>
                 <artifactId>internal-api</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.main.deployment</groupId>
+                <groupId>fish.payara.server.internal.deployment</groupId>
                 <artifactId>dol</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.main.common</groupId>
+                <groupId>fish.payara.server.internal.common</groupId>
                 <artifactId>simple-glassfish-api</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>fish.payara.payara-modules</groupId>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>notification-core</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>fish.payara.payara-modules</groupId>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>healthcheck-core</artifactId>
                 <version>${payara.version}</version>
             </dependency>
             <dependency>
-                <groupId>fish.payara.payara-modules</groupId>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>healthcheck-stuck</artifactId>
                 <version>${payara.version}</version>
             </dependency>
@@ -268,7 +268,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
                 <configuration>
                     <source>${java.min.version}</source>
                     <target>${java.min.version}</target>
@@ -285,21 +284,11 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
-
                 <configuration>
                     <systemPropertyVariables>
                         <isUsingMicroProfile>${micro.isActive}</isUsingMicroProfile>
                     </systemPropertyVariables>
                 </configuration>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                        <version>${jakarta.annotation-api.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -322,7 +311,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.0</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -359,81 +347,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>central</id>
-            <name>Central Repository</name>
-
-            <url>https://repo.maven.apache.org/maven2</url>
-
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>payara-milestones</id>
-            <name>Payara Milestones</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>payara-eclipse</id>
-            <name>Payara Eclipse</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/eclipse</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>ossrh</id>
-            <name>Sonatype-snapshot</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-staging</id>
-            <name>Java.net Staging Repositories</name>
-            <url>https://maven.java.net/content/repositories/staging</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-    </repositories>
-
     <reporting>
         <plugins>
             <plugin>

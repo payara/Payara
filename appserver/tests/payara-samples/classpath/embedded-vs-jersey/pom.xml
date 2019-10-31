@@ -55,41 +55,9 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>payara4</id>
-            <activation>
-                <property>
-                    <name>payara.version</name>
-                    <value>/4.+/</value>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>payara-client-ee7</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    
-        <profile>
-            <id>payara5</id>
-            <activation>
-                <property>
-                    <name>payara.version</name>
-                    <value>/5.+/</value>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>payara-client-ee8</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
