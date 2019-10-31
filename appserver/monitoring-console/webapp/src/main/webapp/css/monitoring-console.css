@@ -38,7 +38,7 @@
    holder.
 */
 body {
-    background-color: #002c3e;
+    background-color: #003247;
     font: 13px/1.231 'IBM Plex Sans', helvetica,clean,sans-serif;
     color: white;
     margin: 0;
@@ -54,6 +54,7 @@ select {
   background: white;
   padding: 2px 5px;
   border-radius: 2px;
+  margin-bottom: 2px;
 }
 input[type=text], input[type=number] {
 	border: 1px solid #ccc;
@@ -66,6 +67,9 @@ input[type=text] {
 }
 input[type=number] {
   width: 60px;
+}
+input[type=checkbox] {
+  vertical-align: middle;
 }
 canvas {
   position: relative;
