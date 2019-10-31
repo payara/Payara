@@ -99,6 +99,11 @@
             mapPut(map="#{pageSession.valueMap}"  key="dockerpasswordfile"  value="#{pageSession.attrMap['dockerPasswordFile']}");
             mapPut(map="#{pageSession.valueMap}"  key="usetls"  value="#{pageSession.attrMap['useTls']}");
 
+            setPageSessionAttribute(key="convertToFalseList" value={"usetls"});
+            if (#{pageSession.valueMap['usetls']}=true) {
+                setPageSessionAttribute(key="usetlsSelected", value="true");
+            }
+
             //if there is already installdir specified, keep the value specified instead of changing to default.
             mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="\\${com.sun.aas.productRoot}");
             if("#{pageSession.attrMap['installDir']}"){

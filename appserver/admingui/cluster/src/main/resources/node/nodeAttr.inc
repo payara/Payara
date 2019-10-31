@@ -432,7 +432,7 @@
                 <sun:textField id="dockerPasswordFile" text="#{pageSession.valueMap['dockerpasswordfile']}" columns="$int{60}" />
             </sun:property>
             <sun:property id="useTls"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.useTls}" helpText="$resource{i18ncs.node.useTlsHelp}">
-                <sun:checkbox id="useTls" selected="#{pageSession.valueMap['usetls']}" label="$resource{i18n.common.Enabled}" selectedValue="true"/>
+                <sun:checkbox id="useTls" selected="#{pageSession.usetlsSelected}" label="$resource{i18n.common.Enabled}" selectedValue="true"/>
             </sun:property>
 
         </sun:propertySheetSection>
