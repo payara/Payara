@@ -82,7 +82,7 @@ public class ListNodesHelper {
 
         for (Node n : nodeList) {
             String nodeType = n.getType();
-            if ((!listType.equals(nodeType) && !listType.equals("ALL")) || nodeType.equals("HIDDEN")) {
+            if ((!listType.equals(nodeType) && !listType.equals("ALL")) || nodeType.equals("TEMP")) {
                 continue;
             }
 
