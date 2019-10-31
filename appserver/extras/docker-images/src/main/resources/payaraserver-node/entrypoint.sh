@@ -79,7 +79,6 @@ function createNewInstance {
     echo "Running command create-local-instance:"
     if [ -z "${PAYARA_INSTANCE_NAME}" ]; then
         if [ -z "${PAYARA_CONFIG_NAME}" ]; then
-            echo "./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} create-local-instance --node ${PAYARA_NODE_NAME} --dockernode true --ip ${DOCKER_CONTAINER_IP}"
             ASADMIN_COMMAND="./payara5/bin/asadmin -I false -T -a -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} create-local-instance --node ${PAYARA_NODE_NAME} --dockernode true --ip ${DOCKER_CONTAINER_IP}"
             echo "${ASADMIN_COMMAND}"
             PAYARA_INSTANCE_NAME="$(${ASADMIN_COMMAND})"
@@ -118,7 +117,7 @@ function createNewInstance {
     echo "Setting Docker Container ID for instance ${PAYARA_INSTANCE_NAME}: ${DOCKER_CONTAINER_ID}"
     ASADMIN_COMMAND="./payara5/bin/asadmin -I false -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _set-docker-container-id --instance ${PAYARA_INSTANCE_NAME} --id ${DOCKER_CONTAINER_ID}"
     echo "${ASADMIN_COMMAND}"
-    $(${ASADMIN_COMMAND})
+    ${ASADMIN_COMMAND}
 }
 
 ### Setup ###
@@ -151,7 +150,7 @@ else
                 if [ "${REGISTERED_DOCKER_CONTAINER_ID}" == "${DOCKER_CONTAINER_ID}" ]; then
                     echo "Docker Container IDs match, creating local instance filesystem: "
                     ASADMIN_COMMAND="./payara5/bin/asadmin -I false -T -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _create-instance-filesystem --node ${PAYARA_NODE_NAME} --dockernode true ${PAYARA_INSTANCE_NAME}"
-                    $(${ASADMIN_COMMAND})
+                    ${ASADMIN_COMMAND}
                 else
                     echo "Docker Container IDs do not match, creating a new instance."
                     createNewInstance
@@ -169,4 +168,4 @@ fi
 ### Start ###
 echo "Starting instance ${PAYARA_INSTANCE_NAME}"
 ASADMIN_COMMAND="./payara5/bin/asadmin --passwordfile ${PAYARA_PASSWORD_FILE} start-local-instance --node ${PAYARA_NODE_NAME} --verbose ${PAYARA_INSTANCE_NAME}"
-$(${ASADMIN_COMMAND})
+${ASADMIN_COMMAND}
