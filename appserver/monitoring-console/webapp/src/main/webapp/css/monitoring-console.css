@@ -37,10 +37,9 @@
    only if the new code is made subject to such option by the copyright
    holder.
 */
-
 body {
     background-color: #002c3e;
-    font: 13px/1.231 helvetica,clean,sans-serif;
+    font: 13px/1.231 'IBM Plex Sans', helvetica,clean,sans-serif;
     color: white;
     margin: 0;
     padding: 0;
@@ -75,15 +74,21 @@ button {
     padding: 5px 1em;
     margin: 0 1px;
     font-weight: normal;
-    background-color: #F0981B;
+    background: rgb(240,152,27);
+    box-shadow: 0px 3px 3px rgba(67,68,69,0.05),    
+      0px 2px 2px rgba(67,68,69,0.1),
+      0px 1px 1px rgba(67,68,69,0.15);
     border-width: 0;
-    color: white;
+    color: #101012;
     border-radius: 2px;
     cursor: pointer;
     line-height: 1.0;
+    font-weight: 500;
 }
 button:hover {
-	background-color: #F1A232;
+	background: rgba(240,152,27,0.9);
+  box-shadow: 0px 1px 1px rgba(16,16,18,0.3);
+  transform : translateY(1px);
 }
 #logo {
   height: 30px;
@@ -173,8 +178,7 @@ button:hover {
     position: relative;
 }
 #chart-grid td.chart-selected h3 {
-    color: #00618A;
-    background-color: white;
+    background-color: #0096D6;
 }
 .stable {
 	background-color: rgba(153, 102, 255, 0.2);
@@ -388,16 +392,20 @@ table.tags th, table.tags td {
   text-align: left;
 }
 .Menu button {
-  color: #bbb;
-  background-color: transparent;
-  padding: 5px;
-}
-.Menu button:hover {
   color: white;
   background-color: transparent;
+  padding: 0.5em 1em;
+  display: inline-block;
+  text-align: left;
+  border-radius: 0px;
+  box-shadow: none;  
+}
+.Menu button:hover {
+  color: #434445;
+  background-color: #D2D8DA;
 }
 .Menu button:disabled {
-  color: #888;
+  color: #DAE0E2;
   cursor: not-allowed;
 }
 .Menu .Item {
@@ -411,14 +419,15 @@ table.tags th, table.tags td {
   float: none;
   display: block;
   white-space: nowrap;
+  width: 100%;
 }
 .Menu .Group {
   display: none;
   position: absolute;
   z-index: 200;
-  background-color: #002c3e;
+  background-color: #0096D6;
   overflow: hidden;
-  border: 1px solid #aaa;
+  padding: 0;
 }
 .Menu .Item:hover .Group {
   display: block;
