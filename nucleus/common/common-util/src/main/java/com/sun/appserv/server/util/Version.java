@@ -62,8 +62,6 @@ import java.util.Properties;
 */
 public class Version {
     
-    private Version() {}
-
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
     private static final String PRODUCT_NAME_KEY = "product_name";
     private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name";
