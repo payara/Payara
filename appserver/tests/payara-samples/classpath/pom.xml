@@ -11,7 +11,10 @@
     <packaging>pom</packaging>
 
     <name>Classpath tests</name>
-    <description>These test verify that artifacts provide classpath isolated enough not to interfere with client code in unexpected ways.</description>
+    <description>
+      These test verify that artifacts provide classpath isolated enough not to interfere
+      with client code in unexpected ways.
+    </description>
 
     <modules>
         <module>embedded-vs-jersey</module>
@@ -36,6 +39,9 @@
                                     <excludes>
                                         <exclude>*:*</exclude>
                                     </excludes>
+                                    <includes>
+                                        <include>com.sun:tools-jar</include>
+                                    </includes>
                                     <message>This module cannot inherit any dependencies to keep children's classpaths clean</message>
                                 </bannedDependencies>
                             </rules>
