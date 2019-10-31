@@ -69,7 +69,7 @@ input[type=number] {
   width: 60px;
 }
 canvas {
-    position: relative;
+  position: relative;
 }
 button {
     padding: 5px 1em;
@@ -127,10 +127,13 @@ button:hover {
     padding: 0 5px;
 }
 .widget-chart-box {
-    position: relative;
+    position: absolute;
+    top: 40px;
 }
 .widget-title-bar {
-  position: relative;
+  position: absolute;
+  z-index: 101;
+  width: calc(100% - 20px);
 }
 .widget-title-bar h3 {
   font-size: 130%;
@@ -160,13 +163,14 @@ button:hover {
 	width: 100%;
 	table-layout:fixed;
 	border-spacing: 5px;
-    border-collapse: separate;
+  border-collapse: separate;
+  padding-top: 5px;
 }
 #chart-grid td {
     background-color: #002433;
     padding: 10px;
     vertical-align: top;
-    border: 2px solid #002433;
+    position: relative;
 }
 #chart-grid td.chart-selected h3 {
     color: #00618A;
@@ -285,7 +289,10 @@ table.tags th, table.tags td {
 /* Widget Legend */
 .Legend {
   margin: 0;
-  padding: 0 20px;
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  padding: 0;
 }
 .Legend li {
   display: inline-block;
@@ -316,6 +323,9 @@ table.tags th, table.tags td {
 .Legend li.status-error strong {
     color: red;
 }
+.Legend span, .Legend strong {
+  background-color: #002433;
+}
 @keyframes blinker {
   50% {
     opacity: 0.5;
@@ -328,7 +338,10 @@ table.tags th, table.tags td {
   font-weight: bold;
   padding: 5px 10px;
   text-align: center;
-  margin: 5px;
+  position: absolute;
+  width: 50%;
+  margin: 15% 25%;
+  background-color: rgba(0,36,51,0.5);
 }
 .Indicator.status-missing {
   border-color: Violet;

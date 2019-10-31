@@ -2699,7 +2699,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Delete', icon: '&times;', description: 'Delete current page', disabled: hasPreset, onClick: MonitoringConsole.View.onPageDelete },
                 { label: 'Reset', icon: '&#128260;', description: 'Reset Page to Preset', disabled: !hasPreset, onClick: MonitoringConsole.View.onPageReset },
             ]},
-            { icon: '&#128472;', label: 'Data Refresh', clickable: true, items: [
+            { icon: '&#128472;', label: 'Data Refresh', items: [
                 { label: 'Pause', icon: '&#9208;', description: 'Pause Data Refresh', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); updateSettings(); } },
                 { label: 'Unpause', icon: '&#9654;', description: 'Unpause Data Refresh', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); updateSettings(); } },
                 { label: 'Slow', icon: '&#128034;', description: 'Slow Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(4); updateMenu(); updateSettings(); } },
@@ -2773,7 +2773,7 @@ MonitoringConsole.View = (function() {
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
     function createWidgetTargetContainer(widget) {
-        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box", style: 'width: calc(100% - 20px); height: calc(100% - 100px);' })
             .append($('<canvas/>',{ id: widget.target }));
     }
 
@@ -3074,14 +3074,27 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
+        let padding = 30;
+        let headerHeight = 40;
+        let minRowHeight = 160;
+        let rowsPerScreen = maxRows;
+        let windowHeight = $(window).height();
+        let rowHeight = 0;
+        while (rowsPerScreen > 0 && rowHeight < minRowHeight) {
+            rowHeight = Math.round((windowHeight - headerHeight) / rowsPerScreen) - padding; // padding is subtracted
+            rowsPerScreen--; // in case we do another round try one less per screen
+        }
+        if (rowHeight == 0) {
+            rowHeight = windowHeight - headerHeight - padding;
+        }
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    let height = (span * rowHeight);
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+height+"px;"});
                     updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
