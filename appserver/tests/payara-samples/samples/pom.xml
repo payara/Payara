@@ -141,6 +141,7 @@
             </activation>
             <properties>
                 <payara.directory.name>payara41</payara.directory.name>
+                <payara.container.version>1.3</payara.container.version>
             </properties>
             <dependencies>
                 <dependency>
