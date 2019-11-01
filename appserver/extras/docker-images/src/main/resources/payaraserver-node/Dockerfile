@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk:8u222
+FROM azul/zulu-openjdk:8u232
 
 ENV WORK_DIR=/opt/payara
 ENV PAYARA_HOME=${WORK_DIR}/payara5 \
