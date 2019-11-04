@@ -47,7 +47,7 @@ import org.eclipse.microprofile.metrics.Gauge;
  * @author jonathan coustick
  * @since 5.193
  */
-public class MBeanGuageImpl implements Gauge<Long> {
+public class MBeanGuageImpl implements Gauge<Double> {
 
     private final MBeanExpression mBean;
 
@@ -56,7 +56,7 @@ public class MBeanGuageImpl implements Gauge<Long> {
     }
 
     @Override
-    public Long getValue() {      
-        return mBean.getNumberValue().longValue();
+    public Double getValue() {      
+        return mBean.getNumberValue().doubleValue();
     }
 }
