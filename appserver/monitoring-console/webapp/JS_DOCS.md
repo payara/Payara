@@ -28,18 +28,26 @@ state changes in case of relead.
 ```
 UI              = { pages, settings }
 pages           = { *: PAGE }
-PAGE            = { name, id, numberOfColumns, widgets }
+PAGE            = { name, id, numberOfColumns, rotate, widgets }
 name            = string
 id              = string
 numberOfColumns = number
+rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display }
+settings        = { display, home, refresh, rotation }
 display         = boolean
+home            = string
+refresh         = { paused, interval }
+rotation        = { enabled, interval }
+paused          = boolean
+enabled         = boolean
+interval        = number
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
 * `widgets` can be ommitted for an empty page
 * `numberOfColumns` can be ommitted
 * `widgets` is allowed to be an array - if so it is made into an object using each widget's `series` for the attribute name
+* `home` is the `PAGE.id` of the currently shown page
 
 ### Widget Model
 
@@ -267,29 +275,34 @@ The model creates a new jquery object that must be inserted into the DOM by the 
 * `assessments` help to understand or classify the given value qualitatively 
 
 
-
-### Navigation API
-Describes the model expected by the `Navigation` component.
-This component is the main page navigation at the top.
-
-```
-NAVIGATION = { pages, onChange }
-pages      = [PAGE_ITEM]
-PAGE_ITEM  = { label, id, active }
-label      = string
-id         = string
-active     = boolean
-onChange   = fn (id) => () 
-```
-* `onChange` is called when another page is selected passing the `PAGE_ITEM.id` of the selected page.
-
-
 ### Indicator API
 Describes the model expected by the `Indicator` component.
 This component gives feedback on the status of each widget.
 
 ```
-INDOCATOR = { status, text }
+INDICATOR = { status, text }
 status    = Status
 text      = string
 ```
+
+
+### MENU API
+Describes the model expected by the `MENU` component that is used for any of the text + icon menus or toolbars.
+
+```
+MENU         = { id, groups }
+groups       = [BUTTON_GROUP | BUTTON]
+BUTTON_GROUP = { icon, label, description, clickable, items }
+items        = [BUTTON]
+clickable    = boolean
+BUTTON       = { icon, label, description, disabled, hidden, onClick }
+icon         = string
+label        = string
+description  = string
+disabled     = boolean
+hidden       = boolean
+onClick      = fn () => ()
+```
+* `id` is optional
+* `description` is optional
+* if item in `MENU` array has `items` it is a `BUTTON_GROUP` otherwise it is a `BUTTON`

@@ -153,26 +153,29 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 3,
 					widgets: [
 						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
-							grid: { item: 0, column: 0, span: 1}, 
+							grid: { item: 1, column: 0, span: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
 						{ series: 'ns:jvm CpuUsage', unit: 'percent',
-							grid: { item: 1, column: 0, span: 1}, 
+							grid: { item: 1, column: 1, span: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
 						{ series: 'ns:jvm ThreadCount', unit: 'count',  
 							grid: { item: 0, column: 1, span: 1}},
-						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
-							grid: { item: 1, column: 1, span: 1},
-							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadUsage', unit: 'percent',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }},
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'avg', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},														
 						{ series: 'ns:web RequestCount', unit: 'count',
 							grid: { item: 0, column: 2, span: 1}, 
 							options: { perSec: true },
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 						{ series: 'ns:web ActiveSessions', unit: 'count',
-							grid: { item: 1, column: 2, span: 1},
+							grid: { item: 0, column: 0, span: 1},
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
@@ -194,7 +197,7 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
 							grid: { column: 0, item: 0},
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+						{ series: 'ns:http ThreadPoolCurrentThreadsBusy', unit: 'count',
 							grid: { column: 0, item: 1},
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
 						{ series: 'ns:http ServerCount2xx', unit: 'count', 
@@ -216,7 +219,6 @@ MonitoringConsole.Model = (function() {
 					]
 				}
 			},
-			settings: {},
 	};
 
 	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
@@ -247,8 +249,6 @@ MonitoringConsole.Model = (function() {
 		 */
 		var settings = {};
 		
-		var currentPageId;
-		
 		/**
 		 * Makes sure the page data structure has all required attributes.
 		 */
@@ -259,6 +259,8 @@ MonitoringConsole.Model = (function() {
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
 				page.numberOfColumns = 1;
+			if (page.rotate === undefined)
+				page.rotate = true;
 			// make widgets from array to object if needed
 			if (Array.isArray(page.widgets)) {
 				let widgets = {};
@@ -313,7 +315,7 @@ MonitoringConsole.Model = (function() {
 		}
 		
 		function doDeselect() {
-			Object.values(pages[currentPageId].widgets)
+			Object.values(pages[settings.home].widgets)
 				.forEach(widget => widget.selected = false);
 		}
 		
@@ -325,7 +327,7 @@ MonitoringConsole.Model = (function() {
 				throw "A page with name "+name+" already exist";
 			let page = sanityCheckPage({name: name});
 			pages[page.id] = page;
-			currentPageId = page.id;
+			settings.home = page.id;
 			return page;
 		}
 		
@@ -336,7 +338,7 @@ MonitoringConsole.Model = (function() {
 			let isPagesOnly = !userInterface.pages || !userInterface.settings;
 			if (!isPagesOnly)
 				settings = userInterface.settings;
-			let importedPages = isPagesOnly ? userInterface : userInterface.pages;
+			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
 				for (let i = 0; i < importedPages.length; i++) {
@@ -359,8 +361,8 @@ MonitoringConsole.Model = (function() {
 					}
 				}
 			}
-			if (Object.keys(pages).length > 0) {
-				currentPageId = Object.keys(pages)[0];
+			if (settings.home === undefined && Object.keys(pages).length > 0) {
+				settings.home = Object.keys(pages)[0];
 			}
 			doStore();
 			return true;
@@ -385,7 +387,7 @@ MonitoringConsole.Model = (function() {
       	}
 
       	function doLayout(columns) {
-			let page = pages[currentPageId];
+			let page = pages[settings.home];
 			if (!page)
 				return [];
 			if (columns)
@@ -473,12 +475,12 @@ MonitoringConsole.Model = (function() {
 		
 		return {
 			currentPage: function() {
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			listPages: function() {
 				return Object.values(pages).map(function(page) { 
-					return { id: page.id, name: page.name, active: page.id === currentPageId };
+					return { id: page.id, name: page.name, active: page.id === settings.home };
 				});
 			},
 			
@@ -513,7 +515,7 @@ MonitoringConsole.Model = (function() {
 				if (ui)
 				doImport(JSON.parse(ui), true);
 				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			/**
@@ -528,12 +530,12 @@ MonitoringConsole.Model = (function() {
 				let pageId = getPageId(name);
 				if (pages[pageId])
 					return false;
-				let page = pages[currentPageId];
+				let page = pages[settings.home];
 				page.name = name;
 				page.id = pageId;
 				pages[pageId] = page;
-				delete pages[currentPageId];
-				currentPageId = pageId;
+				delete pages[settings.home];
+				settings.home = pageId;
 				doStore();
 				return true;
 			},
@@ -546,31 +548,47 @@ MonitoringConsole.Model = (function() {
 				let pageIds = Object.keys(pages);
 				if (pageIds.length <= 1)
 					return undefined;
-				delete pages[currentPageId];
-				currentPageId = pageIds[0];
-				return pages[currentPageId];
+				delete pages[settings.home];
+				settings.home = pageIds[0];
+				return pages[settings.home];
 			},
 
 			resetPage: function() {
 				let presets = UI_PRESETS;
-				if (presets && presets.pages && presets.pages[currentPageId]) {
-					let preset = presets.pages[currentPageId];
-					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
+				if (presets && presets.pages && presets.pages[settings.home]) {
+					let preset = presets.pages[settings.home];
+					pages[settings.home] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
 					doStore();
 					return true;
 				}
 				return false;
 			},
+
+			hasPreset: function() {
+				let presets = UI_PRESETS;
+				return presets && presets.pages && presets.pages[settings.home];
+			},
 			
 			switchPage: function(pageId) {
+				if (pageId === undefined) { // rotate to next page from current page
+					let pageIds = Object.values(pages).filter(page => page.rotate).map(page => page.id);
+					pageId = pageIds[(pageIds.indexOf(settings.home) + 1) % pageIds.length];
+				}
 				if (!pages[pageId])
 					return undefined;
-				currentPageId = pageId;
-				return pages[currentPageId];
+				settings.home = pageId;
+				return pages[settings.home];
+			},
+
+			rotatePage: function(rotate) {
+				if (rotate === undefined)
+					return pages[settings.home].rotate;
+				pages[settings.home].rotate = rotate;
+				doStore();
 			},
 			
 			removeWidget: function(series) {
-				let widgets = pages[currentPageId].widgets;
+				let widgets = pages[settings.home].widgets;
 				if (series && widgets) {
 					delete widgets[series];
 				}
@@ -580,22 +598,38 @@ MonitoringConsole.Model = (function() {
 				if (typeof series !== 'string')
 					throw 'configuration object requires string property `series`';
 				doDeselect();
-				let widgets = pages[currentPageId].widgets;
+				let layout = doLayout();
+				let page = pages[settings.home];
+				let widgets = page.widgets;
 				let widget = { series: series };
 				widgets[series] = sanityCheckWidget(widget);
 				widget.selected = true;
+				// automatically fill most empty column
+				let usedCells = new Array(layout.length);
+				for (let i = 0; i < usedCells.length; i++) {
+					usedCells[i] = 0;
+					for (let j = 0; j < layout[i].length; j++) {
+						let cell = layout[i][j];
+						if (cell === undefined || cell !== null && typeof cell === 'object')
+							usedCells[i]++;
+					}
+				}
+				let indexOfLeastUsedCells = usedCells.reduce((iMin, x, i, arr) => x < arr[iMin] ? i : iMin, 0);
+				widget.grid.column = indexOfLeastUsedCells;
+				widget.grid.item = 100;
+				doStore();
 			},
 			
 			configureWidget: function(widgetUpdate, series) {
 				let selected = series
-					? [pages[currentPageId].widgets[series]]
-					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
+					? [pages[settings.home].widgets[series]]
+					: Object.values(pages[settings.home].widgets).filter(widget => widget.selected);
 				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
 			},
 			
 			select: function(series) {
-				let widget = pages[currentPageId].widgets[series];
+				let widget = pages[settings.home].widgets[series];
 				widget.selected = widget.selected !== true;
 				doStore();
 				return widget.selected === true;
@@ -607,7 +641,7 @@ MonitoringConsole.Model = (function() {
 			},
 			
 			selected: function() {
-				return Object.values(pages[currentPageId].widgets)
+				return Object.values(pages[settings.home].widgets)
 					.filter(widget => widget.selected)
 					.map(widget => widget.series);
 			},
@@ -624,8 +658,8 @@ MonitoringConsole.Model = (function() {
 			
 			showSettings: function() {
 				return settings.display === true
-					|| Object.keys(pages[currentPageId].widgets).length == 0
-					|| Object.values(pages[currentPageId].widgets).filter(widget => widget.selected).length > 0;
+					|| Object.keys(pages[settings.home].widgets).length == 0
+					|| Object.values(pages[settings.home].widgets).filter(widget => widget.selected).length > 0;
 			},
 			openSettings: function() {
 				settings.display = true;
@@ -636,6 +670,42 @@ MonitoringConsole.Model = (function() {
 				doDeselect();
 				doStore();
 			},
+
+			Rotation: {
+				isEnabled: () => settings.rotation && settings.rotation.enabled,
+				enabled: function(enabled) {
+					settings.rotation.enabled = enabled === undefined ? true : enabled;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.rotation)
+						settings.rotation = {};
+					if (duration === undefined)
+						return settings.rotation.interval;
+					if (typeof duration === 'number') {
+						settings.rotation.interval = duration;
+						doStore();
+					}
+				}
+			},
+
+			Refresh: {
+				isPaused: () => settings.refresh && settings.refresh.paused,
+				paused: function(paused) {
+					settings.refresh.paused = paused;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.refresh)
+						settings.refresh = {};
+					if (duration == undefined)
+						return settings.refresh.interval;
+					if (typeof duration === 'number') {
+						settings.refresh.interval = duration;
+						doStore();
+					}
+				}
+			}
 		};
 	})();
 	
@@ -689,12 +759,12 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	const DEFAULT_INTERVAL = 2;
+
 	/**
 	 * Internal API for data loading from server
 	 */
 	var Interval = (function() {
-		
-		const DEFAULT_INTERVAL = 2000;
 		
 	    /**
 	     * {function} - a function called with no extra arguments when interval tick occured
@@ -707,14 +777,27 @@ MonitoringConsole.Model = (function() {
 		var intervalFn;
 		
 		/**
-		 * {number} - tick interval in milliseconds
+		 * {number} - tick interval in seconds
 		 */
 		var refreshInterval = DEFAULT_INTERVAL;
 		
-		function doPause() {
+		function pause() {
 			if (intervalFn) {
 				clearInterval(intervalFn);
 				intervalFn = undefined;
+			}
+		}
+
+		function resume(atRefreshInterval) {
+			onIntervalTick();
+			if (atRefreshInterval && atRefreshInterval != refreshInterval) {
+				pause();
+				refreshInterval = atRefreshInterval;
+			}
+			if (refreshInterval === 0)
+				refreshInterval = DEFAULT_INTERVAL;
+			if (intervalFn === undefined) {
+				intervalFn = setInterval(onIntervalTick, refreshInterval * 1000);
 			}
 		}
 		
@@ -734,25 +817,52 @@ MonitoringConsole.Model = (function() {
 			/**
 			 * Causes an immediate invocation of the tick target function and makes sure an interval is present or started
 			 */
-			resume: function(atRefreshInterval) {
-				onIntervalTick();
-				if (atRefreshInterval && atRefreshInterval != refreshInterval) {
-					doPause();
-					refreshInterval = atRefreshInterval;
-				}
-				if (refreshInterval === 0)
-					refreshInterval = DEFAULT_INTERVAL;
-				if (intervalFn === undefined) {
-					intervalFn = setInterval(onIntervalTick, refreshInterval);
-				}
-			},
+			resume: resume,
 			
-			pause: function() {
-				doPause();
+			pause: pause,
+			isPaused: () => intervalFn === undefined,
+
+			interval: function(duration) {
+				if (duration === undefined)
+					return refreshInterval;
+				resume(duration);
+			}
+		};
+	})();
+
+	/**
+	 * Internal API for the page rotation interval handling.
+	 */ 
+	let Rotation = (function() {
+
+	    /**
+	     * {function} - a function called with no extra arguments when interval tick occured
+	     */
+	    var onIntervalTick;
+
+		/**
+		 * {function} - underlying interval function causing the ticks to occur
+		 */
+		var intervalFn;
+
+		return {
+
+			init: function(onIntervalFn) {
+				onIntervalTick = onIntervalFn;
 			},
+
+			resume: function(atRefreshInterval) {
+				if (intervalFn)
+					clearInterval(intervalFn); // free old 
+				if (atRefreshInterval)
+					intervalFn = setInterval(onIntervalTick, atRefreshInterval * 1000);
+			}
 		};
 	})();
 	
+	/**
+	 * Internal API for creating data update messages send to the view from server responses.
+	 */ 
 	let Update = (function() {
 
 		function retainLastMinute(data) {
@@ -858,16 +968,15 @@ MonitoringConsole.Model = (function() {
 	})();
 
 
-	function doInit(onDataUpdate) {
+	function doInit(onDataUpdate, onPageUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
-					instances: instances
+					instances: undefined, // all
 				}; 
 			});
 			let request = $.ajax({
@@ -880,7 +989,14 @@ MonitoringConsole.Model = (function() {
 			request.done(Update.createOnSuccess(widgets, onDataUpdate));
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
-		Interval.resume();
+		if (UI.Refresh.interval() === undefined) {
+			UI.Refresh.interval(DEFAULT_INTERVAL);
+		}
+		Interval.resume(UI.Refresh.interval());
+		Rotation.init(() => onPageUpdate(doSwitchPage()));
+		if (UI.Rotation.isEnabled()) {
+			Rotation.resume(UI.Rotation.interval());	
+		}
 		return UI.arrange();
 	}
 
@@ -906,6 +1022,14 @@ MonitoringConsole.Model = (function() {
 		};
 	}
 
+	function doSwitchPage(pageId) {
+		if (UI.switchPage(pageId)) {
+			Charts.clear();
+			Interval.tick();
+		}
+		return UI.arrange();		
+	}
+
 	/**
 	 * The public API object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
@@ -928,10 +1052,34 @@ MonitoringConsole.Model = (function() {
 		 * API to control the chart refresh interval.
 		 */
 		Refresh: {
-			pause: Interval.pause,
-			resume: () => Interval.resume(2000),
-			slow: () => Interval.resume(4000),
-			fast: () => Interval.resume(1000),
+			pause: function() { 
+				Interval.pause();
+				UI.Refresh.paused(true);
+			},
+			paused: function(paused) {
+				if (paused === undefined)
+					return UI.Refresh.isPaused();
+				UI.Refresh.paused(paused);
+				if (paused) {
+					Interval.pause();
+				} else {
+					Interval.resume(UI.Refresh.interval());
+				}
+			},
+			isPaused: UI.Refresh.isPaused,
+			resume: function(duration) {
+				if (duration !== undefined) {
+					UI.Refresh.interval(duration);
+				}
+				UI.Refresh.paused(false);
+				Interval.resume(UI.Refresh.interval());
+			},
+			interval: function(duration) {
+				if (duration === undefined)
+					return UI.Refresh.interval();
+				UI.Refresh.interval(duration);
+				Interval.resume(UI.Refresh.interval());				
+			},
 		},
 		
 		Settings: {
@@ -939,6 +1087,20 @@ MonitoringConsole.Model = (function() {
 			open: UI.openSettings,
 			close: UI.closeSettings,
 			toggle: () => UI.showSettings() ? UI.closeSettings() : UI.openSettings(),
+			
+			Rotation: {
+				isEnabled: UI.Rotation.isEnabled,
+				enabled: function(enabled) {
+					UI.Rotation.enabled(enabled);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				},
+				interval: function(duration) {
+					if (duration === undefined)
+						return UI.Rotation.interval();
+					UI.Rotation.interval(duration);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				}
+			}
 		},
 		
 		/**
@@ -949,6 +1111,7 @@ MonitoringConsole.Model = (function() {
 			id: () => UI.currentPage().id,
 			name: () => UI.currentPage().name,
 			rename: UI.renamePage,
+			rotate: UI.rotatePage,
 			isEmpty: () => (Object.keys(UI.currentPage().widgets).length === 0),
 			
 			create: function(name) {
@@ -972,13 +1135,11 @@ MonitoringConsole.Model = (function() {
 				}
 				return UI.arrange();
 			},
+
+			hasPreset: UI.hasPreset,
 			
 			changeTo: function(pageId) {
-				if (UI.switchPage(pageId)) {
-					Charts.clear();
-					Interval.tick();
-				}
-				return UI.arrange();
+				return doSwitchPage(pageId);
 			},
 			
 			/**
@@ -1113,6 +1274,16 @@ MonitoringConsole.View.Units = (function() {
 
    const PERCENT_FACTORS = {
       '%': 1
+   };
+
+   /**
+    * Factors used for any time unit to milliseconds
+    */
+   const SEC_FACTORS = {
+      h: 60 * 60, hours: 60 * 60,
+      m: 60, min: 60, mins: 60,
+      s: 1, sec: 1, secs: 1,
+      _: [['h', 'm', 's'], ['m', 's'], ['h', 'm']]
    };
 
    /**
@@ -1265,6 +1436,7 @@ MonitoringConsole.View.Units = (function() {
          return {
             format: function(valueAsNumber, useDecimals) {
                switch(unit) {
+                  case 'sec': return formatNumber(valueAsNumber, SEC_FACTORS, useDecimals); 
                   case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
                   case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
                   case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
@@ -1274,6 +1446,7 @@ MonitoringConsole.View.Units = (function() {
             },
             parse: function(valueAsString) {
                switch(unit) {
+                  case 'sec': return parseNumber(valueAsString, SEC_FACTORS);
                   case 'ms': return parseNumber(valueAsString, MS_FACTORS);
                   case 'ns': return parseNumber(valueAsString, NS_FACTORS);
                   case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
@@ -1363,26 +1536,30 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTable(model) {
-         let table = $('<table />', { id: model.id });
-         if (model.caption)
-            table.append(createHeaderRow({ label: model.caption }));
-         return table;
+        let table = $('<table />', { id: model.id });
+        if (model.caption)
+          table.append(createHeaderRow({ label: model.caption }));
+        return table;
       }
 
       function createRow(model, inputs) {
-         let components = $.isFunction(inputs) ? inputs() : inputs;
-         if (typeof components === 'string') {
+        let components = $.isFunction(inputs) ? inputs() : inputs;
+        if (typeof components === 'string') {
             components = document.createTextNode(components);
-         }
-         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        }
+        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-         return $("<input/>", { type: 'checkbox', checked: model.value })
-             .on('change', function() {
-                 let checked = this.checked;
-                 Selection.configure((widget) => model.onChange(widget, checked));
-             });
+        return $("<input/>", { type: 'checkbox', checked: model.value })
+          .on('change', function() {
+            let checked = this.checked;
+            if (model.onChange.length == 2) {
+              Selection.configure((widget) => model.onChange(widget, checked)); 
+            } else if (model.onChange.length == 1) {
+              model.onChange(checked);
+            }
+          });
       }
 
       function createRangeInput(model) {
@@ -1417,7 +1594,11 @@ MonitoringConsole.View.Components = (function() {
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+            if (model.onChange.length == 2) {
+              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
+            } else if (model.onChange.length == 1) {
+              model.onChange(val);
+            }
          });
          return input;
       }
@@ -1508,66 +1689,107 @@ MonitoringConsole.View.Components = (function() {
       return { onCreation: onCreation };
    })();
 
-   /**
-   * Component to navigate pages. More a less a dropdown.
+  /**
+   * Component drawn for each widget legend item to indicate data status.
    */
-   let Navigation = (function() {
+  let Indicator = (function() {
 
-      function onUpdate(model) {
-         let dropdown = $('<select/>');
-         dropdown.change(() => model.onChange(dropdown.val()));
-         for (let i = 0; i < model.pages.length; i++) {
-            let pageModel = model.pages[i];
-            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
-            if (pageModel.active) {
-               dropdown.val(pageModel.id);
-            }
-         }
-         let nav = $("#Navigation"); 
-         nav.empty();
-         nav.append(dropdown);
-         return dropdown;
-      }
+    function onCreation(model) {
+       if (!model.text) {
+          return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+       }
+       let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+       return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
+    }
 
-      return { onUpdate: onUpdate };
-   })();
+    return { onCreation: onCreation };
+  })();
 
-
-   let Indicator = (function() {
-
-      function onCreation(model) {
-         if (!model.text) {
-            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
-         }
-         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
-         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
-      }
-
-      return { onCreation: onCreation };
-    })();
-
-   /*
-   * Public API below:
+  /**
+   * Component for any of the text+icon menus/toolbars.
    */
-   return {
+  let Menu = (function() {
+
+    function onCreation(model) {
+      let attrs = { 'class': 'Menu' };
+      if (model.id)
+        attrs.id = model.id;
+      let menu = $('<span/>', attrs);
+      let groups = model.groups;
+      for (let g = 0; g < groups.length; g++) {
+        let group = groups[g];
+        if (group.items) {
+          let groupBox = $('<span/>', { class: 'Group' });
+          let groupLabel = $('<a/>').html(createText(group));
+          let groupItem = $('<span/>', { class: 'Item' })
+            .append(groupLabel)
+            .append(groupBox)
+            ;
+          if (group.clickable) {
+            groupLabel
+              .click(group.items.find(e => e.hidden !== true && e.disabled !== true).onClick)
+              .addClass('clickable');
+          }
+          menu.append(groupItem);
+          for (let i = 0; i < group.items.length; i++) {
+            let item = group.items[i];
+            if (item.hidden !== true)
+              groupBox.append(createButton(item));
+          }          
+        } else {
+          if (group.hidden !== true)
+            menu.append(createButton(group).addClass('Item'));
+        }
+      }
+      return menu;
+    }
+
+    function createText(button) {
+      let text = '';
+      if (button.icon)
+        text += '<strong>'+button.icon+'</strong>';
+      if (button.label)
+        text += button.label;
+      if (button.label && button.items)
+        text += " &#9013;";
+      return text;
+    }
+
+    function createButton(button) {
+      let attrs = { title: button.description };
+      if (button.disabled)
+        attrs.disabled = true;
+      return $('<button/>', attrs)
+            .html(createText(button))
+            .click(button.onClick)
+            .addClass('clickable');
+    }
+
+    return { onCreation: onCreation };
+  })();
+
+  /*
+  * Public API below:
+  */
+  return {
       /**
        * Call to update the settings side panel with the given model
        */
       onSettingsUpdate: (model) => Settings.onUpdate(model),
       /**
-       * Call to update the top page navigation with the given model
-       */
-      onNavigationUpdate: (model) => Navigation.onUpdate(model),
-      /**
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */
       onLegendCreation: (model) => Legend.onCreation(model),
       /**
-       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       * Returns a jquery indicator element reflecting the given model to be inserted into the DOM
        */
       onIndicatorCreation: (model) => Indicator.onCreation(model),
+      /**
+       * Returns a jquery menu element reflecting the given model to inserted into the DOM
+       */
+      onMenuCreation: (model) => Menu.onCreation(model),
       //TODO add id to model and make it an update?
-   };
+  };
 
 })();
 /*
@@ -1755,6 +1977,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onCreation(widget) {
     let options = {
+      responsive: true,
       maintainAspectRatio: false,
       scales: {
         xAxes: [{
@@ -2089,6 +2312,8 @@ MonitoringConsole.Chart.Bar = (function() {
                let bar = this.getElementsAtEventForMode(event, "y", 1)[0];
                let series = bar._chart.config.data.series[bar._index]; 
                if (series.startsWith('ns:trace ') && series.endsWith(' Duration')) {
+                  MonitoringConsole.Model.Settings.close();
+                  MonitoringConsole.View.onPageMenu();
                   MonitoringConsole.Chart.Trace.onOpenPopup(series);
                }
             }
@@ -2318,6 +2543,8 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function updateDomSpanDetails(data, span) {
+      if (!span)
+         return;
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
       let settings = [
          { id: 'settings-span', caption: 'Span' , entries: [
@@ -2346,6 +2573,15 @@ MonitoringConsole.Chart.Trace = (function() {
    function onOpenPopup(series) {
       $('#panel-trace').show();
       model.series = series;
+      let menu = { id: 'TraceMenu', groups: [
+         { icon: '&#128472;', description: 'Refresh', onClick: onDataRefresh },
+         { label: 'Sorting', items: [
+            { icon: '&#9202;', label: 'Sort By Wall Time (past to recent)', onClick: onSortByWallTime },
+            { icon: '&#8987;', label: 'Sort By Duration (slower to faster)', onClick: onSortByDuration },
+         ]},
+         { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
+      ]};
+      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
       onDataRefresh();
    }
 
@@ -2425,6 +2661,18 @@ MonitoringConsole.Chart.Trace = (function() {
  **/
 MonitoringConsole.View = (function() {
 
+    const NS_TEXTS = {
+        web: 'Web Statistics',
+        http: 'HTTP Statistics',
+        jvm: 'JVM Statistics',
+        metric: 'MP Metrics',
+        trace: 'Request Tracing',
+        map: 'Cluster Map Storage Statistics',
+        topic: 'Cluster Topic IO Statistics',
+        mc: 'Monitoring Console Internals',
+        other: 'Other',
+    };
+
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
 
@@ -2432,30 +2680,63 @@ MonitoringConsole.View = (function() {
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = { 
-            onChange: function(pageid) {
-                MonitoringConsole.Chart.Trace.onClosePopup();
-                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
-            },
-            pages: MonitoringConsole.Model.listPages().map(function(page) {
-                return { label: page.name, id: page.id, active: page.active };
-            }),
-        };
-        Components.onNavigationUpdate(nav);
+        let pages = MonitoringConsole.Model.listPages();
+        let activePage = pages.find(page => page.active);
+        let items = pages.filter(page => !page.active).map(function(page) {
+            return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
+        });
+        let nav = { id: 'Navigation', groups: [
+            {label: activePage.name, items: items }
+        ]};
+        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
+    }
+
+    function updateMenu() {
+        let hasPreset = MonitoringConsole.Model.Page.hasPreset();
+        let isPaused = MonitoringConsole.Model.Refresh.isPaused();
+        let settingsOpen = MonitoringConsole.Model.Settings.isDispayed();
+        let toggleSettings = function() { MonitoringConsole.View.onPageMenu(); updateMenu(); };
+        let menu = { id: 'Menu', groups: [
+            { icon: '&#128463;', label: 'Page', items: [
+                { label: 'New...', icon: '&#128459;', description: 'Add a new blank page...', onClick: () => MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')) },
+                { label: 'Delete', icon: '&times;', description: 'Delete current page', disabled: hasPreset, onClick: MonitoringConsole.View.onPageDelete },
+                { label: 'Reset', icon: '&#128260;', description: 'Reset Page to Preset', disabled: !hasPreset, onClick: MonitoringConsole.View.onPageReset },
+            ]},
+            { icon: '&#128472;', label: 'Data Refresh', items: [
+                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Refresh', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); updateSettings(); } },
+                { label: 'Unpause', icon: '&#9654;', description: 'Unpause Data Refresh', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); updateSettings(); } },
+                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(4); updateMenu(); updateSettings(); } },
+                { label: 'Normal', icon: '&#128008;', description: 'Normal Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(2); updateMenu(); updateSettings(); } },
+                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(1); updateMenu(); updateSettings(); } },
+            ]},
+            { icon: '&#9707;', label: 'Layout', items: [
+                { label: '1 Column', icon: '&#11034;', description: 'Use one column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(1) },
+                { label: ' 2 Columns', icon: '&#11034;&#11034;', description: 'Use two column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(2) },
+                { label: ' 3 Columns', icon: '&#11034;&#11034;&#11034;', description: 'Use three column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(3) },
+                { label: ' 4 Columns', icon: '&#11034;&#11034;&#11034;&#11034;', description: 'Use four column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(4) },
+            ]},
+            { icon: '&#9881;', label: 'Settings', clickable: true, items: [
+                { label: 'Hide', icon: '&times;', hidden: !settingsOpen, onClick: toggleSettings },
+                { label: 'Show', icon: '&plus;', hidden: settingsOpen, onClick: toggleSettings },
+                { label: 'Import...', icon: '&#9111;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
+                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
+            ]},
+        ]};
+        $('#Menu').replaceWith(Components.onMenuCreation(menu));
     }
 
     /**
      * Updates the DOM with the page and selection settings so it reflects current model state
      */ 
-    function updatePageAndSelectionSettings() {
+    function updateSettings() {
         let panelConsole = $('#console');
         if (MonitoringConsole.Model.Settings.isDispayed()) {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
             let settings = [];
+            settings.push(createGlobalSettings());
             settings.push(createPageSettings());
-            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
@@ -2495,7 +2776,7 @@ MonitoringConsole.View = (function() {
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
     function createWidgetTargetContainer(widget) {
-        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box", style: 'width: calc(100% - 20px); height: calc(100% - 100px);' })
             .append($('<canvas/>',{ id: widget.target }));
     }
 
@@ -2538,27 +2819,37 @@ MonitoringConsole.View = (function() {
 
     function createWidgetToolbar(widget, expanded) {
         let series = widget.series;
-        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
-            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
-            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
-            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
-            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
-            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
-            ;
+        let menu = { groups: [
+            { icon: '&#9881;', items: [
+                { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
+                { icon: '&ltri;&rtri;', label: 'Larger', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series)) },
+                { icon: '&rtri;&ltri;', label: 'Samller', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series)) },
+                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
+                { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
+                { icon: '&triangle;', label: 'Move Up', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series)) },
+                { icon: '&dtri;', label: 'Move Down', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series)) },
+                { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
+            ]},
+        ]};
         return $('<div/>', {"class": "widget-title-bar"})
             .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
-            .append(settings));
+            .append(Components.onMenuCreation(menu))
+            ;
     }
 
-    function createToolbarButton(title, icon, onClick) {
-        return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
+    function createGlobalSettings() {
+        return { id: 'settings-global', caption: 'Global', entries: [
+            { label: 'Data Refresh', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
+                { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
+            ]},
+            { label: 'Page Rotation', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
+                { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
+            ]},
+        ]};
     }
-
 
     function createWidgetSettings(widget) {
         let options = widget.options;
@@ -2618,21 +2909,41 @@ MonitoringConsole.View = (function() {
     }
 
     function createPageSettings() {
-        let widgetsSelection = $('<select/>');
-        MonitoringConsole.Model.listSeries(function(names) {
-            let lastNs;
-            $.each(names, function() {
-                let key = this; //.replace(/ /g, ',');
-                let ns =  this.substring(3, this.indexOf(' '));
-                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
-                if (ns == lastNs) {
-                    widgetsSelection.find('optgroup').last().append($option);
-                } else {
-                    let group = $('<optgroup/>').attr('label', ns);
-                    group.append($option);
-                    widgetsSelection.append(group);
-                }
-                lastNs = ns;
+        let nsSelection = $('<select/>');
+        nsSelection.append($('<option/>').val('-').text('(Please Select)'));
+        nsSelection.on('mouseenter focus', function() {
+            if (nsSelection.children().length == 1) {
+                 let nsAdded = [];
+                 MonitoringConsole.Model.listSeries(function(names) {
+                    $.each(names, function() {
+                        let key = this;
+                        let ns =  this.substring(3, this.indexOf(' '));
+                        if (NS_TEXTS[ns] === undefined) {
+                            ns = 'other';
+                        }
+                        if (nsAdded.indexOf(ns) < 0) {
+                            nsAdded.push(ns);
+                            nsSelection.append($('<option/>').val(ns).text(NS_TEXTS[ns]));
+                        }
+                    });
+                });
+            }
+        });
+        let widgetsSelection = $('<select/>').attr('disabled', true);
+        nsSelection.change(function() {
+            widgetsSelection.empty();
+            MonitoringConsole.Model.listSeries(function(names) {
+                $.each(names, function() {
+                    let key = this;
+                    let ns =  this.substring(3, this.indexOf(' '));
+                    if (NS_TEXTS[ns] === undefined) {
+                        ns = 'other';
+                    }
+                    if (ns === nsSelection.val()) {
+                        widgetsSelection.append($("<option />").val(key).text(this.substring(this.indexOf(' '))));                        
+                    }
+                });
+                widgetsSelection.attr('disabled', false);
             });
         });
         let widgetSeries = $('<input />', {type: 'text'});
@@ -2647,41 +2958,29 @@ MonitoringConsole.View = (function() {
                     }
                 })
             },
-            { label: 'Widgets', input: () => 
+            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            { label: 'Add Widgets', input: () => 
                 $('<span/>')
+                .append(nsSelection)
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
+                    .click(() => onPageChange(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
             },
         ]};
     }
-
-    function createDataSettings() {
-        let instanceSelection = $('<select />', {multiple: true});
-        $.getJSON("api/instances/", function(instances) {
-            for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
-            }
-        });
-        return { id: 'settings-data', caption: 'Data', entries: [
-            { label: 'Instances', input: instanceSelection }
-        ]};
-    }
-
-    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
         updateDomOfWidget(undefined, widget);
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
+            onPageChange(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
     }
 
@@ -2778,14 +3077,27 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
+        let padding = 30;
+        let headerHeight = 40;
+        let minRowHeight = 160;
+        let rowsPerScreen = maxRows;
+        let windowHeight = $(window).height();
+        let rowHeight = 0;
+        while (rowsPerScreen > 0 && rowHeight < minRowHeight) {
+            rowHeight = Math.round((windowHeight - headerHeight) / rowsPerScreen) - padding; // padding is subtracted
+            rowsPerScreen--; // in case we do another round try one less per screen
+        }
+        if (rowHeight == 0) {
+            rowHeight = windowHeight - headerHeight - padding;
+        }
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    let height = (span * rowHeight);
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+height+"px;"});
                     updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
@@ -2802,16 +3114,18 @@ MonitoringConsole.View = (function() {
      * Method to call when page changes to update UI elements accordingly
      */
     function onPageChange(layout) {
+        MonitoringConsole.Chart.Trace.onClosePopup();
         onPageUpdate(layout);
         updatePageNavigation();
-        updatePageAndSelectionSettings();
+        updateSettings();
+        updateMenu();
     }
 
     function onOpenWidgetSettings(series) {
         MonitoringConsole.Model.Page.Widgets.Selection.clear();
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
         MonitoringConsole.Model.Settings.open();
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     /**
@@ -2823,16 +3137,14 @@ MonitoringConsole.View = (function() {
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
-            onPageUpdate(MonitoringConsole.Model.init(onDataUpdate));
-            updatePageAndSelectionSettings();
-            updatePageNavigation();
+            onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
         onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
-        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
+        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updateSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
         onPageDelete: function() {
             if (window.confirm("Do you really want to delete the current page?")) { 

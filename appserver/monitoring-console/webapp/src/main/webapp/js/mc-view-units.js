@@ -52,6 +52,16 @@ MonitoringConsole.View.Units = (function() {
    /**
     * Factors used for any time unit to milliseconds
     */
+   const SEC_FACTORS = {
+      h: 60 * 60, hours: 60 * 60,
+      m: 60, min: 60, mins: 60,
+      s: 1, sec: 1, secs: 1,
+      _: [['h', 'm', 's'], ['m', 's'], ['h', 'm']]
+   };
+
+   /**
+    * Factors used for any time unit to milliseconds
+    */
    const MS_FACTORS = {
       h: 60 * 60 * 1000, hours: 60 * 60 * 1000,
       m: 60 * 1000, min: 60 * 1000, mins: 60 * 1000,
@@ -199,6 +209,7 @@ MonitoringConsole.View.Units = (function() {
          return {
             format: function(valueAsNumber, useDecimals) {
                switch(unit) {
+                  case 'sec': return formatNumber(valueAsNumber, SEC_FACTORS, useDecimals); 
                   case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
                   case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
                   case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
@@ -208,6 +219,7 @@ MonitoringConsole.View.Units = (function() {
             },
             parse: function(valueAsString) {
                switch(unit) {
+                  case 'sec': return parseNumber(valueAsString, SEC_FACTORS);
                   case 'ms': return parseNumber(valueAsString, MS_FACTORS);
                   case 'ns': return parseNumber(valueAsString, NS_FACTORS);
                   case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);

@@ -53,6 +53,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onCreation(widget) {
     let options = {
+      responsive: true,
       maintainAspectRatio: false,
       scales: {
         xAxes: [{

@@ -198,6 +198,8 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function updateDomSpanDetails(data, span) {
+      if (!span)
+         return;
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
       let settings = [
          { id: 'settings-span', caption: 'Span' , entries: [
@@ -226,6 +228,15 @@ MonitoringConsole.Chart.Trace = (function() {
    function onOpenPopup(series) {
       $('#panel-trace').show();
       model.series = series;
+      let menu = { id: 'TraceMenu', groups: [
+         { icon: '&#128472;', description: 'Refresh', onClick: onDataRefresh },
+         { label: 'Sorting', items: [
+            { icon: '&#9202;', label: 'Sort By Wall Time (past to recent)', onClick: onSortByWallTime },
+            { icon: '&#8987;', label: 'Sort By Duration (slower to faster)', onClick: onSortByDuration },
+         ]},
+         { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
+      ]};
+      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
       onDataRefresh();
    }
 
