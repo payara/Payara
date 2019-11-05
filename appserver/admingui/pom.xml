@@ -99,7 +99,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <modules>
         <module>dataprovider</module>
         <module>plugin-service</module>
@@ -148,8 +148,8 @@
         <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
         <module>cdieventbus-notifier-console-plugin-l10n</module>
-    	<module>email-notifier-console-plugin</module>
-    	<module>email-notifier-console-plugin-l10n</module>
+        <module>email-notifier-console-plugin</module>
+        <module>email-notifier-console-plugin-l10n</module>
         <module>snmp-notifier-console-plugin</module>
         <module>snmp-notifier-console-plugin-l10n</module>
         <module>xmpp-notifier-console-plugin</module>
@@ -221,7 +221,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-	    <scope>provided</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
