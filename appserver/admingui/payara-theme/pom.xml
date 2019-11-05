@@ -51,7 +51,7 @@
     </parent>
     <artifactId>console-payara-branding-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Payara Theme Plugin</name>
     <description>Custom Theme Plugin for Payara Admin Console</description>
 
@@ -144,7 +144,5 @@
             <artifactId>webui-jsf-suntheme</artifactId>
             <scope>provided</scope>
         </dependency>
-
-
     </dependencies>
 </project>
