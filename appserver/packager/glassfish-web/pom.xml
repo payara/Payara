@@ -150,6 +150,11 @@
                     <artifactId>openid-client-integration</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+                <dependency>
+                    <groupId>fish.payara.server.internal.security</groupId>
+                    <artifactId>realm-stores</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>

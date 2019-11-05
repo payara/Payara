@@ -67,9 +67,10 @@
         <module>jacc.provider.inmemory</module>
         <module>jacc.provider.file</module>
         <module>webservices.security</module>
-	    <module>ejb.security</module>
+        <module>ejb.security</module>
         <module>appclient.security</module>
         <module>core-ee-l10n</module>
         <module>webservices.security-l10n</module>
+        <module>realm-stores</module>
     </modules>
 </project>

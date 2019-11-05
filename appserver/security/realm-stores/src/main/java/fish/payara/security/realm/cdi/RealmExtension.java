@@ -1,0 +1,390 @@
+/*
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * 
+ *  The contents of this file are subject to the terms of either the GNU
+ *  General Public License Version 2 only ("GPL") or the Common Development
+ *  and Distribution License("CDDL") (collectively, the "License").  You
+ *  may not use this file except in compliance with the License.  You can
+ *  obtain a copy of the License at
+ *  https://github.com/payara/Payara/blob/master/LICENSE.txt
+ *  See the License for the specific
+ *  language governing permissions and limitations under the License.
+ * 
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License file at glassfish/legal/LICENSE.txt.
+ * 
+ *  GPL Classpath Exception:
+ *  The Payara Foundation designates this particular file as subject to the "Classpath"
+ *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *  file that accompanied this code.
+ * 
+ *  Modifications:
+ *  If applicable, add the following below the License Header, with the fields
+ *  enclosed by brackets [] replaced by your own identifying information:
+ *  "Portions Copyright [year] [name of copyright owner]"
+ * 
+ *  Contributor(s):
+ *  If you wish your version of this file to be governed by only the CDDL or
+ *  only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *  elects to include this software in this distribution under the [CDDL or GPL
+ *  Version 2] license."  If you don't indicate a single choice of license, a
+ *  recipient has the option to distribute your version of this file under
+ *  either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *  its licensees as provided above.  However, if you add GPL Version 2 code
+ *  and therefore, elected the GPL Version 2 license, then the option applies
+ *  only if the new code is made subject to such option by the copyright
+ *  holder.
+ */
+package fish.payara.security.realm.cdi;
+
+import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import fish.payara.security.annotations.CertificateAuthenticationMechanismDefinition;
+import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
+import fish.payara.security.annotations.FileIdentityStoreDefinition;
+import fish.payara.security.annotations.PamIdentityStoreDefinition;
+import fish.payara.security.annotations.RealmIdentityStoreDefinition;
+import fish.payara.security.annotations.RealmIdentityStoreDefinitions;
+import fish.payara.security.annotations.SolarisIdentityStoreDefinition;
+import fish.payara.security.realm.identitystores.CertificateRealmIdentityStore;
+import fish.payara.security.realm.identitystores.FileRealmIdentityStore;
+import fish.payara.security.realm.identitystores.PamRealmIdentityStore;
+import fish.payara.security.realm.identitystores.RealmIdentityStore;
+import fish.payara.security.realm.identitystores.SolarisRealmIdentityStore;
+import fish.payara.security.realm.mechanisms.CertificateAuthenticationMechanism;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import static java.util.logging.Level.INFO;
+import java.util.logging.Logger;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessBean;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.identitystore.IdentityStore;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.soteria.cdi.CdiProducer;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+
+/**
+ * Activate Realm identity stores and authentication mechanism.
+ *
+ * @author Gaurav Gupta
+ */
+public class RealmExtension implements Extension {
+
+    private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
+
+    private final List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
+
+    private static final Logger LOGGER = Logger.getLogger(RealmExtension.class.getName());
+
+    protected void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
+        addAnnotatedType(RealmIdentityStore.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(FileRealmIdentityStore.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(CertificateRealmIdentityStore.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(CertificateAuthenticationMechanism.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(PamRealmIdentityStore.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(SolarisRealmIdentityStore.class, manager, beforeBeanDiscovery);
+    }
+
+    protected <T extends Object> void addAnnotatedType(Class<T> type, BeanManager manager, BeforeBeanDiscovery beforeBeanDiscovery) {
+        beforeBeanDiscovery.addAnnotatedType(manager.createAnnotatedType(type), type.getName());
+    }
+
+    /**
+     * Find the Realm annotations.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    protected <T> void findRealmDefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
+
+        ProcessBean<T> event = eventIn;
+
+        //create the bean being proccessed.
+        Class<?> beanClass = event.getBean().getBeanClass();
+        findRealmIdentityStoreDefinitions(beanManager, event, beanClass);
+        findFileIdentityStoreDefinitions(beanManager, event, beanClass);
+        findCertificateIdentityStoreDefinitions(beanManager, event, beanClass);
+        findCertificateAuthenticationMechanismDefinition(beanManager, event, beanClass);
+        findPamIdentityStoreDefinitions(beanManager, event, beanClass);
+        findSolarisIdentityStoreDefinitions(beanManager, event, beanClass);
+    }
+
+    /**
+     * Find the
+     * {@link RealmIdentityStoreDefinition} & {@link RealmIdentityStoreDefinitions}
+     * annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findRealmIdentityStoreDefinitions(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the identity store from the annotation (if it exists)
+        Optional<RealmIdentityStoreDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), RealmIdentityStoreDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            validateDefinition(definition);
+            logActivatedIdentityStore(RealmIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(RealmIdentityStore.class)
+                    .create(e -> {
+                        RealmIdentityStore mechanism = CDI.current().select(RealmIdentityStore.class).get();
+                        mechanism.setConfiguration(definition);
+                        return mechanism;
+                    })
+            );
+        });
+
+        //get the identity store from the annotation (if it exists)
+        Optional<RealmIdentityStoreDefinitions> optionalStores
+                = getAnnotation(beanManager, event.getAnnotated(), RealmIdentityStoreDefinitions.class);
+
+        optionalStores.ifPresent(definitions -> {
+            for (RealmIdentityStoreDefinition definition : definitions.value()) {
+                validateDefinition(definition);
+                logActivatedIdentityStore(RealmIdentityStore.class, beanClass);
+
+                identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                        .scope(ApplicationScoped.class)
+                        .beanClass(IdentityStore.class)
+                        .types(Object.class, IdentityStore.class)
+                        .addToId(RealmIdentityStore.class)
+                        .create(e -> {
+                            RealmIdentityStore mechanism = CDI.current().select(RealmIdentityStore.class).get();
+                            mechanism.setConfiguration(definition);
+                            return mechanism;
+                        })
+                );
+            }
+
+        });
+    }
+
+    /**
+     * Find the
+     * {@link FileIdentityStoreDefinition} & {@link FileIdentityStoreDefinitions}
+     * annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findFileIdentityStoreDefinitions(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the identity store from the annotation (if it exists)
+        Optional<FileIdentityStoreDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), FileIdentityStoreDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            validateDefinition(definition.value(), FileRealmIdentityStore.REALM_CLASS.getName());
+            logActivatedIdentityStore(FileRealmIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(FileRealmIdentityStore.class)
+                    .create(e -> {
+                        FileRealmIdentityStore mechanism = CDI.current().select(FileRealmIdentityStore.class).get();
+                        mechanism.init(definition);
+                        return mechanism;
+                    })
+            );
+        });
+
+    }
+
+    /**
+     * Find the
+     * {@link CertificateIdentityStoreDefinition} & {@link CertificateIdentityStoreDefinitions}
+     * annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findCertificateIdentityStoreDefinitions(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the identity store from the annotation (if it exists)
+        Optional<CertificateIdentityStoreDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), CertificateIdentityStoreDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            validateDefinition(definition.value(), CertificateRealmIdentityStore.REALM_CLASS.getName());
+            logActivatedIdentityStore(CertificateRealmIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(CertificateRealmIdentityStore.class)
+                    .create(e -> {
+                        CertificateRealmIdentityStore mechanism = CDI.current().select(CertificateRealmIdentityStore.class).get();
+                        mechanism.init(definition);
+                        return mechanism;
+                    })
+            );
+        });
+
+    }
+
+    /**
+     * Find the {@link CertificateAuthenticationMechanismDefinition} annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findCertificateAuthenticationMechanismDefinition(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the authentication mechanism from the annotation (if it exists)
+        Optional<CertificateAuthenticationMechanismDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), CertificateAuthenticationMechanismDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            logActivatedAuthenticationMechanism(CertificateAuthenticationMechanism.class, beanClass);
+            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(HttpAuthenticationMechanism.class)
+                    .types(Object.class, HttpAuthenticationMechanism.class)
+                    .addToId(CertificateAuthenticationMechanism.class)
+                    .create(e -> CDI.current().select(CertificateAuthenticationMechanism.class).get());
+        });
+    }
+
+    /**
+     * Find the
+     * {@link PamIdentityStoreDefinition} & {@link PamIdentityStoreDefinitions}
+     * annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findPamIdentityStoreDefinitions(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the identity store from the annotation (if it exists)
+        Optional<PamIdentityStoreDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), PamIdentityStoreDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            validateDefinition(definition.value(), PamRealmIdentityStore.REALM_CLASS.getName());
+            logActivatedIdentityStore(PamRealmIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(PamRealmIdentityStore.class)
+                    .create(e -> {
+                        PamRealmIdentityStore mechanism = CDI.current().select(PamRealmIdentityStore.class).get();
+                        mechanism.init(definition);
+                        return mechanism;
+                    })
+            );
+        });
+
+    }
+
+    /**
+     * Find the
+     * {@link SolarisIdentityStoreDefinition} & {@link SolarisIdentityStoreDefinitions}
+     * annotation.
+     *
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    private <T> void findSolarisIdentityStoreDefinitions(BeanManager beanManager, ProcessBean<T> event, Class<?> beanClass) {
+
+        //get the identity store from the annotation (if it exists)
+        Optional<SolarisIdentityStoreDefinition> optionalStore
+                = getAnnotation(beanManager, event.getAnnotated(), SolarisIdentityStoreDefinition.class);
+
+        optionalStore.ifPresent(definition -> {
+            validateDefinition(definition.value(), SolarisRealmIdentityStore.REALM_CLASS.getName());
+            logActivatedIdentityStore(SolarisRealmIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(SolarisRealmIdentityStore.class)
+                    .create(e -> {
+                        SolarisRealmIdentityStore mechanism = CDI.current().select(SolarisRealmIdentityStore.class).get();
+                        mechanism.init(definition);
+                        return mechanism;
+                    })
+            );
+        });
+
+    }
+
+    private void validateDefinition(RealmIdentityStoreDefinition definition) {
+        String realmName = definition.value();
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        SecurityService securityService = serviceLocator.getService(SecurityService.class);
+        boolean authRealmFound = securityService.getAuthRealm().stream()
+                .map(authRealm -> authRealm.getName())
+                .anyMatch(realmName::equals);
+        if (!authRealmFound) {
+            throw new IllegalStateException(String.format(
+                    "%s: No such realm found.",
+                    realmName
+            ));
+        }
+    }
+
+    private void validateDefinition(String name, String realm) {
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        SecurityService securityService = serviceLocator.getService(SecurityService.class);
+        for (AuthRealm authRealm : securityService.getAuthRealm()) {
+            if (authRealm.getName().equals(name)
+                    && !authRealm.getClassname().equals(realm)) {
+                throw new IllegalStateException(String.format(
+                        "%s realm can't be created for realm class %s, as already registed with realm class %s.",
+                        name,
+                        realm,
+                        authRealm.getClassname()
+                ));
+            }
+        }
+    }
+
+    protected void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        if (!identityStoreBeans.isEmpty()) {
+            identityStoreBeans.forEach(afterBeanDiscovery::addBean);
+        }
+        if (authenticationMechanismBean != null) {
+            afterBeanDiscovery.addBean(authenticationMechanismBean);
+        }
+    }
+
+    private void logActivatedIdentityStore(Class<?> identityStoreClass, Class<?> beanClass) {
+        LOGGER.log(INFO, "Activating {0} identity store from {1} class", new Object[]{identityStoreClass.getName(), beanClass.getName()});
+    }
+
+    private void logActivatedAuthenticationMechanism(Class<?> authenticationMechanismClass, Class<?> beanClass) {
+        LOGGER.log(INFO, "Activating {0} authentication mechanism from {1} class", new Object[]{authenticationMechanismClass.getName(), beanClass.getName()});
+    }
+
+}

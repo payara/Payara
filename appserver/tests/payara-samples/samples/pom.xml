@@ -28,6 +28,7 @@
         <module>openid</module>
         <module>asadmin</module>
         <module>microprofile-endpoints</module>
+        <module>realm-identity-stores</module>
     </modules>
 
     <dependencies>
