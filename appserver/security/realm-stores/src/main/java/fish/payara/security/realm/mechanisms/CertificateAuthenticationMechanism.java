@@ -39,7 +39,7 @@
  */
 package fish.payara.security.realm.mechanisms;
 
-import fish.payara.security.realm.CertificateCredential;
+import fish.payara.security.api.CertificateCredential;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ResourceBundle;

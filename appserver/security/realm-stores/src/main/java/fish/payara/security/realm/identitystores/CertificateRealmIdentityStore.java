@@ -45,7 +45,7 @@ import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
-import fish.payara.security.realm.CertificateCredential;
+import fish.payara.security.api.CertificateCredential;
 import fish.payara.security.realm.CertificateRealmIdentityStoreConfiguration;
 import fish.payara.security.realm.RealmUtil;
 import static fish.payara.security.realm.RealmUtil.ASSIGN_GROUPS;
@@ -111,7 +111,7 @@ public class CertificateRealmIdentityStore implements IdentityStore {
     }
 
     private static Subject login(CertificateCredential credential, String realmName) {
-        Subject subject = createSubjectWithCerts(credential.getCerts());
+        Subject subject = createSubjectWithCerts(credential.getCertificates());
         WebAndEjbToJaasBridge.doX500Login(subject, realmName, null);
         return subject;
     }

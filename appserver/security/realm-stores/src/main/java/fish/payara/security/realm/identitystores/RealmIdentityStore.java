@@ -45,7 +45,7 @@ import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import fish.payara.security.annotations.RealmIdentityStoreDefinition;
-import fish.payara.security.realm.CertificateCredential;
+import fish.payara.security.api.CertificateCredential;
 import fish.payara.security.realm.RealmIdentityStoreConfiguration;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
