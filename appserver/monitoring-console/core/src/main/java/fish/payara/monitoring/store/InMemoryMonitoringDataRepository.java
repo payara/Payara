@@ -57,6 +57,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -68,6 +70,8 @@ import org.jvnet.hk2.annotations.Service;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -101,6 +105,8 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
      * The topic name used to share data of instances with the DAS.
      */
     private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
+    private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
+    private final Set<String> sourcesFailingBefore = new HashSet<>();
 
     private ServiceLocator serviceLocator;
     private ServerEnvironment serverEnv;
@@ -115,9 +121,14 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
 
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+    private MonitoringService monitoringConfig;
+
     @PostConstruct
     public void init() {
         serviceLocator = Globals.getDefaultBaseServiceLocator();
+        monitoringConfig = serverConfig.getMonitoringService();
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
         isDas = serverEnv.isDas();
         PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
@@ -173,18 +184,26 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         return seriesByInstance;
     }
 
+    private boolean isMonitoringEnabled() {
+        return "true".equalsIgnoreCase(monitoringConfig.getMonitoringEnabled());
+    }
+
     private void collectSourcesToMemory() {
-        tick();
-        collectAll(new SinkDataCollector(this::addLocalPoint));
-        swapLocalBuffer();
+        if (isMonitoringEnabled()) {
+            tick();
+            collectAll(new SinkDataCollector(this::addLocalPoint));
+            swapLocalBuffer();
+        }
     }
 
     private void collectSourcesToPublish() {
-        tick();
-        SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
-        collectAll(new SinkDataCollector(msg));
-        estimatedNumberOfSeries = msg.numberOfSeries;
-        exchange.publish(msg);
+        if (isMonitoringEnabled()) {
+            tick();
+            SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
+            collectAll(new SinkDataCollector(msg));
+            estimatedNumberOfSeries = msg.numberOfSeries;
+            exchange.publish(msg);
+        }
     }
 
     private void collectAll(MonitoringDataCollector collector) {
@@ -196,13 +215,18 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         int collectedSources = 0;
         int failedSources = 0;
         for (MonitoringDataSource source : sources) {
+            String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
             try {
                 collectedSources++;
                 source.collect(collector);
+                sourcesFailingBefore.remove(sourceId);
             } catch (RuntimeException e) {
-                Logger.getLogger("monitoring-console-core").log(Level.FINE, "Error collecting metrics", e);
+                if (!sourcesFailingBefore.contains(sourceId)) {
+                    // only long once unless being successful again
+                    LOGGER.log(Level.FINE, "Error collecting metrics", e);
+                }
                 failedSources++;
-                // ignore and continue with next
+                sourcesFailingBefore.add(sourceId);
             }
         }
         long estimatedTotalBytesMemory = 0L;
