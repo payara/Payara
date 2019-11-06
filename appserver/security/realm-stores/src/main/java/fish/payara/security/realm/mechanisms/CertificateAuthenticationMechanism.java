@@ -40,6 +40,7 @@
 package fish.payara.security.realm.mechanisms;
 
 import fish.payara.security.api.CertificateCredential;
+import fish.payara.security.realm.CertificateCredentialImpl;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ResourceBundle;
@@ -89,7 +90,7 @@ public class CertificateAuthenticationMechanism implements HttpAuthenticationMec
         if (!isEmpty(certificates) && certificates.length != 0) {
 
             CredentialValidationResult result = identityStoreHandler.validate(
-                    new CertificateCredential(certificates));
+                    new CertificateCredentialImpl(certificates));
 
             if (result.getStatus() == VALID) {
                 return httpMsgContext.notifyContainerAboutLogin(

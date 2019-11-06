@@ -37,20 +37,41 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.api;
+package fish.payara.security.realm;
 
+import fish.payara.security.api.CertificateCredential;
 import java.security.cert.X509Certificate;
 import javax.security.enterprise.CallerPrincipal;
-import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.AbstractClearableCredential;
 
 /**
  *
  * @author Gaurav Gupta
  */
-public interface CertificateCredential extends Credential {
+public class CertificateCredentialImpl extends AbstractClearableCredential implements CertificateCredential {
 
-    X509Certificate[] getCertificates();
+    private X509Certificate[] certificates;
 
-    CallerPrincipal getPrincipal();
+    public CertificateCredentialImpl(X509Certificate[] certs) {
+        if (certs == null || certs.length == 0) {
+            throw new IllegalArgumentException("Certificates can't be empty.");
+        }
+        this.certificates = certs;
+    }
+
+    @Override
+    public X509Certificate[] getCertificates() {
+        return certificates;
+    }
+
+    @Override
+    public CallerPrincipal getPrincipal() {
+        return new CallerPrincipal(certificates[0].getIssuerDN().getName());
+    }
+
+    @Override
+    public void clearCredential() {
+        certificates = null;
+    }
 
 }
