@@ -40,6 +40,7 @@
 
 -exportcontents: \
                         com.sun.enterprise.security.ssl.manager; \
+                        com.sun.enterprise.security.ssl.impl; \
                         com.sun.enterprise.server.pluggable; version=${project.osgi.version}
 
 DynamicImport-Package: \

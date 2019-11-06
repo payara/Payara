@@ -135,4 +135,8 @@ public interface HazelcastRuntimeConfiguration
     String getKubernetesServiceName();
     public void setKubernetesServiceName(String value);
 
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getDatagridEncryptionEnabled();
+    public void setDatagridEncryptionEnabled(String value);
+
 }

@@ -60,22 +60,6 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.cache.spi.CachingProvider;
-import javax.inject.Inject;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -92,6 +76,23 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.annotation.PostConstruct;
+import javax.cache.spi.CachingProvider;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -175,6 +176,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberName = context.getInstanceName();
             memberGroup = nodeConfig.getMemberGroup();
         }
+
+
     }
 
     /**
@@ -556,5 +559,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
         return null;
+    }
+
+    public boolean isDatagridEncryptionEnabled() {
+        return configuration.getDatagridEncryptionEnabled().equalsIgnoreCase("true");
     }
 }
