@@ -146,6 +146,9 @@ public class ListTimers implements AdminCommand {
 
     private String[] listTimers(String[] serverIds) {
         String[] result = new String[serverIds.length];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = "0";
+        }
 
         EJBTimerService ejbTimerService = null;
         if (EJBTimerService.isPersistentTimerServiceLoaded()) {
