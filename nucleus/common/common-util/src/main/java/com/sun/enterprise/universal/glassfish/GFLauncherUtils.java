@@ -184,13 +184,8 @@ public class GFLauncherUtils {
     public static boolean isRelativePath(String path) {
         if (!ok(path)) {
             return false;
-        } else if (path.startsWith(".")) {
-            return true;
-        } else if (path.contains("/.")) {
-            return true;
-        } else {
-            return path.contains("\\.");
         }
+        return path.startsWith(".") || (path.contains("/.")) || path.contains("\\.");
     }
 
     /**
