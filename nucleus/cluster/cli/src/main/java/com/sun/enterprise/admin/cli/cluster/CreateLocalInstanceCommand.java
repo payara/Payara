@@ -43,14 +43,6 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
@@ -60,7 +52,13 @@ import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -70,8 +68,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.admin.cli.cluster.NamingHelper;
-import fish.payara.util.cluster.PayaraServerNameGenerator;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 
 /**
@@ -86,12 +83,16 @@ import fish.payara.util.cluster.PayaraServerNameGenerator;
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
     private static final String CONFIG = "config";
     private static final String CLUSTER = "cluster";
+    private static final String DEPLOYMENT_GROUP = "deploymentGroup";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
 
     @Param(name = CLUSTER, optional = true)
     private String clusterName;
+    
+    @Param(name = DEPLOYMENT_GROUP, optional = true)
+    private String deploymentGroup;
 
     @Param(name="lbenabled", optional = true)
     private Boolean lbEnabled;
@@ -350,6 +351,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         if (clusterName != null) {
             argsList.add("--cluster");
             argsList.add(clusterName);
+        }
+        if (deploymentGroup != null) {
+            argsList.add("--deploymentgroup");
+            argsList.add(deploymentGroup);
         }
         if (lbEnabled != null) {
             argsList.add("--lbenabled");

@@ -84,7 +84,7 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
  */
 @Service(name = "set-amx-enabled")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
