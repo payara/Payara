@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util;
 
@@ -90,7 +91,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
                 String key = makeKey(bundle);
                 name2Id.put(key, bundle.getBundleId());
                 if (logger != null && logger.isLoggable(Level.FINER)) {
-                    logger.log(Level.FINER, "BundleTracker.addingBundle BUNDLE " + key + " ==> " + bundle.getBundleId() + "  for " + bundle.getSymbolicName());
+                    logger.log(Level.FINER, "BundleTracker.addingBundle BUNDLE {0} ==> {1}  for {2}", new Object[]{key, bundle.getBundleId(), bundle.getSymbolicName()});
                 }
                 return null;
             }
@@ -100,25 +101,12 @@ public class OSGiObjectInputOutputStreamFactoryImpl
                 String key = makeKey(bundle);
                 Long bundleID = name2Id.remove(key);
                 if (logger.isLoggable(Level.FINER)) {
-                    logger.log(Level.FINER, "BundleTracker.removedBundle BUNDLE " + key + "  ==> " + bundle.getSymbolicName());
+                    logger.log(Level.FINER, "BundleTracker.removedBundle BUNDLE {0}  ==> {1}", new Object[]{key, bundle.getSymbolicName()});
                 }
                 if (bundleID == null) {
                     logger.log(Level.WARNING, CULoggerInfo.NULL_BUNDLE, key);
                 }
             }
-            /*
-            @Override
-            public Object addingBundle(Bundle bundle, BundleEvent event) {
-                System.out.println("ADDING BUNDLE ==> " + bundle.getSymbolicName());
-                return super.addingBundle(bundle, event);    //To change body of overridden methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public void removedBundle(Bundle bundle, BundleEvent event, Object object) {
-                System.out.println("REMOVING BUNDLE ==> " + bundle.getSymbolicName());                
-                super.removedBundle(bundle, event, object);    //To change body of overridden methods use File | Settings | File Templates.
-            }
-            */
         });
 
         bt.open();
@@ -129,6 +117,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return bundle.getSymbolicName() + ":" + bundle.getVersion();
     }
 
+    @Override
     public ObjectInputStream createObjectInputStream(InputStream in)
             throws IOException
     {
@@ -136,6 +125,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return new OSGiObjectInputStream(in, loader);
     }
 
+    @Override
     public ObjectOutputStream createObjectOutputStream(OutputStream out)
             throws IOException
     {
@@ -181,6 +171,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         }
     }
 
+    @Override
     public Class<?> resolveClass(ObjectInputStream in, final ObjectStreamClass desc)
             throws IOException, ClassNotFoundException
     {
@@ -206,6 +197,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return null;
     }
 
+    @Override
     public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
     {
         String key = NOT_A_BUNDLE_KEY;
@@ -225,7 +217,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         }
         assert(cname.charAt(dcount) == 'L');
         component = loadClassFromBundle(b, cname.substring(dcount + 1, cname.length() - 1));
-        int dim[] = new int[dcount];
+        int[] dim = new int[dcount];
         for (int i = 0; i < dcount; i++) {
             dim[i] = 0;
         }
@@ -239,6 +231,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             try {
                 return (Class) java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedExceptionAction() {
+                            @Override
                             public java.lang.Object run() throws ClassNotFoundException {
                                 return b.loadClass(cname);
                             }

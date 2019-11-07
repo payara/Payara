@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -97,21 +98,20 @@ public class AuthTokenManager {
 
     private static final String SUPPRESSED_TOKEN_OUTPUT = "????";
 
-    private final static int TOKEN_SIZE = 10;
+    private static final int TOKEN_SIZE = 10;
 
-    private final static long DEFAULT_TOKEN_LIFETIME = 60 * 1000;
-    private final static long TOKEN_EXPIRATION_IN_MS = 360 * 1000;
+    private static final long DEFAULT_TOKEN_LIFETIME = 60 * 1000;
+    private static final long TOKEN_EXPIRATION_IN_MS = 360 * 1000;
 
     private final SecureRandom rng = new SecureRandom();
 
     private final Map<String,TokenInfo> liveTokens = new HashMap<String,TokenInfo>();
 
-    private final static Logger logger = CULoggerInfo.getLogger();
+    private static final Logger logger = CULoggerInfo.getLogger();
 
-    private final static char REUSE_TOKEN_MARKER = '+';
+    private static final char REUSE_TOKEN_MARKER = '+';
 
-    private static final LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(AuthTokenManager.class);
+    private static final LocalStringManagerImpl localStrings =new LocalStringManagerImpl(AuthTokenManager.class);
 
     /* hex conversion stolen shamelessly from Bill's LocalPasswordImpl - maybe refactor to share later */
     private static final char[] hex = {
@@ -141,8 +141,8 @@ public class AuthTokenManager {
             if (isUsedUp(now)) {
                 if (logger.isLoggable(Level.FINER)) {
                     final String msg = localStrings.getLocalString("AuthTokenInvalid",
-                        "Use of auth token {2} attempted but token is invalid; usesRemaining = {0,number,integer}, expired = {1}",
-                        Integer.valueOf(usesRemaining), Boolean.toString(expiration <= now),
+                        "Use of auth token {2} attempted but token is invalid; usesRemaining = {0,number,integer}, expired = {1}", 
+                        usesRemaining, Boolean.toString(expiration <= now),
                         token);
                     logger.log(Level.FINER, msg);
                 }
@@ -154,7 +154,7 @@ public class AuthTokenManager {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER,
                         "Use of auth token {0} OK; isBeingReused = {2}; remaining uses = {1,number,integer}",
-                        new Object[] {token, Integer.valueOf(usesRemaining), Boolean.toString(isBeingReused)});
+                        new Object[] {token, usesRemaining, Boolean.toString(isBeingReused)});
             }
             expiration += lifetime;
             return true;
@@ -259,14 +259,12 @@ public class AuthTokenManager {
         Subject result = null;
         final long now = System.currentTimeMillis();
         final TokenInfo ti = findTokenInfo(token, now);
-        if (ti != null) {
-            if (ti.use(isReusedToken(token), now)) {
+        if (ti != null && ti.use(isReusedToken(token), now)) {
                 /*
                  * We found the token info for this token and it is still valid,
                  * so prepare to return the stored Subject.
                  */
                 result = ti.subject;
-            }
         }
         retireExpiredTokens(now);
 

@@ -1,4 +1,4 @@
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.security.common;
 
@@ -19,6 +19,8 @@ import java.util.EnumSet;
  * @author Phillip Ross
  */
 public class FileProtectionUtility {
+    
+    private FileProtectionUtility() {}
 
     /**
      * Set permissions on the specified file equivalent to file mode 0600.

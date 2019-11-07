@@ -80,8 +80,7 @@ import java.util.zip.ZipEntry;
  * @author Sivakumar Thyagarajan
  * @since  JDK 1.4
  */
-public class ASURLClassLoader
-        extends CurrentBeforeParentClassLoader
+public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         implements JasperAdapter, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader {
 
     /*
@@ -126,7 +125,7 @@ public class ASURLClassLoader
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
-    private final static StringManager sm = StringManager.getManager(ASURLClassLoader.class);
+    private static final StringManager sm = StringManager.getManager(ASURLClassLoader.class);
 
     //holder for declared and ee permissions
     private final PermsHolder permissionsHolder;
@@ -140,8 +139,7 @@ public class ASURLClassLoader
         permissionsHolder = new PermsHolder();
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,
-                        "ClassLoader: " + this + " is getting created.");
+            _logger.log(Level.FINE, "ClassLoader: {0} is getting created.", this);
         }
     }
 
@@ -430,7 +428,7 @@ public class ASURLClassLoader
                     if (resourceFile.exists()) {
                         // If we make it this far,
                         // the resource is in the directory.
-                        return  resourceFile.toURL();
+                        return  resourceFile.toURI().toURL();
                     }
 
                 } catch (IOException e) {
@@ -968,7 +966,7 @@ public class ASURLClassLoader
            */
          public void setProtectionDomain (ClassLoader ejbClassLoader, Certificate[] signers) throws MalformedURLException {
              if (pd == null) {
-                 pd = new ProtectionDomain(new CodeSource(file.toURL(),signers),null, ejbClassLoader, null );
+                 pd = new ProtectionDomain(new CodeSource(file.toURI().toURL(),signers),null, ejbClassLoader, null );
              }
          }
 
@@ -1035,14 +1033,6 @@ public class ASURLClassLoader
                 DirWatcher.unregister(file.toPath());
             }
         }
-    }
-
-    /**
-     *Returns the vector of open streams; creates it if needed.
-     *@return Vector<SentinelInputStream> holding open streams
-     */
-    private List<SentinelInputStream> getStreams() {
-        return streams;
     }
 
     /**
@@ -1116,6 +1106,15 @@ public class ASURLClassLoader
                 report();
             }
             super.finalize();
+        }
+        
+        /**
+         * Returns the vector of open streams; creates it if needed.
+         *
+         * @return Vector<SentinelInputStream> holding open streams
+         */
+        private List<SentinelInputStream> getStreams() {
+            return streams;
         }
 
         private synchronized void _close() throws IOException {

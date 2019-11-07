@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal;
-
-import java.util.*;
 
 /**
  * This class is needed so often in so many places.  It is centralized once and
@@ -57,8 +56,9 @@ public class NameValue<K, V> {
      */
     public NameValue(K k, V v)
     {
-        if(k == null)
+        if(k == null) {
             throw new NullPointerException();
+        }
         
         value = v;
         key = k;

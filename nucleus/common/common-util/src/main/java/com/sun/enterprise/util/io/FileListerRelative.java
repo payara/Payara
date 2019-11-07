@@ -37,31 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * foo.java
- *
- * Created on November 11, 2001, 12:09 AM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.io;
+
 import java.io.*;
-import java.util.*;
 
 /**
  *
- * @author  bnevins
- * @version 
+ * @author bnevins
+ * @version
  */
-public class FileListerRelative extends FileLister
-{
-	public FileListerRelative(File f)
-	{
-		super(f);
-	}
-	
-	protected boolean relativePath()
-	{
-		return true;
-	}
+public class FileListerRelative extends FileLister {
+
+    public FileListerRelative(File f) {
+        super(f);
+    }
+
+    @Override
+    protected boolean relativePath() {
+        return true;
+    }
 }
