@@ -48,6 +48,7 @@ import java.util.List;
 
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -157,9 +158,7 @@ public class ListTimers implements AdminCommand {
             result = ejbTimerService.listTimers(serverIds);
         } else {
             result = new String[serverIds.length];
-            for (int i = 0; i < result.length; i++) {
-                result[i] = "0";
-            }
+            Arrays.fill(result, "0");
         }
 
         return result;
