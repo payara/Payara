@@ -147,6 +147,8 @@ MonitoringConsole.Chart.Bar = (function() {
                let bar = this.getElementsAtEventForMode(event, "y", 1)[0];
                let series = bar._chart.config.data.series[bar._index]; 
                if (series.startsWith('ns:trace ') && series.endsWith(' Duration')) {
+                  MonitoringConsole.Model.Settings.close();
+                  MonitoringConsole.View.onPageMenu();
                   MonitoringConsole.Chart.Trace.onOpenPopup(series);
                }
             }

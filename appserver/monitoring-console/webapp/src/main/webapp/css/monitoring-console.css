@@ -37,10 +37,9 @@
    only if the new code is made subject to such option by the copyright
    holder.
 */
-
 body {
-    background-color: #002c3e;
-    font: 13px/1.231 helvetica,clean,sans-serif;
+    background-color: #003247;
+    font: 13px/1.231 'IBM Plex Sans', helvetica,clean,sans-serif;
     color: white;
     margin: 0;
     padding: 0;
@@ -55,6 +54,7 @@ select {
   background: white;
   padding: 2px 5px;
   border-radius: 2px;
+  margin-bottom: 2px;
 }
 input[type=text], input[type=number] {
 	border: 1px solid #ccc;
@@ -68,33 +68,37 @@ input[type=text] {
 input[type=number] {
   width: 60px;
 }
+input[type=checkbox] {
+  vertical-align: middle;
+}
 canvas {
-    position: relative;
+  position: relative;
 }
 button {
     padding: 5px 1em;
     margin: 0 1px;
     font-weight: normal;
-    background-color: #F0981B;
+    background: rgb(240,152,27);
+    box-shadow: 0px 3px 3px rgba(67,68,69,0.05),    
+      0px 2px 2px rgba(67,68,69,0.1),
+      0px 1px 1px rgba(67,68,69,0.15);
     border-width: 0;
-    color: white;
+    color: #101012;
     border-radius: 2px;
     cursor: pointer;
     line-height: 1.0;
+    font-weight: 500;
 }
 button:hover {
-	background-color: #F1A232;
+	background: rgba(240,152,27,0.9);
+  box-shadow: 0px 1px 1px rgba(16,16,18,0.3);
+  transform : translateY(1px);
 }
 #logo {
   height: 30px;
   top: 5px;
   left: 15px;
   position: absolute;
-}
-#newPage {
-  position: absolute;
-  left: 110px;
-  top: 5px;
 }
 
 #panel-trace {
@@ -110,17 +114,14 @@ button:hover {
   box-sizing: border-box;
   margin-bottom: 40px;
 }
-#trace-chart-box {
-  position: relative;
+#trace-widget {
   background-color: #002433;
-  clear: both;
+  position: relative;
   padding: 10px;
 }
-#trace-iconbar {
-  margin-bottom: 5px;
-}
-#trace-iconbar .btnIcon {
-  float: none;
+#trace-chart-box {
+  position: relative;
+  clear: both;
 }
 #grid-console {
     position: relative;
@@ -135,21 +136,13 @@ button:hover {
     padding: 0 5px;
 }
 .widget-chart-box {
-    position: relative;
+    position: absolute;
+    top: 40px;
 }
-.btnIcon {
-	float: right;
-	z-index: 101;
-  margin: 0;
-  margin-left: 5px;
-  padding: 0;
-  color: #bbb;
-  background-color: transparent;
-  font-weight: bold;
-}
-button.btnIcon:hover {
-    color: white;
-    background-color: transparent;
+.widget-title-bar {
+  position: absolute;
+  z-index: 101;
+  width: calc(100% - 20px);
 }
 .widget-title-bar h3 {
   font-size: 130%;
@@ -174,41 +167,22 @@ button.btnIcon:hover {
   font-style: normal;
   margin-left: 0.5em;
   color: white;
-}
-#layout-bar {
-	display: inline-block;
-	float: right;
-	text-align: right;
-	width: 50%;
-}
-#panel-iconbar {
-	padding: 0 10px;
-}
-#panel-iconbar button {
-	color: #bbb;
-    background-color: transparent;
-    padding: 5px;
-    font-size: 14px;
-    letter-spacing: -2px;
-}
-#panel-iconbar button:hover {
-	color: white;
 }	
 #chart-grid {
 	width: 100%;
 	table-layout:fixed;
 	border-spacing: 5px;
-    border-collapse: separate;
+  border-collapse: separate;
+  padding-top: 5px;
 }
 #chart-grid td {
     background-color: #002433;
     padding: 10px;
     vertical-align: top;
-    border: 2px solid #002433;
+    position: relative;
 }
 #chart-grid td.chart-selected h3 {
-    color: #00618A;
-    background-color: white;
+    background-color: #0096D6;
 }
 .stable {
 	background-color: rgba(153, 102, 255, 0.2);
@@ -225,6 +199,10 @@ button.btnIcon:hover {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+#panel-grid {
+  position: relative;
 }
 
 /**
@@ -255,6 +233,7 @@ button.btnIcon:hover {
 #Settings table td:first-child {
   width: 120px;
   vertical-align: top;
+  padding-top: 5px;
 }
 #Settings a, #Settings a:visited {
   color: white;
@@ -318,7 +297,10 @@ table.tags th, table.tags td {
 /* Widget Legend */
 .Legend {
   margin: 0;
-  padding: 0 20px;
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  padding: 0;
 }
 .Legend li {
   display: inline-block;
@@ -349,6 +331,9 @@ table.tags th, table.tags td {
 .Legend li.status-error strong {
     color: red;
 }
+.Legend span, .Legend strong {
+  background-color: #002433;
+}
 @keyframes blinker {
   50% {
     opacity: 0.5;
@@ -361,7 +346,10 @@ table.tags th, table.tags td {
   font-weight: bold;
   padding: 5px 10px;
   text-align: center;
-  margin: 5px;
+  position: absolute;
+  width: 50%;
+  margin: 15% 25%;
+  background-color: rgba(0,36,51,0.5);
 }
 .Indicator.status-missing {
   border-color: Violet;
@@ -386,28 +374,71 @@ table.tags th, table.tags td {
 
 /* Page Navigation */
 #Navigation {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-block;  
-}
-#Navigation select {
-  background-color: #002c3e;
-  padding: 5px;
-  border-width: 0;
-  color: white;
-  font-size: 160%;
+  float: left;
+  margin-left: 40%;
+  margin-top: 6px;
   font-weight: bold;
-  max-width: 400px;
+  font-size: 20px;
 }
 
-#Navigation h2 {
-  min-width: 100px;
-  font-weight: bold;
-  font-size: 140%;
+/* Menus */
+#Menu {
+  margin-top: 10px;
+}
+.Menu {
+  float: right;
+  font-size: 14px;
+  overflow: hidden;
+}
+.Menu strong {
   display: inline-block;
-  margin: 0;
-  margin-top: 5px;
+  min-width: 20px;
+  text-align: left;
+}
+.Menu button {
+  color: white;
+  background-color: transparent;
+  padding: 0.5em 1em;
+  display: inline-block;
+  text-align: left;
+  border-radius: 0px;
+  box-shadow: none;  
+}
+.Menu button:hover {
+  color: #434445;
+  background-color: #D2D8DA;
+}
+.Menu button:disabled {
+  color: #DAE0E2;
+  cursor: not-allowed;
+}
+.Menu .Item {
+  padding: 2px 0.75em;
+  float: left;
+}
+.Menu .Item a {
+  display: block;
+}
+.Menu .Group button {
+  float: none;
+  display: block;
+  white-space: nowrap;
+  width: 100%;
+}
+.Menu .Group {
+  display: none;
+  position: absolute;
+  z-index: 200;
+  background-color: #0096D6;
+  overflow: hidden;
   padding: 0;
+}
+.Menu .Item:hover .Group {
+  display: block;
+}
+.widget .Menu .Group {
+  margin-left: -85px;
+}
+.Menu .clickable {
   cursor: pointer;
 }

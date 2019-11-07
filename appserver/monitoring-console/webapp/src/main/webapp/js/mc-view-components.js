@@ -76,26 +76,30 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTable(model) {
-         let table = $('<table />', { id: model.id });
-         if (model.caption)
-            table.append(createHeaderRow({ label: model.caption }));
-         return table;
+        let table = $('<table />', { id: model.id });
+        if (model.caption)
+          table.append(createHeaderRow({ label: model.caption }));
+        return table;
       }
 
       function createRow(model, inputs) {
-         let components = $.isFunction(inputs) ? inputs() : inputs;
-         if (typeof components === 'string') {
+        let components = $.isFunction(inputs) ? inputs() : inputs;
+        if (typeof components === 'string') {
             components = document.createTextNode(components);
-         }
-         return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        }
+        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-         return $("<input/>", { type: 'checkbox', checked: model.value })
-             .on('change', function() {
-                 let checked = this.checked;
-                 Selection.configure((widget) => model.onChange(widget, checked));
-             });
+        return $("<input/>", { type: 'checkbox', checked: model.value })
+          .on('change', function() {
+            let checked = this.checked;
+            if (model.onChange.length == 2) {
+              Selection.configure((widget) => model.onChange(widget, checked)); 
+            } else if (model.onChange.length == 1) {
+              model.onChange(checked);
+            }
+          });
       }
 
       function createRangeInput(model) {
@@ -130,7 +134,11 @@ MonitoringConsole.View.Components = (function() {
          let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
          input.on('input change', function() {
             let val = converter.parse(this.value);
-            MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+            if (model.onChange.length == 2) {
+              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
+            } else if (model.onChange.length == 1) {
+              model.onChange(val);
+            }
          });
          return input;
       }
@@ -221,65 +229,106 @@ MonitoringConsole.View.Components = (function() {
       return { onCreation: onCreation };
    })();
 
-   /**
-   * Component to navigate pages. More a less a dropdown.
+  /**
+   * Component drawn for each widget legend item to indicate data status.
    */
-   let Navigation = (function() {
+  let Indicator = (function() {
 
-      function onUpdate(model) {
-         let dropdown = $('<select/>');
-         dropdown.change(() => model.onChange(dropdown.val()));
-         for (let i = 0; i < model.pages.length; i++) {
-            let pageModel = model.pages[i];
-            dropdown.append($('<option/>', {value: pageModel.id, text: pageModel.label, selected: pageModel.active }));
-            if (pageModel.active) {
-               dropdown.val(pageModel.id);
-            }
-         }
-         let nav = $("#Navigation"); 
-         nav.empty();
-         nav.append(dropdown);
-         return dropdown;
-      }
+    function onCreation(model) {
+       if (!model.text) {
+          return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
+       }
+       let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
+       return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
+    }
 
-      return { onUpdate: onUpdate };
-   })();
+    return { onCreation: onCreation };
+  })();
 
-
-   let Indicator = (function() {
-
-      function onCreation(model) {
-         if (!model.text) {
-            return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
-         }
-         let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
-         return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
-      }
-
-      return { onCreation: onCreation };
-    })();
-
-   /*
-   * Public API below:
+  /**
+   * Component for any of the text+icon menus/toolbars.
    */
-   return {
+  let Menu = (function() {
+
+    function onCreation(model) {
+      let attrs = { 'class': 'Menu' };
+      if (model.id)
+        attrs.id = model.id;
+      let menu = $('<span/>', attrs);
+      let groups = model.groups;
+      for (let g = 0; g < groups.length; g++) {
+        let group = groups[g];
+        if (group.items) {
+          let groupBox = $('<span/>', { class: 'Group' });
+          let groupLabel = $('<a/>').html(createText(group));
+          let groupItem = $('<span/>', { class: 'Item' })
+            .append(groupLabel)
+            .append(groupBox)
+            ;
+          if (group.clickable) {
+            groupLabel
+              .click(group.items.find(e => e.hidden !== true && e.disabled !== true).onClick)
+              .addClass('clickable');
+          }
+          menu.append(groupItem);
+          for (let i = 0; i < group.items.length; i++) {
+            let item = group.items[i];
+            if (item.hidden !== true)
+              groupBox.append(createButton(item));
+          }          
+        } else {
+          if (group.hidden !== true)
+            menu.append(createButton(group).addClass('Item'));
+        }
+      }
+      return menu;
+    }
+
+    function createText(button) {
+      let text = '';
+      if (button.icon)
+        text += '<strong>'+button.icon+'</strong>';
+      if (button.label)
+        text += button.label;
+      if (button.label && button.items)
+        text += " &#9013;";
+      return text;
+    }
+
+    function createButton(button) {
+      let attrs = { title: button.description };
+      if (button.disabled)
+        attrs.disabled = true;
+      return $('<button/>', attrs)
+            .html(createText(button))
+            .click(button.onClick)
+            .addClass('clickable');
+    }
+
+    return { onCreation: onCreation };
+  })();
+
+  /*
+  * Public API below:
+  */
+  return {
       /**
        * Call to update the settings side panel with the given model
        */
       onSettingsUpdate: (model) => Settings.onUpdate(model),
       /**
-       * Call to update the top page navigation with the given model
-       */
-      onNavigationUpdate: (model) => Navigation.onUpdate(model),
-      /**
        * Returns a jquery legend element reflecting the given model to be inserted into the DOM
        */
       onLegendCreation: (model) => Legend.onCreation(model),
       /**
-       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
+       * Returns a jquery indicator element reflecting the given model to be inserted into the DOM
        */
       onIndicatorCreation: (model) => Indicator.onCreation(model),
+      /**
+       * Returns a jquery menu element reflecting the given model to inserted into the DOM
+       */
+      onMenuCreation: (model) => Menu.onCreation(model),
       //TODO add id to model and make it an update?
-   };
+  };
 
 })();

@@ -62,26 +62,29 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 3,
 					widgets: [
 						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
-							grid: { item: 0, column: 0, span: 1}, 
+							grid: { item: 1, column: 0, span: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
 						{ series: 'ns:jvm CpuUsage', unit: 'percent',
-							grid: { item: 1, column: 0, span: 1}, 
+							grid: { item: 1, column: 1, span: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
 						{ series: 'ns:jvm ThreadCount', unit: 'count',  
 							grid: { item: 0, column: 1, span: 1}},
-						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
-							grid: { item: 1, column: 1, span: 1},
-							status: { missing: { hint: TEXT_HTTP_HIGH }}},
+						{ series: 'ns:http ThreadPoolCurrentThreadUsage', unit: 'percent',
+							grid: { item: 1, column: 2, span: 1},
+							status: { missing: { hint: TEXT_HTTP_HIGH }},
+							axis: { min: 0, max: 100 },
+							decorations: {
+								thresholds: { reference: 'avg', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},														
 						{ series: 'ns:web RequestCount', unit: 'count',
 							grid: { item: 0, column: 2, span: 1}, 
 							options: { perSec: true },
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 						{ series: 'ns:web ActiveSessions', unit: 'count',
-							grid: { item: 1, column: 2, span: 1},
+							grid: { item: 0, column: 0, span: 1},
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
@@ -103,7 +106,7 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
 							grid: { column: 0, item: 0},
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ThreadPoolCurrentThreadCount', unit: 'count',
+						{ series: 'ns:http ThreadPoolCurrentThreadsBusy', unit: 'count',
 							grid: { column: 0, item: 1},
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
 						{ series: 'ns:http ServerCount2xx', unit: 'count', 
@@ -125,7 +128,6 @@ MonitoringConsole.Model = (function() {
 					]
 				}
 			},
-			settings: {},
 	};
 
 	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
@@ -156,8 +158,6 @@ MonitoringConsole.Model = (function() {
 		 */
 		var settings = {};
 		
-		var currentPageId;
-		
 		/**
 		 * Makes sure the page data structure has all required attributes.
 		 */
@@ -168,6 +168,8 @@ MonitoringConsole.Model = (function() {
 				page.widgets = {};
 			if (!page.numberOfColumns || page.numberOfColumns < 1)
 				page.numberOfColumns = 1;
+			if (page.rotate === undefined)
+				page.rotate = true;
 			// make widgets from array to object if needed
 			if (Array.isArray(page.widgets)) {
 				let widgets = {};
@@ -222,7 +224,7 @@ MonitoringConsole.Model = (function() {
 		}
 		
 		function doDeselect() {
-			Object.values(pages[currentPageId].widgets)
+			Object.values(pages[settings.home].widgets)
 				.forEach(widget => widget.selected = false);
 		}
 		
@@ -234,7 +236,7 @@ MonitoringConsole.Model = (function() {
 				throw "A page with name "+name+" already exist";
 			let page = sanityCheckPage({name: name});
 			pages[page.id] = page;
-			currentPageId = page.id;
+			settings.home = page.id;
 			return page;
 		}
 		
@@ -245,7 +247,7 @@ MonitoringConsole.Model = (function() {
 			let isPagesOnly = !userInterface.pages || !userInterface.settings;
 			if (!isPagesOnly)
 				settings = userInterface.settings;
-			let importedPages = isPagesOnly ? userInterface : userInterface.pages;
+			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
 				for (let i = 0; i < importedPages.length; i++) {
@@ -268,8 +270,8 @@ MonitoringConsole.Model = (function() {
 					}
 				}
 			}
-			if (Object.keys(pages).length > 0) {
-				currentPageId = Object.keys(pages)[0];
+			if (settings.home === undefined && Object.keys(pages).length > 0) {
+				settings.home = Object.keys(pages)[0];
 			}
 			doStore();
 			return true;
@@ -294,7 +296,7 @@ MonitoringConsole.Model = (function() {
       	}
 
       	function doLayout(columns) {
-			let page = pages[currentPageId];
+			let page = pages[settings.home];
 			if (!page)
 				return [];
 			if (columns)
@@ -382,12 +384,12 @@ MonitoringConsole.Model = (function() {
 		
 		return {
 			currentPage: function() {
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			listPages: function() {
 				return Object.values(pages).map(function(page) { 
-					return { id: page.id, name: page.name, active: page.id === currentPageId };
+					return { id: page.id, name: page.name, active: page.id === settings.home };
 				});
 			},
 			
@@ -422,7 +424,7 @@ MonitoringConsole.Model = (function() {
 				if (ui)
 				doImport(JSON.parse(ui), true);
 				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
-				return pages[currentPageId];
+				return pages[settings.home];
 			},
 			
 			/**
@@ -437,12 +439,12 @@ MonitoringConsole.Model = (function() {
 				let pageId = getPageId(name);
 				if (pages[pageId])
 					return false;
-				let page = pages[currentPageId];
+				let page = pages[settings.home];
 				page.name = name;
 				page.id = pageId;
 				pages[pageId] = page;
-				delete pages[currentPageId];
-				currentPageId = pageId;
+				delete pages[settings.home];
+				settings.home = pageId;
 				doStore();
 				return true;
 			},
@@ -455,31 +457,47 @@ MonitoringConsole.Model = (function() {
 				let pageIds = Object.keys(pages);
 				if (pageIds.length <= 1)
 					return undefined;
-				delete pages[currentPageId];
-				currentPageId = pageIds[0];
-				return pages[currentPageId];
+				delete pages[settings.home];
+				settings.home = pageIds[0];
+				return pages[settings.home];
 			},
 
 			resetPage: function() {
 				let presets = UI_PRESETS;
-				if (presets && presets.pages && presets.pages[currentPageId]) {
-					let preset = presets.pages[currentPageId];
-					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
+				if (presets && presets.pages && presets.pages[settings.home]) {
+					let preset = presets.pages[settings.home];
+					pages[settings.home] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
 					doStore();
 					return true;
 				}
 				return false;
 			},
+
+			hasPreset: function() {
+				let presets = UI_PRESETS;
+				return presets && presets.pages && presets.pages[settings.home];
+			},
 			
 			switchPage: function(pageId) {
+				if (pageId === undefined) { // rotate to next page from current page
+					let pageIds = Object.values(pages).filter(page => page.rotate).map(page => page.id);
+					pageId = pageIds[(pageIds.indexOf(settings.home) + 1) % pageIds.length];
+				}
 				if (!pages[pageId])
 					return undefined;
-				currentPageId = pageId;
-				return pages[currentPageId];
+				settings.home = pageId;
+				return pages[settings.home];
+			},
+
+			rotatePage: function(rotate) {
+				if (rotate === undefined)
+					return pages[settings.home].rotate;
+				pages[settings.home].rotate = rotate;
+				doStore();
 			},
 			
 			removeWidget: function(series) {
-				let widgets = pages[currentPageId].widgets;
+				let widgets = pages[settings.home].widgets;
 				if (series && widgets) {
 					delete widgets[series];
 				}
@@ -489,22 +507,38 @@ MonitoringConsole.Model = (function() {
 				if (typeof series !== 'string')
 					throw 'configuration object requires string property `series`';
 				doDeselect();
-				let widgets = pages[currentPageId].widgets;
+				let layout = doLayout();
+				let page = pages[settings.home];
+				let widgets = page.widgets;
 				let widget = { series: series };
 				widgets[series] = sanityCheckWidget(widget);
 				widget.selected = true;
+				// automatically fill most empty column
+				let usedCells = new Array(layout.length);
+				for (let i = 0; i < usedCells.length; i++) {
+					usedCells[i] = 0;
+					for (let j = 0; j < layout[i].length; j++) {
+						let cell = layout[i][j];
+						if (cell === undefined || cell !== null && typeof cell === 'object')
+							usedCells[i]++;
+					}
+				}
+				let indexOfLeastUsedCells = usedCells.reduce((iMin, x, i, arr) => x < arr[iMin] ? i : iMin, 0);
+				widget.grid.column = indexOfLeastUsedCells;
+				widget.grid.item = 100;
+				doStore();
 			},
 			
 			configureWidget: function(widgetUpdate, series) {
 				let selected = series
-					? [pages[currentPageId].widgets[series]]
-					: Object.values(pages[currentPageId].widgets).filter(widget => widget.selected);
+					? [pages[settings.home].widgets[series]]
+					: Object.values(pages[settings.home].widgets).filter(widget => widget.selected);
 				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
 			},
 			
 			select: function(series) {
-				let widget = pages[currentPageId].widgets[series];
+				let widget = pages[settings.home].widgets[series];
 				widget.selected = widget.selected !== true;
 				doStore();
 				return widget.selected === true;
@@ -516,7 +550,7 @@ MonitoringConsole.Model = (function() {
 			},
 			
 			selected: function() {
-				return Object.values(pages[currentPageId].widgets)
+				return Object.values(pages[settings.home].widgets)
 					.filter(widget => widget.selected)
 					.map(widget => widget.series);
 			},
@@ -533,8 +567,8 @@ MonitoringConsole.Model = (function() {
 			
 			showSettings: function() {
 				return settings.display === true
-					|| Object.keys(pages[currentPageId].widgets).length == 0
-					|| Object.values(pages[currentPageId].widgets).filter(widget => widget.selected).length > 0;
+					|| Object.keys(pages[settings.home].widgets).length == 0
+					|| Object.values(pages[settings.home].widgets).filter(widget => widget.selected).length > 0;
 			},
 			openSettings: function() {
 				settings.display = true;
@@ -545,6 +579,42 @@ MonitoringConsole.Model = (function() {
 				doDeselect();
 				doStore();
 			},
+
+			Rotation: {
+				isEnabled: () => settings.rotation && settings.rotation.enabled,
+				enabled: function(enabled) {
+					settings.rotation.enabled = enabled === undefined ? true : enabled;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.rotation)
+						settings.rotation = {};
+					if (duration === undefined)
+						return settings.rotation.interval;
+					if (typeof duration === 'number') {
+						settings.rotation.interval = duration;
+						doStore();
+					}
+				}
+			},
+
+			Refresh: {
+				isPaused: () => settings.refresh && settings.refresh.paused,
+				paused: function(paused) {
+					settings.refresh.paused = paused;
+					doStore();
+				},
+				interval: function(duration) {
+					if (!settings.refresh)
+						settings.refresh = {};
+					if (duration == undefined)
+						return settings.refresh.interval;
+					if (typeof duration === 'number') {
+						settings.refresh.interval = duration;
+						doStore();
+					}
+				}
+			}
 		};
 	})();
 	
@@ -598,12 +668,12 @@ MonitoringConsole.Model = (function() {
 		};
 	})();
 	
+	const DEFAULT_INTERVAL = 2;
+
 	/**
 	 * Internal API for data loading from server
 	 */
 	var Interval = (function() {
-		
-		const DEFAULT_INTERVAL = 2000;
 		
 	    /**
 	     * {function} - a function called with no extra arguments when interval tick occured
@@ -616,14 +686,27 @@ MonitoringConsole.Model = (function() {
 		var intervalFn;
 		
 		/**
-		 * {number} - tick interval in milliseconds
+		 * {number} - tick interval in seconds
 		 */
 		var refreshInterval = DEFAULT_INTERVAL;
 		
-		function doPause() {
+		function pause() {
 			if (intervalFn) {
 				clearInterval(intervalFn);
 				intervalFn = undefined;
+			}
+		}
+
+		function resume(atRefreshInterval) {
+			onIntervalTick();
+			if (atRefreshInterval && atRefreshInterval != refreshInterval) {
+				pause();
+				refreshInterval = atRefreshInterval;
+			}
+			if (refreshInterval === 0)
+				refreshInterval = DEFAULT_INTERVAL;
+			if (intervalFn === undefined) {
+				intervalFn = setInterval(onIntervalTick, refreshInterval * 1000);
 			}
 		}
 		
@@ -643,25 +726,52 @@ MonitoringConsole.Model = (function() {
 			/**
 			 * Causes an immediate invocation of the tick target function and makes sure an interval is present or started
 			 */
-			resume: function(atRefreshInterval) {
-				onIntervalTick();
-				if (atRefreshInterval && atRefreshInterval != refreshInterval) {
-					doPause();
-					refreshInterval = atRefreshInterval;
-				}
-				if (refreshInterval === 0)
-					refreshInterval = DEFAULT_INTERVAL;
-				if (intervalFn === undefined) {
-					intervalFn = setInterval(onIntervalTick, refreshInterval);
-				}
-			},
+			resume: resume,
 			
-			pause: function() {
-				doPause();
+			pause: pause,
+			isPaused: () => intervalFn === undefined,
+
+			interval: function(duration) {
+				if (duration === undefined)
+					return refreshInterval;
+				resume(duration);
+			}
+		};
+	})();
+
+	/**
+	 * Internal API for the page rotation interval handling.
+	 */ 
+	let Rotation = (function() {
+
+	    /**
+	     * {function} - a function called with no extra arguments when interval tick occured
+	     */
+	    var onIntervalTick;
+
+		/**
+		 * {function} - underlying interval function causing the ticks to occur
+		 */
+		var intervalFn;
+
+		return {
+
+			init: function(onIntervalFn) {
+				onIntervalTick = onIntervalFn;
 			},
+
+			resume: function(atRefreshInterval) {
+				if (intervalFn)
+					clearInterval(intervalFn); // free old 
+				if (atRefreshInterval)
+					intervalFn = setInterval(onIntervalTick, atRefreshInterval * 1000);
+			}
 		};
 	})();
 	
+	/**
+	 * Internal API for creating data update messages send to the view from server responses.
+	 */ 
 	let Update = (function() {
 
 		function retainLastMinute(data) {
@@ -767,16 +877,15 @@ MonitoringConsole.Model = (function() {
 	})();
 
 
-	function doInit(onDataUpdate) {
+	function doInit(onDataUpdate, onPageUpdate) {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			let instances = $('#cfgInstances').val();
 			payload.queries = Object.keys(widgets).map(function(series) { 
 				return { 
 					series: series,
-					instances: instances
+					instances: undefined, // all
 				}; 
 			});
 			let request = $.ajax({
@@ -789,7 +898,14 @@ MonitoringConsole.Model = (function() {
 			request.done(Update.createOnSuccess(widgets, onDataUpdate));
 			request.fail(Update.createOnError(widgets, onDataUpdate));
 		});
-		Interval.resume();
+		if (UI.Refresh.interval() === undefined) {
+			UI.Refresh.interval(DEFAULT_INTERVAL);
+		}
+		Interval.resume(UI.Refresh.interval());
+		Rotation.init(() => onPageUpdate(doSwitchPage()));
+		if (UI.Rotation.isEnabled()) {
+			Rotation.resume(UI.Rotation.interval());	
+		}
 		return UI.arrange();
 	}
 
@@ -815,6 +931,14 @@ MonitoringConsole.Model = (function() {
 		};
 	}
 
+	function doSwitchPage(pageId) {
+		if (UI.switchPage(pageId)) {
+			Charts.clear();
+			Interval.tick();
+		}
+		return UI.arrange();		
+	}
+
 	/**
 	 * The public API object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
@@ -837,10 +961,34 @@ MonitoringConsole.Model = (function() {
 		 * API to control the chart refresh interval.
 		 */
 		Refresh: {
-			pause: Interval.pause,
-			resume: () => Interval.resume(2000),
-			slow: () => Interval.resume(4000),
-			fast: () => Interval.resume(1000),
+			pause: function() { 
+				Interval.pause();
+				UI.Refresh.paused(true);
+			},
+			paused: function(paused) {
+				if (paused === undefined)
+					return UI.Refresh.isPaused();
+				UI.Refresh.paused(paused);
+				if (paused) {
+					Interval.pause();
+				} else {
+					Interval.resume(UI.Refresh.interval());
+				}
+			},
+			isPaused: UI.Refresh.isPaused,
+			resume: function(duration) {
+				if (duration !== undefined) {
+					UI.Refresh.interval(duration);
+				}
+				UI.Refresh.paused(false);
+				Interval.resume(UI.Refresh.interval());
+			},
+			interval: function(duration) {
+				if (duration === undefined)
+					return UI.Refresh.interval();
+				UI.Refresh.interval(duration);
+				Interval.resume(UI.Refresh.interval());				
+			},
 		},
 		
 		Settings: {
@@ -848,6 +996,20 @@ MonitoringConsole.Model = (function() {
 			open: UI.openSettings,
 			close: UI.closeSettings,
 			toggle: () => UI.showSettings() ? UI.closeSettings() : UI.openSettings(),
+			
+			Rotation: {
+				isEnabled: UI.Rotation.isEnabled,
+				enabled: function(enabled) {
+					UI.Rotation.enabled(enabled);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				},
+				interval: function(duration) {
+					if (duration === undefined)
+						return UI.Rotation.interval();
+					UI.Rotation.interval(duration);
+					Rotation.resume(UI.Rotation.isEnabled() ? UI.Rotation.interval() : 0);
+				}
+			}
 		},
 		
 		/**
@@ -858,6 +1020,7 @@ MonitoringConsole.Model = (function() {
 			id: () => UI.currentPage().id,
 			name: () => UI.currentPage().name,
 			rename: UI.renamePage,
+			rotate: UI.rotatePage,
 			isEmpty: () => (Object.keys(UI.currentPage().widgets).length === 0),
 			
 			create: function(name) {
@@ -881,13 +1044,11 @@ MonitoringConsole.Model = (function() {
 				}
 				return UI.arrange();
 			},
+
+			hasPreset: UI.hasPreset,
 			
 			changeTo: function(pageId) {
-				if (UI.switchPage(pageId)) {
-					Charts.clear();
-					Interval.tick();
-				}
-				return UI.arrange();
+				return doSwitchPage(pageId);
 			},
 			
 			/**

@@ -45,6 +45,18 @@
  **/
 MonitoringConsole.View = (function() {
 
+    const NS_TEXTS = {
+        web: 'Web Statistics',
+        http: 'HTTP Statistics',
+        jvm: 'JVM Statistics',
+        metric: 'MP Metrics',
+        trace: 'Request Tracing',
+        map: 'Cluster Map Storage Statistics',
+        topic: 'Cluster Topic IO Statistics',
+        mc: 'Monitoring Console Internals',
+        other: 'Other',
+    };
+
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
 
@@ -52,30 +64,63 @@ MonitoringConsole.View = (function() {
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
     function updatePageNavigation() {
-        let nav = { 
-            onChange: function(pageid) {
-                MonitoringConsole.Chart.Trace.onClosePopup();
-                onPageChange(MonitoringConsole.Model.Page.changeTo(pageid));
-            },
-            pages: MonitoringConsole.Model.listPages().map(function(page) {
-                return { label: page.name, id: page.id, active: page.active };
-            }),
-        };
-        Components.onNavigationUpdate(nav);
+        let pages = MonitoringConsole.Model.listPages();
+        let activePage = pages.find(page => page.active);
+        let items = pages.filter(page => !page.active).map(function(page) {
+            return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
+        });
+        let nav = { id: 'Navigation', groups: [
+            {label: activePage.name, items: items }
+        ]};
+        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
+    }
+
+    function updateMenu() {
+        let hasPreset = MonitoringConsole.Model.Page.hasPreset();
+        let isPaused = MonitoringConsole.Model.Refresh.isPaused();
+        let settingsOpen = MonitoringConsole.Model.Settings.isDispayed();
+        let toggleSettings = function() { MonitoringConsole.View.onPageMenu(); updateMenu(); };
+        let menu = { id: 'Menu', groups: [
+            { icon: '&#128463;', label: 'Page', items: [
+                { label: 'New...', icon: '&#128459;', description: 'Add a new blank page...', onClick: () => MonitoringConsole.View.onPageChange(MonitoringConsole.Model.Page.create('(Unnamed)')) },
+                { label: 'Delete', icon: '&times;', description: 'Delete current page', disabled: hasPreset, onClick: MonitoringConsole.View.onPageDelete },
+                { label: 'Reset', icon: '&#128260;', description: 'Reset Page to Preset', disabled: !hasPreset, onClick: MonitoringConsole.View.onPageReset },
+            ]},
+            { icon: '&#128472;', label: 'Data Refresh', items: [
+                { label: 'Pause', icon: '&#9208;', description: 'Pause Data Refresh', hidden: isPaused, onClick: function() { MonitoringConsole.Model.Refresh.pause(); updateMenu(); updateSettings(); } },
+                { label: 'Unpause', icon: '&#9654;', description: 'Unpause Data Refresh', hidden: !isPaused, onClick: function() { MonitoringConsole.Model.Refresh.resume(); updateMenu(); updateSettings(); } },
+                { label: 'Slow', icon: '&#128034;', description: 'Slow Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(4); updateMenu(); updateSettings(); } },
+                { label: 'Normal', icon: '&#128008;', description: 'Normal Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(2); updateMenu(); updateSettings(); } },
+                { label: 'Fast', icon: '&#128007;', description: 'Fast Data Refresh Rate', onClick: function() { MonitoringConsole.Model.Refresh.resume(1); updateMenu(); updateSettings(); } },
+            ]},
+            { icon: '&#9707;', label: 'Layout', items: [
+                { label: '1 Column', icon: '&#11034;', description: 'Use one column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(1) },
+                { label: ' 2 Columns', icon: '&#11034;&#11034;', description: 'Use two column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(2) },
+                { label: ' 3 Columns', icon: '&#11034;&#11034;&#11034;', description: 'Use three column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(3) },
+                { label: ' 4 Columns', icon: '&#11034;&#11034;&#11034;&#11034;', description: 'Use four column layout', onClick: () => MonitoringConsole.View.onPageLayoutChange(4) },
+            ]},
+            { icon: '&#9881;', label: 'Settings', clickable: true, items: [
+                { label: 'Hide', icon: '&times;', hidden: !settingsOpen, onClick: toggleSettings },
+                { label: 'Show', icon: '&plus;', hidden: settingsOpen, onClick: toggleSettings },
+                { label: 'Import...', icon: '&#9111;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
+                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
+            ]},
+        ]};
+        $('#Menu').replaceWith(Components.onMenuCreation(menu));
     }
 
     /**
      * Updates the DOM with the page and selection settings so it reflects current model state
      */ 
-    function updatePageAndSelectionSettings() {
+    function updateSettings() {
         let panelConsole = $('#console');
         if (MonitoringConsole.Model.Settings.isDispayed()) {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
             let settings = [];
+            settings.push(createGlobalSettings());
             settings.push(createPageSettings());
-            settings.push(createDataSettings());
             if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
@@ -115,7 +160,7 @@ MonitoringConsole.View = (function() {
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
     function createWidgetTargetContainer(widget) {
-        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box", style: 'width: calc(100% - 20px); height: calc(100% - 100px);' })
             .append($('<canvas/>',{ id: widget.target }));
     }
 
@@ -158,27 +203,37 @@ MonitoringConsole.View = (function() {
 
     function createWidgetToolbar(widget, expanded) {
         let series = widget.series;
-        let settings = $('<span/>', {'class': 'widget-settings-bar', style: expanded ? 'display: inline;' : ''})
-            .append(createToolbarButton('Remove chart from page', '&times; Remove', () => onWidgetDelete(series)))
-            .append(createToolbarButton('Enlarge this chart', '&ltri;&rtri; Larger', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series))))
-            .append(createToolbarButton('Shrink this chart', '&rtri;&ltri; Smaller', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series))))
-            .append(createToolbarButton('Move to right', '&rtri; Move Right', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series))))
-            .append(createToolbarButton('Move to left', '&ltri; Move Left', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series))))
-            .append(createToolbarButton('Move up', '&triangle; Move Up', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series))))
-            .append(createToolbarButton('Move down', '&dtri; Move Down', () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series))))
-            .append(createToolbarButton('Open in Side Panel', '&#9881; More...', () => onOpenWidgetSettings(series)))
-            ;
+        let menu = { groups: [
+            { icon: '&#9881;', items: [
+                { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
+                { icon: '&ltri;&rtri;', label: 'Larger', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series)) },
+                { icon: '&rtri;&ltri;', label: 'Samller', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series)) },
+                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
+                { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
+                { icon: '&triangle;', label: 'Move Up', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series)) },
+                { icon: '&dtri;', label: 'Move Down', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series)) },
+                { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
+            ]},
+        ]};
         return $('<div/>', {"class": "widget-title-bar"})
             .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(createToolbarButton('Settings', '&#9881;', () => $(settings).toggle())
-            .append(settings));
+            .append(Components.onMenuCreation(menu))
+            ;
     }
 
-    function createToolbarButton(title, icon, onClick) {
-        return $('<button/>', { "class": "btnIcon", title: title}).html(icon).click(onClick);
+    function createGlobalSettings() {
+        return { id: 'settings-global', caption: 'Global', entries: [
+            { label: 'Data Refresh', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
+                { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
+            ]},
+            { label: 'Page Rotation', input: [
+                { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
+                { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
+            ]},
+        ]};
     }
-
 
     function createWidgetSettings(widget) {
         let options = widget.options;
@@ -238,21 +293,41 @@ MonitoringConsole.View = (function() {
     }
 
     function createPageSettings() {
-        let widgetsSelection = $('<select/>');
-        MonitoringConsole.Model.listSeries(function(names) {
-            let lastNs;
-            $.each(names, function() {
-                let key = this; //.replace(/ /g, ',');
-                let ns =  this.substring(3, this.indexOf(' '));
-                let $option = $("<option />").val(key).text(this.substring(this.indexOf(' ')));
-                if (ns == lastNs) {
-                    widgetsSelection.find('optgroup').last().append($option);
-                } else {
-                    let group = $('<optgroup/>').attr('label', ns);
-                    group.append($option);
-                    widgetsSelection.append(group);
-                }
-                lastNs = ns;
+        let nsSelection = $('<select/>');
+        nsSelection.append($('<option/>').val('-').text('(Please Select)'));
+        nsSelection.on('mouseenter focus', function() {
+            if (nsSelection.children().length == 1) {
+                 let nsAdded = [];
+                 MonitoringConsole.Model.listSeries(function(names) {
+                    $.each(names, function() {
+                        let key = this;
+                        let ns =  this.substring(3, this.indexOf(' '));
+                        if (NS_TEXTS[ns] === undefined) {
+                            ns = 'other';
+                        }
+                        if (nsAdded.indexOf(ns) < 0) {
+                            nsAdded.push(ns);
+                            nsSelection.append($('<option/>').val(ns).text(NS_TEXTS[ns]));
+                        }
+                    });
+                });
+            }
+        });
+        let widgetsSelection = $('<select/>').attr('disabled', true);
+        nsSelection.change(function() {
+            widgetsSelection.empty();
+            MonitoringConsole.Model.listSeries(function(names) {
+                $.each(names, function() {
+                    let key = this;
+                    let ns =  this.substring(3, this.indexOf(' '));
+                    if (NS_TEXTS[ns] === undefined) {
+                        ns = 'other';
+                    }
+                    if (ns === nsSelection.val()) {
+                        widgetsSelection.append($("<option />").val(key).text(this.substring(this.indexOf(' '))));                        
+                    }
+                });
+                widgetsSelection.attr('disabled', false);
             });
         });
         let widgetSeries = $('<input />', {type: 'text'});
@@ -267,41 +342,29 @@ MonitoringConsole.View = (function() {
                     }
                 })
             },
-            { label: 'Widgets', input: () => 
+            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            { label: 'Add Widgets', input: () => 
                 $('<span/>')
+                .append(nsSelection)
                 .append(widgetsSelection)
                 .append(widgetSeries)
                 .append($('<button/>', {title: 'Add selected metric', text: 'Add'})
-                    .click(() => onPageUpdate(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
+                    .click(() => onPageChange(MonitoringConsole.Model.Page.Widgets.add(widgetSeries.val()))))
             },
         ]};
     }
-
-    function createDataSettings() {
-        let instanceSelection = $('<select />', {multiple: true});
-        $.getJSON("api/instances/", function(instances) {
-            for (let i = 0; i < instances.length; i++) {
-                instanceSelection.append($('<option/>', { value: instances[i], text: instances[i], selected:true}));
-            }
-        });
-        return { id: 'settings-data', caption: 'Data', entries: [
-            { label: 'Instances', input: instanceSelection }
-        ]};
-    }
-
-    
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
         updateDomOfWidget(undefined, widget);
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     function onWidgetDelete(series) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
-            onPageUpdate(MonitoringConsole.Model.Page.Widgets.remove(series));
+            onPageChange(MonitoringConsole.Model.Page.Widgets.remove(series));
         }
     }
 
@@ -398,14 +461,27 @@ MonitoringConsole.View = (function() {
         let numberOfColumns = layout.length;
         let maxRows = layout[0].length;
         let table = $("<table/>", { id: 'chart-grid', 'class': 'columns-'+numberOfColumns + ' rows-'+maxRows });
-        let rowHeight = Math.round(($(window).height() - 100) / maxRows) - 30; // padding is subtracted
+        let padding = 30;
+        let headerHeight = 40;
+        let minRowHeight = 160;
+        let rowsPerScreen = maxRows;
+        let windowHeight = $(window).height();
+        let rowHeight = 0;
+        while (rowsPerScreen > 0 && rowHeight < minRowHeight) {
+            rowHeight = Math.round((windowHeight - headerHeight) / rowsPerScreen) - padding; // padding is subtracted
+            rowsPerScreen--; // in case we do another round try one less per screen
+        }
+        if (rowHeight == 0) {
+            rowHeight = windowHeight - headerHeight - padding;
+        }
         for (let row = 0; row < maxRows; row++) {
             let tr = $("<tr/>");
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
                     let span = cell.span;
-                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+(span * rowHeight)+"px;"});
+                    let height = (span * rowHeight);
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+height+"px;"});
                     updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {
@@ -422,16 +498,18 @@ MonitoringConsole.View = (function() {
      * Method to call when page changes to update UI elements accordingly
      */
     function onPageChange(layout) {
+        MonitoringConsole.Chart.Trace.onClosePopup();
         onPageUpdate(layout);
         updatePageNavigation();
-        updatePageAndSelectionSettings();
+        updateSettings();
+        updateMenu();
     }
 
     function onOpenWidgetSettings(series) {
         MonitoringConsole.Model.Page.Widgets.Selection.clear();
         MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
         MonitoringConsole.Model.Settings.open();
-        updatePageAndSelectionSettings();
+        updateSettings();
     }
 
     /**
@@ -443,16 +521,14 @@ MonitoringConsole.View = (function() {
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
-            onPageUpdate(MonitoringConsole.Model.init(onDataUpdate));
-            updatePageAndSelectionSettings();
-            updatePageNavigation();
+            onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
         onPageReset: () => onPageChange(MonitoringConsole.Model.Page.reset()),
         onPageImport: (src) => MonitoringConsole.Model.importPages(src, onPageChange),
         onPageExport: () => onPageExport('monitoring-console-config.json', MonitoringConsole.Model.exportPages()),
-        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updatePageAndSelectionSettings(); },
+        onPageMenu: function() { MonitoringConsole.Model.Settings.toggle(); updateSettings(); },
         onPageLayoutChange: (numberOfColumns) => onPageUpdate(MonitoringConsole.Model.Page.arrange(numberOfColumns)),
         onPageDelete: function() {
             if (window.confirm("Do you really want to delete the current page?")) { 
