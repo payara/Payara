@@ -211,7 +211,7 @@ public class Version {
      * Returns Minor version
      */
     public static String getMinorVersion() {
-        return getProperty(MINOR_VERSION_KEY, "0");
+        return getProperty(MINOR_VERSION_KEY, "0").replace("-SNAPSHOT","");
     }
 
     /**
