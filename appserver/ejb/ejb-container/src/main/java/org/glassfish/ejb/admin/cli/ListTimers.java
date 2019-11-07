@@ -145,10 +145,7 @@ public class ListTimers implements AdminCommand {
     }
 
     private String[] listTimers(String[] serverIds) {
-        String[] result = new String[serverIds.length];
-        for(int i = 0; i < result.length; i++) {
-            result[i] = "0";
-        }
+        String[] result;
 
         EJBTimerService ejbTimerService = null;
         if (EJBTimerService.isPersistentTimerServiceLoaded()) {
@@ -158,6 +155,11 @@ public class ListTimers implements AdminCommand {
         }
         if (nonNull(ejbTimerService)) {
             result = ejbTimerService.listTimers(serverIds);
+        } else {
+            result = new String[serverIds.length];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = "0";
+            }
         }
 
         return result;
