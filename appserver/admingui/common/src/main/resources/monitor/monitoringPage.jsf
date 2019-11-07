@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2018-2019] Payara Foundation and/or affiliates -->
 
 <!initPage 
     setResourceBundle(key="common" bundle="org.glassfish.common.admingui.Strings")
@@ -51,18 +51,44 @@
 <!define name="content">
 <event>
     <!beforeCreate
-        setSessionAttribute(key="monitoringConfigTab" value="monitoringGeneralTab");
+             setSessionAttribute(key="monitoringConfigTab" value="monitoringGeneralTab");
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
         urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="monitoring-service");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
-        setPageSessionAttribute(key="amxUrl", value="#{pageSession.parentUrl}/amx-configuration");
         setPageSessionAttribute(key="rest-api" value="true");
-        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+        
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-monitoring-service-configuration?target=#{pageSession.encodedConfigName}"  
+                method="GET" result="#{requestScope.resp}");
+ 
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getMonitoringServiceConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedConfigName}");       
+         
+        setPageSessionAttribute(key="convertToFalseList" value={"dtraceEnabled", "monitoringEnabled", "mbeanEnabled", "enabled", "dynamic"}); 
+        if (#{pageSession.valueMap['monitoringEnabled']}=true) {
+            setPageSessionAttribute(key="monitoringEnabledSelected", value="true");
+        }
+        
+        if (#{pageSession.valueMap['mbeanEnabled']}=true) {
+            setPageSessionAttribute(key="mbeanEnabledSelected", value="true");
+        }
+
+        if (#{pageSession.valueMap['dtraceEnabled']}=true) {
+            setPageSessionAttribute(key="dtraceEnabledSelected", value="true");
+        }
+        
+        mapRemove(map="#{pageSession.valueMap}" key="amxEnabled");
+        
+        setPageSessionAttribute(key="amxUrl", value="#{pageSession.parentUrl}/amx-configuration");
         gf.getEntityAttrs(endpoint="#{pageSession.amxUrl}", valueMap="#{pageSession.amxMap}");
-        setPageSessionAttribute(key="convertToFalseList" value={"dtraceEnabled", "monitoringEnabled", "mbeanEnabled", "enabled"});
-        setPageSessionAttribute(key="skipAttrsList" value={"amxSelected"});
+        mapPut(map="#{pageSession.amxMap}" key="target" value="#{pageSession.encodedConfigName}"); 
+        setPageSessionAttribute(key="enabledSelected", value="false");
+        if (#{pageSession.amxMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="skipAttrsList" value={"amxEnabled"});
         gf.getMonitorLevels(endpoint="#{pageSession.parentUrl}" monitorCompList="#{requestScope.tableList}")
         
     />
@@ -75,16 +101,26 @@
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}" >
+                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
+                    mapPut(map="#{pageSession.valueMap}" key="monitoringEnabled" value="#{pageSession.monitoringEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="mbeanEnabled" value="#{pageSession.mbeanEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dtraceEnabled" value="#{pageSession.dtraceEnabledSelected}");
+                    mapPut(map="#{pageSession.amxMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.amxMap}" key="dynamic" value="#{pageSession.dynamic}");
                     getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
                     getAllSingleMapRows(TableRowGroup="${tableRowGroup}" Rows=>$attribute{allRows});
-                    updateMonitorLevels(endpoint="#{pageSession.selfUrl}/module-monitoring-levels",  allRows="#{requestScope.allRows}")
-                    gf.updateEntity(endpoint="#{pageSession.selfUrl}"  attrs="#{pageSession.valueMap}"
+                    updateMonitorLevels(allRows="#{requestScope.allRows}" config="#{pageSession.configName}");
+                    
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-service-configuration"
                         skipAttrs="#{pageSession.skipAttrsList}"
+                        attrs="#{pageSession.valueMap}"
                         convertToFalse="#{pageSession.convertToFalseList}"
                         onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
-                    gf.updateEntity(endpoint="#{pageSession.amxUrl}" attrs="#{pageSession.amxMap}"
+
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-amx-enabled" 
+                        attrs="#{pageSession.amxMap}"
                         convertToFalse="#{pageSession.convertToFalseList}"
                     );
                     prepareSuccessfulMsg();
@@ -102,13 +138,19 @@
         />
 
         <sun:property id="monServiceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monService}"  helpText="$resource{common.monitoring.monServiceHelp}">
-            <sun:checkbox id="momServiceCheckbox"  label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['monitoringEnabled']}" selectedValue="true" />
+            <sun:checkbox id="momServiceCheckbox"  label="$resource{i18n.common.Enabled}" selected="#{pageSession.monitoringEnabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="monMbeansProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monMbeans}"  helpText="$resource{common.monitoring.monMbeansHelp}">
-            <sun:checkbox id="momBbeanCheckbox" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['mbeanEnabled']}" selectedValue="true" />
+            <sun:checkbox id="momBbeanCheckbox" label="$resource{i18n.common.Enabled}" selected="#{pageSession.mbeanEnabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="monDtraceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monDtrace}"  helpText="$resource{common.monitoring.monDtraceHelp}">
+            <sun:checkbox id="momDtraceCheckbox" label="$resource{i18n.common.Enabled}" selected="#{pageSession.dtraceEnabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.AMXEnabled}" helpText="$resource{common.monitoring.AMXEnabledHelp}">
-            <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxMap['enabled']}" selectedValue="true"/>
+            <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
+        </sun:property>
+          <sun:property id="amxDynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.AMXDynamic}" helpText="$resource{common.monitoring.AMXDynamicHelp}">
+            <sun:checkbox id="amxDynamic" label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
         </sun:property>
         "<br />
     </sun:propertySheetSection>
