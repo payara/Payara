@@ -78,8 +78,6 @@ public class ExistingRealmIdentityStoreDefinitionTest {
     @ArquillianResource
     private URL deploymentUrl;
 
-    private static final String WEBAPP_SOURCE = "src/main/webapp";
-
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return create(WebArchive.class)
@@ -89,7 +87,6 @@ public class ExistingRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 
