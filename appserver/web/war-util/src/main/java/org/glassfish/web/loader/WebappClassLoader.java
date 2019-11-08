@@ -796,6 +796,7 @@ public class WebappClassLoader
 
         if (repository == null) {
             return;
+	}
 
         if (logger.isLoggable(Level.FINER))
             logger.log(Level.FINER, "addRepository({0})", repository);
