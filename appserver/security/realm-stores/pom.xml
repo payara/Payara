@@ -100,43 +100,5 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Export-Package>
-                                    fish.payara.security.openid,
-                                    fish.payara.security.openid.controller,
-                                    fish.payara.security.openid.domain,
-                                    fish.payara.security.openid.azure,
-                                    fish.payara.security.openid.google
-                                </Export-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-        
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
 
 </project>
