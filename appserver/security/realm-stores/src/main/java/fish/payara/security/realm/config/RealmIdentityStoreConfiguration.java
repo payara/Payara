@@ -37,50 +37,27 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.realm.identitystores;
+package fish.payara.security.realm.config;
 
-import com.sun.enterprise.security.auth.login.FileLoginModule;
-import com.sun.enterprise.security.auth.login.common.LoginException;
-import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.security.auth.realm.file.FileRealm;
-import fish.payara.security.realm.config.FileRealmIdentityStoreConfiguration;
-import java.util.Arrays;
-import java.util.HashSet;
-import javax.enterprise.inject.Typed;
-import javax.security.enterprise.CallerPrincipal;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.credential.UsernamePasswordCredential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import javax.security.enterprise.identitystore.IdentityStore;
+import fish.payara.security.annotations.RealmIdentityStoreDefinition;
 
 /**
- * {@link FileRealmIdentityStore} Identity store validates the user using
- * dynamically created file realm instance and returns the validation result
- * with the caller name and groups.
  *
- * @author Gaurav Gupta
+ * @author jGauravGupta
  */
-@Typed(FileRealmIdentityStore.class)
-public class FileRealmIdentityStore extends RealmIdentityStore {
+public class RealmIdentityStoreConfiguration {
 
-    private FileRealmIdentityStoreConfiguration configuration;
+    private final String name;
 
-    public static final Class<FileRealm> REALM_CLASS = FileRealm.class;
-
-    public static final Class<FileLoginModule> REALM_LOGIN_MODULE_CLASS = FileLoginModule.class;
-
-    public void init(FileRealmIdentityStoreConfiguration configuration) {
-        this.configuration = configuration;
+    private RealmIdentityStoreConfiguration(RealmIdentityStoreDefinition definition) {
+        this.name = definition.value();
     }
 
-    @Override
-    public CredentialValidationResult validate(Credential credential) {
-        if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential, configuration.getName());
-        }
-        return NOT_VALIDATED_RESULT;
+    public static RealmIdentityStoreConfiguration from(RealmIdentityStoreDefinition definition) {
+        return new RealmIdentityStoreConfiguration(definition);
     }
 
+    public String getName() {
+        return name;
+    }
 }

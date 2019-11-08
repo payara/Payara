@@ -45,7 +45,7 @@ import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.pam.PamRealm;
 import com.sun.enterprise.security.ee.auth.login.PamLoginModule;
 import fish.payara.security.annotations.PamIdentityStoreDefinition;
-import fish.payara.security.realm.PamRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.PamRealmIdentityStoreConfiguration;
 import fish.payara.security.realm.RealmUtil;
 import static fish.payara.security.realm.RealmUtil.ASSIGN_GROUPS;
 import static fish.payara.security.realm.RealmUtil.JAAS_CONTEXT;
@@ -71,59 +71,24 @@ import org.jvnet.libpam.UnixUser;
  * @author Gaurav Gupta
  */
 @Typed(PamRealmIdentityStore.class)
-public class PamRealmIdentityStore implements IdentityStore {
+public class PamRealmIdentityStore extends RealmIdentityStore {
 
     private PamRealmIdentityStoreConfiguration configuration;
-
-    private PamRealm pamRealm;
 
     public static final Class<PamRealm> REALM_CLASS = PamRealm.class;
 
     public static final Class<PamLoginModule> REALM_LOGIN_MODULE_CLASS = PamLoginModule.class;
 
-    public void init(PamIdentityStoreDefinition definition) {
-        configuration = PamRealmIdentityStoreConfiguration.from(definition);
-
-        try {
-            if (!Realm.isValidRealm(configuration.getName())) {
-                Properties props = new Properties();
-                props.put(JAAS_CONTEXT, configuration.getName());
-                if (!configuration.getAssignGroups().isEmpty()) {
-                    props.put(ASSIGN_GROUPS, String.join(",", configuration.getAssignGroups()));
-                }
-                RealmUtil.createAuthRealm(configuration.getName(), REALM_CLASS.getName(), REALM_LOGIN_MODULE_CLASS.getName(), props);
-            }
-            pamRealm = REALM_CLASS.cast(Realm.getInstance(configuration.getName()));
-        } catch (NoSuchRealmException ex) {
-            throw new IdentityStoreException(configuration.getName(), ex);
-        }
+    public void init(PamRealmIdentityStoreConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential, configuration.getName());
         }
         return NOT_VALIDATED_RESULT;
-    }
-
-    public CredentialValidationResult validate(UsernamePasswordCredential credential) {
-        try {
-            String[] groups = login(credential);
-            if (groups != null) {
-                return new CredentialValidationResult(new CallerPrincipal(credential.getCaller()), new HashSet<>(Arrays.asList(groups)));
-            }
-        } catch (LoginException ex) {
-            return INVALID_RESULT;
-        }
-        return INVALID_RESULT;
-    }
-
-    public String[] login(UsernamePasswordCredential credential) {
-        String username = credential.getCaller();
-        char[] password = credential.getPassword().getValue();
-        UnixUser user = pamRealm.authenticate(username, password);
-        return user.getGroups().toArray(new String[0]);
     }
 
 }

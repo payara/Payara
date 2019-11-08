@@ -75,9 +75,24 @@ public @interface PamIdentityStoreDefinition {
     String[] assignGroups() default {};
 
     /**
+     * Optional. The JAAS Context of Pam realm.
+     *
+     * The JAAS Context can also be configured by using MicroProfile Config
+     * property "payara.security.pam.jaasContext".
+     *
+     * @return
+     */
+    String jaasContext() default "pamRealm";
+
+    /**
      * The MicroProfile Config key for the assign groups is
      * <code>{@value}</code>
      */
     String STORE_MP_PAM_GROUPS = "payara.security.pam.assignGroups";
+
+    /**
+     * The MicroProfile Config key for the jaas context is <code>{@value}</code>
+     */
+    String STORE_MP_PAM_JAAS_CONTEXT = "payara.security.pam.jaasContext";
 
 }

@@ -37,27 +37,18 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.realm;
+package fish.payara.security.realm.config;
 
-import fish.payara.security.annotations.RealmIdentityStoreDefinition;
+import java.util.List;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
-public class RealmIdentityStoreConfiguration {
+public interface RealmConfiguration {
 
-    private final String name;
+    String getName();
 
-    private RealmIdentityStoreConfiguration(RealmIdentityStoreDefinition definition) {
-        this.name = definition.value();
-    }
+    List<String> getAssignGroups();
 
-    public static RealmIdentityStoreConfiguration from(RealmIdentityStoreDefinition definition) {
-        return new RealmIdentityStoreConfiguration(definition);
-    }
-
-    public String getName() {
-        return name;
-    }
 }

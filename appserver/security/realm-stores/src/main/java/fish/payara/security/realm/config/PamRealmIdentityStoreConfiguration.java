@@ -37,39 +37,43 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.realm;
+package fish.payara.security.realm.config;
 
 import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
-import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
-import static fish.payara.security.annotations.CertificateIdentityStoreDefinition.STORE_MP_CERTIFICATE_GROUPS;
+import fish.payara.security.annotations.PamIdentityStoreDefinition;
+import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_GROUPS;
+import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_JAAS_CONTEXT;
+import static fish.payara.security.realm.RealmUtil.getConfiguredValue;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
- * Certificate Realm identity store configuration.
+ * Pam Realm identity store configuration.
  *
  * @author jGauravGupta
  */
-public class CertificateRealmIdentityStoreConfiguration {
+public class PamRealmIdentityStoreConfiguration implements RealmConfiguration {
 
     private final String name;
     private final List<String> assignGroups;
+    private final String jaasContext;
 
-    private CertificateRealmIdentityStoreConfiguration(CertificateIdentityStoreDefinition definition) {
+    private PamRealmIdentityStoreConfiguration(PamIdentityStoreDefinition definition) {
         Config provider = ConfigProvider.getConfig();
         PayaraConfig payaraConfig = (PayaraConfig) provider;
         this.name = definition.value();
-        this.assignGroups = payaraConfig.getListValues(STORE_MP_CERTIFICATE_GROUPS, String.join(",", definition.assignGroups()), String.class)
+        this.assignGroups = payaraConfig.getListValues(STORE_MP_PAM_GROUPS, String.join(",", definition.assignGroups()), String.class)
                 .stream()
                 .filter(StringUtils::ok)
                 .collect(toList());
+        this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), provider, STORE_MP_PAM_JAAS_CONTEXT);
     }
 
-    public static CertificateRealmIdentityStoreConfiguration from(CertificateIdentityStoreDefinition definition) {
-        return new CertificateRealmIdentityStoreConfiguration(definition);
+    public static PamRealmIdentityStoreConfiguration from(PamIdentityStoreDefinition definition) {
+        return new PamRealmIdentityStoreConfiguration(definition);
     }
 
     public String getName() {
@@ -78,6 +82,10 @@ public class CertificateRealmIdentityStoreConfiguration {
 
     public List<String> getAssignGroups() {
         return assignGroups;
+    }
+
+    public String getJaasContext() {
+        return jaasContext;
     }
 
 }

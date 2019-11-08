@@ -46,7 +46,7 @@ import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
 import fish.payara.security.api.CertificateCredential;
-import fish.payara.security.realm.CertificateRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.CertificateRealmIdentityStoreConfiguration;
 import fish.payara.security.realm.RealmUtil;
 import static fish.payara.security.realm.RealmUtil.ASSIGN_GROUPS;
 import java.security.cert.X509Certificate;
@@ -78,15 +78,8 @@ public class CertificateRealmIdentityStore implements IdentityStore {
     public final static Class<CertificateRealm> REALM_CLASS = CertificateRealm.class;
     public final static Class<ClientCertificateLoginModule> REALM_LOGIN_MODULE_CLASS = ClientCertificateLoginModule.class;
 
-    public void init(CertificateIdentityStoreDefinition definition) {
-        configuration = CertificateRealmIdentityStoreConfiguration.from(definition);
-        if (!Realm.isValidRealm(configuration.getName())) {
-            Properties props = new Properties();
-            if (!configuration.getAssignGroups().isEmpty()) {
-                props.put(ASSIGN_GROUPS, String.join(",", configuration.getAssignGroups()));
-            }
-            RealmUtil.createAuthRealm(configuration.getName(), REALM_CLASS.getName(), REALM_LOGIN_MODULE_CLASS.getName(), props);
-        }
+    public void init(CertificateRealmIdentityStoreConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override

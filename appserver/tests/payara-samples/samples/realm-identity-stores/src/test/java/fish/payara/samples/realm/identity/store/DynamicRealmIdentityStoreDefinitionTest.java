@@ -40,6 +40,7 @@
 package fish.payara.samples.realm.identity.store;
 
 import fish.payara.samples.ServerOperations;
+import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
 import fish.payara.samples.realm.identity.store.common.AuthoritiesConstants;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_PASSWORD;
@@ -92,11 +93,11 @@ public class DynamicRealmIdentityStoreDefinitionTest {
 
     @Before
     public void addTestUser() {
-        ServerOperations.addUserToContainerIdentityStore("new-file-realm", DEFAULT_USER, ADMIN);
+        ServerOperations.addUserToContainerIdentityStore(REALM_NAME, DEFAULT_USER, ADMIN);
     }
 
     @Test
-    public void testMetricsWithCorrectCredentials() throws Exception {
+    public void testWithCorrectCredentials() throws Exception {
         PersonControllerClient client = getBasicPersonControllerClient(deploymentUrl, DEFAULT_USER, DEFAULT_PASSWORD);
         Response response = client.createPerson(Person.DEFAULT_INSTANCE);
         assertThat(response, hasStatus(CREATED));

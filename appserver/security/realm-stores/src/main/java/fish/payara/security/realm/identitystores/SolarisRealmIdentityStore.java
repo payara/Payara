@@ -39,20 +39,29 @@
  */
 package fish.payara.security.realm.identitystores;
 
+import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
+import static com.sun.enterprise.security.auth.login.LoginContextDriver.getValidRealm;
 import com.sun.enterprise.security.auth.login.SolarisLoginModule;
 import com.sun.enterprise.security.auth.login.common.LoginException;
+import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.solaris.SolarisRealm;
+import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import fish.payara.security.annotations.SolarisIdentityStoreDefinition;
 import fish.payara.security.realm.RealmUtil;
 import static fish.payara.security.realm.RealmUtil.ASSIGN_GROUPS;
 import static fish.payara.security.realm.RealmUtil.JAAS_CONTEXT;
-import fish.payara.security.realm.SolarisRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.SolarisRealmIdentityStoreConfiguration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static java.util.stream.Collectors.toSet;
 import javax.enterprise.inject.Typed;
+import javax.security.auth.Subject;
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
@@ -60,6 +69,7 @@ import javax.security.enterprise.identitystore.CredentialValidationResult;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import javax.security.enterprise.identitystore.IdentityStore;
+import org.glassfish.security.common.Group;
 import org.glassfish.soteria.identitystores.IdentityStoreException;
 
 /**
@@ -70,58 +80,24 @@ import org.glassfish.soteria.identitystores.IdentityStoreException;
  * @author Gaurav Gupta
  */
 @Typed(SolarisRealmIdentityStore.class)
-public class SolarisRealmIdentityStore implements IdentityStore {
+public class SolarisRealmIdentityStore extends RealmIdentityStore {
 
     private SolarisRealmIdentityStoreConfiguration configuration;
-
-    private SolarisRealm solarisRealm;
 
     public static final Class<SolarisRealm> REALM_CLASS = SolarisRealm.class;
 
     public static final Class<SolarisLoginModule> REALM_LOGIN_MODULE_CLASS = SolarisLoginModule.class;
 
-    public void init(SolarisIdentityStoreDefinition definition) {
-        configuration = SolarisRealmIdentityStoreConfiguration.from(definition);
-
-        try {
-            if (!Realm.isValidRealm(configuration.getName())) {
-                Properties props = new Properties();
-                props.put(JAAS_CONTEXT, configuration.getName());
-                if (!configuration.getAssignGroups().isEmpty()) {
-                    props.put(ASSIGN_GROUPS, String.join(",", configuration.getAssignGroups()));
-                }
-                RealmUtil.createAuthRealm(configuration.getName(), REALM_CLASS.getName(), REALM_LOGIN_MODULE_CLASS.getName(), props);
-            }
-            solarisRealm = REALM_CLASS.cast(Realm.getInstance(configuration.getName()));
-        } catch (NoSuchRealmException ex) {
-            throw new IdentityStoreException(configuration.getName(), ex);
-        }
+    public void init(SolarisRealmIdentityStoreConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential, configuration.getName());
         }
         return NOT_VALIDATED_RESULT;
-    }
-
-    public CredentialValidationResult validate(UsernamePasswordCredential credential) {
-        try {
-            String[] groups = login(credential);
-            if (groups != null) {
-                return new CredentialValidationResult(new CallerPrincipal(credential.getCaller()), new HashSet<>(Arrays.asList(groups)));
-            }
-        } catch (LoginException ex) {
-            return INVALID_RESULT;
-        }
-        return INVALID_RESULT;
-    }
-
-    public String[] login(UsernamePasswordCredential credential) {
-        String username = credential.getCaller();
-        char[] password = credential.getPassword().getValue();
-        return solarisRealm.authenticate(username, password);
     }
 
 }

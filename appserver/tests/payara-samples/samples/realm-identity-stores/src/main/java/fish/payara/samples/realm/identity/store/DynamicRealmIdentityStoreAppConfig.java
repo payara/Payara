@@ -39,6 +39,7 @@
  */
 package fish.payara.samples.realm.identity.store;
 
+import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.USER;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
@@ -54,6 +55,9 @@ import javax.ws.rs.core.Application;
 @DeclareRoles({ADMIN, USER})
 @ApplicationPath("resources")
 @BasicAuthenticationMechanismDefinition
-@FileIdentityStoreDefinition("new-file-realm")
+@FileIdentityStoreDefinition(value=REALM_NAME)
 public class DynamicRealmIdentityStoreAppConfig extends Application {
+
+    public static final String REALM_NAME = "new-file-realm";
+
 }

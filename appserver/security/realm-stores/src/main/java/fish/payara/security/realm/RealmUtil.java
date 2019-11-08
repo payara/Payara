@@ -55,7 +55,6 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.EmbeddedSystemAdministrator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.soteria.identitystores.IdentityStoreException;
 
 /**
  *
@@ -118,14 +117,14 @@ public interface RealmUtil {
         }
         ActionReport report = new PlainTextActionReporter();
         ActionReport outreport = commandRunnerHelper.runCommand("create-auth-realm", parameters, report, administrator.getSubject());
-        if (outreport.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-            throw new IdentityStoreException("Error in creating Auth realm: " + name);
+        if (outreport.getActionExitCode() == ActionReport.ExitCode.FAILURE) {
+            throw new IllegalStateException("Error in creating Auth realm: " + name);
         }
     }
     
     static String escapeRealmProperty(String component) {
         return component
-                .replaceAll(":", "\\:")
-                .replaceAll("=", "\\=");
+                .replaceAll("\\:", "\\\\:")
+                .replaceAll("\\=", "\\\\=");
     }
 }

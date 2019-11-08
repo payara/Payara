@@ -75,9 +75,24 @@ public @interface SolarisIdentityStoreDefinition {
     String[] assignGroups() default {};
 
     /**
+     * Optional. The JAAS Context of Solaris realm.
+     *
+     * The JAAS Context can also be configured by using MicroProfile Config
+     * property "payara.security.solaris.jaasContext".
+     *
+     * @return
+     */
+    String jaasContext() default "solarisRealm";
+
+    /**
      * The MicroProfile Config key for the assign groups is
      * <code>{@value}</code>
      */
     String STORE_MP_SOLARIS_GROUPS = "payara.security.solaris.assignGroups";
+
+    /**
+     * The MicroProfile Config key for the jaas context is <code>{@value}</code>
+     */
+    String STORE_MP_SOLARIS_JAAS_CONTEXT = "payara.security.solaris.jaasContext";
 
 }

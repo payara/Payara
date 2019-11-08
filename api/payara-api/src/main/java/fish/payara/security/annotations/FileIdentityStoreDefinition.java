@@ -85,6 +85,16 @@ public @interface FileIdentityStoreDefinition {
     String[] assignGroups() default {};
 
     /**
+     * Optional. The JAAS Context of File realm.
+     *
+     * The JAAS Context can also be configured by using MicroProfile Config
+     * property "payara.security.file.jaasContext".
+     *
+     * @return
+     */
+    String jaasContext() default "fileRealm";
+
+    /**
      * The MicroProfile Config key for the file location is
      * <code>{@value}</code>
      */
@@ -95,5 +105,10 @@ public @interface FileIdentityStoreDefinition {
      * <code>{@value}</code>
      */
     String STORE_MP_FILE_GROUPS = "payara.security.file.assignGroups";
+
+    /**
+     * The MicroProfile Config key for the jaas context is <code>{@value}</code>
+     */
+    String STORE_MP_FILE_JAAS_CONTEXT = "payara.security.file.jaasContext";
 
 }

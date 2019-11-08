@@ -41,6 +41,11 @@ package fish.payara.security.realm.cdi;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
+import com.sun.enterprise.security.auth.realm.Realm;
+import com.sun.enterprise.security.auth.realm.file.FileRealm;
+import com.sun.enterprise.security.auth.realm.pam.PamRealm;
+import com.sun.enterprise.security.auth.realm.solaris.SolarisRealm;
 import fish.payara.security.annotations.CertificateAuthenticationMechanismDefinition;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
@@ -48,6 +53,14 @@ import fish.payara.security.annotations.PamIdentityStoreDefinition;
 import fish.payara.security.annotations.RealmIdentityStoreDefinition;
 import fish.payara.security.annotations.RealmIdentityStoreDefinitions;
 import fish.payara.security.annotations.SolarisIdentityStoreDefinition;
+import fish.payara.security.realm.config.FileRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.PamRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.RealmUtil;
+import static fish.payara.security.realm.RealmUtil.ASSIGN_GROUPS;
+import static fish.payara.security.realm.RealmUtil.JAAS_CONTEXT;
+import fish.payara.security.realm.config.CertificateRealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.RealmConfiguration;
+import fish.payara.security.realm.config.SolarisRealmIdentityStoreConfiguration;
 import fish.payara.security.realm.identitystores.CertificateRealmIdentityStore;
 import fish.payara.security.realm.identitystores.FileRealmIdentityStore;
 import fish.payara.security.realm.identitystores.PamRealmIdentityStore;
@@ -57,8 +70,10 @@ import fish.payara.security.realm.mechanisms.CertificateAuthenticationMechanism;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -195,8 +210,23 @@ public class RealmExtension implements Extension {
                 = getAnnotation(beanManager, event.getAnnotated(), FileIdentityStoreDefinition.class);
 
         optionalStore.ifPresent(definition -> {
-            validateDefinition(definition.value(), FileRealmIdentityStore.REALM_CLASS.getName());
+            validateDefinition(
+                    definition.value(),
+                    FileRealmIdentityStore.REALM_CLASS.getName(),
+                    definition.jaasContext()
+            );
             logActivatedIdentityStore(FileRealmIdentityStore.class, beanClass);
+
+            FileRealmIdentityStoreConfiguration configuration = FileRealmIdentityStoreConfiguration.from(definition);
+            Properties props = new Properties();
+            props.put("file", configuration.getFile());
+            props.put(JAAS_CONTEXT, configuration.getJaasContext());
+            createRealm(
+                    configuration,
+                    FileRealmIdentityStore.REALM_CLASS,
+                    FileRealmIdentityStore.REALM_LOGIN_MODULE_CLASS,
+                    props
+            );
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -205,7 +235,7 @@ public class RealmExtension implements Extension {
                     .addToId(FileRealmIdentityStore.class)
                     .create(e -> {
                         FileRealmIdentityStore mechanism = CDI.current().select(FileRealmIdentityStore.class).get();
-                        mechanism.init(definition);
+                        mechanism.init(configuration);
                         return mechanism;
                     })
             );
@@ -229,8 +259,20 @@ public class RealmExtension implements Extension {
                 = getAnnotation(beanManager, event.getAnnotated(), CertificateIdentityStoreDefinition.class);
 
         optionalStore.ifPresent(definition -> {
-            validateDefinition(definition.value(), CertificateRealmIdentityStore.REALM_CLASS.getName());
+            validateDefinition(
+                    definition.value(),
+                    CertificateRealmIdentityStore.REALM_CLASS.getName(),
+                    null
+            );
             logActivatedIdentityStore(CertificateRealmIdentityStore.class, beanClass);
+
+            CertificateRealmIdentityStoreConfiguration configuration = CertificateRealmIdentityStoreConfiguration.from(definition);
+            createRealm(
+                    configuration,
+                    CertificateRealmIdentityStore.REALM_CLASS,
+                    CertificateRealmIdentityStore.REALM_LOGIN_MODULE_CLASS,
+                    new Properties()
+            );
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -239,7 +281,7 @@ public class RealmExtension implements Extension {
                     .addToId(CertificateRealmIdentityStore.class)
                     .create(e -> {
                         CertificateRealmIdentityStore mechanism = CDI.current().select(CertificateRealmIdentityStore.class).get();
-                        mechanism.init(definition);
+                        mechanism.init(configuration);
                         return mechanism;
                     })
             );
@@ -287,8 +329,22 @@ public class RealmExtension implements Extension {
                 = getAnnotation(beanManager, event.getAnnotated(), PamIdentityStoreDefinition.class);
 
         optionalStore.ifPresent(definition -> {
-            validateDefinition(definition.value(), PamRealmIdentityStore.REALM_CLASS.getName());
+            validateDefinition(
+                    definition.value(),
+                    PamRealmIdentityStore.REALM_CLASS.getName(),
+                    definition.jaasContext()
+            );
             logActivatedIdentityStore(PamRealmIdentityStore.class, beanClass);
+
+            PamRealmIdentityStoreConfiguration configuration = PamRealmIdentityStoreConfiguration.from(definition);
+            Properties props = new Properties();
+            props.put(JAAS_CONTEXT, configuration.getJaasContext());
+            createRealm(
+                    configuration,
+                    PamRealmIdentityStore.REALM_CLASS,
+                    PamRealmIdentityStore.REALM_LOGIN_MODULE_CLASS,
+                    props
+            );
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -297,7 +353,7 @@ public class RealmExtension implements Extension {
                     .addToId(PamRealmIdentityStore.class)
                     .create(e -> {
                         PamRealmIdentityStore mechanism = CDI.current().select(PamRealmIdentityStore.class).get();
-                        mechanism.init(definition);
+                        mechanism.init(configuration);
                         return mechanism;
                     })
             );
@@ -321,8 +377,22 @@ public class RealmExtension implements Extension {
                 = getAnnotation(beanManager, event.getAnnotated(), SolarisIdentityStoreDefinition.class);
 
         optionalStore.ifPresent(definition -> {
-            validateDefinition(definition.value(), SolarisRealmIdentityStore.REALM_CLASS.getName());
+            validateDefinition(
+                    definition.value(),
+                    SolarisRealmIdentityStore.REALM_CLASS.getName(),
+                    definition.jaasContext()
+            );
             logActivatedIdentityStore(SolarisRealmIdentityStore.class, beanClass);
+
+            SolarisRealmIdentityStoreConfiguration configuration = SolarisRealmIdentityStoreConfiguration.from(definition);
+            Properties props = new Properties();
+            props.put(JAAS_CONTEXT, configuration.getJaasContext());
+            createRealm(
+                    configuration,
+                    SolarisRealmIdentityStore.REALM_CLASS,
+                    SolarisRealmIdentityStore.REALM_LOGIN_MODULE_CLASS,
+                    props
+            );
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -331,12 +401,37 @@ public class RealmExtension implements Extension {
                     .addToId(SolarisRealmIdentityStore.class)
                     .create(e -> {
                         SolarisRealmIdentityStore mechanism = CDI.current().select(SolarisRealmIdentityStore.class).get();
-                        mechanism.init(definition);
+                        mechanism.init(configuration);
                         return mechanism;
                     })
             );
         });
 
+    }
+
+    private <T> T createRealm(
+            RealmConfiguration configuration,
+            Class<T> realmClass,
+            Class loginModuleClass,
+            Properties props) {
+
+        try {
+            if (!Realm.isValidRealm(configuration.getName())) {
+                if (!configuration.getAssignGroups().isEmpty()) {
+                    props.put(ASSIGN_GROUPS, String.join(",", configuration.getAssignGroups()));
+                }
+                RealmUtil.createAuthRealm(
+                        configuration.getName(),
+                        realmClass.getName(),
+                        loginModuleClass.getName(),
+                        props
+                );
+            }
+
+            return realmClass.cast(Realm.getInstance(configuration.getName()));
+        } catch (NoSuchRealmException ex) {
+            throw new IllegalStateException(configuration.getName(), ex);
+        }
     }
 
     private void validateDefinition(RealmIdentityStoreDefinition definition) {
@@ -354,7 +449,9 @@ public class RealmExtension implements Extension {
         }
     }
 
-    private void validateDefinition(String name, String realm) {
+    private static final Pattern SIMPLE_TEXT_PATTERN = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+
+    private void validateDefinition(String name, String realm, String jaasContext) {
         ServiceLocator serviceLocator = Globals.getDefaultHabitat();
         SecurityService securityService = serviceLocator.getService(SecurityService.class);
         for (AuthRealm authRealm : securityService.getAuthRealm()) {
@@ -367,6 +464,12 @@ public class RealmExtension implements Extension {
                         authRealm.getClassname()
                 ));
             }
+        }
+        if (jaasContext != null && SIMPLE_TEXT_PATTERN.matcher(jaasContext).find()) {
+            throw new IllegalStateException(String.format(
+                    "Special character not allowed in jaasContext %s.",
+                    jaasContext
+            ));
         }
     }
 

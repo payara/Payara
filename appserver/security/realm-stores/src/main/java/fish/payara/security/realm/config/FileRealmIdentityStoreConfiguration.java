@@ -37,13 +37,14 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.realm;
+package fish.payara.security.realm.config;
 
 import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
 import static fish.payara.security.annotations.FileIdentityStoreDefinition.STORE_MP_FILE;
 import static fish.payara.security.annotations.FileIdentityStoreDefinition.STORE_MP_FILE_GROUPS;
+import static fish.payara.security.annotations.FileIdentityStoreDefinition.STORE_MP_FILE_JAAS_CONTEXT;
 import static fish.payara.security.realm.RealmUtil.getConfiguredValue;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
@@ -55,11 +56,12 @@ import org.eclipse.microprofile.config.ConfigProvider;
  *
  * @author jGauravGupta
  */
-public class FileRealmIdentityStoreConfiguration {
+public class FileRealmIdentityStoreConfiguration implements RealmConfiguration {
 
     private final String name;
     private final String file;
     private final List<String> assignGroups;
+    private final String jaasContext;
 
     private FileRealmIdentityStoreConfiguration(FileIdentityStoreDefinition definition) {
         Config provider = ConfigProvider.getConfig();
@@ -70,6 +72,7 @@ public class FileRealmIdentityStoreConfiguration {
                 .stream()
                 .filter(StringUtils::ok)
                 .collect(toList());
+        this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), provider, STORE_MP_FILE_JAAS_CONTEXT);
     }
 
     public static FileRealmIdentityStoreConfiguration from(FileIdentityStoreDefinition definition) {
@@ -90,6 +93,10 @@ public class FileRealmIdentityStoreConfiguration {
 
     public List<String> getAssignGroups() {
         return assignGroups;
+    }
+
+    public String getJaasContext() {
+        return jaasContext;
     }
 
 }

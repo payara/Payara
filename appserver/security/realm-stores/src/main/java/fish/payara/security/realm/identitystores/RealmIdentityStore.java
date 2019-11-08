@@ -46,7 +46,7 @@ import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import fish.payara.security.annotations.RealmIdentityStoreDefinition;
 import fish.payara.security.api.CertificateCredential;
-import fish.payara.security.realm.RealmIdentityStoreConfiguration;
+import fish.payara.security.realm.config.RealmIdentityStoreConfiguration;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import javax.enterprise.inject.Typed;
@@ -79,30 +79,32 @@ public class RealmIdentityStore implements IdentityStore {
     @Override
     public CredentialValidationResult validate(Credential credential) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential, configuration.getName());
         } else if (credential instanceof CertificateCredential) {
             return CertificateRealmIdentityStore.validate((CertificateCredential) credential, configuration.getName());
         }
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(UsernamePasswordCredential credential) {
+    protected CredentialValidationResult validate(UsernamePasswordCredential credential, String realmName) {
         try {
-            Subject subject = login(credential);
+            Subject subject = login(credential, realmName);
             Set<String> groups = subject.getPrincipals(Group.class)
                     .stream()
                     .map(g -> g.getName())
                     .collect(toSet());
-            return new CredentialValidationResult(new CallerPrincipal(credential.getCaller()), groups);
+            if (!groups.isEmpty()) {
+                return new CredentialValidationResult(new CallerPrincipal(credential.getCaller()), groups);
+            }
         } catch (LoginException ex) {
             return INVALID_RESULT;
         }
+        return INVALID_RESULT;
     }
 
-    public Subject login(UsernamePasswordCredential credential) {
+    protected Subject login(UsernamePasswordCredential credential, String realmName) {
         String username = credential.getCaller();
         char[] password = credential.getPassword().getValue();
-        String realmName = configuration.getName();
         Subject subject = new Subject();
         privileged(() -> subject.getPrivateCredentials().add(new PasswordCredential(username, password, getValidRealm(realmName))));
 

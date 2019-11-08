@@ -37,12 +37,14 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.realm;
+package fish.payara.security.realm.config;
 
 import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import fish.payara.security.annotations.SolarisIdentityStoreDefinition;
 import static fish.payara.security.annotations.SolarisIdentityStoreDefinition.STORE_MP_SOLARIS_GROUPS;
+import static fish.payara.security.annotations.SolarisIdentityStoreDefinition.STORE_MP_SOLARIS_JAAS_CONTEXT;
+import static fish.payara.security.realm.RealmUtil.getConfiguredValue;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import org.eclipse.microprofile.config.Config;
@@ -53,10 +55,11 @@ import org.eclipse.microprofile.config.ConfigProvider;
  *
  * @author jGauravGupta
  */
-public class SolarisRealmIdentityStoreConfiguration {
+public class SolarisRealmIdentityStoreConfiguration implements RealmConfiguration {
 
     private final String name;
     private final List<String> assignGroups;
+    private final String jaasContext;
 
     private SolarisRealmIdentityStoreConfiguration(SolarisIdentityStoreDefinition definition) {
         Config provider = ConfigProvider.getConfig();
@@ -66,6 +69,7 @@ public class SolarisRealmIdentityStoreConfiguration {
                 .stream()
                 .filter(StringUtils::ok)
                 .collect(toList());
+        this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), provider, STORE_MP_SOLARIS_JAAS_CONTEXT);
     }
 
     public static SolarisRealmIdentityStoreConfiguration from(SolarisIdentityStoreDefinition definition) {
@@ -78,6 +82,10 @@ public class SolarisRealmIdentityStoreConfiguration {
 
     public List<String> getAssignGroups() {
         return assignGroups;
+    }
+
+    public String getJaasContext() {
+        return jaasContext;
     }
 
 }
