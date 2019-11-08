@@ -404,6 +404,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
      * @return 
      */
     public MetricRegistry removeRegistry(String registryName) {
+        registryName = registryName.toLowerCase();
         return REGISTRIES.remove(registryName);
     }
     
