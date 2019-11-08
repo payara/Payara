@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * API for collecting monitoring data points from a {@link MonitoringDataSource}.
@@ -84,6 +85,21 @@ public interface MonitoringDataCollector {
      * Helper methods for convenience and consistent tagging.
      */
 
+    default MonitoringDataCollector prefix(CharSequence prefix) {
+        MonitoringDataCollector self = this;
+        return new MonitoringDataCollector() {
+
+            @Override
+            public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
+                return self.tag(name, value);
+            }
+
+            @Override
+            public MonitoringDataCollector collect(CharSequence key, long value) {
+                return self.collect(new StringBuilder(prefix).append(key), value);
+            }
+        };
+    }
 
     /**
      * Same as {@link #collect(CharSequence, long)} except that zero value are ignored and not collected.
@@ -171,12 +187,15 @@ public interface MonitoringDataCollector {
 
     default <K, V> MonitoringDataCollector collectAll(Map<K, V> entries,
             BiConsumer<MonitoringDataCollector, V> collect) {
+        return collectAll(entries, key -> key instanceof CharSequence ? (CharSequence) key : key.toString() ,collect);
+    }
+
+    default <K, V> MonitoringDataCollector collectAll(Map<K, V> entries, Function<K, CharSequence> entryTag,
+            BiConsumer<MonitoringDataCollector, V> collect) {
         if (entries != null) {
-            collectNonZero("size", entries.size());
             for (Entry<K,V> entry : entries.entrySet()) {
                 K key = entry.getKey();
-                CharSequence tag = key instanceof CharSequence ? (CharSequence) key : key.toString();
-                collect.accept(entity(tag), entry.getValue());
+                collect.accept(group(entryTag.apply(key)), entry.getValue());
             }
         }
         return this;
@@ -187,7 +206,7 @@ public interface MonitoringDataCollector {
             String name = getter.getName();
             int offset = name.startsWith("get") ? 3 : name.startsWith("is") ? 2 : 0;
             if (offset > 0) {
-                String property = Character.toLowerCase(name.charAt(offset)) + name.substring(offset+1);
+                String property = name.substring(offset);
                 Class<?> returnType = getter.getReturnType();
                 try {
                     if (Boolean.class.isAssignableFrom(returnType) || returnType == boolean.class) {
@@ -201,10 +220,6 @@ public interface MonitoringDataCollector {
             }
         }
         return this;
-    }
-
-    default MonitoringDataCollector app(CharSequence appName) {
-        return tag("app", appName);
     }
 
     /**
@@ -225,19 +240,8 @@ public interface MonitoringDataCollector {
      * @param type type of entity or collection of entities that are about to be collected
      * @return A collector with the type context added/set
      */
-    default MonitoringDataCollector type(CharSequence type) {
-        return tag("type", type);
-    }
-
-    /**
-     * The entity tag states the identity that distinguishes values of one entry from another within the same collection
-     * of entries. The entity is usually the third tag added after the namespace and type (if needed).
-     *
-     * @param entity the entity to use, e.g. "log-notifier" (as opposed to "teams-notifier")
-     * @return A collector with the entity context added/set
-     */
-    default MonitoringDataCollector entity(CharSequence entity) {
-        return tag("entity", entity);
+    default MonitoringDataCollector group(CharSequence type) {
+        return tag("@", type);
     }
 
 }

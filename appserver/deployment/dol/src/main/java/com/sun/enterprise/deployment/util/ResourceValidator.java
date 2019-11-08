@@ -833,13 +833,17 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      */
     private void validateJNDIRefs(DeploymentContext deploymentContext, Application application, AppResource resource, JNDINamespace namespace) {
         // In case lookup is not present, check if another resource with the same name exists
-        String jndiName = resource.getJndiName();
-        if (jndiName == null || !resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
+        if (!resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
                     new Object[]{resource.getName(), null, resource.getType()});
             throw new DeploymentException(localStrings.getLocalString("enterprise.deployment.util.resource.validation",
                     "JNDI lookup failed for the resource: Name: {0}, Lookup: {1}, Type: {2}",
                     resource.getName(), null, resource.getType()));
+        }
+        String jndiName = resource.getJndiName();
+        if (jndiName == null) {
+            // there's no mapping in this resource, but it exists in JNDI namespace, so it's validated by other ref.
+            return;
         }
 
         JndiNameEnvironment env = resource.getEnv();

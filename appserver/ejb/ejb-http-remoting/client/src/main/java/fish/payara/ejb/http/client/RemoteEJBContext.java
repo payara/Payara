@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,9 +61,16 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
-
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import java.util.logging.Level;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.Form;
+import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
+import static javax.ws.rs.core.SecurityContext.FORM_AUTH;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -166,11 +173,11 @@ class RemoteEJBContext implements Context {
 
             Integer version = getVersion(discovery);
             if (discovery.isV1target() && (version == null || version.intValue() == 1)) {
-                logger.info("Discovered v1 at " + discovery.getV1lookup().getUri());
+                logger.log(Level.INFO, "Discovered v1 at {0}", discovery.getV1lookup().getUri());
                 return new LookupV1(environment, client, discovery.getV1lookup());
             }
             if (discovery.isV0target() && (version == null || version.intValue() == 0)) {
-                logger.info("Discovered v0 at " + discovery.getV0lookup().getUri());
+                logger.log(Level.INFO, "Discovered v0 at {0}", discovery.getV0lookup().getUri());
                 return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
             }
             throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
@@ -195,46 +202,79 @@ class RemoteEJBContext implements Context {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
 
         if (environment.containsKey(JAXRS_CLIENT_CONNECT_TIMEOUT)) {
-            clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)).longValue(), MICROSECONDS);
+            clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)), MICROSECONDS);
         }
 
-        if (environment.contains(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
+        if (environment.containsKey(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
             clientBuilder.executorService(getInstance(environment.get(JAXRS_CLIENT_EXECUTOR_SERVICE), ExecutorService.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
+        if (environment.containsKey(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
             clientBuilder.hostnameVerifier(getInstance(environment.get(JAXRS_CLIENT_HOSTNAME_VERIFIER), HostnameVerifier.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_KEY_STORE)) {
-            clientBuilder.keyStore(getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class), getPassword(environment.get("keyStorePassword")));
+        if (environment.containsKey(JAXRS_CLIENT_KEY_STORE)) {
+            clientBuilder.keyStore(
+                    getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class),
+                    getPassword(environment.containsKey("keyStorePassword") ? environment.get("keyStorePassword") : environment.get(JAXRS_CLIENT_KEY_STORE_PASSOWRD))
+            );
         }
 
         if (environment.containsKey(JAXRS_CLIENT_READ_TIMEOUT)) {
-            clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)).longValue(), MICROSECONDS);
+            clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)), MICROSECONDS);
         }
 
-        if (environment.contains(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
+        if (environment.containsKey(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
             clientBuilder.scheduledExecutorService(getInstance(environment.get(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE), ScheduledExecutorService.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_SSL_CONTEXT)) {
+        if (environment.containsKey(JAXRS_CLIENT_SSL_CONTEXT)) {
             clientBuilder.sslContext(getInstance(environment.get(JAXRS_CLIENT_SSL_CONTEXT), SSLContext.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_TRUST_STORE)) {
+        if (environment.containsKey(JAXRS_CLIENT_TRUST_STORE)) {
             clientBuilder.trustStore(getInstance(environment.get(JAXRS_CLIENT_TRUST_STORE), KeyStore.class));
         }
 
-        if (environment.contains(JAXRS_CLIENT_CONFIG)) {
+        if (environment.containsKey(JAXRS_CLIENT_CONFIG)) {
             clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
         }
 
+        if (environment.containsKey(JAXRS_CLIENT_REQUEST_FILTER)) {
+            Object value = environment.get(JAXRS_CLIENT_REQUEST_FILTER);
+            if (value instanceof Class
+                    && (ClientRequestFilter.class.isAssignableFrom((Class) value))) {
+                clientBuilder.register((Class<ClientRequestFilter>) value);
+            } else if (value instanceof ClientRequestFilter) {
+                clientBuilder.register((ClientRequestFilter) value);
+            }
+        }
+
+        if (environment.containsKey(JAXRS_CLIENT_RESPONSE_FILTER)) {
+            Object value = environment.get(JAXRS_CLIENT_RESPONSE_FILTER);
+            if (value instanceof Class
+                    && (ClientResponseFilter.class.isAssignableFrom((Class) value))) {
+                clientBuilder.register((Class<ClientResponseFilter>) value);
+            } else if (value instanceof ClientResponseFilter) {
+                clientBuilder.register((ClientResponseFilter) value);
+            }
+        }
+
+        String providerPrincipal = (String)environment.get(PROVIDER_PRINCIPAL);
+        String providerCredentials = (String)environment.get(PROVIDER_CREDENTIALS);
+        if (providerPrincipal != null && providerCredentials != null) {
+            String authType = (String)environment.get(PROVIDER_AUTH_TYPE);
+            if (null == authType || BASIC_AUTH.equals(authType)) {
+                clientBuilder.register(HttpAuthenticationFeature.basic(providerPrincipal, providerCredentials));
+            } else if (DIGEST_AUTH.equals(authType)) {
+                clientBuilder.register(HttpAuthenticationFeature.digest(providerPrincipal, providerCredentials));
+            }
+        }
         return clientBuilder;
     }
 
     private static NamingException newNamingException(String name, Exception cause) {
-        NamingException namingException = new NamingException("Could not lookup :" + name);
+        NamingException namingException = new NamingException("Could not lookup: " + name);
         namingException.initCause(cause);
 
         return namingException;

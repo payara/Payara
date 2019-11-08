@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -20,7 +20,7 @@
         <group-ref name="glassfish-core-sub"/>
     </component>
     <group id="glassfish-core-sub" mode="forward">
-    <file-entry name="$DOMAIN_DIR$/config/domain.xml"/>
+        <file-entry name="$DOMAIN_DIR$/config/domain.xml"/>
         <file-entry name="$DOMAIN_DIR$/config/glassfish-acc.xml"/>
         <file-entry name="$DOMAIN_DIR$/docroot/index.html"/>
         <change-pair-ref name="VERSION"/>
@@ -48,6 +48,9 @@
         <change-pair-ref name="TOKENS_HERE"/>
         <change-pair-ref name="DEFAULT_TOKENS_HERE"/>
         <change-pair-ref name="PORT_BASE"/>
+        <change-pair-ref name="HAZELCAST_DAS_PORT"/>
+        <change-pair-ref name="HAZELCAST_START_PORT"/>
+        <change-pair-ref name="HAZELCAST_AUTO_INCREMENT"/>
     </group>
     <change-pair id="VERSION" before="%%%VERSION%%%" after="$VERSION$"/>
     <change-pair id="INSTALL_ROOT" before="%%%INSTALL_ROOT%%%" after="$INSTALL_ROOT$"/>
@@ -74,6 +77,9 @@
     <change-pair id="TOKENS_HERE" before="&lt;!--%%%TOKENS_HERE%%%--&gt;" after="$TOKENS_HERE$"/>
     <change-pair id="DEFAULT_TOKENS_HERE" before="&lt;!--%%%DEFAULT_TOKENS_HERE%%%--&gt;" after="$DEFAULT_TOKENS_HERE$"/>
     <change-pair id="PORT_BASE" before="&lt;!--%%%PORT_BASE%%%--&gt;" after="$PORT_BASE$"/>
+    <change-pair id="HAZELCAST_DAS_PORT" before="%%%HAZELCAST_DAS_PORT%%%" after="$HAZELCAST_DAS_PORT$"/>
+    <change-pair id="HAZELCAST_START_PORT" before="%%%HAZELCAST_START_PORT%%%" after="$HAZELCAST_START_PORT$"/>
+    <change-pair id="HAZELCAST_AUTO_INCREMENT" before="%%%HAZELCAST_AUTO_INCREMENT%%%" after="$HAZELCAST_AUTO_INCREMENT$"/>
     <defaults>
         <property key="ADMIN_PORT" value="4848" type="port"/>
         <property key="HTTP_SSL_PORT" value="8181" type="port"/>
@@ -85,5 +91,8 @@
         <property key="JMX_SYSTEM_CONNECTOR_PORT" value="8686" type="port"/>
         <property key="OSGI_SHELL_TELNET_PORT" value="6666" type="port"/>
         <property key="JAVA_DEBUGGER_PORT" value="9009" type="port"/>
+        <property key="HAZELCAST_DAS_PORT" value="4900" type="port"/>
+        <property key="HAZELCAST_START_PORT" value="5900" type="port"/>
+        <property key="HAZELCAST_AUTO_INCREMENT" value="true" type="string"/>
     </defaults>
 </stringsubs-definition>

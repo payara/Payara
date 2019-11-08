@@ -37,18 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.domain;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class SubstitutableTokens {
 
@@ -84,6 +84,10 @@ public class SubstitutableTokens {
     public static final String ORB_LISTENER1_PORT = "ORB_LISTENER1_PORT"; 
 
     private static final String DOMAIN_DIR = "DOMAIN_DIR";
+    
+    public static final String HAZELCAST_DAS_PORT_TOKEN_NAME = "HAZELCAST_DAS_PORT";
+    public static final String HAZELCAST_START_PORT_TOKEN_NAME = "HAZELCAST_START_PORT";
+    public static final String HAZELCAST_AUTO_INCREMENT_TOKEN_NAME = "HAZELCAST_AUTO_INCREMENT";
 
     public static Map<String, String> getSubstitutableTokens(DomainConfig domainConfig) {
         Map<String, String> substitutableTokens = new HashMap<String, String>();
@@ -99,7 +103,7 @@ public class SubstitutableTokens {
         substitutableTokens.put(CONFIG_MODEL_NAME_TOKEN_NAME, CONFIG_MODEL_NAME_TOKEN_VALUE);
         substitutableTokens.put(HOST_NAME_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_HOST_NAME));
 
-        substitutableTokens.put(ADMIN_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_ADMIN_PORT).toString());
+        substitutableTokens.put(ADMIN_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_ADMIN_PORT).toString());   
         substitutableTokens.put(HTTP_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_INSTANCE_PORT).toString());
         substitutableTokens.put(ORB_LISTENER_PORT_TOKEN_NAME,  domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT).toString());
         substitutableTokens.put(JMS_PROVIDER_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_JMS_PORT).toString());
@@ -122,6 +126,10 @@ public class SubstitutableTokens {
         substitutableTokens.put(ORB_LISTENER1_PORT,  domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT).toString());
         String domainLocation =  new File(domainConfig.getRepositoryRoot(), domainConfig.getRepositoryName()).getAbsolutePath();
         substitutableTokens.put(DOMAIN_DIR, domainLocation);
+        
+        substitutableTokens.put(HAZELCAST_DAS_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_HAZELCAST_DAS_PORT).toString());
+        substitutableTokens.put(HAZELCAST_START_PORT_TOKEN_NAME, domainConfig.get(DomainConfig.K_HAZELCAST_START_PORT).toString());
+        substitutableTokens.put(HAZELCAST_AUTO_INCREMENT_TOKEN_NAME, domainConfig.get(DomainConfig.K_HAZELCAST_AUTO_INCREMENT).toString());
 
         for (String pname : domainProperties.stringPropertyNames()) {
             if (!substitutableTokens.containsKey(pname)) {

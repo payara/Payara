@@ -74,6 +74,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
@@ -120,6 +122,7 @@ public class RolesPermittedInterceptor {
      * @param invocationContext Context provided by Weld.
      * @return Proceed to next interceptor in chain.
      * @throws java.lang.Exception
+     * @throws fish.payara.cdi.auth.roles.CallerAccessException if access is not permitted
      */
     @AroundInvoke
     public Object method(InvocationContext invocationContext) throws Exception {
@@ -142,7 +145,6 @@ public class RolesPermittedInterceptor {
      * @return True if access is allowed, false otherwise
      */
     public boolean checkAccessPermitted(RolesPermitted roles, InvocationContext invocationContext) {
-        List<String> permittedRoles = asList(roles.value());
 
         authenticate(roles.value());
 
@@ -151,7 +153,9 @@ public class RolesPermittedInterceptor {
             eLProcessor = getElProcessor(invocationContext);
         }
 
-        if (roles.semantics().equals(OR)) {
+        List<String> permittedRoles = asList(roles.value());
+
+        if (OR.equals(roles.semantics())) {
             for (String role : permittedRoles) {
                 if (eLProcessor != null && hasAnyELExpression(role)) {
                     role = evalELExpression(eLProcessor, role);
@@ -160,7 +164,7 @@ public class RolesPermittedInterceptor {
                     return true;
                 }
             }
-        } else if (roles.semantics().equals(AND)) {
+        } else if (AND.equals(roles.semantics())) {
             for (String role : permittedRoles) {
                 if (eLProcessor != null && hasAnyELExpression(role)) {
                     role = evalELExpression(eLProcessor, role);
@@ -186,7 +190,7 @@ public class RolesPermittedInterceptor {
             optionalRolesPermitted = bindings.stream()
                     .filter(annotation -> annotation.annotationType().equals(RolesPermitted.class))
                     .findAny()
-                    .map(annotation -> RolesPermitted.class.cast(annotation));
+                    .map(RolesPermitted.class::cast);
 
             if (optionalRolesPermitted.isPresent()) {
                 return optionalRolesPermitted.get();
@@ -269,12 +273,18 @@ public class RolesPermittedInterceptor {
             // Authentication was not done at all (i.e. no credentials present) or
             // authentication failed (i.e. wrong credentials, credentials expired, etc)
             if (status == NOT_DONE || status == SEND_FAILURE) {
-                throw new NotAuthorizedException("Authentication resulted in " + status);
+                throw new NotAuthorizedException(
+                    "Authentication resulted in " + status,
+                    Response.status(Response.Status.UNAUTHORIZED).build()
+                );
             }
 
             // compensate for possible Soteria bug, need to investigate
             if (status == SUCCESS && !isAuthenticated()) {
-                throw new NotAuthorizedException("Authentication not done (i.e. no credential found)");
+                throw new NotAuthorizedException(
+                    "Authentication not done (i.e. no credential found)",
+                    Response.status(Response.Status.UNAUTHORIZED).build()
+                );
             }
         }
     }

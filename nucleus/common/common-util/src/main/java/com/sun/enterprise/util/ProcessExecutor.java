@@ -43,6 +43,8 @@ package com.sun.enterprise.util;
 
 //JDK imports
 
+import com.sun.enterprise.util.io.FileUtils;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -171,9 +173,9 @@ public class ProcessExecutor {
     private void init() throws ExecException {
         try {
             mOutFile = File.createTempFile("stdout", null);
-            mOutFile.deleteOnExit();
+            FileUtils.deleteOnExit(mOutFile);
             mErrFile = File.createTempFile("stderr", null);
-            mErrFile.deleteOnExit();
+            FileUtils.deleteOnExit(mErrFile);
         }
         catch (IllegalArgumentException iae) {
             deleteTempFiles();
@@ -485,7 +487,7 @@ public class ProcessExecutor {
      */
     private static void delete(File f) {
         if(f != null && !f.delete()) {
-            f.deleteOnExit();
+            FileUtils.deleteOnExit(f);
         }
     }
 

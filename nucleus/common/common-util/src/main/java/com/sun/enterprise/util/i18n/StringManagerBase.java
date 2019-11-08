@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.util.i18n;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -86,13 +87,13 @@ import java.util.logging.Logger;
 public class StringManagerBase {
 
     /** logger used for this class */
-    private static final Logger _logger = CULoggerInfo.getLogger();
+    private static final Logger LOGGER = CULoggerInfo.getLogger();
 
     /** resource bundle to be used by this manager */
-    private volatile ResourceBundle _resourceBundle;
+    private volatile ResourceBundle resourceBundle;
 
-    private final String _resourceBundleName;
-    private final ClassLoader _classLoader;
+    private final String resourceBundleName;
+    private final ClassLoader classLoader;
 
     /** default value used for undefined local string */
     private static final String NO_DEFAULT = "No local string defined";
@@ -106,8 +107,8 @@ public class StringManagerBase {
      * @param    resourceBundleName    name of the resource bundle
      */
     protected StringManagerBase(String resourceBundleName, ClassLoader classLoader) {
-        this._resourceBundleName = resourceBundleName;
-        this._classLoader = classLoader;
+        this.resourceBundleName = resourceBundleName;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -118,15 +119,15 @@ public class StringManagerBase {
      * in start-up, doing this lazily improves overall performance.
      */
     private ResourceBundle getResourceBundle() {
-        if(_resourceBundle==null) {
+        if(resourceBundle==null) {
             // worst case we just end up loading this twice. No big deal.
             try {
-                _resourceBundle = ResourceBundle.getBundle(_resourceBundleName, Locale.getDefault(), _classLoader);
+                resourceBundle = ResourceBundle.getBundle(resourceBundleName, Locale.getDefault(), classLoader);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, CULoggerInfo.exceptionResourceBundle, e);
+                LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionResourceBundle, e);
             }
         }
-        return _resourceBundle;
+        return resourceBundle;
     }
 
     /**
@@ -136,14 +137,14 @@ public class StringManagerBase {
      *
      * @return   a local string manager for the given package name
      */
-    public synchronized static StringManagerBase getStringManager(String resourceBundleName, ClassLoader classLoader) {
+    public static synchronized StringManagerBase getStringManager(String resourceBundleName, ClassLoader classLoader) {
         StringManagerBase mgr = managers.get(resourceBundleName);
         if (mgr == null) {
             mgr = new StringManagerBase(resourceBundleName, classLoader);
             try {
                 managers.put(resourceBundleName, mgr);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
+                LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
             }
         }
         return mgr;
@@ -176,7 +177,7 @@ public class StringManagerBase {
         try {
             value = getResourceBundle().getString(key);
         } catch (Exception e) {
-            _logger.log(Level.FINE, "No local string for: " + key, e);
+            LOGGER.log(Level.FINE, "No local string for: " + key, e);
         }
 
         if (value != null) {
@@ -221,7 +222,7 @@ public class StringManagerBase {
         try {
             fmtStr =  f.format(arguments);
         } catch (Exception e) {
-            _logger.log(Level.WARNING, CULoggerInfo.exceptionWhileFormating, e);
+            LOGGER.log(Level.WARNING, CULoggerInfo.exceptionWhileFormating, e);
 
             // returns default format
             fmtStr = defaultFormat;

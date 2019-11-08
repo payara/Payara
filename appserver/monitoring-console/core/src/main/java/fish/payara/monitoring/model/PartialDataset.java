@@ -86,14 +86,15 @@ public final class PartialDataset extends SeriesDataset {
 
     PartialDataset(ConstantDataset predecessor, long time, long value) {
         super(predecessor);
-        this.size = predecessor.size() + 1;
+        long lastTime = predecessor.lastTime();
+        this.size = predecessor.size() + (lastTime == time ? 0 : 1);
         this.offset = 0;
-        this.data = new long[predecessor.capacity() * 4];
+        this.data = new long[predecessor.capacity() * 4]; // 2x for time and value, 2x for double buffer size
         int i = 0;
         this.data[i++] = predecessor.getStableSince();
         this.data[i++] = predecessor.lastValue();
-        if (size == 3) {
-            this.data[i++] = predecessor.firstTime();
+        if (predecessor.size() == 2 && lastTime < time) {
+            this.data[i++] = lastTime;
             this.data[i++] = predecessor.lastValue();
         }
         this.data[i++] = time;
@@ -112,14 +113,22 @@ public final class PartialDataset extends SeriesDataset {
         this.size = size;
         this.offset = offset;
         this.data = predecessor.data;
-        boolean stable = predecessor.size != 0 && value == predecessor.lastValue();
-        this.observedValueChanges =  predecessor.observedValueChanges + (stable ? 0 : 1);
         this.time0 = predecessor.size == 0 ? time : predecessor.time0;
         this.observedMax = Math.max(value, predecessor.observedMax);
         this.observedMin = Math.min(value, predecessor.observedMin);
         this.observedSum = predecessor.observedSum.add(BigInteger.valueOf(value));
-        this.stableCount = stable ? predecessor.stableCount + 1 : 1;
-        this.stableSince = stable ? predecessor.stableSince : time;
+        if (predecessor.lastTime() == time) {
+            long sum = predecessor.lastValue() + value;
+            this.data[2 * (offset + size - 1) + 1] = sum;
+            this.stableCount = 1;
+            this.stableSince = time;
+            this.observedValueChanges = predecessor.observedValueChanges + 1;
+        } else {
+            boolean stable = predecessor.size != 0 && value == predecessor.lastValue();
+            this.observedValueChanges =  predecessor.observedValueChanges + (stable ? 0 : 1);
+            this.stableCount = stable ? predecessor.stableCount + 1 : 1;
+            this.stableSince = stable ? predecessor.stableSince : time;
+        }
     }
 
     @Override
@@ -197,6 +206,9 @@ public final class PartialDataset extends SeriesDataset {
 
     @Override
     public SeriesDataset add(long time, long value) {
+        if (time == lastTime()) {
+            return new PartialDataset(this, size, offset, time, value);
+        }
         int newOffset = offset;
         int newSize = size;
         if (size < capacity()) {

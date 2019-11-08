@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//  Portion Copyright [2017-2018] Payara Foundation and/or affiliates
+//  Portion Copyright [2017-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -66,6 +66,9 @@ import org.jvnet.hk2.config.InjectionResolver;
  * the data to inject.
  */
 public class MapInjectionResolver extends InjectionResolver<Param> {
+    
+    private static final String DEFAULT = "DEFAULT";
+    
     private final CommandModel model;
     private final ParameterMap parameters;
     private ExecutionContext context = null;
@@ -111,20 +114,19 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
         String paramName = CommandModel.getParamName(param, target);
         if (param.primary()) {
             // this is the primary parameter for the command
-            List<String> value = parameters.get("DEFAULT");
+            List<String> value = parameters.get(DEFAULT);
             if (value != null && !value.isEmpty()) {
                 /*
                  * If the operands are uploaded files, replace the
                  * client-provided values with the paths to the uploaded files.
                  * XXX - assume the lists are in the same order.
                  */
-                final List<String> filePaths = getUploadedFileParamValues(
-                        "DEFAULT",
+                final List<String> filePaths = getUploadedFileParamValues(DEFAULT,
                         type, optionNameToUploadedFileMap);
                 if (filePaths != null) {
                     value = filePaths;
                     // replace the file name operands with the uploaded files
-                    parameters.set("DEFAULT", value);
+                    parameters.set(DEFAULT, value);
                 } else {
                     for (String s : value) {
                         checkAgainstAcceptableValues(target, s);
@@ -217,7 +219,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             return null;
         }
         final List<File> uploadedFiles = optionNameToFileMap.get(fieldName);
-        if (uploadedFiles != null && uploadedFiles.size() > 0 &&
+        if (uploadedFiles != null && !uploadedFiles.isEmpty() &&
                 (fieldType.isAssignableFrom(File.class) ||
                  fieldType.isAssignableFrom(File[].class))) {
             final List<String> paths = new ArrayList(uploadedFiles.size());
@@ -273,9 +275,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 try {
                     ParamDefaultCalculator pdc = dc.newInstance();
                     paramValueStr = pdc.defaultValue(context);
-                } catch (InstantiationException ex) { // @todo Java SE 7 - use multi catch
-                    Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
+                } catch (InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -361,11 +361,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                                     Class type, String paramValStr) {
         Param param = target.getAnnotation(Param.class);
         Object paramValue = paramValStr;
-        if (type.isAssignableFrom(String.class)) {
-            paramValue = paramValStr;
-        } else if (type.isAssignableFrom(Properties.class)) {
-            paramValue =
-                convertStringToProperties(paramValStr, param.separator());
+        if (type.isAssignableFrom(Properties.class)) {
+            paramValue = convertStringToProperties(paramValStr, param.separator());
         } else if (type.isAssignableFrom(List.class)) {
             paramValue = convertStringToList(paramValStr, param.separator());
         } else if (type.isAssignableFrom(Boolean.class) ||
@@ -377,8 +374,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             String paramName = CommandModel.getParamName(param, target);
             paramValue = convertStringToInteger(paramName, paramValStr);
         } else if (type.isAssignableFrom(String[].class)) {
-            paramValue =
-                convertStringToStringArray(paramValStr, param.separator());
+            paramValue = convertStringToStringArray(paramValStr, param.separator());
         } else if (type.isAssignableFrom(File.class)) {
             return new File(paramValStr);
         }
@@ -492,7 +488,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             while (stoken.hasMoreTokens()) {
                 String token = stoken.nextTokenKeepEscapes();
                 final ParamTokenizer nameTok = new ParamTokenizer(token, '=');
-                String name = null, value = null;
+                String name = null;
+                String value = null;
                 if (nameTok.hasMoreTokens()){
                     name = nameTok.nextToken().trim();
                 }
@@ -556,7 +553,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
         if (propsList != null) {
             for (String prop : propsList) {
                 final ParamTokenizer nameTok = new ParamTokenizer(prop, '=');
-                String name = null, value = null;
+                String name = null;
+                String value = null;
                 if (nameTok.hasMoreTokens())
                     name = nameTok.nextToken();
                 if (nameTok.hasMoreTokens())

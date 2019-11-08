@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -94,15 +95,15 @@ public class TokenResolverTest {
 
         TokenResolver instance = new TokenResolver(testMap);
         instance.resolve(map2);
-        assertEquals(map2.get("foo"), "value1");
-        assertEquals(map2.get("foo2"), "${name111}");
+        assertEquals("value1", map2.get("foo"));
+        assertEquals("${name111}", map2.get("foo2"));
         // this entry should be gone:
         assertNull(map2.get("qqq${name2}qqq"));
 
         // and replaced with this:
-        assertEquals(map2.get("qqqvalue2qqq"), "value4");
+        assertEquals("value4", map2.get("qqqvalue2qqq"));
 
-        assertEquals(map2.get("zzzvalue3zzz"), "zzz");
+        assertEquals("zzz", map2.get("zzzvalue3zzz"));
         
         instance.resolve(map2);
     }

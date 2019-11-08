@@ -39,8 +39,6 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
@@ -69,26 +67,12 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker>
-        implements MonitoringDataSource {
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker> {
 
     private volatile long youngLastCollectionCount;
     private volatile long youngLastCollectionTime;
     private volatile long oldLastCollectionCount;
     private volatile long oldLastCollectionTime;
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (isReady()) {
-            collector.in("health-check").type("checker").entity("GBGC")
-                .collect("checksDone", getChecksDone())
-                .collectNonZero("checksFailed", getChecksFailed())
-                .collectNonZero("youngLastCollectionCount", youngLastCollectionCount)
-                .collectNonZero("youngLastCollectionTime", youngLastCollectionTime)
-                .collectNonZero("oldLastCollectionCount", oldLastCollectionCount)
-                .collectNonZero("oldLastCollectionTime", oldLastCollectionTime);
-        }
-    }
 
     @PostConstruct
     void postConstruct() {

@@ -36,7 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
+ *
  * Portions Copyright Payara Foundation and/or its affiliates
  *
  */
@@ -58,7 +58,7 @@ import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
  * @author Byron Nevins
  */
 public class WindowsService extends NonSMFServiceAdapter {
-    
+
     private static final String SOURCE_WIN32_EXE_FILENAME = "winsw.exe";
     private static final String TARGET_DIR = "bin";
     private static final String TEMPLATE_FILE_NAME = "Domain-service-winsw.xml.template";
@@ -68,7 +68,7 @@ public class WindowsService extends NonSMFServiceAdapter {
     private File targetWin32Exe;
     private File targetConfig;
     private String xmlFileCopy;
-    
+
     static boolean apropos() {
         return OS.isWindowsForSure();
     }
@@ -132,11 +132,9 @@ public class WindowsService extends NonSMFServiceAdapter {
 
             trace("Uninstalled Windows Service");
 
-            if (!targetWin32Exe.delete())
-                targetWin32Exe.deleteOnExit();
+            FileUtils.deleteFileNowOrLater(targetWin32Exe);
 
-            if (!targetXml.delete())
-                targetXml.deleteOnExit();
+            FileUtils.deleteFileNowOrLater(targetXml);
 
             trace("deleted " + targetWin32Exe + targetXml);
             trace(toString());
@@ -235,7 +233,7 @@ public class WindowsService extends NonSMFServiceAdapter {
                 config.println("</startup>");
                 config.println("</configuration>");
             }
-            
+
             targetXml = new File(targetDir, info.serviceName + "Service.xml");
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
@@ -268,7 +266,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             finally {
                 if (in != null)
                     in.close();
-                
+
                 if (out != null)
                     out.close();
             }
@@ -343,7 +341,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             catch (IOException ex) {
                 // oh well....
             }
-            
+
             if (!targetWin32Exe.delete())
                 dryRun("Dry Run error: delete failed for targetWin32Exe " + targetWin32Exe);
 
@@ -370,10 +368,10 @@ public class WindowsService extends NonSMFServiceAdapter {
             if (force) {
                 if (!targetWin32Exe.delete())
                     trace("HandlePreExisting error: could not delete targetWin32Exe.");
-                
+
                 if (!targetXml.delete())
                     trace("HandlePreExisting error: could not delete targetXml.");
-                
+
                 if (targetWin32Exe.exists() || targetXml.exists())
                     throw new RuntimeException(Strings.get("services.alreadyCreated",
                         new File(targetDir, getServerDirs().getServerName() + "Service").toString() + ".*",

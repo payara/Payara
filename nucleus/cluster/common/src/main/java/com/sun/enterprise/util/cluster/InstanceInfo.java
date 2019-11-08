@@ -37,30 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 
  */
 package com.sun.enterprise.util.cluster;
 
-import com.sun.enterprise.admin.util.InstanceCommandExecutor;
+import com.sun.enterprise.admin.util.InstanceRestCommandExecutor;
 import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.universal.Duration;
+import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
-
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.InstanceCommandResult;
-import org.glassfish.api.admin.ParameterMap;
-import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.universal.Duration;
 import org.glassfish.api.admin.InstanceState;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -193,7 +191,7 @@ public final class InstanceInfo {
     private void getFutureResult() {
         try {
             InstanceCommandResult r = future.get(timeoutInMsec, TimeUnit.MILLISECONDS);
-            InstanceCommandExecutor res = (InstanceCommandExecutor) r.getInstanceCommand();
+            InstanceRestCommandExecutor res = (InstanceRestCommandExecutor) r.getInstanceCommand();
             String instanceLocation = res.getCommandOutput();
             // Remove the pesky \n out
             instanceLocation = (instanceLocation == null) ? "" : instanceLocation.trim();
@@ -281,8 +279,8 @@ public final class InstanceInfo {
             InstanceCommandResult aResult = new InstanceCommandResult();
             ParameterMap map = new ParameterMap();
             map.set("type", "terse");
-            InstanceCommandExecutor ice =
-                    new InstanceCommandExecutor(habitat, "__locations", FailurePolicy.Error, FailurePolicy.Error,
+            InstanceRestCommandExecutor ice =
+                    new InstanceRestCommandExecutor(habitat, "__locations", FailurePolicy.Error, FailurePolicy.Error,
                     svr, host, port, logger, map, aReport, aResult);
             return stateService.submitJob(svr, ice, aResult);
             /*

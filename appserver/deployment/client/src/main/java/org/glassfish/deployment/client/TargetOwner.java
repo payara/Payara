@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.client;
 
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
 
 import java.io.IOException;
 
@@ -56,7 +56,7 @@ import java.io.IOException;
  * <p>
  * Fully-formed Target objects will have links back to their respective TargetOwner
  * objects.
- * 
+ *
  * @author tjquinn
  */
 public interface TargetOwner {
@@ -66,22 +66,22 @@ public interface TargetOwner {
      * @param name the name of the Target to be returned
      * @return a new Target
      */
-    public Target createTarget(String name);
-    
+    Target createTarget(String name);
+
     /**
      * Creates several {@link Target} objects with the specified names.
      * @param names the names of the targets to be returned
      * @return new Targets, one for each name specified
      */
-    public Target[] createTargets(String[] names);
-    
+    Target[] createTargets(String[] names);
+
     /**
      * Returns the Web URL for the specified module on the {@link Target}
      * implied by the TargetModuleID.
      * @param tmid
      * @return web url
      */
-    public String getWebURL(TargetModuleID tmid);
+    String getWebURL(TargetModuleID tmid);
 
     /**
      * Sets the Web URL for the specified module on the {@link Target} implied
@@ -90,7 +90,7 @@ public interface TargetOwner {
      * @param tmid
      * @param the URL
      */
-    public void setWebURL(TargetModuleID tmid, String webURL);
+    void setWebURL(TargetModuleID tmid, String webURL);
 
     /**
      *  Exports the Client stub jars to the given location.
@@ -99,6 +99,6 @@ public interface TargetOwner {
      *  should be exported.
      *  @return the absolute location to the main jar file.
      */
-    public String exportClientStubs(String appName, String destDir) 
+    String exportClientStubs(String appName, String destDir)
         throws IOException;
 }

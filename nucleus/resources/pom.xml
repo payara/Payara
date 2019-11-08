@@ -44,11 +44,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main.resourcebase.resources</groupId>
+    <groupId>fish.payara.server.internal.resourcebase.resources</groupId>
     <artifactId>nucleus-resources</artifactId>    
     <packaging>glassfish-jar</packaging>
     
@@ -87,7 +87,7 @@
 	    <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>

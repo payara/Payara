@@ -37,18 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * ThreadLocalData.java
- * $Id: ThreadLocalData.java,v 1.3 2005/12/25 04:10:36 tcfujii Exp $
- * $Date: 2005/12/25 04:10:36 $
- * $Revision: 1.3 $
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.callflow;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * This interface provides access to the thread local call flow data.

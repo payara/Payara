@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -134,7 +134,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
             try {
-                // Run restart-instance against each instance in the cluster
+                // Run restart-instance against each instance in the Deployment Group
                 String commandName = "restart-instance";
                 clusterHelper.runCommand(commandName, pm, deploymentGroup, context,
                         verbose, rolling);
@@ -144,7 +144,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
                 logger.warning(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
-        }
+            }
         }
     }
 

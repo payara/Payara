@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/**
- * @Version $Id: JmxBaseCache.java,v 1.4 2005/12/25 04:25:22 tcfujii Exp $
- * Created on May 4, 2005 11:55 AM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -52,12 +48,13 @@ import com.sun.appserv.util.cache.Constants;
  * This class provides implementation for JmxBaseCacheMBean
  *
  * @author Krishnamohan Meduri (Krishna.Meduri@Sun.com)
- *
+ * @since May 4, 2005
+ * @version 1.4
  */
 public class JmxBaseCache implements JmxBaseCacheMBean {
 
-    private String name;
-    private BaseCache baseCache;
+    private final String name;
+    private final BaseCache baseCache;
 
     public JmxBaseCache(BaseCache baseCache, String name) {
         this.baseCache = baseCache;
@@ -66,6 +63,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns a unique identifier for this MBean inside the domain
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -73,6 +71,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns maximum possible number of entries
      */
+    @Override
     public Integer getMaxEntries() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_MAX_ENTRIES);
@@ -81,6 +80,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns threshold. This when reached, an overflow will occur
      */
+    @Override
     public Integer getThreshold() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_THRESHOLD);
@@ -89,6 +89,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns current number of buckets
      */
+    @Override
     public Integer getTableSize() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_TABLE_SIZE);
@@ -97,6 +98,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns current number of Entries
      */
+    @Override
     public Integer getEntryCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_ENTRY_COUNT);
@@ -105,6 +107,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Return the number of cache hits
      */
+    @Override
     public Integer getHitCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_HIT_COUNT);
@@ -113,6 +116,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns the number of cache misses
      */
+    @Override
     public Integer getMissCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_MISS_COUNT);
@@ -121,6 +125,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns the number of entries that have been removed
      */
+    @Override
     public Integer getRemovalCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_REMOVAL_COUNT);
@@ -130,6 +135,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
      * Returns the number of values that have been refreshed 
      * (replaced with a new value in an existing extry)
      */
+    @Override
     public Integer getRefreshCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_REFRESH_COUNT);
@@ -138,6 +144,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns the number of times that an overflow has occurred
      */
+    @Override
     public Integer getOverflowCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_OVERFLOW_COUNT);
@@ -146,6 +153,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     /**
      * Returns the number of times new entries have been added
      */
+    @Override
     public Integer getAddCount() {
         return (Integer) baseCache.getStatByName(
                                         Constants.STAT_BASECACHE_ADD_COUNT);

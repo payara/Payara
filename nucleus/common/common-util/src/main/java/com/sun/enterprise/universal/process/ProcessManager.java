@@ -39,14 +39,6 @@
  */
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
-/*
- * ProcessManager.java
- * Use this class for painless process spawning.
- * This class was specifically written to be compatable with 1.4
- * @since JDK 1.4
- * @author bnevins
- * Created on October 28, 2005, 10:08 PM
- */
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
@@ -54,8 +46,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- *
+/*
+ * ProcessManager.java
+ * Use this class for painless process spawning.
+ * This class was specifically written to be compatable with 1.4
+ * 
+ * @author bnevins
+ * Created on October 28, 2005, 10:08 PM
  */
 public class ProcessManager {
     public ProcessManager(String... cmds) {
@@ -268,8 +265,8 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     private String[] cmdline;
     private String[] env = null;
-    private StringBuffer sb_out;
-    private StringBuffer sb_err;
+    private final StringBuffer sb_out;
+    private final StringBuffer sb_err;
     private int exit = -1;
     private int timeout;
     private Process process;
@@ -302,9 +299,9 @@ public class ProcessManager {
             }
             ProcessManager.debug("ReaderThread exiting...");
         }
-        private BufferedReader reader;
-        private StringBuffer sb;
-        private boolean echo;
+        private final BufferedReader reader;
+        private final StringBuffer sb;
+        private final boolean echo;
     }
 
     static class TimeoutThread implements Runnable {

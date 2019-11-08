@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.appclient</groupId>
+        <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -140,7 +140,7 @@
                        <goal>unpack-dependencies</goal>
                      </goals>
                      <configuration>
-                       <includeGroupIds>org.glassfish.main.deployment</includeGroupIds>
+                       <includeGroupIds>fish.payara.server.internal.deployment</includeGroupIds>
                        <includeArtifactIds>schemas,dtds</includeArtifactIds>
                        <includes>**/*.dtd,**/*.xsd</includes>
                      </configuration>
@@ -182,13 +182,13 @@
             required for annotation processing support
         -->
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-full-container</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -201,7 +201,7 @@
         -->
         <dependency>
             <scope>provided</scope>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dtds</artifactId>
             <type>zip</type>
             <version>${project.version}</version>
@@ -209,7 +209,7 @@
 
         <dependency>
             <scope>provided</scope>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>schemas</artifactId>
             <type>zip</type>
             <version>${project.version}</version>
@@ -218,7 +218,7 @@
 
         <!-- required for InjectionManager -->
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -226,7 +226,7 @@
             Required for AnnotationDetector, AnnotationScanner, PersistenceUnitDescriptor
         -->
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -235,7 +235,7 @@
             Required for security.
         -->
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>appclient.security</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -243,14 +243,14 @@
             Required for ClientNamingConfigurator
         -->
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- required for ClientPipeCloser -->
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>webservices.security</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -262,32 +262,32 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-naming</artifactId>
             <version>${project.version}</version>
         </dependency>
         
 	 <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>work-management</artifactId>
             <version>${project.version}</version>
         </dependency>
 
  	<dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.webservices</groupId>
+            <groupId>fish.payara.server.internal.webservices</groupId>
             <artifactId>webservices-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -305,32 +305,32 @@
 
         <dependency>
             <scope>runtime</scope>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-iiop</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
+            <groupId>fish.payara.server.appclient</groupId>
             <artifactId>acc-config</artifactId>
             <version>${project.version}</version>
         </dependency>
 
      <dependency>
-         <groupId>org.glassfish.main.transaction</groupId>
+         <groupId>fish.payara.server.internal.transaction</groupId>
          <artifactId>jts</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish.main.jms</groupId>
+         <groupId>fish.payara.server.internal.jms</groupId>
          <artifactId>jms-core</artifactId>
          <version>${project.version}</version>
      </dependency>
@@ -345,27 +345,27 @@
      <dependency>
          <type>pom</type>
          <scope>runtime</scope>
-         <groupId>org.glassfish.main.persistence</groupId>
+         <groupId>fish.payara.server.internal.persistence</groupId>
          <artifactId>eclipselink-wrapper</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
-         <groupId>org.glassfish.main.persistence</groupId>
+         <groupId>fish.payara.server.internal.persistence</groupId>
          <artifactId>jpa-container</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish.main.persistence.cmp</groupId>
+         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
          <artifactId>cmp-internal-api</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
-         <groupId>javax.annotation</groupId>
-         <artifactId>javax.annotation-api</artifactId>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
      </dependency>
 
      <dependency>
@@ -394,6 +394,11 @@
          <artifactId>javax.json.bind-api</artifactId>
      </dependency>
 
+     <dependency>
+         <groupId>org.eclipse</groupId>
+         <artifactId>yasson</artifactId>
+     </dependency>     
+
      <!-- JAXR -JSR-93 Support-->
      <dependency>
          <groupId>javax.xml.registry</groupId>
@@ -404,25 +409,25 @@
         This is needed because it provides the sniffer/detector/moduletype
         -->
         <dependency>
-            <groupId>org.glassfish.main.appclient.server</groupId>
+            <groupId>fish.payara.server.internal.appclient.server</groupId>
             <artifactId>appclient-connector</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-      
+
       <!--
         The next two mail-related dependencies allow mail session look-up
         and use from clients.
       -->
       <dependency>
           <scope>runtime</scope>
-          <groupId>org.glassfish.main.resources</groupId>
+          <groupId>fish.payara.server.internal.resources</groupId>
           <artifactId>javamail-connector</artifactId>
           <version>${project.version}</version>
       </dependency>
       <dependency>
           <scope>runtime</scope>
-          <groupId>org.glassfish.main.resources</groupId>
+          <groupId>fish.payara.server.internal.resources</groupId>
           <artifactId>javamail-runtime</artifactId>
           <version>${project.version}</version>
       </dependency>

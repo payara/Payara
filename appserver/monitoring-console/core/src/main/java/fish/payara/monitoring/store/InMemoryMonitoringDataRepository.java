@@ -40,15 +40,19 @@
 
 package fish.payara.monitoring.store;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +76,8 @@ import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -105,6 +111,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
+    private final Set<String> instances = ConcurrentHashMap.newKeySet();
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
 
@@ -121,6 +128,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         } else {
             instanceName = "server";
         }
+        instances.add(instanceName);
         if (isDas) {
             if (exchange != null) {
                 MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
@@ -132,8 +140,14 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         }
     }
 
+    @Override
+    public Set<String> instances() {
+        return instances;
+    }
+
     public void addRemoteDatasets(Message<SeriesDatasetsSnapshot> message) {
         String instance = message.getPublishingMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        instances.add(instance);
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {
@@ -174,6 +188,9 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     private void collectAll(MonitoringDataCollector collector) {
+        for (Entry<Series, SeriesDataset> e : secondsRead.entrySet()) {
+            secondsWrite.put(e.getKey(), e.getValue());
+        }
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
@@ -183,6 +200,7 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
                 collectedSources++;
                 source.collect(collector);
             } catch (RuntimeException e) {
+                Logger.getLogger("monitoring-console-core").log(Level.FINE, "Error collecting metrics", e);
                 failedSources++;
                 // ignore and continue with next
             }
@@ -192,13 +210,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             estimatedTotalBytesMemory += set.estimatedBytesMemory();
         }
         int seriesCount = secondsWrite.size();
-        collector.in("collect")
-            .collect("duration", System.currentTimeMillis() - collectionStart)
-            .collectNonZero("series", seriesCount)
-            .collectNonZero("estimatedTotalBytesMemory", estimatedTotalBytesMemory)
-            .collectNonZero("estimatedAverageBytesMemory", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
-            .collectNonZero("sources", collectedSources)
-            .collectNonZero("failed", failedSources);
+        collector.in("mc")
+            .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
+            .collectNonZero("SeriesCount", seriesCount)
+            .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
+            .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
+            .collect("SourcesCount", collectedSources)
+            .collect("FailedCollectionCount", failedSources);
     }
 
     /**
@@ -216,7 +234,9 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
 
     private void addLocalPoint(CharSequence key, long value) {
         Series series = new Series(key.toString());
-        secondsWrite.put(series, secondsRead.computeIfAbsent(series, this::emptySet).add(collectedSecond, value));
+        secondsWrite.compute(series, (s, dataset) -> dataset == null 
+                ?  emptySet(s).add(collectedSecond, value) 
+                : dataset.add(collectedSecond, value));
     }
 
     private SeriesDataset emptySet(Series series) {
@@ -224,29 +244,57 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     @Override
-    public List<SeriesDataset> selectSeries(Series series) {
+    public List<SeriesDataset> selectSeries(Series series, String... instances) {
         if (!isDas) {
             return emptyList();
         }
-        SeriesDataset localSet = secondsRead.get(series);
-        SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
-        if (remoteSets == null) {
-            return singletonList(localSet);
-        }
-        long cutOffTime = System.currentTimeMillis() - 30_000;
-        List<SeriesDataset> res = new ArrayList<>(remoteSets.length + 1);
-        if (!localSet.isStableZero()) {
-            res.add(localSet);
-        }
-        for (SeriesDataset remoteSet : remoteSets) {
-            if (remoteSet.lastTime() >= cutOffTime && !remoteSet.isStableZero()) {
-                res.add(remoteSet);
+        Set<String> instanceFilter = instances == null || instances.length == 0 
+                ? this.instances
+                : new HashSet<>(asList(instances));
+        List<SeriesDataset> res = new ArrayList<>(instanceFilter.size());
+        selectSeries(res, Collections.singleton(series), instanceFilter);
+        return res;
+    }
+
+    private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter) {
+        for (Series series : seriesSet) {
+            if (series.isPattern()) {
+                selectSeries(res, seriesMatchingPattern(series), instanceFilter);
+            } else {
+                SeriesDataset localSet = secondsRead.get(series);
+                SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
+
+                if (localSet != null && isRelevantSet(localSet, instanceFilter)) {
+                    res.add(localSet);
+                }
+                if (remoteSets != null && remoteSets.length > 0) {
+                    for (SeriesDataset remoteSet : remoteSets) {
+                        if (isRelevantSet(remoteSet, instanceFilter)) {
+                            res.add(remoteSet);
+                        }
+                    }
+                }
             }
         }
-        if (res.isEmpty()) {
-            res.add(localSet);
+    }
+
+    private static boolean isRelevantSet(SeriesDataset set, Set<String> instanceFilter) {
+        return instanceFilter.contains(set.getInstance());
+    }
+
+    private Set<Series> seriesMatchingPattern(Series pattern) {
+        Set<Series> matches = new HashSet<>();
+        for (Series candidate : secondsRead.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
         }
-        return res;
+        for (Series candidate : remoteInstanceDatasets.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
+        }
+        return matches;
     }
 
     @Override

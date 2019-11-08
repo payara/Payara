@@ -41,28 +41,29 @@
 
 package com.sun.enterprise.admin.launcher;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.Level;
 import com.sun.enterprise.universal.collections.CollectionUtils;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
+import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.universal.xml.MiniXmlParser;
-import static com.sun.enterprise.util.SystemPropertyConstants.*;
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
-import com.sun.enterprise.util.JDK;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import static com.sun.enterprise.util.SystemPropertyConstants.*;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -873,7 +874,7 @@ public abstract class GFLauncher {
         Optional<JDK.Version> jdkVersion = getConfiguredJdkVersion(javaExe);
         List<String> rawJvmOptions = parser.getJvmOptions()
                 .stream()
-                .filter(fullOption -> JDK.isCorrectJDK(jdkVersion, fullOption.minVersion, fullOption.maxVersion))
+                .filter(fullOption -> JDK.isCorrectJDK(jdkVersion, fullOption.vendor, fullOption.minVersion, fullOption.maxVersion))
                 .map(option -> option.option)
                 .collect(Collectors.toList());
         rawJvmOptions.addAll(getSpecialSystemProperties());

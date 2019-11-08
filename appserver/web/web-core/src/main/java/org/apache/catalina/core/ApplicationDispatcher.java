@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -318,14 +318,7 @@ public final class ApplicationDispatcher
      */
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
-        // store previous forward
-        Object prevForward = request.getAttribute("fish.payara.servlet.dispatchPath");
-        request.setAttribute("fish.payara.servlet.dispatchPath", this.servletPath);
-        try {
-            dispatch(request, response, DispatcherType.FORWARD);
-        }finally {
-            request.setAttribute("fish.payara.servlet.dispatchPath",prevForward);
-        }
+        dispatch(request, response, DispatcherType.FORWARD);
     }
 
     /**
@@ -522,10 +515,8 @@ public final class ApplicationDispatcher
                 state.outerRequest.setAttribute(
                     Globals.DISPATCHER_REQUEST_PATH_ATTR,
                     getCombinedPath());
-                invoke(state.outerRequest, response, state);
-            } else {
-                invoke(state.outerRequest, response, state);
             }
+            invoke(state.outerRequest, response, state);
         }
     }
 

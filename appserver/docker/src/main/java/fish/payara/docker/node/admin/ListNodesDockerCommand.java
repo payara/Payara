@@ -70,7 +70,7 @@ import javax.inject.Inject;
 })
 public class ListNodesDockerCommand implements AdminCommand {
 
-    private final static String[] OUTPUT_HEADERS = new String[]{"Name", "Host", "Image", "Port"};
+    private final static String[] OUTPUT_HEADERS = new String[]{"Name", "Host", "Image", "Port", "TLS Enabled"};
 
     @Inject
     private Nodes nodes;

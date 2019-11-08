@@ -42,20 +42,27 @@ package fish.payara.monitoring.web;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
+import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -66,20 +73,35 @@ public class MonitoringConsoleResource {
         return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
     }
 
-    @GET
-    @Path("/series/{series}/statistics")
-    public SeriesStatistics[] getSeriesStatistics(@PathParam("series") String series) {
-        return SeriesStatistics.from(getDataStore().selectSeries(new Series(series)));
+    private static RequestTraceStoreInterface getRequestTracingStore() {
+        return Globals.getDefaultBaseServiceLocator().getService( RequestTracingService.class).getRequestTraceStore();
     }
 
     @GET
-    @Path("/series/statistics/")
-    public List<SeriesStatistics[]> querySeriesStatistics(@QueryParam("q") String query) {
-        List<SeriesStatistics[]> matches = new ArrayList<>();
-        for (String series : query.split("|")) {
-            matches.add(SeriesStatistics.from(getDataStore().selectSeries(new Series(series))));
+    @Path("/series/data/{series}/")
+    public List<SeriesResponse> getSeriesData(@PathParam("series") String series) {
+        return SeriesResponse.from(getDataStore().selectSeries(new Series(series)));
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/series/data/")
+    public Map<Series, List<SeriesResponse>> getSeriesData(SeriesRequest request) {
+        Map<Series, List<SeriesResponse>> res = new HashMap<>();
+        for (SeriesQuery query : request.queries) {
+            Series key = new Series(query.series);
+            List<SeriesDataset> value = getDataStore().selectSeries(key, query.instances);
+            if (value != null && !value.isEmpty()) {
+                if (res.containsKey(key)) {
+                    res.get(key).addAll(SeriesResponse.from(value));
+                } else {
+                    res.put(key, SeriesResponse.from(value));
+                }
+            } else {
+                res.put(key, new ArrayList<>());
+            }
         }
-        return matches;
+        return res;
     }
 
     @GET
@@ -88,6 +110,23 @@ public class MonitoringConsoleResource {
         return stream(getDataStore().selectAllSeries().spliterator(), false)
                 .map(dataset -> dataset.getSeries().toString()).sorted().toArray(String[]::new);
     }
-    
-    //TODO add a method that returns the HTML needed to embedd one or more charts
+
+    @GET
+    @Path("/instances/")
+    public String[] getInstanceNames() {
+        return getDataStore().instances().toArray(new String[0]);
+    }
+
+    @GET
+    @Path("/trace/data/{series}/")
+    public List<RequestTraceResponse> getTraceData(@PathParam("series") String series) {
+        String group = series.split(""+Series.TAG_SEPARATOR)[1].substring(2);
+        List<RequestTraceResponse> response = new ArrayList<>();
+        for (RequestTrace trace : getRequestTracingStore().getTraces()) {
+            if (RequestTracingService.metricGroupName(trace).equals(group)) {
+                response.add(new RequestTraceResponse(trace));
+            }
+        }
+        return response;
+    }
 }

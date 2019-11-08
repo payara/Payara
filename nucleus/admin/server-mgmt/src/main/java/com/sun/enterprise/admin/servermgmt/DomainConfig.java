@@ -37,18 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
-import java.util.HashMap;
-import java.util.Properties;
-
-import java.util.Map;
-
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * This class defines the keys that are used to create the domain config object.
@@ -96,6 +94,10 @@ public class DomainConfig extends RepositoryConfig {
     public static final String K_INSTANCE_CERT_DN = "domain.instance.cert.dn";
     public static final String K_SECURE_ADMIN_IDENTIFIER = "domain.indicator";
     public static final String K_INITIAL_ADMIN_USER_GROUPS="domain.admin.groups";
+    
+    public static final String K_HAZELCAST_DAS_PORT = "hazelcast.das.port";
+    public static final String K_HAZELCAST_START_PORT = "hazelcast.start.port";
+    public static final String K_HAZELCAST_AUTO_INCREMENT = "hazelcast.auto.increment";
 
     private Properties _domainProperties;
 
@@ -166,6 +168,7 @@ public class DomainConfig extends RepositoryConfig {
     public DomainConfig(String domainName, String domainRoot,
             String adminUser, String adminPassword, String masterPassword,
             Boolean saveMasterPassword, String adminPort, String instancePort,
+            String hazelcastDasPort, String hazelcastStartPort, String hazelcastAutoIncrement,
             Properties domainProperties) throws DomainException {
         this(domainName, domainRoot);
         put(K_ADMIN_PORT, adminPort);
@@ -174,6 +177,9 @@ public class DomainConfig extends RepositoryConfig {
         put(K_SAVE_MASTER_PASSWORD, saveMasterPassword);
         put(K_USER, adminUser);
         put(K_INSTANCE_PORT, instancePort);
+        put(K_HAZELCAST_DAS_PORT, hazelcastDasPort);
+        put(K_HAZELCAST_START_PORT, hazelcastStartPort);
+        put(K_HAZELCAST_AUTO_INCREMENT, hazelcastAutoIncrement);
         _domainProperties = domainProperties;
     }
 

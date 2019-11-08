@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Poritons Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.common.util.admin;
 
 import java.util.StringTokenizer;
@@ -61,8 +63,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @Singleton
 public class HK2BindTracingService implements ValidationService {
-    private final static Filter ALL_FILTER = BuilderHelper.allFilter();
-    private final static Filter NONE_FILTER = new Filter() {
+    private static final Filter ALL_FILTER = BuilderHelper.allFilter();
+    private static final Filter NONE_FILTER = new Filter() {
 
         @Override
         public boolean matches(Descriptor d) {
@@ -70,26 +72,22 @@ public class HK2BindTracingService implements ValidationService {
         }
         
     };
-    private final static boolean TRACE_BINDS = Boolean.parseBoolean(
-            System.getProperty("org.glassfish.hk2.tracing.binds", "false"));
-    private final static String TRACE_BINDS_PATTERN =
-            System.getProperty("org.glassfish.hk2.tracing.bindsPattern");
-    private final static boolean TRACE_LOOKUPS = Boolean.parseBoolean(
-            System.getProperty("org.glassfish.hk2.tracing.lookups", "false"));
-    private final static String TRACE_LOOKUPS_PATTERN =
-            System.getProperty("org.glassfish.hk2.tracing.lookupsPattern");
+    private static final boolean TRACE_BINDS = Boolean.parseBoolean(System.getProperty("org.glassfish.hk2.tracing.binds", "false"));
+   
+    private static final String TRACE_BINDS_PATTERN = System.getProperty("org.glassfish.hk2.tracing.bindsPattern");
+    private static final boolean TRACE_LOOKUPS = Boolean.parseBoolean(System.getProperty("org.glassfish.hk2.tracing.lookups", "false"));
+    private static final String TRACE_LOOKUPS_PATTERN =System.getProperty("org.glassfish.hk2.tracing.lookupsPattern");
     
-    private final static String STACK_PATTERN =
-            System.getProperty("org.glassfish.hk2.tracing.binds.stackPattern");
+    private static final String STACK_PATTERN =System.getProperty("org.glassfish.hk2.tracing.binds.stackPattern");
     
-    private final static Validator VALIDATOR = new ValidatorImpl();
+    private static final Validator VALIDATOR = new ValidatorImpl();
 
     /* (non-Javadoc)
      * @see org.glassfish.hk2.api.ValidationService#getLookupFilter()
      */
     @Override
     public Filter getLookupFilter() {
-        if (TRACE_LOOKUPS == true) return ALL_FILTER;
+        if (TRACE_LOOKUPS) return ALL_FILTER;
         
         return NONE_FILTER;
     }

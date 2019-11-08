@@ -58,6 +58,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -68,8 +70,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.sse.SseFeature;
-
-import static org.glassfish.admin.rest.resources.TemplateExecCommand.localStrings;
 
 /**
  *
@@ -222,7 +222,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
                         }
 
                         File f = Util.saveFile(fileName, mimeType, fileStream);
-                        f.deleteOnExit();
+                        FileUtils.deleteOnExit(f);
                         //put only the local path of the file in the same field.
                         data.add(fieldName, f.getAbsolutePath());
                     } else {
