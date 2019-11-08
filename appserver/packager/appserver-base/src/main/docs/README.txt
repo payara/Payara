@@ -8,9 +8,9 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Oracle JDK8 (u72+)
-* Azul Zulu JDK8 (u72+)
-* OpenJDK JDK8 (u72+)
+* Oracle JDK8 (u231+), Oracle JDK 11 (11.0.5+)
+* Azul Zulu JDK8 (u232+), Azul Zulu JDK 11 (11.0.5u10+)
+* OpenJDK JDK8 (u232+), OpenJDK 11 (11.0.5+)
 
 For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
 
@@ -53,7 +53,7 @@ Open the following in your browser: https://docs.payara.fish/. It contains usefu
 Make sure to also check the Payara Server 5.193 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-193.html
 
 
-5. Documentation 
+5. Documentation
 ================
 
 Payara Server 5.193 Release Notes: https://docs.payara.fish/release-notes/release-notes-193.html
@@ -62,13 +62,13 @@ Payara Server Documentation: https://docs.payara.fish/
 
 Payara Server GitHub Project: https://github.com/payara/Payara
 
-Payara Community: http://www.payara.fish/community 
+Payara Community: http://www.payara.fish/community
 
 
 6. Need support?
 ============
 
-Migrating to Payara Server or Payara Micro? Our Migration & Project Support is offered through a flat fee per year regardless of the size of your environment and supports an unlimited number of units in development. 
+Migrating to Payara Server or Payara Micro? Our Migration & Project Support is offered through a flat fee per year regardless of the size of your environment and supports an unlimited number of units in development.
 
 Need help with the Payara Platform in production? Payara Enterprise offers software, security, stability, and support directly from Engineers.
 
