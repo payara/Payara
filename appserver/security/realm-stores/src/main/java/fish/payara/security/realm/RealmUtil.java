@@ -107,7 +107,11 @@ public interface RealmUtil {
         EmbeddedSystemAdministrator administrator = serviceLocator.getService(EmbeddedSystemAdministrator.class);
         ParameterMap parameters = new ParameterMap();
         parameters.insert("authrealmname", name);
-        parameters.insert("property", props.entrySet().stream().map(Object::toString).collect(joining(":")));
+        parameters.insert("property", props.entrySet()
+                .stream()
+                .map(prop -> escapeRealmProperty(prop.getKey().toString()) + '=' + escapeRealmProperty(prop.getValue().toString()))
+                .collect(joining(":"))
+        );
         parameters.insert("classname", realmClass);
         if (loginModule != null) {
             parameters.insert("login-module", loginModule);
@@ -117,5 +121,11 @@ public interface RealmUtil {
         if (outreport.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
             throw new IdentityStoreException("Error in creating Auth realm: " + name);
         }
+    }
+    
+    static String escapeRealmProperty(String component) {
+        return component
+                .replaceAll(":", "\\:")
+                .replaceAll("=", "\\=");
     }
 }
