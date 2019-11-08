@@ -609,7 +609,7 @@
                         <spec>
                             <artifact>
                                 <groupId>org.glassfish</groupId>
-                                <artifactId>javax.el</artifactId>
+                                <artifactId>jakarta.el</artifactId>
                                 <version>${jakarta.el.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
@@ -882,7 +882,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.el</artifactId>
+                <artifactId>jakarta.el</artifactId>
                 <version>${jakarta.el.version}</version>
             </dependency>
             <dependency>
