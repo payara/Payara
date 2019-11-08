@@ -44,7 +44,6 @@ import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerDockerImageManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,6 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
-import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 
@@ -216,13 +214,6 @@ public class DockerEnvironment implements AutoCloseable {
             return;
         }
         LOG.info("Closing docker containers ...");
-        try {
-            final ExecResult result = this.payaraContainer.execInContainer("killall", "-v", "java");
-            LOG.info("killall output: \n OUT: {}\n ERR: {}", result.getStdout(), result.getStderr());
-            Thread.sleep(5000L);
-        } catch (final IOException | InterruptedException e) {
-            LOG.error("Could not shutdown the server nicely.", e);
-        }
         closeSilently(this.payaraContainer);
         closeSilently(this.network);
     }

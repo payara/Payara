@@ -43,6 +43,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 
+import fish.payara.test.containers.tools.container.AsadminCommandException;
 import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerFiles;
 import fish.payara.test.containers.tools.env.DockerEnvironment;
@@ -402,7 +403,8 @@ public class CertificateRealmITest {
     }
 
 
-    private static void setRealmProperties(final String dnParts, final boolean cnAsPrincipal) {
+    private static void setRealmProperties(final String dnParts, final boolean cnAsPrincipal)
+        throws AsadminCommandException {
         LOG.trace("setRealmProperties(dnParts={}, cnAsPrincipal={})", dnParts, cnAsPrincipal);
         final PayaraServerContainer payara = DockerEnvironment.getInstance().getPayaraContainer();
         final String prefix = "configs.config.server-config.security-service.auth-realm.certificate.property.";

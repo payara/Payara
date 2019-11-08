@@ -28,6 +28,7 @@
         <docker.payara.port.https>8181</docker.payara.port.https>
         <docker.payara.host>payara-test-docker</docker.payara.host>
         <docker.payara.version>${project.version}</docker.payara.version>
+        <docker.payara.server-node.tag>latest</docker.payara.server-node.tag>
 
         <docker.mysql.image.forceNew>false</docker.mysql.image.forceNew>
         <docker.mysql.image.base>mysql:8.0.18</docker.mysql.image.base>

@@ -41,6 +41,7 @@ package fish.payara.test.containers.tools.arquillian;
 
 import com.sun.enterprise.deployment.deploy.shared.MemoryMappedArchive;
 
+import fish.payara.test.containers.tools.container.AsadminCommandException;
 import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.env.DockerEnvironment;
 import fish.payara.test.containers.tools.junit.DockerITestExtension;
@@ -143,6 +144,8 @@ public class PayaraDockerDeployableContainer implements DeployableContainer<Paya
             final ProtocolMetaData protocolMetaData = new ProtocolMetaData();
             protocolMetaData.addContext(httpContext);
             return protocolMetaData;
+        } catch (final AsadminCommandException e) {
+            throw new DeploymentException("Deployment passed, but asadmin command failed to get component status.", e);
         } finally {
             deployer.disconnect();
         }

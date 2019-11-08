@@ -66,6 +66,8 @@ public final class TestConfiguration {
     private final int jerseyClientConnectionTimeout;
     private final int jerseyClientReadTimeout;
 
+    private final String payaraServerNodeTag;
+
 
 
     /**
@@ -90,6 +92,7 @@ public final class TestConfiguration {
         this.payaraPort = properties.getInt("docker.payara.port", 0);
         this.payaraUsername = properties.getString("docker.payara.username");
         this.payaraPassword = properties.getString("docker.payara.password");
+        this.payaraServerNodeTag = properties.getString("docker.payara.server-node.tag", "latest");
 
         this.jerseyClientConnectionTimeout = properties.getInt("benchmark.client.timeoutInMillis.connect", 0);
         this.jerseyClientReadTimeout = properties.getInt("benchmark.client.timeoutInMillis.read", 0);
@@ -175,6 +178,14 @@ public final class TestConfiguration {
      */
     public int getJerseyClientReadTimeout() {
         return this.jerseyClientReadTimeout;
+    }
+
+
+    /**
+     * @return tag of the docker image, default is 'latest'
+     */
+    public String getPayaraServerNodeTag() {
+        return payaraServerNodeTag;
     }
 
 

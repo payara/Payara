@@ -48,7 +48,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
@@ -124,7 +131,39 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
 
     @Override
     public void close() {
+        try {
+            stopAllInstances();
+        } catch (final Exception e) {
+            LOG.error("Could not stop all instances managed by this domain.", e);
+        }
         this.clientCache.close();
+        try {
+            asLocalAdmin("stop-domain");
+        } catch (final Exception e) {
+            LOG.error("Could not shutdown the server nicely.", e);
+        }
+    }
+
+
+    private void stopAllInstances() throws AsadminCommandException {
+        final List<String> instances = Stream.of(asAdmin("list-instances").split("\n")).map(String::trim)
+            .filter(line -> !line.contains("Nothing to list.")).map(s -> s.split(" ")[0]).collect(Collectors.toList());
+        for (String instance : instances) {
+            try {
+                asAdmin("stop-instance", instance);
+            } catch (AsadminCommandException e) {
+                LOG.warn("Could not stop instance " + instance, e);
+            }
+            try {
+                asAdmin("delete-instance", instance);
+            } catch (final AsadminCommandException e) {
+                if (e.getMessage().contains("There is no instance named " + instance + " in this domain")) {
+                    LOG.warn("Instance " + instance + " was already deleted");
+                } else {
+                    LOG.error("Could not delete instance " + instance, e);
+                }
+            }
+        }
     }
 
 
@@ -153,16 +192,13 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
      * @param command - command name
      * @param arguments - arguments. Can be null.
      * @return standard output
+     * @throws AsadminCommandException
      */
-    public String asLocalAdmin(final String command, final String... arguments) {
-        try {
-            // FIXME: --echo breaks change-admin-password
-            final String[] defaultArgs = new String[] {"--terse"};
-            final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
-            return executor.exec(command, arguments);
-        } catch (AsadminCommandException e) {
-            throw new IllegalStateException(e);
-        }
+    public String asLocalAdmin(final String command, final String... arguments) throws AsadminCommandException {
+        // FIXME: --echo breaks change-admin-password
+        final String[] defaultArgs = new String[] {"--terse"};
+        final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
+        return executor.exec(command, arguments).trim();
     }
 
 
@@ -173,39 +209,65 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
      * @param arguments - arguments. Can be null and should not contain parameters used before
      *            the command.
      * @return standard ouptut
+     * @throws AsadminCommandException
      */
-    public String asAdmin(final String command, final String... arguments) {
-        try {
-            final String[] defaultArgs = new String[] {"--terse", "--user", "admin", //
-                "--passwordfile", this.configuration.getPasswordFileInDocker().getAbsolutePath()};
-            final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
-            return executor.exec(command, arguments);
-        } catch (AsadminCommandException e) {
-            throw new IllegalStateException(e);
-        }
+    public String asAdmin(final String command, final String... arguments) throws AsadminCommandException {
+        final String[] defaultArgs = new String[] {"--terse", "--user", "admin", //
+            "--passwordfile", this.configuration.getPasswordFileInDocker().getAbsolutePath()};
+        final AsadminCommandExecutor executor = new AsadminCommandExecutor(this, defaultArgs);
+        return executor.exec(command, arguments).trim();
     }
 
 
     /**
-     * Calls hosts docker on port 2376. The port must be exposed into container with the
-     * {@link Testcontainers#exposeHostPorts(int...)} before the container is created.
+     * Calls hosts docker on port 2376 with the HTTP POST.
+     * The port must be exposed into container with
+     * the {@link Testcontainers#exposeHostPorts(int...)} before the container is created.
      *
      * @param path
      * @param json
-     * @return stdout
+     * @return response including headers
      */
     public String docker(final String path, final String json) {
-        LOG.debug("docker(path={}, json=\n{}\n)", path, json);
+        return docker("POST", path, json);
+    }
+
+
+    /**
+     * Calls hosts docker on port 2376.
+     * The port must be exposed into container with
+     * the {@link Testcontainers#exposeHostPorts(int...)} before the container is created.
+     *
+     * @param method
+     * @param path
+     * @param json
+     * @return response including headers
+     */
+    public String docker(final String method, final String path, final String json) {
+        LOG.debug("docker(method={}, path={}, json=\n{}\n)", method, path, json);
         try {
+            final File outputFileInDocker = new File(this.configuration.getMainApplicationDirectoryInDocker(),
+                UUID.randomUUID() + ".json");
             final ExecResult result = execInContainer( //
                 "curl", "-sS", //
+                "-X", method, //
                 "-H", "Accept: application/json", "-H", "Content-Type: application/json", //
                 "-i", "http://host.testcontainers.internal:2376/" + path, //
+                "-o", outputFileInDocker.getAbsolutePath(),
                 "--data", json);
+            LOG.debug("path={}, exitCode={},\nstdout:\n{}\nstderr:\n{}", path, result.getExitCode(), result.getStdout(),
+                result.getStderr());
             if (result.getExitCode() != 0) {
                 throw new DockerClientException(result.getStderr());
             }
-            return result.getStdout();
+            // the line buffer+terminal are limited and they put "random" new line characters
+            // to the output, so this is a workaround
+            // bonus: you can read these files after the test (order by date)
+            final File outputFile = new File(this.configuration.getMainApplicationDirectory(),
+                outputFileInDocker.getName());
+            final String output = FileUtils.readFileToString(outputFile, StandardCharsets.UTF_8);
+            LOG.trace("HTTP output: \n{}", output);
+            return output;
         } catch (final UnsupportedOperationException | IOException | InterruptedException e) {
             throw new IllegalStateException("Could not execute docker command via curl.", e);
         }
