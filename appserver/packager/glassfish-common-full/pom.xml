@@ -175,8 +175,8 @@
            <type>zip</type>
        </dependency>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <groupId>jakarta.batch</groupId>
+            <artifactId>jakarta.batch-api</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.batch</groupId>
@@ -190,8 +190,8 @@
          -->
 
         <dependency>
-            <groupId>javax.xml.rpc</groupId>
-            <artifactId>javax.xml.rpc-api</artifactId>
+            <groupId>jakarta.xml.rpc</groupId>
+            <artifactId>jakarta.xml.rpc-api</artifactId>
         </dependency>  
     </dependencies>
 </project>

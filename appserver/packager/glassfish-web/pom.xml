@@ -133,8 +133,8 @@
                      Required in Payara 5, but optional for JDK 8+ builds in Payara 4
                 -->
                 <dependency>
-                    <groupId>javax.security.enterprise</groupId>
-                    <artifactId>javax.security.enterprise-api</artifactId>
+                    <groupId>jakarta.security.enterprise</groupId>
+                    <artifactId>jakarta.security.enterprise-api</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>org.glassfish.soteria</groupId>
@@ -231,16 +231,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>javax.servlet.jsp-api</artifactId>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet.jsp.jstl</groupId>
-            <artifactId>javax.servlet.jsp.jstl-api</artifactId>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
@@ -249,8 +249,8 @@
 
         <!-- Java EE Security -->
         <dependency>
-            <groupId>javax.security.enterprise</groupId>
-            <artifactId>javax.security.enterprise-api</artifactId>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
@@ -262,8 +262,8 @@
             <artifactId>javax.el</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>

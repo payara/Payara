@@ -56,7 +56,7 @@
     <packaging>glassfish-jar</packaging>
 
     <properties>
-        <javax.validation.version.upperbound>3</javax.validation.version.upperbound>
+        <jakarta.validation.version.upperbound>3</jakarta.validation.version.upperbound>
         <hibernate.validator.version.upperbound>7</hibernate.validator.version.upperbound>
     </properties>
     
@@ -110,7 +110,7 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            javax.validation.*;resolution:=optional;version="${range;[==,${javax.validation.version.upperbound});${javax.validation.version}}
+                            javax.validation.*;resolution:=optional;version="${range;[==,${jakarta.validation.version.upperbound});${jakarta.validation.version}}
 ",
                             org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
                             *
@@ -151,8 +151,8 @@
 
         <!-- hk2-config tests use hibernate-validator which requires javax.el-api -->
         <dependency>
-          <groupId>javax.el</groupId>
-          <artifactId>javax.el-api</artifactId>
+          <groupId>jakarta.el</groupId>
+          <artifactId>jakarta.el-api</artifactId>
           <scope>test</scope>
        </dependency>
         <dependency>

@@ -146,7 +146,7 @@
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
-        <javaee.api.version>8.0</javaee.api.version>
+        <jakartaee.api.version>8.0.0</jakartaee.api.version>
 
         <!-- Servlet -->
         <servlet-api.version>4.0.2</servlet-api.version>
@@ -165,13 +165,13 @@
         <jersey.version>2.29.1.payara-p1</jersey.version>
 
         <!-- Bean Validation -->
-        <javax.validation.version>2.0.1.Final</javax.validation.version>
+        <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.0.16.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.0.16.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
-        <javax.el.version>3.0.1-b11</javax.el.version>
-        <javax.el-api.version>3.0.1-b06</javax.el-api.version>
+        <jakarta.el.version>3.0.1-b11</jakarta.el.version>
+        <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
 
         <!-- JAX-B -->
         <jaxb-api.version>2.3.2</jaxb-api.version>
@@ -896,9 +896,9 @@ Parent is ${project.parent}</echo>
 
             <!-- Bean Validation (BVal) -->
             <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${javax.validation.version}</version>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
@@ -914,14 +914,14 @@ Parent is ${project.parent}</echo>
 
             <!-- Expression Language (EL) -->
             <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>${javax.el-api.version}</version>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
-                <version>${javax.el.version}</version>
+                <version>${jakarta.el.version}</version>
             </dependency>
 
 
