@@ -64,17 +64,20 @@ public @interface CertificateIdentityStoreDefinition {
     String value();
 
     /**
-     * The MicroProfile Config key for the assign groups is
-     * <code>{@value}</code>
-     */
-    public static final String STORE_MP_CERTIFICATE_GROUPS = "payara.security.certificate.assignGroups";
-
-    /**
      * Optional. Users are assigned membership to these groups for the purposes
      * of authorization decisions.
+     *
+     * The assign groups can also be configured by using MicroProfile Config
+     * property "payara.security.certificate.assignGroups".
      *
      * @return
      */
     String[] assignGroups() default {};
+
+    /**
+     * The MicroProfile Config key for the assign groups is
+     * <code>{@value}</code>
+     */
+    String STORE_MP_CERTIFICATE_GROUPS = "payara.security.certificate.assignGroups";
 
 }

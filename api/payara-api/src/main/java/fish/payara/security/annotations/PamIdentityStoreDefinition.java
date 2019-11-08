@@ -62,20 +62,22 @@ public @interface PamIdentityStoreDefinition {
      * @return
      */
     String value();
-    
-
-    /**
-     * The MicroProfile Config key for the assign groups is
-     * <code>{@value}</code>
-     */
-    public static final String STORE_MP_PAM_GROUPS = "payara.security.pam.assignGroups";
 
     /**
      * Optional. Users are assigned membership to these groups for the purposes
      * of authorization decisions.
      *
+     * The assign groups can also be configured by using MicroProfile Config
+     * property "payara.security.pam.assignGroups".
+     *
      * @return
      */
     String[] assignGroups() default {};
+
+    /**
+     * The MicroProfile Config key for the assign groups is
+     * <code>{@value}</code>
+     */
+    String STORE_MP_PAM_GROUPS = "payara.security.pam.assignGroups";
 
 }
