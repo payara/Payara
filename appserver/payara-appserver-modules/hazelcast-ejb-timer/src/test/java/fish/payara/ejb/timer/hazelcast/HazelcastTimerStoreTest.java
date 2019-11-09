@@ -56,5 +56,16 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
       assert count != null : "Even for missing timers/server ids no null is expected but rather some representation of zero";
     }
   }
+
+  @Test
+  public void countersShallFollowServerIdOrder() {
+    String [] serverIds = new String[] { "hz", "ltd", "jb" };
+
+    String [] counts = callListTimers(timers, serverIds);
+
+    assert counts[0].equals("1");
+    assert counts[1].equals("0");
+    assert counts[2].equals("2");
+  }
 }
 
