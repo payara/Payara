@@ -471,14 +471,13 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
         return result;
     }
 
-    static String [] listTimers(Collection timers, String[] serverIds) {
+    static String [] listTimers(Collection<HZTimer> timers, String[] serverIds) {
         String result[] = new String[serverIds.length];
 
         // count all server ids
         HashMap<String, Long> counts = new HashMap<>();
-        for (Object timer : timers) {
-            HZTimer hzTimer = (HZTimer) timer;
-            String serverName = hzTimer.getMemberName();
+        for (HZTimer timer : timers) {
+            String serverName = timer.getMemberName();
             Long val = counts.get(serverName);
             if (val == null) {
                 val = new Long(0);
@@ -500,7 +499,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
 
     @Override
     public String[] listTimers(String[] serverIds) {
-        return listTimers(pkCache.values(), serverIds);
+        return listTimers((Collection<HZTimer>)pkCache.values(), serverIds);
     }
 
     @Override

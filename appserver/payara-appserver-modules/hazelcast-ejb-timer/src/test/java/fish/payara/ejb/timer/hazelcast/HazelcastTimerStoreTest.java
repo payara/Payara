@@ -17,7 +17,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
   @Mock
   private HZTimer timer1, timer2, timer3;
 
-  private Collection timers;
+  private Collection<HZTimer> timers;
 
   @Before
   public void setUpTimers() {

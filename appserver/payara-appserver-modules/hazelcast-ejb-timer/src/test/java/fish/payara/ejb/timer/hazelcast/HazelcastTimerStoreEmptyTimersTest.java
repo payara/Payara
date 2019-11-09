@@ -6,7 +6,7 @@ import java.util.Collections;
 import org.junit.Test;
 
 public class HazelcastTimerStoreEmptyTimersTest extends HazelcastTimerStoreTestBase {
-  private Collection timers = Collections.emptyList();
+  private Collection<HZTimer> timers = Collections.emptyList();
 
   @Test
   public void emptyTimersShallResultInZeroTimersCountedForServer() {
