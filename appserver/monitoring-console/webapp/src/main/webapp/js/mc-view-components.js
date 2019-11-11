@@ -129,18 +129,22 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTextInput(model, converter) {
-         if (!converter)
-            converter = { format: (str) => str, parse: (str) => str };
-         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
-         input.on('input change', function() {
+        if (!converter)
+          converter = { format: (str) => str, parse: (str) => str };
+        let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
+        if (model.onChange !== undefined) {
+          input.on('input change paste', function() {
             let val = converter.parse(this.value);
             if (model.onChange.length == 2) {
               MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
             } else if (model.onChange.length == 1) {
               model.onChange(val);
             }
-         });
-         return input;
+          });          
+        } else {
+          input.prop('readonly', true);
+        }
+        return input;
       }
 
       function createInput(model) {

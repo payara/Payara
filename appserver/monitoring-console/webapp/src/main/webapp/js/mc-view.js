@@ -332,16 +332,13 @@ MonitoringConsole.View = (function() {
         });
         let widgetSeries = $('<input />', {type: 'text'});
         widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
-        
+        let pageNameOnChange = MonitoringConsole.Model.Page.hasPreset() ? undefined : function(text) {
+            if (MonitoringConsole.Model.Page.rename(text)) {
+                updatePageNavigation();                        
+            }
+        };
         return { id: 'settings-page', caption: 'Page', entries: [
-            { label: 'Name', input: () => 
-                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
-                .on("propertychange change keyup paste input", function() {
-                    if (MonitoringConsole.Model.Page.rename(this.value)) {
-                        updatePageNavigation();                        
-                    }
-                })
-            },
+            { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
             { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
             { label: 'Add Widgets', input: () => 
                 $('<span/>')

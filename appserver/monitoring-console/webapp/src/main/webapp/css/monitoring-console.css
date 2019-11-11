@@ -71,6 +71,11 @@ input[type=number] {
 input[type=checkbox] {
   vertical-align: middle;
 }
+input[readonly] {
+  background-color: transparent;
+  color: white;
+  border-width: 0;
+}
 canvas {
   position: relative;
 }
@@ -103,25 +108,27 @@ button:hover {
 
 #panel-trace {
   position: absolute;
-  top: 38px;
+  top: 32px;
   left: 0;
-  background-color: #002c3e;
   display: none;
   z-index: 110;
   padding: 10px;
-  width: 100%;
-  height: 100%;
   box-sizing: border-box;
-  margin-bottom: 40px;
 }
 #trace-widget {
   background-color: #002433;
   position: relative;
   padding: 10px;
 }
+#trace-legend {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+}
 #trace-chart-box {
   position: relative;
   clear: both;
+  padding-bottom: 60px;
 }
 #grid-console {
     position: relative;
@@ -404,7 +411,7 @@ table.tags th, table.tags td {
   border-radius: 0px;
   box-shadow: none;  
 }
-.Menu button:hover {
+.Menu .Group button:hover {
   color: #434445;
   background-color: #D2D8DA;
 }

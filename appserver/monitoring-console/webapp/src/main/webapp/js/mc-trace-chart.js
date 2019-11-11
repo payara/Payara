@@ -226,6 +226,7 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function onOpenPopup(series) {
+      $('#chart-grid').hide();
       $('#panel-trace').show();
       model.series = series;
       let menu = { id: 'TraceMenu', groups: [
@@ -246,6 +247,7 @@ MonitoringConsole.Chart.Trace = (function() {
          chart = undefined;
       }
       $('#panel-trace').hide();
+      $('#chart-grid').show();
    }
 
    function onSortByWallTime() {

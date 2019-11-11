@@ -1591,18 +1591,22 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createTextInput(model, converter) {
-         if (!converter)
-            converter = { format: (str) => str, parse: (str) => str };
-         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
-         input.on('input change', function() {
+        if (!converter)
+          converter = { format: (str) => str, parse: (str) => str };
+        let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
+        if (model.onChange !== undefined) {
+          input.on('input change paste', function() {
             let val = converter.parse(this.value);
             if (model.onChange.length == 2) {
               MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
             } else if (model.onChange.length == 1) {
               model.onChange(val);
             }
-         });
-         return input;
+          });          
+        } else {
+          input.prop('readonly', true);
+        }
+        return input;
       }
 
       function createInput(model) {
@@ -2573,6 +2577,7 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function onOpenPopup(series) {
+      $('#chart-grid').hide();
       $('#panel-trace').show();
       model.series = series;
       let menu = { id: 'TraceMenu', groups: [
@@ -2593,6 +2598,7 @@ MonitoringConsole.Chart.Trace = (function() {
          chart = undefined;
       }
       $('#panel-trace').hide();
+      $('#chart-grid').show();
    }
 
    function onSortByWallTime() {
@@ -2950,16 +2956,13 @@ MonitoringConsole.View = (function() {
         });
         let widgetSeries = $('<input />', {type: 'text'});
         widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
-        
+        let pageNameOnChange = MonitoringConsole.Model.Page.hasPreset() ? undefined : function(text) {
+            if (MonitoringConsole.Model.Page.rename(text)) {
+                updatePageNavigation();                        
+            }
+        };
         return { id: 'settings-page', caption: 'Page', entries: [
-            { label: 'Name', input: () => 
-                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
-                .on("propertychange change keyup paste input", function() {
-                    if (MonitoringConsole.Model.Page.rename(this.value)) {
-                        updatePageNavigation();                        
-                    }
-                })
-            },
+            { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
             { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
             { label: 'Add Widgets', input: () => 
                 $('<span/>')
