@@ -80,6 +80,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+              <version>2.8</version>
+              <executions>
+                <execution>
+                  <id>unpack</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                    <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                    <artifactItems>
+                      <artifactItem>
+                        <groupId>fish.payara.server.monitoring-console</groupId>
+                        <artifactId>monitoring-console-webapp</artifactId>
+                        <version>${project.version}</version>
+                        <type>war</type>
+                        <outputDirectory>target/stage/payara5/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
+                      </artifactItem>
+                    </artifactItems>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
         </plugins>
     </build>
 
