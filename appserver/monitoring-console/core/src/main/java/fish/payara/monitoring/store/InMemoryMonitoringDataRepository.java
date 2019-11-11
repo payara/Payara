@@ -40,10 +40,13 @@
 
 package fish.payara.monitoring.store;
 
+import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
+import static org.jvnet.hk2.config.Dom.unwrap;
 
+import java.beans.PropertyChangeEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +57,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -64,10 +71,15 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -96,14 +108,17 @@ import java.util.logging.Logger;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryMonitoringDataRepository implements MonitoringDataRepository {
+public class InMemoryMonitoringDataRepository implements MonitoringDataRepository, ConfigListener {
     /**
      * The topic name used to share data of instances with the DAS.
      */
     private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
+    private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
+    private final Set<String> sourcesFailingBefore = ConcurrentHashMap.newKeySet();
 
     private ServiceLocator serviceLocator;
     private ServerEnvironment serverEnv;
+    private PayaraExecutorService executor;
     private boolean isDas;
     private String instanceName;
     private ITopic<SeriesDatasetsSnapshot> exchange;
@@ -112,15 +127,21 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
     private final Set<String> instances = ConcurrentHashMap.newKeySet();
+    private final AtomicReference<ScheduledFuture<?>> dataCollectionJob = new AtomicReference<>();
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
+
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+    private MonitoringService monitoringConfig;
 
     @PostConstruct
     public void init() {
         serviceLocator = Globals.getDefaultBaseServiceLocator();
+        monitoringConfig = serverConfig.getMonitoringService();
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
         isDas = serverEnv.isDas();
-        PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
+        executor = serviceLocator.getService(PayaraExecutorService.class);
         HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
         if (hz.isEnabled()) {
             instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
@@ -129,14 +150,62 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             instanceName = "server";
         }
         instances.add(instanceName);
-        if (isDas) {
-            if (exchange != null) {
-                MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
-                exchange.addMessageListener(subscriber);
+        if (isDas && exchange != null) {
+            MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
+            exchange.addMessageListener(subscriber);
+        }
+        enableDataSourceCollection(parseBoolean(monitoringConfig.getMonitoringEnabled()));
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        for (PropertyChangeEvent e : events) {
+            if (e.getSource() instanceof ConfigBeanProxy) {
+                Class<?> source = unwrap((ConfigBeanProxy)e.getSource()).getImplementationClass();
+                if (source == MonitoringService.class) {
+                    String property = e.getPropertyName();
+                    if ("monitoring-enabled".equals(property)) {
+                        enableDataSourceCollection(parseBoolean(e.getNewValue().toString()));
+                    }
+                }
             }
-            executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS);
-        } else if (exchange != null) {
-            executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
+        }
+        return null;
+    }
+
+    private void enableDataSourceCollection(boolean enabled) {
+        if (enabled) {
+            enableDataSourceCollection();
+        } else {
+            disableDataSourceCollection();
+        }
+    }
+
+    private void enableDataSourceCollection() {
+        if (dataCollectionJob.get() != null) {
+            return; // don't start another job
+        }
+        LOGGER.info("Starting monitoring data collection for " + instanceName);
+        ScheduledFuture<?> task = isDas
+                ? executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS)
+                : executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
+        if (!dataCollectionJob.compareAndSet(null, task)) {
+            cancelDataCollection(task);
+        }
+    }
+
+    private void disableDataSourceCollection() {
+        cancelDataCollection(dataCollectionJob.getAndUpdate(job -> null));
+    }
+
+    private void cancelDataCollection(ScheduledFuture<?> task) {
+        if (task != null) {
+            LOGGER.info("Stopping monitoring data collection for " + instanceName);
+            try {
+                task.cancel(false);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to cancel monitoring data collection.", e);
+            }
         }
     }
 
@@ -180,11 +249,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     private void collectSourcesToPublish() {
-        tick();
-        SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
-        collectAll(new SinkDataCollector(msg));
-        estimatedNumberOfSeries = msg.numberOfSeries;
-        exchange.publish(msg);
+        if (exchange != null) {
+            tick();
+            SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
+            collectAll(new SinkDataCollector(msg));
+            estimatedNumberOfSeries = msg.numberOfSeries;
+            exchange.publish(msg);
+        }
     }
 
     private void collectAll(MonitoringDataCollector collector) {
@@ -196,13 +267,18 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         int collectedSources = 0;
         int failedSources = 0;
         for (MonitoringDataSource source : sources) {
+            String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
             try {
                 collectedSources++;
                 source.collect(collector);
+                sourcesFailingBefore.remove(sourceId);
             } catch (RuntimeException e) {
-                Logger.getLogger("monitoring-console-core").log(Level.FINE, "Error collecting metrics", e);
+                if (!sourcesFailingBefore.contains(sourceId)) {
+                    // only long once unless being successful again
+                    LOGGER.log(Level.FINE, "Error collecting metrics", e);
+                }
                 failedSources++;
-                // ignore and continue with next
+                sourcesFailingBefore.add(sourceId);
             }
         }
         long estimatedTotalBytesMemory = 0L;

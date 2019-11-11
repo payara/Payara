@@ -86,7 +86,8 @@ public class JsonRequestConstructorTest {
                         .add(DockerConstants.PAYARA_DAS_HOST + "=" + "localhost")
                         .add(DockerConstants.PAYARA_DAS_PORT + "=" + "4848")
                         .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                        .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()))
+                        .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                        .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()))
                 .build();
 
         Assert.assertEquals(expected.toString(), actual.toString());
@@ -117,7 +118,8 @@ public class JsonRequestConstructorTest {
                         .add(DockerConstants.PAYARA_DAS_HOST + "=" + "localhost")
                         .add(DockerConstants.PAYARA_DAS_PORT + "=" + "4848")
                         .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                        .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()))
+                        .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                        .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()))
                 .build();
 
         Assert.assertEquals(expected.toString(), actual.toString());
@@ -141,7 +143,8 @@ public class JsonRequestConstructorTest {
                         .add(DockerConstants.PAYARA_DAS_HOST + "=" + "localhost")
                         .add(DockerConstants.PAYARA_DAS_PORT + "=" + "4848")
                         .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                        .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()))
+                        .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                        .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()))
                 .add(DockerConstants.DOCKER_HOST_CONFIG_KEY, Json.createObjectBuilder()
                         .add(DockerConstants.DOCKER_MOUNTS_KEY, Json.createArrayBuilder()
                                 .add(Json.createObjectBuilder()
@@ -199,7 +202,8 @@ public class JsonRequestConstructorTest {
                         .add(DockerConstants.PAYARA_DAS_HOST + "=" + "localhost")
                         .add(DockerConstants.PAYARA_DAS_PORT + "=" + "4848")
                         .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                        .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()))
+                        .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                        .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()))
                 .build();
 
         Assert.assertEquals(expected.toString(), actual.toString());
@@ -442,7 +446,7 @@ public class JsonRequestConstructorTest {
 
         @Override
         public String getConfigRef() {
-            return null;
+            return "Insty1-config";
         }
 
         @Override

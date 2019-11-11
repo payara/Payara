@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -93,7 +94,7 @@ import org.glassfish.api.admin.Payload.Part;
 public abstract class PayloadFilesManager {
 
     private static final String XFER_DIR_PREFIX = "xfer-";
-    public final static LocalStringManagerImpl strings = new LocalStringManagerImpl(PayloadFilesManager.class);
+    public static final LocalStringManagerImpl strings = new LocalStringManagerImpl(PayloadFilesManager.class);
 
     private final File targetDir;
     protected final Logger logger;
@@ -124,7 +125,7 @@ public abstract class PayloadFilesManager {
         return targetDir;
     }
 
-    protected URI getParentURI(Part part) throws UnsupportedEncodingException {
+    protected URI getParentURI(Part part) {
             /*
              * parentURI and parentFile start as the target extraction directory for this
              * manager, but will change iff the part specifies a file

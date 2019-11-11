@@ -69,7 +69,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 public class MiniXmlParser {
     public MiniXmlParser(File domainXml) throws MiniXmlParserException {
-        this(domainXml, "server");  // default for a domain
+        this(domainXml, DEFAULT_VS_ID);  // default for a domain
     }
 
     public MiniXmlParser(File domainXml, String serverName) throws MiniXmlParserException {
@@ -111,7 +111,7 @@ public class MiniXmlParser {
 
     public Map<String, String> getJavaConfig() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return javaConfig;
     }
@@ -120,35 +120,35 @@ public class MiniXmlParser {
 
     public List<JvmOption> getJvmOptions() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return jvmOptions;
     }
 
     public Map<String, String> getProfilerConfig() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return profilerConfig;
     }
 
     public List<String> getProfilerJvmOptions() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return profilerJvmOptions;
     }
 
     public Map<String, String> getProfilerSystemProperties() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return profilerSysProps;
     }
 
     public Map<String, String> getSystemProperties() throws MiniXmlParserException {
         if (!valid) {
-            throw new MiniXmlParserException(strings.get("invalid"));
+            throw new MiniXmlParserException(strings.get(INVALID));
         }
         return sysProps.getCombinedSysProps();
     }
@@ -168,9 +168,18 @@ public class MiniXmlParser {
         return adminAddresses;
     }
 
+    /**
+     * @deprecated use {@link #setupConfigDir(java.io.File)} instead
+     */
+    @Deprecated
     public void setupConfigDir(File configDir, File installDir) {
         loggingConfig = new LoggingConfigImpl(configDir, configDir);
     }
+    
+    public void setupConfigDir(File configDir) {
+        loggingConfig = new LoggingConfigImpl(configDir, configDir);
+    }
+    
     public boolean getSecureAdminEnabled() {
         return secureAdminEnabled;
     }
@@ -293,10 +302,7 @@ public class MiniXmlParser {
                 return false;
             }
             final JvmOption other = (JvmOption) obj;
-            if (!Objects.equals(this.option, other.option)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.option, other.option);
         }
 
         @Override
@@ -411,28 +417,34 @@ public class MiniXmlParser {
             return;
         }   // second pass!
         skipRoot("domain");
-        // complications -- look for this element as a child of Domain...
-        // <property name="administrative.domain.name" value="domain1"/>
-        // also have to handle system-property at the domain level
+        OUTER:
         while (true) {
-            skipTo("servers", "property", "clusters", "system-property");
+            skipTo("servers", PROPERTY, CLUSTERS, SYSTEM_PROPERTY);
             String name = parser.getLocalName();
-            if ("servers".equals(name)) {
-                break;
-            }
-            else if ("clusters".equals(name))
-                parseClusters();
-            else if ("system-property".equals(name))
-                parseSystemProperty(SysPropsHandler.Type.DOMAIN);
-            else
+            if (null == name) {
                 parseDomainProperty(); // maybe it is the domain name?
+            } else {
+                switch (name) {
+                    case "servers":
+                        break OUTER;
+                    case CLUSTERS:
+                        parseClusters();
+                        break;
+                    case SYSTEM_PROPERTY:
+                        parseSystemProperty(SysPropsHandler.Type.DOMAIN);
+                        break;
+                    default:
+                        parseDomainProperty(); // maybe it is the domain name?
+                        break;
+                }
+            }
         }
         // the cursor is at the start-element of <servers>
         while (true) {
             // get to first <server> element
             skipNonStartElements();
             String localName = parser.getLocalName();
-            if (!"server".equals(localName)) {
+            if (!DEFAULT_VS_ID.equals(localName)) {
                 throw new XMLStreamException(strings.get("noserver", serverName));
             }
             // get the attributes for this <server>
@@ -444,7 +456,7 @@ public class MiniXmlParser {
                 skipToEnd("servers");
                 return;
             } else
-                skipToEnd("server");
+                skipToEnd(DEFAULT_VS_ID);
         }
     }
 
@@ -453,17 +465,18 @@ public class MiniXmlParser {
         // <property name="administrative.domain.name" value="domain1"/>
         // also have to handle system-property at the domain level
         while (true) {
-            skipTo("configs", "property", "clusters", "system-property");
+            skipTo("configs", PROPERTY, CLUSTERS, SYSTEM_PROPERTY);
             String name = parser.getLocalName();
             if ("configs".equals(name)) {
                 break;
             }
-            if ("clusters".equals(name))
+            if (CLUSTERS.equals(name))
                 parseClusters();
-            else if ("system-property".equals(name))
+            else if (SYSTEM_PROPERTY.equals(name)) {
                 parseSystemProperty(SysPropsHandler.Type.DOMAIN);
-            else
+            } else {
                 parseDomainProperty(); // maybe it is the domain name?
+            }
         }
         while (skipToButNotPast("configs", "config")) {
             // get the attributes for this <config>
@@ -496,26 +509,34 @@ public class MiniXmlParser {
                 }
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
-                if ("system-property".equals(name)) {
-                    parseSystemProperty(SysPropsHandler.Type.CONFIG);
-                } else if ("java-config".equals(name)) {
-                    parseJavaConfig();
-                } else if ("http-service".equals(name)) {
-                    parseHttpService();
-                } else if ("network-config".equals(name)) {
-                    sawNetworkConfig = true;
-                    parseNetworkConfig();
-                } else if ("monitoring-service".equals(name)) {
-                    parseMonitoringService();
-                }
-                else if("admin-service".equals(name)) {
-                    parseAdminService();
-                }
-                else if("security-service".equals(name)) {
-                    populateAdminRealmProperties();
-                }
-                else {
+                if (null == name) {
                     skipTree(name);
+                } else switch (name) {
+                    case SYSTEM_PROPERTY:
+                        parseSystemProperty(SysPropsHandler.Type.CONFIG);
+                        break;
+                    case "java-config":
+                        parseJavaConfig();
+                        break;
+                    case "http-service":
+                        parseHttpService();
+                        break;
+                    case "network-config":
+                        sawNetworkConfig = true;
+                        parseNetworkConfig();
+                        break;
+                    case "monitoring-service":
+                        parseMonitoringService();
+                        break;
+                    case "admin-service":
+                        parseAdminService();
+                        break;
+                    case "security-service":
+                        populateAdminRealmProperties();
+                        break;
+                    default:
+                        skipTree(name);
+                        break;
                 }
             }
         }
@@ -544,12 +565,18 @@ public class MiniXmlParser {
                 }
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
-                if ("protocols".equals(name)) {
-                    parseProtocols();
-                } else if ("network-listeners".equals(name)) {
-                    parseListeners();
-                } else
-                    skipTree(name);
+                if (null == name) {skipTree(name);
+                } else switch (name) {
+                    case "protocols":
+                        parseProtocols();
+                        break;
+                    case "network-listeners":
+                        parseListeners();
+                        break;
+                    default:
+                        skipTree(name);
+                        break;
+                }
             }
         }
     }
@@ -561,12 +588,12 @@ public class MiniXmlParser {
             int event = next();
             // return when we get to the </config>
             if (event == END_ELEMENT) {
-                if ("server".equals(parser.getLocalName())) {
+                if (DEFAULT_VS_ID.equals(parser.getLocalName())) {
                     return;
                 }
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
-                if ("system-property".equals(name)) {
+                if (SYSTEM_PROPERTY.equals(name)) {
                     parseSystemProperty(SysPropsHandler.Type.SERVER);
                 } else {
                     skipTree(name);
@@ -611,7 +638,7 @@ public class MiniXmlParser {
         if (!profilerConfig.containsKey("enabled"))
             profilerConfig.put("enabled", "true");
 
-        while (skipToButNotPast("profiler", "jvm-options", "property")) {
+        while (skipToButNotPast("profiler", "jvm-options", PROPERTY)) {
             if ("jvm-options".equals(parser.getLocalName())) {
                 profilerJvmOptions.add(parser.getElementText());
             } else {
@@ -696,10 +723,8 @@ public class MiniXmlParser {
                     }
                 }
             }
-            if (event == END_ELEMENT) {
-                if (parser.getLocalName().equals(endName)) {
-                    return false;
-                }
+            if (event == END_ELEMENT && parser.getLocalName().equals(endName)) {
+                return false;
             }
         }
     }
@@ -711,7 +736,6 @@ public class MiniXmlParser {
         while (true) {
             int event = next();
             if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
-                //System.out.println("END: " + parser.getLocalName());
                 return;
             }
         }
@@ -747,16 +771,25 @@ public class MiniXmlParser {
             // we are going through domain.xml in one long relentless sweep and
             // we can't back up!
 
-            while (skipToButNotPast("domain", "property", "clusters", "system-property","secure-admin")) {
+            while (skipToButNotPast("domain", PROPERTY, CLUSTERS, SYSTEM_PROPERTY,"secure-admin")) {
                 String name = parser.getLocalName();
-                if ("clusters".equals(name))
-                    parseClusters();
-                else if ("system-property".equals(name))
-                    parseSystemProperty(SysPropsHandler.Type.DOMAIN);
-                else if ("property".equals(name))
-                    parseDomainProperty(); // property found -- maybe it is the domain name?
-                else if("secure-admin".equals(name))
-                    parseSecureAdmin();
+                if (null != name)
+                    switch (name) {
+                    case CLUSTERS:
+                        parseClusters();
+                        break;
+                    case SYSTEM_PROPERTY:
+                        parseSystemProperty(SysPropsHandler.Type.DOMAIN);
+                        break;
+                    case PROPERTY:
+                        parseDomainProperty(); // property found -- maybe it is the domain name?
+                        break;
+                    case "secure-admin":
+                        parseSecureAdmin();
+                        break;
+                    default:
+                        break;
+                }
             }
             if (domainName == null) {
                 Logger.getLogger(MiniXmlParser.class.getName()).log(
@@ -834,8 +867,8 @@ public class MiniXmlParser {
                     adminRealmProperties = new HashMap<String, String>();
                     adminRealmProperties.put("classname", attributes.get("classname"));
                     while (true) {
-                        skipToButNotPast("auth-realm", "property");
-                        if ("property".equals(parser.getLocalName())) {
+                        skipToButNotPast("auth-realm", PROPERTY);
+                        if (PROPERTY.equals(parser.getLocalName())) {
                             attributes = parseAttributes();
                             adminRealmProperties.put(attributes.get("name"), attributes.get("value"));
                         } else if ("auth-realm".equals(parser.getLocalName())) {
@@ -1024,7 +1057,7 @@ public class MiniXmlParser {
         // if there is more than one clusters element (!weird!) only use the last one
         clusters = new ArrayList<ParsedCluster>();
 
-        while (skipToButNotPast("clusters", "cluster")) {
+        while (skipToButNotPast(CLUSTERS, "cluster")) {
             // cursor ==> "cluster"
             ParsedCluster pc = new ParsedCluster(parseAttributes().get("name"));
             clusters.add(pc);
@@ -1044,9 +1077,9 @@ public class MiniXmlParser {
      */
     private void parseCluster(ParsedCluster pc) throws XMLStreamException, EndDocumentException {
         // cursor --> cluster element
-        while (skipToButNotPast("cluster", "system-property", "server-ref")) {
+        while (skipToButNotPast("cluster", SYSTEM_PROPERTY, "server-ref")) {
             String name = parser.getLocalName();
-            if ("system-property".equals(name)) {
+            if (SYSTEM_PROPERTY.equals(name)) {
                 // NOT parseSystemProperty() because this might not be "our" cluster
                 // finalTouches() will add the correct system-property's
                 parseProperty(pc.sysProps);
@@ -1085,6 +1118,12 @@ public class MiniXmlParser {
 
     private static final String DEFAULT_ADMIN_VS_ID = "__asadmin";
     private static final String DEFAULT_VS_ID = "server";
+    private static final String CLUSTERS = "clusters";
+    private static final String INVALID = "invalid";
+    private static final String PROPERTY = "property";
+    private static final String SYSTEM_PROPERTY = "system-property";
+    
+    
     private LoggingConfigImpl loggingConfig;
     private File domainXml;
     private XMLStreamReader parser;
@@ -1112,5 +1151,4 @@ public class MiniXmlParser {
     private SysPropsHandler sysProps = new SysPropsHandler();
     private List<ParsedCluster> clusters = null;
     private boolean secureAdminEnabled = false;
-    private static final JDK.Version JDK_VERSION = JDK.getVersion();
 }

@@ -142,6 +142,10 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     }
 
     private void terminateThreadPools() {
+        if (threadPoolExecutor == null) {
+            // we didn't initialize yet
+            return;
+        }
         threadPoolExecutor.shutdown();
         scheduledThreadPoolExecutor.shutdown();
 

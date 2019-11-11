@@ -93,7 +93,8 @@ public class JsonRequestConstructor {
                     .add(DockerConstants.PAYARA_DAS_HOST + "=" + dasHost)
                     .add(DockerConstants.PAYARA_DAS_PORT + "=" + dasPort)
                     .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                    .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()));
+                    .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                    .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()));
         } else {
             translatePropertyValuesToJson(rootObjectBuilder, containerConfig, node, server,
                     dasHost, dasPort);
@@ -163,7 +164,8 @@ public class JsonRequestConstructor {
                     .add(DockerConstants.PAYARA_DAS_HOST + "=" + dasHost)
                     .add(DockerConstants.PAYARA_DAS_PORT + "=" + dasPort)
                     .add(DockerConstants.PAYARA_NODE_NAME + "=" + node.getName())
-                    .add(DockerConstants.INSTANCE_NAME + "=" + server.getName()));
+                    .add(DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef())
+                    .add(DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName()));
         }
     }
 
@@ -242,8 +244,11 @@ public class JsonRequestConstructor {
         if (!envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
             envConfigString += "|" + DockerConstants.PAYARA_NODE_NAME + "=" + node.getName();
         }
-        if (!envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
-            envConfigString += "|" + DockerConstants.INSTANCE_NAME + "=" + server.getName();
+        if (!envConfigString.contains(DockerConstants.PAYARA_CONFIG_NAME)) {
+            envConfigString += "|" + DockerConstants.PAYARA_CONFIG_NAME + "=" + server.getConfigRef();
+        }
+        if (!envConfigString.contains(DockerConstants.PAYARA_INSTANCE_NAME)) {
+            envConfigString += "|" + DockerConstants.PAYARA_INSTANCE_NAME + "=" + server.getName();
         }
 
         // We can't currently have '=' in a system property value, so for this special case substitute ':' as we

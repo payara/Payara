@@ -73,7 +73,7 @@ public class ManifestUtils {
      * @param m
      * @return
      */
-    public final static Map<String, Map<String,String>> normalize(Manifest m)
+    public static final Map<String, Map<String,String>> normalize(Manifest m)
     {
         // first add the "main attributes
         Map<String, Map<String,String>> all = new HashMap<String, Map<String,String>>();
@@ -101,7 +101,7 @@ public class ManifestUtils {
      * @param att
      * @return
      */
-    public final static Map<String,String> normalize(Attributes att)
+    public static final Map<String,String> normalize(Attributes att)
     {
         Set<Map.Entry<Object,Object>> entries = att.entrySet();
         Map<String,String> pristine = new HashMap<String,String>(entries.size());
@@ -115,7 +115,7 @@ public class ManifestUtils {
         return pristine;
     }
 
-    public final static String encode(String input) {
+    public static final String encode(String input) {
         if (nonNull(input)) {
             // do DOS linefeed first!
             input = input.replaceAll("\r\n", EOL_TOKEN);

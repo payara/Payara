@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util;
 
@@ -52,12 +53,14 @@ import org.osgi.framework.BundleContext;
  */
 public class CommonUtilsActivator implements BundleActivator
 {
+    @Override
     public void start(BundleContext context) throws Exception
     {
         ObjectInputOutputStreamFactoryFactory.setFactory(
                 new OSGiObjectInputOutputStreamFactoryImpl(context));
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception
     {
     }

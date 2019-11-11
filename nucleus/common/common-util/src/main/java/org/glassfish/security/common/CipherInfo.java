@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.security.common;
 
 import java.util.HashMap;
@@ -73,11 +74,11 @@ public class CipherInfo {
             {"SSL_RSA_WITH_NULL_SHA", "SSL_RSA_WITH_NULL_SHA"}
         };
 
-    private static Map ciphers = new HashMap();
+    private static final Map ciphers = new HashMap();
 
-    private String configName;
-    private String cipherName;
-    private short protocolVersion;
+    private final String configName;
+    private final String cipherName;
+    private final short protocolVersion;
 
     static {
         int len = OLD_CIPHER_MAPPING.length;

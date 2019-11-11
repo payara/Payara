@@ -39,12 +39,6 @@
  */
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * SystemProps.java
- *
- * Created on October 2, 2001, 2:53 PM
- */
-
 package com.sun.enterprise.universal;
 
 import com.sun.enterprise.util.StringUtils;
@@ -54,7 +48,7 @@ import java.util.*;
 /**
  *
  * @author  bnevins
- * @version
+ * @since October 2, 2001
  */
 public class SystemProps
 {

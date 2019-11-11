@@ -122,15 +122,15 @@ public class SmartFileTest {
             return;
         
         String fn = "/../../../../../../../../foo";
-        assertEquals(SmartFile.sanitize(fn), "/foo");
+        assertEquals("/foo", SmartFile.sanitize(fn));
         fn = "/../foo";
-        assertEquals(SmartFile.sanitize(fn), "/foo");
+        assertEquals("/foo", SmartFile.sanitize(fn));
 
         fn = "/foo/../foo";
-        assertEquals(SmartFile.sanitize(fn), "/foo");
+        assertEquals("/foo", SmartFile.sanitize(fn));
 
         fn = "/foo/../../foo";
-        assertEquals(SmartFile.sanitize(fn), "/foo");
+        assertEquals("/foo", SmartFile.sanitize(fn));
     }
 
 

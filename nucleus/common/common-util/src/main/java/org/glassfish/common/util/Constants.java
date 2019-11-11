@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.common.util;
 
 /**
@@ -45,19 +47,22 @@ package org.glassfish.common.util;
  * @author jwells
  */
 public class Constants {
+    
+    private Constants() {}
+    
     /**
      * This constant should be used whenever there are multiple implementations
      * of an &#64;Contract and one of them should be the default implementation
      * that people should get if they have no other distinguising information
      * in their lookup or &#64;Inject point.
      */
-    public final static int DEFAULT_IMPLEMENTATION_RANK = 50;
+    public static final int DEFAULT_IMPLEMENTATION_RANK = 50;
     
     /**
      * This constant should be used as the rank of an important
      * start level service (one that should be initialized generally
      * ahead of other services at the same run-level)
      */
-    public final static int IMPORTANT_RUN_LEVEL_SERVICE = 50;
+    public static final int IMPORTANT_RUN_LEVEL_SERVICE = 50;
 
 }

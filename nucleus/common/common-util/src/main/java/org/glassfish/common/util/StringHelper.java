@@ -39,12 +39,6 @@
  */
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * StringHelper.java
- *
- * Created on March 3, 2000
- */
-
 package org.glassfish.common.util;
 
 import java.util.ArrayList;
@@ -57,8 +51,8 @@ import java.util.StringTokenizer;
  * There can be some refactoring work to combine these with some of the
  * methods in the StringScanner class.
  *
+ * @since March 3, 2000
  */
-
 public class StringHelper
 {
 	/**
@@ -75,24 +69,23 @@ public class StringHelper
 	 * @param separator The separator to be used between strings.
 	 * @return a string representing the expanded list.
 	 */
-	public static String arrayToSeparatedList (List list, int beginIndex,
-		int endIndex, String separator)
-	{
-		StringBuilder result = new StringBuilder();
+        public static String arrayToSeparatedList(List list, int beginIndex, int endIndex, String separator) {
+            StringBuilder result = new StringBuilder();
 
-		if (list != null)
-		{
-			int i, count = (endIndex + 1);
+            if (list != null) {
+                int i, count = (endIndex + 1);
 
-			if ((count > beginIndex) && (list.size() >= count))
-				result.append(list.get(beginIndex));
+                if ((count > beginIndex) && (list.size() >= count)) {
+                    result.append(list.get(beginIndex));
+                }
 
-			for (i = beginIndex + 1; i < count; i++)
-				result.append(separator).append(list.get(i));
-		}
+                for (i = beginIndex + 1; i < count; i++) {
+                    result.append(separator).append(list.get(i));
+                }
+            }
 
-		return result.toString();
-	}
+            return result.toString();
+        }
 
 	/** Convert an array of objects into a separated string using the default
 	 * separator.  This method assumes there is no instance of the separator

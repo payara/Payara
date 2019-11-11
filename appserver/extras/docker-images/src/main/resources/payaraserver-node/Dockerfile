@@ -1,12 +1,15 @@
-FROM azul/zulu-openjdk:8u212
+FROM azul/zulu-openjdk:8u232
 
 ENV WORK_DIR=/opt/payara
 ENV PAYARA_HOME=${WORK_DIR}/payara5 \
     PAYARA_PASSWORD_FILE_DIR=${WORK_DIR}/passwords \
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
-    PAYARA_NODE_NAME="LocalDockerNode1" \
-    PAYARA_INSTANCE_NAME=""
+    PAYARA_NODE_NAME="" \
+    PAYARA_CONFIG_NAME="" \
+    PAYARA_INSTANCE_NAME="" \
+    DOCKER_CONTAINER_IP=""
+
 ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 # Create and set the Payara user and working directory owned by the new user

@@ -98,8 +98,9 @@
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-docker");
             gfr.prepareNodeCmd();
             mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirDocker']}");
+            mapPut(map="#{pageSession.attrsMap}", key="usetls" value="#{pageSession.usetlsSelected}");
         }
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" method="POST" attrs="#{pageSession.attrsMap}")
+        gf.updateEntity(endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" attrs="#{pageSession.attrsMap}" convertToFalse="#{pageSession.convertToFalseList}");
         prepareSuccessfulMsg();
         gf.redirect(page="#{request.contextPath}/cluster/#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
     />
@@ -177,8 +178,9 @@
         setAttribute(key="endpoint" value="nodes/create-node-docker");
         gfr.prepareNodeCmd();
         mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirDocker']}");
+        mapPut(map="#{pageSession.attrsMap}", key="usetls" value="#{pageSession.usetlsSelected}");
     }
-    gf.restRequest( endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" attrs="#{pageSession.attrsMap}" method="POST" )
+    gf.updateEntity( endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" attrs="#{pageSession.attrsMap}" convertToFalse="#{pageSession.convertToFalseList}");
     gf.redirect(page="#{request.contextPath}/cluster/node/nodes.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
  />
 </sun:button>
