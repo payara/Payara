@@ -108,10 +108,7 @@ public final class MonitoringDataCollection {
 
     public static void collectRange(MonitoringDataCollector collector, RangeStatistic range) {
         collector
-            .collect(range.getName(), range.getCurrent())
-            .group(range.getName())
-                .collect("LowWaterMark", range.getLowWaterMark())
-                .collect("HighWaterMark", range.getHighWaterMark());
+            .collect(range.getName(), range.getCurrent());
     }
 
     public static void collectCount(MonitoringDataCollector collector, CountStatistic count) {
