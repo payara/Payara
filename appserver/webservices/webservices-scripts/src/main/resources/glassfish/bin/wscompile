@@ -59,7 +59,7 @@ if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
 
-./jdkcheck
+. $(dirname "$0")/jdkcheck
 
 if [ checkEndorsedAvailable = true ]
 then 

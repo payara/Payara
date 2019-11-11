@@ -57,7 +57,7 @@ goto run
 set JAVA=java
 
 :run
-CALL jdkcheck.bat
+CALL %~dp0jdkcheck.bat
 
 if %ENDORSED_AVAILABLE%==true (
     %JAVA% %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsGen %*

@@ -58,7 +58,7 @@ goto run
 set JAVA=java
 
 :run
-CALL jdkcheck.bat
+CALL %~dp0jdkcheck.bat
 
 if %ENDORSED_AVAILABLE%==true (
     %JAVA% %WSCOMPILE_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.mail.jar;%JAVA_HOME%/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main %*
