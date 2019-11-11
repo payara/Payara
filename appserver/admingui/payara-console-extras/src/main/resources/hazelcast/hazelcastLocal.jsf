@@ -74,6 +74,9 @@
         <sun:property id="lite" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
             <sun:checkbox id="lite" selected="#{pageSession.lite}" selectedValue="true" />
         </sun:property>
+         <sun:property id="configPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configPort}"  helpText="$resource{i18nhc.hazelcast.configuration.configPortHelp}">
+            <sun:textField id="configPort" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['configPort']}" />
+        </sun:property>
         <sun:property id="publicAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.publicAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.publicAddressHelp}">
             <sun:textField id="publicAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['publicAddress']}" />
         </sun:property> 

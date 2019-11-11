@@ -100,4 +100,8 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     String getLite();
     public void setLite(String value);
     
+    @Attribute(defaultValue = "0")
+    String getConfigPort();
+    public void setConfigPort(String value);
+    
 }

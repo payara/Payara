@@ -137,6 +137,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"Scheduled Executor Pool Size",nodeConfiguration.getScheduledExecutorPoolSize(),"Config"});
         columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
         columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
+        columnFormatter.addRow(new Object[]{"Config Port",nodeConfiguration.getConfigPort(),"Config"});
         
         Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
@@ -170,6 +171,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("publicAddress", nodeConfiguration.getPublicAddress());
         map.put("kubernetesNamespace", runtimeConfiguration.getKubernetesNamespace());
         map.put("kubernetesServiceName", runtimeConfiguration.getKubernetesServiceName());
+        map.put("configPort",nodeConfiguration.getConfigPort());
         
         extraProps.put("getHazelcastConfiguration",map);
                 

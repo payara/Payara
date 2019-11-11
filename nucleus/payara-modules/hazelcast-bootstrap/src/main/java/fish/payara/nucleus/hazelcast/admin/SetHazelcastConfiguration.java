@@ -204,6 +204,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "autoIncrementPort", optional = true)
     private Boolean autoIncrementPort;
     
+    @Param(name = "configPort", optional = true)
+    private String configPort;
+    
     @Inject
     ServiceLocator serviceLocator;
 
@@ -345,6 +348,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                             }
                             if (publicAddress != null) {
                                 hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
+                            }
+                            if (configPort != null) {
+                                hazelcastRuntimeConfigurationProxy.setConfigPort(configPort);
                             }
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return null;
