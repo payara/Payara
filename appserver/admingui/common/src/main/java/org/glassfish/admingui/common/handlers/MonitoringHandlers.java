@@ -37,33 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.handlers;
-
-import java.io.UnsupportedEncodingException;
-import org.glassfish.admingui.common.util.GuiUtil;
 
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
 import java.text.DateFormat;
-import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.logging.Level;
-
-import org.glassfish.admingui.common.util.RestResponse;
+import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
 /**
@@ -406,18 +402,33 @@ public class MonitoringHandlers {
     @Handler(id = "updateMonitorLevels",
     input = {
         @HandlerInput(name = "allRows", type = List.class, required = true),
-        @HandlerInput(name = "endpoint", type = String.class)})
+        @HandlerInput(name = "config", type = String.class, required = true)})
     public static void updateMonitorLevels(HandlerContext handlerCtx) {
-        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        String config = (String) handlerCtx.getInputValue("config");
         List<Map> allRows = (List<Map>) handlerCtx.getInputValue("allRows");
         Map payload = new HashMap();
+
+        StringJoiner moduelNames = new StringJoiner(":");
+        StringJoiner moduellevels = new StringJoiner(":");
+
         for (Map<String, String> oneRow : allRows) {
-            payload.put(oneRow.get("attrName"), oneRow.get("level"));
+            String moduleName = oneRow.get("attrName");
+            String level = oneRow.get("level");
+
+            if (moduleName.length() > 0 && level.length() > 0) {
+                moduelNames.add(moduleName);
+                moduellevels.add(level);
+            }
         }
-        try{
-            RestUtil.restRequest( endpoint , payload, "post" , null, false);
-        }catch (Exception ex){
-            GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("msg.error.save.monitor.modules" ,  new Object[]{endpoint, payload}));
+
+        String endpoint = (String) GuiUtil.getSessionValue("REST_URL") + "/set-monitoring-level.json";
+        payload.put("module", moduelNames.toString());
+        payload.put("level", moduellevels.toString());
+        payload.put("target", config);
+        try {
+            RestUtil.restRequest(endpoint, payload, "POST", null, false, true);
+        } catch (Exception ex) {
+            GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("msg.error.save.monitor.modules", new Object[]{endpoint, payload}));
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.error.checkLog"));
             return;
         }
