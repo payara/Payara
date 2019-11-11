@@ -775,6 +775,8 @@ MonitoringConsole.Model = (function() {
 	let Update = (function() {
 
 		function retainLastMinute(data) {
+			if (!data)
+				return [];
 			let startOfLastMinute = Date.now() - 65000;
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
