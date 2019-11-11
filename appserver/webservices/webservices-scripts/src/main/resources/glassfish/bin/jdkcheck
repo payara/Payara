@@ -42,11 +42,7 @@
 
 # Checks the version of Java installed, if it is 9+ then endorsed is not available
 checkEndorsedAvailable () {
-    local ver=$("$JAVA" -version 2>&1 >/dev/null| sed -e 's/.*version "\(.*\)"\(.*\)/\1/; 1q')
-    if [ $ver = "1."* ]
-    then
-        true;
-    else
-        false;
-    fi
+    ver=$("$JAVA" -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    return $ver
 }
+

@@ -57,8 +57,9 @@ if [ ${AS_JAVA} ]; then
 fi
 
 . $(dirname "$0")/jdkcheck
+checkEndorsedAvailable
 
-if [ checkEndorsedAvailable = true ]
+if [ $? -lt 9 ]
 then 
     exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.xjc.Driver "$@"
 else
