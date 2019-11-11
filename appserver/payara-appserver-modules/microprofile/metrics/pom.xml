@@ -45,7 +45,6 @@
         <artifactId>microprofile</artifactId>
         <version>5.202-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-metrics</artifactId>
     <name>Microprofile - Metrics</name>
     <description>Implementation of MicroProfile Metrics API</description>
@@ -111,6 +110,10 @@
         <dependency>
             <groupId>fish.payara.monitoring-console</groupId>
             <artifactId>monitoring-console-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>
