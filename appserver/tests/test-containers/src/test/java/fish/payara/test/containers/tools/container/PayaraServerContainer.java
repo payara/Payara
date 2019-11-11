@@ -248,11 +248,12 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
         try {
             final File outputFileInDocker = new File(this.configuration.getMainApplicationDirectoryInDocker(),
                 UUID.randomUUID() + ".json");
+            final NetworkTarget docker = this.configuration.getDockerHostAndPort();
             final ExecResult result = execInContainer( //
                 "curl", "-sS", //
                 "-X", method, //
                 "-H", "Accept: application/json", "-H", "Content-Type: application/json", //
-                "-i", "http://host.testcontainers.internal:2376/" + path, //
+                "-i", "http://" + docker.getHost() + ":" + docker.getPort() + "/" + path, //
                 "-o", outputFileInDocker.getAbsolutePath(),
                 "--data", json);
             LOG.debug("path={}, exitCode={},\nstdout:\n{}\nstderr:\n{}", path, result.getExitCode(), result.getStdout(),

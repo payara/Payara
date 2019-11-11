@@ -96,11 +96,17 @@ public class DockerEnvironmentConfiguration {
     }
 
 
+    /**
+     * @param isUseMySqlContainer true if the container will be used in tests
+     */
     public void setUseMySqlContainer(boolean isUseMySqlContainer) {
         this.isUseMySqlContainer = isUseMySqlContainer;
     }
 
 
+    /**
+     * @return true if the container will be used in tests
+     */
     public boolean isUseMySqlContainer() {
         return this.isUseMySqlContainer;
     }
@@ -153,4 +159,5 @@ public class DockerEnvironmentConfiguration {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
+
 }

@@ -56,6 +56,8 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
     private int adminPort;
     private int httpsPort;
 
+    private NetworkTarget dockerHostAndPort;
+
 
     /**
      * @return internal port of the admin endpoint in the docker container.
@@ -86,6 +88,22 @@ public class PayaraServerContainerConfiguration extends JavaContainerConfigurati
      */
     public void setHttpsPort(final int port) {
         this.httpsPort = port;
+    }
+
+
+    /**
+     * @param dockerHostAndPort {@link NetworkTarget} of the docker rest service
+     */
+    public void setDockerHostAndPort(final NetworkTarget dockerHostAndPort) {
+        this.dockerHostAndPort = dockerHostAndPort;
+    }
+
+
+    /**
+     * @return {@link NetworkTarget} of the docker rest service
+     */
+    public NetworkTarget getDockerHostAndPort() {
+        return this.dockerHostAndPort;
     }
 
 

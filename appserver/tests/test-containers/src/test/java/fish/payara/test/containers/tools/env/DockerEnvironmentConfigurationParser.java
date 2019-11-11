@@ -40,6 +40,7 @@
 package fish.payara.test.containers.tools.env;
 
 import fish.payara.test.containers.tools.container.MySQLContainerConfiguration;
+import fish.payara.test.containers.tools.container.NetworkTarget;
 import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
 import fish.payara.test.containers.tools.properties.Properties;
 
@@ -97,6 +98,11 @@ public final class DockerEnvironmentConfigurationParser {
 
         cfg.setJaCoCoReportDirectory(properties.getFile("jacoco.reportDirectory"));
         cfg.setJaCoCoVersion(properties.getString("jacoco.version"));
+
+        final String dockerHost = properties.getString("docker.host", "localhost");
+        final int dockerPort = properties.getInt("docker.port", 2375);
+        cfg.setDockerHostAndPort(new NetworkTarget(dockerHost, dockerPort));
+
         return cfg;
     }
 

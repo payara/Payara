@@ -99,7 +99,7 @@ public class JdbcPoolITest extends DockerITest {
 
     @Deployment(testable = false)
     public static WebArchive getArchiveToDeploy() throws Exception {
-        LOG.info("createDeployment()");
+        LOG.info("getArchiveToDeploy()");
 
         initEnvironment();
 

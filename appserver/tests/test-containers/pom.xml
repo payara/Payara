@@ -12,6 +12,8 @@
     <packaging>jar</packaging>
 
     <properties>
+        <docker.host>host.testcontainers.internal</docker.host>
+        <docker.port>2376</docker.port>
         <docker.images.timeoutInSeconds>900</docker.images.timeoutInSeconds>
         <docker.payara.directory.shared>${project.build.directory}/shared</docker.payara.directory.shared>
 <!--         <docker.payara.image.base>ubuntu:19.10</docker.payara.image.base> -->
@@ -183,8 +185,9 @@
             <version>5.5.2</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <!-- depends on JUnit4 -->
+            <!-- depends on JUnit4, which cannot be excluded -->
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <version>1.12.2</version>

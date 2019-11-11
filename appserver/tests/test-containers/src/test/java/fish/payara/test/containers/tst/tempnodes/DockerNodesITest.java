@@ -40,8 +40,10 @@
 package fish.payara.test.containers.tst.tempnodes;
 
 import fish.payara.test.containers.tools.container.AsadminCommandException;
+import fish.payara.test.containers.tools.container.NetworkTarget;
 import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
+import fish.payara.test.containers.tools.env.DockerEnvironmentConfiguration;
 import fish.payara.test.containers.tools.junit.DockerITest;
 import fish.payara.test.containers.tools.junit.DockerITestExtension;
 
@@ -71,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
@@ -117,13 +120,13 @@ public class DockerNodesITest extends DockerITest {
                 LOG.info("Tolerating container already existing before this test: {}", id);
                 continue;
             }
-            domain.docker("DELETE", "containers/" + id.id + "?v=true&force=true&link=true", "");
+            domain.docker("DELETE", "containers/" + id.id + "?v=true&force=true", "");
         }
     }
 
 
     @Test
-    public void testTemporaryDockerNodeLifeCycle() throws Exception {
+    public void testTemporaryDockerNodeInstanceLifeCycle() throws Exception {
         final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
         final String createResponse = domain.docker("containers/create", getCreateContainerJSon(domain));
         assertThat("curl create container output", createResponse, stringContainsInOrder("HTTP/1.1 201 Created"));
@@ -138,19 +141,15 @@ public class DockerNodesITest extends DockerITest {
         waitFor(listRunningInstance, 60 * 1000L);
 
         final String listInstancesResponse = domain.asAdmin("list-instances");
-        assertAll( //
-            () -> assertNotNull(listInstancesResponse, "listInstancesResponse"), //
-            () -> assertThat("listInstancesResponse", listInstancesResponse.split("\n"), arrayWithSize(1)) //
-        );
+        assertNotNull(listInstancesResponse, "listInstancesResponse"); //
+        assertThat("listInstancesResponse", listInstancesResponse.split("\n"), arrayWithSize(1)); //
+
         final String listNodesResponse = domain.asAdmin("list-nodes");
-        assertAll( //
-            () -> assertNotNull(listNodesResponse, "listNodesResponse"), //
-            // temporary nodes are not listed!
-            () -> assertThat("listNodesResponse", listNodesResponse.split("\n"), arrayWithSize(1)) //
-        );
+        assertNotNull(listNodesResponse, "listNodesResponse"); //
+        // temporary nodes are not listed! The one line is default local node.
+        assertThat("listNodesResponse", listNodesResponse.split("\n"), arrayWithSize(1)); //
 
         final String dockerInstanceName = parseInstanceNameAndStatus(listInstancesResponse).get(0)[0];
-
         try {
             final String deleteInstanceResponse = domain.asAdmin("delete-instance", dockerInstanceName);
             fail("Expected error, but received this response: " + deleteInstanceResponse);
@@ -159,7 +158,7 @@ public class DockerNodesITest extends DockerITest {
                 stringContainsInOrder("Instance " + dockerInstanceName + " must be stopped before it can be deleted."));
         }
         final String stopInstanceResponse = domain.asAdmin("stop-instance", dockerInstanceName);
-        assertEquals("The instance, " + dockerInstanceName + ", is stopped.", stopInstanceResponse.trim(), "e.message");
+        assertEquals("The instance, " + dockerInstanceName + ", is stopped.", stopInstanceResponse, "e.message");
 
         final String listInstancesResponseAfterStop = domain.asAdmin("list-instances");
         assertThat("listInstancesResponseAfterStop", listInstancesResponseAfterStop,
@@ -168,17 +167,59 @@ public class DockerNodesITest extends DockerITest {
         final String dockerDeleteResponse = //
             domain.docker("DELETE", "containers/" + containerId + "?v=true&force=true", "");
         assertThat("dockerDeleteResponse", dockerDeleteResponse, stringContainsInOrder("HTTP/1.1 204 No Content"));
+    }
 
-//        domain.asAdmin("create-node-docker", "--nodehost", nodeCfg.getHost(), "--dockerPasswordFile",
-//            nodeCfg.getPasswordFileInDocker().getAbsolutePath(), "--dockerport", "2376", "DockerNode1");
 
-//        domain.asAdmin("create-instance", "--autoname", "DockerTempInstance1");
-//        asadmin create-node-docker --nodehost localhost --dockerPasswordFile /opt/passwordfile.txt --dockerport 2376 DockerInstance1
-//        asadmin create-instance --node DockerNode1 dockerInstance1
+    @Test
+    public void testDASManagedDockerInstanceLifeCycle() throws Exception {
+        final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
+        // we use same computer as DAS for simplicity - in fact it is still host's docker.
+        final DockerEnvironmentConfiguration dockerConfiguration = getDockerEnvironment().getConfiguration();
+        final PayaraServerContainerConfiguration dasConfiguration = dockerConfiguration.getPayaraServerConfiguration();
+        final NetworkTarget dockerNode = dasConfiguration.getDockerHostAndPort();
+        final String nodeName = "DockerNode1";
+        domain.asAdmin("create-node-docker", //
+            "--dockerPasswordFile", dasConfiguration.getPasswordFile().getAbsolutePath(), //
+            "--nodehost", dockerNode.getHost(), "--dockerport", Integer.toString(dockerNode.getPort()), //
+            "--dockerimage", "payara/server-node:" + getTestConfiguration().getPayaraServerNodeTag(), //
+            nodeName);
 
-        // FIXME: don't forget to delete created containers - now done manually
-        // docker container prune; docker network prune
-        // - should be also in documentation, I had 30 dead containers here, same for networks :D )
+        final String instanceName = "DockerInstance1";
+        final String createResponse = domain.asAdmin("create-instance", "--node", nodeName, instanceName);
+
+        final Executable listStoppedInstances = getListInstanceActionToWaitFor(domain, INSTANCE_STATUS_STOPPED);
+        waitFor(listStoppedInstances, 60 * 1000L);
+
+        final String listInstancesResponse = domain.asAdmin("list-instances");
+        assertNotNull(listInstancesResponse, "listInstancesResponse"); //
+        final List<String[]> instanceNamesAndStatuses = parseInstanceNameAndStatus(listInstancesResponse);
+        assertThat("instanceNamesAndStatuses", instanceNamesAndStatuses, hasSize(1)); //
+        assertThat("instances[0]", instanceNamesAndStatuses.get(0)[0], equalTo(instanceName));
+
+        final String listNodesResponse = domain.asAdmin("list-nodes");
+        assertNotNull(listNodesResponse, "listNodesResponse"); //
+        // default payara node + DockerNode1
+        final String[] nodes = listNodesResponse.split("\n");
+        assertThat("nodes", nodes, arrayWithSize(2)); //
+        assertAll( //
+            () -> assertThat("nodes[0]", nodes[0], equalTo("localhost-domain1")), //
+            () -> assertThat("nodes[1]", nodes[1], equalTo(nodeName)) //
+        ); //
+
+        final String deleteInstanceResponse = domain.asAdmin("delete-instance", instanceName);
+        assertEquals("Successfully removed instance " + instanceName + " from the DAS configuration," //
+            + " and removed the container from node " + nodeName + " (" + dockerNode.getHost() + ").", //
+            deleteInstanceResponse, "deleteInstanceResponse");
+
+        final String listInstancesResponseAfterDeletion = domain.asAdmin("list-instances");
+        assertThat("listInstancesResponseAfterStop", listInstancesResponseAfterDeletion,
+            stringContainsInOrder("Nothing to list."));
+
+        final Set<DockerContainerId> currentDockerIds = getDockerIds();
+        assertThat("currentDockerIds", currentDockerIds, hasSize(containersToPreserve.size()));
+        final DockerContainerId[] expectedIds = containersToPreserve
+            .toArray(new DockerContainerId[currentDockerIds.size()]);
+        assertThat("currentDockerIds", currentDockerIds, hasItems(expectedIds));
     }
 
 
@@ -223,26 +264,27 @@ public class DockerNodesITest extends DockerITest {
 
 
     private String getCreateContainerJSon(final PayaraServerContainer domain) {
-        final PayaraServerContainerConfiguration mainCfg = getDockerEnvironment().getConfiguration().getPayaraServerConfiguration();
+        final PayaraServerContainerConfiguration dasCfg = getDockerEnvironment().getConfiguration()
+            .getPayaraServerConfiguration();
         return "{\n" //
             + "\"Image\": \"payara/server-node:" + getTestConfiguration().getPayaraServerNodeTag() + "\",\n" //
                 + "\"HostConfig\": {\n" //
                 + "    \"Mounts\": [\n" //
                 + "      {\n" //
                 + "        \"Type\": \"bind\",\n" //
-                + "        \"Source\": \"" + mainCfg.getPasswordFile().getAbsolutePath() + "\",\n" //
+                + "        \"Source\": \"" + dasCfg.getPasswordFile().getAbsolutePath() + "\",\n" //
                 + "        \"Target\": \"/opt/payara/passwords/passwordfile.txt\",\n" //
                 + "        \"ReadOnly\": true\n" //
                 + "      }\n" //
                 + "    ],\n" //
                 + "    \"NetworkMode\": \"" + domain.getNetwork().getId() + "\",\n"
                 + "    \"ExtraHosts\": [\n" //
-                + "      \"" + mainCfg.getHost() + ":" + domain.getVirtualNetworkIpAddress() + "\"\n"
+                + "      \"" + dasCfg.getHost() + ":" + domain.getVirtualNetworkIpAddress() + "\"\n"
                 + "    ]\n"
                 + "  },\n" //
                 + "\"Env\": [\n" //
-                + "  \"PAYARA_DAS_HOST=" + mainCfg.getHost() + "\",\n" //
-                + "  \"PAYARA_DAS_PORT=" + mainCfg.getAdminPort() + "\",\n" //
+                + "  \"PAYARA_DAS_HOST=" + dasCfg.getHost() + "\",\n" //
+                + "  \"PAYARA_DAS_PORT=" + dasCfg.getAdminPort() + "\",\n" //
                 + "  \"PAYARA_NODE_NAME=TempNode1\"\n" //
                 + "]\n" //
                 + "}";
@@ -275,7 +317,8 @@ public class DockerNodesITest extends DockerITest {
         try (JsonReader jr = Json.createReader(new StringReader(line))) {
             final JsonArray jsonArray = jr.readArray();
             final Predicate<JsonObject> filter = v -> v.getString("Image").startsWith("payara/server-node:");
-            return jsonArray.stream().map(JsonValue::asJsonObject).filter(filter).map(converter::apply).collect(Collectors.toSet());
+            return jsonArray.stream().map(JsonValue::asJsonObject).filter(filter).map(converter::apply)
+                .collect(Collectors.toSet());
         }
     }
 
@@ -301,6 +344,7 @@ public class DockerNodesITest extends DockerITest {
 
         @Override
         public boolean equals(final Object o) {
+            LOG.trace("this: \n{}\nequals(o=\n{}\n)", this, o);
             if (o == null || !DockerContainerId.class.isInstance(o)) {
                 return false;
             }
