@@ -12,7 +12,6 @@ Payara Server currently supports the following Java Virtual Machines:
 * Azul Zulu JDK8 (u232+), Azul Zulu JDK 11 (11.0.5u10+)
 * OpenJDK JDK8 (u232+), OpenJDK 11 (11.0.5+)
 
-For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
 
 1. Installing Payara Server
 ===========================
