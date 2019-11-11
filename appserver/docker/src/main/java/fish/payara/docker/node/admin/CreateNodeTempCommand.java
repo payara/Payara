@@ -40,87 +40,71 @@
 
 package fish.payara.docker.node.admin;
 
-import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 /**
- * Asadmin command for deleting a Docker Node.
+ * Command to create a temporary node. A temporary node only exists as long as there are instances assinged to it, the
+ * intention behind this being for use in cloud environments to allow containers to manage their own nodes.
  *
- * @author Andrew Pielage
+ * @author AndrewPielage <andrew.pielage@payara.fish>
  */
-@Service(name = "delete-node-docker")
+@Service(name = "_create-node-temp")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
-@CommandLock(CommandLock.LockType.NONE)
-@TargetType(value = {CommandTarget.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-        @RestEndpoint(configBean= Nodes.class,
-                opType=RestEndpoint.OpType.DELETE,
-                path="delete-node-docker",
-                description="Deletes a Docker Node")
+        @RestEndpoint(configBean = Nodes.class,
+                opType = POST,
+                path = "_create-node-temp",
+                description = "Create Node Temp")
 })
-public class DeleteNodeDockerCommand implements AdminCommand {
+public class CreateNodeTempCommand implements AdminCommand {
 
     @Param(name = "name", primary = true)
-    private String name;
+    String name;
 
-    @Inject
-    private Nodes nodes;
+    @Param(name = "nodehost")
+    String nodehost;
 
     @Inject
     private CommandRunner commandRunner;
 
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the parameter names and the values are the parameter values
-     *
-     * @param context information
-     */
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
-        Node node = nodes.getNode(name);
-
-        if (node == null) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("No node found with given name: " + name);
-            return;
-        }
-
-        if (!(node.getType().equals("DOCKER"))) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("Node with given name is not a docker node: " + name);
-            return;
-
-        }
-
-        CommandRunner.CommandInvocation commandInvocation = commandRunner.getCommandInvocation(
-                "_delete-node", actionReport, context.getSubject());
+    public void execute(AdminCommandContext adminCommandContext) {
+        ActionReport actionReport = adminCommandContext.getActionReport();
+        CommandRunner.CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_create-node",
+                actionReport, adminCommandContext.getSubject());
         ParameterMap commandParameters = new ParameterMap();
-        commandParameters.add("DEFAULT", name);
-        commandInvocation.parameters(commandParameters);
 
+        commandParameters.add("DEFAULT", name);
+        if (StringUtils.ok(nodehost)) {
+            commandParameters.add(PARAM_NODEHOST, nodehost);
+        }
+        commandParameters.add(PARAM_TYPE, "TEMP");
+
+        commandInvocation.parameters(commandParameters);
         commandInvocation.execute();
+
+        if (actionReport.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+            commandInvocation.report().setMessage(name);
+        }
     }
 }

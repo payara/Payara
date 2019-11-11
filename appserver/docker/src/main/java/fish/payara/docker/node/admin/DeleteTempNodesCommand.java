@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,85 +42,80 @@ package fish.payara.docker.node.admin;
 
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 /**
- * Asadmin command for deleting a Docker Node.
+ * Command that deletes all temporary nodes that have no running instances.
  *
- * @author Andrew Pielage
+ * @author AndrewPielage <andrew.pielage@payara.fish>
  */
-@Service(name = "delete-node-docker")
+@Service(name = "_delete-temp-nodes")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
-@CommandLock(CommandLock.LockType.NONE)
-@TargetType(value = {CommandTarget.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-        @RestEndpoint(configBean= Nodes.class,
-                opType=RestEndpoint.OpType.DELETE,
-                path="delete-node-docker",
-                description="Deletes a Docker Node")
+        @RestEndpoint(configBean = Nodes.class,
+                opType = POST,
+                path = "_delete-temp-nodes",
+                description = "Deletes all temporary nodes not in use")
 })
-public class DeleteNodeDockerCommand implements AdminCommand {
-
-    @Param(name = "name", primary = true)
-    private String name;
+public class DeleteTempNodesCommand implements AdminCommand {
 
     @Inject
     private Nodes nodes;
 
     @Inject
+    private Servers servers;
+
+    @Inject
     private CommandRunner commandRunner;
 
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the parameter names and the values are the parameter values
-     *
-     * @param context information
-     */
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
-        Node node = nodes.getNode(name);
+        for (Node node : nodes.getNode()) {
+            if (node.getType().equals("TEMP") && commandRunner != null) {
+                ParameterMap parameterMap = new ParameterMap();
+                parameterMap.add("name", node.getName());
 
-        if (node == null) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("No node found with given name: " + name);
-            return;
+                // If the node still has instances registered to it, delete them if they're not running
+                if (node.nodeInUse()) {
+                    deleteServersOnNode(node, context);
+                } else {
+                    commandRunner.getCommandInvocation("_delete-node-temp",
+                            context.getActionReport(),
+                            context.getSubject())
+                            .parameters(parameterMap)
+                            .execute();
+                }
+            }
         }
+    }
 
-        if (!(node.getType().equals("DOCKER"))) {
-            // No node to delete nothing to do here
-            actionReport.setActionExitCode(FAILURE);
-            actionReport.setMessage("Node with given name is not a docker node: " + name);
-            return;
+    private void deleteServersOnNode(Node node, AdminCommandContext context) {
+        for (Server server : servers.getServersOnNode(node)) {
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("instance_name", server.getName());
 
+            // delete-instance command deletes TEMP nodes if their last instance is deleted.
+            commandRunner.getCommandInvocation("delete-instance",
+                    context.getActionReport(),
+                    context.getSubject())
+                    .parameters(parameterMap)
+                    .execute();
         }
-
-        CommandRunner.CommandInvocation commandInvocation = commandRunner.getCommandInvocation(
-                "_delete-node", actionReport, context.getSubject());
-        ParameterMap commandParameters = new ParameterMap();
-        commandParameters.add("DEFAULT", name);
-        commandInvocation.parameters(commandParameters);
-
-        commandInvocation.execute();
     }
 }
