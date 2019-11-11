@@ -61,10 +61,11 @@ public @interface FileIdentityStoreDefinition {
      *
      * @return
      */
-    String value();
+    String value() default "file";
 
     /**
-     * Optional. The location of file to store user credentials locally.
+     * Optional. The location of file to store user credentials locally. If no
+     * file name defined then by default realm name is used as file name.
      *
      * The file location can also be configured by using MicroProfile Config
      * property "payara.security.file".

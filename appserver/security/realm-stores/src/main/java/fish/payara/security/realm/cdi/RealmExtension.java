@@ -43,9 +43,7 @@ import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.security.auth.realm.file.FileRealm;
-import com.sun.enterprise.security.auth.realm.pam.PamRealm;
-import com.sun.enterprise.security.auth.realm.solaris.SolarisRealm;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.security.annotations.CertificateAuthenticationMechanismDefinition;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
@@ -68,9 +66,11 @@ import fish.payara.security.realm.identitystores.RealmIdentityStore;
 import fish.payara.security.realm.identitystores.SolarisRealmIdentityStore;
 import fish.payara.security.realm.mechanisms.CertificateAuthenticationMechanism;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -99,7 +99,11 @@ public class RealmExtension implements Extension {
 
     private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
 
+    private final Set<String> realms = new HashSet<>();
+
     private final List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
+
+    private SecurityService securityService;
 
     private static final Logger LOGGER = Logger.getLogger(RealmExtension.class.getName());
 
@@ -212,7 +216,7 @@ public class RealmExtension implements Extension {
         optionalStore.ifPresent(definition -> {
             validateDefinition(
                     definition.value(),
-                    FileRealmIdentityStore.REALM_CLASS.getName(),
+                    FileRealmIdentityStore.REALM_CLASS,
                     definition.jaasContext()
             );
             logActivatedIdentityStore(FileRealmIdentityStore.class, beanClass);
@@ -261,7 +265,7 @@ public class RealmExtension implements Extension {
         optionalStore.ifPresent(definition -> {
             validateDefinition(
                     definition.value(),
-                    CertificateRealmIdentityStore.REALM_CLASS.getName(),
+                    CertificateRealmIdentityStore.REALM_CLASS,
                     null
             );
             logActivatedIdentityStore(CertificateRealmIdentityStore.class, beanClass);
@@ -331,7 +335,7 @@ public class RealmExtension implements Extension {
         optionalStore.ifPresent(definition -> {
             validateDefinition(
                     definition.value(),
-                    PamRealmIdentityStore.REALM_CLASS.getName(),
+                    PamRealmIdentityStore.REALM_CLASS,
                     definition.jaasContext()
             );
             logActivatedIdentityStore(PamRealmIdentityStore.class, beanClass);
@@ -379,7 +383,7 @@ public class RealmExtension implements Extension {
         optionalStore.ifPresent(definition -> {
             validateDefinition(
                     definition.value(),
-                    SolarisRealmIdentityStore.REALM_CLASS.getName(),
+                    SolarisRealmIdentityStore.REALM_CLASS,
                     definition.jaasContext()
             );
             logActivatedIdentityStore(SolarisRealmIdentityStore.class, beanClass);
@@ -436,31 +440,36 @@ public class RealmExtension implements Extension {
 
     private void validateDefinition(RealmIdentityStoreDefinition definition) {
         String realmName = definition.value();
-        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-        SecurityService securityService = serviceLocator.getService(SecurityService.class);
-        boolean authRealmFound = securityService.getAuthRealm().stream()
+        if(realmName.isEmpty()) {
+            realmName = getSecurityService().getDefaultRealm();
+        }
+        boolean authRealmFound = getSecurityService().getAuthRealm().stream()
                 .map(authRealm -> authRealm.getName())
                 .anyMatch(realmName::equals);
         if (!authRealmFound) {
             throw new IllegalStateException(String.format(
-                    "%s: No such realm found.",
+                    "[%s] No such realm found.",
                     realmName
+            ));
+        }
+        if (!realms.add(realmName)) {
+            throw new IllegalStateException(String.format(
+                    "Duplicate realm name [%s] defined in RealmIdentityStoreDefinition.",
+                    definition.value()
             ));
         }
     }
 
     private static final Pattern SIMPLE_TEXT_PATTERN = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
 
-    private void validateDefinition(String name, String realm, String jaasContext) {
-        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-        SecurityService securityService = serviceLocator.getService(SecurityService.class);
-        for (AuthRealm authRealm : securityService.getAuthRealm()) {
-            if (authRealm.getName().equals(name)
-                    && !authRealm.getClassname().equals(realm)) {
+    private void validateDefinition(String realmName, Class realmClass, String jaasContext) {
+        for (AuthRealm authRealm : getSecurityService().getAuthRealm()) {
+            if (authRealm.getName().equals(realmName)
+                    && !authRealm.getClassname().equals(realmClass.getName())) {
                 throw new IllegalStateException(String.format(
                         "%s realm can't be created for realm class %s, as already registed with realm class %s.",
-                        name,
-                        realm,
+                        realmName,
+                        realmClass.getName(),
                         authRealm.getClassname()
                 ));
             }
@@ -471,6 +480,14 @@ public class RealmExtension implements Extension {
                     jaasContext
             ));
         }
+    }
+
+    private SecurityService getSecurityService() {
+        if (securityService == null) {
+            ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+            this.securityService = serviceLocator.getService(SecurityService.class);
+        }
+        return securityService;
     }
 
     protected void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {

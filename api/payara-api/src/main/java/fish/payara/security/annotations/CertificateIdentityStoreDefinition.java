@@ -61,7 +61,7 @@ public @interface CertificateIdentityStoreDefinition {
      *
      * @return
      */
-    String value();
+    String value() default "certificate";
 
     /**
      * Optional. Users are assigned membership to these groups for the purposes

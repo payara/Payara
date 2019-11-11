@@ -62,6 +62,6 @@ public @interface RealmIdentityStoreDefinition {
      *
      * @return
      */
-    String value();
+    String value() default "";
 
 }
