@@ -801,8 +801,6 @@ public class WebappClassLoader
         if (logger.isLoggable(Level.FINER))
             logger.log(Level.FINER, "addRepository({0})", repository);
 
-        int i;
-
         // Add this repository to our internal list
         String[] result = new String[repositories.length + 1];
         for (int i = 0; i < repositories.length; i++) {
@@ -1759,12 +1757,11 @@ public class WebappClassLoader
         int filesLength = files.length;
         int jarFilesLength = jarRealFiles.length;
         int length = filesLength + jarFilesLength + external.length;
-        int i;
 
         try {
 
             ArrayList<URL> urls = new ArrayList<URL>();
-            for (i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++) {
                 if (i < filesLength) {
                     urls.add(i, getURL(files[i]));
                 } else if (i < filesLength + jarFilesLength) {
