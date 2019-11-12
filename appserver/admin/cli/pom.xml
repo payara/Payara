@@ -78,6 +78,9 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>../../modules</classpathPrefix>
                         </manifest>
+                        <manifestEntries>
+                            <Class-Path>jna.jar jline-terminal-jna.jar</Class-Path>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
