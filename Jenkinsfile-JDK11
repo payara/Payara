@@ -48,7 +48,7 @@ pipeline {
                 jdk "zulu-11"
             }
             steps {
-                sh "rm *.zip"
+                sh "rm *.zip || true"
                 setupDomain()
             }
         }
