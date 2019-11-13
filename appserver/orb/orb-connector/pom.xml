@@ -99,8 +99,8 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
         </dependency>
        <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>

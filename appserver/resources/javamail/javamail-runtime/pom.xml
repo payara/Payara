@@ -110,8 +110,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
         </dependency>
         <dependency> <!-- for FindBugs -->
             <groupId>com.sun.mail</groupId>

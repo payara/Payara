@@ -75,7 +75,7 @@
                         <manifestEntries>
                             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                             <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-                            <Fragment-Host>javax.enterprise.cdi-api</Fragment-Host>
+                            <Fragment-Host>jakarta.enterprise.cdi-api</Fragment-Host>
                             <Import-Package>org.glassfish.weld</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description>
                         </manifestEntries>
