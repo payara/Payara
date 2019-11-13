@@ -52,27 +52,6 @@
     <packaging>pom</packaging>
     <description>Aggregator Module for Artefacts that exposes the public API of Payara Application Server</description>
 
-    <developers>
-        <developer>
-            <id>smillidge</id>
-            <name>Steve Millidge</name>
-            <url>http://www.payara.fish</url>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>mulderbaba</id>
-            <name>Mert Caliskan</name>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    
     <modules>
         <module>payara-api</module>
         <module>payara-bom</module>

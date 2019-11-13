@@ -58,59 +58,59 @@
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-web</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-ml</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-web-ml</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>ejb-http-client</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-embedded-web</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-embedded-all</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-micro</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-api</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
             </dependency>
 
             <!-- APIs -->
@@ -744,4 +744,20 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <properties>
+        <payara.version>${project.version}</payara.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <flattenMode>bom</flattenMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
