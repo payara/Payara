@@ -134,21 +134,24 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- Jakarta BOM. May be used in import scope by client instead of aggregate -->
             <dependency>
                 <groupId>jakarta.platform</groupId>
                 <artifactId>jakarta.jakartaee-bom</artifactId>
                 <version>${jakarta-platform.version}</version>
                 <type>pom</type>
-                <scope>import</scope>
             </dependency>
-            <!-- Microprofile APIs -->
+
+            <!-- Microprofile API release aggregate. Can also be used as a BOM -->
             <dependency>
                 <groupId>org.eclipse.microprofile</groupId>
                 <artifactId>microprofile</artifactId>
                 <version>${microprofile-release.version}</version>
                 <type>pom</type>
+                <scope>provided</scope>
             </dependency>
 
+            <!-- Individual Microprofile APIs - Payara may implement different bugfix releases -->
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
@@ -203,30 +206,35 @@
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>arquillian-payara-server-remote</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>arquillian-payara-server-embedded</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>arquillian-payara-server-managed</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>arquillian-payara-micro-managed</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>payara-micro-remote</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -234,6 +242,7 @@
                 <artifactId>payara-micro-deployer</artifactId>
                 <version>${payara-arquillian-container.version}</version>
                 <type>war</type>
+                <scope>test</scope>
             </dependency>
 
             <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
@@ -241,12 +250,14 @@
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>payara-client-ee8</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
                 <artifactId>payara-client-ee7</artifactId>
                 <version>${payara-arquillian-container.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Individual APIs -->
@@ -643,11 +654,6 @@
                         <artifactId>jsp-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${jakarta.el.version}</version>
             </dependency>
 
             <dependency>
