@@ -132,7 +132,7 @@ MonitoringConsole.Chart.Trace = (function() {
    function autoLink(text) {
       if (text.startsWith('http://') || text.startsWith('https://'))
          return $('<a/>', { href: text, text: text});
-      return $(document.createTextNode(text));
+      return $('<span/>', { text: text });
    }
 
    function addCustomTooltip(chart, spans) {

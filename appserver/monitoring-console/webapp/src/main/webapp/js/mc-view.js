@@ -250,8 +250,12 @@ MonitoringConsole.View = (function() {
         ]});
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
             { label: 'Unit', input: [
-                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Upscaling', input: [
+                { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value},
+                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked},
             ]},
             { label: 'Extra Lines', input: [
                 { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
@@ -339,7 +343,9 @@ MonitoringConsole.View = (function() {
         };
         return { id: 'settings-page', caption: 'Page', entries: [
             { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
-            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            { label: 'Page Rotation', input: [
+                { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            ]},
             { label: 'Add Widgets', input: () => 
                 $('<span/>')
                 .append(nsSelection)
@@ -400,7 +406,7 @@ MonitoringConsole.View = (function() {
             for (let n = 0; n < avgOffN; n++)
                 avg += points[points.length - 1 - (n * 2)];
             avg /= avgOffN;
-            let value = format(avg, widget.unit === 'bytes');
+            let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
             let item = { 

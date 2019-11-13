@@ -52,11 +52,12 @@ interval        = number
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, target, grid, axis, options, decorations, status }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status }
 series     = string
 target     = string
 type       = 'line' | 'bar'
 unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+scaleFactor= number
 grid       = { item, column, span }
 item       = number
 column     = number
@@ -69,10 +70,11 @@ options    = {
 	drawMaxLine:boolean,
 	drawAvgLine:boolean,
 	perSec:boolean,
+	decimalMetric:boolean,
 	noCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
-	noTimeLabels:boolean
+	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }
 waterline  = number
