@@ -3,7 +3,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -39,32 +39,10 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2019] Payara Foundation and/or affiliates
-#
 
+# Checks the version of Java installed, if it is 9+ then endorsed is not available
+checkEndorsedAvailable () {
+    ver=$("$JAVA" -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    return $ver
+}
 
-AS_INSTALL=`dirname "$0"`/..
-
-case "`uname`" in
-  CYGWIN*) AS_INSTALL=`cygpath --windows $AS_INSTALL`
-esac
-
-AS_INSTALL_LIB="$AS_INSTALL/modules"
-JAVAX_MAIL_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
-. "${AS_INSTALL}/config/asenv.conf"
-JAVA=java
-
-#Depends upon Java from ../config/asenv.conf
-if [ ${AS_JAVA} ]; then
-    JAVA=${AS_JAVA}/bin/java
-fi
-
-. $(dirname "$0")/jdkcheck
-checkEndorsedAvailable
-
-if [ $? -lt 9 ]
-then 
-    exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/aixporting-repackaged.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"
-else
-    exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/aixporting-repackaged.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"
-fi

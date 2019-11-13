@@ -114,6 +114,13 @@
             <artifactId>monitoring-console-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.monitoring-console</groupId>
+            <artifactId>monitoring-console-webapp</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 </project>
 

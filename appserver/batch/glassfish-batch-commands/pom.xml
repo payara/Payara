@@ -56,8 +56,8 @@
     <name>Batch Commands for Glassfish</name>
     <dependencies>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <groupId>jakarta.batch</groupId>
+            <artifactId>jakarta.batch-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
