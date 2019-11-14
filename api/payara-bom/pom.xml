@@ -514,6 +514,17 @@
                 <artifactId>jakarta.batch-api</artifactId>
                 <version>${jakarta.batch-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
+                <version>${websocket-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise.concurrent</groupId>
+                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                <version>${concurrent-api.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.osgi</groupId>
@@ -819,6 +830,12 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.enterprise.concurrent</artifactId>
+                <version>${concurrent.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>

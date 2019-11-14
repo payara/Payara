@@ -199,6 +199,9 @@
         <opentracing.version>0.31.0</opentracing.version>
         <javadb.version>10.13.1.1</javadb.version>
         <h2db.version>1.4.196</h2db.version>
+        <websocket-api.version>1.1.2</websocket-api.version>
+        <concurrent-api.version>1.1.2</concurrent-api.version>
+        <concurrent.version>1.0.payara-p2</concurrent.version>
     </properties>
 
     <profiles>

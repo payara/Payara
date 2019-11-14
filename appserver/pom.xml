@@ -60,9 +60,6 @@
 
     <properties>
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
-        <websocket-api.version>1.1.2</websocket-api.version>
-        <concurrent-api.version>1.1.2</concurrent-api.version>
-        <concurrent.version>1.0.payara-p2</concurrent.version>
         <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
         <!-- Java EE Security API -->
@@ -686,21 +683,6 @@
                 <groupId>org.glassfish.ha</groupId>
                 <artifactId>ha-api</artifactId>
                 <version>${ha-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.websocket</groupId>
-                <artifactId>jakarta.websocket-api</artifactId>
-                <version>${websocket-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise.concurrent</groupId>
-                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                <version>${concurrent-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.enterprise.concurrent</artifactId>
-                <version>${concurrent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
