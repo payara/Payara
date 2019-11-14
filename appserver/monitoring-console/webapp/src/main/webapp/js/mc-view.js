@@ -174,8 +174,7 @@ MonitoringConsole.View = (function() {
         return res;
     }
 
-    function formatSeriesName(widget) {
-        let series = widget.series;
+    function formatSeriesName(series) {
         let endOfTags = series.lastIndexOf(' ');
         let metric = endOfTags <= 0 ? series : series.substring(endOfTags + 1);
         if (endOfTags <= 0 )
@@ -201,7 +200,7 @@ MonitoringConsole.View = (function() {
         return text;
     }
 
-    function createWidgetToolbar(widget, expanded) {
+    function createWidgetToolbar(widget) {
         let series = widget.series;
         let menu = { groups: [
             { icon: '&#9881;', items: [
@@ -215,11 +214,12 @@ MonitoringConsole.View = (function() {
                 { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
             ]},
         ]};
+        let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
-            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
+            .append($('<h3/>', {title: 'Select '+series})
+                .html(title)
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.onMenuCreation(menu))
-            ;
+            .append(Components.onMenuCreation(menu));
     }
 
     function createGlobalSettings() {
@@ -241,6 +241,7 @@ MonitoringConsole.View = (function() {
         let thresholds = widget.decorations.thresholds;
         let settings = [];
         settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
+            { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
@@ -249,13 +250,16 @@ MonitoringConsole.View = (function() {
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
         ]});
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
-            { label: 'Upscaling', input: [
-                { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value},
-                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked},
+            { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
+                { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
+                    description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
+                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked,
+                    description: 'Values that are collected as decimal are converted to a integer with 4 fix decimal places. By checking this option this conversion is reversed to get back the original decimal range.'},
             ]},
             { label: 'Extra Lines', input: [
                 { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
@@ -288,7 +292,7 @@ MonitoringConsole.View = (function() {
             ]},                
             //TODO add color for each threshold
         ]});
-        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+        settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
@@ -360,7 +364,7 @@ MonitoringConsole.View = (function() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
-        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series, true);
         updateDomOfWidget(undefined, widget);
         updateSettings();
     }

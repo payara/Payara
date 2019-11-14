@@ -543,9 +543,17 @@ MonitoringConsole.Model = (function() {
 				doStore();
 			},
 			
-			select: function(series) {
-				let widget = pages[settings.home].widgets[series];
+			select: function(series, exclusive) {
+				let page = pages[settings.home];
+				let widget = page.widgets[series];
 				widget.selected = widget.selected !== true;
+				if (exclusive) {
+					Object.values(page.widgets).forEach(function(widget) {
+						if (widget.series != series) {
+							widget.selected = false;
+						}
+					});
+				}
 				doStore();
 				return widget.selected === true;
 			},
@@ -1111,11 +1119,11 @@ MonitoringConsole.Model = (function() {
 	            }),
 
 				moveUp: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span - 0.1);
+                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span);
 	            }),
 
 	            moveDown: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item += widget.grid.span + 0.1;
+                    widget.grid.item += widget.grid.span;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {

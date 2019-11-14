@@ -52,9 +52,10 @@ interval        = number
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName }
 series     = string
 target     = string
+displayName= string
 type       = 'line' | 'bar'
 unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 scaleFactor= number
