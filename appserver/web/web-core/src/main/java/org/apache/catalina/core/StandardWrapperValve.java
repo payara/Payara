@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina.core;
 
 import java.io.IOException;
@@ -72,7 +74,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpRequest;
@@ -83,6 +84,9 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.grizzly.http.util.DataChunk;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -117,6 +121,7 @@ final class StandardWrapperValve extends ValveBase {
         boolean unavailable = false;
         Throwable throwable = null;
         Servlet servlet = null;
+        ApplicationInfo applicationInfo = null;
 
         StandardWrapper wrapper = (StandardWrapper) getContainer();
         Context context = (Context) wrapper.getParent();
@@ -135,7 +140,23 @@ final class StandardWrapperValve extends ValveBase {
         RequestFacade hreq = (RequestFacade) request.getRequest(true);
         HttpServletResponse hres =
             (HttpServletResponse) response.getResponse();
+        
+        String contextPath = context.getServletContext().getContextPath();
+        
+        if (!contextPath.isEmpty()) {
+            ServiceLocator services = org.glassfish.internal.api.Globals.getDefaultHabitat();
+            ApplicationRegistry appRegistry = services.<ApplicationRegistry>getService(ApplicationRegistry.class);
+            applicationInfo = appRegistry.get(context.getServletContext().getContextPath().replace("/", ""));
+        }
 
+        if (applicationInfo != null) {
+            if (!applicationInfo.isLoaded()) {
+                hres.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.setDetailMessage(rb.getString(LogFacade.APP_UNAVAILABLE));
+                unavailable = true;
+            }           
+        }
+        
         // Check for the application being marked unavailable
         if (!context.getAvailable()) {
             // BEGIN S1AS 4878272
