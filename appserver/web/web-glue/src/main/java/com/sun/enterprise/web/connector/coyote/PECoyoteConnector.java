@@ -50,6 +50,16 @@ import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
+import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.web.util.IntrospectionUtils;
+import org.apache.catalina.*;
+import org.apache.catalina.connector.Connector;
+import org.glassfish.security.common.CipherInfo;
+import org.glassfish.web.LogFacade;
+import org.glassfish.web.admin.monitor.RequestProbeProvider;
+
+import javax.management.Notification;
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -59,16 +69,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.Notification;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.catalina.*;
-import org.apache.catalina.connector.Connector;
-import org.glassfish.grizzly.config.dom.*;
-import org.glassfish.security.common.CipherInfo;
-import org.glassfish.web.LogFacade;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
-import org.glassfish.web.util.IntrospectionUtils;
-
 import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
 import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
 import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
@@ -1193,13 +1193,10 @@ public class PECoyoteConnector extends Connector {
             if (host != null) {
                 hostName = host.getName();
             }
-
-            if (context.getAvailable()) {
-                requestProbeProvider.requestStartEvent(
-                        appName, hostName,
-                        request.getServerName(), request.getServerPort(),
-                        request.getContextPath(), request.getServletPath());
-            }
+            requestProbeProvider.requestStartEvent(
+                appName, hostName,
+                request.getServerName(), request.getServerPort(),
+                request.getContextPath(), request.getServletPath());
         }
     };
 
@@ -1461,4 +1458,5 @@ public class PECoyoteConnector extends Connector {
         return jsseCipher;
     }
 }
+
 
