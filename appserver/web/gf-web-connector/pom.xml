@@ -95,7 +95,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
-            <version>${weld-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

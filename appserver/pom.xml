@@ -741,6 +741,13 @@
                 <artifactId>maven-processor-plugin</artifactId>
                 <version>2.0.4</version>
             </dependency>
+            <!-- contrary to what BOM says, this processor is packaged with the server, and therefore needs compile scope -->
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
+                <version>${eclipselink.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
             <!--
                 only used to satisfy findbugs,

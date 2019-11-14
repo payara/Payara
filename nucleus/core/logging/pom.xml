@@ -91,7 +91,6 @@
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
