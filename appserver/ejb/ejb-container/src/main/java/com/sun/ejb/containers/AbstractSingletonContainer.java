@@ -57,6 +57,7 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
+
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -64,19 +65,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
 
 
-public abstract class AbstractSingletonContainer
-    extends BaseContainer {
+public abstract class AbstractSingletonContainer extends BaseContainer {
 
     private static final byte[] singletonInstanceKey = {0, 0, 0, 1};
 
@@ -94,8 +96,8 @@ public abstract class AbstractSingletonContainer
     // Data members for Remote business view. Any objects representing the
     // Remote business interface are not subtypes of EJBObject.
     private EJBObjectImpl theRemoteBusinessObjectImpl = null;
-    private Map<String, java.rmi.Remote> theRemoteBusinessStubs =
-        new HashMap<String, java.rmi.Remote>();
+    private final Map<String, java.rmi.Remote> theRemoteBusinessStubs =
+        new HashMap<>();
 
     // Information about a web service ejb endpoint.  Used as a conduit
     // between webservice runtime and ejb container.  Contains a Remote
@@ -118,8 +120,8 @@ public abstract class AbstractSingletonContainer
     protected volatile ComponentContext singletonCtx;
 
 
-    private InvocationInfo postConstructInvInfo;
-    private InvocationInfo preDestroyInvInfo;
+    private final InvocationInfo postConstructInvInfo;
+    private final InvocationInfo preDestroyInvInfo;
 
     protected final ClusteredSingletonLookup clusteredLookup = new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
@@ -146,7 +148,7 @@ public abstract class AbstractSingletonContainer
         postConstructInvInfo = new InvocationInfo();
         postConstructInvInfo.ejbName = ejbDescriptor.getName();
         postConstructInvInfo.methodIntf = MethodDescriptor.LIFECYCLE_CALLBACK;
-        postConstructInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPostConstructDescriptors());;
+        postConstructInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPostConstructDescriptors());
 
         preDestroyInvInfo = new InvocationInfo();
         preDestroyInvInfo.ejbName = ejbDescriptor.getName();
@@ -231,6 +233,7 @@ public abstract class AbstractSingletonContainer
         inv.setResourceHandler(SimpleEjbResourceHandlerImpl.getResourceHandler(transactionManager));
     }
 
+    @Override
     protected void initializeHome()
         throws Exception
     {
@@ -280,20 +283,24 @@ public abstract class AbstractSingletonContainer
                 Container.TX_REQUIRES_NEW, Container.TX_NOT_SUPPORTED);
     }
 
+    @Override
     protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
         _logger.log(Level.FINE, "[Singleton Container] registered monitorable");
     }
 
+    @Override
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
         // TODO - which stats provider to use?
         return new SingletonBeanStatsProvider(getContainerId(), appName, modName, ejbName);
     }
 
+    @Override
     public void onReady() {
     }
 
+    @Override
     public EJBObjectImpl createRemoteBusinessObjectImpl()
         throws CreateException, RemoteException
     {
@@ -310,6 +317,7 @@ public abstract class AbstractSingletonContainer
     /**
      *
      */
+    @Override
     public EJBObjectImpl createEJBObjectImpl()
         throws CreateException, RemoteException
     {
@@ -319,6 +327,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Called during client creation request through EJB LocalHome view.
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
     {
@@ -328,6 +337,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Called during internal creation of session bean
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {
@@ -340,6 +350,7 @@ public abstract class AbstractSingletonContainer
 
 
     // Doesn't apply to Singletons
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 	    boolean local)
 	throws RemoveException, EJBException, RemoteException
@@ -353,6 +364,7 @@ public abstract class AbstractSingletonContainer
      * during invocations on the Singleton do not result in the instance
      * being destroyed.
      */
+    @Override
     protected void forceDestroyBean(EJBContextImpl sc) {
     }
 
@@ -360,10 +372,12 @@ public abstract class AbstractSingletonContainer
     /**
      * Not applicable to Singletons
      */
+    @Override
     protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return null;
     }
 
+    @Override
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] instanceKey) {
         return theRemoteBusinessObjectImpl;
     }
@@ -371,6 +385,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Not applicable to Singletons
      */
+    @Override
     protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
         return null;
     }
@@ -379,6 +394,7 @@ public abstract class AbstractSingletonContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getEJBLocalBusinessObjectImpl(Object key) {
         return theEJBLocalBusinessObjectImpl;
     }
@@ -387,6 +403,7 @@ public abstract class AbstractSingletonContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getOptionalEJBLocalBusinessObjectImpl(Object key) {
         return theOptionalEJBLocalBusinessObjectImpl;
     }
@@ -451,8 +468,8 @@ public abstract class AbstractSingletonContainer
     }
 
     @Override
-    protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-	return new SingletonContextImpl(instance, this);
+    protected SingletonContextImpl _constructEJBContextImpl(Object instance) {
+        return new SingletonContextImpl(instance, this);
     }
 
     private EjbInvocation createInvocationAndPreInvoke(EjbInvocation ejbInv, Object ejb, SingletonContextImpl context) {
@@ -490,7 +507,7 @@ public abstract class AbstractSingletonContainer
                     }
                 }
                 else {
-                    context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
+                    context = _constructEJBContextImpl(singletonMap.get(sessionKey));
                     ejb = context.getEJB();
                     ejbInv = createInvocationAndPreInvoke(ejbInv, ejb, context);
                     createEmptyContextAndInterceptors(context);
@@ -598,6 +615,7 @@ public abstract class AbstractSingletonContainer
         return context;
     }
 
+    @Override
     protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
             throws Exception {
         if ( isRemote ) {
@@ -614,6 +632,7 @@ public abstract class AbstractSingletonContainer
         }
     }
 
+    @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
         if ( isBeanManagedTran ) {
@@ -634,46 +653,48 @@ public abstract class AbstractSingletonContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
+    @Override
     protected void checkExists(EJBLocalRemoteObject ejbObj)
     {
         // Doesn't apply to Singletons
     }
 
+    @Override
     protected void afterBegin(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void beforeCompletion(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
     }
 
     // default
+    @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
     }
 
+    /**
+     * @deprecated not called and not used in Payara 5
+     */
+    @Deprecated
     // default
-    public void activateEJB(Object ctx, Object instanceKey) {}
-
-/** TODO
-    public void appendStats(StringBuilder sbuf) {
-	sbuf.append("\nSingletonContainer: ")
-	    .append("CreateCount=").append(statCreateCount).append("; ")
-	    .append("RemoveCount=").append(statRemoveCount).append("; ")
-	    .append("]");
+    public void activateEJB(Object ctx, Object instanceKey) {
+        // dead code
     }
-**/
 
+    @Override
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
 
         ClassLoader originalCCL = null;
-
         try {
 
             originalCCL = Utility.setContextClassLoader(loader);
@@ -683,64 +704,38 @@ public abstract class AbstractSingletonContainer
                 singletonCtxFactory.destroy(singletonCtx);
             }
 
-            /*TODO
-            if ( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
-                String endpointAddress =
-                    webServiceEndpoint.getEndpointAddressUri();
-                WebServiceEjbEndpointRegistry.getRegistry().
-                    unregisterEjbWebServiceEndpoint(endpointAddress);
-            }
-
-            EjbBundleDescriptor desc = ejbDescriptor.getEjbBundleDescriptor();
-            if (desc != null && desc.getServiceReferenceDescriptors()!= null) {
-                for (Object srd : desc.getServiceReferenceDescriptors()) {
-                    ClientPipeCloser.getInstance()
-                    .cleanupClientPipe((ServiceReferenceDescriptor)srd);
-                }
-            }
-            */
-
-
-
-            if ( hasRemoteBusinessView ) {
-                for(RemoteBusinessIntfInfo next :
-                        remoteBusinessIntfInfo.values()) {
-                    next.referenceFactory.destroyReference
-                        (theRemoteBusinessObjectImpl.getStub
-                            (next.generatedRemoteIntf.getName()),
-                         theRemoteBusinessObjectImpl.getEJBObject
-                            (next.generatedRemoteIntf.getName()));
+            if (hasRemoteBusinessView) {
+                for (RemoteBusinessIntfInfo next : remoteBusinessIntfInfo.values()) {
+                    next.referenceFactory.destroyReference(
+                        theRemoteBusinessObjectImpl.getStub(next.generatedRemoteIntf.getName()),
+                        theRemoteBusinessObjectImpl.getEJBObject(next.generatedRemoteIntf.getName()));
                 }
             }
 
-
-        } catch(Throwable t) {
-
+        } catch (Throwable t) {
             _logger.log(Level.FINE, "Exception during Singleton shutdown", t);
-
         } finally {
-
             singletonCtxFactory = null;
             Utility.setContextClassLoader(originalCCL);
         }
     }
 
     public long getMethodReadyCount() {
-	return 0; //TODO FIXME
+        return 0;
     }
 
-    protected class SingletonContextFactory
-        implements ObjectFactory
-    {
+    protected class SingletonContextFactory implements ObjectFactory {
 
+        @Override
         public Object create(Object param) {
             try {
-                    return createSingletonEJB();
+                return createSingletonEJB();
             } catch (CreateException ex) {
-                    throw new EJBException(ex);
+                throw new EJBException(ex);
             }
         }
 
+        @Override
         public void destroy(Object obj) {
             SingletonContextImpl singletonCtx = (SingletonContextImpl) obj;
             // Note: Singletons cannot have incomplete transactions
@@ -748,7 +743,7 @@ public abstract class AbstractSingletonContainer
 
             // Only need to cleanup and destroy bean (andd call @PreDestroy)
             // if it successfully completed initialization.
-            if ( singletonCtx != null )  {
+            if (singletonCtx != null) {
 
                 Object sb = singletonCtx.getEJB();
 
@@ -757,13 +752,12 @@ public abstract class AbstractSingletonContainer
                 boolean doPreDestroy = true;
 
                 if (clusteredLookup.isClusteredEnabled()) {
-                    EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+                    EjbSessionDescriptor sessDesc = (EjbSessionDescriptor) ejbDescriptor;
                     IAtomicLong count = clusteredLookup.getClusteredUsageCount();
                     if (count.decrementAndGet() <= 0) {
                         clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
                         count.destroy();
-                    }
-                    else if (sessDesc.dontCallPreDestroyOnDetach()) {
+                    } else if (sessDesc.dontCallPreDestroyOnDetach()) {
                         doPreDestroy = false;
                     }
                 }
@@ -804,7 +798,6 @@ public abstract class AbstractSingletonContainer
                 }
 
                 cleanupInstance(singletonCtx);
-
                 singletonCtx.deleteAllReferences();
             }
         }
@@ -820,8 +813,5 @@ public abstract class AbstractSingletonContainer
     public int getSteadyPoolSize() {
         return 1;
     }
-
-    //The inner class ResourceHandlerImpl has been moved into its own (top level) class called
-    // SimpleEjbResourceHandlerImpl because it is now used by EjbInvocation.clone() method also.
 }
 
