@@ -59,41 +59,17 @@
     <name>Payara Appserver Parent Project</name>
 
     <properties>
-        <!-- EJB -->
-        <!-- JSP -->
-        <!-- JSTL -->
-        <!-- JSF -->
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
-        <!-- WebSocket -->
         <websocket-api.version>1.1.2</websocket-api.version>
-        <!-- JAX-B -->
-        <!-- JSON-B -->
-        <!-- JPA -->
-        <!-- JTA -->
-        <!-- Concurrency -->
         <concurrent-api.version>1.1.2</concurrent-api.version>
         <concurrent.version>1.0.payara-p2</concurrent.version>
-        <!-- Interceptor -->
-        <!-- CDI -->
-        <weld-bundle.version>3.1.1.Final</weld-bundle.version>
         <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
-        <!-- JACC -->
-        <!-- JASPIC -->
-        <!-- JMS -->
         <jna.version>5.2.0</jna.version>
         <jline-terminal-jna>3.11.0</jline-terminal-jna>
-        <!-- 5.1.1-b02.payara-p1 -->
-        <!-- Batch -->
-        <!-- JAX-WS -->
-        <!-- Metro Webservices is the JAX-WS impl -->
-        <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
-        <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
-        <!-- Deployment API (JSR 88) (deprecated/pruned) -->
-        <!-- Management API (JRS 77) -->
-        <!-- JAF -->
+
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
         <brief_product_name>Payara Server</brief_product_name>
