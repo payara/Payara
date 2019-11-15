@@ -595,34 +595,6 @@
                 </executions>
             </plugin>
 
-            <!-- force cleaning of the local repository
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>purge-local-dependencies</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>purge-local-repository</goal>
-                        </goals>
-                        <configuration>
-                            <resolutionFuzziness>groupId</resolutionFuzziness>
-                            <includes>
-                                <include>jakarta.ejb</include>
-                                <include>jakarta.transaction</include>
-                                <include>javax.resource</include>
-                                <include>javax.enterprise.concurrent</include>
-                                <include>javax.ws.rs</include>
-                                <include>javax.xml.registry</include>
-                                <include>javax.websocket</include>
-                                <include>org.glassfish.jersey</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-      -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>

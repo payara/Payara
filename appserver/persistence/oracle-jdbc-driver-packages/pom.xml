@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
     <name>GlassFish Oracle JDBC Packages</name>

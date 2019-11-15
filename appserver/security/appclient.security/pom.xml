@@ -47,11 +47,10 @@
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
-    </parent>    
+    </parent>
     <artifactId>appclient.security</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Appclient Security Integration</name>
     <developers>
         <developer>
@@ -71,7 +70,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -89,7 +88,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>

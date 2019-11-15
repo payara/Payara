@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-extra-jre-packages</artifactId>
     <name>GlassFish Extra JRE Packages</name>

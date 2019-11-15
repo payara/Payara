@@ -46,7 +46,6 @@
         <groupId>fish.payara.server.internal.grizzly</groupId>
         <artifactId>glassfish-grizzly</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-grizzly-container</artifactId>

@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-batch-connector</artifactId>

@@ -48,7 +48,6 @@
 	<groupId>fish.payara.server.internal.web</groupId>
     	<artifactId>web</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>weld-integration-test-fragment</artifactId>
     <name>Fragment bundle for Weld related testing</name>

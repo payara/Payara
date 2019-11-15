@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-  
+
    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
-  
+
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
    and Distribution License("CDDL") (collectively, the "License").  You
@@ -12,20 +12,20 @@
    https://github.com/payara/Payara/blob/master/LICENSE.txt
    See the License for the specific
    language governing permissions and limitations under the License.
-  
+
    When distributing the software, include this License Header Notice in each
    file and include the License file at glassfish/legal/LICENSE.txt.
-  
+
    GPL Classpath Exception:
    The Payara Foundation designates this particular file as subject to the "Classpath"
    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
    file that accompanied this code.
-  
+
    Modifications:
    If applicable, add the following below the License Header, with the fields
    enclosed by brackets [] replaced by your own identifying information:
    "Portions Copyright [year] [name of copyright owner]"
-  
+
    Contributor(s):
    If you wish your version of this file to be governed by only the CDDL or
    only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -38,7 +38,7 @@
    only if the new code is made subject to such option by the copyright
    holder.
 -->
-<project 
+<project
     xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -54,9 +54,9 @@
     <description>This pom describes how to assemble the Payara Monitoring Console package</description>
 
     <properties>
-        <temp.dir>${project.build.directory}/dependency</temp.dir>       
-    </properties> 
-    
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -81,29 +81,28 @@
                 </executions>
             </plugin>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-dependency-plugin</artifactId>
-              <version>2.8</version>
-              <executions>
-                <execution>
-                  <id>unpack</id>
-                  <phase>generate-sources</phase>
-                  <goals>
-                    <goal>unpack</goal>
-                  </goals>
-                  <configuration>
-                    <artifactItems>
-                      <artifactItem>
-                        <groupId>fish.payara.server.monitoring-console</groupId>
-                        <artifactId>monitoring-console-webapp</artifactId>
-                        <version>${project.version}</version>
-                        <type>war</type>
-                        <outputDirectory>target/stage/payara5/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
-                      </artifactItem>
-                    </artifactItems>
-                  </configuration>
-                </execution>
-              </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>fish.payara.server.monitoring-console</groupId>
+                                    <artifactId>monitoring-console-webapp</artifactId>
+                                    <type>war</type>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>target/stage/payara5/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

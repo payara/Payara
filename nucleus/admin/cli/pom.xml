@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>admin-cli</artifactId>
     <packaging>glassfish-jar</packaging>

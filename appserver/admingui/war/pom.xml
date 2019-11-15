@@ -45,12 +45,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server</groupId>
-        <artifactId>payara-parent</artifactId>
+        <groupId>fish.payara.server.internal.admingui</groupId>
+        <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
     <name>Admin Console WAR</name>
@@ -124,43 +122,49 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <!-- following provided scopes are to avoid maven-war-plugin's resolution of libs directory, -->
         <!-- because we need these dependencies in extra directory -->
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>dataprovider</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.sun.woodstock.dependlibs</groupId>
             <artifactId>dojo-ajax-nodemo</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock.dependlibs</groupId>
             <artifactId>json</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock.dependlibs</groupId>
             <artifactId>prototype</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock</groupId>
             <artifactId>webui-jsf</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock</groupId>
             <artifactId>webui-jsf-suntheme</artifactId>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

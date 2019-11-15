@@ -47,16 +47,11 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-jms-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
-    <name>Admin Console JMS Plugin</name>
 
-    <developers>
-        <!-- See parent POM -->
-    </developers>
+    <name>Admin Console JMS Plugin</name>
 
     <build>
         <plugins>
@@ -71,9 +66,6 @@
                         <supportedProjectType>bundle</supportedProjectType>
                     </supportedProjectTypes>
                     <instructions>
-                        <!-- _include does not work. See Felix-620.
-                        <_include>osgi.bundle</_include>
-                        -->
                         <Export-Package>org.glassfish.jdbc.admingui</Export-Package>
                     </instructions>
                 </configuration>
@@ -138,9 +130,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.messaging.mq</groupId>
-            <artifactId>imqjmx</artifactId>
-            <scope>provided</scope>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

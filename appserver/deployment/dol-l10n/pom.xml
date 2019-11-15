@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dol-l10n</artifactId>
     
