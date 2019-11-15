@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-core</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -86,10 +85,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
@@ -100,6 +95,20 @@
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>dataprovider</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.woodstock</groupId>
+            <artifactId>webui-jsf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

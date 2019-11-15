@@ -44,12 +44,11 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>payara-support</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Support</name>
-        
+
     <developers>
         <!-- See parent POM -->
     </developers>
@@ -120,6 +119,10 @@
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

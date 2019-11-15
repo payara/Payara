@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>core</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>javaee-kernel</artifactId>
     <packaging>glassfish-jar</packaging>

@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.appclient</groupId>
         <artifactId>appclient</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>server</artifactId>
     <packaging>pom</packaging>

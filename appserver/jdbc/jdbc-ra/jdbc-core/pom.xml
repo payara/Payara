@@ -48,7 +48,6 @@
     <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
     <artifactId>jdbc-ra</artifactId>
     <version>5.194-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core</groupId>

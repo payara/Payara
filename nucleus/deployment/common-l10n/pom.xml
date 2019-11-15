@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-common-l10n</artifactId>
