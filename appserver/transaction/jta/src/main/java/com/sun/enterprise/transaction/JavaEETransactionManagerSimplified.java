@@ -761,11 +761,7 @@ public class JavaEETransactionManagerSimplified
     @Override
     public boolean isTimedOut() {
         JavaEETransaction tx = transactions.get();
-        if ( tx != null) {
-            return tx.isTimedOut();
-        } else {
-            return false;
-        }
+        return tx == null ? false : tx.isTimedOut();
     }
 
     /**
@@ -795,7 +791,7 @@ public class JavaEETransactionManagerSimplified
     @Override
     public void checkTransactionExport(boolean isLocal) {
 
-        if ( isLocal ) {
+        if (isLocal) {
             // Put a counter in TLS indicating this is a local call.
             // Use int[1] as a mutable java.lang.Integer!
             int[] count = localCallCounter.get();
@@ -808,17 +804,13 @@ public class JavaEETransactionManagerSimplified
         }
 
         JavaEETransaction tx = transactions.get();
-        if ( tx == null ) {
-            return;
-        }
-
-        if ( !tx.isLocalTx() ) {
+        if (tx == null || !tx.isLocalTx()) {
             return;
         }
 
         // Check if a local tx with non-XA resource is being exported.
         // XXX what if this is a call on a non-transactional remote object ?
-        if ( tx.getNonXAResource() != null ) {
+        if (tx.getNonXAResource() != null) {
             throw new RuntimeException(sm.getString("enterprise_distributedtx.cannot_export_transaction_having_nonxa"));
         }
 

@@ -142,7 +142,7 @@ public class EJBContainerTransactionManager {
         // Get existing Tx status: this tells us if the client
         // started a transaction which was propagated on this invocation.
         final Integer preInvokeTxStatus = inv.getPreInvokeTxStatus();
-        final int status = (preInvokeTxStatus != null) ? preInvokeTxStatus.intValue() : transactionManager.getStatus();
+        final int status = preInvokeTxStatus == null ? transactionManager.getStatus() : preInvokeTxStatus.intValue();
 
         // For MessageDrivenBeans,ejbCreate/ejbRemove must be called without a Tx.
         // For StatelessSessionBeans, ejbCreate/ejbRemove must be called without a Tx.
@@ -171,13 +171,7 @@ public class EJBContainerTransactionManager {
         // (i.e. a tx context with a null Coordinator objref)
         // or if this server's tx interop mode flag is false.
         // Follow the tables in EJB2.0 sections 19.6.2.2.1 and 19.6.2.2.2.
-        final boolean isNullTx;
-        if (inv.isRemote) {
-            isNullTx = transactionManager.isNullTransaction();
-        } else {
-            isNullTx = false;
-        }
-
+        final boolean isNullTx = inv.isRemote ? transactionManager.isNullTransaction() : false;
         final int txAttr = container.getTxAttr(inv);
         final EJBContextImpl context = (EJBContextImpl)inv.context;
 
@@ -406,7 +400,7 @@ public class EJBContainerTransactionManager {
                     final TransactionRolledbackLocalException toThrow = new TransactionRolledbackLocalException("", ex);
                     try {
                         transactionManager.setRollbackOnly();
-                    } catch ( Exception e ) {
+                    } catch (Exception e) {
                         toThrow.addSuppressed(e);
 					}
                     throw toThrow;
@@ -465,11 +459,7 @@ public class EJBContainerTransactionManager {
                 // NotSupported and Never are handled in the same way
                 // EJB2.0 sections 17.6.2.1, 17.6.2.6.
                 // EJB executed in no Tx
-                if (oriException == null) {
-                    newException = null;
-                } else {
-                    newException = checkExceptionNoTx(context, oriException);
-                }
+                newException = checkExceptionNoTx(context, oriException);
                 container.postInvokeNoTx(inv);
 
                 if (inv.clientTx != null) {
@@ -482,11 +472,7 @@ public class EJBContainerTransactionManager {
             case Container.TX_MANDATORY:
                 // EJB2.0 section 18.3.1, Table 15
                 // EJB executed in client's Tx
-                if (oriException == null) {
-                    newException = null;
-                } else {
-                    newException = checkExceptionClientTx(context, oriException);
-                }
+                newException = checkExceptionClientTx(context, oriException);
                 break;
 
             case Container.TX_REQUIRED:
@@ -496,11 +482,7 @@ public class EJBContainerTransactionManager {
                     newException = completeNewTx(context, oriException, status);
                 } else {
                     // EJB executed in client's tx
-                    if (oriException == null) {
-                        newException = null;
-                    } else {
-                        newException = checkExceptionClientTx(context, oriException);
-                    }
+                    newException = checkExceptionClientTx(context, oriException);
                 }
                 break;
 
@@ -519,18 +501,10 @@ public class EJBContainerTransactionManager {
                 // EJB2.0 section 18.3.1, Table 15
                 if (status != Status.STATUS_NO_TRANSACTION) {
                     // EJB executed in client's tx
-                    if (oriException == null) {
-                        newException = null;
-                    } else {
-                        newException = checkExceptionClientTx(context, oriException);
-                    }
+                    newException = checkExceptionClientTx(context, oriException);
                 } else {
                     // EJB executed in no Tx
-                    if (oriException == null) {
-                        newException = null;
-                    } else {
-                        newException = checkExceptionNoTx(context, oriException);
-                    }
+                    newException = checkExceptionNoTx(context, oriException);
                     container.postInvokeNoTx(inv);
                 }
                 break;
@@ -572,9 +546,6 @@ public class EJBContainerTransactionManager {
             return exception.getCause();
         } else if (status == Status.STATUS_NO_TRANSACTION) {
             // EJB was invoked, EJB's Tx is complete.
-            if (exception == null) {
-                return exception;
-            }
             return checkExceptionNoTx(context, exception);
         } else {
             // EJB was invoked, EJB's Tx is incomplete.
@@ -603,6 +574,10 @@ public class EJBContainerTransactionManager {
 
     private Throwable checkExceptionNoTx(EJBContextImpl context, Throwable exception) throws EJBException {
         LOG.finest(() -> String.format("checkExceptionNoTx(context=%s, exception=%s)", context, exception));
+        if (exception == null) {
+            return null;
+        }
+
         if (exception instanceof BaseContainer.PreInvokeException) {
             // A PreInvokeException was thrown, so bean was not invoked
             return exception.getCause();
@@ -621,6 +596,9 @@ public class EJBContainerTransactionManager {
     // Can be called by the BaseContainer - do not make it private
     Throwable checkExceptionClientTx(EJBContextImpl context, Throwable exception) throws SystemException {
         LOG.finest(() -> String.format("checkExceptionClientTx(context=%s, exception=%s)", context, exception));
+        if (exception == null) {
+            return null;
+        }
         if (exception instanceof BaseContainer.PreInvokeException) {
             // A PreInvokeException was thrown, so bean was not invoked
             return exception.getCause();

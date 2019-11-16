@@ -1063,7 +1063,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
         _logger.log(Level.FINE, "containers.mdb.shutdown_cleanup_start",
                 appEJBName_);
-        monitorOn = false;
         cleanupResources();
         _logger.log(Level.FINE, "containers.mdb.shutdown_cleanup_end",
                 appEJBName_);

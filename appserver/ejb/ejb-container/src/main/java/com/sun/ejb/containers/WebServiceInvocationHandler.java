@@ -139,7 +139,7 @@ public final class WebServiceInvocationHandler extends EJBLocalRemoteObject
             inv.invocationInfo = (InvocationInfo) invocationInfoMap_.get(inv.method);
 
             if (inv.invocationInfo == null) {
-                throw new EJBException("Web service Invocation Info lookup failed for " + "method " + inv.method);
+                throw new EJBException("Web service Invocation Info lookup failed for method " + inv.method);
             }
 
             inv.transactionAttribute = inv.invocationInfo.txAttr;
