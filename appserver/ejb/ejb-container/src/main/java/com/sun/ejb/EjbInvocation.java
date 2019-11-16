@@ -92,7 +92,6 @@ public class EjbInvocation //
 
     private TransactionOperationsManager transactionOperationsManager;
 
-
     /**
      * The EJBObject/EJBLocalObject which created this EjbInvocation object.
      * This identifies the target bean.
@@ -268,10 +267,10 @@ public class EjbInvocation //
 
     public Method beanMethod;
 
-    // Only set for web service invocations.
+    /** Only set for web service invocations. */
     private WebServiceContext webServiceContext;
 
-    // Only set for EJB JAXWS
+    /** Only set for EJB JAXWS */
     // FIXME: private Message message = null;
     private Object message;
 
@@ -686,28 +685,30 @@ public class EjbInvocation //
             setWebServiceMethod(null);
             return true;
         }
-        Exception ie;
+        final Exception ie = authorizeWebServiceAndSetMethod(m);
+        if (ie == null) {
+            return true;
+        }
+        exception = ie;
+        throw ie;
+	}
+
+    private Exception authorizeWebServiceAndSetMethod(Method m) {
         try {
             this.method = m;
             if (((com.sun.ejb.Container) container).authorize(this)) {
                 // Record the method on which the successful
                 // authorization check was performed.
                 setWebServiceMethod(m);
-                ie = null;
-            } else {
-                ie = new Exception("Client not authorized for invocation of method {" + method + "}");
+                return null;
             }
+            return new Exception("Client not authorized for invocation of method {" + method + "}");
         } catch (Exception e) {
             String errorMsg = "Error unmarshalling method {" + method + "} for ejb ";
-            ie = new UnmarshalException(errorMsg, e);
+            // note: this exception is undeclared, but catched!
+            return new UnmarshalException(errorMsg, e);
         }
-        if (ie == null) {
-            return true;
-        }
-        // ie was only created or catched, it does not matter here
-        exception = ie;
-        throw ie;
-	}
+    }
 
     /**
      * @return true if the SecurityManager reports that the caller is in role

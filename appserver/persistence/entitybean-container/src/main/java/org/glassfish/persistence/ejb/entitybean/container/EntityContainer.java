@@ -1243,8 +1243,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
      * Remove a bean. Used by the PersistenceManager.
      * This is needed because the PM's remove must bypass tx/security checks.
      */
-    private void internalRemoveBeanUnchecked(EJBLocalRemoteObject localRemoteObj,
-            boolean local) {
+    private void internalRemoveBeanUnchecked(EJBLocalRemoteObject localRemoteObj, boolean local) {
         EjbInvocation inv = super.createEjbInvocation();
         inv.ejbObject = localRemoteObj;
         inv.isLocal = local;
@@ -1252,11 +1251,10 @@ public class EntityContainer extends BaseContainer implements CacheListener {
         Method method=null;
         try {
             method = EJBLocalObject.class.getMethod("remove", NO_PARAMS);
-        } catch ( NoSuchMethodException e ) {
+        } catch (NoSuchMethodException e) {
             _logger.log(Level.FINE, "Exception in internalRemoveBeanUnchecked()", e);
         }
         inv.method = method;
-
         inv.invocationInfo = invocationInfoMap.get(method);
 
         try {
@@ -1266,17 +1264,15 @@ public class EntityContainer extends BaseContainer implements CacheListener {
             // based on remove's txAttr.
             // Assume there is a tx on the current thread.
             EntityContextImpl context = getEJBWithIncompleteTx(inv);
-            if ( context == null ) {
+            if (context == null) {
                 context = getReadyEJB(inv);
             }
 
-            synchronized ( context ) {
-                if ( context.isInState(BeanState.INVOKING) && !isReentrant ) {
-                    throw new EJBException(
-                        "EJB is already executing another request");
+            synchronized (context) {
+                if (context.isInState(BeanState.INVOKING) && !isReentrant) {
+                    throw new EJBException("EJB is already executing another request");
                 }
-                if (context.isInState(BeanState.POOLED) ||
-                    context.isInState(BeanState.DESTROYED)) {
+                if (context.isInState(BeanState.POOLED) || context.isInState(BeanState.DESTROYED)) {
                     // somehow a concurrent thread must have changed state.
                     // this is an internal error.
                     throw new EJBException("Internal error: unknown EJB state");
@@ -1298,28 +1294,21 @@ public class EntityContainer extends BaseContainer implements CacheListener {
             try {
                 context.setCascadeDeleteBeforeEJBRemove(true);
                 removeBean(inv);
-            } catch ( Exception ex ) {
-                _logger.log(Level.FINE,
-                    "Exception in internalRemoveBeanUnchecked()", ex);
+            } catch (Exception ex) {
+                _logger.log(Level.FINE, "Exception in internalRemoveBeanUnchecked()", ex);
                 // if system exception mark the tx for rollback
                 inv.exception = checkExceptionClientTx(context, ex);
             }
-            if ( inv.exception != null ) {
+            if (inv.exception != null) {
                 throw inv.exception;
             }
-        }
-        catch ( RuntimeException ex ) {
+        } catch (RuntimeException ex) {
             throw ex;
-        }
-        catch ( Exception ex ) {
+        } catch (Exception ex) {
             throw new EJBException(ex);
-        }
-        catch ( Throwable ex ) {
-            EJBException ejbEx = new EJBException();
-            ejbEx.initCause(ex);
-            throw ejbEx;
-        }
-        finally {
+        } catch (Throwable ex) {
+            throw (EJBException) new EJBException().initCause(ex);
+        } finally {
             invocationManager.postInvoke(inv);
             releaseContext(inv);
         }
@@ -1348,15 +1337,14 @@ public class EntityContainer extends BaseContainer implements CacheListener {
         synchronized ( context ) {
             try {
                 Object primaryKey = context.getPrimaryKey();
-                if ( primaryKey != null ) {
-                    if ( context.getTransaction() != null ) {
+                if (primaryKey != null) {
+                    if (context.getTransaction() != null) {
                         Transaction txCurrent = context.getTransaction();
-			ActiveTxCache activeTxCache = (ActiveTxCache)
-			    ejbContainerUtilImpl.getActiveTxCache(txCurrent);
-                        if (activeTxCache !=  null) {
-			    // remove the context from the store
-			    activeTxCache.remove(this, primaryKey);
-			}
+                        ActiveTxCache activeTxCache = (ActiveTxCache) ejbContainerUtilImpl.getActiveTxCache(txCurrent);
+                        if (activeTxCache != null) {
+                            // remove the context from the store
+                            activeTxCache.remove(this, primaryKey);
+                        }
                     }
 
                     // remove the context from readyStore as well

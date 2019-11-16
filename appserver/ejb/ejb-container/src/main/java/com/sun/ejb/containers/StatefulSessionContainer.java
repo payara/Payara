@@ -408,29 +408,28 @@ public final class StatefulSessionContainer
 
         if (SessionSynchronization.class.isAssignableFrom(ejbClass)) {
             try {
-                afterBeginMethod = ejbClass.getMethod("afterBegin", null);
-                beforeCompletionMethod = ejbClass.getMethod("beforeCompletion", null);
+                afterBeginMethod = ejbClass.getMethod("afterBegin");
+                beforeCompletionMethod = ejbClass.getMethod("beforeCompletion");
                 afterCompletionMethod = ejbClass.getMethod("afterCompletion", Boolean.TYPE);
             } catch (Exception e) {
                 _logger.log(Level.WARNING, EXCEPTION_WHILE_INITIALIZING_SESSION_SYNCHRONIZATION, e);
             }
         } else {
-
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDescriptor;
-	        MethodDescriptor afterBeginMethodDesc = sessionDesc.getAfterBeginMethod();
-            if( afterBeginMethodDesc != null ) {
+            MethodDescriptor afterBeginMethodDesc = sessionDesc.getAfterBeginMethod();
+            if (afterBeginMethodDesc != null) {
                 afterBeginMethod = afterBeginMethodDesc.getDeclaredMethod(sessionDesc);
                 processSessionSynchMethod(afterBeginMethod);
             }
 
-	        MethodDescriptor beforeCompletionMethodDesc = sessionDesc.getBeforeCompletionMethod();
-            if( beforeCompletionMethodDesc != null ) {
+            MethodDescriptor beforeCompletionMethodDesc = sessionDesc.getBeforeCompletionMethod();
+            if (beforeCompletionMethodDesc != null) {
                 beforeCompletionMethod = beforeCompletionMethodDesc.getDeclaredMethod(sessionDesc);
                 processSessionSynchMethod(beforeCompletionMethod);
             }
 
-	        MethodDescriptor afterCompletionMethodDesc = sessionDesc.getAfterCompletionMethod();
-            if( afterCompletionMethodDesc != null ) {
+            MethodDescriptor afterCompletionMethodDesc = sessionDesc.getAfterCompletionMethod();
+            if (afterCompletionMethodDesc != null) {
                 afterCompletionMethod = afterCompletionMethodDesc.getDeclaredMethod(sessionDesc);
                 if (afterCompletionMethod == null) {
                     afterCompletionMethod = afterCompletionMethodDesc.getDeclaredMethod( //
@@ -438,7 +437,7 @@ public final class StatefulSessionContainer
                 }
                 processSessionSynchMethod(afterCompletionMethod);
             }
-	    }
+        }
     }
 
     private void processSessionSynchMethod(Method sessionSynchMethod) throws Exception {
@@ -462,12 +461,11 @@ public final class StatefulSessionContainer
     @Override
     protected void checkUnfinishedTx(Transaction prevTx, EjbInvocation inv) {
         try {
-            if ( inv.invocationInfo.isBusinessMethod && prevTx != null &&
-                prevTx.getStatus() != Status.STATUS_NO_TRANSACTION ) {
+            if (inv.invocationInfo.isBusinessMethod && prevTx != null
+                && prevTx.getStatus() != Status.STATUS_NO_TRANSACTION) {
                 // An unfinished tx exists for the bean.
                 // so we cannot invoke the bean with no Tx or a new Tx.
-                throw new IllegalStateException(
-                    "Bean is associated with a different unfinished transaction");
+                throw new IllegalStateException("Bean is associated with a different unfinished transaction");
             }
         } catch (SystemException ex) {
             _logger.log(Level.FINE, "Exception in checkUnfinishedTx", ex);
@@ -478,26 +476,23 @@ public final class StatefulSessionContainer
 
     protected void loadCheckpointInfo() {
         try {
-            if (isHAEnabled) {
-                Iterator<InvocationInfo> iter = invocationInfoMap.values().iterator();
-                while (iter.hasNext()) {
-                    InvocationInfo info = iter.next();
-                    info.checkpointEnabled = false;
-                    MethodDescriptor md = new MethodDescriptor(info.method, info.methodIntf);
-                    IASEjbExtraDescriptors extraDesc = ejbDescriptor.getIASEjbExtraDescriptors();
-                    if (extraDesc != null) {
-                        CheckpointAtEndOfMethodDescriptor cpDesc = extraDesc.getCheckpointAtEndOfMethodDescriptor();
-                        if (cpDesc != null) {
-                            info.checkpointEnabled = cpDesc.isCheckpointEnabledFor(md);
-                        }
+            if (!isHAEnabled) {
+                return;
+            }
+            for (InvocationInfo info : invocationInfoMap.values()) {
+                info.checkpointEnabled = false;
+                MethodDescriptor md = new MethodDescriptor(info.method, info.methodIntf);
+                IASEjbExtraDescriptors extraDesc = ejbDescriptor.getIASEjbExtraDescriptors();
+                if (extraDesc != null) {
+                    CheckpointAtEndOfMethodDescriptor cpDesc = extraDesc.getCheckpointAtEndOfMethodDescriptor();
+                    if (cpDesc != null) {
+                        info.checkpointEnabled = cpDesc.isCheckpointEnabledFor(md);
                     }
+                }
 
-                    if (info.checkpointEnabled) {
-                        if (_logger.isLoggable(Level.FINE)) {
-                            _logger.log(Level.FINE,
-                                "[SFSBContainer] " + info.method + " MARKED for " + "end-of-method-checkpoint");
-                        }
-                    }
+                if (info.checkpointEnabled) {
+                    _logger.log(Level.FINE,
+                        () -> "[SFSBContainer] " + info.method + " MARKED for end-of-method-checkpoint");
                 }
             }
         } catch (Exception ex) {
@@ -1143,16 +1138,13 @@ public final class StatefulSessionContainer
             }
 
             // call ejbRemove on the EJB
-            if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "[SFSBContainer] Removing " + "session: " + sc.getInstanceKey());
-            }
+            _logger.log(FINE, () -> "[SFSBContainer] Removing session: " + sc.getInstanceKey());
 
             sc.setInEjbRemove(true);
             try {
                 destroyBean(inv, sc);
             } catch (Throwable t) {
-                _logger.log(Level.FINE,
-                        "exception thrown from SFSB PRE_DESTROY", t);
+                _logger.log(Level.FINE, "exception thrown from SFSB PRE_DESTROY", t);
             } finally {
                 sc.setInEjbRemove(false);
             }
@@ -1189,10 +1181,7 @@ public final class StatefulSessionContainer
             sc.setState(BeanState.DESTROYED);
             cleanupInstance(ctx);
 
-            if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "[SFSBContainer] (Force)Destroying " + "session: " + sc.getInstanceKey());
-            }
-
+            _logger.log(FINE, () -> "[SFSBContainer] (Force)Destroying session: " + sc.getInstanceKey());
 
             Transaction prevTx = sc.getTransaction();
             try {
@@ -1298,16 +1287,16 @@ public final class StatefulSessionContainer
 
     @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
-        if (isBeanManagedTran) {
-            if (inv instanceof EjbInvocation) {
-                SessionContextImpl sc = (SessionContextImpl) ((EjbInvocation) inv).context;
-                // This will prevent setSessionContext access to
-                // UserTransaction methods.
-                return sc.getInstanceKey() != null;
-            }
-            return true;
+        if (!isBeanManagedTran) {
+            return false;
         }
-        return false;
+        if (inv instanceof EjbInvocation) {
+            SessionContextImpl sc = (SessionContextImpl) ((EjbInvocation) inv).context;
+            // This will prevent setSessionContext access to
+            // UserTransaction methods.
+            return sc.getInstanceKey() != null;
+        }
+        return true;
     }
 
 
@@ -1328,7 +1317,7 @@ public final class StatefulSessionContainer
 
                 if (_logger.isLoggable(FINE)) {
                     SessionContextImpl sc = (SessionContextImpl) ctx;
-                    _logger.log(FINE, "[SFSBContainer] Removing TIMEDOUT " + "session: " + sc.getInstanceKey());
+                    _logger.log(FINE, "[SFSBContainer] Removing TIMEDOUT session: " + sc.getInstanceKey());
                 }
 
                 forceDestroyBean(ctx);
@@ -2508,7 +2497,7 @@ public final class StatefulSessionContainer
                         ComponentInvocation.ComponentInvocationType.EJB_INVOCATION, unitName, ejbDescriptor);
                     if (emf == null) {
                         throw new EJBException(
-                            "EMF is null. Couldn't get extended EntityManager for" + " refName: " + emRefName);
+                            "EMF is null. Couldn't get extended EntityManager for refName: " + emRefName);
                     }
                     try ( //
                         ByteArrayInputStream bis = new ByteArrayInputStream(refInfo.serializedEEM);
@@ -2523,7 +2512,7 @@ public final class StatefulSessionContainer
                         eemKey2EEMMap.put(newRefInfo.getKey(), newRefInfo.getEntityManager());
                     } catch (Throwable th) {
                         EJBException ejbEx = new EJBException(
-                            "Couldn't create EntityManager for" + " refName: " + emRefName);
+                            "Couldn't create EntityManager for refName: " + emRefName);
                         ejbEx.initCause(th);
                         throw ejbEx;
                     }
@@ -2554,9 +2543,9 @@ public final class StatefulSessionContainer
             // Now see if there's already a *different* extended
             // persistence context within this transaction for the
             // same EntityManagerFactory.
-            PhysicalEntityManagerWrapper physicalEM = (PhysicalEntityManagerWrapper) clientJ2EETx
-                .getExtendedEntityManagerResource(emf);
-            if ((physicalEM != null) && entry.getValue().getEM() != physicalEM.getEM()) {
+            PhysicalEntityManagerWrapper physicalEM = //
+                (PhysicalEntityManagerWrapper) clientJ2EETx.getExtendedEntityManagerResource(emf);
+            if (physicalEM != null && entry.getValue().getEM() != physicalEM.getEM()) {
                 throw new EJBException(
                     "Detected two different extended persistence contexts for the same EntityManagerFactory"
                         + " within a transaction");
