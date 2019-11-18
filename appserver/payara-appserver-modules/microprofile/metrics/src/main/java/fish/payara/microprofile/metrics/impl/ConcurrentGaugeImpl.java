@@ -38,7 +38,6 @@
  *     holder.
  *
  */
-
 package fish.payara.microprofile.metrics.impl;
 
 import java.time.Instant;
@@ -46,12 +45,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 
 /**
  * Implementation of ConcurrentGauge from Microprofile Metrics
+ *
  * @see ConcurrentGauge
  * @since 5.193
  */
@@ -62,25 +63,53 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     /**
      * Last point for which clearOld() has been run
      */
-    private Instant lastInstant = Instant.now();
-    
+    private Instant lastInstant = getCurrentMinute();
+
     /**
-     * A map containing all the values that the count of the gauge has been at in the last minute.
-     * The key is the time in seconds that the value changed, the value is the value of the count at the moment
-     * before it changed
+     * A map containing all the max count values that the count of the gauge has
+     * been at in the last and current minutes. The key is the time in minute
+     * that the value changed, the value is the max value of the count at the
+     * moment before it changed
      */
-    private Map<Instant, Long> lastCounts = new ConcurrentHashMap<>();
-    
+    private final ConcurrentMap<Instant, Long> maxCounts
+            = new ConcurrentHashMap<>();
+
+    /**
+     * A map containing all the min count values that the count of the gauge has
+     * been at in the last and current minutes. The key is the time in minute
+     * that the value changed, the value is the min value of the count at the
+     * moment before it changed
+     */
+    private final ConcurrentMap<Instant, Long> minCounts
+            = new ConcurrentHashMap<>();
+
     /**
      * Increment the counter by one.
      */
     @Override
     public void inc() {
         clearOld();
-        if (count.longValue() > 0) {
-            lastCounts.put(Instant.now(), count.longValue());
-        }
-        count.increment();
+        Instant currentMin = getCurrentMinute();
+
+            count.increment();
+            long latestCount = count.longValue();
+            Long value = maxCounts.getOrDefault(currentMin, 0L);
+            if (latestCount > value) {
+                maxCounts.put(currentMin, latestCount);
+            }
+    }
+
+    @Override
+    public void dec() {
+        clearOld();
+        Instant currentMin = getCurrentMinute();
+
+            count.decrement();
+            long latestCount = count.longValue();
+            Long value = minCounts.getOrDefault(currentMin, Long.MAX_VALUE);
+            if (latestCount < value) {
+                minCounts.put(currentMin, latestCount);
+            }
     }
 
     /**
@@ -96,58 +125,40 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     @Override
     public long getMax() {
         clearOld();
-        long max = 0;
-        Instant nowMinStart = Instant.now().truncatedTo(ChronoUnit.MINUTES);
-        for (Map.Entry<Instant, Long> momentCount: lastCounts.entrySet()) {
-            if (momentCount.getKey().isBefore(nowMinStart) && momentCount.getValue() > max) {
-                max = momentCount.getValue();
-            }
-        }
-        return max;
+        return maxCounts.getOrDefault(getPreviousMinute(), 0L);
     }
 
     @Override
     public long getMin() {
         clearOld();
-        long min = Long.MAX_VALUE;
         // if it was not called in the last minute, then the value is 0
         // but if it was called at least once in the last minute then the
         //value is non-zero, even if it was 0 at some point duing that minute
-        if (lastCounts.isEmpty()) {
+        if (minCounts.isEmpty()) {
             return 0;
         }
-        Instant nowMinStart = Instant.now().truncatedTo(ChronoUnit.MINUTES);
-        for (Map.Entry<Instant, Long> momentCount: lastCounts.entrySet()) {
-            if (momentCount.getKey().isBefore(nowMinStart) && momentCount.getValue() < min) {
-                min = momentCount.getValue();
-            }
-        }
-        return min;
+        return minCounts.getOrDefault(getPreviousMinute(), 0L);
     }
 
-    @Override
-    public void dec() {
-        clearOld();
-        lastCounts.put(Instant.now(), count.longValue());
-        count.decrement();
-    }
-    
     /**
-     * Removes counts that occured before the previous minute that finished
+     * Removes counts that occurred before the previous minute that finished
      */
     private void clearOld() {
-        Instant previousMinute = Instant.now().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
+        Instant previousMinute = getPreviousMinute();
         if (previousMinute.equals(lastInstant)) {
             //already called in this minute
             return;
         }
-        Iterator<Instant> guages = lastCounts.keySet().iterator();
-        while (guages.hasNext()) {
-            Instant guageTime = guages.next();
-            if (guageTime.isBefore(previousMinute)) {
-                lastCounts.remove(guageTime);
-            }
-        }
-        lastInstant = previousMinute;
+            maxCounts.entrySet().removeIf(e -> e.getKey().isBefore(previousMinute));
+            minCounts.entrySet().removeIf(e -> e.getKey().isBefore(previousMinute));
+            lastInstant = previousMinute;
+    }
+
+    private Instant getCurrentMinute() {
+        return Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    }
+
+    private Instant getPreviousMinute() {
+        return getCurrentMinute().minus(1, ChronoUnit.MINUTES);
     }
 }
