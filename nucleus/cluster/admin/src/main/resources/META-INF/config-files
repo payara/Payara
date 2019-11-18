@@ -60,3 +60,4 @@ javaee.server.policy
 restrict.server.policy
 hazelcast-config.xml
 metrics.xml
+datagrid-key

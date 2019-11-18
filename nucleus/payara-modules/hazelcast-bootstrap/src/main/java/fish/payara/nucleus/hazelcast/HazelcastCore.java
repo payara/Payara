@@ -75,6 +75,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import javax.annotation.PostConstruct;
@@ -558,7 +559,19 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
-        return null;
+        List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
+        for (PropertyChangeEvent pce : pces) {
+            if (pce.getPropertyName().equalsIgnoreCase("datagrid-encryption-enabled")) {
+                unprocessedChanges.add(new UnprocessedChangeEvent(pce, "Hazelcast encryption settings changed"));
+            }
+        }
+
+        if (unprocessedChanges.isEmpty()) {
+            return null;
+        } else {
+
+        }
+        return new UnprocessedChangeEvents(unprocessedChanges);
     }
 
     public boolean isDatagridEncryptionEnabled() {

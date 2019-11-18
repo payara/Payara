@@ -1,6 +1,7 @@
 package fish.payara.nucleus.hazelcast.encryption;
 
 import com.hazelcast.core.HazelcastException;
+import com.hazelcast.nio.IOUtil;
 import com.sun.enterprise.security.ssl.impl.MasterPasswordImpl;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -167,7 +168,7 @@ public class SymmetricEncryptor {
     public static Object byteArrayToObject(byte[] bytes) {
         Object object = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
-            object = new ObjectInputStream(bis).readObject();
+            object = IOUtil.newObjectInputStream(Thread.currentThread().getContextClassLoader(), null, bis).readObject();
         } catch (IOException | ClassNotFoundException exception) {
             throw new HazelcastException("Error converting Byte Array to Object", exception);
         }
