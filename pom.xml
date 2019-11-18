@@ -112,10 +112,12 @@
         <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
+        <javase.version>1.8</javase.version>
+        <deploy.skip>false</deploy.skip>
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
@@ -354,8 +356,14 @@
                     <version>${maven.source.plugin.version}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
+                    <configuration>
+                        <additionalOptions>
+                            <additionalOption>-Xdoclint:none</additionalOption>
+                        </additionalOptions>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-gpg-plugin</artifactId>
@@ -372,6 +380,50 @@
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>${maven.release.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <configuration>
+                        <source>${javase.version}</source>
+                        <target>${javase.version}</target>
+                        <excludes>
+                            <exclude>**/.ade_path/**</exclude>
+                        </excludes>
+                        <testExcludes>
+                            <testExclude>**/.ade_path/**</testExclude>
+                        </testExcludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
+                        <skip>${deploy.skip}</skip>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <configuration>
+                        <!-- By default, we don't export anything. -->
+                        <Export-Package />
+                        <instructions>
+                            <!--
+                                Read all the configuration from osgi.bundle file, if it exists.
+                            -->
+                            <_include>-osgi.bundle</_include>
+                        </instructions>
+                        <excludeDependencies>tools-jar</excludeDependencies>
+                        <supportedProjectTypes>
+                            <supportedProjectType>glassfish-jar</supportedProjectType>
+                            <supportedProjectType>jar</supportedProjectType>
+                        </supportedProjectTypes>
+                    </configuration>
                 </plugin>
                 <!-- Flatten plugin for use in public artifacts. -->
                 <plugin>

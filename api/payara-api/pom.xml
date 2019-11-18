@@ -43,36 +43,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server</groupId>
-        <artifactId>payara-nucleus-parent</artifactId>
+        <groupId>fish.payara.api</groupId>
+        <artifactId>api-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../../nucleus/pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.api</groupId>
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
-
-    <developers>
-        <developer>
-            <id>smillidge</id>
-            <name>Steve Millidge</name>
-            <url>http://www.payara.fish</url>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>mulderbaba</id>
-            <name>Mert Caliskan</name>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
 
     <build>
         <plugins>
@@ -157,8 +134,25 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
