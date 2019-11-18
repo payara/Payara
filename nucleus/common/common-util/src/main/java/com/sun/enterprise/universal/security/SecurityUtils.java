@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.universal.security;
 
 import java.security.SecureRandom;
@@ -60,20 +62,22 @@ public final class SecurityUtils {
     private SecurityUtils() {
     }
 
-    static private String toHexString(byte b) {
+    private static String toHexString(byte b) {
         String s = Integer.toHexString((int) b + 128);
 
-        if (s.length() == 1)
+        if (s.length() == 1) {
             s = "0" + s;
+        }
 
         return s;
     }
 
-    static private String toHexString(byte[] bb) {
+    private static String toHexString(byte[] bb) {
         StringBuilder sb = new StringBuilder();
 
-        for (byte b : bb)
+        for (byte b : bb) {
             sb.append(toHexString(b));
+        }
 
         return sb.toString();
     }

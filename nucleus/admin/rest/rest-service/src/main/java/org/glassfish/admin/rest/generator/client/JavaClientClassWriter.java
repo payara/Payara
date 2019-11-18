@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.Level;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.Util;
@@ -75,7 +77,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             "        super(parent.client, null);\n" +
             "        this.parent = parent;\n" +
             "    }\n\n";
-    private static final String TMPL_CTOR_OTHER_WITH_KEY = 
+    private static final String TMPL_CTOR_OTHER_WITH_KEY =
             "    private String name;\n" +
             "    protected CLASSNAME (Client c, RestClientBase p, String name) {\n" +
             "        super(c, p);\n" +
@@ -101,7 +103,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             "    @Override protected String getSegment() {\n" +
             "        return \"/TAGNAME\";\n" +
             "    }\n\n";
-    private static final String TMPL_GETTERS_AND_SETTERS = 
+    private static final String TMPL_GETTERS_AND_SETTERS =
             "    public TYPE getMETHOD() {\n" +
             "        return getValue(\"FIELDNAME\", TYPE.class);\n" +
             "    }\n\n" +
@@ -130,7 +132,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
 
 
         File packageDir = new File(baseDirectory, Constants.CLIENT_JAVA_PACKAGE_DIR);
-        packageDir.deleteOnExit();
+        FileUtils.deleteOnExit(packageDir);
         boolean success = packageDir.exists() || packageDir.mkdirs();
         if (!success) {
             throw new RuntimeException("Unable to create output directory"); // i18n
@@ -141,7 +143,6 @@ public class JavaClientClassWriter implements ClientClassWriter {
             if (!createSuccess){
                RestLogging.restLogger.log(Level.SEVERE, RestLogging.FILE_CREATION_FAILED, classFile.getName());
             }
-            classFile.deleteOnExit();
             source = new BufferedWriter(new FileWriter(classFile));
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
@@ -153,7 +154,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             generateSimpleCtor(parent.getName());
         }
     }
-    
+
     protected final void generateRestClientBaseChild(ConfigModel model) {
         try {
             boolean hasKey = (Util.getKeyAttributeName(model) != null);
@@ -206,7 +207,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             String parametersSignature = Util.getMethodParameterList(cm, true, false);
             boolean needsMultiPart = parametersSignature.contains("java.io.File");
-            
+
             String parameters = Util.getMethodParameterList(cm, false, false);
             String method = TMPL_COMMAND
                     .replace("METHODNAME", methodName)
@@ -220,7 +221,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @Override
     public String generateMethodBody(CommandModel cm, String httpMethod, String resourcePath, boolean includeOptional, boolean needsMultiPart) {
         StringBuilder sb = new StringBuilder();

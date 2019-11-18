@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -71,7 +71,7 @@
             <artifactId>hk2-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.hk2</groupId>
+            <groupId>fish.payara.server.internal.hk2</groupId>
             <artifactId>hk2-config</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -104,7 +104,7 @@
             <artifactId>jakarta.inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>tiger-types</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -115,8 +115,8 @@
         
         <!-- Bean Validation -->
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
@@ -126,7 +126,7 @@
         <!-- Expression Language -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>jakarta.el</artifactId>
         </dependency>
         
         <dependency>

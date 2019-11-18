@@ -55,16 +55,17 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
+import java.io.File;
+import java.util.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileRealmStorageManager;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 import org.jvnet.hk2.annotations.Service;
-
-import java.io.File;
-import java.util.*;
 
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.*;
 import static com.sun.enterprise.config.util.PortConstants.*;
@@ -73,8 +74,6 @@ import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_ADMIN_USER
 import static com.sun.enterprise.util.net.NetUtils.checkPort;
 import static com.sun.enterprise.util.net.NetUtils.isPortValid;
 import static java.util.logging.Level.FINER;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.UserInterruptException;
 
 /**
  * This is a local command that creates a domain.
@@ -94,6 +93,10 @@ public final class CreateDomainCommand extends CLICommand {
     private static final String INSTANCE_PORT = "instanceport";
     private static final String DOMAIN_PROPERTIES = "domainproperties";
     private static final String PORTBASE_OPTION = "portbase";
+    
+    private static final String HAZELCAST_DAS_PORT = "hazelcastdasport";
+    private static final String HAZELCAST_START_PORT = "hazelcaststartport";
+    private static final String HAZELCAST_AUTO_INCREMENT ="hazelcastautoincrement";
     
     @Param(name = ADMIN_PORT, optional = true)
     private String adminPort;
@@ -140,13 +143,22 @@ public final class CreateDomainCommand extends CLICommand {
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts = true;
     
+    @Param(name = HAZELCAST_DAS_PORT, optional = true)
+    private String hazelcastDasPort;
+
+    @Param(name = HAZELCAST_START_PORT, optional = true)
+    private String hazelcastStartPort;
+
+    @Param(name = HAZELCAST_AUTO_INCREMENT, optional = true)
+    private String hazelcastAutoIncrement;
+    
     @Param(name = "domain_name", primary = true)
     private String domainName;
     
     private String adminUser;
 
     /**
-     * Add --adminport and --instanceport options with proper default values. (Can't set default values above because it
+     * Add options with port with proper default values. (Can't set default values above because it
      * conflicts with --portbase option processing.)
      */
     @Override
@@ -155,6 +167,8 @@ public final class CreateDomainCommand extends CLICommand {
         Set<ParamModel> uopts = new LinkedHashSet<ParamModel>();
         ParamModel adminPort = new ParamModelData(ADMIN_PORT, String.class, true, Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT));
         ParamModel instancePort = new ParamModelData(INSTANCE_PORT, String.class, true, Integer.toString(DEFAULT_INSTANCE_PORT));
+        ParamModel hazelcastDasPort = new ParamModelData(HAZELCAST_DAS_PORT, String.class, true, Integer.toString(DEFAULT_HAZELCAST_DAS_PORT));
+        ParamModel hazelcastStartPort = new ParamModelData(HAZELCAST_START_PORT, String.class, true, Integer.toString(DEFAULT_HAZELCAST_START_PORT));
         
         for (ParamModel paramModel : opts) {
             switch (paramModel.getName()) {
@@ -164,6 +178,11 @@ public final class CreateDomainCommand extends CLICommand {
                 case INSTANCE_PORT:
                     uopts.add(instancePort);
                     break;
+                case HAZELCAST_DAS_PORT:
+                    uopts.add(hazelcastDasPort);
+                    break;
+                case HAZELCAST_START_PORT:
+                    uopts.add(hazelcastStartPort);
                 default:
                     uopts.add(paramModel);
                     break;
@@ -266,6 +285,12 @@ public final class CreateDomainCommand extends CLICommand {
 
         verifyPortBasePortIsValid(DomainConfig.K_JAVA_DEBUGGER_PORT, portbase + PORTBASE_DEBUG_SUFFIX);
         domainProperties.put(DomainConfig.K_JAVA_DEBUGGER_PORT, String.valueOf(portbase + PORTBASE_DEBUG_SUFFIX));
+        
+        verifyPortBasePortIsValid(HAZELCAST_DAS_PORT, portbase + PORTBASE_HAZELCAST_DAS_PORT_SUFFIX);
+        hazelcastDasPort = String.valueOf(portbase + PORTBASE_HAZELCAST_DAS_PORT_SUFFIX);
+        
+        verifyPortBasePortIsValid(HAZELCAST_START_PORT, portbase + PORTBASE_HAZELCAST_START_PORT_SUFFIX);
+        hazelcastStartPort = String.valueOf(portbase + PORTBASE_HAZELCAST_START_PORT_SUFFIX);
 
     }
 
@@ -316,6 +341,14 @@ public final class CreateDomainCommand extends CLICommand {
             // Verify admin port is valid if specified on command line
             if (adminPort != null) {
                 verifyPortIsValid(adminPort);
+            }
+            
+            if (hazelcastDasPort != null) {
+                verifyPortIsValid(hazelcastDasPort);
+            }
+
+            if (hazelcastStartPort != null) {
+                verifyPortIsValid(hazelcastStartPort);
             }
             
             // Instance option is entered then verify instance port is valid
@@ -457,7 +490,7 @@ public final class CreateDomainCommand extends CLICommand {
         DomainConfig domainConfig = null;
         if (template == null || template.endsWith(".jar")) {
             domainConfig = new DomainConfig(domainName, domainPath, adminUser, adminPassword, masterPassword, saveMasterPassword, adminPort,
-                    instancePort, domainProperties);
+                    instancePort, hazelcastDasPort, hazelcastStartPort, hazelcastAutoIncrement, domainProperties);
             domainConfig.put(K_VALIDATE_PORTS, checkPorts);
             domainConfig.put(KEYTOOLOPTIONS, keytoolOptions);
             domainConfig.put(K_TEMPLATE_NAME, template);

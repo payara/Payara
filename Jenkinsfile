@@ -4,10 +4,10 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
+    agent any
     options {
         disableConcurrentBuilds()
     }
-    agent any
     tools {
         jdk "zulu-8"
     }
@@ -42,6 +42,7 @@ pipeline {
         }
         stage('Setup for Quicklook Tests') {
             steps {
+                sh "rm *.zip"
                 setupDomain()
             }
         }
@@ -58,6 +59,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
@@ -88,6 +90,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
@@ -146,6 +149,7 @@ pipeline {
             }
             post {
                 always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }

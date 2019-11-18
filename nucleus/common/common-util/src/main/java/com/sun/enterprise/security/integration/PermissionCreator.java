@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.integration;
 
@@ -47,6 +48,8 @@ import java.lang.reflect.Constructor;
 
 //this implementation is based on sun.security.provider.PolicyFile.java
 public class PermissionCreator {
+    
+    private PermissionCreator() {}
 
     private static final Class[] PARAMS0 = { };
     private static final Class[] PARAMS1 = { String.class };
@@ -65,38 +68,35 @@ public class PermissionCreator {
                 Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
             //this class is not recognized 
-            Permission pm = new UnresolvedPermission(type, name, actions, null);
-            return pm;  // policy provider suppose to translate this permission later
+            return new UnresolvedPermission(type, name, actions, null);
+            // policy provider suppose to translate this permission later
         }
         
         if (name == null && actions == null) {
             try {
                 Constructor<?> c = pc.getConstructor(PARAMS0);
-                return (Permission) c.newInstance(new Object[] {});
+                return (Permission) c.newInstance();
             } catch (NoSuchMethodException ne) {
                 try {
                     Constructor<?> c = pc.getConstructor(PARAMS1);
-                    return (Permission) c.newInstance(new Object[] { name });
+                    return (Permission) c.newInstance(name);
                 } catch (NoSuchMethodException ne1) {
                     Constructor<?> c = pc.getConstructor(PARAMS2);
-                    return (Permission) c.newInstance(new Object[] { name,
-                            actions });
+                    return (Permission) c.newInstance(name, actions);
                 }
             }
         } else {
             if (name != null && actions == null) {
                 try {
                     Constructor<?> c = pc.getConstructor(PARAMS1);
-                    return (Permission) c.newInstance(new Object[] { name });
+                    return (Permission) c.newInstance(name);
                 } catch (NoSuchMethodException ne) {
                     Constructor<?> c = pc.getConstructor(PARAMS2);
-                    return (Permission) c.newInstance(new Object[] { name,
-                            actions });
+                    return (Permission) c.newInstance(name, actions);
                 }
             } else {
                 Constructor<?> c = pc.getConstructor(PARAMS2);
-                return (Permission) c
-                        .newInstance(new Object[] { name, actions });
+                return (Permission) c.newInstance( name, actions);
             }
         }
     }

@@ -42,6 +42,8 @@ package org.glassfish.weld.services;
 
 import com.sun.enterprise.security.SecurityContext;
 import java.security.Principal;
+import java.util.function.Consumer;
+
 import org.jboss.weld.security.spi.SecurityServices;
 
 public class SecurityServicesImpl implements SecurityServices {
@@ -53,5 +55,41 @@ public class SecurityServicesImpl implements SecurityServices {
 
     @Override
     public void cleanup() {}
+
+    @Override
+    public org.jboss.weld.security.spi.SecurityContext getSecurityContext() {
+        return new SecurityContextImpl();
+    }
+
+    static class SecurityContextImpl implements org.jboss.weld.security.spi.SecurityContext {
+
+        private final SecurityContext myContext;
+        private SecurityContext oldContext;
+
+        private SecurityContextImpl() {
+            this.myContext = SecurityContext.getCurrent();
+        }
+
+        @Override
+        public void associate() {
+            if (oldContext == null) {
+                oldContext = SecurityContext.getCurrent();
+            } else {
+                throw new IllegalStateException("Security context is already associated");
+            }
+            SecurityContext.setCurrent(myContext);
+        }
+
+        @Override
+        public void dissociate() {
+            SecurityContext.setCurrent(oldContext);
+            oldContext = null;
+        }
+
+        @Override
+        public void close() {
+
+        }
+    }
 }
 

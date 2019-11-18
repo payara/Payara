@@ -40,19 +40,30 @@
 
 package fish.payara.monitoring.store;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import static org.jvnet.hk2.config.Dom.unwrap;
 
+import java.beans.PropertyChangeEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -60,10 +71,15 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -72,6 +88,8 @@ import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -90,14 +108,17 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryMonitoringDataRepository implements MonitoringDataRepository {
+public class InMemoryMonitoringDataRepository implements MonitoringDataRepository, ConfigListener {
     /**
      * The topic name used to share data of instances with the DAS.
      */
     private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
+    private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
+    private final Set<String> sourcesFailingBefore = ConcurrentHashMap.newKeySet();
 
     private ServiceLocator serviceLocator;
     private ServerEnvironment serverEnv;
+    private PayaraExecutorService executor;
     private boolean isDas;
     private String instanceName;
     private ITopic<SeriesDatasetsSnapshot> exchange;
@@ -105,15 +126,22 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
+    private final Set<String> instances = ConcurrentHashMap.newKeySet();
+    private final AtomicReference<ScheduledFuture<?>> dataCollectionJob = new AtomicReference<>();
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
+
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+    private MonitoringService monitoringConfig;
 
     @PostConstruct
     public void init() {
         serviceLocator = Globals.getDefaultBaseServiceLocator();
+        monitoringConfig = serverConfig.getMonitoringService();
         serverEnv = serviceLocator.getService(ServerEnvironment.class);
         isDas = serverEnv.isDas();
-        PayaraExecutorService executor = serviceLocator.getService(PayaraExecutorService.class);
+        executor = serviceLocator.getService(PayaraExecutorService.class);
         HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
         if (hz.isEnabled()) {
             instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
@@ -121,19 +149,74 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         } else {
             instanceName = "server";
         }
-        if (isDas) {
-            if (exchange != null) {
-                MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
-                exchange.addMessageListener(subscriber);
-            }
-            executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS);
-        } else if (exchange != null) {
-            executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
+        instances.add(instanceName);
+        if (isDas && exchange != null) {
+            MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
+            exchange.addMessageListener(subscriber);
         }
+        enableDataSourceCollection(parseBoolean(monitoringConfig.getMonitoringEnabled()));
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        for (PropertyChangeEvent e : events) {
+            if (e.getSource() instanceof ConfigBeanProxy) {
+                Class<?> source = unwrap((ConfigBeanProxy)e.getSource()).getImplementationClass();
+                if (source == MonitoringService.class) {
+                    String property = e.getPropertyName();
+                    if ("monitoring-enabled".equals(property)) {
+                        enableDataSourceCollection(parseBoolean(e.getNewValue().toString()));
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private void enableDataSourceCollection(boolean enabled) {
+        if (enabled) {
+            enableDataSourceCollection();
+        } else {
+            disableDataSourceCollection();
+        }
+    }
+
+    private void enableDataSourceCollection() {
+        if (dataCollectionJob.get() != null) {
+            return; // don't start another job
+        }
+        LOGGER.info("Starting monitoring data collection for " + instanceName);
+        ScheduledFuture<?> task = isDas
+                ? executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS)
+                : executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
+        if (!dataCollectionJob.compareAndSet(null, task)) {
+            cancelDataCollection(task);
+        }
+    }
+
+    private void disableDataSourceCollection() {
+        cancelDataCollection(dataCollectionJob.getAndUpdate(job -> null));
+    }
+
+    private void cancelDataCollection(ScheduledFuture<?> task) {
+        if (task != null) {
+            LOGGER.info("Stopping monitoring data collection for " + instanceName);
+            try {
+                task.cancel(false);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to cancel monitoring data collection.", e);
+            }
+        }
+    }
+
+    @Override
+    public Set<String> instances() {
+        return instances;
     }
 
     public void addRemoteDatasets(Message<SeriesDatasetsSnapshot> message) {
         String instance = message.getPublishingMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        instances.add(instance);
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {
@@ -166,25 +249,36 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     private void collectSourcesToPublish() {
-        tick();
-        SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
-        collectAll(new SinkDataCollector(msg));
-        estimatedNumberOfSeries = msg.numberOfSeries;
-        exchange.publish(msg);
+        if (exchange != null) {
+            tick();
+            SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
+            collectAll(new SinkDataCollector(msg));
+            estimatedNumberOfSeries = msg.numberOfSeries;
+            exchange.publish(msg);
+        }
     }
 
     private void collectAll(MonitoringDataCollector collector) {
+        for (Entry<Series, SeriesDataset> e : secondsRead.entrySet()) {
+            secondsWrite.put(e.getKey(), e.getValue());
+        }
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
         int failedSources = 0;
         for (MonitoringDataSource source : sources) {
+            String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
             try {
                 collectedSources++;
                 source.collect(collector);
+                sourcesFailingBefore.remove(sourceId);
             } catch (RuntimeException e) {
+                if (!sourcesFailingBefore.contains(sourceId)) {
+                    // only long once unless being successful again
+                    LOGGER.log(Level.FINE, "Error collecting metrics", e);
+                }
                 failedSources++;
-                // ignore and continue with next
+                sourcesFailingBefore.add(sourceId);
             }
         }
         long estimatedTotalBytesMemory = 0L;
@@ -192,13 +286,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             estimatedTotalBytesMemory += set.estimatedBytesMemory();
         }
         int seriesCount = secondsWrite.size();
-        collector.in("collect")
-            .collect("duration", System.currentTimeMillis() - collectionStart)
-            .collectNonZero("series", seriesCount)
-            .collectNonZero("estimatedTotalBytesMemory", estimatedTotalBytesMemory)
-            .collectNonZero("estimatedAverageBytesMemory", seriesCount == 0 ? 0L : Math.round(estimatedTotalBytesMemory / seriesCount))
-            .collectNonZero("sources", collectedSources)
-            .collectNonZero("failed", failedSources);
+        collector.in("mc")
+            .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
+            .collectNonZero("SeriesCount", seriesCount)
+            .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
+            .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
+            .collect("SourcesCount", collectedSources)
+            .collect("FailedCollectionCount", failedSources);
     }
 
     /**
@@ -216,7 +310,9 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
 
     private void addLocalPoint(CharSequence key, long value) {
         Series series = new Series(key.toString());
-        secondsWrite.put(series, secondsRead.computeIfAbsent(series, this::emptySet).add(collectedSecond, value));
+        secondsWrite.compute(series, (s, dataset) -> dataset == null 
+                ?  emptySet(s).add(collectedSecond, value) 
+                : dataset.add(collectedSecond, value));
     }
 
     private SeriesDataset emptySet(Series series) {
@@ -224,29 +320,57 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     @Override
-    public List<SeriesDataset> selectSeries(Series series) {
+    public List<SeriesDataset> selectSeries(Series series, String... instances) {
         if (!isDas) {
             return emptyList();
         }
-        SeriesDataset localSet = secondsRead.get(series);
-        SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
-        if (remoteSets == null) {
-            return singletonList(localSet);
-        }
-        long cutOffTime = System.currentTimeMillis() - 30_000;
-        List<SeriesDataset> res = new ArrayList<>(remoteSets.length + 1);
-        if (!localSet.isStableZero()) {
-            res.add(localSet);
-        }
-        for (SeriesDataset remoteSet : remoteSets) {
-            if (remoteSet.lastTime() >= cutOffTime && !remoteSet.isStableZero()) {
-                res.add(remoteSet);
+        Set<String> instanceFilter = instances == null || instances.length == 0 
+                ? this.instances
+                : new HashSet<>(asList(instances));
+        List<SeriesDataset> res = new ArrayList<>(instanceFilter.size());
+        selectSeries(res, Collections.singleton(series), instanceFilter);
+        return res;
+    }
+
+    private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter) {
+        for (Series series : seriesSet) {
+            if (series.isPattern()) {
+                selectSeries(res, seriesMatchingPattern(series), instanceFilter);
+            } else {
+                SeriesDataset localSet = secondsRead.get(series);
+                SeriesDataset[] remoteSets = remoteInstanceDatasets.get(series);
+
+                if (localSet != null && isRelevantSet(localSet, instanceFilter)) {
+                    res.add(localSet);
+                }
+                if (remoteSets != null && remoteSets.length > 0) {
+                    for (SeriesDataset remoteSet : remoteSets) {
+                        if (isRelevantSet(remoteSet, instanceFilter)) {
+                            res.add(remoteSet);
+                        }
+                    }
+                }
             }
         }
-        if (res.isEmpty()) {
-            res.add(localSet);
+    }
+
+    private static boolean isRelevantSet(SeriesDataset set, Set<String> instanceFilter) {
+        return instanceFilter.contains(set.getInstance());
+    }
+
+    private Set<Series> seriesMatchingPattern(Series pattern) {
+        Set<Series> matches = new HashSet<>();
+        for (Series candidate : secondsRead.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
         }
-        return res;
+        for (Series candidate : remoteInstanceDatasets.keySet()) {
+            if (pattern.matches(candidate)) {
+                matches.add(candidate);
+            }
+        }
+        return matches;
     }
 
     @Override

@@ -61,7 +61,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.User;
@@ -94,10 +93,10 @@ import com.sun.enterprise.security.auth.realm.User;
 @Service
 public final class FileRealm extends BaseRealm {
 
-    // Descriptive string of the authentication type of this realm.
+    /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "filepassword";
 
-    // These are property names which should be in auth-realm in server.xml
+    /** These are property names which should be in auth-realm in server.xml */
     public static final String PARAM_KEYFILE = "file";
 
     private FileRealmStorageManager fileRealmStorageManager;
@@ -128,8 +127,8 @@ public final class FileRealm extends BaseRealm {
      * keyfile will have been created; otherwise an exception is thrown.
      *
      * @param keyfile Full path to the keyfile to read for user data.
-     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
+     * @throws BadRealmException If the configuration parameters identify a corrupt realm.
+     * @throws NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
     public FileRealm(String keyfile) throws BadRealmException, NoSuchRealmException {
@@ -153,8 +152,8 @@ public final class FileRealm extends BaseRealm {
      * method is invoked from Realm during initialization.
      *
      * @param props Initialization parameters used by this realm.
-     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
+     * @throws BadRealmException If the configuration parameters identify a corrupt realm.
+     * @throws NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
     @Override
@@ -177,7 +176,7 @@ public final class FileRealm extends BaseRealm {
         if (jaasCtx == null) {
             throw new BadRealmException(sm.getString("filerealm.nomodule"));
         }
-        setProperty(BaseRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+        setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
         _logger.log(FINE, "FileRealm : " + PARAM_KEYFILE + "={0}", file);
         _logger.log(FINE, "FileRealm : " + JAAS_CONTEXT_PARAM + "={0}", jaasCtx);
@@ -203,7 +202,7 @@ public final class FileRealm extends BaseRealm {
      *
      * @param user Name of user to authenticate.
      * @param password Password provided by client.
-     * @returns Array of group names the user belongs to, or null if authentication fails.
+     * @return Array of group names the user belongs to, or null if authentication fails.
      *
      */
     public String[] authenticate(String user, char[] password) {
@@ -223,7 +222,7 @@ public final class FileRealm extends BaseRealm {
      * @return a list of the file names for all files realms in the config
      */
     public static List<String> getRealmFileNames(Config config) {
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
         SecurityService securityService = config.getSecurityService();
 
         for (AuthRealm authRealm : securityService.getAuthRealm()) {
@@ -253,7 +252,7 @@ public final class FileRealm extends BaseRealm {
      * Returns names of all the users in this particular realm.
      *
      * @return enumeration of user names (strings)
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     @Override
     public Enumeration<String> getUserNames() throws BadRealmException {
@@ -265,8 +264,7 @@ public final class FileRealm extends BaseRealm {
      *
      * @param name Name of the user whose information is desired.
      * @return The user object.
-     * @exception NoSuchUserException if the user doesn't exist.
-     * @exception BadRealmException if realm data structures are bad.
+     * @throws NoSuchUserException if the user doesn't exist.
      */
     @Override
     public User getUser(String name) throws NoSuchUserException {
@@ -283,7 +281,7 @@ public final class FileRealm extends BaseRealm {
      * Returns names of all the groups in this particular realm. Note that this will not return assign-groups.
      *
      * @return enumeration of group names (strings)
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     @Override
     public Enumeration<String> getGroupNames() throws BadRealmException {
@@ -295,7 +293,7 @@ public final class FileRealm extends BaseRealm {
      *
      * @param username Name of the user in this realm whose group listing is needed.
      * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
+     * @throws NoSuchUserException thrown if the realm does not support this operation - e.g. Certificate realm
      *            does not support this operation.
      */
     @Override
@@ -317,7 +315,7 @@ public final class FileRealm extends BaseRealm {
      * Realm registry so future Realm.getInstance() calls will obtain the new data. Any existing references to this instance
      * (e.g. in active LoginModule sessions) are unaffected.
      *
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      *
      */
     @Override
@@ -343,7 +341,7 @@ public final class FileRealm extends BaseRealm {
      * (e.g. in active LoginModule sessions) are unaffected.
      *
      * @param config
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      *
      */
     @Override
@@ -366,7 +364,6 @@ public final class FileRealm extends BaseRealm {
      * @param name User name.
      * @param password Cleartext password for the user.
      * @param groupList List of groups to which user belongs.
-     * @throws BadRealmException If there are problems adding user.
      *
      */
     @Override
@@ -378,7 +375,6 @@ public final class FileRealm extends BaseRealm {
      * Remove user from file realm. User must exist.
      *
      * @param name User name.
-     * @throws NoSuchUserException If user does not exist.
      *
      */
     @Override
@@ -394,10 +390,7 @@ public final class FileRealm extends BaseRealm {
      *        name which does not already exist as a user.
      * @param password Cleartext password for the user. If non-null the user password is changed to this value. If null, the
      *        original password is retained.
-     * @param groupList List of groups to which user belongs.
-     * @throws BadRealmException If there are problems adding user.
-     * @throws NoSuchUserException If user does not exist.
-     *
+     * @param groups List of groups to which user belongs.
      */
     @Override
     public void updateUser(String name, String newName, char[] password, String[] groups) {
@@ -418,9 +411,10 @@ public final class FileRealm extends BaseRealm {
         }
     }
 
+
     /**
-     * Test whether their is a user in the FileRealm that has a password that has been set, i.e., something other than the
-     * resetKey.
+     * Test whether their is a user in the FileRealm that has a password that has been set, i.e.,
+     * something other than the resetKey.
      */
     public boolean hasAuthenticatableUser() {
         return fileRealmStorageManager.hasAuthenticatableUser();

@@ -36,14 +36,22 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+ *
+ * Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt;
 
-import static com.sun.enterprise.admin.servermgmt.SLogger.BAD_DELETE_TEMP_CERT_FILE;
-import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
-import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
+import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.universal.process.ProcessUtils;
+import com.sun.enterprise.util.ExecException;
+import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.ProcessExecutor;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.util.net.NetUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +63,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -79,23 +88,15 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.process.ProcessUtils;
-import com.sun.enterprise.util.ExecException;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.ProcessExecutor;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.util.net.NetUtils;
-import java.nio.file.Paths;
-import java.util.Map.Entry;
+import static com.sun.enterprise.admin.servermgmt.SLogger.BAD_DELETE_TEMP_CERT_FILE;
+import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
+import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
 
 /**
  * @author kebbs
@@ -111,11 +112,11 @@ public class KeystoreManager {
     public static final String DEFAULT_MASTER_PASSWORD = "changeit";
     private static final String SKID_EXTENSION_SYSTEM_PROPERTY = "-J-Dsun.security.internal.keytool.skid";
     private static final String INSTANCE_CN_SUFFIX = "-instance";
-    
+
     private static final StringManager STRING_MANAGER = StringManager.getManager(KeystoreManager.class);
-    
+
     protected PEFileLayout _fileLayout = null;
-    
+
 
     static {
         // Byron Nevins, July 2011
@@ -124,14 +125,15 @@ public class KeystoreManager {
         String javaroot = new ASenvPropertyReader().getProps().get(propName);
         File k = new File(new File(javaroot, "bin"), KEYTOOL_EXE_NAME);
 
-        if (k.canExecute())
+        if (k.canExecute()) {
             nonFinalKeyTool = SmartFile.sanitize(k.getPath());
-        else {
+        } else {
             // can't find it in a JDK. Maybe it is in the PATH?
             k = ProcessUtils.getExe(KEYTOOL_EXE_NAME);
 
-            if (k != null && k.canExecute())
+            if (k != null && k.canExecute()) {
                 nonFinalKeyTool = k.getPath();
+            }
         }
         KEYTOOL_CMD = nonFinalKeyTool;
     }
@@ -189,18 +191,18 @@ public class KeystoreManager {
                 cn = "localhost";
             }
         }
-        
+
         /*
          * Use the suffix, if provided, in creating the DN (by augmenting the CN).
          */
-        return CERTIFICATE_DN_PREFIX + cn + (CNSuffix != null ? CNSuffix : "") + CERTIFICATE_DN_SUFFIX;// must be of form "CN=..., OU=..." 
+        return CERTIFICATE_DN_PREFIX + cn + (CNSuffix != null ? CNSuffix : "") + CERTIFICATE_DN_SUFFIX;// must be of form "CN=..., OU=..."
     }
 
     protected PEFileLayout getFileLayout(RepositoryConfig config) {
         if (_fileLayout == null) {
             _fileLayout = new PEFileLayout(config);
         }
-        
+
         return _fileLayout;
     }
 
@@ -237,26 +239,26 @@ public class KeystoreManager {
      * protected void addToAsadminTrustStore( RepositoryConfig config, File certFile) throws RepositoryException { boolean
      * newTruststore = false; final PEFileLayout layout = getFileLayout(config); //import the newly created certificate into
      * the asadmin truststore final File asadminTruststore = AsadminTruststore.getAsadminTruststore();
-     * 
+     *
      * if (!asadminTruststore.exists()) { newTruststore = true; }
-     * 
+     *
      * //The keystore alias name is the repository name. We want to avoid alias //name conflicts since multiple domains are
      * likely to live on the same //machine. String aliasName = layout.getRepositoryDir().getAbsolutePath();
-     * 
+     *
      * //first delete the alias in case it already exists. This can happen for //example if a domain is created, deleted,
      * and re-created again. String[] keytoolCmd = new String[] { "-delete", "-keystore",
      * asadminTruststore.getAbsolutePath(), "-alias", aliasName, };
-     * 
+     *
      * final String[] input = {AsadminTruststore.getAsadminTruststorePassword(),
      * AsadminTruststore.getAsadminTruststorePassword()}; // twice in case we are creating KeytoolExecutor p = new
      * KeytoolExecutor(keytoolCmd, 30, input); try { p.execute("trustStoreNotCreated", asadminTruststore); } catch
      * (RepositoryException ex) { //ignore all exceptions. The alias most likely does not exist. }
-     * 
+     *
      * keytoolCmd = new String[] { "-import", "-noprompt", "-keystore", asadminTruststore.getAbsolutePath(), "-alias",
      * aliasName, //alias is the domain name "-file", certFile.getAbsolutePath(), };
-     * 
+     *
      * p = new KeytoolExecutor(keytoolCmd, 30, input); p.execute("trustStoreNotCreated", asadminTruststore);
-     * 
+     *
      * //If this is a newly created truststore, lock it down. if (newTruststore) { try { chmod("600", asadminTruststore); }
      * catch (IOException ex) { throw new RepositoryException(STRING_MANAGER.getString( "trustStoreNotCreated", asadminTruststore),
      * ex); } } }
@@ -282,7 +284,7 @@ public class KeystoreManager {
 
     /**
      * Copies all non-expired certificates from the currently used JDK to the Payara trust store.
-     * 
+     *
      * @param trustStore the trust store to copy the certificates to.
      * @param masterPassword the password to the trust store.
      * @throws RepositoryException if an error occured a {@link RepositoryException} will wrap the original exception
@@ -369,7 +371,7 @@ public class KeystoreManager {
 
     /**
      * Copies a certificate from a keyStore to a trustStore.
-     * 
+     *
      * @param keyStore the key store to copy the certificate from.
      * @param trustStore the trust store to copy the certificate to.
      * @param alias the name of the certificate to copy.
@@ -415,7 +417,7 @@ public class KeystoreManager {
 
     /**
      * Throws an IllegalArgumentException if the password's complexity does not meet requirements
-     * 
+     *
      * @param pw
      * @param msgId
      */
@@ -427,7 +429,7 @@ public class KeystoreManager {
 
     /**
      * Loads a (JKS or PKCS#12) keystore. This method does not use the keytool, but instead the JAVA API
-     * 
+     *
      * @param source the path of the file to be opened and loaded into the keystore
      * @param storeType the type of the keystore to be read
      * @param pw the keystore password
@@ -446,7 +448,7 @@ public class KeystoreManager {
 
     /**
      * Saves the (modified) keystore. This method does not use the keytool, but instead the JAVA API
-     * 
+     *
      * @param keyStore the keystore to be written
      * @param dest path of the file the keystore is to be written to
      * @param pw keystore password
@@ -464,7 +466,7 @@ public class KeystoreManager {
 
     /**
      * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
-     * 
+     *
      * @param keyStore the keystore. Must not be null.
      * @param storeType the type of the keystore (JKS or PKCS#12)
      * @param storePw the keystore password. Since glassfish requires that keystore and key passwords are identical, this is
@@ -491,7 +493,7 @@ public class KeystoreManager {
      * {@link #addKeyPair(java.io.File, java.lang.String, char[], java.security.PrivateKey, java.security.cert.Certificate[], java.lang.String) }
      * instead
      * </p>
-     * 
+     *
      * @param keyStore the keystore. Must not be null.
      * @param storeType the type of the keystore (JKS or PKCS#12).
      * @param storePw the keystore password
@@ -508,7 +510,7 @@ public class KeystoreManager {
         ks.setKeyEntry(alias, privKey, keyPw, certChain);
         saveKeyStore(ks, keyStore, storePw);
     }
-    
+
     /**
      * Changes the keystore password
      *
@@ -533,7 +535,7 @@ public class KeystoreManager {
      * <p>
      * This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
      * </p>
-     * 
+     *
      * @param keyStore the destination keystore - may be null for an in-memory keystore
      * @param storeType the type of the keystore (JKS or PKCS#12)
      * @param oldPw the old password
@@ -553,7 +555,7 @@ public class KeystoreManager {
      * <p>
      * This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
      * </p>
-     * 
+     *
      * @param keyStore the destination keystore - may be null for an in-memory keystore
      * @param storeType the type of the keystore (JKS or PKCS#12)
      * @param oldPw the old password
@@ -618,7 +620,7 @@ public class KeystoreManager {
 
     /**
      * Reads an unencrypted, PKCS#8 formattted and base64 encoded RSA private key from the given File
-     * 
+     *
      * @param keyFile the file containing the private key
      * @return the RSA private key
      * @throws IOException
@@ -633,7 +635,7 @@ public class KeystoreManager {
     /**
      * Reads an unencrypted, PKCS#8 formattted and base64 encoded private key from the given InputStream using the specified
      * algo
-     * 
+     *
      * @param is the input stream containing the private key
      * @param algo the algorithm used for the private key
      * @return the RSA private key
@@ -650,7 +652,7 @@ public class KeystoreManager {
 
     /**
      * Ignores the header and footer and extracts the private key bytes from a PKCS#8 format BASe64 encoded file
-     * 
+     *
      * @param privateKeyLines
      * @return the decoded binary content
      */
@@ -700,7 +702,7 @@ public class KeystoreManager {
             }
 
             // add code to change all the aliases that exist rather then change s1as only
-            List<String> aliases = new ArrayList<String>();
+            List<String> aliases = new ArrayList<>();
             FileInputStream is = null;
             try {
                 KeyStore keyStore = KeyStore.getInstance(keyStoreType);
@@ -784,14 +786,16 @@ public class KeystoreManager {
     protected void chmod(String args, File file) throws IOException {
         if (OS.isUNIX()) {
             // args and file should never be null.
-            if (args == null || file == null)
+            if (args == null || file == null) {
                 throw new IOException(STRING_MANAGER.getString("nullArg"));
-            if (!file.exists())
+            }
+            if (!file.exists()) {
                 throw new IOException(STRING_MANAGER.getString("fileNotFound"));
+            }
 
             // " +" regular expression for 1 or more spaces
             final String[] argsString = args.split(" +");
-            List<String> cmdList = new ArrayList<String>();
+            List<String> cmdList = new ArrayList<>();
             cmdList.add("/bin/chmod");
             cmdList.addAll(Arrays.asList(argsString));
             cmdList.add(file.getAbsolutePath());
@@ -809,8 +813,9 @@ public class KeystoreManager {
 
     private static String getCNFromCfg(RepositoryConfig cfg) {
         String option = (String) cfg.get(DomainConfig.KEYTOOLOPTIONS);
-        if (option == null || option.length() == 0)
+        if (option == null || option.length() == 0) {
             return null;
+        }
         String value = getCNFromOption(option);
         if (value == null || value.length() == 0) {
             return null;
@@ -837,13 +842,14 @@ public class KeystoreManager {
             String n = nv[0].trim();
             String v = nv[1].trim();
             boolean found = (ignoreNameCase) ? n.equalsIgnoreCase(name) : n.equals(name);
-            if (found)
+            if (found) {
                 return v;
+            }
         }
         return null;
     }
 
     private static String getCNFromOption(String option) {
-        return getValueFromOptionForName(option, "CN", true);
+        return getValueFromOptionForName(option, OID.CN.getName(), true);
     }
 }

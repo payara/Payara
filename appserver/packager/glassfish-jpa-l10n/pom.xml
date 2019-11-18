@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -121,7 +121,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.persistence</groupId>
+            <groupId>fish.payara.server.internal.persistence</groupId>
             <artifactId>jpa-container-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

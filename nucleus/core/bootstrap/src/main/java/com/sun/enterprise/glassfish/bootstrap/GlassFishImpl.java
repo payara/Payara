@@ -80,7 +80,16 @@ public class GlassFishImpl implements GlassFish {
             throw new IllegalStateException("Already in " + status + " state.");
         }
         status = Status.STARTING;
-        gfKernel.start();
+        try {
+            gfKernel.start();
+        } catch (RuntimeException | Error t) {
+            dispose();
+            if (t.getCause() instanceof GlassFishException) {
+                throw (GlassFishException)t.getCause();
+            } else {
+                throw t;
+            }
+        }
         status = Status.STARTED;
     }
 

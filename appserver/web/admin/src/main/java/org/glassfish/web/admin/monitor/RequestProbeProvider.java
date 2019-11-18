@@ -41,7 +41,6 @@
 package org.glassfish.web.admin.monitor;
 
 import org.glassfish.external.probe.provider.annotations.*;
-import org.glassfish.grizzly.Buffer;
 
 /**
  * Provider interface for HTTP request/response related probes.

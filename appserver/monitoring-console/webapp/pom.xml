@@ -41,7 +41,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.monitoring-console</groupId>
+        <groupId>fish.payara.server.monitoring-console</groupId>
         <artifactId>monitoring-console</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -57,9 +57,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
+            <groupId>fish.payara.server.internal.monitoring-console</groupId>
             <artifactId>monitoring-console-core</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -67,8 +74,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -82,16 +89,53 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee.api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>com.bekioui.maven.plugin</groupId>
+              <artifactId>merge-maven-plugin</artifactId>
+              <version>1.2.0</version>
+              <executions>
+                <execution>
+                  <id>merge-files</id>
+                  <goals>
+                    <goal>merge</goal>
+                  </goals>
+                  <configuration>
+                    <merges>
+                      <merge>
+                        <override>true</override>
+                        <target>src/main/webapp/js/monitoring-console.js</target>
+                        <sources>
+                            <source>src/main/webapp/js/mc-main.js</source>
+                            <source>src/main/webapp/js/mc-model.js</source>
+                            <source>src/main/webapp/js/mc-view-units.js</source>
+                            <source>src/main/webapp/js/mc-view-components.js</source>
+                            <source>src/main/webapp/js/mc-common-chart.js</source>
+                            <source>src/main/webapp/js/mc-line-chart.js</source>
+                            <source>src/main/webapp/js/mc-bar-chart.js</source>
+                            <source>src/main/webapp/js/mc-trace-chart.js</source>
+                            <source>src/main/webapp/js/mc-view.js</source>
+                        </sources>
+                      </merge>
+                    </merges>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

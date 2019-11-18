@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples-aggregator</artifactId>
+        <version>5.194-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>classpath</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Classpath tests</name>
+    <description>These test verify that artifacts provide classpath isolated enough not to interfere with client code in unexpected ways.</description>
+
+    <modules>
+        <module>embedded-vs-jersey</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>enforce-clean-classpath</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>*:*</exclude>
+                                    </excludes>
+                                    <message>This module cannot inherit any dependencies to keep children's classpaths clean</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal;
 
@@ -50,10 +50,10 @@ package com.sun.enterprise.universal;
 public final class NanoDuration {
 
     // possibly useful constants
-    private final static double NSEC_PER_MICROSECOND = 1000;
-    private final static double NSEC_PER_MILLISECOND = 1000d * 1000;
-    private final static double NSEC_PER_SECOND = 1000d * 1000 * 1000;
-    private final static double NSEC_PER_MINUTE = 60d * 1000 * 1000 * 1000;
+    private static final double NSEC_PER_MICROSECOND = 1000;
+    private static final double NSEC_PER_MILLISECOND = 1000d * 1000;
+    private static final double NSEC_PER_SECOND = 1000d * 1000 * 1000;
+    private static final double NSEC_PER_MINUTE = 60d * 1000 * 1000 * 1000;
 
     private double numSeconds = -1.0;
     private double numMilliSeconds = -1.0;
@@ -68,17 +68,17 @@ public final class NanoDuration {
             return;
         }
 
-        if((double) nsec >= NSEC_PER_SECOND)
+        if((double) nsec >= NSEC_PER_SECOND) {
             numSeconds = (double) nsec / NSEC_PER_SECOND;
-
-        else if((double) nsec >= NSEC_PER_MILLISECOND)
+        } else if((double) nsec >= NSEC_PER_MILLISECOND) {
             numMilliSeconds = (double) nsec / NSEC_PER_MILLISECOND;
 
-        else if((double) nsec >= NSEC_PER_MICROSECOND)
+        } else if((double) nsec >= NSEC_PER_MICROSECOND) {
             numMicroSeconds = (double) nsec / NSEC_PER_MICROSECOND;
 
-        else
+        } else {
             numNanoSeconds = nsec; // not a double!
+        }
     }
 
     @Override

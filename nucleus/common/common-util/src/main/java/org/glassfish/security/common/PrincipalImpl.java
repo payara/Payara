@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.security.common;
 
 import java.io.Serializable;
@@ -55,7 +56,7 @@ public class PrincipalImpl implements Principal, Serializable {
     /**
      * @serial
      */
-    private String name;
+    private final String name;
 
     /**
      * Construct a principal from a string user name.
@@ -72,6 +73,7 @@ public class PrincipalImpl implements Principal, Serializable {
      * @param another the Principal to compare with.
      * @return true if the Principal passed is the same as that encapsulated in this object, false otherwise
      */
+    @Override
     public boolean equals(Object another) {
         // XXX for bug 4889642: if groupA and userA have
         // the same name, then groupA.equals(userA) return false
@@ -113,6 +115,7 @@ public class PrincipalImpl implements Principal, Serializable {
      * 
      * @return the name of the principal.
      */
+    @Override
     public String getName() {
         return name;
     }

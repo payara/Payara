@@ -43,7 +43,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.ejb.http</groupId>
+        <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb-http-remoting</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -55,8 +55,8 @@
     <description>
         This module contains the endpoint that services HTTP commands from the client (fish.payara.ejb.http:ejb-http-client) and looks EJBs up and invokes them.
         
-        It contains a mini web application that is picked up by the domain template (org.glassfish.main.admin:nucleus-domain) which places it in the 
-        glassfish/domains/[domainname]/endpoints/ejb-invoker folder.
+        It contains a mini web application that is picked up by the domain template (fish.payara.server.internal.admin:nucleus-domain) which places it in the
+        glassfish/domains/[domainname]/endpoints/__ejb-invoker folder.
     </description>
 
     <dependencies>
@@ -66,8 +66,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -81,7 +81,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -116,6 +116,17 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ejb-http-admin</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

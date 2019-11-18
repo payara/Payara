@@ -40,12 +40,12 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2018] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2017-2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.featuresets</groupId>
+        <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -57,112 +57,112 @@
     <dependencies>
         <!-- atomic distribution packages-->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>felix</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-grizzly</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-nucleus</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- all previous web-nb distribution packages -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-cluster</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jersey</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-management</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-corba-base</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- additional grizzly modules package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jca</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jta</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jdbc</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jmx</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- additional legal content dependency -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>legal-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

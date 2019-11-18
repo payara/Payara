@@ -314,28 +314,27 @@
       <param-value>
         /lib/
         \lib\
-        javax.el.jar
-        javax.servlet-api.jar
-        javax.servlet.jsp-api.jar
-        javax.servlet.jsp.jstl-api.jar
+        jakarta.el.jar
+        jakarta.servlet-api.jar
+        jakarta.servlet.jsp-api.jar
+        jakarta.servlet.jsp.jstl-api.jar
         javax.servlet.jsp.jstl.jar
-        javax.jms-api.jar
+        jakarta.jms-api.jar
         jakarta.faces.jar
         javax.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar
-        jakarta.ejb.jar
-        javax.enterprise.deploy-api.jar
-        javax.jms-api.jar
+        jakarta.ejb-api.jar
+        jakarta.enterprise.deploy-api.jar
         jakarta.mail.jar
-        javax.management.j2ee-api.jar
+        jakarta.management.j2ee-api.jar
         jakarta.persistence.jar
-        javax.resource-api.jar
-        javax.security.auth.message.jar
-        javax.security.jacc.jar
+        jakarta.resource-api.jar
+        jakarta.security.auth.message-api.jar
+        jakarta.security.jacc-api.jar
         jakarta.transaction-api.jar
-        javax.xml.rpc-api.jar
+        jakarta.xml.rpc-api.jar
         webservices-osgi.jar
         weld-osgi-bundle.jar
         jersey-mvc-jsp.jar

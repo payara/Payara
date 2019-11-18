@@ -110,13 +110,7 @@ import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.weld.connector.WeldUtils;
-import org.glassfish.weld.services.EjbServicesImpl;
-import org.glassfish.weld.services.ExternalConfigurationImpl;
-import org.glassfish.weld.services.InjectionServicesImpl;
-import org.glassfish.weld.services.NonModuleInjectionServices;
-import org.glassfish.weld.services.ProxyServicesImpl;
-import org.glassfish.weld.services.SecurityServicesImpl;
-import org.glassfish.weld.services.TransactionServicesImpl;
+import org.glassfish.weld.services.*;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
@@ -127,6 +121,7 @@ import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.NewInstanceAction;
@@ -146,7 +141,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import org.glassfish.weld.services.ExecutorServicesImpl;
 import org.jboss.weld.manager.api.ExecutorServices;
 
 @Service
@@ -379,12 +373,15 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // We use the generic InjectionService service to handle all EE-style
                     // injection instead of the per-dependency-type InjectionPoint approach.
                     // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
+
                     InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
+                    ResourceInjectionServicesImpl resourceInjectionServices = new ResourceInjectionServicesImpl();
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, beanDeploymentArchive.getId() });
                     }
 
                     beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
+                    beanDeploymentArchive.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
                     EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
                     if (eeModuleDescriptor != null) {
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);

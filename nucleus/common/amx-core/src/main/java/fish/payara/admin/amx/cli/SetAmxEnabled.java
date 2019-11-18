@@ -43,6 +43,7 @@
 package fish.payara.admin.amx.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.admin.amx.AMXBootService;
 import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyVetoException;
@@ -58,12 +59,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
-import static org.glassfish.config.support.CommandTarget.CONFIG;
-import static org.glassfish.config.support.CommandTarget.DAS;
-import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
-import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -72,6 +67,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 /**
  * Comment to enable AMX, as separate from JMX.
@@ -82,10 +84,10 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 @Service(name = "set-amx-enabled")
 @PerLookup
-@ExecuteOn({RuntimeType.ALL})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = AMXConfiguration.class,
+    @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-amx-enabled",
             description = "Sets whether AMX in enabled")
@@ -94,10 +96,10 @@ public class SetAmxEnabled implements AdminCommand {
 
     private static final Logger LOGGER = AMXLoggerInfo.getLogger();
 
-    @Param(name = "enabled", optional = false, primary = true, defaultValue = "true")
+    @Param(name = "enabled", optional = true, defaultValue = "true")
     Boolean enabled;
 
-    @Param(name = "dynamic", optional = false, defaultValue = "true")
+    @Param(name = "dynamic", optional = true, defaultValue = "true")
     private Boolean dynamic;
 
     @Param(name="target", optional = true, defaultValue = "server-config")
@@ -126,10 +128,8 @@ public class SetAmxEnabled implements AdminCommand {
                 }
             }, metricsConfiguration);
 
-            if (dynamic) {
-                AMXBootService bootService = habitat.getService(AMXBootService.class);
-                bootService.setEnabled(enabled);
-            }
+            AMXBootService bootService = habitat.getService(AMXBootService.class);
+            bootService.setEnabled(enabled, dynamic);
 
         } catch (TransactionFailure ex) {
             LOGGER.log(Level.WARNING, "Exception during command set-amx-enabled: {0}", ex.getCause().getMessage());

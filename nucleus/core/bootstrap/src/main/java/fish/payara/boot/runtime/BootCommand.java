@@ -68,7 +68,7 @@ public class BootCommand {
         boolean result = true;
         CommandResult asadminResult = runner.run(command, arguments);
         if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
-            LOGGER.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()));
+            LOGGER.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()), asadminResult.getFailureCause());
             result = false;
         } else {
             LOGGER.log(INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));

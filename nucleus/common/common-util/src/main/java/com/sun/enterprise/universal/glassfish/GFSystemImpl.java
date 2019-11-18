@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -79,9 +80,6 @@ public final class GFSystemImpl {
     public final void setProperty(String key, String value)
     {
         props.put(key, value);
-    }
-    
-    public GFSystemImpl() {
     }
     
     // initial props copy java.lang.System Properties

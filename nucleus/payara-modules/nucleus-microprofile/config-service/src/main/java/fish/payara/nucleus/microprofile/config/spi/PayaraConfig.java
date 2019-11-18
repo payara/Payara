@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,23 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
+import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
@@ -95,12 +90,12 @@ public class PayaraConfig implements Config {
         if(String.class.equals(propertyType)) {
             return (Optional<T>) Optional.ofNullable(strValue);
         }
-        
-        Converter<T> converter = getConverter(propertyType);
-        if (converter == null) {
-            throw new IllegalArgumentException("No converter for class " + propertyType);
+
+        if (strValue == null) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(convertString(strValue, propertyType));
         }
-        return Optional.ofNullable(converter.convert(strValue));
     }
 
     @Override
@@ -176,75 +171,59 @@ public class PayaraConfig implements Config {
         return result;
     }
     
-    private <T> Converter<T> getConverter(Class<T> propertyType) {
-        Class type = propertyType;
-        if (type.equals(int.class)) {
-            type = Integer.class;
-        } else if (type.equals(long.class)) {
-            type = Long.class;
-        } else if (type.equals(double.class)) {
-            type = Double.class;
-        } else if (type.equals(float.class)) {
-            type = Float.class;
-        } else if (type.equals(boolean.class)) {
-            type = Boolean.class;
-        }
+    private <T> Converter<T> getConverter(Type propertyType) {
+        Type type = boxedTypeOf(propertyType);
+
         Converter<T> converter = converters.get(type);
 
-            
-        if (converter == null) {
-            // search for a matching raw type
-            for (Entry<Type, Converter> entry : converters.entrySet()) {
-                Type type1 = entry.getKey();
-                if (type1 instanceof ParameterizedType) {
-                    ParameterizedType ptype = (ParameterizedType)type1;
-                    if (ptype.getRawType().equals(propertyType)) {
-                        converter = entry.getValue();
-                        break;
-                    }
-                }
-            }
+        if (converter != null) {
+            return converter;
         }
-        
-        if (converter == null) {
-            // see if a common sense converter can be created
-            boolean commonSense = true;
-            try {
-                Method m = propertyType.getMethod("of", String.class);
-                converter = (Converter<T>) new CommonSenseConverter(m);
-                converters.put(propertyType, converter);
-                return converter;
-            } catch (NoSuchMethodException | SecurityException ex) {
-                try {
-                    Method m = propertyType.getMethod("valueOf",String.class);
-                    converter = (Converter<T>) new CommonSenseConverter(m);
-                    converters.put(propertyType, converter);
-                    return converter;
-                } catch (NoSuchMethodException | SecurityException ex1) {
-                    try {
-                        Constructor c = propertyType.getConstructor(String.class);
-                        converter = (Converter<T>) new CommonSenseConverter(c);
-                        converters.put(propertyType, converter);
-                        return converter;
-                    } catch (NoSuchMethodException | SecurityException ex2) {
-                        try {
-                            Method m = propertyType.getMethod("parse", CharSequence.class);
-                            converter = (Converter<T>) new CommonSenseConverter(m);
-                            converters.put(propertyType, converter);
-                            return converter;
-                        } catch (NoSuchMethodException | SecurityException ex3) {
-                            commonSense = false;
-                        }
-                    }
-                }
-            }
+
+        // see if a common sense converter can be created
+        Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(propertyType);
+        if (automaticConverter.isPresent()) {
+            converters.put(propertyType, automaticConverter.get());
+            return automaticConverter.get();
         }
-        if (converter == null) {
-            throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getCanonicalName());
-        }
-        return converter;
+
+        throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getTypeName());
     }
-    
+
+
+
+    private static Type boxedTypeOf(Type type) {
+        if (type instanceof Class && !((Class) type).isPrimitive()) {
+            return type;
+        }
+        if (type == int.class) {
+            return Integer.class;
+        } 
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        } 
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        // That's really strange config variable you got there
+        return Void.class;
+    }
+
     private <T> T convertString(String value, Class<T> propertyType) {
 
         // if it is an array convert arrays

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>javaee-pom</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish JavaEE Manifest pom</name>  

@@ -51,13 +51,13 @@ import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderInfo;
 
 public class StatsProviderRegistry {
-    private final Map<String, List<StatsProviderRegistryElement>> configToRegistryElementMap = new HashMap();
-    private final Map<Object, StatsProviderRegistryElement> statsProviderToRegistryElementMap = new HashMap();
+    private final Map<String, List<StatsProviderRegistryElement>> configToRegistryElementMap = new ConcurrentHashMap<>();
+    private final Map<Object, StatsProviderRegistryElement> statsProviderToRegistryElementMap = new ConcurrentHashMap<>();
     private boolean isAMXReady = false;
     private boolean isMBeanEnabled = true;
     
     static final String[] DEFAULT_CONFIG_LEVELS = new String[] {"LOW","HIGH"};
-    protected static final Map<String, Integer> configLevelsMap = new ConcurrentHashMap();
+    protected static final Map<String, Integer> configLevelsMap = new ConcurrentHashMap<>();
 
     public StatsProviderRegistry(MonitoringRuntimeDataRegistry mrdr) {
         for (int i = 0; i < DEFAULT_CONFIG_LEVELS.length; i++) {
@@ -84,7 +84,7 @@ public class StatsProviderRegistry {
             List<StatsProviderRegistryElement> spreList = configToRegistryElementMap.get(configStr);
             spreList.add(spre);
         } else {
-            List<StatsProviderRegistryElement> spreList = new ArrayList();
+            List<StatsProviderRegistryElement> spreList = new ArrayList<>();
             spreList.add(spre);
             configToRegistryElementMap.put(configStr, spreList);
         }
@@ -118,7 +118,8 @@ public class StatsProviderRegistry {
     }
 
     List<StatsProviderRegistryElement> getStatsProviderRegistryElement(String configElement) {
-        return (this.configToRegistryElementMap.get(configElement));
+        List<StatsProviderRegistryElement> plain = configToRegistryElementMap.get(configElement);
+        return plain == null ? Collections.emptyList() : new ArrayList<>(plain);
     }
 
     Collection<StatsProviderRegistryElement> getSpreList() {

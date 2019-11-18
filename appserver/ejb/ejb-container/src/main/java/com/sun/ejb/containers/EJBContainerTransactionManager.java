@@ -573,7 +573,7 @@ public class EJBContainerTransactionManager {
         try {
             container.forceDestroyBean(context);
         } finally {
-            transactionManager.rollback();
+            rollback();
         }
 
         EJBException ex = null;
@@ -604,7 +604,7 @@ public class EJBContainerTransactionManager {
             if ( container.isStatefulSession ) {
                 if ( !container.isSystemUncheckedException(exception) ) {
                     if( isAppExceptionRequiringRollback(exception) ) {
-                        transactionManager.rollback();
+                        rollback();
                     } else {
                         transactionManager.suspend();
                     }
@@ -701,19 +701,13 @@ public class EJBContainerTransactionManager {
         }
         else {
             try {
-                if ( status == Status.STATUS_MARKED_ROLLBACK ) {
+                if (status == Status.STATUS_MARKED_ROLLBACK) {
                     // EJB2.0 section 18.3.1, Table 15, and 18.3.6:
                     // rollback tx, no exception
-                    if (transactionManager.isTimedOut()) {
-                        _logger.log(Level.WARNING, "ejb.tx_timeout", new Object[] {
-                            transactionManager.getTransaction(), ejbDescriptor.getName()});
-                    }
-                    transactionManager.rollback();
-                }
-                else {
-                    if( (newException != null) &&
-                            isAppExceptionRequiringRollback(newException) ) {
-                        transactionManager.rollback();
+                    rollback();
+                } else {
+                    if (newException != null && isAppExceptionRequiringRollback(newException)) {
+                        rollback();
                     } else {
                         // Note: if exception is an application exception
                         // we do a commit as in EJB2.0 Section 18.3.1,
@@ -729,11 +723,18 @@ public class EJBContainerTransactionManager {
                 _logger.log(Level.FINE, "ejb.cmt_exception", ex);
                 // Commit or rollback failed.
                 // EJB2.0 section 18.3.6
-                newException = new EJBException("Unable to complete" +
-                    " container-managed transaction.", ex);
+                newException = new EJBException("Unable to complete" + " container-managed transaction.", ex);
             }
         }
         return newException;
+    }
+
+    private void rollback() throws SystemException {
+        if (transactionManager.isTimedOut()) {
+            _logger.log(Level.WARNING, "ejb.tx_timeout",
+                new Object[] {transactionManager.getTransaction(), ejbDescriptor.getName()});
+        }
+        transactionManager.rollback();
     }
 
     private Throwable processSystemException(Throwable sysEx) {

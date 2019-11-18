@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 
 import javax.ws.rs.client.Client;
@@ -427,7 +429,7 @@ public class Util {
         if (!tempDir.mkdirs()) {
             throw new RuntimeException("Unable to create directories"); // i81n
         }
-        tempDir.deleteOnExit();
+        FileUtils.deleteOnExit(tempDir);
 
         return tempDir;
     }
@@ -452,12 +454,7 @@ public class Util {
                 }
             }
         } else {
-            if (!dir.delete()) {
-                if (RestLogging.restLogger.isLoggable(Level.WARNING)) {
-                    RestLogging.restLogger.log(Level.WARNING, RestLogging.UNABLE_DELETE_FILE, dir.getAbsolutePath());
-                }
-                dir.deleteOnExit();
-            }
+            FileUtils.deleteFileNowOrLater(dir);
         }
 
     }
@@ -519,7 +516,7 @@ public class Util {
                     out.close();
                 }
             } catch (IOException ex) {
-                RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, 
+                RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION,
                         ex.getMessage());
             }
         }

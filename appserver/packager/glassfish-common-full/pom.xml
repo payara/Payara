@@ -40,11 +40,11 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -122,35 +122,35 @@
         
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>sun-as-jsr88-dm-frag</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>mejb-frag</artifactId>
 	    <version>${project.version}</version>
 	    <type>zip</type>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.external</groupId>
+           <groupId>fish.payara.server.internal.packager</groupId>
            <artifactId>jaxr-ra</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
        </dependency>
        <dependency>
-           <groupId>fish.payara.admingui</groupId>
+           <groupId>fish.payara.server.internal.admingui</groupId>
 	   <artifactId>console-common-full-plugin</artifactId>
            <version>${project.version}</version>
        </dependency> 
        <dependency>
-           <groupId>org.glassfish.main.external</groupId>
+           <groupId>fish.payara.server.internal.packager</groupId>
            <artifactId>ant</artifactId>
            <version>${project.version}</version>
        </dependency>
@@ -159,27 +159,27 @@
        	till 19614 is resolved.
        -->
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>glassfish-batch-connector</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>glassfish-batch-commands</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.main.batch</groupId>
+           <groupId>fish.payara.server.internal.batch</groupId>
            <artifactId>batch-databases</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
        </dependency>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <groupId>jakarta.batch</groupId>
+            <artifactId>jakarta.batch-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.server.internal.batch</groupId>
             <artifactId>payara-jbatch</artifactId>
            <version>${project.version}</version>
         </dependency>
@@ -190,8 +190,8 @@
          -->
 
         <dependency>
-            <groupId>javax.xml.rpc</groupId>
-            <artifactId>javax.xml.rpc-api</artifactId>
+            <groupId>jakarta.xml.rpc</groupId>
+            <artifactId>jakarta.xml.rpc-api</artifactId>
         </dependency>  
     </dependencies>
 </project>

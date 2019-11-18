@@ -98,16 +98,10 @@ public class Util {
     /**
      * Starts the singleton provider for weld.
      * <p>
-     * This will be {@link ACLSingletonProvider} if there is ear support, otherwise {@link TCCLSingletonProvider}
+     * This will be {@link ACLSingletonProvider}
      */
     public static void initializeWeldSingletonProvider() {
-      boolean earSupport = false;
-      try {
-          Class.forName("org.glassfish.javaee.full.deployment.EarClassLoader");
-          earSupport = true;
-      } catch (ClassNotFoundException ignore) {
-      }
-      SingletonProvider.initialize(earSupport ? new ACLSingletonProvider() : new TCCLSingletonProvider());
+        SingletonProvider.initialize(new ACLSingletonProvider());
     }
 
 }

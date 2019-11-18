@@ -96,6 +96,9 @@ public final class StableDataset extends ConstantDataset {
 
     @Override
     public SeriesDataset add(long time, long value) {
+        if (time == lastTime()) {
+            return new PartialDataset(this, time, value + lastValue());
+        }
         return value == lastValue() ? new StableDataset(this, time) : new PartialDataset(this, time, value);
     }
 

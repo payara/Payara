@@ -41,17 +41,17 @@
 
 -->
 
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
+    <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
     <artifactId>jdbc-ra</artifactId>
-    <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
     <version>5.194-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
+  <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core</groupId>
   <artifactId>jdbc-core</artifactId>
   <packaging>glassfish-jar</packaging>
   
@@ -78,17 +78,17 @@
 
   <dependencies>
       <dependency>
-          <groupId>org.glassfish.main.common</groupId>
+          <groupId>fish.payara.server.internal.common</groupId>
           <artifactId>glassfish-api</artifactId>
           <version>${project.version}</version>
       </dependency>		    
       <dependency>
-          <groupId>org.glassfish.main.connectors</groupId>
+          <groupId>fish.payara.server.internal.connectors</groupId>
           <artifactId>connectors-internal-api</artifactId>
           <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.glassfish.main.common</groupId>
+          <groupId>fish.payara.server.internal.common</groupId>
           <artifactId>common-util</artifactId>
           <version>${project.version}</version>
       </dependency>
@@ -101,12 +101,12 @@
           <artifactId>gmbal</artifactId>
       </dependency>
       <dependency>
-          <groupId>fish.payara.payara-modules</groupId>
+          <groupId>fish.payara.server.internal.payara-modules</groupId>
           <artifactId>requesttracing-core</artifactId>
           <version>${project.version}</version>
       </dependency>
         <dependency>
-            <groupId>org.glassfish.main.jdbc</groupId>
+            <groupId>fish.payara.server.internal.jdbc</groupId>
             <artifactId>jdbc-config</artifactId>
             <version>${project.version}</version>
         </dependency>

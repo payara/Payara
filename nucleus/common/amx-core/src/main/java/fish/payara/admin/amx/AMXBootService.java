@@ -72,6 +72,7 @@ public class AMXBootService implements ConfigListener {
     ServiceLocator habitat;
     
     private boolean enabled;
+    private boolean dynamic;
     
     @PostConstruct
     public void postConstruct(){
@@ -87,32 +88,27 @@ public class AMXBootService implements ConfigListener {
         bootAMX.bootAMX();
     }
     
-    public void setEnabled(boolean enabled){
+    public void setEnabled(boolean enabled, boolean dynamic) {
         this.enabled = enabled;
-        if (enabled){
+        this.dynamic = dynamic;
+        if (enabled && dynamic) {
             startup();
-        }   
+        }
     }
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         UnprocessedChangeEvents unchanged = null;
-        for (PropertyChangeEvent event: events){
-            if (event.getPropertyName().contains("enabled")){
+
+        for (PropertyChangeEvent event : events) {
+            if (event.getPropertyName().contains("enabled")) {
                 String change = (String) event.getNewValue();
-                if (change.equalsIgnoreCase("false")){
-                    unchanged = new UnprocessedChangeEvents(new UnprocessedChangeEvent(event, "Unable to stop AMX dynamically"));
-                } else if (change.equalsIgnoreCase("true")){
-                    setEnabled(true);
-                } else {
-                    throw new IllegalArgumentException("Not boolean change" + event.toString());
+                if (change.equalsIgnoreCase("false") && dynamic) {
+                    unchanged = new UnprocessedChangeEvents(new UnprocessedChangeEvent(event, "AMX can't be disabled dynamically."));
                 }
             }
         }
 
         return unchanged;
     }
-    
-    
-    
 }

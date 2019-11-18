@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.main.appclient.server.appclient-server-core; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.appclient.server.appclient-server-core; bundle-version=${project.osgi.version}

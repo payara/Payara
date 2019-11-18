@@ -42,21 +42,22 @@
 
 package com.sun.enterprise.admin.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import com.sun.enterprise.util.JDK;
 import java.io.IOException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
@@ -69,6 +70,9 @@ public final class HttpConnectorAddress {
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
     private static final String DEFAULT_PROTOCOL = TLS12;
+    private static final String ZULU_JDK_VENDOR = "Azul";
+    private static final int MINIMUM_MAJOR_VERSION = 9;
+    private static final int MINIMUM_UPDATE_VERSION = 222;
 
     private String host;
     private int    port;
@@ -203,6 +207,14 @@ public final class HttpConnectorAddress {
                                         break;
 
                         case TLS13: protocol = TLS13;
+                                        if (JDK.getMajor() < MINIMUM_MAJOR_VERSION) {
+                                            if (JDK.getVendor().contains(ZULU_JDK_VENDOR) && 
+                                                    JDK.getUpdate() >= MINIMUM_UPDATE_VERSION) {
+                                                protocol = TLS13;
+                                            } else {
+                                                protocol = DEFAULT_PROTOCOL;
+                                            }
+                                        }
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);

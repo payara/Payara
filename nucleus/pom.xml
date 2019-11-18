@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
@@ -146,7 +146,7 @@
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
-        <javaee.api.version>8.0</javaee.api.version>
+        <jakartaee.api.version>8.0.0</jakartaee.api.version>
 
         <!-- Servlet -->
         <servlet-api.version>4.0.2</servlet-api.version>
@@ -162,16 +162,16 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.payara-p5</jersey.version>
+        <jersey.version>2.29.1.payara-p1</jersey.version>
 
         <!-- Bean Validation -->
-        <javax.validation.version>2.0.1.Final</javax.validation.version>
+        <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.0.16.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.0.16.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
-        <javax.el.version>3.0.1-b11</javax.el.version>
-        <javax.el-api.version>3.0.1-b06</javax.el-api.version>
+        <jakarta.el.version>3.0.3</jakarta.el.version>
+        <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
 
         <!-- JAX-B -->
         <jaxb-api.version>2.3.2</jaxb-api.version>
@@ -181,17 +181,17 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.3</mail.version>
+        <mail.version>1.6.4.payara-p1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
-        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+        <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
 
 
         <!-- Other -->
 
-        <hk2.version>2.6.1</hk2.version>
-        <hk2.plugin.version>2.6.1</hk2.plugin.version>
+        <hk2.version>2.6.1.payara-p1</hk2.version>
+        <hk2.plugin.version>2.6.1.payara-p1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>
@@ -216,7 +216,7 @@
         <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.24</snakeyaml.version>
 
@@ -247,7 +247,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>7.1</asm.version>
+        <asm.version>7.2</asm.version>
         <ha-api.version>3.1.12</ha-api.version>
         <hazelcast.version>3.12</hazelcast.version>
         <hazelcast.kubernetes.version>1.3.1</hazelcast.kubernetes.version>
@@ -896,14 +896,20 @@ Parent is ${project.parent}</echo>
 
             <!-- Bean Validation (BVal) -->
             <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${javax.validation.version}</version>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate.validator.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
@@ -914,14 +920,14 @@ Parent is ${project.parent}</echo>
 
             <!-- Expression Language (EL) -->
             <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>${javax.el-api.version}</version>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.el</artifactId>
-                <version>${javax.el.version}</version>
+                <artifactId>jakarta.el</artifactId>
+                <version>${jakarta.el.version}</version>
             </dependency>
 
 
@@ -938,9 +944,9 @@ Parent is ${project.parent}</echo>
             </dependency>
 
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax.annotation-api.version}</version>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta.annotation-api.version}</version>
             </dependency>
 
             <dependency>
@@ -1393,7 +1399,7 @@ Parent is ${project.parent}</echo>
                             </configuration>
                             <dependencies>
                                 <dependency>
-                                    <groupId>org.glassfish.main</groupId>
+                                    <groupId>fish.payara.server.internal</groupId>
                                     <artifactId>copyright</artifactId>
                                     <version>${project.version}</version>
                                 </dependency>

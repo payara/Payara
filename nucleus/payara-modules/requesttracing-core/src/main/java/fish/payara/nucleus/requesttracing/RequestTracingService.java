@@ -84,9 +84,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,7 +158,13 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
     private RequestTraceStoreInterface historicRequestTraceStore;
     private RequestTraceStoreInterface requestTraceStore;
-    
+
+    /**
+     * Hold the last not yet collected traces. The size of the queue is limited by removing oldest element in case it
+     * gets larger than a fixed limit before adding a new trace to the queue.
+     */
+    private final ConcurrentLinkedQueue<RequestTrace> uncollectedTraces = new ConcurrentLinkedQueue<>();
+
     /**
      * The filter which determines whether to sample a given request
      */
@@ -239,6 +244,13 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         }
 
         if (executionOptions != null && executionOptions.isEnabled()) {
+            if (executionOptions.getAdaptiveSamplingEnabled()) {
+                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
+                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
+            } else {
+                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
+            }
+
             // Set up the historic request trace store if enabled
             if (executionOptions.isHistoricTraceStoreEnabled()) {
                 historicRequestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), true);
@@ -274,13 +286,6 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                         0, period, TimeUnit.SECONDS);
             }
             
-            if (executionOptions.getAdaptiveSamplingEnabled()) {
-                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
-                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
-            } else {
-                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
-            }
-
             logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
         }
     }
@@ -438,7 +443,12 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                     return;
                 }
             }
+            // collect any trace exceeding the threshold
+            if (uncollectedTraces.size() > 50) {
+                uncollectedTraces.poll();
+            }
             RequestTrace requestTrace = requestEventStore.getTrace();
+            uncollectedTraces.add(requestTrace);
             
             Runnable addTask = () -> {
                 RequestTrace removedTrace = requestTraceStore.addTrace(requestTrace);
@@ -554,43 +564,37 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector tracingCollector = rootCollector.in("tracing");
-        if (requestEventStore != null) {
-            for (Entry<Thread, RequestTrace> entry : requestEventStore.getTraces()) {
-                collectTrace(tracingCollector, entry.getValue());
-            }
-        }
-        if (requestTraceStore != null) {
-            collectTraces(tracingCollector, requestTraceStore.getTraces());
-        }
-        if (historicRequestTraceStore != null) {
-            collectTraces(tracingCollector, historicRequestTraceStore.getTraces());
-        }
-    }
-
-    private static void collectTraces(MonitoringDataCollector collector, Collection<RequestTrace> traces) {
-        if (traces != null) {
-            for (RequestTrace trace : traces) {
-                collectTrace(collector, trace);
-            }
+        MonitoringDataCollector tracingCollector = rootCollector.in("trace");
+        RequestTrace trace = uncollectedTraces.poll();
+        while (trace != null) {
+            collectTrace(tracingCollector, trace);
+            trace = uncollectedTraces.poll();
         }
     }
 
     private static void collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace) {
-        UUID traceId = trace.getTraceId();
-        if (traceId != null) {
-            MonitoringDataCollector traceCollector = tracingCollector.tag("traceid", traceId.toString())
-                    .collect("start", trace.getStartTime())
-                    .collect("end", trace.getEndTime())
-                    .collectNonZero("elapsed", trace.getElapsedTime());
-            for (RequestTraceSpan span : trace.getTraceSpans()) {
-                traceCollector.entity(span.getId().toString()).tag("op", span.getEventName())
-                    .collect("start", span.getStartInstant())
-                    .collect("end", span.getTraceEndTime())
-                    .collectNonZero("duration", span.getSpanDuration())
-                    .collectNonZero("tags", span.getSpanTags().size())
-                    .collectNonZero("refs", span.getSpanReferences().size());
+        try {
+            UUID traceId = trace.getTraceId();
+            if (traceId != null) {
+                String group = metricGroupName(trace);
+                long duration = trace.getTraceSpans().getFirst().getSpanDuration() / 1000000;
+                tracingCollector.group(group).collect("Duration", duration);
             }
+        } catch (Exception ex) {
+            logger.log(Level.FINE, "Failed to collect trace", ex);
         }
+    }
+
+    public static String metricGroupName(RequestTrace trace) {
+        return stripPackageName(trace.getTraceSpans().getLast().getEventName());
+    }
+
+    public static String stripPackageName(String eventName) {
+        int javaMethodDot = eventName.lastIndexOf('.');
+        int httpMethodDivider = eventName.indexOf(':');
+        return javaMethodDot < 0 || httpMethodDivider < 0
+                ? eventName
+                : eventName.substring(0, httpMethodDivider) + "_"
+                        + eventName.substring(eventName.lastIndexOf('.', javaMethodDot - 1) + 1);
     }
 }

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.security.common;
 
 import static com.sun.enterprise.util.Utility.convertCharArrayToByteArray;
@@ -552,7 +553,7 @@ public final class FileRealmStorageManager {
             while (input.ready()) {
                 String line = input.readLine();
                 
-                if (line != null && !line.startsWith(COMMENT) && line.indexOf(FIELD_SEP) >= 0) {
+                if (line != null && !line.startsWith(COMMENT) && line.contains(FIELD_SEP)) {
                     User user = decodeUser(line, groupSizeMap);
                     
                     userTable.put(user.getName(), user);
@@ -803,7 +804,7 @@ public final class FileRealmStorageManager {
             hc = 17 * hc + Arrays.hashCode(this.salt);
             hc = 17 * hc + Arrays.hashCode(this.hash);
             hc = 17 * hc + (this.algo != null ? this.algo.hashCode() : 0);
-            hc = 17 * super.hashCode();
+            hc = 17 * hc + super.hashCode();
             return hc;
         }
 

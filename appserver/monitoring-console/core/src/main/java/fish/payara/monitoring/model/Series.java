@@ -42,6 +42,7 @@ package fish.payara.monitoring.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 /**
  * An immutable structured representation of a data series key parsed into its {@link #tags} and {@link #metric} name.
@@ -50,20 +51,71 @@ import java.util.Arrays;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
+    private static final char QUERY_WILDCARD = '*';
+    public static final char TAG_ASSIGN = ':';
+    public static final char TAG_SEPARATOR = ' ';
+    private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
+
+    private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
+
     private final String metric;
     private final String[] tags;
     private final String[] values;
 
     public Series(String key) {
-        String[] parts = key.split("[ ,;]+");
+        String[] parts = key.split(SPLIT_PATTERN);
         this.tags = new String[parts.length - 1];
         this.values = new String[tags.length];
         this.metric = parts[parts.length - 1].intern();
         for (int i = 0; i < parts.length - 1; i++) {
-            int eqIndex = parts[i].indexOf('=');
+            int eqIndex = parts[i].indexOf(TAG_ASSIGN);
             tags[i] = parts[i].substring(0, eqIndex).intern();
             values[i] = parts[i].substring(eqIndex + 1).intern();
         }
+    }
+
+    public String getMetric() {
+        return metric;
+    }
+
+    public int tagCount() {
+        return tags.length;
+    }
+
+    public String key(int index) {
+        return tags[index];
+    }
+
+    public String value(int index) {
+        return values[index];
+    }
+
+    public boolean isPattern() {
+        if (isWildCard(metric)) {
+            return true;
+        }
+        for (int i = 0; i < values.length; i++) {
+            if (isWildCard(values[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWildCard(String str) {
+        return str.length() == 1 && str.charAt(0) == QUERY_WILDCARD;
+    }
+
+    public boolean matches(Series other) {
+        if (tagCount() != other.tagCount() || !isWildCard(metric) && !metric.equals(other.metric)) {
+            return false;
+        }
+        for (int i = 0; i < tags.length; i++) {
+            if (!tags[i].equals(other.tags[i]) || !isWildCard(values[i]) && !values[i].equals(other.values[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -113,9 +165,21 @@ public final class Series implements Comparable<Series>, Serializable {
     public String toString() {
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < tags.length; i++) {
-            str.append(tags[i]).append('=').append(values[i]).append(' ');
+            str.append(tags[i]).append(TAG_ASSIGN).append(values[i]).append(TAG_SEPARATOR);
         }
         str.append(metric);
         return str.toString();
+    }
+
+    public static boolean isSpecialTagCharacter(char c) {
+        if (c == TAG_ASSIGN || c == QUERY_WILDCARD) {
+            return true;
+        }
+        for (char sep : TAG_SEPARATORS) {
+            if (sep == c) {
+                return true;
+            }
+        }
+        return false;
     }
 }
