@@ -42,12 +42,11 @@ package fish.payara.microprofile.metrics.impl;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
+
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 
 /**
@@ -60,56 +59,31 @@ import org.eclipse.microprofile.metrics.ConcurrentGauge;
 public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     private final LongAdder count = new LongAdder();
-    /**
-     * Last point for which clearOld() has been run
-     */
-    private Instant lastInstant = getCurrentMinute();
 
     /**
-     * A map containing all the max count values that the count of the gauge has
-     * been at in the last and current minutes. The key is the time in minute
-     * that the value changed, the value is the max value of the count at the
-     * moment before it changed
+     * Minimum and maximum of current minute
      */
-    private final ConcurrentMap<Instant, Long> maxCounts
-            = new ConcurrentHashMap<>();
+    private AtomicReference<MinMax> openStats = new AtomicReference<>(new MinMax());
 
     /**
-     * A map containing all the min count values that the count of the gauge has
-     * been at in the last and current minutes. The key is the time in minute
-     * that the value changed, the value is the min value of the count at the
-     * moment before it changed
+     * Minimum and maximum during previously completed minute
      */
-    private final ConcurrentMap<Instant, Long> minCounts
-            = new ConcurrentHashMap<>();
+    private volatile MinMax closedStats = new MinMax();
 
     /**
      * Increment the counter by one.
      */
     @Override
     public void inc() {
-        clearOld();
-        Instant currentMin = getCurrentMinute();
-
-            count.increment();
-            long latestCount = count.longValue();
-            Long value = maxCounts.getOrDefault(currentMin, 0L);
-            if (latestCount > value) {
-                maxCounts.put(currentMin, latestCount);
-            }
+        // adder does not have atomic increment, but has better throughput
+        count.increment();
+        currentStats().update(count.longValue());
     }
 
     @Override
     public void dec() {
-        clearOld();
-        Instant currentMin = getCurrentMinute();
-
-            count.decrement();
-            long latestCount = count.longValue();
-            Long value = minCounts.getOrDefault(currentMin, Long.MAX_VALUE);
-            if (latestCount < value) {
-                minCounts.put(currentMin, latestCount);
-            }
+        count.decrement();
+        currentStats().update(count.longValue());
     }
 
     /**
@@ -124,41 +98,70 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     @Override
     public long getMax() {
-        clearOld();
-        return maxCounts.getOrDefault(getPreviousMinute(), 0L);
+        currentStats();
+        return closedStats.max.get();
     }
 
     @Override
     public long getMin() {
-        clearOld();
-        // if it was not called in the last minute, then the value is 0
-        // but if it was called at least once in the last minute then the
-        //value is non-zero, even if it was 0 at some point duing that minute
-        if (minCounts.isEmpty()) {
-            return 0;
-        }
-        return minCounts.getOrDefault(getPreviousMinute(), 0L);
+        currentStats();
+        return closedStats.min.get();
     }
 
-    /**
-     * Removes counts that occurred before the previous minute that finished
-     */
-    private void clearOld() {
-        Instant previousMinute = getPreviousMinute();
-        if (previousMinute.equals(lastInstant)) {
-            //already called in this minute
-            return;
-        }
-            maxCounts.entrySet().removeIf(e -> e.getKey().isBefore(previousMinute));
-            minCounts.entrySet().removeIf(e -> e.getKey().isBefore(previousMinute));
-            lastInstant = previousMinute;
-    }
-
-    private Instant getCurrentMinute() {
+    private static Instant getCurrentMinute() {
         return Instant.now().truncatedTo(ChronoUnit.MINUTES);
     }
 
-    private Instant getPreviousMinute() {
-        return getCurrentMinute().minus(1, ChronoUnit.MINUTES);
+    private MinMax currentStats() {
+        MinMax possiblyOutdated = openStats.getAndUpdate(MinMax::replaceIfOld);
+        if (possiblyOutdated.finished) {
+            // we got previous MinMax instance, that has set finished=true just before it was replaced
+            closedStats = possiblyOutdated;
+            // if value was not updated for longer than one minute, this is still correct answer,
+            // as the gauge doesn't reset by itself.
+            return openStats.get();
+        } else {
+            return possiblyOutdated;
+        }
+    }
+
+    /**
+     * Stats captured by the gauge. Note that even if it is stored in AtomicReference, the class itself may be
+     * accessed concurrently.
+     */
+    private static class MinMax {
+        final AtomicLong min = new AtomicLong(0);
+        final AtomicLong max = new AtomicLong(0);
+        final Instant minute;
+        boolean finished;
+
+        private MinMax() {
+            this.minute = getCurrentMinute();
+        }
+
+        private MinMax(Instant minute) {
+            this.minute = minute;
+        }
+
+        /**
+         * The root of the trick is to call ref.getAndUpdate(MinMax::replaceIfOld). If minute is over, this instance
+         * is marked as finished, and new one is created for current minute. Since client gets this instance, it can
+         * check for finished flag, and in such case store this as closed stats.
+         * @return
+         */
+        MinMax replaceIfOld() {
+            Instant now = getCurrentMinute();
+            if (!now.equals(minute)) {
+                this.finished = true;
+                return new MinMax(now);
+            } else {
+                return this;
+            }
+        }
+
+        void update(long value) {
+            min.accumulateAndGet(value, Math::min);
+            max.accumulateAndGet(value, Math::max);
+        }
     }
 }
