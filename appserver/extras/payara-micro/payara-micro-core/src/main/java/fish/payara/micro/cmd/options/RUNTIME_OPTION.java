@@ -86,6 +86,7 @@ public enum RUNTIME_OPTION {
     logproperties(true, new FileValidator(true, true, false)),
     accesslog(true, new DirectoryValidator(true, true, true)),
     accesslogformat(true),
+    accessloginterval(true),
     enablerequesttracing(false),
     requesttracingthresholdunit(true),
     requesttracingthresholdvalue(true),
