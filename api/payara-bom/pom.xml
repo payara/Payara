@@ -123,13 +123,7 @@
             </dependency>
             <dependency>
                 <groupId>jakarta.platform</groupId>
-                <artifactId>jakartaee-api</artifactId>
-                <version>${jakarta-platform.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.platform</groupId>
-                <artifactId>jakartaee-web-api</artifactId>
+                <artifactId>jakarta.jakartaee-web-api</artifactId>
                 <version>${jakarta-platform.version}</version>
                 <scope>provided</scope>
             </dependency>
