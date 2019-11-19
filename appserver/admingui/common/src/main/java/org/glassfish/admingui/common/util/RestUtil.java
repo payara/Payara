@@ -885,7 +885,7 @@ public class RestUtil {
         }
         Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                //        .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .post(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
