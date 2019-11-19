@@ -204,6 +204,7 @@
         <websocket-api.version>1.1.2</websocket-api.version>
         <concurrent-api.version>1.1.2</concurrent-api.version>
         <concurrent.version>1.0.payara-p2</concurrent.version>
+        <asm.version>7.2</asm.version>
     </properties>
 
     <profiles>
