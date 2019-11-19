@@ -116,10 +116,14 @@ class DirWatcher {
             // Quite often the root path doesn't even exist yet (and registering for watch would fail)
             // In such case we register watcher for parent directory so it would register the main watcher
             // when directory is created
-            processors.computeIfAbsent(path, p -> ItemChecker.registerNonExisting(p, watchService));
+            processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerNonExisting(p, watchService) : watcher.subscribe());
             processors.computeIfAbsent(path.getParent(), p -> new ParentWatcher(p, watchService));
+            while (Files.notExists(path.getParent())) {
+                path = path.getParent();
+                processors.computeIfAbsent(path.getParent(), p -> new ParentWatcher(p, watchService));
+            }
         } else {
-            processors.computeIfAbsent(path, p -> ItemChecker.registerExisting(p, watchService));
+            processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerExisting(p, watchService) : watcher.subscribe());
         }
     }
 
@@ -171,15 +175,17 @@ class DirWatcher {
             boolean valid = key.reset();
             if (!valid) {
                 processor.cancelled();
-                processors.remove(root);
             }
         }
     }
 
     private void unregisterFromFilesystem(Path path) {
-        WatchProcessor processor = processors.remove(path);
+        WatchProcessor processor = processors.get(path);
         if (processor != null) {
-            processor.cancelled();
+            if (processor.unsubscribe()) {
+                processor.cancelled();
+                processors.remove(path);
+            }
         }
     }
 
