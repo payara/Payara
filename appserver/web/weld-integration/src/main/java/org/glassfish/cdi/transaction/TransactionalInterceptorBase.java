@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -177,9 +177,10 @@ public class TransactionalInterceptorBase implements Serializable {
         if (transactionManager == null) {
             try {
                 synchronized (TransactionalInterceptorBase.class) {
-                    if (transactionManager == null)
+                    if (transactionManager == null) {
                         transactionManager = (TransactionManager)
                             new InitialContext().lookup("java:appserver/TransactionManager");
+                    }
                 }
             } catch (NamingException e) {
                 _logger.log(SEVERE, CDI_JTA_NAME_EXCEPTION, e);
@@ -195,7 +196,8 @@ public class TransactionalInterceptorBase implements Serializable {
     }
 
     boolean isLifeCycleMethod(InvocationContext ctx) {
-        return ctx.getMethod().getAnnotation(PostConstruct.class) != null || ctx.getMethod().getAnnotation(PreDestroy.class) != null;
+        return ctx.getMethod().getAnnotation(PostConstruct.class) != null
+            || ctx.getMethod().getAnnotation(PreDestroy.class) != null;
     }
 
     public Object proceed(InvocationContext ctx) throws Exception {

@@ -47,11 +47,10 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-concurrent-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Concurrent Plugin</name>
     <description>Concurrent (JSR236)  plugin bundle for Payara Admin Console</description>
 

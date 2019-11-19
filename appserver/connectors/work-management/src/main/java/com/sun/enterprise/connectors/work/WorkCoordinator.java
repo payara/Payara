@@ -38,23 +38,31 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.connectors.work;
 
 
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.corba.ee.spi.threadpool.WorkQueue;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ResourceAdapterAssociation;
-import javax.resource.spi.work.*;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ResourceAdapterAssociation;
+import javax.resource.spi.work.ExecutionContext;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkCompletedException;
+import javax.resource.spi.work.WorkEvent;
+import javax.resource.spi.work.WorkException;
+import javax.resource.spi.work.WorkListener;
+import javax.resource.spi.work.WorkRejectedException;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * WorkCoordinator : Coordinates one work's execution. Handles all
@@ -91,10 +99,10 @@ public final class WorkCoordinator {
 
     private WorkManagementProbeProvider probeProvider = null;
 
-    private ConnectorRuntime runtime;
+    private final ConnectorRuntime runtime;
     private String raName = null;
 
-    private WorkContextHandlerImpl contextHandler;
+    private final WorkContextHandlerImpl contextHandler;
 
     /**
      * Constructs a coordinator
@@ -130,7 +138,7 @@ public final class WorkCoordinator {
     public String getRAName(){
         return raName;
     }
- 
+
     /**
      * Submits the work to the queue and generates a work accepted event.
      */
@@ -168,7 +176,7 @@ public final class WorkCoordinator {
      */
     public void preInvoke() {
 
-        // If the work is just scheduled, check whether it has timed out or not. 
+        // If the work is just scheduled, check whether it has timed out or not.
         if (waitMode == NO_WAIT && timeout > -1) {
             long elapsedTime = System.currentTimeMillis() - startTime;
 
@@ -217,7 +225,7 @@ public final class WorkCoordinator {
                     new WorkEvent(this, WorkEvent.WORK_STARTED, work, null));
         }
 
-        //set the unauthenticated securityContext before executing the work            
+        //set the unauthenticated securityContext before executing the work
         com.sun.enterprise.security.SecurityContext.setUnauthenticatedContext();
 
     }
@@ -253,9 +261,7 @@ public final class WorkCoordinator {
 
                     //If exception is not null, the work has already been rejected.
                     if (listener != null) {
-                        listener.workCompleted(
-                                new WorkEvent(this, WorkEvent.WORK_COMPLETED, work,
-                                        getException()));
+                        listener.workCompleted(new WorkEvent(this, WorkEvent.WORK_COMPLETED, work, getException()));
                     }
                 }
 
@@ -266,7 +272,7 @@ public final class WorkCoordinator {
             } catch(Exception e) {
 	            logger.log(Level.WARNING, e.getMessage());
             }finally{
-                //reset the securityContext once the work has completed            
+                //reset the securityContext once the work has completed
                 com.sun.enterprise.security.SecurityContext.setUnauthenticatedContext();
             }
         }
@@ -402,6 +408,7 @@ public final class WorkCoordinator {
      *
      * @return Unique identification concatenated by work object.
      */
+    @Override
     public String toString() {
         return id + ":" + work;
     }
@@ -412,6 +419,7 @@ public final class WorkCoordinator {
      * @param state CREATED or Either STARTED or COMPLETED or TIMEDOUT
      */
     public synchronized void setState(int state) {
+        logger.finest(() -> String.format("setState(state=%s)", state));
         this.state = state;
     }
 
@@ -465,7 +473,7 @@ public final class WorkCoordinator {
         }
         return ec;
     }
-    
+
     public static synchronized int increaseSeed() {
         return ++seed;
     }

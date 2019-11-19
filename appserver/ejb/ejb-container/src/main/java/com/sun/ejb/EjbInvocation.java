@@ -41,17 +41,27 @@
 
 package com.sun.ejb;
 
-//XXX: import javax.xml.rpc.handler.MessageContext;
-/* HARRY : JACC Changes */
-
-import com.sun.ejb.containers.*;
+import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.EJBContextImpl;
+import com.sun.ejb.containers.EJBLocalRemoteObject;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.ejb.containers.EjbFutureTask;
+import com.sun.ejb.containers.SimpleEjbResourceHandlerImpl;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
+import com.sun.ejb.containers.interceptors.InterceptorManager.AroundInvokeContext;
 import com.sun.ejb.containers.interceptors.InterceptorUtil;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.ResourceHandler;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.rmi.UnmarshalException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import javax.ejb.EJBContext;
 import javax.ejb.Timer;
@@ -61,11 +71,10 @@ import javax.transaction.Transaction;
 import javax.xml.rpc.handler.MessageContext;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.WebServiceContext;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.rmi.UnmarshalException;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ResourceHandler;
+import org.glassfish.ejb.api.EJBInvocation;
 
 /**
  * The EjbInvocation object contains state associated with an invocation
@@ -75,32 +84,13 @@ import java.util.Map;
  * EJB(Local)Object/EJB(Local)Home before and after an invocation.
  */
 
-public class EjbInvocation
-    extends ComponentInvocation
-    implements InvocationContext, TransactionOperationsManager,
-         org.glassfish.ejb.api.EJBInvocation, InterceptorManager.AroundInvokeContext
-{
-
+public class EjbInvocation //
+    extends ComponentInvocation //
+    implements InvocationContext, TransactionOperationsManager, EJBInvocation, AroundInvokeContext {
 
     public ComponentContext context;
 
     private TransactionOperationsManager transactionOperationsManager;
-
-    EjbInvocation(String compEnvId, Container container) {
-        super.componentId = compEnvId;
-        super.container = container;
-        super.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.EJB_INVOCATION);
-
-        EjbBundleDescriptor ejbBundleDesc = container.getEjbDescriptor().getEjbBundleDescriptor();
-        moduleName = ejbBundleDesc.getModuleName();
-        appName = ejbBundleDesc.getApplication().getAppName();
-        registrationName = ejbBundleDesc.getApplication().getRegistrationName();
-
-        //By default we enable TransactionOperationsManager checks. But EjbInvocation.clone()
-        //  clears transactionOperationsManager so that, be default, cloned invocations
-        //  doesn't enforce Transaction Operations checks.
-        transactionOperationsManager = this;
-    }
 
     /**
      * The EJBObject/EJBLocalObject which created this EjbInvocation object.
@@ -112,13 +102,13 @@ public class EjbInvocation
      * Local flag: true if this invocation was through the 2.x (or earlier)
      * Local client view, the 3.x local client view or a no-interface client view.
      */
-    public boolean isLocal=false;
+    public boolean isLocal = false;
 
     /**
      * True if this invocation was made through the 2.x (or earlier) Remote
      * client view or the 3.x remote client view.
      */
-    public boolean isRemote=false;
+    public boolean isRemote = false;
 
     /**
      * InvocationInfo object caches information about the current method
@@ -134,29 +124,29 @@ public class EjbInvocation
     /**
      * true if this is a web service invocation
      */
-    public boolean isWebService=false;
+    public boolean isWebService = false;
 
     /**
      * true if this is an ejb timeout method invocation
      */
-    public boolean isTimerCallback=false;
+    public boolean isTimerCallback = false;
 
     /**
      * true if this is a message-driven bean invocation
      */
-    public boolean isMessageDriven=false;
+    public boolean isMessageDriven = false;
 
     /**
      * true if this is an invocation on the home object
      * this is required for jacc.
      */
-    public boolean isHome=false;
+    public boolean isHome = false;
 
     /**
      * Home, Remote, LocalHome, Local, WebService, or business interface
      * through which a synchronous ejb invocation was made.
      */
-    public Class clientInterface;
+    public Class<?> clientInterface;
 
     /**
      * Method to be invoked. This is a method of the EJB's local/remote
@@ -189,21 +179,12 @@ public class EjbInvocation
      */
     public Throwable exceptionFromBeanMethod;
 
-
     /**
      * The client's transaction if any.
      * Set by the Container during preInvoke() and used by the Container
      * during postInvoke().
      */
     public Transaction clientTx;
-
-    /**
-     * The EJBContext object of the bean instance being invoked.
-     * Set by the Container during preInvoke() and used by the Container
-     * during postInvoke().
-     */
-    // Moved to com/sun/enterprise/ComponentInvocation
-    // public ComponentContext context;
 
     /**
      * The transaction attribute of the bean method. Set in generated
@@ -282,6 +263,38 @@ public class EjbInvocation
     // True if lock is currently held for this invocation
     private boolean holdingSFSBSerializedLock = false;
 
+    private int interceptorIndex;
+
+    public Method beanMethod;
+
+    /** Only set for web service invocations. */
+    private WebServiceContext webServiceContext;
+
+    /** Only set for EJB JAXWS */
+    // FIXME: private Message message = null;
+    private Object message;
+
+    private SOAPMessage soapMessage = null;
+
+    private Map<String, Object> contextData;
+
+
+    EjbInvocation(String compEnvId, Container container) {
+        super.componentId = compEnvId;
+        super.container = container;
+        super.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.EJB_INVOCATION);
+
+        EjbBundleDescriptor ejbBundleDesc = container.getEjbDescriptor().getEjbBundleDescriptor();
+        moduleName = ejbBundleDesc.getModuleName();
+        appName = ejbBundleDesc.getApplication().getAppName();
+        registrationName = ejbBundleDesc.getApplication().getRegistrationName();
+
+        //By default we enable TransactionOperationsManager checks. But EjbInvocation.clone()
+        //  clears transactionOperationsManager so that, be default, cloned invocations
+        //  doesn't enforce Transaction Operations checks.
+        transactionOperationsManager = this;
+    }
+
     public ClassLoader getOriginalContextClassLoader() {
         return originalContextClassLoader;
     }
@@ -330,6 +343,7 @@ public class EjbInvocation
         this.doTxProcessingInPostInvoke = doTxProcessingInPostInvoke;
     }
 
+    @Override
     public EjbInvocation clone() {
         EjbInvocation newInv = (EjbInvocation) super.clone();
 
@@ -366,6 +380,7 @@ public class EjbInvocation
      * implementation should use this method rather than directly
      * accessing the ejb field.
      */
+    @Override
     public Object getJaccEjb() {
         Object bean = null;
         if( container != null ) {
@@ -392,17 +407,17 @@ public class EjbInvocation
     }
 
     /**
-     * Returns CachedPermission associated with this invocation, or
+     * @return CachedPermission associated with this invocation, or
      * null if not available.
      */
     public Object getCachedPermission() {
-        return (invocationInfo != null) ? invocationInfo.cachedPermission :
-            null;
+        return invocationInfo == null ? null : invocationInfo.cachedPermission;
     }
 
     /**
      * @return Returns the ejbCtx.
      */
+    @Override
     public EJBContext getEJBContext() {
         return (EJBContext) this.context;
     }
@@ -438,17 +453,16 @@ public class EjbInvocation
     }
 
     public void setTransactionOperationsManager(TransactionOperationsManager transactionOperationsManager) {
-        //Note: clone() clears transactionOperationsManager so that, be default, cloned invocations
-        //  doesn't enforce Transaction Operations checks.
+        // Note: clone() clears transactionOperationsManager so that, be default, cloned invocations
+        // doesn't enforce Transaction Operations checks.
         this.transactionOperationsManager = transactionOperationsManager;
     }
-
-    //Implementation of TransactionOperationsManager methods
 
     /**
      * Called by the UserTransaction implementation to verify
      * access to the UserTransaction methods.
      */
+    @Override
     public boolean userTransactionMethodsAllowed() {
         return ((Container) container).userTransactionMethodsAllowed(this);
     }
@@ -457,6 +471,7 @@ public class EjbInvocation
      * Called by the UserTransaction lookup to verify
      * access to the UserTransaction itself.
      */
+    @Override
     public void userTransactionLookupAllowed() throws NameNotFoundException {
         ((BaseContainer) container).checkUserTransactionLookup(this);
     }
@@ -464,35 +479,19 @@ public class EjbInvocation
     /**
      * Called by the UserTransaction when transaction is started.
      */
+    @Override
     public void doAfterUtxBegin() {
         ((Container) container).doAfterBegin(this);
     }
 
-    //Implementation of InvocationContext methods
-
-    private int interceptorIndex;
-
-    public Method   beanMethod;
-
-    // Only set for web service invocations.
-    private WebServiceContext webServiceContext;
-
-    // Only set for EJB JAXWS
-    //FIXME: private Message message = null;
-    private Object message;
-
-    private SOAPMessage soapMessage = null;
-
-    private Map      contextData;
-
     public InterceptorManager.InterceptorChain getInterceptorChain() {
-        return (invocationInfo == null)
-            ? null : invocationInfo.interceptorChain;
+        return (invocationInfo == null) ? null : invocationInfo.interceptorChain;
     }
 
     /**
      * @return Returns the bean instance.
      */
+    @Override
     public Object getTarget() {
         return this.ejb;
     }
@@ -500,6 +499,7 @@ public class EjbInvocation
     /**
      * @return Returns the timer instance.
      */
+    @Override
     public Object getTimer() {
         return timer;
     }
@@ -510,13 +510,16 @@ public class EjbInvocation
      *         method being invoked.  For lifecycle callback methods,
      *         returns null.
      */
+    @Override
     public Method getMethod() {
         return getBeanMethod();
     }
+
     public Method getBeanMethod() {
         return this.beanMethod;
     }
 
+    @Override
     public Constructor getConstructor() {
         return null;
     }
@@ -527,6 +530,7 @@ public class EjbInvocation
      * getParameters() returns the values to which the parameters
      * have been set.
      */
+    @Override
     public Object[] getParameters() {
         return this.methodParams;
     }
@@ -535,15 +539,17 @@ public class EjbInvocation
      * Set the parameters that will be used to invoke the business method.
      *
      */
+    @Override
     public void setParameters(Object[] params) {
         InterceptorUtil.checkSetParameters(params, getMethod());
         this.methodParams = params;
     }
 
-    /*
-     * Method takes Object to decouple EJBInvocation interface
+    /**
+     * Method takes Object to decouple {@link EJBInvocation} interface
      * from jaxws (which isn't available in all profiles).
      */
+    @Override
     public void setWebServiceContext(Object webServiceContext) {
         // shouldn't be necessary, but to be safe
         if (webServiceContext instanceof WebServiceContext) {
@@ -554,12 +560,14 @@ public class EjbInvocation
     /**
      * @return Returns the contextMetaData.
      */
+    @Override
     public Map<String, Object> getContextData() {
         if (this.contextData == null) {
-            if (webServiceContext != null)
+            if (webServiceContext != null) {
                 this.contextData = webServiceContext.getMessageContext();
-            else
-                this.contextData = new HashMap<String, Object>();
+            } else {
+                this.contextData = new HashMap<>();
+            }
         }
         return contextData;
     }
@@ -568,6 +576,7 @@ public class EjbInvocation
      * This is for EJB JAXWS only.
      * @param message  an unconsumed message
      */
+    @Override
     public <T> void setMessage(T message) {
         this.message = message;
     }
@@ -576,6 +585,7 @@ public class EjbInvocation
      * This is for EJB JAXWS only.
      * @return the JAXWS message
      */
+    @Override
     public Object getMessage() {
         return this.message;
     }
@@ -597,12 +607,8 @@ public class EjbInvocation
         return soapMessage;
     }
 
-    /* (non-Javadoc)
-     * @see javax.interceptor.InvocationContext#proceed()
-     */
-    public Object proceed()
-        throws Exception
-    {
+    @Override
+    public Object proceed() throws Exception {
         try {
             //TODO: Internal error if getInterceptorChain() is null
             interceptorIndex++;
@@ -623,8 +629,8 @@ public class EjbInvocation
     /**
      * Print most useful fields.  Don't do all of them (yet) since there
      * are a large number.
-     * @return
      */
+    @Override
     public String toString() {
 
         StringBuilder sbuf = new StringBuilder();
@@ -649,94 +655,102 @@ public class EjbInvocation
     }
 
     // Implementation of AroundInvokeContext
+    @Override
     public Object[] getInterceptorInstances() {
         return  ((EJBContextImpl)context).getInterceptorInstances();
     }
 
+    @Override
     public  Object invokeBeanMethod() throws Throwable {
         return ((BaseContainer) container).invokeBeanMethod(this);
     }
-
-    /*********************************************************/
-
-
 
     public com.sun.enterprise.security.SecurityManager getEjbSecurityManager() {
         return ((BaseContainer)container).getSecurityManager();
     }
 
+    @Override
     public boolean isAWebService() {
         return this.isWebService;
     }
 
+    @Override
     public Object[] getMethodParams() {
         return this.methodParams;
     }
 
+    @Override
     public boolean authorizeWebService(Method m) throws Exception {
-        Exception ie = null;
-        if (isAWebService()) {
-            try {
-                this.method = m;
-                if (!((com.sun.ejb.Container)container).authorize(this)) {
-                    ie = new Exception
-                    ("Client not authorized for invocation of method {" + method + "}");
-                } else {
-                    // Record the method on which the successful
-                    // authorization check was performed.
-                    setWebServiceMethod(m);
-                }
-            } catch(Exception e) {
-                String errorMsg = "Error unmarshalling method {" + method + "} for ejb ";
-                ie = new UnmarshalException(errorMsg);
-                ie.initCause(e);
-            }
-            if ( ie != null ) {
-                exception = ie;
-                throw ie;
-            }
-	    } else {
-		    setWebServiceMethod(null);
-	    }
-        return true;
+        if (!isAWebService()) {
+            setWebServiceMethod(null);
+            return true;
+        }
+        final Exception ie = authorizeWebServiceAndSetMethod(m);
+        if (ie == null) {
+            return true;
+        }
+        exception = ie;
+        throw ie;
 	}
 
-/**
-    * Implements the  method in org.glassfish.ejb.api.EJBInvocation
-    * @return true if the SecurityManager reports that the caller is in role
-    */
-   public boolean isCallerInRole(String role) {
-       return getEjbSecurityManager().isCallerInRole(role);
-   }
+    private Exception authorizeWebServiceAndSetMethod(Method m) {
+        try {
+            this.method = m;
+            if (((com.sun.ejb.Container) container).authorize(this)) {
+                // Record the method on which the successful
+                // authorization check was performed.
+                setWebServiceMethod(m);
+                return null;
+            }
+            return new Exception("Client not authorized for invocation of method {" + method + "}");
+        } catch (Exception e) {
+            String errorMsg = "Error unmarshalling method {" + method + "} for ejb ";
+            // note: this exception is undeclared, but catched!
+            return new UnmarshalException(errorMsg, e);
+        }
+    }
 
+    /**
+     * @return true if the SecurityManager reports that the caller is in role
+     */
+    @Override
+    public boolean isCallerInRole(String role) {
+        return getEjbSecurityManager().isCallerInRole(role);
+    }
+
+    @Override
     public void setWebServiceTie(Object tie) {
         webServiceTie = tie;
     }
 
+    @Override
     public Object getWebServiceTie() {
         return webServiceTie;
     }
 
+    @Override
     public void setWebServiceMethod(Method method) {
         webServiceMethod = method;
     }
 
+    @Override
     public Method getWebServiceMethod() {
         return webServiceMethod;
     }
 
+    @Override
     public void setMessageContext(MessageContext msgContext) {
        messageContext = msgContext;
     }
 
-   public ResourceHandler getResourceHandler() {
-       ResourceHandler rh = super.getResourceHandler();
-       if (rh == null) {
-           rh = context;
-       }
-
-       return rh;
-   }
+    @Override
+    public ResourceHandler getResourceHandler() {
+        ResourceHandler rh = super.getResourceHandler();
+        if (rh == null) {
+            rh = context;
+        }
+        return rh;
+    }
 
     public boolean isContainerStartsTx() {
         return containerStartsTx;
@@ -745,6 +759,14 @@ public class EjbInvocation
     public void setContainerStartsTx(boolean containerStartsTx) {
         this.containerStartsTx = containerStartsTx;
     }
+
+    /**
+     * @param classes must not be null
+     * @return true if the client interface is assignable to at least one of classes in parameter
+     */
+    public boolean isClientInterfaceAssignableToOneOf(final Class<?>... classes) {
+        Objects.requireNonNull(classes, "classes");
+        final Predicate<Class<?>> predicate = c -> c.isAssignableFrom(this.clientInterface);
+        return Arrays.stream(classes).anyMatch(predicate);
+    }
 }
-
-

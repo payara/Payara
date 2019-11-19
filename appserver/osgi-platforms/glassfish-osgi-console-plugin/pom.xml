@@ -51,7 +51,7 @@
     <groupId>fish.payara.server.internal.osgi-platforms</groupId>
     <artifactId>glassfish-osgi-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Payara OSGi Console Plugin</name>
     <description>OSGi Console Plugin for Payara Administration Console</description>
 
@@ -84,6 +84,10 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>concurrent-impl-l10n</artifactId>

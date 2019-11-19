@@ -116,9 +116,8 @@ public class ThemeHandlers {
                     try {
                         Properties propertyMap = new Properties();
                         propertyMap.load(propertyFileURL.openStream());
-                        ThemeContext themeContext =
-			    AdminguiThemeContext.getInstance(ctx, propertyMap);
-			themeContext.setDefaultClassLoader(pluginCL);
+                        ThemeContext themeContext = AdminguiThemeContext.getInstance(ctx, propertyMap);
+                        themeContext.setDefaultClassLoader(pluginCL);
                         handlerCtx.setOutputValue("themeContext", themeContext);
                     } catch (Exception ex) {
                         throw new RuntimeException(

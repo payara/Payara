@@ -60,6 +60,7 @@
 
     <properties>
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
+        <jsftemplating.version>2.1.3</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
         <!-- Java EE Security API -->
@@ -80,9 +81,6 @@
         <minor_version>194-SNAPSHOT</minor_version>
         <update_version></update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
-        <jsf-ext.version>0.2</jsf-ext.version>
-        <jsftemplating.version>2.1.3</jsftemplating.version>
-        <woodstock.version>4.0.2.10.payara-p16</woodstock.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <dbschema.version>3.1.1</dbschema.version>
@@ -225,7 +223,7 @@
                             <artifact>
                                 <groupId>jakarta.security.enterprise</groupId>
                                 <artifactId>jakarta.security.enterprise-api</artifactId>
-                                <version>${javax.security.enterprise-api.version}</version>
+                                <version>${jakarta.security.enterprise-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
@@ -296,12 +294,12 @@
                             <artifact>
                                 <groupId>jakarta.batch</groupId>
                                 <artifactId>jakarta.batch-api</artifactId>
-                                <version>${javax.batch-api.version}</version>
+                                <version>${jakarta.batch-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>1.0</specVersion>
-			                <specImplVersion>${javax.batch-api.version}</specImplVersion>
+                            <specImplVersion>${jakarta.batch-api.version}</specImplVersion>
                             <apiPackage>javax.batch</apiPackage>
                         </spec>
 
@@ -399,7 +397,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${jakarta.ejb-api.version}</specVersion>
-			                <specImplVersion>${jakarta.ejb-api.version}</specImplVersion>
+                            <specImplVersion>${jakarta.ejb-api.version}</specImplVersion>
                             <apiPackage>jakarta.ejb</apiPackage>
                         </spec>
 
@@ -413,7 +411,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${jakarta.interceptor-api.version}</specVersion>
-			                <specImplVersion>${jakarta.interceptor-api.version}</specImplVersion>
+                            <specImplVersion>${jakarta.interceptor-api.version}</specImplVersion>
                             <apiPackage>javax.interceptor</apiPackage>
                         </spec>
                         <spec>
@@ -425,7 +423,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${jakarta.resource-api.version}</specVersion>
-			                <specImplVersion>${jakarta.resource-api.version}</specImplVersion>
+                            <specImplVersion>${jakarta.resource-api.version}</specImplVersion>
                             <apiPackage>jakarta.resource</apiPackage>
                         </spec>
                         <spec>
@@ -456,7 +454,7 @@
                             <artifact>
                                 <groupId>jakarta.enterprise.deploy</groupId>
                                 <artifactId>jakarta.enterprise.deploy-api</artifactId>
-                                <version>${javax.enterprise.deploy-api.version}</version>
+                                <version>${jakarta.enterprise.deploy-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
@@ -468,12 +466,12 @@
                             <artifact>
                                 <groupId>jakarta.management.j2ee</groupId>
                                 <artifactId>jakarta.management.j2ee-api</artifactId>
-                                <version>${javax.management.j2ee-api.version}</version>
+                                <version>${jakarta.management.j2ee-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>1.1</specVersion>
-                            <specImplVersion>${javax.management.j2ee-api.version}</specImplVersion>
+                            <specImplVersion>${jakarta.management.j2ee-api.version}</specImplVersion>
                             <apiPackage>javax.management.j2ee</apiPackage>
                         </spec>
                         <spec>
@@ -518,6 +516,37 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- shared by admingui packager and admingui modules -->
+            <dependency>
+                <groupId>com.sun.jsftemplating</groupId>
+                <artifactId>jsftemplating</artifactId>
+                <version>${jsftemplating.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>javax.servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.faces</groupId>
+                        <artifactId>javax.faces-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.el</groupId>
+                        <artifactId>el-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.woodstock.dependlibs</groupId>
+                        <artifactId>dataprovider</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.jsftemplating</groupId>
+                <artifactId>jsftemplating-dt</artifactId>
+                <version>${jsftemplating.version}</version>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>org.apache.bcel</groupId>
                 <artifactId>bcel</artifactId>
@@ -537,76 +566,6 @@
                 <groupId>com.sun.pkg</groupId>
                 <artifactId>pkg-bootstrap</artifactId>
                 <version>${uc-pkg-bootstrap.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.faces.extensions</groupId>
-                <artifactId>jsf-extensions-dynamic-faces</artifactId>
-                <version>${jsf-ext.version}</version>
-                <classifier>jsftemplating</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.faces.extensions</groupId>
-                <artifactId>jsf-extensions-common</artifactId>
-                <version>${jsf-ext.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf</artifactId>
-                <version>${woodstock.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf-suntheme</artifactId>
-                <version>${woodstock.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.jsftemplating</groupId>
-                <artifactId>jsftemplating</artifactId>
-                <version>${jsftemplating.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>javax.servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.faces</groupId>
-                        <artifactId>javax.faces-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.el</groupId>
-                        <artifactId>el-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.jsftemplating</groupId>
-                <artifactId>jsftemplating-dt</artifactId>
-                <version>${jsftemplating.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
-                <artifactId>json</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
-                <artifactId>dojo-ajax-nodemo</artifactId>
-                <version>0.4.4</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
-                <artifactId>prototype</artifactId>
-                <version>1.7.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
-                <artifactId>dataprovider</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>1.3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
