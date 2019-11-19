@@ -168,6 +168,9 @@
                       helpText="$resource{i18nrt.requestTracing.configuration.traceStoreSizeLabelHelpText}">
             <sun:textField id="traceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
                            text="#{pageSession.valueMap['traceStoreSize']}" />
+            <f:verbatim>
+            <div class="ConWrnLblTxt_sun4" style="padding-top: 10px; font-size: 90%;">Please note that from 5.194 onwards the store size refers to the size of a single store shared by all cluster members. Any configuration change regarding the store should be applied to all configurations equally to prevent unbalanced sharing. All affected configuration are extracted and moved to a central configuration in a future release.</div>
+            </f:verbatim>
         </sun:property>
         <sun:property id="traceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                       label="$resource{i18nrt.requestTracing.configuration.traceStoreTimeoutLabel}"
@@ -189,6 +192,9 @@
                       helpText="$resource{i18nrt.requestTracing.configuration.historicTraceStoreSizeLabelHelpText}">
             <sun:textField id="historicTraceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
                            text="#{pageSession.valueMap['historicTraceStoreSize']}" />
+            <f:verbatim>
+            <div class="ConWrnLblTxt_sun4" style="padding-top: 10px; font-size: 90%;">Please note that from 5.194 onwards the store size refers to the size of a single store shared by all cluster members. Any configuration change regarding the store should be applied to all configurations equally to prevent unbalanced sharing. All affected configuration are extracted and moved to a central configuration in a future release.</div>
+            </f:verbatim>
         </sun:property>
         <sun:property id="historicTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                       label="$resource{i18nrt.requestTracing.configuration.historicTraceStoreTimeoutLabel}"

@@ -44,12 +44,9 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-
-import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -169,73 +166,63 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             try {
                 ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
                     @Override
-                    public Object run(final RequestTracingServiceConfiguration proxy) throws
+                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        ExitCode status = ExitCode.SUCCESS;
-                        String msg = null;
                         if (enabled != null) {
-                            proxy.enabled(enabled.toString());
+                            requestTracingServiceConfigurationProxy.enabled(enabled.toString());
                         }
                         
                         if (sampleRate != null) {
-                            proxy.setSampleRate(sampleRate);
+                            requestTracingServiceConfigurationProxy.setSampleRate(sampleRate);
                         }
                         if (adaptiveSamplingEnabled != null) {
-                            proxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
                         }
                         if (adaptiveSamplingTargetCount != null) {
-                            proxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
                         }
                         if (adaptiveSamplingTimeValue != null) {
-                            proxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue.toString());
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue.toString());
                         }
                         if (adaptiveSamplingTimeUnit != null) {
-                            proxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
                         }
                         
                         if (applicationsOnlyEnabled != null) {
-                            proxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
+                            requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
                         }
                         if (thresholdValue != null) {
-                            proxy.setThresholdValue(thresholdValue);
+                            requestTracingServiceConfigurationProxy.setThresholdValue(thresholdValue);
                         }
                         if (thresholdUnit != null) {
-                            proxy.setThresholdUnit(thresholdUnit);
+                            requestTracingServiceConfigurationProxy.setThresholdUnit(thresholdUnit);
                         }
                         if (sampleRateFirstEnabled != null) {
-                            proxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
+                            requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
                         }
                         
                         if (traceStoreSize != null) {
-                            if (!proxy.getTraceStoreSize().equals(traceStoreSize)) {
-                                status = ExitCode.WARNING;
-                                msg = "Please note that from 5.194 onwards the store is a shared ";
-                            }
-                            proxy.setTraceStoreSize(traceStoreSize.toString());
+                            requestTracingServiceConfigurationProxy.setTraceStoreSize(traceStoreSize.toString());
                         }
                         if (traceStoreTimeout != null) {
-                            proxy.setTraceStoreTimeout(traceStoreTimeout);
+                            requestTracingServiceConfigurationProxy.setTraceStoreTimeout(traceStoreTimeout);
                         }
                         if (reservoirSamplingEnabled != null) {
-                            proxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
+                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
                         }
                         
                         if (historicTraceStoreEnabled != null) {
-                            proxy.setHistoricTraceStoreEnabled(historicTraceStoreEnabled.toString());
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreEnabled(historicTraceStoreEnabled.toString());
                         }
                         if (historicTraceStoreSize != null) {
-                            proxy.setHistoricTraceStoreSize(historicTraceStoreSize.toString());
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreSize(historicTraceStoreSize.toString());
                         }
                         if (historicTraceStoreTimeout != null) {
-                            proxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
                         }
 
-                        actionReport.setActionExitCode(status);
-                        if (msg != null) {
-                            actionReport.setMessage(msg);
-                        }
-                        GuiUtil.prepareAlert("warning", "Foo", "Bar");
-                        return proxy;
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return requestTracingServiceConfigurationProxy;
                     }
                 }, requestTracingServiceConfiguration);
             } catch (TransactionFailure ex) {
