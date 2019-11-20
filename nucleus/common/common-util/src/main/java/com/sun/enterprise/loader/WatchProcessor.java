@@ -106,12 +106,16 @@ class WatchProcessor {
         return this.cancelled;
     }
 
-    public WatchProcessor subscribe() {
+    /**
+     * Register additional subscriber to path.
+     * @return
+     */
+    WatchProcessor subscribe() {
         subscribers++;
         return this;
     }
 
-    public boolean unsubscribe() {
+    boolean unsubscribe() {
         return --subscribers == 0;
     }
 }

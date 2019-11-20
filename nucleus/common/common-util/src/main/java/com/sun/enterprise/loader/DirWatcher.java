@@ -51,7 +51,9 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -117,10 +119,14 @@ class DirWatcher {
             // In such case we register watcher for parent directory so it would register the main watcher
             // when directory is created
             processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerNonExisting(p, watchService) : watcher.subscribe());
-            processors.computeIfAbsent(path.getParent(), p -> new ParentWatcher(p, watchService));
-            while (Files.notExists(path.getParent())) {
+
+            for(;;) {
                 path = path.getParent();
-                processors.computeIfAbsent(path.getParent(), p -> new ParentWatcher(p, watchService));
+                WatchProcessor watcher = processors.computeIfAbsent(path, p -> new ParentWatcher(p, watchService));
+                if (watcher.registered || Files.exists(path)) {
+                    watcher.register();
+                    break;
+                }
             }
         } else {
             processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerExisting(p, watchService) : watcher.subscribe());
@@ -194,20 +200,35 @@ class DirWatcher {
 
         ParentWatcher(Path p, WatchService watchService) {
             super(p, watchService);
-            register();
         }
+
+        @Override
+        protected void register() {
+            super.register();
+            try (Stream<Path> stream = Files.list(root)){
+                stream.forEach(this::registerSubProcessor);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, "Error when listing directory",e);
+            }
+        }
+
         @Override
         protected boolean created(Path filename) {
-            LOGGER.info(() -> "In parent directory "+root+": created "+filename);
+            LOGGER.fine(() -> "In parent directory "+root+": created "+filename);
             Path path = root.resolve(filename);
-            if (filename.getNameCount() == 1 && Files.isDirectory(path)) {
+            registerSubProcessor(path);
+            return true;
+        }
+
+        private void registerSubProcessor(Path path) {
+            if (Files.isDirectory(path)) {
                 WatchProcessor processor = processors.get(path);
                 if (processor != null) {
                     processor.register();
                 }
             }
-            return true;
         }
+
     }
 
 
