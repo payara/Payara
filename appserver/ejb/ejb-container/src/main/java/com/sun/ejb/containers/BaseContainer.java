@@ -2212,7 +2212,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         inv.method = ejbIntfMethods[method];
         inv.invocationInfo = ejbIntfMethodInfo[method];
 
-        if ( !authorize(inv) ) {
+        if (!authorize(inv)) {
             final Throwable t = mapRemoteException(inv);
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;

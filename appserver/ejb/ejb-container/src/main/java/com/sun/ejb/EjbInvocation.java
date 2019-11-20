@@ -761,11 +761,17 @@ public class EjbInvocation //
     }
 
     /**
+     * Checks if the client interface is not null and is assignable to at least one of classes
+     * in parameter.
+     *
      * @param classes must not be null
      * @return true if the client interface is assignable to at least one of classes in parameter
      */
     public boolean isClientInterfaceAssignableToOneOf(final Class<?>... classes) {
         Objects.requireNonNull(classes, "classes");
+        if (this.clientInterface == null) {
+            return false;
+        }
         final Predicate<Class<?>> predicate = c -> c.isAssignableFrom(this.clientInterface);
         return Arrays.stream(classes).anyMatch(predicate);
     }
