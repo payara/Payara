@@ -57,6 +57,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import fish.payara.nucleus.hazelcast.encryption.PayaraHazelcastEncryptedValueHolder;
+import fish.payara.nucleus.hazelcast.encryption.SymmetricEncryptor;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -128,6 +131,10 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     public boolean set(String storeName, Serializable key, Serializable value) {
         boolean result = false;
         if (isEnabled()) {
+            if (value != null && hzCore.isDatagridEncryptionEnabled()) {
+                value = new PayaraHazelcastEncryptedValueHolder(SymmetricEncryptor.encode(
+                        SymmetricEncryptor.objectToByteArray(value)));
+            }
             hzCore.getInstance().getMap(storeName).set(key, value);
             result = true;
         }
@@ -184,6 +191,13 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
             IMap map = hzCore.getInstance().getMap(storeName);
             if (map != null) {
                 result = (Serializable) map.get(key);
+
+                if (result != null && hzCore.isDatagridEncryptionEnabled()
+                        && result instanceof PayaraHazelcastEncryptedValueHolder) {
+                    result = (Serializable) SymmetricEncryptor.byteArrayToObject(
+                            SymmetricEncryptor.decode(
+                                    ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectString()));
+                }
             }
         }
         return result;
@@ -212,26 +226,19 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
             if (map != null) {
                 Set<Serializable> keys = map.keySet();
                 for (Serializable key : keys) {
-                    result.put(key, (Serializable) map.get(key));
+                    Serializable value = (Serializable) map.get(key);
+
+                    if (value != null && hzCore.isDatagridEncryptionEnabled()
+                            && value instanceof PayaraHazelcastEncryptedValueHolder) {
+                        value = (Serializable) SymmetricEncryptor.byteArrayToObject(
+                                SymmetricEncryptor.decode(
+                                        ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectString()));
+                    }
+
+                    result.put(key, value);
                 }
             }
         }
         return result;
-    }
-    
-    /**
-     * Gets the requested MultiMap from Hazelcast. Use this if you want to store a collection in Hazelcast.
-     * @param storeName The MultiMap to get
-     * @return The MultiMap matching the storeName parameter, or null if the MultiMap does not exist
-     */
-    public MultiMap<Serializable, Serializable> getMultiMap(String storeName) {
-        MultiMap<Serializable, Serializable> multiMap = null;
-        if (hzCore.isEnabled()) {
-            multiMap = hzCore.getInstance().getMultiMap(storeName);
-        } 
-        
-        
-        
-        return multiMap;
     }
 }

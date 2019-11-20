@@ -39,71 +39,40 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import org.glassfish.internal.api.JavaEEContextUtil;
 import com.hazelcast.internal.serialization.impl.JavaDefaultSerializers;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.hazelcast.encryption.SymmetricEncryptor;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.JavaEEContextUtil;
+import java.io.IOException;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
-import javax.inject.Inject;
-import java.io.IOException;
-
 /**
+ *
  * @author lprimak
  * @since 4.1.2.173
  */
 public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
-
-    private final JavaEEContextUtil ctxUtil;
-    private final StreamSerializer<Object> delegate;
-
-    @Inject
-    private HazelcastCore hazelcastCore;
-
     @SuppressWarnings("unchecked")
     public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
         this.ctxUtil = ctxUtil;
-        this.delegate = delegate != null ? (StreamSerializer<Object>) delegate : new JavaDefaultSerializers.JavaSerializer(true, false, null);
+        this.delegate = delegate != null ? (StreamSerializer<Object>) delegate : new JavaDefaultSerializers.JavaSerializer(
+                true, false, null);
     }
 
 
     @Override
     public void write(ObjectDataOutput out, Object object) throws IOException {
-        lookupHazelcastCore();
-        String invocationComponentId = ctxUtil.getInvocationComponentId();
-        if (hazelcastCore.isDatagridEncryptionEnabled()) {
-            if (invocationComponentId != null) {
-                invocationComponentId = SymmetricEncryptor.encode(invocationComponentId.getBytes());
-            }
-            object = SymmetricEncryptor.encode(SymmetricEncryptor.objectToByteArray(object));
-        }
-
-        delegate.write(out, invocationComponentId);
+        delegate.write(out, ctxUtil.getInvocationComponentId());
         delegate.write(out, object);
     }
 
     @Override
     public Object read(ObjectDataInput in) throws IOException {
-        lookupHazelcastCore();
-        String componentId = (String) delegate.read(in);
-        if (hazelcastCore.isDatagridEncryptionEnabled()) {
-            if (StringUtils.ok(componentId)) {
-                componentId = SymmetricEncryptor.decode(componentId).toString();
-            }
-        }
+        String componentId = (String)delegate.read(in);
         ctxUtil.setInstanceComponentId(componentId);
-
         try (Context ctx = ctxUtil.setApplicationClassLoader()) {
-            Object readObjectDataInput = delegate.read(in);
-            if (hazelcastCore.isDatagridEncryptionEnabled()) {
-                readObjectDataInput = SymmetricEncryptor.byteArrayToObject(SymmetricEncryptor.decode((String) readObjectDataInput));
-            }
-
-            return readObjectDataInput;
+            return delegate.read(in);
         }
     }
 
@@ -117,9 +86,6 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
         delegate.destroy();
     }
 
-    private void lookupHazelcastCore() {
-        if (hazelcastCore == null) {
-            hazelcastCore = Globals.getDefaultBaseServiceLocator().getService(HazelcastCore.class);
-        }
-    }
+    private final JavaEEContextUtil ctxUtil;
+    private final StreamSerializer<Object> delegate;
 }

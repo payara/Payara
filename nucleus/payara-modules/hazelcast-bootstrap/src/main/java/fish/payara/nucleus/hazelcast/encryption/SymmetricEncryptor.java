@@ -3,7 +3,6 @@ package fish.payara.nucleus.hazelcast.encryption;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.nio.IOUtil;
 import com.sun.enterprise.security.ssl.impl.MasterPasswordImpl;
-import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
 
@@ -20,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -33,6 +31,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Base64;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class that encodes and decodes symmetric keys.
@@ -117,6 +117,9 @@ public class SymmetricEncryptor {
             encryptedBytes = Files.readAllBytes(
                     new File(serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE).toPath());
         } catch (IOException ioe) {
+            Logger.getLogger(SymmetricEncryptor.class.getName()).log(Level.SEVERE,
+                    "Error reading datagrid key, please check if it's accessible at expected location: "
+                            + serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE);
             throw new HazelcastException("Error reading encrypted key", ioe);
         }
 
