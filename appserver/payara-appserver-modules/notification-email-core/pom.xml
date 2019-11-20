@@ -62,8 +62,6 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

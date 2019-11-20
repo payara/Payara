@@ -89,19 +89,6 @@
             </snapshots>
         </repository>
 
-        <repository>
-           <id>payara-patched-externals</id>
-             <name>Payara Patched Externals</name>
-             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-             <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
-             <releases>
-                 <enabled>true</enabled>
-             </releases>
-              <snapshots>
-                  <enabled>false</enabled>
-              </snapshots>
-        </repository>
-
     </repositories>
 
     <pluginRepositories>
@@ -109,7 +96,6 @@
             <id>payara-patched-externals</id>
             <name>Payara Patched Externals</name>
             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -123,7 +109,6 @@
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
         <jdk.version>1.8.0</jdk.version>
-        <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
 
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
@@ -135,7 +120,6 @@
         <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
-        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
@@ -145,57 +129,26 @@
 
         <deploy.skip>true</deploy.skip>
 
-        <!-- Java EE -->
-        <jakartaee.api.version>8.0.0</jakartaee.api.version>
-
         <!-- Servlet -->
-        <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p9</grizzly.version>
-
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
 
         <!-- Microprofile -->
-        <microprofile-config.version>1.3</microprofile-config.version>
-        <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
-
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.1.payara-p1</jersey.version>
-
-        <!-- Bean Validation -->
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
-        <hibernate.validator.version>6.0.16.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.16.Final</hibernate.validator-cdi.version>
-
-        <!-- Expression language -->
-        <jakarta.el.version>3.0.3</jakarta.el.version>
-        <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
 
         <!-- JAX-B -->
-        <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb.version>2.3.2</jaxb.version>
-
-        <!-- Cache -->
-        <javax.cache-api.version>1.1.0</javax.cache-api.version>
-
-        <!-- JavaMail -->
-        <mail.version>1.6.4.payara-p1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
-        <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
-
-
         <!-- Other -->
 
-        <hk2.version>2.6.1.payara-p1</hk2.version>
         <hk2.plugin.version>2.6.1.payara-p1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>
-        <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
@@ -215,17 +168,7 @@
 
         <commons-io.version>2.6</commons-io.version>
 
-        <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.10.0</jackson.version>
-        <!-- SnakeYAML is required for the YAML conversion in Jackson -->
-        <snakeyaml.version>1.24</snakeyaml.version>
-
-        <jsonp.version>1.1.5</jsonp.version>
-
         <mimepull.version>1.9.11</mimepull.version>
-
-        <opentracing.version>0.31.0</opentracing.version>
-
         <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
@@ -242,22 +185,16 @@
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
-        <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>7.2</asm.version>
         <ha-api.version>3.1.12</ha-api.version>
-        <hazelcast.version>3.12</hazelcast.version>
-        <hazelcast.kubernetes.version>1.3.1</hazelcast.kubernetes.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
-        <jaxb-api.version>2.3.2</jaxb-api.version>
-        <jaxb-impl.version>2.3.2</jaxb-impl.version>
 
         <!-- Build -->
 
@@ -327,22 +264,6 @@
                     <version>${maven.clean.plugin.version}</version>
                </plugin>
 
-               <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.plugin.version}</version>
-                    <configuration>
-                        <source>${javase.version}</source>
-                        <target>${javase.version}</target>
-                        <excludes>
-                            <exclude>**/.ade_path/**</exclude>
-                        </excludes>
-                        <testExcludes>
-                            <testExclude>**/.ade_path/**</testExclude>
-                        </testExcludes>
-                    </configuration>
-                </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -362,17 +283,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>${maven.source.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven.javadoc.plugin.version}</version>
-                    <configuration>
-                        <additionalOptions>
-                            <additionalOption>${javadoc.options}</additionalOption>
-                        </additionalOptions>
-                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -488,12 +398,6 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>${maven.jaxb2.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven.bundle.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -658,21 +562,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <!-- By default, we don't export anything. -->
-                    <Export-Package />
-                    <instructions>
-                        <!--
-                            Read all the configuration from osgi.bundle file, if it exists.
-                        -->
-                        <_include>-osgi.bundle</_include>
-                    </instructions>
-                    <excludeDependencies>tools-jar</excludeDependencies>
-                    <supportedProjectTypes>
-                        <supportedProjectType>glassfish-jar</supportedProjectType>
-                        <supportedProjectType>jar</supportedProjectType>
-                    </supportedProjectTypes>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -818,117 +707,19 @@ Parent is ${project.parent}</echo>
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                    <skip>${deploy.skip}</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
     <dependencyManagement>
         <dependencies>
-
-            <!-- Servlet -->
             <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${servlet-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-bom</artifactId>
-                <version>${grizzly.version}</version>
-                <scope>import</scope>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <!-- A workaround for case when module redefines its version (rest-monitoring-war) -->
+                <version>${project.parent.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <!-- JAX-RS -->
-            <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${jax-rs-api.impl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey</groupId>
-                <artifactId>jersey-bom</artifactId>
-                <version>${jersey.version}</version>
                 <scope>import</scope>
-                <type>pom</type>
             </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.inject</groupId>
-                <artifactId>jersey-hk2</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-
-
-            <!-- Bean Validation (BVal) -->
-            <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${jakarta.validation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${hibernate.validator.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${hibernate.validator-cdi.version}</version>
-            </dependency>
-
-
-            <!-- Expression Language (EL) -->
-            <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${jakarta.el-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${jakarta.el.version}</version>
-            </dependency>
-
-
-            <!-- JavaMail -->
-            <dependency>
-                <groupId>jakarta.mail</groupId>
-                <artifactId>jakarta.mail-api</artifactId>
-                <version>${mail.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${mail.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.annotation</groupId>
-                <artifactId>jakarta.annotation-api</artifactId>
-                <version>${jakarta.annotation-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-bom</artifactId>
-                <version>${hk2.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
@@ -939,11 +730,6 @@ Parent is ${project.parent}</echo>
                 <groupId>com.sun.xml.stream</groupId>
                 <artifactId>sjsxp</artifactId>
                 <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.xml.stream</groupId>
-                <artifactId>stax-api</artifactId>
-                <version>${stax-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>antlr</groupId>
@@ -965,31 +751,6 @@ Parent is ${project.parent}</echo>
                 <artifactId>gmbal</artifactId>
                 <version>${gmbal.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.compendium</artifactId>
-                <version>5.0.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.enterprise</artifactId>
-                <version>5.0.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
-                <artifactId>org.osgi.dto</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.main</artifactId>
@@ -1026,8 +787,8 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.gogo.command.version}</version>
             </dependency>
             <dependency> <!-- A utility to automatically install bundles from a directory.-->
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.fileinstall</artifactId>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.fileinstall</artifactId>
                 <version>${org.apache.felix.fileinstall.version}</version>
             </dependency>
             <dependency>
@@ -1036,51 +797,14 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.configadmin.version}</version>
             </dependency>
             <dependency>
-               <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
-               <artifactId>org.apache.felix.scr</artifactId>
-               <version>${org.apache.felix.scr.version}</version>
+                <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
+                <artifactId>org.apache.felix.scr</artifactId>
+                <version>${org.apache.felix.scr.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
                 <version>${org.apache.felix.bundlerepository.version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-xml</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${snakeyaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${jackson.version}</version>
             </dependency>
 
             <dependency>
@@ -1206,31 +930,6 @@ Parent is ${project.parent}</echo>
                 <version>1.0</version>
             </dependency>
             <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-commons</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-analysis</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-tree</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-util</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jvnet.hudson</groupId>
                 <artifactId>trilead-ssh2</artifactId>
                 <version>${trilead-ssh2.version}</version>
@@ -1266,32 +965,6 @@ Parent is ${project.parent}</echo>
                 <artifactId>javassist</artifactId>
                 <version>${javassist.version}</version>
             </dependency>
-            <dependency>
-                <groupId>javax.cache</groupId>
-                <artifactId>cache-api</artifactId>
-                <version>${javax.cache-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hazelcast</groupId>
-                <artifactId>hazelcast</artifactId>
-                <version>${hazelcast.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hazelcast</groupId>
-                <artifactId>hazelcast-kubernetes</artifactId>
-                <version>${hazelcast.kubernetes.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${jaxb-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-osgi</artifactId>
-                <version>${jaxb-impl.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>

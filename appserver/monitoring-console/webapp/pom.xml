@@ -91,8 +91,6 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.security</groupId>

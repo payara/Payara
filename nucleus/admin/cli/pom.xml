@@ -142,7 +142,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>

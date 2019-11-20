@@ -61,7 +61,6 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>${com.ibm.jbatch.container.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.batch</groupId>

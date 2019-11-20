@@ -82,13 +82,11 @@
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <version>${microprofile-jwt-auth.version}</version>
         </dependency>
 
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
         </dependency>
 
         <dependency>

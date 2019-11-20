@@ -66,17 +66,14 @@
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
-            <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
-            <version>${microprofile-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
@@ -91,7 +88,6 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
