@@ -37,27 +37,31 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tst.jdbc.war;
+package fish.payara.test.containers.tst.jta.timeout.war.stopwatch;
 
-import javax.ws.rs.ApplicationPath;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
-/**
- * Used by the container to register the REST application.
- *
- * @author David Matějček
- */
-// WARNING: don't move this class, it must be in root package of all your REST services.
-@ApplicationPath("")
-public class RestAppConfig extends ResourceConfig {
+@Stopwatch
+@Interceptor
+public class StopwatchInterceptor {
 
-  /**
-   * Instantiates a new rest app config.
-   */
-  public RestAppConfig() {
-    packages(//
-        RestAppConfig.class.getPackage().getName() //
-    );
-  }
+    private static final Logger LOGGER = Logger.getLogger(StopwatchInterceptor.class.getName());
+
+    @AroundInvoke
+    public Object time(InvocationContext invocationContext) throws Exception {
+        final String systemClassName = invocationContext.getMethod().getDeclaringClass().getCanonicalName();
+        final String systemMethodName = invocationContext.getMethod().getName();
+        final long startTime = System.currentTimeMillis();
+        try {
+           return invocationContext.proceed();
+        } finally {
+            LOGGER.log(Level.INFO, "calling method {0}.{1} took {2} milliseconds", //
+                new Object[] {systemClassName, systemMethodName, System.currentTimeMillis() - startTime});
+        }
+    }
 }

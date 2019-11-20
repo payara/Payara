@@ -37,27 +37,19 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tst.jdbc.war;
+package fish.payara.test.containers.tst.jta.timeout.war.stopwatch;
 
-import javax.ws.rs.ApplicationPath;
+import javax.interceptor.InterceptorBinding;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Used by the container to register the REST application.
- *
- * @author David Matějček
- */
-// WARNING: don't move this class, it must be in root package of all your REST services.
-@ApplicationPath("")
-public class RestAppConfig extends ResourceConfig {
-
-  /**
-   * Instantiates a new rest app config.
-   */
-  public RestAppConfig() {
-    packages(//
-        RestAppConfig.class.getPackage().getName() //
-    );
-  }
-}
+@Inherited
+@InterceptorBinding
+@Retention(RUNTIME)
+@Target({METHOD, TYPE})
+public @interface Stopwatch {}

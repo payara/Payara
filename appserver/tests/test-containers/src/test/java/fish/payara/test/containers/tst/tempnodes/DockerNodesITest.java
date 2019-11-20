@@ -72,6 +72,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static fish.payara.test.containers.tools.junit.WaitForExecutable.waitFor;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
@@ -100,7 +101,7 @@ public class DockerNodesITest extends DockerITest {
     private static Set<DockerContainerId> containersToPreserve;
 
     /**
-     * FIXME: use simpliar manager to only unzip payara, not managing domain - it is not used.
+     * FIXME: use simplier manager to only unzip payara, not managing domain - it is not used.
      * @throws Exception
      */
     @BeforeAll
@@ -126,7 +127,7 @@ public class DockerNodesITest extends DockerITest {
 
 
     @Test
-    public void testTemporaryDockerNodeInstanceLifeCycle() throws Exception {
+    public void testTemporaryDockerNodeInstanceLifeCycle() throws Throwable {
         final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
         final String createResponse = domain.docker("containers/create", getCreateContainerJSon(domain));
         assertThat("curl create container output", createResponse, stringContainsInOrder("HTTP/1.1 201 Created"));
@@ -171,7 +172,7 @@ public class DockerNodesITest extends DockerITest {
 
 
     @Test
-    public void testDASManagedDockerInstanceLifeCycle() throws Exception {
+    public void testDASManagedDockerInstanceLifeCycle() throws Throwable {
         final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
         // we use same computer as DAS for simplicity - in fact it is still host's docker.
         final DockerEnvironmentConfiguration dockerConfiguration = getDockerEnvironment().getConfiguration();
@@ -186,6 +187,20 @@ public class DockerNodesITest extends DockerITest {
 
         final String instanceName = "DockerInstance1";
         final String createResponse = domain.asAdmin("create-instance", "--node", nodeName, instanceName);
+        assertEquals("Port Assignments for server instance DockerInstance1: \n" //
+            + "OSGI_SHELL_TELNET_PORT=26666\n" //
+            + "JAVA_DEBUGGER_PORT=29009\n" //
+            + "JMS_PROVIDER_PORT=27676\n" //
+            + "HTTP_LISTENER_PORT=28080\n"//
+            + "IIOP_SSL_LISTENER_PORT=23820\n"//
+            + "ASADMIN_LISTENER_PORT=24848\n" //
+            + "IIOP_SSL_MUTUALAUTH_PORT=23920\n"//
+            + "JMX_SYSTEM_CONNECTOR_PORT=28686\n" //
+            + "HTTP_SSL_LISTENER_PORT=28181\n"//
+            + "IIOP_LISTENER_PORT=23700\n" //
+            + "\n" //
+            + "Successfully registered instance with DAS, now attempting to create Docker container...",
+            createResponse.trim(), "createInstanceResponse"); //
 
         final Executable listStoppedInstances = getListInstanceActionToWaitFor(domain, INSTANCE_STATUS_STOPPED);
         waitFor(listStoppedInstances, 60 * 1000L);
@@ -242,24 +257,6 @@ public class DockerNodesITest extends DockerITest {
         final Pattern pattern = Pattern.compile("[ ]+");
         return Arrays.stream(listInstancesResponse.split("\n")).map(line -> pattern.split(line.trim(), 2))
             .collect(Collectors.toList());
-    }
-
-    private void waitFor(final Executable executable, final long timeoutInMillis) throws Exception {
-        final long start = System.currentTimeMillis();
-        while (true) {
-            try {
-                executable.execute();
-                return;
-            } catch (final AssertionError e) {
-                if (System.currentTimeMillis() - start > timeoutInMillis) {
-                    throw e;
-                }
-                LOG.warn("Nope. Waiting ...");
-                Thread.sleep(100L);
-            } catch (final Throwable e) {
-                fail(e);
-            }
-        }
     }
 
 

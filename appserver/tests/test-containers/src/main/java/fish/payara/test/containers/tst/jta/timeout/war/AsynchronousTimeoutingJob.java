@@ -37,27 +37,57 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tst.jdbc.war;
+package fish.payara.test.containers.tst.jta.timeout.war;
 
-import javax.ws.rs.ApplicationPath;
+import fish.payara.test.containers.tst.jta.timeout.war.stopwatch.Stopwatch;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import java.util.logging.Logger;
+
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 
 /**
- * Used by the container to register the REST application.
- *
- * @author David Matějček
+ * @author fabio
+ * @author David Matejcek
  */
-// WARNING: don't move this class, it must be in root package of all your REST services.
-@ApplicationPath("")
-public class RestAppConfig extends ResourceConfig {
+@Stateless
+public class AsynchronousTimeoutingJob {
 
-  /**
-   * Instantiates a new rest app config.
-   */
-  public RestAppConfig() {
-    packages(//
-        RestAppConfig.class.getPackage().getName() //
-    );
-  }
+    @EJB
+    private SlowJpaPartitioner partitioner;
+
+    private static final Logger LOG = Logger.getLogger(AsynchronousTimeoutingJob.class.getName());
+
+    @Stopwatch
+    @Asynchronous
+    public void timeoutingAsyncWithFailingNextStep() {
+        LOG.info("timeoutingAsyncWithFailingNextStep()");
+        partitioner.slowlyPreparePartition();
+        partitioner.executePreparedPartition();
+        LOG.info("Done.");
+    }
+
+    @Stopwatch
+    @Asynchronous
+    public void tmeoutingAsync() {
+        LOG.info("tmeoutingAsync()");
+        partitioner.slowlyPreparePartition();
+        LOG.info("Done.");
+    }
+
+    @Stopwatch
+    @Asynchronous
+    public void timeoutingAsyncWithFailingNextStepCatchingExceptionAndRedo() {
+        try {
+            LOG.info("timeoutingAsyncWithFailingNextStepCatchingExceptionAndRedo()");
+            partitioner.slowlyPreparePartition();
+            partitioner.executePreparedPartition();
+            LOG.info("Done in first attempt.");
+        } catch (Exception e) {
+            LOG.info(() -> String.format("Catched exception: %s; Reexecuting.", e));
+            partitioner.executePreparedPartition();
+            LOG.info("Done in second attempt.");
+        }
+    }
 }
