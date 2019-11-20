@@ -63,12 +63,12 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     /**
      * Minimum and maximum of current minute
      */
-    private AtomicReference<MinMax> openStats = new AtomicReference<>(new MinMax());
+    private AtomicReference<MinMax> openStats = new AtomicReference<>(new MinMax(0));
 
     /**
      * Minimum and maximum during previously completed minute
      */
-    private volatile MinMax closedStats = new MinMax();
+    private volatile MinMax closedStats = new MinMax(0);
 
     /**
      * Increment the counter by one.
@@ -77,13 +77,13 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     public void inc() {
         // adder does not have atomic increment, but has better throughput
         count.increment();
-        currentStats().update(count.longValue());
+        currentStats().updateMax(count.longValue());
     }
 
     @Override
     public void dec() {
         count.decrement();
-        currentStats().update(count.longValue());
+        currentStats().updateMin(count.longValue());
     }
 
     /**
@@ -126,41 +126,50 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     }
 
     /**
-     * Stats captured by the gauge. Note that even if it is stored in AtomicReference, the class itself may be
-     * accessed concurrently.
+     * Stats captured by the gauge. Note that even if it is stored in
+     * AtomicReference, the class itself may be accessed concurrently.
      */
-    private static class MinMax {
-        final AtomicLong min = new AtomicLong(0);
-        final AtomicLong max = new AtomicLong(0);
+    private class MinMax {
+
+        final AtomicLong min;
+        final AtomicLong max;
         final Instant minute;
         boolean finished;
 
-        private MinMax() {
-            this.minute = getCurrentMinute();
+        private MinMax(long initialValue) {
+            this(initialValue, getCurrentMinute());
         }
 
-        private MinMax(Instant minute) {
+        private MinMax(long initialValue, Instant minute) {
+            this.min = new AtomicLong(initialValue);
+            this.max = new AtomicLong(initialValue);
             this.minute = minute;
         }
 
         /**
-         * The root of the trick is to call ref.getAndUpdate(MinMax::replaceIfOld). If minute is over, this instance
-         * is marked as finished, and new one is created for current minute. Since client gets this instance, it can
-         * check for finished flag, and in such case store this as closed stats.
+         * The root of the trick is to call
+         * ref.getAndUpdate(MinMax::replaceIfOld). If minute is over, this
+         * instance is marked as finished, and new one is created for current
+         * minute. Since client gets this instance, it can check for finished
+         * flag, and in such case store this as closed stats.
+         *
          * @return
          */
         MinMax replaceIfOld() {
             Instant now = getCurrentMinute();
             if (!now.equals(minute)) {
                 this.finished = true;
-                return new MinMax(now);
+                return new MinMax(count.longValue(), now);
             } else {
                 return this;
             }
         }
 
-        void update(long value) {
+        void updateMin(long value) {
             min.accumulateAndGet(value, Math::min);
+        }
+
+        void updateMax(long value) {
             max.accumulateAndGet(value, Math::max);
         }
     }
