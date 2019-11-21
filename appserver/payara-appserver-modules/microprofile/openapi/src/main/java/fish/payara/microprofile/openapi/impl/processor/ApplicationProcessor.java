@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -482,7 +482,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitSchema(Schema schema, AnnotatedElement element, ApiContext context) {
         if (element instanceof Class) {
-            visitSchemaClass(schema, (Class<?>) element, context);
+            if (((Class) element).isEnum()) {
+                vistEnumClass(schema, (Class<?>) element, context);
+            } else {
+                visitSchemaClass(schema, (Class<?>) element, context);
+            }
         }
         if (element instanceof Field) {
             visitSchemaField(schema, (Field) element, context);
@@ -491,6 +495,27 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             visitSchemaParameter(schema, (java.lang.reflect.Parameter) element, context);
         }
     }
+    
+    private void vistEnumClass(Schema schema, Class<?> clazz, ApiContext context) {
+        // Get the schema object name
+        String schemaName = (schema == null) ? null : schema.name();
+        if (schemaName == null || schemaName.isEmpty()) {
+            schemaName = clazz.getSimpleName();
+        }
+        
+        org.eclipse.microprofile.openapi.models.media.Schema newSchema = new SchemaImpl();
+        context.getApi().getComponents().addSchema(schemaName, newSchema);
+         if (schema != null) {
+            SchemaImpl.merge(schema, newSchema, true, context.getApi().getComponents().getSchemas());
+        }
+        if (schema == null || schema.enumeration().length == 0) {
+            //if the schema annotation does not specify enums, then all enum fields will be added
+            for (Object enumField : clazz.getEnumConstants()) {
+                newSchema.addEnumeration(enumField);
+            }
+        }
+        
+    }
 
     private void visitSchemaClass(Schema schema, Class<?> clazz, ApiContext context) {
         // Get the schema object name
@@ -498,7 +523,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = clazz.getSimpleName();
         }
-
+        
         // Add a new schema
         org.eclipse.microprofile.openapi.models.media.Schema newSchema = new SchemaImpl();
         context.getApi().getComponents().addSchema(schemaName, newSchema);
@@ -522,7 +547,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             Class<?> superClass = clazz.getSuperclass();
 
             // If the super class is legitimate
-            if (!superClass.equals(Object.class)) {
+            if (!superClass.equals(Object.class) && !superClass.equals(Enum.class)) {
 
                 // Get the parent schema annotation
                 Schema parentSchema = superClass.getDeclaredAnnotation(Schema.class);
