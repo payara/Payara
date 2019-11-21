@@ -39,6 +39,7 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.TimeUtil;
@@ -84,6 +85,7 @@ import java.util.logging.Logger;
 public class SetRequestTracingConfiguration implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(SetRequestTracingConfiguration.class);
 
     @Inject
     ServerEnvironment server;
@@ -228,9 +230,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                         }
                         actionReport.setActionExitCode(ExitCode.SUCCESS);
                         if (warn) {
-                            actionReport.setMessage(strings.getLocalString(
-                                    "requesttracing.configure.store.size.warning",
-                                    "Please note that from 5.194 onwards the store size refers to the size of a single store shared by all cluster members. Any configuration change regarding the store should be applied to all configurations equally to prevent unbalanced sharing. All affected configurations will be extracted and moved to a central configuration in a future release."));
+                            actionReport.setMessage(STRINGS.get("requesttracing.configure.store.size.warning"));
                         }
                         return proxy;
                     }
