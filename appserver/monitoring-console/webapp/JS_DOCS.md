@@ -52,11 +52,13 @@ interval        = number
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, target, grid, axis, options, decorations, status }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName }
 series     = string
 target     = string
+displayName= string
 type       = 'line' | 'bar'
 unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+scaleFactor= number
 grid       = { item, column, span }
 item       = number
 column     = number
@@ -69,10 +71,11 @@ options    = {
 	drawMaxLine:boolean,
 	drawAvgLine:boolean,
 	perSec:boolean,
+	decimalMetric:boolean,
 	noCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
-	noTimeLabels:boolean
+	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }
 waterline  = number
@@ -239,6 +242,7 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'value'    : { label, value, unit, onChange }
 'text'     : { label, value, onChange }
 ```
+* `onChange` may be ommitted for _text_ inputs which makes the field _readonly_.
 * Settings of type `'value'` are inputs for a number that depends on the `unit` 
 used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
 If no unit is provided or the unit is undefined a plain number is assumed.

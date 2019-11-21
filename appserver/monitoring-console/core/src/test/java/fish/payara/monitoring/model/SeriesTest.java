@@ -2,6 +2,7 @@ package fish.payara.monitoring.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -93,5 +94,24 @@ public class SeriesTest {
     @Test
     public void wildCardIsSpecialCharacter() {
         assertTrue(Series.isSpecialTagCharacter('*'));
+    }
+
+    @Test
+    public void illegalFormat() {
+        try {
+            assertNotNull(new Series("ns: system. cpu.load"));
+        } catch (IllegalArgumentException e) {
+            assertEquals("Malformed series key, `:` missing or misplaced in ns: system. cpu.load", e.getMessage());
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullArgument() {
+        assertNotNull(new Series(null));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void emptyArgument() {
+        assertNotNull(new Series(""));
     }
 }

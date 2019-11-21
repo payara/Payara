@@ -220,9 +220,16 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
         SeriesDatasetsSnapshot snapshot = message.getMessageObject();
         long time = snapshot.time;
         for (int i = 0; i < snapshot.numberOfSeries; i++) {
-            Series series = new Series(snapshot.series[i]);
-            long value = snapshot.values[i];
-            remoteInstanceDatasets.compute(series, (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+            Series series = null;
+            try {
+                series = new Series(snapshot.series[i]);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.FINEST, "Failed to add remote series: " + snapshot.series[i], ex);
+            }
+            if (series != null) {
+                long value = snapshot.values[i];
+                remoteInstanceDatasets.compute(series, (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+            }
         }
     }
 
@@ -309,7 +316,13 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     }
 
     private void addLocalPoint(CharSequence key, long value) {
-        Series series = new Series(key.toString());
+        Series series = null;
+        try {
+            series = new Series(key.toString());
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINEST, "Failed to add local series: " + key, ex);
+            return;
+        }
         secondsWrite.compute(series, (s, dataset) -> dataset == null 
                 ?  emptySet(s).add(collectedSecond, value) 
                 : dataset.add(collectedSecond, value));

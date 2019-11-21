@@ -61,7 +61,10 @@ MonitoringConsole.View.Components = (function() {
 
       function createHeaderRow(model) {
          let caption = model.label;
-         return $('<tr/>').append($('<th/>', {colspan: 2})
+         let config = {colspan: 2};
+         if (model.description)
+          config.title = model.description;
+         return $('<tr/>').append($('<th/>', config)
              .html(caption)
              .click(function() {
                  let tr = $(this).closest('tr').next();
@@ -78,20 +81,25 @@ MonitoringConsole.View.Components = (function() {
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description }));
         return table;
       }
 
       function createRow(model, inputs) {
         let components = $.isFunction(inputs) ? inputs() : inputs;
-        if (typeof components === 'string') {
+        if (typeof components === 'string')
             components = document.createTextNode(components);
-        }
-        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        let config = {};
+        if (model.description)
+          config.title = model.description;
+        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-        return $("<input/>", { type: 'checkbox', checked: model.value })
+        let config = { id: model.id, type: 'checkbox', checked: model.value };
+        if (model.description && !model.label)
+          config.title = model.description;  
+        return $("<input/>", config)
           .on('change', function() {
             let checked = this.checked;
             if (model.onChange.length == 2) {
@@ -103,20 +111,27 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createRangeInput(model) {
-         let attributes = {type: 'number', value: model.value};
+         let config = { id: model.id, type: 'number', value: model.value};
          if (model.min)
-            attributes.min = model.min;
+            config.min = model.min;
          if (model.max)
-            attributes.max = model.max;         
-         return $('<input/>', attributes)
+            config.max = model.max;
+         if (model.description && !model.label)
+            config.title = model.description;       
+         return $('<input/>', config)
              .on('input change', function() {  
-                 let val = this.valueAsNumber;
-                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+                let val = this.valueAsNumber;
+                if (Number.isNaN(val))
+                  val = undefined;
+                MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
              });
       }
 
       function createDropdownInput(model) {
-         let dropdown = $('<select/>');
+         let config = { id: model.id };
+         if (model.description && !model.label)
+          config.title = description;
+         let dropdown = $('<select/>',  );
          Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
          return dropdown;
@@ -124,23 +139,43 @@ MonitoringConsole.View.Components = (function() {
 
       function createValueInput(model) {
          if (model.unit === 'percent')
-            return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
+            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+         if (model.unit === 'count')
+            return createRangeInput(model);
          return createTextInput(model, Units.converter(model.unit));
       }
 
       function createTextInput(model, converter) {
-         if (!converter)
-            converter = { format: (str) => str, parse: (str) => str };
-         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
-         input.on('input change', function() {
+        if (!converter)
+          converter = { format: (str) => str, parse: (str) => str };
+        let config = { 
+          id: model.id,
+          type: 'text', 
+          value: converter.format(model.value), 
+        };
+        if (model.description && !model.label)
+          config.title = description;
+        let readonly = model.onChange === undefined;
+        if (!readonly) {
+          if (converter.pattern !== undefined)
+            config.pattern = converter.pattern();
+          if (converter.patternHint !== undefined)
+            config.title = (config.title ? config.title + ' ' : '') + converter.patternHint();
+        }
+        let input = $('<input/>', config);
+        if (!readonly) {
+          input.on('input change paste', function() {
             let val = converter.parse(this.value);
             if (model.onChange.length == 2) {
               MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
             } else if (model.onChange.length == 1) {
               model.onChange(val);
             }
-         });
-         return input;
+          });          
+        } else {
+          input.prop('readonly', true);
+        }
+        return input;
       }
 
       function createInput(model) {
@@ -156,15 +191,19 @@ MonitoringConsole.View.Components = (function() {
 
       function onUpdate(model) {
          let panel = emptyPanel();
+         let syntheticId = 0;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
+               syntheticId++;
                let entry = group.entries[r];
                let type = entry.type;
                let auto = type === undefined;
                let input = entry.input;
+               if (entry.id === undefined)
+                 entry.id = 'setting_' + syntheticId;
                if (type == 'header' || auto && input === undefined) {
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
@@ -173,9 +212,16 @@ MonitoringConsole.View.Components = (function() {
                   if (Array.isArray(input)) {
                      let multiInput = $('<div/>');
                      for (let i = 0; i < input.length; i++) {
-                        multiInput.append(createInput(input[i]));
-                        if (input[i].label) {
-                           multiInput.append($('<label/>').html(input[i].label));
+                        let multiEntry = input[i];
+                        syntheticId++;
+                        if (multiEntry.id === undefined)
+                          multiEntry.id = 'setting_' + syntheticId;
+                        multiInput.append(createInput(multiEntry));
+                        if (multiEntry.label) {
+                          let config = { 'for': multiEntry.id };
+                          if (multiEntry.description)
+                            config.title = multiEntry.description;
+                          multiInput.append($('<label/>', config).html(multiEntry.label));
                         }                        
                      }
                      input = multiInput;
