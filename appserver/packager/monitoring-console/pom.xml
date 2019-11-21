@@ -69,21 +69,6 @@
                     <execution>
                         <id>process-step2</id>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>process-step3</id>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>unpack</id>
                         <phase>generate-sources</phase>
@@ -101,6 +86,15 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step3</id>
                     </execution>
                 </executions>
             </plugin>
