@@ -84,12 +84,10 @@
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
-            <version>${microprofile-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -107,9 +105,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
     </dependencies>
 </project>

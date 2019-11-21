@@ -68,8 +68,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>javax.management.j2ee</groupId>
-            <artifactId>javax.management.j2ee-api</artifactId>
+            <groupId>jakarta.management.j2ee</groupId>
+            <artifactId>jakarta.management.j2ee-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.ejb</groupId>

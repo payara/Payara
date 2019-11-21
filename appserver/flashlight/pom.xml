@@ -47,7 +47,6 @@
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.server.internal.flashlight</groupId>
     <artifactId>glassfish-flashlight</artifactId>

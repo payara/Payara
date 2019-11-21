@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>appserv-rt-pom</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>GlassFish appserv-rt.jar</name>

@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>deployment-client</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -97,8 +96,8 @@
             <version>${project.version}</version>
         </dependency>   
         <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>

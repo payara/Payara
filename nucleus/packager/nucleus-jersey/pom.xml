@@ -145,7 +145,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
     </dependencies>
 </project>

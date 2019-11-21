@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. 
+  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates.
   All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
@@ -18,8 +18,8 @@
   file and include the License file at glassfish/legal/LICENSE.txt.
 
   GPL Classpath Exception:
-  The Payara Foundation designates this particular file as subject to the 
-  "Classpath" exception as provided by the Payara Foundation in the GPL 
+  The Payara Foundation designates this particular file as subject to the
+  "Classpath" exception as provided by the Payara Foundation in the GPL
   Version 2 section of the License file that accompanied this code.
 
   Modifications:
@@ -46,24 +46,23 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    
-    <artifactId>cdieventbus-notifier-console-plugin-l10n</artifactId>  
+
+    <artifactId>cdieventbus-notifier-console-plugin-l10n</artifactId>
     <name>Admin Console CDI Event Bus Notifier Plugin l10n</name>
     <description>CDI Event Bus Notifier Plugin bundle for Admin Console Localization</description>
-    
+
     <properties>
         <javadoc.skip>true</javadoc.skip>
         <deploy.skip>true</deploy.skip>
     </properties>
-    
-    
+
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
-                <artifactId>osgiversion-maven-plugin</artifactId>            
+                <artifactId>osgiversion-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>compute-osgi-version</id>

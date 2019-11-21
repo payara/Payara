@@ -122,32 +122,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.1.0</version>
-                <configuration>
-                    <flattenMode>ossrh</flattenMode>
-                    <pomElements>
-                        <developers>resolve</developers>
-                        <build>remove</build>
-                    </pomElements>
-                </configuration>
-                <executions>
-                    <!-- enable flattening -->
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <!-- ensure proper cleanup -->
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -194,8 +168,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>

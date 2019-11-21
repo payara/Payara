@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jmxremote_optional-repackaged</artifactId>

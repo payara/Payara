@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb</artifactId>
         <version>5.194-SNAPSHOT</version>
-       <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>ejb-internal-api</artifactId>
@@ -99,8 +98,8 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
 	<dependency>
-	    <groupId>javax.interceptor</groupId>
-	    <artifactId>javax.interceptor-api</artifactId>
+	    <groupId>jakarta.interceptor</groupId>
+	    <artifactId>jakarta.interceptor-api</artifactId>
 	</dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>

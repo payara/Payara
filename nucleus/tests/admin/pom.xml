@@ -81,7 +81,6 @@ of COPY_LIB map constant.)
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>nucleus-admin</artifactId>

@@ -48,17 +48,12 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Common</name>
     <description>This bundle contains common code that may be shared across plugins.</description>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
 
     <build>
         <plugins>
@@ -76,7 +71,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
@@ -85,47 +80,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.security.auth.message</groupId>
-            <artifactId>jakarta.security.auth.message-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
-            <artifactId>jsftemplating-dt</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>javax.servlet.jsp-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.faces</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
@@ -152,6 +112,36 @@
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>rest-service</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating-dt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.faces</artifactId>
         </dependency>
     </dependencies>
 </project>

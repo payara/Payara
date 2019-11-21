@@ -50,7 +50,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <packaging>glassfish-jar</packaging>
     <name>Payara Console Extras</name>
     <description>Plugin containing extra configuration for the Payara console</description>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -75,8 +75,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             </resource>
         </resources>
     </build>
-    
-    
+
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
@@ -97,14 +97,19 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

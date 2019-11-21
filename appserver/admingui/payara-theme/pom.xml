@@ -47,11 +47,10 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-payara-branding-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Payara Theme Plugin</name>
     <description>Custom Theme Plugin for Payara Admin Console</description>
 
@@ -144,7 +143,5 @@
             <artifactId>webui-jsf-suntheme</artifactId>
             <scope>provided</scope>
         </dependency>
-
-
     </dependencies>
 </project>

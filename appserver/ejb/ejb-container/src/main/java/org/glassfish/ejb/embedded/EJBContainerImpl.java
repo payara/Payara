@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.embedded;
 
 import java.io.File;
@@ -72,16 +72,15 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class EJBContainerImpl extends EJBContainer {
 
     // Use Bundle from another package
-    private static final Logger _logger =
-            LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
 
     private final GlassFish server;
-    
+
     private final Deployer deployer;
 
     private String deployedAppName;
 
-    private ServiceLocator habitat;
+    private final ServiceLocator habitat;
 
     private volatile int state = STARTING;
     private Cleanup cleanup = null;
@@ -93,8 +92,8 @@ public class EJBContainerImpl extends EJBContainer {
     private final static int CLOSED = 3;
 
     /**
-     * Construct new EJBContainerImpl instance 
-     */                                               
+     * Construct new EJBContainerImpl instance
+     */
     EJBContainerImpl(GlassFish server) throws GlassFishException {
         this.server = server;
         this.server.start();
@@ -124,7 +123,7 @@ public class EJBContainerImpl extends EJBContainer {
 
             // Check if appName was set by application creation code
             appName = res_app.getAppName();
-            
+
             String[] params;
             if (appName != null) {
                 params = new String[] {"--name", appName};
@@ -156,7 +155,8 @@ public class EJBContainerImpl extends EJBContainer {
      *
      * @return naming context
      */
-    public Context getContext() { 
+    @Override
+    public Context getContext() {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("IN getContext()");
         }
@@ -171,6 +171,7 @@ public class EJBContainerImpl extends EJBContainer {
     /**
      * Shutdown an embeddable EJBContainer instance.
      */
+    @Override
     public void close() {
         if (cleanup != null) {
             cleanup.disable();
@@ -209,21 +210,10 @@ public class EJBContainerImpl extends EJBContainer {
 
     private void cleanupTransactions() {
         try {
-            /*
-            Providers<TransactionManager> txProviders = habitat.forContract(TransactionManager.class);
-            if (txProviders != null) {
-                Provider<TransactionManager> provider = txProviders.getProvider();
-                if (provider != null && provider.isActive()) {
-                    TransactionManager txMgr = provider.get();
-                    txMgr.rollback();
-                }
-            }
-            */
-            ServiceHandle<TransactionManager> inhabitant =
-                    habitat.getServiceHandle(TransactionManager.class);
+            final ServiceHandle<TransactionManager> inhabitant = habitat.getServiceHandle(TransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
-                TransactionManager txmgr = inhabitant.getService();
-                if ( txmgr.getTransaction() != null ) {
+                final TransactionManager txmgr = inhabitant.getService();
+                if (txmgr.getTransaction() != null) {
                     txmgr.rollback();
                 }
             }
@@ -235,18 +225,7 @@ public class EJBContainerImpl extends EJBContainer {
 
     private void cleanupConnectorRuntime() {
         try {
-            /*
-            Providers<ConnectorRuntime> txProviders = habitat.forContract(ConnectorRuntime.class);
-            if (txProviders != null) {
-                Provider<ConnectorRuntime> provider = txProviders.getProvider();
-                if (provider != null && provider.isActive()) {
-                    ConnectorRuntime connectorRuntime = provider.get();
-                    connectorRuntime.cleanUpResourcesAndShutdownAllActiveRAs();
-                }
-            }
-            */
-            ServiceHandle<ConnectorRuntime> inhabitant =
-                    habitat.getServiceHandle(ConnectorRuntime.class);
+            ServiceHandle<ConnectorRuntime> inhabitant = habitat.getServiceHandle(ConnectorRuntime.class);
             if (inhabitant != null && inhabitant.isActive()) {
                 ConnectorRuntime connectorRuntime = inhabitant.getService();
                 connectorRuntime.cleanUpResourcesAndShutdownAllActiveRAs();
@@ -307,6 +286,7 @@ public class EJBContainerImpl extends EJBContainer {
             );
         }
 
+        @Override
         public void run() {
             if (container.isOpen()) {
                 container.forceClose();
