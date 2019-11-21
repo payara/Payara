@@ -116,7 +116,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     
     @Param(name = "dataGridStartPort", optional = true, shortName = "dgp", defaultValue = "0")
     private String dataGridStartPort;
-
+    
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
@@ -241,20 +241,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         if (StringUtils.ok(dataGridStartPort)) {
             try {
                 RemoteCLICommand rc = new RemoteCLICommand("set-hazelcast-configuration", this.programOpts, this.env);
-                ArrayList<String> argsList = new ArrayList<>();
-
-                argsList.add("--configSpecificDataGridStartPort");
-                argsList.add(dataGridStartPort);
-                argsList.add("--target");
-                argsList.add(instanceName + "-config");
-                String[] argsArray = new String[argsList.size()];
-                argsArray = argsList.toArray(argsArray);
-
-                for (int i = 0; i < argsArray.length; i++) {
-                    System.out.println("============================================= " + argsArray[i]);
-                }
-                System.out.println(configName);
-                rc.execute(argsArray);
+                rc.execute("set-hazelcast-configuration", "--configSpecificDataGridStartPort", dataGridStartPort, "--target", instanceName);
                 
             } catch (CommandException cex) {
                 String msg = "Something went wrong when setting config specific Data Grid start port for instance " + instanceName;

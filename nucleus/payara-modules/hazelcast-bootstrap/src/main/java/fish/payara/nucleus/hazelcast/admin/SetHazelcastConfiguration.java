@@ -86,7 +86,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
-@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DOMAIN})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,

@@ -291,7 +291,7 @@ public class CreateInstanceCommand implements AdminCommand {
             commandParameters.add("target", targetUtil.getConfig(instance).getName());
             commandInvocation.parameters(commandParameters);
             commandInvocation.execute();
-            
+
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
                     && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
                 // If we couldn't update domain.xml then stop!
@@ -299,27 +299,6 @@ public class CreateInstanceCommand implements AdminCommand {
             }
 
         }
-//            Config config = targetUtil.getConfig(instance);
-//            HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
-//
-//            try {
-//                ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
-//                    @Override
-//                    public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-//                        if (dataGridStartPort != null) {
-//                            hazelcastRuntimeConfigurationProxy.setConfigSpecificDataGridStartPort(dataGridStartPort);
-//                        }
-//                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-//                        return null;
-//                    }
-//                }, nodeConfiguration);
-//            } catch (TransactionFailure ex) {
-//                logger.log(Level.WARNING, "Exception during command ", ex);
-//                report.setMessage(ex.getCause().getMessage());
-//                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-//                return;
-//            }
-//        }
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
