@@ -101,7 +101,7 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     public void setLite(String value);
     
     @Attribute(defaultValue = "0")
-    String getConfigPort();
-    public void setConfigPort(String value);
+    String getConfigSpecificDataGridStartPort();
+    public void setConfigSpecificDataGridStartPort(String value);
     
 }

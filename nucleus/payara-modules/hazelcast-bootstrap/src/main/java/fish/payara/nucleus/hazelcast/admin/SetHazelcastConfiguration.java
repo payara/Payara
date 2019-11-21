@@ -95,7 +95,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Set Hazelcast Configuration")
 })
 public class SetHazelcastConfiguration implements AdminCommand, DeploymentTargetResolver {
-
+    
     @Inject
     protected Logger logger;
 
@@ -203,10 +203,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Param(name = "autoIncrementPort", optional = true)
     private Boolean autoIncrementPort;
-    
-    @Param(name = "configPort", optional = true)
-    private String configPort;
-    
+  
+    @Param(name = "configSpecificDataGridStartPort", optional = true, shortName = "dgp")
+    private String configSpecificDataGridStartPort;
+
     @Inject
     ServiceLocator serviceLocator;
 
@@ -215,8 +215,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Override
     public void execute(AdminCommandContext context) {
-
-        final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -236,22 +234,19 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
-                        }
+                        }                        
                         if (multiCastGroup != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastGroup(multiCastGroup);
-                        }
+                        }                        
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
                         }
-
                         if (configFile != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
-
                         if (hostawarePartitioning != null) {
                             hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
                         }
-
                         if (hzClusterName != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupName(hzClusterName);
                         }
@@ -349,8 +344,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                             if (publicAddress != null) {
                                 hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
                             }
-                            if (configPort != null) {
-                                hazelcastRuntimeConfigurationProxy.setConfigPort(configPort);
+                            if (configSpecificDataGridStartPort != null) {
+                                if (!configToApply.isDas()) {
+                                    hazelcastRuntimeConfigurationProxy.setConfigSpecificDataGridStartPort(configSpecificDataGridStartPort);
+                                }
                             }
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return null;
@@ -387,7 +384,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
         }
 
     }
-
+    
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
 
         // for all affected targets restart hazelcast. 

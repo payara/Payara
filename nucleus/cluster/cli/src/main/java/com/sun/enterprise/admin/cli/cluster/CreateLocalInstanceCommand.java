@@ -43,14 +43,6 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
@@ -58,9 +50,16 @@ import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -70,8 +69,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.admin.cli.cluster.NamingHelper;
-import fish.payara.util.cluster.PayaraServerNameGenerator;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 
 /**
@@ -115,6 +113,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     // Technically deprecated syntax
     @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
     private boolean autoName;
+    
+    @Param(name = "dataGridStartPort", optional = true, shortName = "dgp", defaultValue = "0")
+    private String dataGridStartPort;
 
     private String masterPassword = null;
 
@@ -236,6 +237,36 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
             throw new CommandException(msg, ce);
         }
+        
+        if (StringUtils.ok(dataGridStartPort)) {
+            try {
+                RemoteCLICommand rc = new RemoteCLICommand("set-hazelcast-configuration", this.programOpts, this.env);
+                ArrayList<String> argsList = new ArrayList<>();
+
+                argsList.add("--configSpecificDataGridStartPort");
+                argsList.add(dataGridStartPort);
+                argsList.add("--target");
+                argsList.add(instanceName + "-config");
+                String[] argsArray = new String[argsList.size()];
+                argsArray = argsList.toArray(argsArray);
+
+                for (int i = 0; i < argsArray.length; i++) {
+                    System.out.println("============================================= " + argsArray[i]);
+                }
+                System.out.println(configName);
+                rc.execute(argsArray);
+                
+            } catch (CommandException cex) {
+                String msg = "Something went wrong when setting config specific Data Grid start port for instance " + instanceName;
+                if (cex.getLocalizedMessage() != null) {
+                    msg = msg + ": " + cex.getLocalizedMessage();
+                }
+                logger.severe(msg);
+                throw new CommandException(msg, cex);
+            }
+
+        }
+        
         return exitCode;
     }
 

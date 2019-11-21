@@ -412,7 +412,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         
         int port = Integer.valueOf(configuration.getStartPort());
 
-        int configPort = Integer.valueOf(nodeConfig.getConfigPort());
+        int configPort = Integer.valueOf(nodeConfig.getConfigSpecificDataGridStartPort());
 
         if (configPort > 0) {
             port = configPort;
@@ -446,9 +446,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);            
         }
-        
-     
-       
+               
         if (env.isDas() && !env.isMicro()) {
             port = Integer.valueOf(configuration.getDasPort());
         }
