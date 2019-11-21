@@ -47,17 +47,12 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common-full-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Full distribution plugin</name>
     <description>Plugin bundle for GlassFish v3 Admin Console common-full package</description>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
 
     <build>
         <plugins>
@@ -88,6 +83,10 @@
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

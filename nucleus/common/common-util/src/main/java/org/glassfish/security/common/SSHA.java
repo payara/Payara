@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.security.common;
 
 import static java.lang.System.arraycopy;
@@ -120,26 +121,6 @@ public class SSHA {
     }
 
     /**
-     * Compute a salted SHA hash.
-     *
-     * <P>
-     * Salt bytes are obtained using SecureRandom.
-     *
-     * @param saltBytes Number of bytes of random salt value to generate.
-     * @param password Password bytes.
-     * @return Byte array of length 20 bytes containing hash result.
-     * @throws IASSecurityExeption Thrown if there is an error.
-     *
-     */
-    // Deprecating this method as this is nt being used.To be removed later
-    /*
-     * public static byte[] compute(int saltBytes, byte[] password) throws IASSecurityException { SecureRandom
-     * rng=SharedSecureRandom.get(); byte[] salt=new byte[saltBytes]; rng.nextBytes(salt);
-     * 
-     * return compute(salt, password); }
-     */
-
-    /**
      * Perform encoding of salt and computed hash.
      *
      * @param salt Salt bytes.
@@ -172,40 +153,6 @@ public class SSHA {
 
         return out;
     }
-
-    /**
-     * Compute a salted SHA hash and return the encoded result. This is a convenience method combining compute() and
-     * encode().
-     *
-     * @param salt Salt bytes.
-     * @param password Password bytes.
-     * @return String Encoded string, as described in class documentation.
-     * @throws IASSecurityExeption Thrown if there is an error.
-     *
-     */
-    // Deprecating this method as this is nt being used.To be removed later
-    /*
-     * public static String computeAndEncode(byte[] salt, byte[] password) throws IASSecurityException { byte[] hash =
-     * compute(salt, password); return encode(salt, hash, false); }
-     */
-
-    /**
-     * Compute a salted SHA hash and return the encoded result. This is a convenience method combining compute() and
-     * encode().
-     *
-     * @param saltBytes Number of bytes of random salt value to generate.
-     * @param password Password bytes.
-     * @return String Encoded string, as described in class documentation.
-     * @throws IASSecurityExeption Thrown if there is an error.
-     *
-     */
-    // Deprecating this method as this is nt being used.To be removed later
-    /*
-     * public static String computeAndEncode(int saltBytes, byte[] password) throws IASSecurityException { SecureRandom
-     * rng=SharedSecureRandom.get(); byte[] salt=new byte[saltBytes]; rng.nextBytes(salt);
-     * 
-     * byte[] hash = compute(salt, password); return encode(salt, hash, false); }
-     */
 
     /**
      * Verifies a password.

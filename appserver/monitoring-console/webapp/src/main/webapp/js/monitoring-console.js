@@ -430,13 +430,18 @@ MonitoringConsole.Model = (function() {
 						if (spanX == 0) {
 							if (!widget.grid)
 								widget.grid = { column: col, span: span }; // init grid
-							widget.grid.item = column.length; // update item position
+							widget.grid.item = row0; // update item position
 						} else {
 							while (column.length < row0)
 								column.push(null); // null marks empty cells
 						}
 						for (let spanY = 0; spanY < span; spanY++) {
-							column.push(spanX === 0 && spanY === 0 ? info : undefined);
+							let cell = spanX === 0 && spanY === 0 ? info : undefined;
+							if (row0 + spanY > column.length) {
+								column.push(cell);	
+							} else {
+								column[row0 + spanY] = cell;
+							}
 						}
 					}
 				}
@@ -470,7 +475,8 @@ MonitoringConsole.Model = (function() {
 		 * @return {number} row position in column where n rows are still empty ('null' marks empty)
 		 */
       	function getEmptyRowIndex(column, n) {
-			return Math.max(column.length, column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null))); 
+      		let row = column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null));
+			return row < 0 ? column.length : row;
       	}
 		
 		return {
@@ -628,9 +634,17 @@ MonitoringConsole.Model = (function() {
 				doStore();
 			},
 			
-			select: function(series) {
-				let widget = pages[settings.home].widgets[series];
+			select: function(series, exclusive) {
+				let page = pages[settings.home];
+				let widget = page.widgets[series];
 				widget.selected = widget.selected !== true;
+				if (exclusive) {
+					Object.values(page.widgets).forEach(function(widget) {
+						if (widget.series != series) {
+							widget.selected = false;
+						}
+					});
+				}
 				doStore();
 				return widget.selected === true;
 			},
@@ -866,7 +880,9 @@ MonitoringConsole.Model = (function() {
 	let Update = (function() {
 
 		function retainLastMinute(data) {
-			let startOfLastMinute = Date.now() - 65000;
+			if (!data)
+				return [];
+			let startOfLastMinute = Date.now() - 62000;
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
 				if (src.length == 4 && src[2] >= startOfLastMinute) {
@@ -883,6 +899,15 @@ MonitoringConsole.Model = (function() {
 				}
 			});
 			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function adjustDecimals(data, factor, divisor) {
+			data.forEach(function(seriesData) {
+				seriesData.points = seriesData.points.map((val, index) => index % 2 == 0 ? val : val * factor / divisor);
+				seriesData.observedMax = seriesData.observedMax * factor / divisor; 
+				seriesData.observedMin = seriesData.observedMin * factor / divisor;
+				seriesData.observedSum = seriesData.observedSum * factor / divisor;
+			});
 		}
 
 		function perSecond(data) {
@@ -938,6 +963,8 @@ MonitoringConsole.Model = (function() {
 			return function(response) {
 				Object.values(widgets).forEach(function(widget) {
 					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
+						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
 						perSecond(data);
 					addAssessment(widget, data);
@@ -1183,11 +1210,11 @@ MonitoringConsole.Model = (function() {
 	            }),
 
 				moveUp: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item = 0;
+                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span);
 	            }),
 
 	            moveDown: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item += 1.1;
+                    widget.grid.item += widget.grid.span;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {
@@ -1322,6 +1349,17 @@ MonitoringConsole.View.Units = (function() {
       tb: 1024 * 1024 * 1024 * 1024,
    };
 
+   /**
+    * Factors by unit
+    */
+   const FACTORS = {
+      sec: SEC_FACTORS,
+      ms: MS_FACTORS,
+      ns: NS_FACTORS,
+      bytes: BYTES_FACTORS,
+      percent: PERCENT_FACTORS,
+   };
+
    function parseNumber(valueAsString, factors) {
       if (!valueAsString || typeof valueAsString === 'string' && valueAsString.trim() === '')
          return undefined;
@@ -1350,10 +1388,15 @@ MonitoringConsole.View.Units = (function() {
    function formatNumber(valueAsNumber, factors, useDecimals) {
       if (valueAsNumber === undefined)
          return undefined;
+      if (valueAsNumber === 0)
+         return '0';
       if (!factors)
          return formatDecimal(valueAsNumber);
+      if (valueAsNumber < 0)
+         return '-' + formatNumber(-valueAsNumber, factors, useDecimals);
       let largestFactorUnit;
       let largestFactor = 0;
+      let factor1Unit = '';
       for (let [unit, factor] of Object.entries(factors)) {
          if (unit != '_' && (valueAsNumber >= 0 && factor > 0 || valueAsNumber < 0 && factor < 0)
             && (useDecimals && (valueAsNumber / factor) >= 1 || !hasDecimalPlaces(valueAsNumber / factor))
@@ -1361,13 +1404,13 @@ MonitoringConsole.View.Units = (function() {
             largestFactor = factor;
             largestFactorUnit = unit;
          }
+         if (factor === 1)
+            factor1Unit = unit;
       }
-      if (!largestFactorUnit) {
-         return formatDecimal(valueAsNumber);
-      }
-      if (useDecimals) {
+      if (!largestFactorUnit)
+         return formatDecimal(valueAsNumber) + factor1Unit;
+      if (useDecimals)
          return formatDecimal(valueAsNumber / largestFactor) + largestFactorUnit;
-      }
       let valueInUnit = Math.round(valueAsNumber / largestFactor);
       if (factors._) {
          for (let i = 0; i < factors._.length; i++) {
@@ -1419,6 +1462,20 @@ MonitoringConsole.View.Units = (function() {
       return number.toString().padStart(2, '0');
    }
 
+   const DECIMAL_NUMBER_PATTERN = '([0-9]+\.)?[0-9]+';
+
+   function pattern(factors) {
+      if (!factors)
+         return DECIMAL_NUMBER_PATTERN;
+      return '(' + DECIMAL_NUMBER_PATTERN + '(' + Object.keys(factors).filter(unit => unit != '_').join('|') + ')? *)+';
+   }
+
+   function patternHint(factors) {
+      if (!factors)
+         return 'a integer or decimal number';
+      return 'a integer or decimal number, optionally followed by a unit: ' + Object.keys(factors).filter(unit => unit != '_').join(', ');
+   }
+
    /**
     * Public API below:
     */
@@ -1433,27 +1490,12 @@ MonitoringConsole.View.Units = (function() {
       parseNanoseconds: (valueAsString) => parseNumber(valueAsString, NS_FACTORS),
       parseBytes: (valueAsString) => parseNumber(valueAsString, BYTES_FACTORS),
       converter: function(unit) {
+         let factors = FACTORS[unit];
          return {
-            format: function(valueAsNumber, useDecimals) {
-               switch(unit) {
-                  case 'sec': return formatNumber(valueAsNumber, SEC_FACTORS, useDecimals); 
-                  case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
-                  case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
-                  case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
-                  case 'percent': return formatNumber(valueAsNumber, PERCENT_FACTORS, useDecimals);
-                  default: return formatNumber(valueAsNumber);
-               }
-            },
-            parse: function(valueAsString) {
-               switch(unit) {
-                  case 'sec': return parseNumber(valueAsString, SEC_FACTORS);
-                  case 'ms': return parseNumber(valueAsString, MS_FACTORS);
-                  case 'ns': return parseNumber(valueAsString, NS_FACTORS);
-                  case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
-                  case 'percent': return parseNumber(valueAsString, PERCENT_FACTORS);
-                  default: return parseNumber(valueAsString);
-               }
-            },
+            format: (valueAsNumber, useDecimals) => formatNumber(valueAsNumber, factors, useDecimals),
+            parse: (valueAsString) => parseNumber(valueAsString, factors),
+            pattern: () =>  pattern(factors),
+            patternHint: () => patternHint(factors),
          };
       }
    };
@@ -1521,7 +1563,10 @@ MonitoringConsole.View.Components = (function() {
 
       function createHeaderRow(model) {
          let caption = model.label;
-         return $('<tr/>').append($('<th/>', {colspan: 2})
+         let config = {colspan: 2};
+         if (model.description)
+          config.title = model.description;
+         return $('<tr/>').append($('<th/>', config)
              .html(caption)
              .click(function() {
                  let tr = $(this).closest('tr').next();
@@ -1538,20 +1583,25 @@ MonitoringConsole.View.Components = (function() {
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description }));
         return table;
       }
 
       function createRow(model, inputs) {
         let components = $.isFunction(inputs) ? inputs() : inputs;
-        if (typeof components === 'string') {
+        if (typeof components === 'string')
             components = document.createTextNode(components);
-        }
-        return $('<tr/>').append($('<td/>').text(model.label)).append($('<td/>').append(components));   
+        let config = {};
+        if (model.description)
+          config.title = model.description;
+        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
       }
 
       function createCheckboxInput(model) {
-        return $("<input/>", { type: 'checkbox', checked: model.value })
+        let config = { id: model.id, type: 'checkbox', checked: model.value };
+        if (model.description && !model.label)
+          config.title = model.description;  
+        return $("<input/>", config)
           .on('change', function() {
             let checked = this.checked;
             if (model.onChange.length == 2) {
@@ -1563,20 +1613,27 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createRangeInput(model) {
-         let attributes = {type: 'number', value: model.value};
+         let config = { id: model.id, type: 'number', value: model.value};
          if (model.min)
-            attributes.min = model.min;
+            config.min = model.min;
          if (model.max)
-            attributes.max = model.max;         
-         return $('<input/>', attributes)
+            config.max = model.max;
+         if (model.description && !model.label)
+            config.title = model.description;       
+         return $('<input/>', config)
              .on('input change', function() {  
-                 let val = this.valueAsNumber;
-                 MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
+                let val = this.valueAsNumber;
+                if (Number.isNaN(val))
+                  val = undefined;
+                MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
              });
       }
 
       function createDropdownInput(model) {
-         let dropdown = $('<select/>');
+         let config = { id: model.id };
+         if (model.description && !model.label)
+          config.title = description;
+         let dropdown = $('<select/>',  );
          Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
          dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
          return dropdown;
@@ -1584,23 +1641,43 @@ MonitoringConsole.View.Components = (function() {
 
       function createValueInput(model) {
          if (model.unit === 'percent')
-            return createRangeInput({min: 0, max: 100, value: model.value, onChange: model.onChange });
+            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+         if (model.unit === 'count')
+            return createRangeInput(model);
          return createTextInput(model, Units.converter(model.unit));
       }
 
       function createTextInput(model, converter) {
-         if (!converter)
-            converter = { format: (str) => str, parse: (str) => str };
-         let input = $('<input/>', {type: 'text', value: converter.format(model.value) });
-         input.on('input change', function() {
+        if (!converter)
+          converter = { format: (str) => str, parse: (str) => str };
+        let config = { 
+          id: model.id,
+          type: 'text', 
+          value: converter.format(model.value), 
+        };
+        if (model.description && !model.label)
+          config.title = description;
+        let readonly = model.onChange === undefined;
+        if (!readonly) {
+          if (converter.pattern !== undefined)
+            config.pattern = converter.pattern();
+          if (converter.patternHint !== undefined)
+            config.title = (config.title ? config.title + ' ' : '') + converter.patternHint();
+        }
+        let input = $('<input/>', config);
+        if (!readonly) {
+          input.on('input change paste', function() {
             let val = converter.parse(this.value);
             if (model.onChange.length == 2) {
               MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
             } else if (model.onChange.length == 1) {
               model.onChange(val);
             }
-         });
-         return input;
+          });          
+        } else {
+          input.prop('readonly', true);
+        }
+        return input;
       }
 
       function createInput(model) {
@@ -1616,15 +1693,19 @@ MonitoringConsole.View.Components = (function() {
 
       function onUpdate(model) {
          let panel = emptyPanel();
+         let syntheticId = 0;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
+               syntheticId++;
                let entry = group.entries[r];
                let type = entry.type;
                let auto = type === undefined;
                let input = entry.input;
+               if (entry.id === undefined)
+                 entry.id = 'setting_' + syntheticId;
                if (type == 'header' || auto && input === undefined) {
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
@@ -1633,9 +1714,16 @@ MonitoringConsole.View.Components = (function() {
                   if (Array.isArray(input)) {
                      let multiInput = $('<div/>');
                      for (let i = 0; i < input.length; i++) {
-                        multiInput.append(createInput(input[i]));
-                        if (input[i].label) {
-                           multiInput.append($('<label/>').html(input[i].label));
+                        let multiEntry = input[i];
+                        syntheticId++;
+                        if (multiEntry.id === undefined)
+                          multiEntry.id = 'setting_' + syntheticId;
+                        multiInput.append(createInput(multiEntry));
+                        if (multiEntry.label) {
+                          let config = { 'for': multiEntry.id };
+                          if (multiEntry.description)
+                            config.title = multiEntry.description;
+                          multiInput.append($('<label/>', config).html(multiEntry.label));
                         }                        
                      }
                      input = multiInput;
@@ -2477,7 +2565,7 @@ MonitoringConsole.Chart.Trace = (function() {
    function autoLink(text) {
       if (text.startsWith('http://') || text.startsWith('https://'))
          return $('<a/>', { href: text, text: text});
-      return $(document.createTextNode(text));
+      return $('<span/>', { text: text });
    }
 
    function addCustomTooltip(chart, spans) {
@@ -2571,6 +2659,7 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function onOpenPopup(series) {
+      $('#chart-grid').hide();
       $('#panel-trace').show();
       model.series = series;
       let menu = { id: 'TraceMenu', groups: [
@@ -2591,6 +2680,7 @@ MonitoringConsole.Chart.Trace = (function() {
          chart = undefined;
       }
       $('#panel-trace').hide();
+      $('#chart-grid').show();
    }
 
    function onSortByWallTime() {
@@ -2790,8 +2880,7 @@ MonitoringConsole.View = (function() {
         return res;
     }
 
-    function formatSeriesName(widget) {
-        let series = widget.series;
+    function formatSeriesName(series) {
         let endOfTags = series.lastIndexOf(' ');
         let metric = endOfTags <= 0 ? series : series.substring(endOfTags + 1);
         if (endOfTags <= 0 )
@@ -2817,7 +2906,7 @@ MonitoringConsole.View = (function() {
         return text;
     }
 
-    function createWidgetToolbar(widget, expanded) {
+    function createWidgetToolbar(widget) {
         let series = widget.series;
         let menu = { groups: [
             { icon: '&#9881;', items: [
@@ -2831,11 +2920,12 @@ MonitoringConsole.View = (function() {
                 { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
             ]},
         ]};
+        let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
-            .append($('<h3/>', {title: 'Select '+series}).html(formatSeriesName(widget))
+            .append($('<h3/>', {title: 'Select '+series})
+                .html(title)
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.onMenuCreation(menu))
-            ;
+            .append(Components.onMenuCreation(menu));
     }
 
     function createGlobalSettings() {
@@ -2857,6 +2947,7 @@ MonitoringConsole.View = (function() {
         let thresholds = widget.decorations.thresholds;
         let settings = [];
         settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
+            { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
@@ -2865,9 +2956,16 @@ MonitoringConsole.View = (function() {
             { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
         ]});
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
+            { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
-                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: (widget, selected) => widget.unit = selected},
+                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+            ]},
+            { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
+                { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
+                    description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
+                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked,
+                    description: 'Values that are collected as decimal are converted to a integer with 4 fix decimal places. By checking this option this conversion is reversed to get back the original decimal range.'},
             ]},
             { label: 'Extra Lines', input: [
                 { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
@@ -2900,7 +2998,7 @@ MonitoringConsole.View = (function() {
             ]},                
             //TODO add color for each threshold
         ]});
-        settings.push({ id: 'settings-status', caption: 'Status', entries: [
+        settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
@@ -2948,17 +3046,16 @@ MonitoringConsole.View = (function() {
         });
         let widgetSeries = $('<input />', {type: 'text'});
         widgetsSelection.change(() => widgetSeries.val(widgetsSelection.val()));
-        
+        let pageNameOnChange = MonitoringConsole.Model.Page.hasPreset() ? undefined : function(text) {
+            if (MonitoringConsole.Model.Page.rename(text)) {
+                updatePageNavigation();                        
+            }
+        };
         return { id: 'settings-page', caption: 'Page', entries: [
-            { label: 'Name', input: () => 
-                $('<input/>', { type: 'text', value: MonitoringConsole.Model.Page.name() })
-                .on("propertychange change keyup paste input", function() {
-                    if (MonitoringConsole.Model.Page.rename(this.value)) {
-                        updatePageNavigation();                        
-                    }
-                })
-            },
-            { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
+            { label: 'Page Rotation', input: [
+                { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
+            ]},
             { label: 'Add Widgets', input: () => 
                 $('<span/>')
                 .append(nsSelection)
@@ -2973,7 +3070,7 @@ MonitoringConsole.View = (function() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
-        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series);
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series, true);
         updateDomOfWidget(undefined, widget);
         updateSettings();
     }
@@ -3019,7 +3116,7 @@ MonitoringConsole.View = (function() {
             for (let n = 0; n < avgOffN; n++)
                 avg += points[points.length - 1 - (n * 2)];
             avg /= avgOffN;
-            let value = format(avg, widget.unit === 'bytes');
+            let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
             let item = { 

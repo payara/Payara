@@ -37,13 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * TokenResolver.java
- *
- * Created on April 20, 2007, 11:59 AM
- * Updated for V3 on March 4, 2008
- */
 package com.sun.enterprise.universal.glassfish;
 
 import java.util.*;
@@ -60,6 +55,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  * token embedded in the value -- it will not be further resolved.
  * This is the KISS principle in action...
  * @author bnevins
+ * @version 3
+ * @since April 20, 2007
  */
 public class TokenResolver {
 
@@ -246,10 +243,7 @@ public class TokenResolver {
         if (GFLauncherUtils.isWindows() && hasWindowsToken(s)) {
             return true;
         }
-        if (s.indexOf(Token.TOKEN_START) >= 0) {
-            return true;
-        }
-        return false;
+        return s.contains(Token.TOKEN_START);
     }
     ///////////////////////////////////////////////////////////////////////////
     private final Map<String, String> props;
@@ -261,8 +255,8 @@ public class TokenResolver {
         String token;
         String name;
         String value;
-        final static String TOKEN_START = SystemPropertyConstants.OPEN;
-        final static String TOKEN_END = SystemPropertyConstants.CLOSE;
+        static final String TOKEN_START = SystemPropertyConstants.OPEN;
+        static final String TOKEN_END = SystemPropertyConstants.CLOSE;
 
         @Override
         public String toString() {

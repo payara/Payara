@@ -48,7 +48,6 @@
     <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>eclipselink-wrapper</artifactId>
     <packaging>pom</packaging>
@@ -91,7 +90,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-             <version>${eclipselink.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>

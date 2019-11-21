@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>internal-api-l10n</artifactId>

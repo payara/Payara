@@ -41,53 +41,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-   
+
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
     </parent>
-    
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
 
-    <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
-
-    <developers>
-        <developer>
-            <id>smillidge</id>
-            <name>Steve Millidge</name>
-            <url>http://www.payara.fish</url>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>mulderbaba</id>
-            <name>Mert Caliskan</name>
-            <organization>Payara Foundation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${javase.version}</source>
-                    <target>${javase.version}</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -151,6 +116,7 @@
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
                                     fish.payara.security.annotations,
+                                    fish.payara.security.api,
                                     fish.payara.security.oauth2.api,
                                     fish.payara.security.openid.api
                                 </Export-Package>
@@ -169,20 +135,37 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-api</artifactId>
-            <version>${opentracing.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>

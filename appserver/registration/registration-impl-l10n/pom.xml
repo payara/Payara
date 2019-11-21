@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.registration</groupId>
         <artifactId>registration</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>registration-impl-l10n</artifactId>
     

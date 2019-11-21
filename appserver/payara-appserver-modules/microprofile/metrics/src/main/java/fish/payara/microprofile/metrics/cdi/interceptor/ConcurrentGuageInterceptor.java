@@ -57,16 +57,16 @@ public class ConcurrentGuageInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricID metricID = resolver.concurrentGauge(bean.getBeanClass(), element).metricID();
-        org.eclipse.microprofile.metrics.ConcurrentGauge counter = registry.getConcurrentGauges().get(metricID);
-        if (counter == null) {
+        org.eclipse.microprofile.metrics.ConcurrentGauge gauge = registry.getConcurrentGauges().get(metricID);
+        if (gauge == null) {
             throw new IllegalStateException("No concurrent gauge with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }
 
-        counter.inc();
+        gauge.inc();
         try {
             return context.proceed();
         } finally {
-            counter.dec();
+            gauge.dec();
         }
     }
 

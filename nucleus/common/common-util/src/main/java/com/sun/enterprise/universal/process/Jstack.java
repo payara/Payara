@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.universal.process;
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-import java.io.OutputStream;
+package com.sun.enterprise.universal.process;
 
 import java.util.Map;
 import java.util.Set;

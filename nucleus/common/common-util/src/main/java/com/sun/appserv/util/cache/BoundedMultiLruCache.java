@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
@@ -45,7 +46,6 @@ import java.text.MessageFormat;
 
 import java.util.Properties;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Locale;
 
 /**
@@ -64,6 +64,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
      * initialize the LRU cache
      * @param maxCapacity maximum number of entries this cache may hold
      */
+    @Override
     public void init(int maxCapacity, Properties props) throws Exception {
         super.init(maxCapacity, props);
         currentSize = 0;
@@ -115,6 +116,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected CacheItem itemAdded(CacheItem item) {
         LruCacheItem overflow = (LruCacheItem) super.itemAdded(item);
 
@@ -133,6 +135,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
      * @param oldSize size of the previous value that was refreshed
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
         super.itemRefreshed(item, oldSize);
 
@@ -149,6 +152,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRemoved(CacheItem item) {
         super.itemRemoved(item);
 
@@ -160,6 +164,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
      * has cache reached its threshold
      * @return true when the cache reached its threshold
      */
+    @Override
     protected boolean isThresholdReached() {
         return (currentSize > maxSize || super.isThresholdReached());
     }
@@ -189,36 +194,36 @@ public class BoundedMultiLruCache extends MultiLruCache {
      * @return an Object corresponding to the stat
      * See also: Constant.java for the key
      */
+    @Override
     public Object getStatByName(String key) {
         Object stat = super.getStatByName(key);
 
         if (stat == null && key != null) {
-            if (key.equals(Constants.STAT_BOUNDEDMULTILRUCACHE_CURRENT_SIZE))
-                stat = Long.valueOf(currentSize);
-            else if (key.equals(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE)) {
-                if (maxSize == Constants.DEFAULT_MAX_CACHE_SIZE)
+            if (key.equals(Constants.STAT_BOUNDEDMULTILRUCACHE_CURRENT_SIZE)) {
+                stat = currentSize;
+            } else if (key.equals(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE)) {
+                if (maxSize == Constants.DEFAULT_MAX_CACHE_SIZE) {
                     stat = Constants.STAT_DEFAULT;
-                else
-                    stat = Long.valueOf(maxSize);
+                } else {
+                    stat = maxSize;
+                }
             }
         }
 
         return stat;
     }
 
+    @Override
     public Map getStats() {
         Map stats = super.getStats();
 
         // cache size in KB
-        stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_CURRENT_SIZE,
-                  Long.valueOf(currentSize));
+        stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_CURRENT_SIZE, currentSize);
         if (maxSize == Constants.DEFAULT_MAX_CACHE_SIZE) {
-            stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE,
-                      Constants.STAT_DEFAULT);
+            stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE, Constants.STAT_DEFAULT);
         }
         else {
-            stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE,
-                      Long.valueOf(maxSize));
+            stats.put(Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE, maxSize);
         }
         return stats;
     }

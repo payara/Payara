@@ -84,12 +84,16 @@ import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERP
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
     private static final String CONFIG = "config";
     private static final String CLUSTER = "cluster";
+    private static final String DEPLOYMENT_GROUP = "deploymentGroup";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
 
     @Param(name = CLUSTER, optional = true)
     private String clusterName;
+    
+    @Param(name = DEPLOYMENT_GROUP, optional = true)
+    private String deploymentGroup;
 
     @Param(name="lbenabled", optional = true)
     private Boolean lbEnabled;
@@ -116,7 +120,11 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     
     @Param(name = "dataGridStartPort", optional = true, shortName = "dgp", defaultValue = "0")
     private String dataGridStartPort;
-    
+
+    // Override for hostname, as getting it from the system can be fragile when comparing against node config
+    @Param(name = "ip", optional = true)
+    private String ip;
+
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
@@ -148,12 +156,19 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             //If we are on Windows, call _validate-node on DAS instead of relying on the path processing in the local validation.
             String nodeInstallDir = getNodeInstallDir();
             if (nodeInstallDir == null || nodeInstallDir.isEmpty() || TokenResolver.hasToken(nodeInstallDir) || OS.isWindows()) {
-                validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, getProductRootPath(), ip);
+                } else {
+                    validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                }
             } else {
                 validateNodeInstallDirLocal(nodeInstallDir, getProductRootPath());
-                validateNode(node, null, getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, null, ip);
+                } else {
+                    validateNode(node, null, getInstanceHostName(true));
+                }
             }
-
         }
 
         if (!rendezvousWithDAS()) {
@@ -368,6 +383,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         if (clusterName != null) {
             argsList.add("--cluster");
             argsList.add(clusterName);
+        }
+        if (deploymentGroup != null) {
+            argsList.add("--deploymentgroup");
+            argsList.add(deploymentGroup);
         }
         if (lbEnabled != null) {
             argsList.add("--lbenabled");

@@ -42,7 +42,7 @@ pipeline {
         }
         stage('Setup for Quicklook Tests') {
             steps {
-                sh "rm *.zip"
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }

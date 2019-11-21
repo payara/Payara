@@ -65,11 +65,19 @@ input[type=text] {
   width: 150px;
   max-width: 150px;
 }
+input[type=text]:invalid {
+  background-color: #ffdddd;
+}
 input[type=number] {
   width: 60px;
 }
 input[type=checkbox] {
   vertical-align: middle;
+}
+input[readonly] {
+  background-color: transparent;
+  color: white;
+  border-width: 0;
 }
 canvas {
   position: relative;
@@ -103,25 +111,27 @@ button:hover {
 
 #panel-trace {
   position: absolute;
-  top: 38px;
+  top: 32px;
   left: 0;
-  background-color: #002c3e;
   display: none;
   z-index: 110;
   padding: 10px;
-  width: 100%;
-  height: 100%;
   box-sizing: border-box;
-  margin-bottom: 40px;
 }
 #trace-widget {
   background-color: #002433;
   position: relative;
   padding: 10px;
 }
+#trace-legend {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+}
 #trace-chart-box {
   position: relative;
   clear: both;
+  padding-bottom: 60px;
 }
 #grid-console {
     position: relative;
@@ -229,6 +239,9 @@ button:hover {
 #Settings table tr:first-child th {
   font-weight: bold;
   border-bottom: 1px solid #bbb;
+}
+#Settings table td {
+  max-width: 230px;
 }
 #Settings table td:first-child {
   width: 120px;
@@ -384,6 +397,7 @@ table.tags th, table.tags td {
 /* Menus */
 #Menu {
   margin-top: 10px;
+  padding-right: 30px;
 }
 .Menu {
   float: right;
@@ -404,7 +418,7 @@ table.tags th, table.tags td {
   border-radius: 0px;
   box-shadow: none;  
 }
-.Menu button:hover {
+.Menu .Group button:hover {
   color: #434445;
   background-color: #D2D8DA;
 }

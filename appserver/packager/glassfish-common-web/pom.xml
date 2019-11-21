@@ -309,8 +309,8 @@
             <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.management.j2ee</groupId>
-            <artifactId>javax.management.j2ee-api</artifactId>
+            <groupId>jakarta.management.j2ee</groupId>
+            <artifactId>jakarta.management.j2ee-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.security.auth.message</groupId>
@@ -342,8 +342,8 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.transaction</groupId>

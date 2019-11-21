@@ -156,8 +156,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
            <groupId>fish.payara.server.internal.admingui</groupId>
@@ -175,8 +175,8 @@
            <version>${project.version}</version>
        </dependency> 
        <dependency>
-            <groupId>javax.enterprise.concurrent</groupId>
-            <artifactId>javax.enterprise.concurrent-api</artifactId>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
        <dependency>
             <groupId>org.glassfish</groupId>

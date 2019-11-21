@@ -62,7 +62,7 @@
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/standalone/standaloneInstances.jsf?");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config", result="#{requestScope.tmpList}");
         listRemove(list="#{requestScope.tmpList}" value="server-config" result="#{pageSession.configsList}");
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
+        py.getNodeNamesList(parentEndpoint="#{sessionScope.REST_URL}/nodes", childType="node", result="#{pageSession.nodesList}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group", result="#{pageSession.dgList}");
         listAdd(list="#{pageSession.dgList}" value="", index="0", result="#{pageSession.dgList}");
 

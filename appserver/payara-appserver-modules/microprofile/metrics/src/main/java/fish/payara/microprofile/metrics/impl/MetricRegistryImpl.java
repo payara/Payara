@@ -138,7 +138,7 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public SortedSet<String> getNames() {
-        TreeSet<String> names = new TreeSet<>();
+        SortedSet<String> names = new TreeSet<>();
         for (MetricID metricID: metricMap.keySet()) {
             names.add(metricID.getName());
         }
@@ -212,11 +212,11 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<String, Metadata> getMetadata() {
-        return new HashMap<>(metadataMap);
+        return Collections.unmodifiableMap(metadataMap);
     }
 
     @Override
-    public boolean remove(String name) {
+    public synchronized boolean remove(String name) {
         boolean removedAny = false;
         for (MetricID metricID : metricMap.keySet()) {
             if (metricID.getName().equals(name)) {
@@ -226,6 +226,12 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         metadataMap.remove(name);
         return removedAny;
+    }
+
+    @Override
+    public synchronized boolean remove(MetricID mid) {
+        metadataMap.remove(mid.getName());
+        return metricMap.remove(mid) != null;
     }
 
     @Override
@@ -311,8 +317,10 @@ public class MetricRegistryImpl extends MetricRegistry {
             if (metric == null) {
                 metric = createMetricInstance(newMetadata);
             }
-            metricMap.put(metricID, metric);
-            metadataMap.put(name, Metadata.builder(newMetadata).build());
+            synchronized (this) {
+                metricMap.put(metricID, metric);
+                metadataMap.put(name, Metadata.builder(newMetadata).build());
+            }
         } else if (existingMetadata.equals(newMetadata)) {
             T existingMetric = (T) metricMap.get(metricID);
             if (existingMetric == null) {
@@ -405,11 +413,6 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         return (T)metric;
     }
-    
-    @Deprecated
-    private Metadata metadataClone(Metadata metadata) {
-        return Metadata.builder(metadata).build();
-    }
 
     private <T extends Metric> SortedMap<MetricID, T> findMetrics(Class<T> metricClass, MetricFilter metricFilter) {
         SortedMap<MetricID, T> out = metricMap.entrySet().stream()
@@ -467,12 +470,6 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public Timer timer(Metadata metadata, Tag... tags) {
         return findMetricOrCreate(metadata, TIMER, tags);
-    }
-
-    @Override
-    public boolean remove(MetricID mid) {
-        metadataMap.remove(mid.getName());
-        return metricMap.remove(mid) != null;
     }
 
     @Override

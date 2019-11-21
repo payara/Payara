@@ -51,7 +51,6 @@
         <groupId>quicklook</groupId>
         <artifactId>org.glassfish.quicklook</artifactId>
         <version>4.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <description>Runs the tests on admin/asadmin code</description>
     <build>

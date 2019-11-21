@@ -12,7 +12,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal</groupId>
+            <groupId>fish.payara.distributions</groupId>
             <artifactId>payara</artifactId>
             <version>${project.version}</version>
             <type>glassfish-distribution</type>
@@ -34,7 +34,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>fish.payara.server.internal</groupId>
+                                    <groupId>fish.payara.distributions</groupId>
                                     <artifactId>payara</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>

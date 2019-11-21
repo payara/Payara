@@ -186,7 +186,7 @@ public class ValidateNodeCommand implements AdminCommand {
         }
     }
 
-    public void validateNode(final Node node) throws
+    private void validateNode(final Node node) throws
             CommandValidationException {
 
         String value = null;

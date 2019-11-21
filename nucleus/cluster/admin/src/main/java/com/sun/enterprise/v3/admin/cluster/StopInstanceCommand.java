@@ -168,6 +168,10 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             stopDockerContainer(nodeName, instanceName, context);
         }
 
+        if (node.getType().equals("TEMP")) {
+            deleteTempInstance(instanceName, context);
+        }
+
         // If we've got any sub-command failures, log a warning
         if (context.getActionReport().hasFailures()) {
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
@@ -402,6 +406,16 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         CommandRunner commandRunner = habitat.getService(CommandRunner.class);
         commandRunner.getCommandInvocation(
                 "_stop-docker-container", adminCommandContext.getActionReport().addSubActionsReport(),
+                adminCommandContext.getSubject()).parameters(parameterMap).execute();
+    }
+
+    private void deleteTempInstance(String instanceName, AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("instance_name", instanceName);
+
+        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "delete-instance", adminCommandContext.getActionReport().addSubActionsReport(),
                 adminCommandContext.getSubject()).parameters(parameterMap).execute();
     }
 }

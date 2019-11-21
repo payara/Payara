@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
  
     <artifactId>jms-notifier-console-plugin-l10n</artifactId>

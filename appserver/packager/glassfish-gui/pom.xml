@@ -82,7 +82,7 @@
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -103,7 +103,7 @@
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -119,7 +119,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
@@ -132,19 +132,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>console-updatecenter-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency> -->
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-payara-branding-plugin</artifactId>
@@ -155,7 +146,7 @@
             <artifactId>console-reference-manual-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>        
+        <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>dist-fragment</artifactId>
             <version>${project.version}</version>
@@ -177,12 +168,12 @@
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-jdbc-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-jca-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>gf-admingui-connector</artifactId>
@@ -247,6 +238,12 @@
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>xmpp-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>

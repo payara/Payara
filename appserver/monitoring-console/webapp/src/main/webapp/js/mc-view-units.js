@@ -95,6 +95,17 @@ MonitoringConsole.View.Units = (function() {
       tb: 1024 * 1024 * 1024 * 1024,
    };
 
+   /**
+    * Factors by unit
+    */
+   const FACTORS = {
+      sec: SEC_FACTORS,
+      ms: MS_FACTORS,
+      ns: NS_FACTORS,
+      bytes: BYTES_FACTORS,
+      percent: PERCENT_FACTORS,
+   };
+
    function parseNumber(valueAsString, factors) {
       if (!valueAsString || typeof valueAsString === 'string' && valueAsString.trim() === '')
          return undefined;
@@ -123,10 +134,15 @@ MonitoringConsole.View.Units = (function() {
    function formatNumber(valueAsNumber, factors, useDecimals) {
       if (valueAsNumber === undefined)
          return undefined;
+      if (valueAsNumber === 0)
+         return '0';
       if (!factors)
          return formatDecimal(valueAsNumber);
+      if (valueAsNumber < 0)
+         return '-' + formatNumber(-valueAsNumber, factors, useDecimals);
       let largestFactorUnit;
       let largestFactor = 0;
+      let factor1Unit = '';
       for (let [unit, factor] of Object.entries(factors)) {
          if (unit != '_' && (valueAsNumber >= 0 && factor > 0 || valueAsNumber < 0 && factor < 0)
             && (useDecimals && (valueAsNumber / factor) >= 1 || !hasDecimalPlaces(valueAsNumber / factor))
@@ -134,13 +150,13 @@ MonitoringConsole.View.Units = (function() {
             largestFactor = factor;
             largestFactorUnit = unit;
          }
+         if (factor === 1)
+            factor1Unit = unit;
       }
-      if (!largestFactorUnit) {
-         return formatDecimal(valueAsNumber);
-      }
-      if (useDecimals) {
+      if (!largestFactorUnit)
+         return formatDecimal(valueAsNumber) + factor1Unit;
+      if (useDecimals)
          return formatDecimal(valueAsNumber / largestFactor) + largestFactorUnit;
-      }
       let valueInUnit = Math.round(valueAsNumber / largestFactor);
       if (factors._) {
          for (let i = 0; i < factors._.length; i++) {
@@ -192,6 +208,20 @@ MonitoringConsole.View.Units = (function() {
       return number.toString().padStart(2, '0');
    }
 
+   const DECIMAL_NUMBER_PATTERN = '([0-9]+\.)?[0-9]+';
+
+   function pattern(factors) {
+      if (!factors)
+         return DECIMAL_NUMBER_PATTERN;
+      return '(' + DECIMAL_NUMBER_PATTERN + '(' + Object.keys(factors).filter(unit => unit != '_').join('|') + ')? *)+';
+   }
+
+   function patternHint(factors) {
+      if (!factors)
+         return 'a integer or decimal number';
+      return 'a integer or decimal number, optionally followed by a unit: ' + Object.keys(factors).filter(unit => unit != '_').join(', ');
+   }
+
    /**
     * Public API below:
     */
@@ -206,27 +236,12 @@ MonitoringConsole.View.Units = (function() {
       parseNanoseconds: (valueAsString) => parseNumber(valueAsString, NS_FACTORS),
       parseBytes: (valueAsString) => parseNumber(valueAsString, BYTES_FACTORS),
       converter: function(unit) {
+         let factors = FACTORS[unit];
          return {
-            format: function(valueAsNumber, useDecimals) {
-               switch(unit) {
-                  case 'sec': return formatNumber(valueAsNumber, SEC_FACTORS, useDecimals); 
-                  case 'ms': return formatNumber(valueAsNumber, MS_FACTORS, useDecimals);
-                  case 'ns': return formatNumber(valueAsNumber, NS_FACTORS, useDecimals);
-                  case 'bytes': return formatNumber(valueAsNumber, BYTES_FACTORS, useDecimals);
-                  case 'percent': return formatNumber(valueAsNumber, PERCENT_FACTORS, useDecimals);
-                  default: return formatNumber(valueAsNumber);
-               }
-            },
-            parse: function(valueAsString) {
-               switch(unit) {
-                  case 'sec': return parseNumber(valueAsString, SEC_FACTORS);
-                  case 'ms': return parseNumber(valueAsString, MS_FACTORS);
-                  case 'ns': return parseNumber(valueAsString, NS_FACTORS);
-                  case 'bytes': return parseNumber(valueAsString, BYTES_FACTORS);
-                  case 'percent': return parseNumber(valueAsString, PERCENT_FACTORS);
-                  default: return parseNumber(valueAsString);
-               }
-            },
+            format: (valueAsNumber, useDecimals) => formatNumber(valueAsNumber, factors, useDecimals),
+            parse: (valueAsString) => parseNumber(valueAsString, factors),
+            pattern: () =>  pattern(factors),
+            patternHint: () => patternHint(factors),
          };
       }
    };

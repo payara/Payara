@@ -86,6 +86,9 @@
         setPageSessionAttribute(key="psSelected" value="1");
         setPageSessionAttribute(key="winPsSelected" value="2");
 
+        setPageSessionAttribute(key="convertToFalseList" value={"usetls"});
+        setPageSessionAttribute(key="usetlsSelected", value="false");
+
     />
     </event>
 <sun:form id="propertyForm" autoComplete="off">

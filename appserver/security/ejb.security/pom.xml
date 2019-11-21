@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ejb.security</artifactId>
     <packaging>glassfish-jar</packaging>

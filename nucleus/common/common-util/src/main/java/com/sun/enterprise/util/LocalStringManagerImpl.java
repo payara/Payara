@@ -60,10 +60,10 @@ public class LocalStringManagerImpl implements LocalStringManager {
     //WARNING: _logger must be initialized upon demand in this case. The
     //reason is that this static init happens before the ServerContext
     //is initialized
-    private static Logger _logger = null;
+    private static final Logger _logger = null;
     // END OF IASRI 4660742
 
-    private Class defaultClass;
+    private final Class defaultClass;
 
     /**
      * Create a string manager that looks for LocalStrings.properties in
@@ -94,6 +94,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
      * @param defaultValue The default return value if not found
      * @return The localized value for the resource
      */
+    @Override
     public String getLocalString(Class callerClass, String key, String defaultValue) {
 		Class stopClass  = defaultClass.getSuperclass();
 		Class startClass = callerClass != null
@@ -132,6 +133,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
      * @param defaultValue The default return value if not found
      * @return The localized string
      */
+    @Override
     public String getLocalString(String key, String defaultValue) {
 	return getLocalString(null, key, defaultValue);
     }
@@ -144,7 +146,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
      * @param arguments The set of arguments to provide to the formatter
      * @return A formatted localized string
      */
-
+    @Override
     public String getLocalString(Class callerClass, String key, String defaultFormat, Object... arguments) {
 		MessageFormat f = new MessageFormat(
 			getLocalString(callerClass, key, defaultFormat));

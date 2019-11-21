@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -94,7 +95,7 @@ public class ParameterMapExtractor {
      * @throws IllegalAccessException
      */
     public ParameterMap extract() throws IllegalArgumentException, IllegalAccessException {
-        return extract(Collections.EMPTY_SET);
+        return extract(Collections.emptySet());
     }
 
     /**
@@ -117,13 +118,12 @@ public class ParameterMapExtractor {
         return paramMap;
     }
 
-    private void extract(final Object target,
-            final Collection<String> parameterNamesToExclude,
-            final ParameterMap paramMap) throws IllegalArgumentException, IllegalAccessException {
+    private void extract(final Object target, final Collection<String> parameterNamesToExclude, final ParameterMap paramMap)
+            throws IllegalArgumentException, IllegalAccessException {
+        
         for (Field f : target.getClass().getFields()) {
             final Param param = f.getAnnotation(Param.class);
-            if (param != null &&
-                    ! parameterNamesToExclude.contains(f.getName())) {
+            if (param != null && ! parameterNamesToExclude.contains(f.getName())) {
                 final Object fieldValue = f.get(target);
                 if (fieldValue != null) {
                     final String paramName = param.primary() ? "DEFAULT" :  CommandModel.getParamName(param, f);
