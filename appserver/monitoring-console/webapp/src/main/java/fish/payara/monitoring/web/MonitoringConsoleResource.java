@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -70,6 +72,8 @@ import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 @RequestScoped
 public class MonitoringConsoleResource {
 
+    private static final Logger LOGGER = Logger.getLogger(MonitoringConsoleResource.class.getName());
+
     private static MonitoringDataRepository getDataStore() {
         return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
     }
@@ -82,6 +86,7 @@ public class MonitoringConsoleResource {
         try {
             return new Series(series);
         } catch (RuntimeException e) {
+            LOGGER.log(Level.FINE, "Failed to parse series", e);
             return null;
         }
     }
