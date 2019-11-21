@@ -129,6 +129,25 @@ public class DirWatcherTest {
         assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty/reallyEmpty"));
     }
 
+    @Test
+    public void itemsFoundIfTwoLevelsDoNotExist() throws IOException {
+        Path root = createTempDirectory(Paths.get("target") , "watch").resolve("later/and/more");
+        DirWatcher.register(root);
+        assertFalse("non-existing root item should not be found", () -> hasItem(root, "file1"));
+
+        createDirectories(root);
+        createFile(root.resolve("file1"));
+        createFile(root.resolve("file2"));
+        assertTrue("root item should be found", () -> hasItem(root, "file1"));
+        assertTrue("root item should be found", () -> hasItem(root, "file2"));
+
+        createDirectories(root.resolve("com/empty/"));
+
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty"));
+        assertTrue("only first level is considered for items added after registration", () -> hasItem(root, "com/empty/reallyEmpty"));
+    }
+
     static void assertTrue(String message, Supplier<Boolean> test) {
         for(int i=0; i<5; i++) { // watch service takes some time to react, so let's make few attempts before giving up
             Boolean result = test.get();
