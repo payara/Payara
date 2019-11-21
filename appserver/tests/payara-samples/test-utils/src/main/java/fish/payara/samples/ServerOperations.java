@@ -61,11 +61,14 @@ public class ServerOperations {
     
     private static final Logger logger = Logger.getLogger(ServerOperations.class.getName());
     
+    public static void addUserToContainerIdentityStore(String username, String groups) {
+        addUserToContainerIdentityStore("file", username, groups);
+    }
     /**
      * Add the default test user and credentials to the identity store of
      * supported containers
      */
-    public static void addUserToContainerIdentityStore(String username, String groups) {
+    public static void addUserToContainerIdentityStore(String authRealm, String username, String groups) {
 
         // TODO: abstract adding container managed users to utility class
         // TODO: consider PR for sending CLI commands to Arquillian
@@ -81,6 +84,8 @@ public class ServerOperations {
             cmd.add("create-file-user");
             cmd.add("--groups");
             cmd.add(groups);
+            cmd.add("--authrealmname");
+            cmd.add(authRealm);
             cmd.add("--passwordfile");
             cmd.add(Paths.get("").toAbsolutePath() + "/src/test/resources/password.txt");
 

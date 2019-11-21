@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.pam;
 
 import static java.util.logging.Level.SEVERE;
@@ -51,12 +50,13 @@ import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.libpam.PAMException;
-import org.jvnet.libpam.UnixUser;
-
 import com.sun.appserv.security.AppservRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import static com.sun.enterprise.security.auth.realm.Realm.JAAS_CONTEXT_PARAM;
+import org.jvnet.libpam.PAM;
+import org.jvnet.libpam.UnixUser;
 
 /**
  * Realm wrapper for supporting PAM based authentication for all Unix machines. The PAM realm uses
@@ -104,8 +104,17 @@ public final class PamRealm extends AppservRealm {
         }
     }
 
+    public UnixUser authenticate(String username, char[] password) {
+        try {
+            return new PAM(PAM_SERVICE).authenticate(username, String.valueOf(password));
+        } catch (PAMException ex) {
+            Logger.getLogger(PamRealm.class.getName()).log(SEVERE, "pam_exception_authenticate", ex);
+            return null;
+        }
+    }
+
     /**
-     * This method retreives the PAM service stack to be used by the Realm class and Login Module
+     * This method retrieves the PAM service stack to be used by the Realm class and Login Module
      * uniformly
      *
      * @return {@value #PAM_SERVICE}
