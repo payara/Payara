@@ -2230,8 +2230,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
         publicAddress = getProperty("payaramicro.publicAddress");
         contextRoot = getProperty("payaramicro.contextRoot");
-        accessLogInterval = getIntegerProperty("payaramicro.accessLogInterval", accessLogInterval);
-        accessLogSuffix = getProperty("payaramicro.accessLogSuffix", accessLogSuffix);
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2402,11 +2400,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
         }
-
-        if (accessLogInterval != Integer.MIN_VALUE) {
-            props.setProperty("payaramicro.accessLogInterval", Integer.toString(accessLogInterval));
-        }
-        
         
         if (httpPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.port", Integer.toString(httpPort));
