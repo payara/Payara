@@ -2409,7 +2409,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         
         if (accessLogPrefix != null) {
-            props.setProperty("payaramicro.customlog", accessLogPrefix);
+            props.setProperty("payaramicro.accessLogPrefix", accessLogPrefix);
         }
         
         if (httpPort != Integer.MIN_VALUE) {
