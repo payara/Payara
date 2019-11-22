@@ -204,7 +204,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "autoIncrementPort", optional = true)
     private Boolean autoIncrementPort;
   
-    @Param(name = "configSpecificDataGridStartPort", optional = true, shortName = "dgp")
+    @Param(name = "configSpecificDataGridStartPort", optional = true, alias = "configspecificdatagridstartport")
     private String configSpecificDataGridStartPort;
 
     @Inject
