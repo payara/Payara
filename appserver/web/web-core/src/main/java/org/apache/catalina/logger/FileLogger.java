@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.logger;
 
@@ -77,9 +78,7 @@ import java.sql.Timestamp;
  * @author Craig R. McClanahan
  * @version $Revision: 1.3 $ $Date: 2006/10/03 20:19:12 $
  */
-
-public class FileLogger
-    extends LoggerBase {
+public class FileLogger extends LoggerBase {
 
     // ----------------------------------------------------- Instance Variables
 
@@ -245,6 +244,7 @@ public class FileLogger
      * @param msg A <code>String</code> specifying the message to be written
      *  to the log file
      */
+    @Override
     public void log(String msg) {
 
         // Construct the timestamp we will use, if requested
@@ -330,6 +330,7 @@ public class FileLogger
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -352,6 +353,7 @@ public class FileLogger
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state

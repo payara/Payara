@@ -55,11 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.servlets;
-
-
-import org.apache.catalina.util.StringManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -137,10 +135,9 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
     /**
      * Override the <code>getPathInfo()</code> method of the wrapped request.
      */
+    @Override
     public String getPathInfo() {
-
         return (this.pathInfo);
-
     }
 
 
@@ -148,20 +145,18 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
      * Override the <code>getPathTranslated()</code> method of the
      * wrapped request.
      */
+    @Override
     public String getPathTranslated() {
-
         return (this.pathTranslated);
-
     }
 
 
     /**
      * Override the <code>getRequestURI()</code> method of the wrapped request.
      */
+    @Override
     public String getRequestURI() {
-
         return (this.requestURI);
-
     }
 
 
@@ -169,10 +164,9 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
      * Override the <code>getServletPath()</code> method of the wrapped
      * request.
      */
+    @Override
     public String getServletPath() {
-
         return (this.servletPath);
-
     }
 
 

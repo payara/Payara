@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -78,7 +79,6 @@ import java.io.Serializable;
  * @author Craig R. McClanahan
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:42 $
  */
-
 public class SecurityCollection implements Serializable {
 
 
@@ -213,8 +213,7 @@ public class SecurityCollection implements Serializable {
         if (method == null)
             return;
         String results[] = new String[methods.length + 1];
-        for (int i = 0; i < methods.length; i++)
-            results[i] = methods[i];
+        System.arraycopy(methods, 0, results, 0, methods.length);
         results[methods.length] = method;
         methods = results;
 
@@ -229,8 +228,7 @@ public class SecurityCollection implements Serializable {
         if (methodOmission == null)
             return;
         String results[] = new String[methodOmissions.length + 1];
-        for (int i = 0; i < methodOmissions.length; i++)
-            results[i] = methodOmissions[i];
+        System.arraycopy(methodOmissions, 0, results, 0, methodOmissions.length);
         results[methodOmissions.length] = methodOmission;
         methodOmissions = results;
 
@@ -246,8 +244,7 @@ public class SecurityCollection implements Serializable {
             return;
         pattern = RequestUtil.urlDecode(pattern);
         String results[] = new String[patterns.length + 1];
-        for (int i = 0; i < patterns.length; i++)
-            results[i] = patterns[i];
+        System.arraycopy(patterns, 0, results, 0, patterns.length);
         results[patterns.length] = pattern;
         patterns = results;
 
@@ -264,9 +261,10 @@ public class SecurityCollection implements Serializable {
 
         if (methods.length == 0)
             return (true);
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].equals(method))
+        for (String method1 : methods) {
+            if (method1.equals(method)) {
                 return (true);
+            }
         }
         return (false);
 
@@ -295,9 +293,10 @@ public class SecurityCollection implements Serializable {
 
         if (methodOmissions.length == 0)
             return (false);
-        for (int i = 0; i < methodOmissions.length; i++) {
-            if (methodOmissions[i].equals(methodOmission))
+        for (String methodOmission1 : methodOmissions) {
+            if (methodOmission1.equals(methodOmission)) {
                 return (true);
+            }
         }
         return (false);
 
@@ -322,9 +321,10 @@ public class SecurityCollection implements Serializable {
      */
     public boolean findPattern(String pattern) {
 
-        for (int i = 0; i < patterns.length; i++) {
-            if (patterns[i].equals(pattern))
+        for (String pattern1 : patterns) {
+            if (pattern1.equals(pattern)) {
                 return (true);
+            }
         }
         return (false);
 
@@ -436,6 +436,7 @@ public class SecurityCollection implements Serializable {
     /**
      * Return a String representation of this security collection.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SecurityCollection: ");

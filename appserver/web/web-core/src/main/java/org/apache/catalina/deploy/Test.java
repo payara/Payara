@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -73,8 +74,9 @@ public final class Test {
 
         System.out.println("Currently defined methods:");
         list = collection.findMethods();
-        for (int i = 0; i < list.length; i++)
-            System.out.println(" " + list[i]);
+        for (String list1 : list) {
+            System.out.println(" " + list1);
+        }
         System.out.println("Is DELETE included? " +
                            collection.findMethod("DELETE"));
         System.out.println("Is POST included? " +
@@ -85,8 +87,9 @@ public final class Test {
 
         System.out.println("Currently defined methods:");
         list = collection.findMethods();
-        for (int i = 0; i < list.length; i++)
-            System.out.println(" " + list[i]);
+        for (String list1 : list) {
+            System.out.println(" " + list1);
+        }
         System.out.println("Is DELETE included? " +
                            collection.findMethod("DELETE"));
         System.out.println("Is POST included? " +

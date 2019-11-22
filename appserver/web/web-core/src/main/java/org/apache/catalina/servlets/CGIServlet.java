@@ -55,7 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+
 package org.apache.catalina.servlets;
 
 import java.io.BufferedOutputStream;
@@ -327,6 +328,7 @@ public final class CGIServlet extends HttpServlet {
      *                                  interferes with the servlet's normal
      *                                  operation
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
@@ -345,8 +347,7 @@ public final class CGIServlet extends HttpServlet {
         if (getServletConfig().getInitParameter("cgiPathPrefix") != null) {
             cgiPathPrefix = getServletConfig().getInitParameter("cgiPathPrefix");
         }
-        boolean passShellEnvironment =
-            Boolean.valueOf(getServletConfig().getInitParameter("passShellEnvironment")).booleanValue();
+        boolean passShellEnvironment = Boolean.valueOf(getServletConfig().getInitParameter("passShellEnvironment"));
 
         if (passShellEnvironment) {
             shellEnv.putAll(System.getenv());
@@ -414,9 +415,9 @@ public final class CGIServlet extends HttpServlet {
         while (params.hasMoreElements()) {
             String param = params.nextElement();
             String values[] = req.getParameterValues(param);
-            for (int i = 0; i < values.length; i++)
-                out.println("<li><b>parameter</b> " + HtmlEntityEncoder.encodeXSS(param) + " = " +
-                               HtmlEntityEncoder.encodeXSS(values[i]));
+            for (String value : values) {
+                out.println("<li><b>parameter</b> " + HtmlEntityEncoder.encodeXSS(param) + " = " + HtmlEntityEncoder.encodeXSS(value));
+            }
         }
         out.println("<li><b>protocol</b> = " + req.getProtocol());
         out.println("<li><b>remoteAddr</b> = " + req.getRemoteAddr());
@@ -436,9 +437,9 @@ public final class CGIServlet extends HttpServlet {
                        req.getContextPath());
         Cookie cookies[] = req.getCookies();
         if (cookies!=null) {
-            for (int i = 0; i < cookies.length; i++)
-                out.println("<li><b>cookie</b> " + HtmlEntityEncoder.encodeXSS(cookies[i].getName())
-                       +" = " +HtmlEntityEncoder.encodeXSS(cookies[i].getValue()));
+            for (Cookie cookie : cookies) {
+                out.println("<li><b>cookie</b> " + HtmlEntityEncoder.encodeXSS(cookie.getName()) + " = " + HtmlEntityEncoder.encodeXSS(cookie.getValue()));
+            }
         }
         Enumeration<String> headers = req.getHeaderNames();
         while (headers.hasMoreElements()) {
@@ -611,8 +612,8 @@ public final class CGIServlet extends HttpServlet {
      * @see javax.servlet.http.HttpServlet
      *
      */
-    protected void doGet(HttpServletRequest req, HttpServletResponse res)
-        throws ServletException, IOException {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
         // Verify that we were not accessed using the invoker servlet
         if (req.getAttribute(Globals.INVOKED_ATTR) != null)
@@ -1035,8 +1036,7 @@ public final class CGIServlet extends HttpServlet {
             envp.put("SERVER_PROTOCOL", nullsToBlanks(req.getProtocol()));
 
             int port = req.getServerPort();
-            Integer iPort = (port == 0 ?
-                             Integer.valueOf(-1) : Integer.valueOf(port));
+            Integer iPort = (port == 0 ? -1 : port);
             envp.put("SERVER_PORT", iPort.toString());
 
             envp.put("REQUEST_METHOD", nullsToBlanks(req.getMethod()));
@@ -1273,6 +1273,7 @@ public final class CGIServlet extends HttpServlet {
          * @return  HTML string containing CGI environment info
          *
          */
+        @Override
         public String toString() {
 
             StringBuilder sb = new StringBuilder();
@@ -1667,9 +1668,9 @@ public final class CGIServlet extends HttpServlet {
                 log("runCGI(envp=[" + env + "], command=" + command + ")");
             }
 
-            if ((command.indexOf(File.separator + "." + File.separator) >= 0)
-                || (command.indexOf(File.separator + "..") >= 0)
-                || (command.indexOf(".." + File.separator) >= 0)) {
+            if ((command.contains(File.separator + "." + File.separator))
+                || (command.contains(File.separator + ".."))
+                || (command.indexOf(File.separator + "..") >= 0)) {
                 throw new IOException(this.getClass().getName()
                                       + "Illegal Character in CGI command "
                                       + "path ('.' or '..') detected.  Not "
@@ -1692,7 +1693,7 @@ public final class CGIServlet extends HttpServlet {
 
             //create query arguments
             StringBuilder cmdAndArgs = new StringBuilder();
-            if (command.indexOf(" ") < 0) {
+            if (command.indexOf(' ') == -1) {
                 cmdAndArgs.append(command);
             } else {
                 // Spaces used as delimiter, so need to use quotes
@@ -1704,7 +1705,7 @@ public final class CGIServlet extends HttpServlet {
             for (int i=0; i < params.size(); i++) {
                 cmdAndArgs.append(" ");
                 String param = params.get(i);
-                if (param.indexOf(" ") < 0) {
+                if (param.indexOf(' ') == -1) {
                     cmdAndArgs.append(param);
                 } else {
                     // Spaces used as delimiter, so need to use quotes
@@ -1953,7 +1954,7 @@ public final class CGIServlet extends HttpServlet {
         private static final int STATE_SECOND_CR = 3;
         private static final int STATE_HEADER_END = 4;
         
-        private InputStream input;
+        private final InputStream input;
         private int state;
         
         HTTPHeaderInputStream(InputStream theInput) {
@@ -1964,6 +1965,7 @@ public final class CGIServlet extends HttpServlet {
         /**
          * @see java.io.InputStream#read()
          */
+        @Override
         public int read() throws IOException {
             if (state == STATE_HEADER_END) {
                 return -1;
@@ -1986,40 +1988,39 @@ public final class CGIServlet extends HttpServlet {
             //            |(CR)    ^(LF)
             //            |        |
             //          (CR2)-->---
-            
-            if (i == 10) {
-                // LF
-                switch(state) {
-                    case STATE_CHARACTER:
-                    case STATE_FIRST_CR:
-                        state = STATE_FIRST_LF;
-                        break;
-                    case STATE_FIRST_LF:
-                    case STATE_SECOND_CR:
-                        state = STATE_HEADER_END;
-                        break;
-                    default:
-                        break;
-                }
-
-            } else if (i == 13) {
-                // CR
-                switch(state) {
-                    case STATE_CHARACTER:
-                        state = STATE_FIRST_CR;
-                        break;
-                    case STATE_FIRST_CR:
-                        state = STATE_HEADER_END;
-                        break;
-                    case STATE_FIRST_LF:
-                        state = STATE_SECOND_CR;
-                        break;
-                    default:
-                        break;
-                }
-
-            } else {
-                state = STATE_CHARACTER;
+            switch (i) {
+                case 10:
+                    // LF
+                    switch(state) {
+                        case STATE_CHARACTER:
+                        case STATE_FIRST_CR:
+                            state = STATE_FIRST_LF;
+                            break;
+                        case STATE_FIRST_LF:
+                        case STATE_SECOND_CR:
+                            state = STATE_HEADER_END;
+                            break;
+                        default:
+                            break;
+                    }   break;
+                case 13:
+                    // CR
+                    switch(state) {
+                        case STATE_CHARACTER:
+                            state = STATE_FIRST_CR;
+                            break;
+                        case STATE_FIRST_CR:
+                            state = STATE_HEADER_END;
+                            break;
+                        case STATE_FIRST_LF:
+                            state = STATE_SECOND_CR;
+                            break;
+                        default:
+                            break;
+                    }   break;
+                default:
+                    state = STATE_CHARACTER;
+                    break;
             }
             
             return i;            

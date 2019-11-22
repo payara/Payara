@@ -204,6 +204,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
     /**
      * Return the Container with which this Realm has been associated.
      */
+    @Override
     public Container getContainer() {
         return container;
     }
@@ -229,6 +230,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
         Container oldContainer = this.container;
         this.container = container;
@@ -275,6 +277,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * Return descriptive information about this Realm implementation and the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
         return info;
     }
@@ -302,6 +305,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -313,6 +317,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param username Username of the Principal to look up
      * @param credentials Password or other credentials to use in authenticating this username
      */
+    @Override
     public Principal authenticate(String username, char[] credentials) {
         char[] serverCredentials = getPassword(username);
 
@@ -342,6 +347,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param realm Realm name
      * @param md5a2 Second MD5 digest used to calculate the digest : MD5(Method + ":" + uri)
      */
+    @Override
     public Principal authenticate(String username, char[] clientDigest, String nOnce, String nc, String cnonce, String qop, String realm,
             char[] md5a2) {
 
@@ -423,6 +429,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param certificates Array of client certificates, with the first one in the array being the certificate of the client
      * itself.
      */
+    @Override
     public Principal authenticate(X509Certificate certificates[]) {
         if (certificates == null || certificates.length < 1) {
             return null;
@@ -434,14 +441,13 @@ public abstract class RealmBase implements Lifecycle, Realm {
         }
         
         if (validate) {
-            for (int i = 0; i < certificates.length; i++) {
+            for (X509Certificate certificate : certificates) {
                 if (log.isLoggable(FINE)) {
-                    log.log(FINE, "Checking validity for '" + certificates[i].getSubjectX500Principal().getName() + "'");
+                    log.log(FINE, "Checking validity for ''{0}''", certificate.getSubjectX500Principal().getName());
                 }
-                
                 try {
-                    certificates[i].checkValidity();
-                } catch (Exception e) {
+                    certificate.checkValidity();
+                }catch (Exception e) {
                     log.log(FINE, "Validity exception", e);
                     return (null);
                 }
@@ -467,6 +473,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param request Request we are processing
      * @param context Context the Request is mapped to
      */
+    @Override
     public SecurityConstraint[] findSecurityConstraints(HttpRequest request, Context context) {
         return findSecurityConstraints(request.getRequestPathMB().toString(), ((HttpServletRequest) request.getRequest()).getMethod(),
                 context);
@@ -481,6 +488,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @return the security constraints configured by the given context for the given request URI and method, or null
      */
+    @Override
     public SecurityConstraint[] findSecurityConstraints(String uri, String method, Context context) {
 
         ArrayList<SecurityConstraint> results = null;
@@ -532,29 +540,27 @@ public abstract class RealmBase implements Lifecycle, Realm {
             // START SJSWS 6324431
             if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
 
-                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint ''{0}'' against {1} {2}", new Object[]{constraint, method, origUri});
 
             }
             // END SJSWS 6324431
-
-            for (int j = 0; j < collection.length; j++) {
-                String[] patterns = collection[j].findPatterns();
+            for (SecurityCollection collection1 : collection) {
+                String[] patterns = collection1.findPatterns();
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
                 if (patterns == null) {
                     continue;
                 }
-
                 for (int k = 0; k < patterns.length; k++) {
                     /*
-                     * SJSWS 6324431 if(uri.equals(patterns[k])) {
-                     */
+                    * SJSWS 6324431 if(uri.equals(patterns[k])) {
+                    */
                     // START SJSWS 6324431
                     String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     if (uri != null && uri.equals(pattern)) {
                         // END SJSWS 6324431
                         found = true;
-                        if (collection[j].findMethod(method)) {
+                        if (collection1.findMethod(method)) {
                             if (results == null) {
                                 results = new ArrayList<SecurityConstraint>();
                             }
@@ -599,7 +605,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
              */
             // START SJSWS 6324431
             if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
-                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint ''{0}'' against {1} {2}", new Object[]{constraint, method, origUri});
             }
             // END SJSWS 6324431
 
@@ -613,12 +619,12 @@ public abstract class RealmBase implements Lifecycle, Realm {
 
                 boolean matched = false;
                 int length = -1;
-                for (int k = 0; k < patterns.length; k++) {
+                for (String pattern1 : patterns) {
                     /*
                      * SJSWS 6324431 String pattern = patterns[k];
                      */
                     // START SJSWS 6324431
-                    String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
+                    String pattern = caseSensitiveMapping ? pattern1 : pattern1.toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
                     if (pattern.startsWith("/") && pattern.endsWith("/*") && pattern.length() >= longest) {
 
@@ -683,7 +689,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
             // START SJSWS 6324431
             if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
 
-                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint ''{0}'' against {1} {2}", new Object[]{constraint, method, origUri});
             }
             // END SJSWS 6324431
 
@@ -760,7 +766,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
              */
             // START SJSWS 6324431
             if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
-                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint ''{0}'' against {1} {2}", new Object[]{constraint, method, origUri});
             }
             // END SJSWS 6324431
 
@@ -826,6 +832,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public boolean hasResourcePermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, Context context)
             throws IOException {
 
@@ -844,7 +851,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
                 return (true);
 
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "  Checking roles " + principal);
+                log.log(Level.FINE, "  Checking roles {0}", principal);
 
             if (roles.length == 0) {
                 if (constraint.getAuthConstraint()) {
@@ -877,11 +884,11 @@ public abstract class RealmBase implements Lifecycle, Realm {
             for (int j = 0; j < roles.length; j++) {
                 if (hasRole(principal, roles[j])) {
                     if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Role found:  " + roles[j]);
+                        log.log(Level.FINE, "Role found:  {0}", roles[j]);
                     return (true);
                 } else {
                     if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "No role found:  " + roles[j]);
+                        log.log(Level.FINE, "No role found:  {0}", roles[j]);
                 }
             }
         }
@@ -908,6 +915,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param principal Principal for whom the role is to be checked
      * @param role Security role to be checked
      */
+    @Override
     public boolean hasRole(HttpRequest request, HttpResponse response, Principal principal, String role) {
         return hasRole(principal, role);
     }
@@ -927,10 +935,11 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param ssoEnabled true if sso is enabled
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public int preAuthenticateCheck(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints,
             boolean disableProxyCaching, boolean securePagesWithPragma, boolean ssoEnabled) throws IOException {
-        for (int i = 0; i < constraints.length; i++) {
-            if (constraints[i].getAuthConstraint()) {
+        for (SecurityConstraint constraint : constraints) {
+            if (constraint.getAuthConstraint()) {
                 disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
                 return Realm.AUTHENTICATE_NEEDED;
             }
@@ -949,6 +958,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param authenticator the current authenticator.
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public boolean invokeAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context, Authenticator authenticator,
             boolean calledFromAuthenticate) throws IOException {
         LoginConfig config = context.getLoginConfig();
@@ -963,6 +973,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param context The Context to which client of this class is attached.
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public boolean invokePostAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context) throws IOException {
         return true;
     }
@@ -978,6 +989,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param principal Principal for whom the role is to be checked
      * @param role Security role to be checked
      */
+    @Override
     public boolean hasRole(Principal principal, String role) {
 
         // Should be overridden in JAASRealm - to avoid pretty inefficient conversions
@@ -987,7 +999,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
         GenericPrincipal gp = (GenericPrincipal) principal;
         if (!(gp.getRealm() == this)) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Different realm " + this + " " + gp.getRealm());
+                log.log(Level.FINE, "Different realm {0} {1}", new Object[]{this, gp.getRealm()});
             }
         }
         boolean result = gp.hasRole(role);
@@ -1015,6 +1027,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @return <code>true</code> if this constraint was not violated and processing should continue, or <code>false</code>
      * if we have created a response already
      */
+    @Override
     public boolean hasUserDataPermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints) throws IOException {
         return hasUserDataPermission(request, response, constraints, null, null);
     }
@@ -1037,6 +1050,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * transport-guarantee of CONFIDENTIAL, and false if they are (in which case the given request will have been redirected
      * to HTTPS)
      */
+    @Override
     public boolean hasUserDataPermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, String uri,
             String method) throws IOException {
         // Is there a relevant user data constraint?
@@ -1104,7 +1118,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
         if ((requestedSessionId != null) && hrequest.isRequestedSessionIdFromURL()) {
             String sessionParameterName = ((request.getContext() != null) ? request.getContext().getSessionParameterName()
                     : Globals.SESSION_PARAMETER_NAME);
-            file.append(";" + sessionParameterName + "=");
+            file.append(";").append(sessionParameterName).append("=");
             file.append(requestedSessionId);
         }
         String queryString = hrequest.getQueryString();
@@ -1112,8 +1126,9 @@ public abstract class RealmBase implements Lifecycle, Realm {
             file.append('?');
             file.append(queryString);
         }
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Redirecting to " + file.toString());
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Redirecting to {0}", file.toString());
+        }
         hresponse.sendRedirect(file.toString());
 
         return (false);
@@ -1124,10 +1139,9 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-
         support.removePropertyChangeListener(listener);
-
     }
 
     // ------------------------------------------------------ Lifecycle Methods
@@ -1137,15 +1151,15 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
-
         lifecycle.addLifecycleListener(listener);
-
     }
 
     /**
      * Gets the (possibly empty) list of lifecycle listeners associated with this Realm.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -1155,6 +1169,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -1166,6 +1181,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @exception LifecycleException if this component detects a fatal error that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1197,6 +1213,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @exception LifecycleException if this component detects a fatal error that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1361,7 +1378,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
             logger.log(getName() + "[" + name + "]: " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, getName() + "[" + name + "]: " + message);
+                log.log(Level.INFO, "{0}[{1}]: {2}", new Object[]{getName(), name, message});
             }
         }
     }
@@ -1428,6 +1445,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param req The request object.
      * @return Alternate principal or null.
      */
+    @Override
     public Principal getAlternatePrincipal(HttpRequest req) {
         return null;
     }
@@ -1439,6 +1457,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * @param req The request object.
      * @return Alternate auth type or null.
      */
+    @Override
     public String getAlternateAuthType(HttpRequest req) {
         return null;
     }
@@ -1450,6 +1469,7 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @param name the name of the realm.
      */
+    @Override
     public void setRealmName(String name, String authMethod) {
         // DO NOTHING. PRIVATE EXTENSION
     }
@@ -1459,12 +1479,14 @@ public abstract class RealmBase implements Lifecycle, Realm {
      *
      * @return realm name or null if not set.
      */
+    @Override
     public String getRealmName() {
         // DO NOTHING. PRIVATE EXTENSION
         return null;
     }
 
     // END IASRI 4856062,4918627,4874504
+    @Override
     public Principal authenticate(HttpServletRequest hreq) {
         throw new UnsupportedOperationException();
     }

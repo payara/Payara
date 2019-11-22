@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -73,7 +74,6 @@ import java.util.Hashtable;
  * @author Remy Maucherat
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:42 $
  */
-
 public class NamingResources implements Serializable {
 
 
@@ -100,66 +100,58 @@ public class NamingResources implements Serializable {
      * List of naming entries, keyed by name. The value is the entry type, as
      * declared by the user.
      */
-    private Hashtable<String, String> entries =
-        new Hashtable<String, String>();
+    private final Hashtable<String, String> entries = new Hashtable<String, String>();
 
 
     /**
      * The EJB resource references for this web application, keyed by name.
      */
-    private HashMap<String, ContextEjb> ejbs = new HashMap<String, ContextEjb>();
+    private final HashMap<String, ContextEjb> ejbs = new HashMap<String, ContextEjb>();
 
 
     /**
      * The environment entries for this web application, keyed by name.
      */
-    private HashMap<String, ContextEnvironment> envs =
-        new HashMap<String, ContextEnvironment>();
+    private final HashMap<String, ContextEnvironment> envs = new HashMap<String, ContextEnvironment>();
 
 
     /**
      * The local  EJB resource references for this web application, keyed by
      * name.
      */
-    private HashMap<String, ContextLocalEjb> localEjbs =
-        new HashMap<String, ContextLocalEjb>();
+    private final HashMap<String, ContextLocalEjb> localEjbs = new HashMap<String, ContextLocalEjb>();
 
 
     /**
      * The message destination referencess for this web application,
      * keyed by name.
      */
-    private HashMap<String, MessageDestinationRef> mdrs =
-        new HashMap<String, MessageDestinationRef>();
+    private final HashMap<String, MessageDestinationRef> mdrs = new HashMap<String, MessageDestinationRef>();
 
 
     /**
      * The resource environment references for this web application,
      * keyed by name.
      */
-    private HashMap<String, String> resourceEnvRefs =
-        new HashMap<String, String>();
+    private final HashMap<String, String> resourceEnvRefs = new HashMap<String, String>();
 
 
     /**
      * The resource references for this web application, keyed by name.
      */
-    private HashMap<String, ContextResource> resources =
-        new HashMap<String, ContextResource>();
+    private final HashMap<String, ContextResource> resources = new HashMap<String, ContextResource>();
 
 
     /**
      * The resource links for this web application, keyed by name.
      */
-    private HashMap<String, ContextResourceLink> resourceLinks =
-        new HashMap<String, ContextResourceLink>();
+    private final HashMap<String, ContextResourceLink> resourceLinks = new HashMap<String, ContextResourceLink>();
 
 
     /**
      * The resource parameters for this web application, keyed by name.
      */
-    private HashMap<String, ResourceParams> resourceParams =
-        new HashMap<String, ResourceParams>();
+    private final HashMap<String, ResourceParams> resourceParams = new HashMap<String, ResourceParams>();
 
 
     /**

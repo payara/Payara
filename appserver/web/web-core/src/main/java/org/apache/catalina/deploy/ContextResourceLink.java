@@ -55,11 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
-
-import java.io.Serializable;
-
 
 /**
  * Representation of a resource link for a web application, as
@@ -69,7 +67,6 @@ import java.io.Serializable;
  * @author Remy Maucherat
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:40 $
  */
-
 public class ContextResourceLink extends ResourceBase {
 
 
@@ -81,10 +78,12 @@ public class ContextResourceLink extends ResourceBase {
      */
     private String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -95,10 +94,12 @@ public class ContextResourceLink extends ResourceBase {
      */
     private String type = null;
 
+    @Override
     public String getType() {
         return (this.type);
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
@@ -124,6 +125,7 @@ public class ContextResourceLink extends ResourceBase {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ContextResourceLink[");

@@ -55,13 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.security;
 
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.LogFacade;
-import org.apache.catalina.util.StringManager;
 
 import javax.security.auth.Subject;
 import javax.servlet.Filter;
@@ -451,10 +451,7 @@ public final class SecurityUtil{
      * package protection mechanism is enabled.
      */
     public static boolean isPackageProtectionEnabled(){
-        if (packageDefinitionEnabled && Globals.IS_SECURITY_ENABLED) {
-            return true;
-        }
-        return false;
+        return packageDefinitionEnabled && Globals.IS_SECURITY_ENABLED;
     }
     
     
@@ -464,10 +461,7 @@ public final class SecurityUtil{
      * <code>isDoAsRequired</code> is required.
      */
     public static boolean executeUnderSubjectDoAs(){
-        if (executeUnderSubjectDoAs && Globals.IS_SECURITY_ENABLED) {
-            return true;
-        }
-        return false;
+        return executeUnderSubjectDoAs && Globals.IS_SECURITY_ENABLED;
     }    
     // END OF SJS WS 7.0 6236329
 

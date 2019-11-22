@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.realm;
 
@@ -132,32 +133,28 @@ public class JAASCallbackHandler implements CallbackHandler {
      * @exception UnsupportedCallbackException if the login method requests
      *  an unsupported callback type
      */
+    @Override
     public void handle(Callback callbacks[])
         throws IOException, UnsupportedCallbackException {
 
-        for (int i = 0; i < callbacks.length; i++) {
-
-            if (callbacks[i] instanceof NameCallback) {
+        for (Callback callback : callbacks) {
+            if (callback instanceof NameCallback) {
                 if (realm.getDebug() >= 3)
                     realm.log("Returning username " + username);
-                ((NameCallback) callbacks[i]).setName(username);
-            } else if (callbacks[i] instanceof PasswordCallback) {
-                  final char[] passwordcontents;
-                  if (password != null) {
-                      passwordcontents = (char[])password.clone();
-                  } else {
-                      passwordcontents = new char[0];
-                  }
-                  ((PasswordCallback) callbacks[i]).setPassword
-                      (passwordcontents);
+                ((NameCallback) callback).setName(username);
+            } else if (callback instanceof PasswordCallback) {
+                final char[] passwordcontents;
+                if (password != null) {
+                    passwordcontents = (char[])password.clone();
+                } else {
+                    passwordcontents = new char[0];
+                }
+                ((PasswordCallback) callback).setPassword(passwordcontents);
             } else {
-                throw new UnsupportedCallbackException(callbacks[i]);
+                throw new UnsupportedCallbackException(callback);
             }
-
-
         }
 
     }
-
 
 }

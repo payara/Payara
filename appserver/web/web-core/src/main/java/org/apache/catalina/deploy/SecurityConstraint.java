@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -76,7 +77,6 @@ import java.util.Locale;
  * @author Craig R. McClanahan
  * @version $Revision: 1.3 $ $Date: 2005/12/08 01:27:42 $
  */
-
 public class SecurityConstraint implements Serializable {
 
 
@@ -236,8 +236,7 @@ public class SecurityConstraint implements Serializable {
             return;
         }
         String results[] = new String[authRoles.length + 1];
-        for (int i = 0; i < authRoles.length; i++)
-            results[i] = authRoles[i];
+        System.arraycopy(authRoles, 0, results, 0, authRoles.length);
         results[authRoles.length] = authRole;
         authRoles = results;
         authConstraint = true;
@@ -257,8 +256,7 @@ public class SecurityConstraint implements Serializable {
             return;
         SecurityCollection results[] =
             new SecurityCollection[collections.length + 1];
-        for (int i = 0; i < collections.length; i++)
-            results[i] = collections[i];
+        System.arraycopy(collections, 0, results, 0, collections.length);
         results[collections.length] = collection;
         collections = results;
 
@@ -275,9 +273,10 @@ public class SecurityConstraint implements Serializable {
 
         if (role == null)
             return (false);
-        for (int i = 0; i < authRoles.length; i++) {
-            if (role.equals(authRoles[i]))
+        for (String authRole : authRoles) {
+            if (role.equals(authRole)) {
                 return (true);
+            }
         }
         return (false);
 
@@ -307,9 +306,10 @@ public class SecurityConstraint implements Serializable {
 
         if (name == null)
             return (null);
-        for (int i = 0; i < collections.length; i++) {
-            if (name.equals(collections[i].getName()))
-                return (collections[i]);
+        for (SecurityCollection collection : collections) {
+            if (name.equals(collection.getName())) {
+                return collection;
+            }
         }
         return (null);
 
@@ -348,18 +348,19 @@ public class SecurityConstraint implements Serializable {
             return (false);
 
         // Check all of the collections included in this constraint
-        for (int i = 0; i < collections.length; i++) {
-            if (!collections[i].findMethod(method))
+        for (SecurityCollection collection : collections) {
+            if (!collection.findMethod(method)) {
                 continue;
-            String patterns[] = collections[i].findPatterns();
+            }
+            String[] patterns = collection.findPatterns();
             for (int j = 0; j < patterns.length; j++) {
                 /* SJSWS 6324431
                 if (matchPattern(uri, patterns[j]))
                 */
                 // START SJSWS 6324431
-                if (matchPattern(uri, patterns[j], 
-                                 caseSensitiveMapping))
-                // END SJSWS 6324431
+                if (matchPattern(uri, patterns[j],
+                        caseSensitiveMapping))
+                    // END SJSWS 6324431
                     return (true);
             }
         }
@@ -434,6 +435,7 @@ public class SecurityConstraint implements Serializable {
     /**
      * Return a String representation of this security constraint.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SecurityConstraint: ");
@@ -441,7 +443,7 @@ public class SecurityConstraint implements Serializable {
             sb.append(" collection: ").append(collection);
         }
         for (String authRole : authRoles) {
-            sb.append(" authRole: "+authRole);
+            sb.append(" authRole: ").append(authRole);
         }
         sb.append(" userConstraint: ").append(userConstraint);
         return (sb.toString());

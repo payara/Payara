@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.filters;
 
@@ -155,14 +156,7 @@ public class CsrfPreventionFilter extends FilterBase {
         try {
             Class<?> clazz = Class.forName(randomClass);
             randomSource = (Random) clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-
-            ServletException se = new ServletException(msg, e);
-            throw se;
-        } catch (InstantiationException e) {
-            ServletException se = new ServletException(msg, e);
-            throw se;
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             ServletException se = new ServletException(msg, e);
             throw se;
         }
@@ -369,7 +363,7 @@ public class CsrfPreventionFilter extends FilterBase {
 
     private static class FixSizeLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
         private static final long serialVersionUID = 1L;
-        private int cacheSize;
+        private final int cacheSize;
 
         private FixSizeLinkedHashMap(int cs) {
             super();
@@ -378,10 +372,7 @@ public class CsrfPreventionFilter extends FilterBase {
 
         @Override
         protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
-            if (size() > cacheSize) {
-                return true;
-            }
-            return false;
+            return size() > cacheSize;
         }
     }
 }

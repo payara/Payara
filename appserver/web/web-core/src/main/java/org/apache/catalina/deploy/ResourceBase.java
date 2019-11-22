@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -69,7 +70,6 @@ import java.util.Iterator;
  * @author Peter Rossbach (pero@apache.org)
  * @version $Revision$ $Date$
  */
-
 public class ResourceBase implements Serializable {
 
 
@@ -122,8 +122,7 @@ public class ResourceBase implements Serializable {
     /**
      * Holder for our configured properties.
      */
-    private HashMap<String, Object> properties =
-        new HashMap<String, Object>();
+    private final HashMap<String, Object> properties = new HashMap<String, Object>();
 
     /**
      * Return a configured property.

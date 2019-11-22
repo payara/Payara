@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.loader;
 
@@ -97,10 +98,7 @@ import java.util.logging.Logger;
  * @author Remy Maucherat
  * @version $Revision: 1.3 $ $Date: 2006/03/12 01:27:02 $
  */
-
-public class StandardClassLoader
-    extends URLClassLoader
-    implements Reloader {
+public class StandardClassLoader extends URLClassLoader implements Reloader {
 
     private static final Logger log = LogFacade.getLogger();
 
@@ -225,8 +223,8 @@ public class StandardClassLoader
         this.system = getSystemClassLoader();
         securityManager = System.getSecurityManager();
         if (repositories != null) {
-            for (int i = 0; i < repositories.length; i++) {
-                addRepositoryInternal(repositories[i].toString());
+            for (URL repositorie : repositories) {
+                addRepositoryInternal(repositorie.toString());
             }
         }
     }
@@ -405,10 +403,7 @@ public class StandardClassLoader
             URL url = new URL(null, repository, streamHandler);
             super.addURL(url);
         } catch (MalformedURLException e) {
-            IllegalArgumentException iae = new IllegalArgumentException
-                ("Invalid repository: " + repository);
-            iae.initCause(e);
-            throw iae;
+            throw new IllegalArgumentException("Invalid repository: " + repository, e);
         }
 
         // Add this repository to our internal list
@@ -430,6 +425,7 @@ public class StandardClassLoader
     /**
      * Render a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("StandardClassLoader\r\n");
@@ -464,22 +460,26 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
+    @Override
     public Class findClass(String name) throws ClassNotFoundException {
 
-        if (debug >= 3)
+        if (debug >= 3) {
             log("    findClass(" + name + ")");
+        }
 
         // (1) Permission to define this class when using a SecurityManager
         if (securityManager != null) {
             int i = name.lastIndexOf('.');
             if (i >= 0) {
                 try {
-                    if (debug >= 4)
+                    if (debug >= 4) {
                         log("      securityManager.checkPackageDefinition");
-                    securityManager.checkPackageDefinition(name.substring(0,i));
+                    }
+                    securityManager.checkPackageDefinition(name.substring(0, i));
                 } catch (Exception se) {
-                    if (debug >= 4)
+                    if (debug >= 4) {
                         log("      -->Exception-->ClassNotFoundException", se);
+                    }
                     throw new ClassNotFoundException(name, se);
                 }
             }
@@ -533,17 +533,20 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to be found
      */
+    @Override
     public URL findResource(String name) {
 
-        if (debug >= 3)
+        if (debug >= 3) {
             log("    findResource(" + name + ")");
+        }
 
         URL url = super.findResource(name);
         if (debug >= 3) {
-            if (url != null)
+            if (url != null) {
                 log("    --> Returning '" + url.toString() + "'");
-            else
+            } else {
                 log("    --> Resource not found, returning null");
+            }
         }
         return (url);
 
@@ -559,10 +562,11 @@ public class StandardClassLoader
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public Enumeration<URL> findResources(String name) throws IOException {
-
-        if (debug >= 3)
+        if (debug >= 3) {
             log("    findResources(" + name + ")");
+        }
         return (super.findResources(name));
 
     }
@@ -590,6 +594,7 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to return a URL for
      */
+    @Override
     public URL getResource(String name) {
 
         if (debug >= 2)
@@ -651,6 +656,7 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to return an input stream for
      */
+    @Override
     public InputStream getResourceAsStream(String name) {
 
         if (debug >= 2)
@@ -730,10 +736,9 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
+    @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-
         return (loadClass(name, false));
-
     }
 
 
@@ -762,8 +767,8 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
-    public Class loadClass(String name, boolean resolve)
-        throws ClassNotFoundException {
+    @Override
+    public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
 
         if (debug >= 2)
             log("loadClass(" + name + ", " + resolve + ")");
@@ -879,6 +884,7 @@ public class StandardClassLoader
      * @param codeSource where the code was loaded from
      * @return PermissionCollection for CodeSource
      */
+    @Override
     protected final PermissionCollection getPermissions(CodeSource codeSource) {
         if (!policy_refresh) {
             // Refresh the security policies
@@ -974,10 +980,7 @@ public class StandardClassLoader
                          repository + "'");
                 }
             } catch (Throwable t) {
-                IllegalArgumentException iae = new IllegalArgumentException
-                    ("addRepositoryInternal");
-                iae.initCause(t);
-                throw iae;
+                throw new IllegalArgumentException("addRepositoryInternal", t);
             } finally {
                 if (jarFile != null) {
                     try {
@@ -1052,9 +1055,9 @@ public class StandardClassLoader
      * @param message Message to be logged
      */
     private void log(String message) {
-
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "StandardClassLoader: " + message);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "StandardClassLoader: {0}", message);
+        }
 
     }
 
