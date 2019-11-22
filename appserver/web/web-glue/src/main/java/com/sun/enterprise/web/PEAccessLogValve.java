@@ -665,10 +665,6 @@ public final class PEAccessLogValve
             WebContainerFeatureFactory fac, String globalAccessLogBufferSize,
             String globalAccessLogWriteInterval, String globalAccessLogPrefix) {
             
-        /*if(globalAccessLogPrefix != null && !globalAccessLogPrefix.trim().isEmpty() && !globalAccessLogPrefix.equals("null")) {
-            setPrefix(vsId + globalAccessLogPrefix + fac.getDefaultAccessLogPrefix());
-        }*/
-        
         setPrefix(vsId + fac.getDefaultAccessLogPrefix());
         
         boolean start = updateVirtualServerProperties(
