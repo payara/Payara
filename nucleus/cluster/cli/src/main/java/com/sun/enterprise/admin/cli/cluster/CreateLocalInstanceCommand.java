@@ -118,7 +118,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
     private boolean autoName;
     
-    @Param(name = "dataGridStartPort", optional = true, shortName = "dgp", defaultValue = "0")
+    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
     private String dataGridStartPort;
 
     // Override for hostname, as getting it from the system can be fragile when comparing against node config
