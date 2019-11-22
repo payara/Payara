@@ -368,7 +368,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
             ps.setString(index, padSpaceChar(strVal, length) );
             if (logger.isLoggable(Logger.FINE) ) {
                 logger.log(Logger.FINE, "sqlstore.database.oracle.fixedcharpadded",
-                           strVal, new Integer(length) );
+                           strVal, Integer.valueOf(length) );
             }
         }
 

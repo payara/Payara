@@ -39,16 +39,15 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.deployment</groupId>
+        <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>dol</artifactId>
@@ -112,54 +111,54 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-        </dependency>
-	    <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <artifactId>jakarta.persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>javax.resource-api</artifactId>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.ejb</groupId>
-            <artifactId>javax.ejb-api</artifactId>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>annotation-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -169,21 +168,17 @@
           <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.resourcebase.resources</groupId>
+            <groupId>fish.payara.server.internal.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

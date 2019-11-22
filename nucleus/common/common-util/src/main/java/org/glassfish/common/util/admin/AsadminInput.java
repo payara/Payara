@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -81,16 +82,16 @@ import java.util.Properties;
  */
 public class AsadminInput {
 
-    public final static String CLI_INPUT_OPTION_NAME = "_auxinput";
-    public final static String CLI_INPUT_OPTION = "--" + CLI_INPUT_OPTION_NAME;
+    public static final String CLI_INPUT_OPTION_NAME = "_auxinput";
+    public static final String CLI_INPUT_OPTION = "--" + CLI_INPUT_OPTION_NAME;
     
-    public final static String SYSTEM_IN_INDICATOR = "-"; // option value indicating we should read from stdin
+    public static final String SYSTEM_IN_INDICATOR = "-"; // option value indicating we should read from stdin
     
-    private final static String VERSION_1_0 = "1.0";
-    private final static String VERSION_INTRODUCER = "version=";
+    private static final String VERSION_1_0 = "1.0";
+    private static final String VERSION_INTRODUCER = "version=";
     
-    private final static String CURRENT_VERSION = VERSION_1_0;
-    private final static LocalStringManager localStrings = new LocalStringManagerImpl(AsadminInput.class);
+    private static final String CURRENT_VERSION = VERSION_1_0;
+    private static final LocalStringManager localStrings = new LocalStringManagerImpl(AsadminInput.class);
     
     public interface InputReader {
         public Map<String,Properties> settings();
@@ -111,7 +112,7 @@ public class AsadminInput {
      * @return
      * @throws IOException
      */
-    public static InputReader reader(final String inputPath) throws URISyntaxException, IOException {
+    public static InputReader reader(final String inputPath) throws IOException {
         if (inputPath.equals(SYSTEM_IN_INDICATOR)) {
             return reader(System.in);
         }

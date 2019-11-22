@@ -57,7 +57,8 @@ import java.lang.management.MemoryUsage;
  */
 @Service(name = "healthcheck-heap")
 @RunLevel(StartupRunLevel.VAL)
-public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
+public class HeapMemoryUsageHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
 
     @PostConstruct
     void postConstruct() {
@@ -75,7 +76,7 @@ public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthC
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
         MemoryUsage heap = memBean.getHeapMemoryUsage();
@@ -85,17 +86,14 @@ public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthC
                 prettyPrintBytes(heap.getUsed()),
                 prettyPrintBytes(heap.getCommitted()),
                 prettyPrintBytes(heap.getMax()));
-        Double percentage = calculatePercentage(heap);
+        long percentage = calculatePercentage(heap);
         result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), heapValueText + "heap%: " + percentage + "%"));
 
         return result;
     }
 
-    private static Double calculatePercentage(MemoryUsage usage) {
-        if (usage.getMax() > 0) {
-            return Math.floor(((double)usage.getUsed() / (double)usage.getMax()) * 100);
-        }
-        return null;
+    private static long calculatePercentage(MemoryUsage usage) {
+        return usage.getMax() == 0L ? 0L : (long)Math.floor(((double)usage.getUsed() / (double)usage.getMax()) * 100d);
     }
 }
 

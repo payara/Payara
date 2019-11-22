@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common-web-l10n</artifactId>
     <name>Glassfish Commons Web l10n Package</name>
@@ -121,72 +121,72 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>cli-optional-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>backup-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>annotation-framework-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
+            <groupId>fish.payara.server.internal.resources</groupId>
             <artifactId>resources-connector-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>transaction-internal-api-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-connector-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>gf-load-balancer-connector-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.loadbalancer</groupId>
+            <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>load-balancer-admin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-core-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

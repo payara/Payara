@@ -45,71 +45,67 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara</groupId>
-        <artifactId>payara-parent</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <groupId>fish.payara.server.internal.admingui</groupId>
+        <artifactId>admingui</artifactId>
+        <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.admingui</groupId>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
     <name>Admin Console WAR</name>
 
-    <developers>
-        <!-- See parent POM -->
-    </developers>
+    <properties>
+        <dependencies.extra.directory>${project.build.directory}/extra-dependencies</dependencies.extra.directory>
+    </properties>
 
     <build>
         <finalName>admingui</finalName>
         <plugins>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>prepare-extra-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
                         <configuration>
-                            <archive>
-                                <manifestEntries>
-                                    <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                                    <HK2-Import-Bundles>fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
-                                </manifestEntries>
-                            </archive>
+                            <outputDirectory>${dependencies.extra.directory}</outputDirectory>
+                            <includeArtifactIds>
+                                commons-fileupload,commons-io,
+                                dojo-ajax-nodemo,json,prototype,
+                                webui-jsf,webui-jsf-suntheme
+                            </includeArtifactIds>
+                            <includeScope>provided</includeScope>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <unzip src="target/admingui.war" dest="target/temp" />
-                                <delete file="target/admingui.war" />
-                                <mkdir dir="target/temp/WEB-INF/extra" />
-                                <move todir="target/temp/WEB-INF/extra">
-                                    <fileset dir="target/admingui/WEB-INF/lib" includes="**/*.jar" excludes="console-core*.jar" />
-                                </move>
-                                <delete>
-                                    <fileset dir="target/temp/WEB-INF/lib" includes="**/*.jar" excludes="console-core*.jar" />
-                                </delete>
-                               <jar jarfile="target/admingui.war" basedir="target/temp">
-                                    <manifest>
-                                      <attribute name="Glassfish-require-services" value="org.glassfish.api.admingui.ConsoleProvider" />
-                                      <attribute name="HK2-Import-Bundles" value="fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client " />
-                                    </manifest>
-                                </jar>
-                                <delete dir="target/temp" />
-
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <warSourceExcludes>WEB-INF/sun-web.xml</warSourceExcludes>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp</directory>
+                            <filtering>true</filtering>
+                            <includes>
+                                <include>WEB-INF/sun-web.xml</include>
+                            </includes>
+                        </resource>
+                        <resource>
+                            <directory>${dependencies.extra.directory}</directory>
+                            <targetPath>WEB-INF/extra</targetPath>
+                        </resource>
+                    </webResources>
+                    <archive>
+                        <manifestEntries>
+                            <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
+                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -119,11 +115,56 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>console-core</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!-- following provided scopes are to avoid maven-war-plugin's resolution of libs directory, -->
+        <!-- because we need these dependencies in extra directory -->
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>dataprovider</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.woodstock.dependlibs</groupId>
+            <artifactId>dojo-ajax-nodemo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.woodstock.dependlibs</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.woodstock.dependlibs</groupId>
+            <artifactId>prototype</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.woodstock</groupId>
+            <artifactId>webui-jsf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.woodstock</groupId>
+            <artifactId>webui-jsf-suntheme</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

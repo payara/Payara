@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
@@ -55,7 +56,7 @@ final class Strings {
         // no instances allowed!
     }
 
-    final static String get(String indexString) {
+    static final String get(String indexString) {
         return strings.get(indexString);
     }
 
@@ -63,5 +64,5 @@ final class Strings {
         return strings.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

@@ -193,12 +193,12 @@ public class InstanceHandler {
 
     public static ArrayList getKeyValuePair(String str) {
         ArrayList list = new ArrayList(2);
-        int index = str.indexOf("=");
+        int index = str.indexOf('=');
         String key = "";
         String value = "";
         if (index != -1) {
-            key = str.substring(0,str.indexOf("="));
-            value = str.substring(str.indexOf("=")+1,str.length());
+            key = str.substring(0,str.indexOf('='));
+            value = str.substring(str.indexOf('=')+1,str.length());
         } else {
             key = str;
         }

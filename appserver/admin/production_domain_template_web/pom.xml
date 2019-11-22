@@ -44,9 +44,9 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.admin</groupId>
+        <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>admin</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>production-domain-web</artifactId>
@@ -55,7 +55,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>nucleus-domain</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -69,14 +69,14 @@
                 <executions>
                     <execution>
                         <id>unpack</id>
-                        <phase>validate</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.admin</groupId>
+                                    <groupId>fish.payara.server.internal.admin</groupId>
                                     <artifactId>nucleus-domain</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>

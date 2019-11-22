@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -55,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -70,6 +71,9 @@ import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -144,9 +148,9 @@ public class ModuleInfo {
     }
 
     public Object getMetaData(String className) {
-        for (Class c : metaData.keySet()) {
-            if (c.getName().equals(className)) {
-                return metaData.get(c);
+        for (Entry<Class<? extends Object>, Object> entry : metaData.entrySet()) {
+            if (entry.getKey().getName().equals(className)) {
+                return entry.getValue();
             }
         }
         return null;
@@ -158,7 +162,9 @@ public class ModuleInfo {
 
     public Properties getModuleProps() {
         Properties props =  new Properties();
-        props.putAll(moduleProps);
+        if (moduleProps != null) {
+            props.putAll(moduleProps);
+        }
         return props;
     }
 
@@ -180,10 +186,7 @@ public class ModuleInfo {
     public void load(ExtendedDeploymentContext context, ProgressTracker tracker) throws Exception {
         Logger logger = context.getLogger();
         context.setPhase(ExtendedDeploymentContext.Phase.LOAD);
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOAD);
-        }
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
 
         moduleClassLoader = context.getClassLoader();
 
@@ -191,21 +194,16 @@ public class ModuleInfo {
         LinkedList<EngineRef> filteredReversedEngines = new LinkedList<EngineRef>();
 
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
-        try {
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, name, DeploymentTracing.AppStage.LOAD)){
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             for (EngineRef engine : _getEngineRefs()) {
     
                 final EngineInfo engineInfo = engine.getContainerInfo();
 
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.LOAD,
-                        engineInfo.getSniffer().getModuleType());
-                }
-                
                 // get the container.
                 Deployer deployer = engineInfo.getDeployer();
 
-                try {
+                try (DeploymentSpan containerSpan = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD)) {
                    ApplicationContainer appCtr = deployer.load(engineInfo.getContainer(), context);
                    if (appCtr==null) {
                        String msg = "Cannot load application in " + engineInfo.getContainer().getName() + " container";
@@ -220,23 +218,15 @@ public class ModuleInfo {
                     logger.log(Level.SEVERE, "Exception while invoking " + deployer.getClass() + " load method", e);
                     throw e;
                 }
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.LOADED,
-                        engineInfo.getSniffer().getModuleType());
-                }
-
             }
             engines = filteredEngines;
             reversedEngines = filteredReversedEngines;
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.LOAD_EVENTS);
-            }
 
             if (events!=null) {
-                events.send(new Event<ModuleInfo>(Deployment.MODULE_LOADED, this), false);
-            }
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.LOADED);
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, name,
+                        DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_LOADED.type())) {
+                    events.send(new Event<ModuleInfo>(Deployment.MODULE_LOADED, this), false);
+                }
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
@@ -277,20 +267,16 @@ public class ModuleInfo {
         
         ClassLoader currentClassLoader  = 
             Thread.currentThread().getContextClassLoader();
-        try {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, getName(), DeploymentTracing.AppStage.START)) {
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             // registers all deployed items.
             for (EngineRef engine : _getEngineRefs()) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("starting " + engine.getContainerInfo().getSniffer().getModuleType());
                 }
-                DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.START,
-                        engine.getContainerInfo().getSniffer().getModuleType());
-                }
 
-                try {
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.CONTAINER,  engine.getContainerInfo().getSniffer().getModuleType(), DeploymentTracing.AppStage.START)){
                     if (!engine.start( context, tracker)) {
                         logger.log(Level.SEVERE, "Module not started " +  engine.getApplicationContainer().toString());
                         throw new Exception( "Module not started " +  engine.getApplicationContainer().toString());
@@ -304,14 +290,12 @@ public class ModuleInfo {
                         throw e;
                     }
                 }
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.STARTED,
-                        engine.getContainerInfo().getSniffer().getModuleType());
-                }
             }
             started=true;
             if (events!=null) {
+                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_STARTED.type());
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
+                innerSpan.close();
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);

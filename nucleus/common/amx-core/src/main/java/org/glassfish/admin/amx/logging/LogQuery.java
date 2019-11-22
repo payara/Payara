@@ -180,9 +180,3 @@ public interface LogQuery
     }
 	
 }
-
-
-
-
-
-

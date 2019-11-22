@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -66,12 +66,15 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import static fish.payara.security.openid.OpenIdUtil.DEFAULT_JWT_SIGNED_ALGORITHM;
+import fish.payara.security.openid.api.IdentityToken;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_SECRET;
 import static fish.payara.security.openid.api.OpenIdConstant.CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.GRANT_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
+import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
+import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
@@ -175,6 +178,21 @@ public class TokenController {
     }
 
     /**
+     * Validate Id Token received from Successful Refresh Response.
+     *
+     * @param previousIdToken
+     * @param newIdToken
+     * @param httpContext
+     * @param configuration
+     * @return JWT Claims
+     */
+    public Map<String, Object> validateRefreshedIdToken(IdentityToken previousIdToken, IdentityTokenImpl newIdToken, HttpMessageContext httpContext, OpenIdConfiguration configuration) {
+        JWTClaimsSetVerifier jwtVerifier = new RefreshedIdTokenClaimsSetVerifier(previousIdToken, configuration);
+        JWTClaimsSet claimsSet = validateBearerToken(newIdToken.getTokenJWT(), jwtVerifier, configuration);
+        return claimsSet.getClaims();
+    }
+
+    /**
      * (5.2) Validate the Access Token & it's claims and verify the signature.
      *
      * @param accessToken
@@ -202,6 +220,31 @@ public class TokenController {
 //        }
 
         return claims;
+    }
+
+    /**
+     * Makes a refresh request to the token endpoint and the OpenId Provider
+     * responds with a new (updated) Access Token and Refreshs Token.
+     *
+     * @param configuration
+     * @param refreshToken Refresh Token received from previous token request.
+     * @return a JSON object representation of OpenID Connect token response
+     * from the Token endpoint.
+     */
+    public Response refreshTokens(OpenIdConfiguration configuration, RefreshToken refreshToken) {
+
+        Form form = new Form()
+                .param(CLIENT_ID, configuration.getClientId())
+                .param(CLIENT_SECRET, new String(configuration.getClientSecret()))
+                .param(GRANT_TYPE, REFRESH_TOKEN)
+                .param(REFRESH_TOKEN, refreshToken.getToken());
+
+        // Access Token and RefreshToken Request
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(configuration.getProviderMetadata().getTokenEndpoint());
+        return target.request()
+                .accept(APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 
     private JWTClaimsSet validateBearerToken(JWT token, JWTClaimsSetVerifier jwtVerifier, OpenIdConfiguration configuration) {

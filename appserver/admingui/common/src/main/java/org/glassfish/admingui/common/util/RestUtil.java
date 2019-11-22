@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2019 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,11 +122,11 @@ public class RestUtil {
     }
 
     public static String getPropValue(String endpoint, String propName, HandlerContext handlerCtx) {
-        Map responseMap = (Map) restRequest(endpoint + "/property.json", null, "GET", handlerCtx, false);
-        Map extraPropertiesMap = (Map) ((Map) responseMap.get("data")).get("extraProperties");
+        Map<String, Object> responseMap = restRequest(endpoint + "/property.json", null, "GET", handlerCtx, false);
+        Map<String, Object> extraPropertiesMap = (Map) ((Map) responseMap.get("data")).get("extraProperties");
         if (extraPropertiesMap != null) {
-            List<Map> props = (List) extraPropertiesMap.get("properties");
-            for (Map oneProp : props) {
+            List<Map<String, Object>> props = (List<Map<String, Object>>) extraPropertiesMap.get("properties");
+            for (Map<String, Object> oneProp : props) {
                 if (oneProp.get("name").equals(propName)) {
                     return (String) oneProp.get("value");
                 }
@@ -150,12 +150,12 @@ public class RestUtil {
             return token;
         }
 
-        Map attrMap = new HashMap();
+        Map<String, Object> attrMap = new HashMap<>();
         String str = token.substring(start + tokenStartMarker.length(), end - tokenEndMarker.length() + 1);
         attrMap.put("tokens", str);
 
         try {
-            Map result = restRequest(endpoint + "/resolve-tokens.json", attrMap, "GET", null, true);
+            Map<String, Object> result = restRequest(endpoint + "/resolve-tokens.json", attrMap, "GET", null, true);
             return (String) GuiUtil.getMapValue(result, "data,extraProperties,tokens," + str);
         } catch (Exception ex) {
             GuiUtil.getLogger().info(ex.getMessage());
@@ -182,14 +182,14 @@ public class RestUtil {
                 useData = true;
             } else {
                 // Initialize the attributes to an empty map
-                attrs = new HashMap<String, Object>();
+                attrs = new HashMap<>();
             }
         }
         method = method.toLowerCase(new Locale("UTF-8"));
 
         Logger logger = GuiUtil.getLogger();
         if (logger.isLoggable(Level.FINEST)) {
-            Map maskedAttr = maskOffPassword(attrs);
+            Map<String, Object> maskedAttr = maskOffPassword(attrs);
             logger.log(Level.FINEST,
                        GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
                                                 new Object[]{
@@ -307,8 +307,8 @@ public class RestUtil {
 //
 //        return restResponse.;
 //    }
-    public static Map maskOffPassword(Map<String, Object> attrs) {
-        Map masked = new HashMap();
+    public static Map<String, Object> maskOffPassword(Map<String, Object> attrs) {
+        Map<String, Object> masked = new HashMap<>();
         if (attrs == null) {
             return masked;
         }
@@ -325,7 +325,7 @@ public class RestUtil {
     }
 
     public static Map<String, String> buildDefaultValueMap(String endpoint) throws ParserConfigurationException, SAXException, IOException {
-        Map<String, String> defaultValues = new HashMap<String, String>();
+        Map<String, String> defaultValues = new HashMap<>();
 
         RestResponse response = options(endpoint, "application/json");
         //System.out.println("=========== response.getResponse():\n " + response.getResponse());
@@ -350,12 +350,12 @@ public class RestUtil {
         return defaultValues;
     }
 
-    public static Map getAttributesMap(String endpoint) {
+    public static Map<String, Object> getAttributesMap(String endpoint) {
         RestResponse response = null;
         try {
             response = get(endpoint);
             if (!response.isSuccess()) {
-                return new HashMap();
+                return new HashMap<>();
             }
             return getEntityAttrs(endpoint, "entity");
         } finally {
@@ -366,7 +366,7 @@ public class RestUtil {
     }
 
     public static Map<String, Object> getEntityAttrs(String endpoint, String key) {
-        Map<String, Object> valueMap = new HashMap<String, Object>();
+        Map<String, Object> valueMap = new HashMap<>();
         try {
             // Use restRequest to query the endpoint
             Map<String, Object> result = restRequest(endpoint, (Map<String, Object>) null, "get", null, false);
@@ -388,7 +388,7 @@ public class RestUtil {
         return valueMap;
     }
 
-    private static String getMessage(Map aMap) {
+    private static String getMessage(Map<String, Object> aMap) {
         String message = "";
         if (aMap != null) {
             message = (String) aMap.get("message");
@@ -408,21 +408,21 @@ public class RestUtil {
         if (response != null) {
             try {
                 //int status = response.getResponseCode();
-                Map responseMap = response.getResponse();
+                Map<String, Object> responseMap = response.getResponse();
                 if (responseMap.get("data") != null) {
-                    String exitCodeStr = (String) ((Map) responseMap.get("data")).get("exit_code");
+                    String exitCodeStr = (String) ((Map<String, Object>) responseMap.get("data")).get("exit_code");
                     exitCode = (exitCodeStr != null) ? ExitCode.valueOf(exitCodeStr) : ExitCode.SUCCESS;
                 }
 
                 //Get the message for both WARNING and FAILURE exit_code
                 if (exitCode != ExitCode.SUCCESS) {
-                    Map dataMap = (Map) responseMap.get("data");
+                    Map<String, Object> dataMap = (Map<String, Object>) responseMap.get("data");
                     if (dataMap != null) {
                         message = getMessage(dataMap);
-                        List<Map> subReports = (List<Map>) dataMap.get("subReports");
+                        List<Map<String, Object>> subReports = (List<Map<String, Object>>) dataMap.get("subReports");
                         if (subReports != null) {
                             StringBuilder sb = new StringBuilder("");
-                            for (Map oneSubReport : subReports) {
+                            for (Map<String, Object> oneSubReport : subReports) {
                                 sb.append(" ").append(getMessage(oneSubReport));
                             }
                             message = message + sb.toString();
@@ -543,8 +543,8 @@ public class RestUtil {
 
     //*******************************************************************************************************************
     //*******************************************************************************************************************
-    protected static MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
-        MultivaluedMap formData = new MultivaluedHashMap();
+    protected static MultivaluedMap<String, Object> buildMultivalueMap(Map<String, Object> payload) {
+        MultivaluedMap<String, Object> formData = new MultivaluedHashMap<>();
         if (payload == null || payload.isEmpty()) {
             return formData;
         }
@@ -553,7 +553,7 @@ public class RestUtil {
             final Object value = entry.getValue();
             final String key = entry.getKey();
             if (value instanceof Collection) {
-                for (Object obj : ((Collection) value)) {
+                for (Object obj : ((Collection<?>) value)) {
                     try {
                         formData.add(key, obj);
                     } catch (ClassCastException ex) {
@@ -609,7 +609,7 @@ public class RestUtil {
     }
 
     protected static Map<String, Object> fixKeyNames(Map<String, Object> map) {
-        Map<String, Object> results = new HashMap<String, Object>();
+        Map<String, Object> results = new HashMap<>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey().substring(0, 1).toLowerCase(GuiUtil.guiLocale) + entry.getKey().substring(1);
             Object value = entry.getValue();
@@ -633,9 +633,9 @@ public class RestUtil {
         }
     }
 
-    protected static Map buildUseOnlyAttrMap(Map<String, Object> attrs, List<String> onlyUseAttrs) {
+    protected static Map<String, Object> buildUseOnlyAttrMap(Map<String, Object> attrs, List<String> onlyUseAttrs) {
         if (onlyUseAttrs != null) {
-            Map newAttrs = new HashMap();
+            Map<String, Object> newAttrs = new HashMap<>();
             for (String key : onlyUseAttrs) {
                 if (attrs.keySet().contains(key)) {
                     newAttrs.put(key, attrs.get(key));
@@ -651,7 +651,7 @@ public class RestUtil {
     // This is ugly, but I'm trying to figure out why the cleaner code doesn't work :(
     protected static Map<String, Object> convertNullValuesToFalse(Map<String, Object> attrs, List<String> convertToFalse) {
         if (convertToFalse != null) {
-            Map<String, Object> newAttrs = new HashMap<String, Object>();
+            Map<String, Object> newAttrs = new HashMap<>();
             String key;
 
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
@@ -682,7 +682,7 @@ public class RestUtil {
     }
 
     public static List<String> getChildResourceList(String document) throws SAXException, IOException, ParserConfigurationException {
-        List<String> children = new ArrayList<String>();
+        List<String> children = new ArrayList<>();
         Document doc = MiscUtil.getDocument(document);
         Element root = doc.getDocumentElement();
         NodeList nl = root.getElementsByTagName("childResource");
@@ -709,19 +709,19 @@ public class RestUtil {
      * @return
      * @throws Exception
      */
-    public static List<Map> buildChildEntityList(String parent, String childType, List skipList, List includeList, String id) throws Exception {
+    public static List<Map<String, Object>> buildChildEntityList(String parent, String childType, List<?> skipList, List<?> includeList, String id) throws Exception {
 
         String endpoint = parent.endsWith("/") ? parent + childType : parent + "/" + childType;
         boolean hasSkip = (skipList != null);
         boolean hasInclude = (includeList != null);
         boolean convert = childType.equals("property");
 
-        List<Map> childElements = new ArrayList<Map>();
+        List<Map<String, Object>> childElements = new ArrayList<>();
         try {
             List<String> childUrls = getChildList(endpoint);
             for (String childUrl : childUrls) {
                 Map<String, Object> entity = getEntityAttrs(childUrl, "entity");
-                HashMap<String, Object> oneRow = new HashMap<String, Object>();
+                HashMap<String, Object> oneRow = new HashMap<>();
 
                 if (hasSkip && skipList.contains(entity.get(id))) {
                     continue;
@@ -762,7 +762,7 @@ public class RestUtil {
      * @throws Exception
      */
     public static List<String> getChildList(String endpoint) throws Exception {
-        List<String> childElements = new ArrayList<String>();
+        List<String> childElements = new ArrayList<>();
         Map<String, String> childResources = getChildMap(endpoint);
         childElements.addAll(childResources.values());
         Collections.sort(childElements);
@@ -774,20 +774,20 @@ public class RestUtil {
     }
 
 
-    public static Map<String, String> getChildMap(String endpoint, Map attrs) throws Exception {
-        Map<String, String> childElements = new TreeMap<String, String>();
+    public static Map<String, String> getChildMap(String endpoint, Map<String, Object> attrs) throws Exception {
+        Map<String, String> childElements = new TreeMap<>();
         if (attrs == null){
-            attrs = new HashMap<String, Object>();
+            attrs = new HashMap<>();
         }
         if (doesProxyExist(endpoint)) {
-            Map responseMap = restRequest(endpoint, attrs, "get", null, false);
-            Map data = (Map) responseMap.get("data");
+            Map<String, Object> responseMap = restRequest(endpoint, attrs, "get", null, false);
+            Map<String, ?> data = (Map<String, ?>) responseMap.get("data");
             if (data != null) {
-                Map extraProperties = (Map) data.get("extraProperties");
+                Map<String, ?> extraProperties = (Map<String, ?>) data.get("extraProperties");
                 if (extraProperties != null) {
                     childElements = (Map<String, String>) extraProperties.get("childResources");
                     if (childElements == null) {
-                        childElements = new TreeMap<String, String>();
+                        childElements = new TreeMap<>();
                     }
                 }
             }
@@ -849,8 +849,8 @@ public class RestUtil {
 
     }
 
-    public static WebTarget targetWithQueryParams(WebTarget target, Map<String, Object> paramMap) {
-        for (Map.Entry<String, Object> param : paramMap.entrySet()) {
+    public static WebTarget targetWithQueryParams(WebTarget target, Map<String, ?> paramMap) {
+        for (Map.Entry<String, ?> param : paramMap.entrySet()) {
             target = target.queryParam(param.getKey(), param.getValue());
         }
         return target;
@@ -885,7 +885,7 @@ public class RestUtil {
         }
         Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                //        .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .post(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
@@ -902,7 +902,7 @@ public class RestUtil {
         return rr;
     }
     
-    private static Entity getEntityForAddress(String address, Map<String, Object> payload) {
+    private static Entity<?> getEntityForAddress(String address, Map<String, Object> payload) {
         return address.endsWith("system-properties") ? Entity.entity(payload, MediaType.APPLICATION_JSON)
                 : Entity.entity(buildMultivalueMap(payload), MediaType.APPLICATION_FORM_URLENCODED);
     }
@@ -991,7 +991,7 @@ public class RestUtil {
     public static void postRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
         WebTarget target = JERSEY_CLIENT.target(endpoint);
-        MultivaluedMap formData = buildMultivalueMap(attrs);
+        MultivaluedMap<String, Object> formData = buildMultivalueMap(attrs);
         Response cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, token))

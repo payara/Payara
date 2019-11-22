@@ -216,6 +216,7 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
+import org.glassfish.deployment.common.DeploymentProperties;
 
 /**
  * Web container service
@@ -1654,7 +1655,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * Creates and configures a web module and adds it to the specified virtual server.
      */
     private WebModule loadWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig, String j2eeApplication, Properties deploymentProperties) throws Exception {
-
+        DeploymentContext dc = webModuleConfig.getDeploymentContext();
         String webModuleName = webModuleConfig.getName();
         String webModuleContextPath = webModuleConfig.getContextPath();
 
@@ -1673,18 +1674,25 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModuleConfig.setWorkDirBase(_appsWorkRoot);
         webModuleConfig.setStubBaseDir(appsStubRoot);
 
-        String displayContextPath = null;
+        String displayContextPath;
         if (webModuleContextPath.length() == 0) {
             displayContextPath = "/";
         } else {
             displayContextPath = webModuleContextPath;
         }
 
+        File docBase;
+        if (JWS_APPCLIENT_MODULE_NAME.equals(webModuleName)) {
+            docBase = new File(System.getProperty("com.sun.aas.installRoot"));
+        } else {
+            docBase = webModuleConfig.getLocation();
+        }
+
         Map<String, AdHocServletInfo> adHocPaths = null;
         Map<String, AdHocServletInfo> adHocSubtrees = null;
-        
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
+              Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
@@ -1709,6 +1717,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  */
                 webModule.setAvailable(true);
                 return webModule;
+            } else if(Boolean.TRUE.equals(hotDeploy)){
+                webModule.stop();
+                _embedded.updateContext(webModule,
+                        virtualServer.getDefaultContextXmlLocation(),
+                        virtualServer.getDefaultWebXmlLocation(),
+                        useDOLforDeployment, webModuleConfig);
+                processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+                webModule.start();
+                return webModule;
             } else {
                 throw new Exception(format(rb.getString(DUPLICATE_CONTEXT_ROOT), virtualServer.getID(), webModule.getModuleName(), displayContextPath, webModuleName));
             }
@@ -1716,13 +1733,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         if (logger.isLoggable(FINEST)) {
             logger.log(FINEST, WEB_MODULE_LOADING, new Object[]{ webModuleName, virtualServer.getID(), displayContextPath });
-        }
-
-        File docBase = null;
-        if (JWS_APPCLIENT_MODULE_NAME.equals(webModuleName)) {
-            docBase = new File(System.getProperty("com.sun.aas.installRoot"));
-        } else {
-            docBase = webModuleConfig.getLocation();
         }
 
         webModule = (WebModule) 
@@ -1788,47 +1798,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
         webModule.setParentClassLoader(parentLoader);
 
-        if (webBundleDescriptor != null) {
-            // Determine if an alternate DD is set for this web-module in the application
-            webModule.configureAlternateDD(webBundleDescriptor);
-            webModule.configureWebServices(webBundleDescriptor);
-        }
-
-        // Object containing sun-web.xml information
-        SunWebAppImpl iasBean = null;
-
-        // The default context is the only case when wbd == null
-        if (webBundleDescriptor != null) {
-            iasBean = (SunWebAppImpl) webBundleDescriptor.getSunDescriptor();
-        }
-
-        // set the sun-web config bean
-        webModule.setIasWebAppConfigBean(iasBean);
-
-        // Configure SingleThreadedServletPools, work/tmp directory etc
-        webModule.configureMiscSettings(iasBean, virtualServer, displayContextPath);
-
-        // Configure alternate docroots if dummy web module
-        if (webModule.getID().startsWith(DEFAULT_WEB_MODULE_NAME)) {
-            webModule.setAlternateDocBases(virtualServer.getProperties());
-        }
-
-        // Configure the class loader delegation model, classpath etc
-        Loader loader = webModule.configureLoader(iasBean);
-
-        // Set the class loader on the DOL object
-        if (webBundleDescriptor != null && webBundleDescriptor.hasWebServices()) {
-            webBundleDescriptor.addExtraAttribute("WEBLOADER", loader);
-        }
-
-        for (LifecycleListener listener : webModule.findLifecycleListeners()) {
-            if (listener instanceof ContextConfig) {
-                ((ContextConfig) listener).setClassLoader(webModuleConfig.getAppClassLoader());
-            }
-        }
-
-        // Configure the session manager and other related settings
-        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
+       processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
@@ -1893,6 +1863,53 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.loadSessions(deploymentProperties);
 
         return webModule;
+    }
+
+    private void processWebBundleDescriptor(VirtualServer virtualServer, WebModule webModule, WebModuleConfig webModuleConfig, String displayContextPath) {
+
+        WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
+
+        if (webBundleDescriptor != null) {
+            // Determine if an alternate DD is set for this web-module in the application
+            webModule.configureAlternateDD(webBundleDescriptor);
+            webModule.configureWebServices(webBundleDescriptor);
+        }
+
+        // Object containing sun-web.xml information
+        SunWebAppImpl iasBean = null;
+
+        // The default context is the only case when wbd == null
+        if (webBundleDescriptor != null) {
+            iasBean = (SunWebAppImpl) webBundleDescriptor.getSunDescriptor();
+        }
+
+        // set the sun-web config bean
+        webModule.setIasWebAppConfigBean(iasBean);
+
+        // Configure SingleThreadedServletPools, work/tmp directory etc
+        webModule.configureMiscSettings(iasBean, virtualServer, displayContextPath);
+
+        // Configure alternate docroots if dummy web module
+        if (webModule.getID().startsWith(DEFAULT_WEB_MODULE_NAME)) {
+            webModule.setAlternateDocBases(virtualServer.getProperties());
+        }
+
+        // Configure the class loader delegation model, classpath etc
+        Loader loader = webModule.configureLoader(iasBean);
+
+        // Set the class loader on the DOL object
+        if (webBundleDescriptor != null && webBundleDescriptor.hasWebServices()) {
+            webBundleDescriptor.addExtraAttribute("WEBLOADER", loader);
+        }
+
+        for (LifecycleListener listener : webModule.findLifecycleListeners()) {
+            if (listener instanceof ContextConfig) {
+                ((ContextConfig) listener).setClassLoader(webModuleConfig.getAppClassLoader());
+            }
+        }
+
+        // Configure the session manager and other related settings
+        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
     }
     
     private List<String> getServletNames(WebBundleDescriptor webBundleDescriptor) {
@@ -3005,14 +3022,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         String jvmRoute = null;
         if (jvmOption.contains("{") && jvmOption.contains("}")) {
             // Look up system-property
-            jvmOption = jvmOption.substring(jvmOption.indexOf("{") + 1, jvmOption.indexOf("}"));
+            jvmOption = jvmOption.substring(jvmOption.indexOf('{') + 1, jvmOption.indexOf('}'));
             jvmRoute = server.getSystemPropertyValue(jvmOption);
             if (jvmRoute == null) {
                 // Try to get it from System property if it exists
                 jvmRoute = System.getProperty(jvmOption);
             }
         } else if (jvmOption.contains("=")) {
-            jvmRoute = jvmOption.substring(jvmOption.indexOf("=") + 1);
+            jvmRoute = jvmOption.substring(jvmOption.indexOf('=') + 1);
         }
         engine.setJvmRoute(jvmRoute);
         for (com.sun.enterprise.config.serverbeans.VirtualServer vsBean : httpService.getVirtualServer()) {

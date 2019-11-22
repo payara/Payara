@@ -86,6 +86,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 
 /**
@@ -93,46 +94,47 @@ import com.sun.enterprise.security.auth.realm.file.FileRealm;
  * to interact with the JAAS based LoginModules and set the current (per thread) security context.
  * The WebContainer uses these for the native Servlet authentication, which is distinct from the newer
  * JASPIC Servlet Container Profile authentication.
- * 
+ *
  * <p>
- * Note that the JAAS system determines which LoginModule is ultimately being called, for instance the 
+ * Note that the JAAS system determines which LoginModule is ultimately being called, for instance the
  * {@link FileLoginModule}.
- * Actual LoginModules in Payara are each paired with a Payara Realm, for instance the {@link FileLoginModule} 
- * is paired with the {@link FileRealm}. The LoginModule typically does very little else than directly delegating 
+ * Actual LoginModules in Payara are each paired with a Payara Realm, for instance the {@link FileLoginModule}
+ * is paired with the {@link FileRealm}. The LoginModule typically does very little else than directly delegating
  * to its peer Realm.
- * 
+ *
  * <p>
  * Also note that with few exceptions neither the LoginModule nor the Realm set the current security context, but only
  * validate credentials and, if valid, return zero or more roles. The methods in this class set the security context if
  * the JAAS credential validation succeeds.
- * 
+ *
  * <p>
- * All LoginModules used by Payara have the convention that* credentials are passed in via a {@link Subject} instance 
- * (instead of the usual {@link CallbackHandler}). The validation outcome is a boolean, but is being passed via an exception. 
+ * All LoginModules used by Payara have the convention that* credentials are passed in via a {@link Subject} instance
+ * (instead of the usual {@link CallbackHandler}). The validation outcome is a boolean, but is being passed via an exception.
  * No exception means success, while an exception means no success. If the LoginModule/Realm returned any roles they will
  * put into the same Subject instance that was used to pass the credentials in.
- * 
+ *
  * @author Harpreet Singh (hsingh@eng.sun.com)
  * @author Jyri Virkki
  * @author Arjan Tijms (refactoring)
  *
  */
 public final class WebAndEjbToJaasBridge {
-    
+
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
-    
+
     private WebAndEjbToJaasBridge() {
         // No instances of this class
     }
-    
+
+
     /**
      * This method is just a convenience wrapper for <i>login(Subject, Class)</i> method. It will
      * construct a PasswordCredential class.
      *
-     * @param String username
-     * @param String password
-     * @param String realmName the name of the realm to login into, if realmName is null, we login into
-     * the default realm
+     * @param username
+     * @param password
+     * @param realmName the name of the realm to login into, if realmName is null, we login into
+     *            the default realm
      */
     public static void login(String username, char[] password, String realmName) {
         Subject subject = new Subject();
@@ -171,13 +173,11 @@ public final class WebAndEjbToJaasBridge {
      *
      * @param subject the subject of the client
      * @param credentialClass the class of the credential packaged in the subject.
-     * 
+     *
      * @throws LoginException when login fails
      */
     public static void login(Subject subject, Class<?> credentialClass) {
-        if (_logger.isLoggable(FINEST)) {
-            _logger.log(FINEST, "Processing login with credentials of type: " + credentialClass.toString());
-        }
+        _logger.finest(() -> "Processing login with credentials of type: " + credentialClass);
 
         if (credentialClass.equals(PasswordCredential.class)) {
             doPasswordLogin(subject);
@@ -200,39 +200,46 @@ public final class WebAndEjbToJaasBridge {
         }
     }
 
+    public static void doX500Login(Subject subject, String appModuleID) {
+        doX500Login(subject, CertificateRealm.AUTH_TYPE, appModuleID);
+    }
+
     /**
-     * A special case login for X500Name credentials. This is invoked for certificate login because the
-     * containers extract the X.500 name from the X.509 certificate before calling into this class.
-     * 
+     * A special case login for X500Name credentials.This is invoked for
+     * certificate login because the containers extract the X.500 name from the
+     * X.509 certificate before calling into this class.
+     *
+     * @param subject
+     * @param realmName
+     * @param appModuleID
      * @throws LoginException when login fails
      *
      */
-    public static void doX500Login(Subject subject, String appModuleID) {
+    public static void doX500Login(Subject subject, String realmName, String appModuleID) {
         _logger.fine("Processing X.500 name login.");
 
         String user = null;
-        String realmName = null;
         try {
             X500Principal x500principal = getPublicCredentials(subject, X500Principal.class);
             if (x500principal == null) {
                 // Should never happen
                 return;
             }
-            
-            user = x500principal.getName();
+
+            user = x500principal.getName(X500Principal.RFC2253, OID.getOIDMap());
 
             // In the RI-inherited implementation this directly creates
-            // some credentials and sets the security context. 
+            // some credentials and sets the security context.
             //
             // This means that the certificate realm does not get an opportunity to
-            // process the request. While the realm will not do any authentication 
-            // (already done by this point) it can choose to adjust the groups or principal 
-            // name or other variables of the security context. 
+            // process the request. While the realm will not do any authentication
+            // (already done by this point) it can choose to adjust the groups or principal
+            // name or other variables of the security context.
             //
             // Of course, bug 4646134 needs to be kept in mind at all times, even though time has
             // forgotten what 4646134 was.
-            
-            Realm realm = Realm.getInstance(CertificateRealm.AUTH_TYPE);
+
+            Realm realm = Realm.getInstance(realmName);
 
             if (realm instanceof CertificateRealm) { // Should always be true
 
@@ -241,20 +248,18 @@ public final class WebAndEjbToJaasBridge {
                 if (jaasCtx != null) {
                     // The subject has the certificate Credential.
                     new LoginContext(
-                            jaasCtx, subject, 
+                            jaasCtx, subject,
                             new ServerLoginCallbackHandler(user, null, appModuleID))
                         .login();
                 }
-                
+
                 // The name that the cert realm decided to set as the caller principal name
                 user = certRealm.authenticate(subject, x500principal);
-                realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);
             } else {
                 // Should never come here
                 _logger.warning(certLoginBadRealmError);
-                realmName = realm.getName();
                 setSecurityContext(user, subject, realmName);
             }
 
@@ -297,7 +302,7 @@ public final class WebAndEjbToJaasBridge {
      * This method is used for logging in a run As principal. It creates a JAAS subject whose credential
      * is to type GSSUPName. This is used primarily for runas
      *
-     * @throws LoginException if login fails 
+     * @throws LoginException if login fails
      */
     public static void loginPrincipal(String username, String realmName) {
         if (realmName == null || realmName.length() == 0) {
@@ -332,7 +337,7 @@ public final class WebAndEjbToJaasBridge {
 
         setSecurityContext(username, subject, realmName);
     }
-    
+
     /**
      * This method logs out the user by clearing the security context.
      *
@@ -341,10 +346,10 @@ public final class WebAndEjbToJaasBridge {
     public static void logout() {
         unsetSecurityContext();
     }
-    
-    
+
+
     // ############################   Private methods ######################################
-    
+
     /**
      * Log in subject with PasswordCredential. This is a generic login which applies to all login
      * mechanisms which process PasswordCredential. In other words, any mechanism which receives an
@@ -403,7 +408,7 @@ public final class WebAndEjbToJaasBridge {
     /**
      * A special case login for handling X509CertificateCredential. This does not get triggered based on
      * current RI code. See X500Login.
-     * 
+     *
      * @throws LoginException Thrown if the login fails.
      *
      */
@@ -431,7 +436,7 @@ public final class WebAndEjbToJaasBridge {
 
     /**
      * A special case login for anonymous credentials (no login info).
-     * 
+     *
      * @throws LoginException Thrown if the login fails.
      *
      */
@@ -443,7 +448,7 @@ public final class WebAndEjbToJaasBridge {
 
     /**
      * A special case login for GSSUPName credentials.
-     * 
+     *
      * @throws LoginException Thrown if the login fails.
      */
     private static void doGSSUPLogin(Subject s) {
@@ -466,7 +471,7 @@ public final class WebAndEjbToJaasBridge {
             throw le;
         }
     }
-    
+
     /**
      * Retrieve a public credential of the given type (java class) from the subject.
      *
@@ -523,9 +528,7 @@ public final class WebAndEjbToJaasBridge {
             if (e instanceof LoginException) {
                 throw (LoginException) e;
             }
-            else {
-                throw (LoginException) new LoginException("Failed to retrieve private credential: " + e.getMessage()).initCause(e);
-            }
+            throw new LoginException("Failed to retrieve private credential: " + e.getMessage(), e);
         }
     }
 
@@ -539,7 +542,7 @@ public final class WebAndEjbToJaasBridge {
     private static void setSecurityContext(String userName, Subject subject, String realm) {
         SecurityContext.setCurrent(new SecurityContext(userName, subject, realm));
     }
-    
+
     /**
      * Set the current security context on the Thread Local Storage to null.
      *

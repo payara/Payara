@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.faces.integration;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 import org.jvnet.hk2.annotations.Service;
@@ -102,12 +103,13 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
     public synchronized Map<URI, List<String>> getTldListenerMap() {
         if (tldListenerMap == null) {
             tldListenerMap = new HashMap<URI, List<String>>();
-            for (URI uri : tldMap.keySet()) {
+            for (Map.Entry<URI, List<String>> entry : tldMap.entrySet()) {
+                URI uri = entry.getKey();
                 /*
                  * In the case of JSF, the only TLD that declares any listener is META-INF/jsf_core.tld
                  */
-                if (tldMap.get(uri).contains("META-INF/jsf_core.tld")) {
-                    tldListenerMap.put(uri, tldMap.get(uri));
+                if (entry.getValue().contains("META-INF/jsf_core.tld")) {
+                    tldListenerMap.put(uri, entry.getValue());
                     break;
                 }
             }
@@ -126,7 +128,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
         }
 
         URI[] uris = null;
-        Module m = null;
+        HK2Module m = null;
         if (jsfImplClass != null) {
             m = registry.find(jsfImplClass);
         }

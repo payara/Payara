@@ -46,9 +46,9 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.admin</groupId>
+        <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
     <artifactId>config-api</artifactId>
@@ -119,12 +119,12 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -136,7 +136,7 @@
 
         <!-- test dependencies -->
         <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -147,20 +147,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>jakarta.el</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     

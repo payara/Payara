@@ -40,15 +40,15 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.web</groupId>
-    	  <artifactId>web</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <groupId>fish.payara.server.internal.web</groupId>
+        <artifactId>web</artifactId>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>web-core</artifactId>
@@ -101,45 +101,45 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-naming</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -157,21 +157,25 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-servlet</artifactId>
-            <version>${tyrus.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>healthcheck-stuck</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>

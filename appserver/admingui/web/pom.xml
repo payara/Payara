@@ -44,19 +44,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.admingui</groupId>
+        <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>console-web-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Web Container Plugin</name>
     <description>Web container plugin bundle for GlassFish Admin Console</description>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
 
     <build>
         <plugins>
@@ -77,7 +73,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -88,33 +84,37 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

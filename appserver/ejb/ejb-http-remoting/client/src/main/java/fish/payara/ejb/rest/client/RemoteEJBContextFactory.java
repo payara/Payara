@@ -39,12 +39,6 @@
  */
 package fish.payara.ejb.rest.client;
 
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
-
 /**
  * This is the context factory that creates the context used for looking up and invoking
  * remote EJBs.

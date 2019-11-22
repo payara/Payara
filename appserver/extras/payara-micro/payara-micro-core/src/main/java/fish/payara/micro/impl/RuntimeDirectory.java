@@ -40,11 +40,11 @@
 package fish.payara.micro.impl;
 
 import com.sun.enterprise.glassfish.bootstrap.JarUtil;
+import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.micro.PayaraMicro;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,7 +95,7 @@ class RuntimeDirectory {
             if (!directory.delete() || !directory.mkdir()) { // convert the file into a directory.
                 throw new IOException("cannot create directory: " + directory.getAbsolutePath());
             }
-            directory.deleteOnExit();
+            FileUtils.deleteOnExit(directory);
         } else {
             directory = new File(runTimeDir);
         }
@@ -152,7 +152,7 @@ class RuntimeDirectory {
                         File outputFile = new File(configDir, fileName);
 
                         if (isTempDir) {
-                            outputFile.deleteOnExit();
+                            FileUtils.deleteOnExit(outputFile);
                         }
 
                         // only unpack if an existing file is not there

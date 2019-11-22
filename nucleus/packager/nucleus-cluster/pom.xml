@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-cluster</artifactId>
     <name>Nucleus Clustering Package</name>
@@ -60,37 +60,37 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-cli</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-admin</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-common</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>j-interop-repackaged</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.external</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>trilead-ssh2-repackaged</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>

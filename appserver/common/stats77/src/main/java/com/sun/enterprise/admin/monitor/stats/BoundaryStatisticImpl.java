@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.BoundaryStatistic;
+
+import javax.management.j2ee.statistics.BoundaryStatistic;
 
 /** An implementation of a BoundaryStatistic. All instances of this class are
  * immutable. Provides all the necessary accessors for properties.
@@ -76,6 +78,7 @@ public final class BoundaryStatisticImpl extends StatisticImpl implements Bounda
      * Returns the lowest possible value, that this statistic is permitted to attain
 	 * @return		long the lowest permissible value
      */
+    @Override
     public long getLowerBound() {
         return lowerBound;
     }
@@ -84,6 +87,7 @@ public final class BoundaryStatisticImpl extends StatisticImpl implements Bounda
      * Return the highest possible value, that this statistic is permitted to attain
 	 * @return		long the highest permissible value
      */
+    @Override
     public long getUpperBound() {
         return upperBound;
     }

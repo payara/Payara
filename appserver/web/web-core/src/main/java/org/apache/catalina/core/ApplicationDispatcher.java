@@ -55,16 +55,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.ClientAbortException;
+import org.apache.catalina.connector.MappingImpl;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.InstanceSupport;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.server.util.MappingData;
+import org.glassfish.grizzly.http.util.CharChunk;
+import org.glassfish.grizzly.http.util.MessageBytes;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletMapping;
@@ -318,14 +323,7 @@ public final class ApplicationDispatcher
      */
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
-        // store previous forward
-        Object prevForward = request.getAttribute("fish.payara.servlet.dispatchPath");
-        request.setAttribute("fish.payara.servlet.dispatchPath", this.servletPath);
-        try {
-            dispatch(request, response, DispatcherType.FORWARD);
-        }finally {
-            request.setAttribute("fish.payara.servlet.dispatchPath",prevForward);
-        }
+        dispatch(request, response, DispatcherType.FORWARD);
     }
 
     /**
@@ -522,10 +520,8 @@ public final class ApplicationDispatcher
                 state.outerRequest.setAttribute(
                     Globals.DISPATCHER_REQUEST_PATH_ATTR,
                     getCombinedPath());
-                invoke(state.outerRequest, response, state);
-            } else {
-                invoke(state.outerRequest, response, state);
             }
+            invoke(state.outerRequest, response, state);
         }
     }
 
@@ -1074,6 +1070,15 @@ public final class ApplicationDispatcher
             //START OF 6364900
             crossContextFlag = Boolean.valueOf(crossContext);
             //END OF 6364900
+
+            if (this.name != null) {
+                this.mappingForDispatch = computeNamedDispatchHttpServletMapping(context, hcurrent);
+            }
+
+            if (DispatcherType.ASYNC.equals(state.dispatcherType)) {
+                this.mappingForDispatch = hcurrent.getHttpServletMapping();
+            }
+
             wrapper = new ApplicationHttpRequest
                 (hcurrent, context, crossContext, mappingForDispatch, state.dispatcherType);
         } else {
@@ -1091,6 +1096,30 @@ public final class ApplicationDispatcher
         return wrapper;
     }
 
+    private HttpServletMapping computeNamedDispatchHttpServletMapping(Context context, HttpServletRequest hcurrent) {
+        HttpServletMapping result = null;
+        Mapper mapper = context.getMapper();
+        if (null == mapper) {
+            return null;
+        }
+
+        MessageBytes uriMB = MessageBytes.newInstance();
+        CharChunk cc = uriMB.getCharChunk();
+        MappingData mappingData = new MappingData();
+        String requestURI = hcurrent.getRequestURI();
+        if (null == requestURI) {
+            return null;
+        }
+        try {
+            cc.append(requestURI, 0, requestURI.length());
+            mapper.map(uriMB, mappingData);
+        } catch (Exception ex) {
+            return null;
+        }
+        result = new MappingImpl(mappingData);
+
+        return result;
+    }
 
     /**
      * Create and return a response wrapper that has been inserted in the

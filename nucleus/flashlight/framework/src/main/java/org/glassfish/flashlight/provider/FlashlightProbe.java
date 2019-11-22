@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.provider;
 
@@ -264,7 +265,7 @@ public class FlashlightProbe
 	}
 
     public String getModuleName() {
-        return moduleProviderName;
+        return moduleName;
     }
 
 	public String getProbeProviderName() {
@@ -405,7 +406,11 @@ public class FlashlightProbe
         /* package */ final Object getState() { return state; }
         /* package */ final int getInvokerId() { return invokerId; }
     }
-    
+
+    public int getInvokerCount() {
+        return invokers.size();
+    }
+
     private Method probeMethod;
     public static final String SELF = "@SELF";
     private int id;

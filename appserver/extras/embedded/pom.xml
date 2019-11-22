@@ -46,10 +46,10 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>embedded</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Embedded modules</name>  

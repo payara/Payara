@@ -37,19 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.loader.ASURLClassLoader;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * Classloader that is responsible to load the ear libraries (lib/*.jar etc)
@@ -79,18 +77,23 @@ public class EarLibClassLoader extends ASURLClassLoader
         Enumeration<URL> localResources = super.getResources(name);
         Enumeration<URL> parentResources = getParent().getResources(name);
         
-        Enumeration<URL> combinedResources = Iterators.asEnumeration(Iterators.concat(
-                Lists.transform(currentBeforeParentEnabled?
-                        ImmutableList.of(localResources, parentResources) :
-                        ImmutableList.of(parentResources, localResources),
-                        new Function<Enumeration<URL>, Iterator<URL>>() {
-                    @Override
-                    public Iterator<URL> apply(Enumeration<URL> enumeration) {
-                        return Iterators.forEnumeration(enumeration);
-                    }
-                }).iterator()
-        ));
+        Enumeration<URL> combined = Collections.emptyEnumeration();
+        
+        Enumeration<URL> combinedResources = currentBeforeParentEnabled?
+                        combineEnumerations(localResources, parentResources):
+                        combineEnumerations(parentResources, localResources);
         return combinedResources;
+    }
+    
+    private Enumeration<URL> combineEnumerations(Enumeration<URL> first, Enumeration<URL> second) {
+        List<URL> combinedList = new ArrayList<>();
+        while (first.hasMoreElements()) {
+            combinedList.add(first.nextElement());
+        }
+        while (second.hasMoreElements()) {
+            combinedList.add(second.nextElement());
+        }
+        return Collections.enumeration(combinedList);
     }
 
     @Override

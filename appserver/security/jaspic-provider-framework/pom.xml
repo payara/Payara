@@ -40,14 +40,15 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2019] [Payara Foundation] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.security</groupId>
+        <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
     <artifactId>jaspic.provider.framework</artifactId>
@@ -73,8 +74,8 @@
             <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
     </dependencies>
 </project>

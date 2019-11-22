@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>json</artifactId>
     <name>JSON Package</name>
@@ -124,7 +124,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -134,8 +134,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

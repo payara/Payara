@@ -39,128 +39,110 @@
  */
 // Portions Copyright [2016-2019] [Payara Foundation]
 
-
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.admin.servermgmt.NodeKeystoreManager;
-import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
+
+import java.io.File;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * The change-master-password command for a node.
- * It takes in a nodeDir and node name
+ * The change-master-password command for a node. It takes in a nodeDir and node
+ * name
  *
  * @author Bhakti Mehta
+ * @author Matt Gill
  */
 @Service(name = "_change-master-password-node")
 @PerLookup
+public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
-public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
+    private static final Logger LOGGER = Logger.getLogger(ChangeNodeMasterPasswordCommand.class.getName());
 
-    @Param(name = "nodedir", optional = true)
-    protected String nodeDir0;           // nodeDirRoot
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeNodeMasterPasswordCommand.class);
+
+    protected static final String OLD_PASSWORD_ALIAS = "AS_ADMIN_MASTERPASSWORD";
+    protected static final String NEW_PASSWORD_ALIAS = "AS_ADMIN_NEWMASTERPASSWORD";
 
     @Param(name = "node", primary = true)
-    protected String node0;
+    protected String node;
 
-    @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
-    protected boolean savemp;
+    @Param(name = "savemasterpassword", optional = true)
+    private boolean saveMasterPassword;
 
-    private static final String MASTER_PASSWORD_ALIAS="master-password";
-
-    private static final LocalStringsImpl strings = new LocalStringsImpl(ChangeNodeMasterPasswordCommand.class);
+    protected File selectedNodeDir;
 
     private String newPassword;
 
-    private String oldPassword;
+    @Override
+    protected void inject() throws CommandException {
+        super.inject();
 
+        selectedNodeDir = new File(nodeDir, node);
+    }
+
+    @Override
+    protected void validate() throws CommandException, CommandValidationException {
+        super.validate();
+
+        if (saveMasterPassword) {
+            LOGGER.warning(STRINGS.get("savemasterpassword.unused"));
+        }
+
+        // Check node exists
+        if (!selectedNodeDir.isDirectory() || !getServerDirs().getAgentDir().exists()) {
+            throw new CommandException(STRINGS.get("bad.node.dir", selectedNodeDir));
+        }
+
+        // Check instances aren't running
+        for (File instanceDir : getInstanceDirectories()) {
+            if (isRunning(instanceDir)) {
+                throw new CommandException(STRINGS.get("instance.is.running", instanceDir.getName()));
+            }
+        }
+
+        // Find and verify old password
+        String oldPassword = findOldPassword();
+        String currentPassword = ofNullable(readFromMasterPasswordFile()).orElse(DEFAULT_MASTER_PASSWORD);
+        if (!oldPassword.equals(currentPassword)) {
+            throw new CommandException(STRINGS.get("incorrect.old.mp"));
+        }
+
+        // Find and set new password
+        setNewPassword();
+    }
 
     @Override
     protected int executeCommand() throws CommandException {
-
+        // Find the master password file
+        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
         try {
-            nodeDir = nodeDir0;
-            node = node0;
-            File serverDir = new File(nodeDir,node);
-
-            if (!serverDir.isDirectory()) {
-                throw new CommandException(strings.get("bad.node.dir",serverDir));
-            }
-
-            ArrayList<String> serverNames = getInstanceDirs(serverDir);
-            for (String serverName: serverNames) 
-                if (isRunning(serverDir, serverName))
-                    throw new CommandException(strings.get("instance.is.running",
-                            serverName));
-
-            oldPassword = passwords.get("AS_ADMIN_MASTERPASSWORD");
-            if (oldPassword == null) {
-                char[] opArr = super.readPassword(strings.get("old.mp"));
-                oldPassword = opArr != null ? new String(opArr) : null;
-            }
-            if (oldPassword == null)
-                throw new CommandException(strings.get("no.console"));
-
-            // for each instance iterate through the instances first,
-            // read each keystore with the old password,
-            // only then should it save the new master password.
-            boolean valid = true;
-            for(String instanceDir0: getInstanceDirs(nodeDirChild)) {
-               valid &= verifyInstancePassword(new File(nodeDirChild,instanceDir0));
-           }
-           if (!valid) {
-               throw new CommandException(strings.get("incorrect.old.mp"));
-           }
-            ParamModelData nmpo = new ParamModelData("AS_ADMIN_NEWMASTERPASSWORD",
-                    String.class, false, null);
-            nmpo.prompt = strings.get("new.mp");
-            nmpo.promptAgain = strings.get("new.mp.again");
-            nmpo.param._password = true;
-            char[] npArr = super.getPassword(nmpo, null, true);
-            newPassword = npArr != null ? new String(npArr) : null;
-
-            // for each instance encrypt the keystore
-            for(String instanceDir2: getInstanceDirs(nodeDirChild)) {
-               encryptKeystore(instanceDir2);
-           }
-            if (savemp) {
-                createMasterPasswordFile();
-            }
+            // Write the master password file
+            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
+            p.setPasswordForAlias(MASTERPASSWORD_FILE, newPassword.getBytes());
+            FileProtectionUtility.chmod0600(pwdFile);
             return 0;
-        } catch(Exception e) {
-            throw new CommandException(e.getMessage(),e);
+        } catch (Exception ex) {
+            throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", pwdFile), ex);
         }
     }
-
-    /**
-     * This will load and verify the keystore for each of the instances
-     * in a node
-     * @param instanceDir0 The instance directory
-     * @return  if the password is valid for the instance keystore
-     */
-    private boolean verifyInstancePassword(File instanceDir) {
-
-        File mp = new File(new File(instanceDir, "config"), "cacerts.jks");
-        return loadAndVerifyKeystore(mp,oldPassword);
-    }
-
-
 
     @Override
     public int execute(String... argv) throws CommandException {
@@ -171,89 +153,93 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     }
 
     /**
-     * Create the master password keystore. This routine can also modify the master password
-     * if the keystore already exists
-     *
-     * @throws CommandException
+     * Find the old password from the property in the password file with the name
+     * {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the user otherwise.
+     * 
+     * @throws CommandException if the password is null
      */
-    protected void createMasterPasswordFile() throws CommandException {
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTER_PASSWORD_ALIAS);
-        try {
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(),
-                MASTER_PASSWORD_ALIAS.toCharArray());
-            p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
-            FileProtectionUtility.chmod0600(pwdFile);
-        } catch (Exception ex) {
-            throw new CommandException(strings.get("masterPasswordFileNotCreated", pwdFile),ex);
-        }
-    }
+    protected String findOldPassword() throws CommandException {
+        // Fetch from master password file
+        String oldPassword = super.readFromMasterPasswordFile();
 
-
-    /*
-     * This will encrypt the keystore
-     */
-    public void encryptKeystore(String f) throws CommandException {
-
-        RepositoryConfig nodeConfig = new RepositoryConfig(f,
-                new File(nodeDir, node).toString(), f);
-        NodeKeystoreManager km = new NodeKeystoreManager();
-        try {
-            km.encryptKeystore(nodeConfig,oldPassword,newPassword);
-
-        } catch (Exception e) {
-             throw new CommandException(strings.get("Keystore.not.encrypted"), e);
+        // Fetch from provided password file
+        if (oldPassword == null) {
+            oldPassword = passwords.get(OLD_PASSWORD_ALIAS);
         }
 
+        // Prompt user
+        if (oldPassword == null) {
+            char[] opArr = super.readPassword(STRINGS.get("old.mp"));
+            oldPassword = opArr != null ? new String(opArr) : null;
+        }
+
+        // Check if password was collected
+        if (oldPassword == null) {
+            throw new CommandException(STRINGS.get("no.console"));
+        }
+
+        return oldPassword;
     }
 
     /**
-     * This will get all the instances for a given node
-     * @param parent  node
-     * @return   The list of instances for a node
-     * @throws CommandException
+     * Set the {@link #newPassword} field from the property in the password file
+     * with the name {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the
+     * user twice otherwise.
+     * 
+     * @throws CommandException if the passwords don't match or are null
      */
-    private ArrayList<String> getInstanceDirs(File parent) throws CommandException {
+    protected void setNewPassword() throws CommandException {
+        ParamModelData nmpo = new ParamModelData(NEW_PASSWORD_ALIAS, String.class, false, null);
+        nmpo.prompt = STRINGS.get("new.mp");
+        nmpo.promptAgain = STRINGS.get("new.mp.again");
+        nmpo.param._password = true;
+        char[] npArr = super.getPassword(nmpo, null, true);
+        newPassword = npArr != null ? new String(npArr) : null;
 
-         ArrayList<String> instancesList = new ArrayList<String>();
-         File[] files = parent.listFiles(new FileFilter() {
-             @Override
-             public boolean accept(File f) {
-                 return f.isDirectory();
-             }
-         });
+        // Check if password was collected
+        if (newPassword == null) {
+            throw new CommandException(STRINGS.get("no.console"));
+        }
+    }
 
-         if (files == null || files.length == 0) {
-             throw new CommandException(
-                     strings.get("Instance.noInstanceDirs", parent));
-         }
+    /**
+     * This will get the directory of all instances for the selected node.
+     * 
+     * @return The list of instances for the selected node
+     * @throws CommandException if there are no instances
+     */
+    private List<File> getInstanceDirectories() throws CommandException {
 
-         for (File f : files) {
-             if (!f.getName().equals("agent"))
-                 instancesList.add(f.getName());
-         }
-         return instancesList;
+        File[] instanceDirectories = selectedNodeDir.listFiles(f -> f.isDirectory() && !f.getName().equals("agent"));
 
-     }
+        if (instanceDirectories == null || instanceDirectories.length == 0) {
+            throw new CommandException(STRINGS.get("Instance.noInstanceDirs", selectedNodeDir));
+        }
 
-    private boolean isRunning(File nodeDirChild, String serverName)
-            throws CommandException {
+        return asList(instanceDirectories);
+    }
+
+    /**
+     * @param instanceDir the directory of the instance to check
+     * @return if the instance is currently running
+     */
+    private boolean isRunning(File instanceDir) throws CommandException {
         try {
-            File serverDir = new File(nodeDirChild, serverName);
-            File configDir = new File(serverDir, "config");
+            File configDir = new File(instanceDir, "config");
             File domainXml = new File(configDir, "domain.xml");
             if (!domainXml.exists()) {
                 return false;
             }
-            MiniXmlParser parser = new MiniXmlParser(domainXml, serverName);
+            MiniXmlParser parser = new MiniXmlParser(domainXml, instanceDir.getName());
             List<HostAndPort> addrSet = parser.getAdminAddresses();
             if (addrSet.isEmpty()) {
-                throw new CommandException(strings.get("NoAdminPort"));
+                throw new CommandException(STRINGS.get("NoAdminPort"));
             }
             HostAndPort addr = addrSet.get(0);
             return isRunning(addr.getHost(), addr.getPort());
         } catch (MiniXmlParserException ex) {
-            throw new CommandException(strings.get("NoAdminPortEx", ex), ex);
+            throw new CommandException(STRINGS.get("NoAdminPortEx", ex), ex);
         }
     }
-    
+
 }

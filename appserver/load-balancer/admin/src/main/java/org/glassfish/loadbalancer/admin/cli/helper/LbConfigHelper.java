@@ -190,8 +190,8 @@ public class LbConfigHelper {
                 while (st.hasMoreElements()) {
                     String listener = st.nextToken();
                     if (listener.contains("ajp://")) {
-                        listenerHost = listener.substring(listener.lastIndexOf("/") + 1, listener.lastIndexOf(":"));
-                        listenerPort = listener.substring(listener.lastIndexOf(":") + 1, listener.length());
+                        listenerHost = listener.substring(listener.lastIndexOf('/') + 1, listener.lastIndexOf(':'));
+                        listenerPort = listener.substring(listener.lastIndexOf(':') + 1, listener.length());
                         break;
                     }
                 }
@@ -276,8 +276,8 @@ public class LbConfigHelper {
                 while (st.hasMoreElements()) {
                     String listener = st.nextToken();
                     if (listener.contains("http://")) {
-                        listenerHost = listener.substring(listener.lastIndexOf("/") + 1, listener.lastIndexOf(":"));
-                        listenerPort = listener.substring(listener.lastIndexOf(":") + 1, listener.length());
+                        listenerHost = listener.substring(listener.lastIndexOf('/') + 1, listener.lastIndexOf(':'));
+                        listenerPort = listener.substring(listener.lastIndexOf(':') + 1, listener.length());
                         break;
                     }
                 }

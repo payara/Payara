@@ -62,9 +62,9 @@ public class ProbeRegistry {
     private static volatile ProbeRegistry _me = new ProbeRegistry();
 
     private static ConcurrentHashMap<Integer, FlashlightProbe> probeMap =
-                new ConcurrentHashMap<Integer, FlashlightProbe>();
+                new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, FlashlightProbe> probeDesc2ProbeMap =
-                new ConcurrentHashMap<String, FlashlightProbe>();
+                new ConcurrentHashMap<>();
 
     public static ProbeRegistry getInstance() {
         return _me;
@@ -120,7 +120,7 @@ public class ProbeRegistry {
 
     public Collection<FlashlightProbe> getAllProbes() {
        Collection<FlashlightProbe> allProbes = probeMap.values();
-       Collection<FlashlightProbe> visibleProbes = new ArrayList<FlashlightProbe>();
+       Collection<FlashlightProbe> visibleProbes = new ArrayList<>();
        for (FlashlightProbe probe : allProbes) {
            if (!probe.isHidden())
                visibleProbes.add(probe);

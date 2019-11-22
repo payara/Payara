@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,11 +42,10 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
     <artifactId>healthcheck-package</artifactId>
     <name>Nucleus HealthCheck Package</name>
     <packaging>distribution-fragment</packaging>
@@ -54,17 +53,17 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-cpool</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>

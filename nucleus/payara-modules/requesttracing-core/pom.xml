@@ -42,10 +42,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
+        <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>requesttracing-core</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -103,26 +102,24 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>notification-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>${jsonp.version}</version>
+            <artifactId>jakarta.json</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -132,7 +129,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>

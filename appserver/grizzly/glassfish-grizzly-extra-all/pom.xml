@@ -44,10 +44,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main.grizzly</groupId>
+        <groupId>fish.payara.server.internal.grizzly</groupId>
         <artifactId>glassfish-grizzly</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-grizzly-extra-all</artifactId>
@@ -155,7 +154,7 @@
             <artifactId>grizzly-http-ajp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>glassfish-grizzly-container</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -164,8 +163,8 @@
            <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
 	    <scope>provided</scope>
         </dependency>
     </dependencies>

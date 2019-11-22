@@ -41,11 +41,12 @@
 
 package org.glassfish.admin.rest.resources;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import javax.ws.rs.PUT;
+
+import com.sun.enterprise.util.JDK;
 import org.jvnet.hk2.config.TransactionFailure;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,8 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -92,6 +95,10 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected boolean isJvmOptions = false;
 
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    
+    private static final String MIN_VERSION = "minVersion";
+    private static final String MAX_VERISON = "maxVersion";
+    private static final String JVM_OPTION = "jvmOption";
 
     /** Creates a new instance of xxxResource */
     public CollectionLeafResource() {
@@ -230,9 +237,13 @@ public abstract class CollectionLeafResource extends AbstractResource {
         final String typeKey = upperCaseFirstLetter((decode(getName())));
         ar.setActionDescription(typeKey);
         if (isJvmOptions) {
-            ar.getExtraProperties().put("leafList", getEntity().stream().map(JvmOption::new)
-                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent() ? option.minVersion.get().toString() : "",
-                            "maxVersion", option.maxVersion.isPresent()? option.maxVersion.get().toString(): "", "jvmOption", option.option)).toArray());
+            List<String> optionsEntity = getEntity();
+            List<Map> optionsList = new ArrayList<>(optionsEntity.size());
+            for (String option: optionsEntity) {
+                JvmOption jvmOption = new JvmOption(option);
+                optionsList.add(optionToMap(jvmOption));
+            }
+            ar.getExtraProperties().put("leafList", optionsList);
         }
         else {
             ar.getExtraProperties().put("leafList", getEntity());
@@ -245,6 +256,15 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
         ResourceUtil.addMethodMetaData(ar, mmd);
         return new ActionReportResult(ar, optionsResult);
+    }
+    
+    private Map<String, String> optionToMap(JvmOption option){
+        Map<String, String> baseMap = new HashMap<>();
+        baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
+        baseMap.put(MAX_VERISON, option.maxVersion.map(JDK.Version::toString).orElse(""));
+        baseMap.put(JVM_OPTION, option.option);
+        
+        return Collections.unmodifiableMap(baseMap);
     }
 
     protected Map<String, MethodMetaData> getMethodMetaData() {
@@ -340,39 +360,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack 
-    //"There's nothing more permanent than a temporary solution" - Russian Proverb
     protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
-        Map<String, String> results = new HashMap<String, String>();
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
-                results.put(key, entry.getValue());
-            } else {
-                options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
-                
-                String value = entry.getValue();
-                
-                if (key != null && !key.trim().isEmpty() && (key.startsWith("-D") || key.startsWith("-X"))) {    
-                    if (value == null) {
-                        value = "";
-                    } else if(value.contains("=")) {
-                        value = value.replaceAll("=", "");
-                    }
-                 
-                    if (key.endsWith("=")) {                   
-                        options.append(value);
-                    } else if(!key.contains("=")) {
-                        options.append("=").append(value);
-                    }
-                }
-                sep = ":";
-            }
-        }
-
-        results.put("id", options.toString());
+        Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
         }

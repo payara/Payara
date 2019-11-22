@@ -66,6 +66,7 @@
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
         mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara5");
+        mapPut(map="#{pageSession.valueMap}", key="dockerimage" value="payara/server-node");
         mapPut(map="#{pageSession.valueMap}", key="setupSsh" value="false");
 
         setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
@@ -84,6 +85,9 @@
         setPageSessionAttribute(key="convertToFalseList" value="force");
         setPageSessionAttribute(key="psSelected" value="1");
         setPageSessionAttribute(key="winPsSelected" value="2");
+
+        setPageSessionAttribute(key="convertToFalseList" value={"usetls"});
+        setPageSessionAttribute(key="usetlsSelected", value="false");
 
     />
     </event>

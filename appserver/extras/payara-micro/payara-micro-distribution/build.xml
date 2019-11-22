@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
@@ -209,6 +209,8 @@
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
                 <attribute name="Start-Class" value="fish.payara.micro.impl.PayaraMicroImpl"/>
+                <attribute name="Add-Exports" value="java.base/jdk.internal.ref"/>
+                <attribute name="Add-Opens" value="java.base/jdk.internal.loader java.base/java.lang java.base/java.net java.base/java.nio java.base/java.util java.base/sun.nio.ch java.management/sun.management jdk.management/com.sun.management.internal java.base/sun.net.www.protocol.jrt java.base/sun.net.www.protocol.jar java.naming/javax.naming.spi java.rmi/sun.rmi.transport"/>
         </manifest>
         </jar>    
     </target> 

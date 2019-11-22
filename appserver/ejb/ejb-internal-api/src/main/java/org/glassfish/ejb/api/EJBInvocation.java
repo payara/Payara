@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.api;
 
 
@@ -47,83 +47,99 @@ import javax.xml.rpc.handler.MessageContext;
 
 /**
  * This interface provides access to the exported portions of the
- * ejb invocation object.  
+ * ejb invocation object.
  * @author Kenneth Saks
  */
-
-
 public interface EJBInvocation {
 
-    public EJBContext getEJBContext();
-    
+    /**
+     * @return runtime {@link EJBContext} of this invocation
+     */
+    EJBContext getEJBContext();
+
     /**
      * This is for EJB JAXWS only.
      * @return the JAXWS message
      */
-    public Object getMessage();
-    
+    Object getMessage();
+
     /**
      * This is for EJB JAXWS only.
      * @param message  an unconsumed message
      */
-    public <T> void setMessage(T message);
-    
+    <T> void setMessage(T message);
+
     /**
-     * 
+     *
      * @return true if it is a webservice invocation
      */
-    public boolean isAWebService();
-    
+    boolean isAWebService();
+
     /**
      * @return the Java Method object for this Invocation
      */
-    public Method getMethod();
-    
+    Method getMethod();
+
     /**
-     * 
+     *
      * @return the Method parameters for this Invocation
      */
-    public Object[] getMethodParams();
-    
+    Object[] getMethodParams();
+
     /**
      * Used by JACC implementation to get an enterprise bean
      * instance for the EnterpriseBean policy handler.  The jacc
      * implementation should use this method rather than directly
      * accessing the ejb field.
+     *
+     * @return EnterpriseBean instance or null if not applicable for this invocation.
      */
-    public Object getJaccEjb();
-    
+    Object getJaccEjb();
+
     /**
      * Use the underlying container to authorize this invocation
+     *
+     * @param method method to be invoked
      * @return true if the invocation was authorized by the underlying container
-     * @throws java.lang.Exception TODO, change this to throw some subclass
+     * @throws java.lang.Exception
      */
-    public boolean authorizeWebService(Method m) throws Exception;
-    
-/**
-    *
-    * @return true if the SecurityManager reports that the caller is in role
-    */
-   public boolean isCallerInRole(String role);
+    boolean authorizeWebService(Method method) throws Exception;
 
     /**
-     * Used by JAXRPC pre/postHandler classes
+     * @return true if the SecurityManager reports that the caller is in role
+     */
+   boolean isCallerInRole(String role);
+
+    /**
+     * Used by JAX-RPC pre/postHandler classes
+     *
      * @param tie an instance of com.sun.xml.rpc.spi.runtime.Tie
      */
-    public void setWebServiceTie(Object tie);
+    void setWebServiceTie(Object tie);
 
 
     /**
-     * Used for setting JAXRPC message context.
+     * Used for setting JAX-RPC message context.
      */
-    public void setMessageContext(MessageContext msgContext);
+    void setMessageContext(MessageContext context);
 
     /**
      * @return instance of com.sun.xml.rpc.spi.runtime.Tie
      */
-    public Object getWebServiceTie();
+    Object getWebServiceTie();
 
-    public void setWebServiceMethod(Method method);
-    public Method getWebServiceMethod();
-    public void setWebServiceContext(Object webServiceContext);
+    /**
+     * @param method - web service endpoint method
+     */
+    void setWebServiceMethod(Method method);
+
+    /**
+     * @return web service endpoint {@link Method}
+     */
+    Method getWebServiceMethod();
+
+    /**
+     * @param webServiceContext JAX-WS web service context used for the invocation
+     */
+    void setWebServiceContext(Object webServiceContext);
 }

@@ -211,8 +211,3 @@ public interface LogRecordEmitter extends NotificationEmitter, ListenerInfo
     @ManagedOperation(impact=MBeanOperationInfo.INFO)
 	public int	getLogLevelListenerCount( @Param(name="logLevel") final Level logLevel );
 }
-
-
-
-
-

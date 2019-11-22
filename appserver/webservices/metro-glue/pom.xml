@@ -39,14 +39,14 @@
     holder.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.webservices</groupId>
+        <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
+    
     <artifactId>metro-glue</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -66,27 +66,27 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.webservices</groupId>
+            <groupId>fish.payara.server.internal.webservices</groupId>
             <artifactId>jsr109-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -95,7 +95,7 @@
             <artifactId>webservices-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>

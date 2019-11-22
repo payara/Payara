@@ -41,13 +41,13 @@
 
 -->
 
-<!-- "Portions Copyright [2016] [Payara Foundation]" -->
+<!-- "Portions Copyright [2016-2019] [Payara Foundation]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-ejb</artifactId>
@@ -58,49 +58,49 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-timer-databases</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-full-container</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>ejb.security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-enabler</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-iiop</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-ejb-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-corba-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.timer</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.http</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-http-admin</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.core.proxy;
 
 import org.glassfish.admin.amx.base.DomainRoot;
@@ -45,7 +47,6 @@ import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.util.AMXDebugHelper;
 import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.admin.amx.util.StringUtil;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.external.arc.Stability;
@@ -63,7 +64,6 @@ import java.util.concurrent.ConcurrentMap;
 import static org.glassfish.external.amx.AMX.DESC_STD_IMMUTABLE_INFO;
 import static org.glassfish.external.amx.AMX.NAME_KEY;
 
-//import org.glassfish.api.amx.AMXUtil;
 /**
  * @deprecated Factory for {@link AMXProxy} proxies.
  */
@@ -86,9 +86,9 @@ public final class ProxyFactory implements NotificationListener {
             new AMXDebugHelper(ProxyFactory.class.getName());
 
     private static void debug(final Object... args) {
-        //mDebug.println( args );
-        System.out.println(StringUtil.toString(", ", args));
+        mDebug.println( args );
     }
+    
     private static final Map<MBeanServerConnection, ProxyFactory> INSTANCES =
             Collections.synchronizedMap(new HashMap<MBeanServerConnection, ProxyFactory>());
 
@@ -154,12 +154,11 @@ public final class ProxyFactory implements NotificationListener {
 
         try {
             getMBeanServerConnection().isRegistered(JMXUtil.getMBeanServerDelegateObjectName());
-            connectionGood = true;
+            return true;
         } catch (Exception e) {
             connectionBad();
+            return false;
         }
-
-        return (connectionGood);
     }
 
     void notifsLost() {
@@ -172,9 +171,8 @@ public final class ProxyFactory implements NotificationListener {
      * internally as callback for {@link javax.management.NotificationListener}.
      * <b>DO NOT CALL THIS METHOD</b>.
      */
-    public void handleNotification(
-            final Notification notifIn,
-            final Object handback) {
+    @Override
+    public void handleNotification(final Notification notifIn, final Object handback) {
         final String type = notifIn.getType();
 
         if (type.equals(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
@@ -192,20 +190,15 @@ public final class ProxyFactory implements NotificationListener {
             debug("ProxyFactory.handleNotification: UNKNOWN notification: ", notifIn);
         }
     }
-    private final static String DOMAIN_ROOT_KEY = "DomainRoot";
 
-    public DomainRoot createDomainRoot()
-            throws IOException {
+    public DomainRoot createDomainRoot() {
         return (mDomainRoot);
     }
 
-    public DomainRoot initDomainRoot()
-            throws IOException {
+    public DomainRoot initDomainRoot() throws IOException {
         final ObjectName domainRootObjectName = getDomainRootObjectName();
 
-        final DomainRoot dr = getProxy(domainRootObjectName, DomainRoot.class);
-
-        return (dr);
+        return getProxy(domainRootObjectName, DomainRoot.class);
     }
 
     /**
@@ -277,9 +270,7 @@ public final class ProxyFactory implements NotificationListener {
      * @param useMBeanServerID	use the MBeanServerID to determine if it's the
      * same server
      */
-    public static synchronized ProxyFactory getInstance(
-            final MBeanServerConnection conn,
-            final boolean useMBeanServerID) {
+    public static synchronized ProxyFactory getInstance(final MBeanServerConnection conn, final boolean useMBeanServerID) {
         ProxyFactory instance = findInstance(conn);
 
         if (instance == null) {
@@ -292,7 +283,6 @@ public final class ProxyFactory implements NotificationListener {
                 }
 
                 if (instance == null) {
-                    //debug( "Creating new ProxyFactory for ConnectionSource / conn", connSource, conn );
                     instance = new ProxyFactory(conn);
                     INSTANCES.put(conn, instance);
                 }
@@ -365,7 +355,7 @@ public final class ProxyFactory implements NotificationListener {
         final Descriptor d = info.getDescriptor();
 
         final String value = "" + d.getFieldValue(DESC_STD_IMMUTABLE_INFO);
-        return Boolean.valueOf(value);
+        return Boolean.parseBoolean(value);
     }
 
     /**
@@ -392,8 +382,7 @@ public final class ProxyFactory implements NotificationListener {
             return null;
         }
 
-        final T proxy = getProxy(objectName, info, intf);
-        return proxy;
+        return getProxy(objectName, info, intf);
     }
 
     /**
@@ -406,8 +395,7 @@ public final class ProxyFactory implements NotificationListener {
         }
 
         final Class<? extends AMXProxy> intf = genericInterface(info);
-        final AMXProxy proxy = getProxy(objectName, info, intf);
-        return proxy;
+        return getProxy(objectName, info, intf);
     }
 
     public static Class<? extends AMXProxy> genericInterface(final MBeanInfo info) {
@@ -434,11 +422,7 @@ public final class ProxyFactory implements NotificationListener {
     /**
      * NOTE: a null proxy may be returned if the MBean is no longer registered
      */
-    <T extends AMXProxy> T getProxy(
-            final ObjectName objectName,
-            final MBeanInfo mbeanInfoIn,
-            final Class<T> intfIn) {
-        //debug( "ProxyFactory.createProxy: " + objectName + " of class " + expected.getName() + " with interface " + JMXUtil.interfaceName(mbeanInfo) + ", descriptor = " + mbeanInfo.getDescriptor() );
+    <T extends AMXProxy> T getProxy(final ObjectName objectName, final MBeanInfo mbeanInfoIn, final Class<T> intfIn) {
         AMXProxy proxy = null;
 
         try {
@@ -455,14 +439,11 @@ public final class ProxyFactory implements NotificationListener {
 
             final AMXProxyHandler handler = new AMXProxyHandler(getMBeanServerConnection(), objectName, mbeanInfo);
             proxy = (AMXProxy) Proxy.newProxyInstance(intf.getClassLoader(), new Class[]{intf}, handler);
-            //debug( "CREATED proxy of type " + intf.getName() + ", metadata specifies " + AMXProxyHandler.interfaceName(mbeanInfo) );
         } catch (IllegalArgumentException e) {
-            //debug( "createProxy", e );
             throw e;
         } catch (Exception e) {
             final Throwable rootCause = ExceptionUtil.getRootCause(e);
             if (!(rootCause instanceof InstanceNotFoundException)) {
-                //debug( "createProxy", e );
                 throw new RuntimeException(e);
             }
             proxy = null;
@@ -472,8 +453,7 @@ public final class ProxyFactory implements NotificationListener {
     }
 
     protected static String toString(final Object o) {
-        //return( org.glassfish.admin.amx.util.stringifier.SmartStringifier.toString( o ) );
-        return "" + o;
+        return(org.glassfish.admin.amx.util.stringifier.SmartStringifier.toString(o));
     }
 
     /**
@@ -503,8 +483,7 @@ public final class ProxyFactory implements NotificationListener {
                     s.add(proxy);
                 }
             } catch (final Exception e) {
-                debug("ProxyFactory.toProxySet: exception for MBean ",
-                        objectName, " = ", ExceptionUtil.getRootCause(e));
+                debug("ProxyFactory.toProxySet: exception for MBean ", objectName, " = ", ExceptionUtil.getRootCause(e));
             }
         }
 

@@ -104,14 +104,14 @@ public class ErrorMsg
         if (line > 1)
         {
             // include line and column info
-            Object args[] = {context, new Integer(line), new Integer(col), msg};
+            Object args[] = {context, line, col, msg};
             ex = new JDOQueryException(I18NHelper.getMessage(
                 messages, "jqlc.errormsg.generic.msglinecolumn", args)); //NOI18N
         }
         else if (col > 0)
         {
             // include column info
-            Object args[] = {context, new Integer(col), msg};
+            Object args[] = {context, col, msg};
             ex = new JDOQueryException(I18NHelper.getMessage(
                 messages, "jqlc.errormsg.generic.msgcolumn", args)); //NOI18N
         }
@@ -138,14 +138,14 @@ public class ErrorMsg
         if (line > 1)
         {
             // include line and column info
-            Object args[] = {context, new Integer(line), new Integer(col), msg};
+            Object args[] = {context, line, col, msg};
             ex = new JDOUnsupportedOptionException(I18NHelper.getMessage(
                 messages, "jqlc.errormsg.generic.msglinecolumn", args)); //NOI18N
         }
         else if (col > 0)
         {
             // include column info
-            Object args[] = {context, new Integer(col), msg};
+            Object args[] = {context, col, msg};
             ex = new JDOUnsupportedOptionException(I18NHelper.getMessage(
                 messages, "jqlc.errormsg.generic.msgcolumn", args)); //NOI18N
                                                                          

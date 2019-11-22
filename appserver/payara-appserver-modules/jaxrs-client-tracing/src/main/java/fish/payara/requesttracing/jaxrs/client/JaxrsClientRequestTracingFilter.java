@@ -152,6 +152,11 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                         PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
                 if (parentSpanContext != null) {
                     spanBuilder.asChildOf(parentSpanContext);
+                } else {
+                    parentSpanContext = SpanPropagator.propagatedContext();
+                    if (parentSpanContext != null) {
+                        spanBuilder.asChildOf(parentSpanContext);
+                    }
                 }
 
                 // If there is a propagated span context, set it as a parent of the new span

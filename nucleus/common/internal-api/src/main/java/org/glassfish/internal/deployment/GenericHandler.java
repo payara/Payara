@@ -37,33 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
-import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.util.io.FileUtils;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import javax.inject.Inject;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.jar.Manifest;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
-import java.net.URI;
-import java.net.URL;
-
-import com.sun.enterprise.util.io.FileUtils;
-
-import javax.inject.Inject;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
 /**
  * Pretty generic implementation of some ArchiveHandler methods
@@ -85,6 +81,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param context deployment context
      * @throws IOException when the archive is corrupted
      */
+    @Override
     public void expand(ReadableArchive source, WritableArchive target,
         DeploymentContext context) throws IOException {
 
@@ -115,6 +112,12 @@ public abstract class GenericHandler implements ArchiveHandler {
             target.closeEntry();
         }
     }
+    
+    @Override
+    public String getDefaultApplicationName(ReadableArchive archive, 
+        DeploymentContext context) {
+        return getDefaultApplicationName(archive, context, null);
+    }
 
     /**
      * Returns the default application name usable for identifying the archive.
@@ -130,21 +133,18 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param context deployment context
      * @return the default application name for the specified archive
      */
+    @Override
     public String getDefaultApplicationName(ReadableArchive archive, 
-        DeploymentContext context) {
+        DeploymentContext context, String originalAppName ) {
+
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.DETERMINE_APP_NAME, "ApplicationInfoProvider");
+
         // first try to get the name from ApplicationInfoProvider if 
         // we can find an implementation of this service
         ApplicationInfoProvider nameProvider = habitat.getService(ApplicationInfoProvider.class);
 
-        DeploymentTracing tracing = null;
-
-        if (context != null) {
-            tracing = context.getModuleMetaData(DeploymentTracing.class);
-        }
-
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.APPINFO_PROVIDED);
-        }
+        span.close();
 
 
         String appName = null;
@@ -153,6 +153,10 @@ public abstract class GenericHandler implements ArchiveHandler {
             if (appName != null) {
                 return appName;
             }
+        }
+        
+        if (originalAppName != null) {
+            return originalAppName;
         }
 
         // now try to get the default
@@ -170,6 +174,7 @@ public abstract class GenericHandler implements ArchiveHandler {
         return appName;
     }
 
+    @Override
     public String getDefaultApplicationName(ReadableArchive archive) {
         return getDefaultApplicationName(archive, null);
     }

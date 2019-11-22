@@ -38,7 +38,7 @@
  */
 package fish.payara.notification.hipchat;
 
-import com.google.common.base.Strings;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
@@ -72,6 +72,7 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
     @Param(name = "token")
     private String token;
 
+    @Override
     protected void applyValues(HipchatNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -79,11 +80,11 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(roomName)) {
+        if(StringUtils.ok(roomName)) {
             configuration.setRoomName(roomName);
         }
 
-        if(!Strings.isNullOrEmpty(token)) {
+        if(StringUtils.ok(token)) {
             configuration.setToken(token);
         }
     }

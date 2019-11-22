@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,8 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
-import static fish.payara.microprofile.metrics.Constants.REGISTRY_NAMES;
+import static fish.payara.microprofile.metrics.MetricsConstants.EMPTY_STRING;
+import static fish.payara.microprofile.metrics.MetricsConstants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -63,11 +63,14 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
+    
+    private static final String APPLICATION_WILDCARD = "application/*";
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
@@ -80,14 +83,10 @@ public class MetricsResource extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (!metricsService.isMetricsEnabled()) {
-            response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
-            return;
-        }
-        if(!request.isSecure() && metricsService.isMetricsSecure()){
-            response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
+
+        if (!metricsService.isEnabled()) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service is disabled");
             return;
         }
         metricsService.reregisterMetadataConfig();
@@ -142,15 +141,40 @@ public class MetricsResource extends HttpServlet {
 
         switch (method) {
             case GET:
-                if (accept.contains(APPLICATION_JSON)) {
+                //application/json;q=0.1,text/plain;q=0.9
+
+                String[] acceptFormats = accept.split(",");
+                float qJsonValue = 0;
+                float qTextFormat = 0;
+                for (String format : acceptFormats) {
+                    if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
+                        String[] splitTextFormat = format.split(";");
+                        if (splitTextFormat.length == 2) {
+                            qTextFormat = Float.parseFloat(splitTextFormat[1].substring(2));
+                        } else {
+                            qTextFormat = 1;
+                        }
+                    } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
+                        String[] splitJsonFormat = format.split(";");
+                        if (splitJsonFormat.length == 2) {
+                            qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
+                        } else {
+                            qJsonValue = 1;
+                        }
+                    } // else { no other formats supported by Payara, ignored }
+                }
+
+                //if neither JSON or plain text are supported
+                if (qJsonValue == 0 && qTextFormat == 0) {
+                    response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
+                } else if (qJsonValue > qTextFormat) {
                     outputWriter = new JsonMetricWriter(writer);
-                } else if (accept.contains(TEXT_PLAIN)) {
-                    outputWriter = new PrometheusWriter(writer);
                 } else {
                     outputWriter = new PrometheusWriter(writer);
-                }   break;
+                }
+                break;
             case OPTIONS:
-                if (accept.contains(APPLICATION_JSON)) {
+                if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
                     outputWriter = new JsonMetadataWriter(writer);
                 } else {
                     response.sendError(

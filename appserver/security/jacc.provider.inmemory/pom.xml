@@ -41,15 +41,15 @@
 
 -->
 
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.security</groupId>
+        <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
         
     <artifactId>jacc.provider.inmemory</artifactId>
@@ -89,12 +89,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>javax.security.jacc</groupId>
-            <artifactId>javax.security.jacc-api</artifactId>
+            <groupId>jakarta.security.jacc</groupId>
+            <artifactId>jakarta.security.jacc-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <!-- Don't set scope as provided. See issue #5992 -->
         </dependency>
         <dependency>
@@ -102,12 +102,12 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.web</groupId>
+        <groupId>fish.payara.server.internal.web</groupId>
     	  <artifactId>web</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>web-naming</artifactId>
@@ -75,7 +75,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <!-- Needed for Startup service -->
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

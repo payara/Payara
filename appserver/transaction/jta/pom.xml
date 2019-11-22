@@ -46,10 +46,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.glassfish.main.transaction</groupId>
+        <groupId>fish.payara.server.internal.transaction</groupId>
         <artifactId>transaction</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jta</artifactId>
@@ -92,43 +91,43 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>javax.resource-api</artifactId>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <artifactId>jakarta.persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -141,7 +140,7 @@
             <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>

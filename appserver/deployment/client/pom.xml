@@ -44,10 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.deployment</groupId>
+        <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>    
     <artifactId>deployment-client</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -87,21 +86,21 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-cli</artifactId>
             <version>${project.version}</version>
         </dependency>   
         <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>

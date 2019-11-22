@@ -40,6 +40,7 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
@@ -59,6 +60,8 @@ import javax.inject.Named;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
@@ -91,8 +94,51 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     protected O options;
     protected Class<C> checkerType;
 
-    public abstract HealthCheckResult doCheck();
+    private final AtomicInteger checksDone = new AtomicInteger();
+    private final AtomicInteger checksFailed = new AtomicInteger();
+    private final AtomicBoolean inProcess = new AtomicBoolean(false);
+    private volatile HealthCheckResultStatus mostRecentCumulativeStatus;
+
+    public final HealthCheckResult doCheck() {
+        if (!getOptions().isEnabled() || inProcess.compareAndSet(false, true)) {
+            return null;
+        }
+        try {
+            HealthCheckResult result = doCheckInternal();
+            mostRecentCumulativeStatus = result.getCumulativeStatus();
+            return result;
+        } catch (Exception ex) {
+            checksFailed.incrementAndGet();
+            throw ex;
+        } finally {
+            inProcess.set(false);
+            checksDone.incrementAndGet();
+        }
+    }
+
+    protected abstract HealthCheckResult doCheckInternal();
     public abstract O constructOptions(C c);
+
+    public HealthCheckResultStatus getMostRecentCumulativeStatus() {
+        return mostRecentCumulativeStatus;
+    }
+
+    public boolean isInProgress() {
+        return inProcess.get();
+    }
+
+    public int getChecksDone() {
+        return checksDone.get();
+    }
+
+    public int getChecksFailed() {
+        return checksFailed.get();
+    }
+
+    public boolean isReady() {
+        O options = getOptions();
+        return !isInProgress() && options != null && options.isEnabled();
+    }
 
     protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
         this.checkerType = checkerType;

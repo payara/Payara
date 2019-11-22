@@ -21,7 +21,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
     file that accompanied this code.
 
-    Modifications:
+    Modifications
     If applicable, add the following below the License Header, with the fields
     enclosed by brackets [] replaced by your own identifying information:
     "Portions Copyright [year] [name of copyright owner]"
@@ -43,13 +43,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.payara-modules</groupId>
+    <groupId>fish.payara.server.internal.payara-modules</groupId>
     <artifactId>payara-nucleus-modules</artifactId>
     <packaging>pom</packaging>
     <name>Payara Nucleus Modules</name>
@@ -70,6 +69,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>jsr107-repackaged</module>
         <module>payara-executor-service</module>
         <module>opentracing-adapter</module>
+        <module>nucleus-microprofile</module>
     </modules>
     
     <profiles>

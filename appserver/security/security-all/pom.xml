@@ -46,11 +46,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-         <groupId>org.glassfish.main.security</groupId>
+         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
-    </parent>    
+        <version>5.194-SNAPSHOT</version>
+    </parent>
     <artifactId>security-all</artifactId>
     <packaging>pom</packaging>
     <name>Security Related Implementation for GlassFish</name>
@@ -66,22 +65,22 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>jacc.provider.inmemory</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>jacc.provider.file</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -90,8 +89,8 @@
             <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.security.jacc</groupId>
-            <artifactId>javax.security.jacc-api</artifactId>
+            <groupId>jakarta.security.jacc</groupId>
+            <artifactId>jakarta.security.jacc-api</artifactId>
         </dependency>
      </dependencies>
 </project>

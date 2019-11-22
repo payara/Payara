@@ -473,7 +473,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             boolean isDeployment = opsparams.origin.isDeploy() || opsparams.origin.isCreateAppRef();
             boolean isDirectTarget = env.getInstanceName().equals(dcp.target);
             // Create timers on DAS only if this condition is not met
-            if (!isDeployment || isDirectTarget || isDeploymentGroup) {
+            if (!isDeployment || isDirectTarget) {
                 // Create them on deploy for a cluster or create-application-ref (the latter will
                 // check if it's the 1st ref being added or a subsequent one (timers with this unique id are present
                 // or not)
@@ -483,6 +483,10 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                 }
                 // But is-timed-app needs to be set in AppInfo in any case
                 createTimers = false;
+            }
+            if (isDeploymentGroup) {
+                _logger.log(Level.WARNING, "Deployment targets deployment group {0}, it is assumed that timer "+
+                        "service configuration is consistent accross all members of the group", dcp.target);
             }
 
             String target = dcp.target;

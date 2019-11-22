@@ -38,7 +38,7 @@
  * holder.
  */
  
- // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
  
 package org.glassfish.admin.amx.impl.config;
 
@@ -72,19 +72,16 @@ import org.glassfish.external.arc.Taxonomy;
 import org.jvnet.hk2.config.*;
 
 /**
-Responsible for loading ConfigBeanProxy MBeans (com.sun.enterprise.config.serverbeans.*)
+ * Responsible for loading ConfigBeanProxy MBeans (com.sun.enterprise.config.serverbeans.*)
  * @author llc
  */
 @Taxonomy(stability = Stability.NOT_AN_INTERFACE)
-public final class AMXConfigLoader 
-        implements TransactionListener {
+public final class AMXConfigLoader implements TransactionListener {
 
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
+    private static final Logger mLogger = AMXLoggerInfo.getLogger();
+    
     private volatile AMXConfigLoaderThread mLoaderThread;
     private final Transactions mTransactions;
-    private final Logger mLogger = AMXLoggerInfo.getLogger();
     private final PendingConfigBeans mPendingConfigBeans;
     private final ConfigBeanRegistry mRegistry = ConfigBeanRegistry.getInstance();
     private final MBeanServer mServer;
@@ -156,7 +153,6 @@ public final class AMXConfigLoader
         }
 
         if (changed) {
-            //debug( "AMXConfigLoader.issueAttributeChange(): " + xmlAttrName + ": {" + oldValue + " => " + newValue + "}");
             final Object impl = mRegistry.getImpl(cb);
             if (!(impl instanceof AMXConfigImpl)) {
                 throw new IllegalStateException("impossible");
@@ -170,7 +166,6 @@ public final class AMXConfigLoader
     private void sortAndDispatch(
             final List<PropertyChangeEvent> events,
             final long whenChanged) {
-        //debug( "AMXConfigLoader.sortAndDispatch: " + events.size() + " events" );
         final List<ConfigBean> newConfigBeans = new ArrayList<ConfigBean>();
         final List<PropertyChangeEvent> remainingEvents = new ArrayList<PropertyChangeEvent>();
 
@@ -196,7 +191,6 @@ public final class AMXConfigLoader
                 // REMOVE
                 final ConfigBeanProxy cbp = (ConfigBeanProxy) oldValue;
                 final ConfigBean cb = asConfigBean(ConfigBean.unwrap(cbp));
-                //debug( "AMXConfigLoader.sortAndDispatch: remove (recursive) ConfigBean: " + mRegistry.getObjectName(cb) );
                 configBeanRemoved(cb);
             } else {
                 remainingEvents.add(event);
@@ -210,43 +204,35 @@ public final class AMXConfigLoader
                 final Object newValue = event.getNewValue();
                 final Object source = event.getSource();
                 final String propertyName = event.getPropertyName();
-                //final String sourceString = (source instanceof ConfigBeanProxy) ? ConfigSupport.proxyType((ConfigBeanProxy)source).getName() : "" + source;
-
-                //debug( "AMXConfigLoader.sortAndDispatch (ATTR change): name = " + propertyName +
-                //        ", oldValue = " + oldValue + ", newValue = " + newValue + ", source = " + sourceString );
                 if (source instanceof ConfigBeanProxy) {
                     // CHANGE
                     final ConfigBeanProxy cbp = (ConfigBeanProxy) source;
                     final ConfigBean cb = asConfigBean(ConfigBean.unwrap(cbp));
-                    //final Class<? extends ConfigBeanProxy> proxyClass = ConfigSupport.proxyType(cbp);
 
                     // change events without prior add
                     // we shouldn't have to check for this, but it's a bug in the caller: no even for
                     // new ConfigBean, but changes come along anyway
 
                     if (mRegistry.getObjectName(cb) == null) {
-                        if (!newConfigBeans.contains(cb)) {
-                            //debug( "AMXConfigLoader.sortAndDispatch: process new ConfigBean (WORKAROUND): " + proxyClass.getNameProp() );
-                            if (handleConfigBean(cb, false)) {
+                        if (!newConfigBeans.contains(cb) && handleConfigBean(cb, false)) {
                                 newConfigBeans.add(cb);
-                            }
                         }
                     } else {
                         issueAttributeChange(cb, propertyName, oldValue, newValue, whenChanged);
                     }
                 } else {
-                    debug("AMXConfigLoader.sortAndDispatch: WARNING: source is not a ConfigBean");
+                    mLogger.log(Level.WARNING, "AMXConfigLoader.sortAndDispatch: source is not a ConfigBean");
                 }
             }
         }
     }
 
+    @Override
     public void transactionCommited(final List<PropertyChangeEvent> changes) {
-        //final PropertyChangeEvent[] changesArray = new PropertyChangeEvent[changes.size()];
-        //changes.toArray( changesArray );
         sortAndDispatch(changes, System.currentTimeMillis());
     }
 
+    @Override
     public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         // not interested...
     }
@@ -289,10 +275,8 @@ public final class AMXConfigLoader
      */
     private ConfigBean getActualParent(final ConfigBean configBean) {
         ConfigBean parent = asConfigBean(configBean.parent());
-        if (parent == null) {
-            if (!configBean.getProxyType().getName().endsWith("Domain")) {
+        if (parent == null && !configBean.getProxyType().getName().endsWith("Domain")) {
                 throw new IllegalStateException("WARNING: parent is null for " + configBean.getProxyType().getName() + ",  see issue #10528");
-            }
         }
 
         return parent;
@@ -381,7 +365,6 @@ public final class AMXConfigLoader
                 // that are parents, and thus already registered.
                 if (objectName == null) {
                     objectName = registerConfigBeanAsMBean(cb);
-                    //debug( "AMXConfigLoaderThread.registerOne(): " + objectName);
                 }
             } catch (final Throwable t) {
                 mLogger.log(Level.WARNING, AMXLoggerInfo.cantRegister, new Object[]{getType(cb), getKey(cb), t});
@@ -392,6 +375,7 @@ public final class AMXConfigLoader
             return objectName;
         }
 
+        @Override
         public void run() {
             try {
                 doRun();
@@ -444,12 +428,9 @@ public final class AMXConfigLoader
     private ObjectName registerConfigBeanAsMBean(final ConfigBean cb) {
         ObjectName objectName = null;
 
-        //debug( "registerConfigBeanAsMBean: " + cb.getProxyType().getName()  + ", object = " + cb );
         final ConfigBean parentCB = getActualParent(cb);
         if (parentCB != null && mRegistry.getObjectName(parentCB) == null) {
-            //debug( "REGISTER parent first: " + parentCB.getProxyType().getName() );
             registerConfigBeanAsMBean(parentCB);
-            //debug( "REGISTERED parent: " + parentCB.getProxyType().getName() + " as " + JMXUtil.toString(parentCB.getObjectName()) );
         }
         objectName = _registerConfigBeanAsMBean(cb, parentCB);
         assert objectName == null || mRegistry.getObjectName(cb) != null;
@@ -464,7 +445,6 @@ public final class AMXConfigLoader
             final ConfigBean parentCB) {
         final Class<? extends ConfigBeanProxy> cbClass = cb.getProxyType();
 
-        //debug( "_registerConfigBeanAsMBean: " + cb.getProxyType().getName() );
 
         ObjectName objectName = mRegistry.getObjectName(cb);
         if (objectName != null) {
@@ -475,13 +455,11 @@ public final class AMXConfigLoader
                     + " must be registered first before child = " + cbClass.getName());
         }
 
-        // debug( "Preparing ConfigBean for registration with ObjectNameInfo = " + objectNameInfo.toString() + ", AMXMBeanMetaData = " + metadata );
-
         objectName = buildObjectName(cb);
 
         objectName = createAndRegister(cb, objectName);
         if (objectName != null) {
-            mLogger.fine("REGISTERED MBEAN: " + objectName);
+            mLogger.log(Level.FINE, "REGISTERED MBEAN: {0}", objectName);
         }
 
         return objectName;
@@ -504,16 +482,11 @@ public final class AMXConfigLoader
             final ObjectInstance instance = mServer.registerMBean(impl, objectNameIn);
             objectName = instance.getObjectName();
             mRegistry.add(cb, objectName, impl);
-
-            //System.out.println( "AMXConfigLoader.createAndRegister(): REGISTERED: " + objectName + " at " + System.currentTimeMillis() );
-            //System.out.println( JMXUtil.toString( mServer.getMBeanInfo(objectName) ) );
         } catch (InstanceAlreadyExistsException ex) {
             mLogger.log(Level.FINE, ExceptionUtil.toString(ex));
-            
             objectName = null;
         } catch (final JMException e) {
-            debug(ExceptionUtil.toString(e));
-
+            mLogger.log(Level.SEVERE, ExceptionUtil.toString(e));
             objectName = null;
         } 
         return objectName;
@@ -580,13 +553,7 @@ public final class AMXConfigLoader
             mLogger.log(Level.WARNING, AMXLoggerInfo.nonsingletonConfigbean, new Object[] {cb.getProxyType().getName() ,name});
         }
 
-        //debug( "Type/name for " + cb.getProxyType().getName() + " = " + type + " = " + name );
-
-        final ObjectName objectName = ObjectNameBuilder.buildChildObjectName(mServer, parentObjectName, type, quoteIfNeeded(name));
-
-        //debug( "ObjectName for " + cb.getProxyType().getName() + " = " + objectName + " of parent " + parentObjectName );
-
-        return objectName;
+        return ObjectNameBuilder.buildChildObjectName(mServer, parentObjectName, type, quoteIfNeeded(name));
     }
     
     /**

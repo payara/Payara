@@ -44,19 +44,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.admingui</groupId>
+        <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>console-jms-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
-    <name>Admin Console JMS Plugin</name>
 
-    <developers>
-        <!-- See parent POM -->
-    </developers>
+    <name>Admin Console JMS Plugin</name>
 
     <build>
         <plugins>
@@ -71,9 +66,6 @@
                         <supportedProjectType>bundle</supportedProjectType>
                     </supportedProjectTypes>
                     <instructions>
-                        <!-- _include does not work. See Felix-620.
-                        <_include>osgi.bundle</_include>
-                        -->
                         <Export-Package>org.glassfish.jdbc.admingui</Export-Package>
                     </instructions>
                 </configuration>
@@ -114,33 +106,32 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.jms</groupId>
+            <groupId>fish.payara.server.internal.jms</groupId>
             <artifactId>jms-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.jms</groupId>
+            <groupId>fish.payara.server.internal.jms</groupId>
             <artifactId>jms-admin</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.messaging.mq</groupId>
-            <artifactId>imqjmx</artifactId>
-            <scope>provided</scope>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -164,7 +165,7 @@ public final class ClassUtil
      */
     public static String stripPackageName(String classname)
     {
-        final int lastDot = classname.lastIndexOf(".");
+        final int lastDot = classname.lastIndexOf('.');
         if (lastDot < 0)
         {
             return (classname);
@@ -262,41 +263,8 @@ public final class ClassUtil
         if (classnameIsPrimitiveArray(classname))
         {
             final char lastChar = classname.charAt(classnameLength - 1);
-
-            switch (lastChar)
-            {
-                default:
-                    throw new RuntimeException("illegal primitive");
-
-                // a simple type
-                case 'Z':
-                    result = "boolean";
-                    break;
-                case 'B':
-                    result = "byte";
-                    break;
-                case 'C':
-                    result = "char";
-                    break;
-                case 'S':
-                    result = "short";
-                    break;
-                case 'I':
-                    result = "int";
-                    break;
-                case 'J':
-                    result = "long";
-                    break;
-                case 'F':
-                    result = "float";
-                    break;
-                case 'D':
-                    result = "double";
-                    break;
-            }
-        }
-        else
-        {
+            result = primitiveLetterToClassName(lastChar);
+        } else {
             // strip leading "[L" and trailing ";"
             result = classname.substring(2, classnameLength - 1);
         }
@@ -307,7 +275,7 @@ public final class ClassUtil
     /**
     Class.forName does not work for primitive types, so we need to do it ourselves here.
      */
-    final static class ClassNameToClassMapping
+    static final class ClassNameToClassMapping
     {
         String mName;
 
@@ -342,13 +310,7 @@ public final class ClassUtil
         try
         {
             c = Class.forName(name);
-        }
-        catch (ClassNotFoundException e)
-        {
-            c = Class.forName(name, true, Thread.currentThread().getContextClassLoader());
-        }
-        catch (NoClassDefFoundError e)
-        {
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
             c = Class.forName(name, true, Thread.currentThread().getContextClassLoader());
         }
 
@@ -632,7 +594,7 @@ public final class ClassUtil
     @param 		type
     @return	a friendlier string representing the type
      */
-    final static String javaLang = "java.lang.";
+    static final String javaLang = "java.lang.";
 
     public static String getFriendlyClassname(String type)
     {
@@ -650,43 +612,12 @@ public final class ClassUtil
             // strip all the '[' characters
             result = type.substring(depth, type.length());
 
-            if (result.startsWith("L") && result.endsWith(";"))
-            {
+            if (result.startsWith("L") && result.endsWith(";")) {
                 result = result.substring(1, result.length() - 1);
-            }
-            else if (result.length() == 1)
-            {
+            } else if (result.length() == 1) {
+                
                 // a simple type
-                switch (result.charAt(0))
-                {
-                    case 'Z':
-                        result = "boolean";
-                        break;
-                    case 'B':
-                        result = "byte";
-                        break;
-                    case 'C':
-                        result = "char";
-                        break;
-                    case 'S':
-                        result = "short";
-                        break;
-                    case 'I':
-                        result = "int";
-                        break;
-                    case 'J':
-                        result = "long";
-                        break;
-                    case 'F':
-                        result = "float";
-                        break;
-                    case 'D':
-                        result = "double";
-                        break;
-                    default:
-                        result = "unknown";
-                        break;
-                }
+                result = primitiveLetterToClassName(result.charAt(0));
             }
 
             StringBuilder sb = new StringBuilder(result);
@@ -962,10 +893,7 @@ public final class ClassUtil
         T result = null;
         try
         {
-            result = constructor.newInstance(new Object[]
-                    {
-                        theString
-                    });
+            result = constructor.newInstance(theString);
         }
         catch (java.lang.reflect.InvocationTargetException e)
         {
@@ -1051,7 +979,7 @@ public final class ClassUtil
                 throw new IllegalArgumentException("not a character: " + theString);
             }
 
-            result = Character.valueOf(theString.charAt(0));
+            result = theString.charAt(0);
         }
         else
         {
@@ -1088,7 +1016,7 @@ public final class ClassUtil
         }
         else if (objectClass == Character.class)
         {
-            result = Character.valueOf('X');
+            result = 'X';
         }
         else if (classIsArray(objectClass))
         {
@@ -1123,12 +1051,12 @@ public final class ClassUtil
         return result;
     }
 
-    final static String[] sJavaLangTypes =
+    static final String[] sJavaLangTypes =
     {
         "Character", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "String", "Object"
     };
 
-    final static int sNumBaseTypes = Array.getLength(sJavaLangTypes);
+    static final int sNumBaseTypes = Array.getLength(sJavaLangTypes);
 
     /**
     Expand an abbreviated classname into its true java name.
@@ -1151,25 +1079,26 @@ public final class ClassUtil
 
         if (fullName == name)	// no match so far
         {
-            if (name.equals("Number"))
-            {
-                fullName = "java.lang." + name;
-            }
-            else if (name.equals("BigDecimal") || name.equals("BigInteger"))
-            {
-                fullName = "java.math." + name;
-            }
-            else if (name.equals("URL") || name.equals("URI"))
-            {
-                fullName = "java.net." + name;
-            }
-            else if (name.equals("Date"))
-            {
-                fullName = "java.util." + name;
-            }
-            else if (name.equals("ObjectName"))
-            {
-                fullName = "javax.management." + name;
+            switch (name) {
+                case "Number":
+                    fullName = "java.lang." + name;
+                    break;
+                case "BigDecimal":
+                case "BigInteger":
+                    fullName = "java.math." + name;
+                    break;
+                case "URL":
+                case "URI":
+                    fullName = "java.net." + name;
+                    break;
+                case "Date":
+                    fullName = "java.util." + name;
+                    break;
+                case "ObjectName":
+                    fullName = "javax.management." + name;
+                    break;
+                default:
+                    break;
             }
 
         }
@@ -1194,7 +1123,7 @@ public final class ClassUtil
             throw new IllegalArgumentException("not an array of Object");
         }
 
-        final int innerNameBegin = 1 + arrayClassname.indexOf("L");
+        final int innerNameBegin = 1 + arrayClassname.indexOf('L');
 
         final String newClassName = arrayClassname.substring(0, innerNameBegin) + newInnerType.getName() + ";";
 
@@ -1266,7 +1195,7 @@ public final class ClassUtil
 
     public static String stripPackagePrefix(final String classname)
     {
-        final int index = classname.lastIndexOf(".");
+        final int index = classname.lastIndexOf('.');
 
         String result = classname;
         if (index > 0)
@@ -1277,11 +1206,9 @@ public final class ClassUtil
         return result;
     }
 
-    ;
-
     public static String getPackagePrefix(final String classname)
     {
-        final int index = classname.lastIndexOf(".");
+        final int index = classname.lastIndexOf('.');
 
         String result = classname;
         if (index > 0)
@@ -1292,12 +1219,4 @@ public final class ClassUtil
         return result;
     }
 
-    ;
 }
-
-
-
-
-
-
-

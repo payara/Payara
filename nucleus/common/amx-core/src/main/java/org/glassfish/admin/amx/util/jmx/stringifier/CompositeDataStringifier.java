@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -48,14 +48,14 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 import java.util.Set;
 
-public class CompositeDataStringifier implements Stringifier
-{
+/**
+ * Creates a String representation of an {@link CompositeData}
+ * @see Object#toString() 
+ */
+public class CompositeDataStringifier implements Stringifier {
     public static final CompositeDataStringifier DEFAULT = new CompositeDataStringifier();
 
-    public CompositeDataStringifier()
-    {
-    }
-
+    @Override
     public String stringify(Object o)
     {
         final StringBuilder buf = new StringBuilder();
@@ -77,22 +77,3 @@ public class CompositeDataStringifier implements Stringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

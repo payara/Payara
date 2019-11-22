@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.featuresets</groupId>
+        <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish</artifactId>
     <name>Glassfish Featureset</name>
@@ -56,70 +56,70 @@
     <dependencies>
         <!-- pull web packages -->
         <dependency>
-            <groupId>org.glassfish.main.featuresets</groupId>
+            <groupId>fish.payara.server.internal.featuresets</groupId>
             <artifactId>web</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
         <!-- commons full package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-common-full</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- ejb full package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-ejb</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- CMP package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- EntityBeans Container package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-entitybeans-container</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>     
         <!-- corba package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-corba</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
         <!-- metro package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>metro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- appclient package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-appclient</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- jms package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jms</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <!-- mq package -->
         <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>mq</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

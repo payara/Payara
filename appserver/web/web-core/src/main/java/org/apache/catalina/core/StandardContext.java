@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -90,6 +90,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -1856,6 +1857,12 @@ public class StandardContext
     @Override
     public void setSessionTimeout(int timeout) {
 
+        if (isContextInitializedCalled) {
+            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                    new Object[] {"setSessionTimeout", getName()});
+            throw new IllegalStateException(msg);
+        }
+
         int oldSessionTimeout = this.sessionTimeout;
 
         /*
@@ -3563,7 +3570,7 @@ public class StandardContext
         wrapper.addMapping(pattern);
 
         // Update context mapper
-        mapper.addWrapper(pattern, wrapper, jspWildCard, true);
+        mapper.addWrapper(pattern, wrapper, jspWildCard, name, true);
 
         if (notifyContainerListeners) {
             fireContainerEvent("addServletMapping", pattern);
@@ -5083,14 +5090,15 @@ public class StandardContext
         boolean ok = true;
         synchronized (filterConfigs) {
             filterConfigs.clear();
-            for (String name : filterDefs.keySet()) {
+            for (Entry<String, FilterDef> entry : filterDefs.entrySet()) {
+                String name = entry.getKey();
                 if(log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, " Starting filter '" + name + "'");
                 }
                 try {
                     filterConfigs.put(name,
                         new ApplicationFilterConfig(this,
-                                                    filterDefs.get(name)));
+                                                    entry.getValue()));
                 } catch(Throwable t) {
                     String msg = MessageFormat.format(rb.getString(LogFacade.STARTING_FILTER_EXCEPTION), name);
                     getServletContext().log(msg, t);
@@ -5115,11 +5123,12 @@ public class StandardContext
 
         // Release all Filter and FilterConfig instances
         synchronized (filterConfigs) {
-            for (String filterName : filterConfigs.keySet()) {
+            for (Entry<String, FilterConfig> entry : filterConfigs.entrySet()) {
+                String filterName = entry.getKey();
                 if(log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, " Stopping filter '" + filterName + "'");
                 }
-                ApplicationFilterConfig filterConfig = (ApplicationFilterConfig)filterConfigs.get(filterName);
+                ApplicationFilterConfig filterConfig = (ApplicationFilterConfig)entry.getValue();
                 filterConfig.release();
             }
             filterConfigs.clear();
@@ -5413,6 +5422,10 @@ public class StandardContext
         }
 
         this.resources = null;
+        this.webappResources = null;
+
+        this.servletRegisMap.clear();
+        this.filterRegisMap.clear();
 
         return (ok);
 
@@ -6048,6 +6061,7 @@ public class StandardContext
             sendNotification(notification);
         }
 
+        this.isContextInitializedCalled = false;
     }
 
     /**
@@ -6840,7 +6854,7 @@ public class StandardContext
             log.log(Level.SEVERE, LogFacade.MALFORMED_NAME, getName());
         }
         path=path.substring(2);
-        int delim=path.indexOf( "/" );
+        int delim=path.indexOf('/');
         hostName="localhost"; // Should be default...
         if( delim > 0 ) {
             hostName=path.substring(0, delim);
@@ -7094,7 +7108,7 @@ public class StandardContext
 
         if (file == null)
             return (null);
-        int period = file.lastIndexOf(".");
+        int period = file.lastIndexOf('.');
         if (period < 0)
             return (null);
         String extension = file.substring(period + 1);

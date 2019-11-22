@@ -144,9 +144,3 @@ public interface Query extends AMXProxy, Utility, Singleton
     @ManagedOperation(impact = MBeanOperationInfo.INFO)
     public AMXProxy[] queryDescendants( @Param(name="parentObjectName") ObjectName parentObjectName);
 }
-
-
-
-
-
-

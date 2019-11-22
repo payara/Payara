@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -61,8 +61,6 @@ import static org.glassfish.web.LogFacade.VS_DEFAULT_WEB_MODULE_NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -166,7 +164,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.CatalinaLogger;
@@ -621,7 +619,10 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             WebBundleDescriptorImpl webBundleDescriptor = webArchivist.getDefaultWebXmlBundleDescriptor();
             webBundleDescriptor.setModuleID(DEFAULT_WEB_MODULE_NAME);
             webBundleDescriptor.setContextRoot("");
-            
+
+            SecurityService securityService = Globals.get(SecurityService.class);
+            webBundleDescriptor.getLoginConfiguration().setRealmName(securityService.getDefaultRealm());
+
             webModuleConfig = new WebModuleConfig();
             webModuleConfig.setLocation(new File(docroot));
             webModuleConfig.setDescriptor(webBundleDescriptor);

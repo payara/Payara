@@ -40,14 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main.jms</groupId>
+        <groupId>fish.payara.server.internal.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -69,32 +68,31 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-            <version>${jms-api.version}</version>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
         </dependency>
 
          <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

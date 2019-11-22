@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.amx.impl.mbean;
 
 import static java.util.logging.Level.WARNING;
@@ -70,7 +70,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.SecurityLifecycle;
 import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.auth.realm.User;
@@ -146,7 +145,7 @@ public final class RealmsImpl extends AMXImplBase {
             }
         }
 
-        if (goodRealms.size() != 0) {
+        if (!goodRealms.isEmpty()) {
             String goodRealm = goodRealms.iterator().next();
             try {
                 String defaultRealm = getSecurityService().getDefaultRealm();
@@ -306,7 +305,7 @@ public final class RealmsImpl extends AMXImplBase {
 
         // Get FileRealm class name
         String fileRealmClassName = adminFileAuthRealm.getClassname();
-        if (fileRealmClassName != null && !fileRealmClassName.equals(FILE_REALM_CLASSNAME)) {
+        if (!fileRealmClassName.equals(FILE_REALM_CLASSNAME)) {
             // This condition can arise if admin-realm is not a File realm. Then the API to extract
             // the anonymous user should be integrated for the logic below this line of code. for now,
             // we treat this as an error and instead of throwing exception return false;

@@ -313,7 +313,7 @@ public final class WsCompile extends CompileToolDelegate {
                 String msg = "Endpoint address uri must be set for endpoint " +
                     next.getEndpointName();
                 throw new IllegalStateException(msg);
-            } else if( endpointAddressUri.indexOf("*") >= 0 ) {
+            } else if( endpointAddressUri.indexOf('*') >= 0 ) {
                 String msg = "Endpoint address uri " + endpointAddressUri + 
                     " for endpoint " + next.getEndpointName() + 
                     " is invalid. It must not contain the '*' character";

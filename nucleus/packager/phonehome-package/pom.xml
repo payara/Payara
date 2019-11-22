@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation and/or its affiliates. 
+ Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. 
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -21,11 +21,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
     <artifactId>phonehome-package</artifactId>
     <name>Nucleus Phonehome Package</name>
     <packaging>distribution-fragment</packaging>
@@ -33,7 +32,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>phonehome-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

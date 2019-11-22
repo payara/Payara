@@ -53,11 +53,13 @@ import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.net.*;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -78,8 +80,7 @@ import java.util.zip.ZipEntry;
  * @author Sivakumar Thyagarajan
  * @since  JDK 1.4
  */
-public class ASURLClassLoader
-        extends CurrentBeforeParentClassLoader
+public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         implements JasperAdapter, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader {
 
     /*
@@ -124,10 +125,10 @@ public class ASURLClassLoader
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
-    private final static StringManager sm = StringManager.getManager(ASURLClassLoader.class);
+    private static final StringManager sm = StringManager.getManager(ASURLClassLoader.class);
 
     //holder for declared and ee permissions
-    private PermsHolder permissionsHolder;
+    private final PermsHolder permissionsHolder;
 
     /**
      * Constructor.
@@ -138,8 +139,7 @@ public class ASURLClassLoader
         permissionsHolder = new PermsHolder();
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,
-                        "ClassLoader: " + this + " is getting created.");
+            _logger.log(Level.FINE, "ClassLoader: {0} is getting created.", this);
         }
     }
 
@@ -203,19 +203,7 @@ public class ASURLClassLoader
 
             // closes the jar handles and sets the url entries to null
             for (URLEntry u : this.urlSet) {
-                if (u.zip != null) {
-                    try {
-                        u.zip.reallyClose();
-                    } catch (IOException ioe) {
-                        _logger.log(Level.INFO,
-                                CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, u.source),
-                                ioe);
-                    }
-                }
-                if (u.table != null) {
-                    u.table.clear();
-                    u.table = null;
-                }
+                u.close();
             }
 
             closeOpenStreams();
@@ -245,9 +233,7 @@ public class ASURLClassLoader
                     CULoggerInfo.getString(CULoggerInfo.badUrlEntry, file.toURI()),
                     mue);
 
-            IOException ioe = new IOException();
-            ioe.initCause(mue);
-            throw ioe;
+            throw new IOException(mue);
         }
     }
 
@@ -258,6 +244,7 @@ public class ASURLClassLoader
      *
      * @param url the URL to be added to the search path of URLs
      */
+    @Override
     public void addURL(URL url) {
         appendURL(url);
     }
@@ -287,8 +274,7 @@ public class ASURLClassLoader
                     checkManifest(entry.zip, entry.file);
                 }
             } else {
-                _logger.log(Level.FINE,
-                    "[ASURLClassLoader] Ignoring duplicate URL: " + url);
+                _logger.log(Level.FINE, "[ASURLClassLoader] Ignoring duplicate URL: {0}", url);
                 /*
                  *Clean up the unused entry or it could hold open a jar file.
                  */
@@ -324,6 +310,7 @@ public class ASURLClassLoader
      *
      * @return    the urls of this class loader or an empty array
      */
+    @Override
     public synchronized URL[] getURLs() {
         return this.urlSet.stream().map(u -> u.source).toArray(URL[]::new);
     }
@@ -367,6 +354,7 @@ public class ASURLClassLoader
         clearNotFoundCaches();
     }
 
+    @Override
     public void addTransformer(ClassFileTransformer transformer) {
         transformers.add(transformer);
     }
@@ -376,6 +364,7 @@ public class ASURLClassLoader
      * @return a new instance of a class loader that has the same visibility
      *  as this class loader
      */
+    @Override
     public ClassLoader copy() {
         final ASURLClassLoader copyFrom = this;
         return AccessController.doPrivileged((PrivilegedAction<DelegatingClassLoader>) () -> {
@@ -439,7 +428,7 @@ public class ASURLClassLoader
                     if (resourceFile.exists()) {
                         // If we make it this far,
                         // the resource is in the directory.
-                        return  resourceFile.toURL();
+                        return  resourceFile.toURI().toURL();
                     }
 
                 } catch (IOException e) {
@@ -452,6 +441,7 @@ public class ASURLClassLoader
         });
     }
 
+    @Override
     public URL findResource(String name) {
 
         // quick quick that relies on 'doneCalled' being 'volatile'
@@ -503,6 +493,7 @@ public class ASURLClassLoader
      */
     private boolean warnedOnce = false;
 
+    @Override
     public synchronized Enumeration<URL> findResources(String name) {
         if( doneCalled ) {
             //PAYARA-588
@@ -571,7 +562,9 @@ public class ASURLClassLoader
 
                 // add to class path of this class loader
                 try {
-                    appendURL(newFile);
+                    if (newFile.exists()) {
+                        appendURL(newFile);
+                    }
                 } catch (MalformedURLException ex) {
                     _logger.log(Level.SEVERE, CULoggerInfo.exceptionInASURLClassLoader, ex);
                 }
@@ -599,8 +592,7 @@ public class ASURLClassLoader
                         return classData;
                     }
                 } else { // Its a directory....
-                    File classFile = new File (res.file,
-                                entryName.replace('/', File.separatorChar));
+                    File classFile = new File (res.file, entryName.replace('/', File.separatorChar));
                     if (classFile.exists()) {
                         try (InputStream classStream = new FileInputStream(classFile)) {
                             byte[] classData = getClassData(classStream);
@@ -662,6 +654,7 @@ public class ASURLClassLoader
         CAUTION: this method might be overriden, and subclasses must be cautious (also)
         about thread safety.
      */
+    @Override
     protected Class findClass(String name) throws ClassNotFoundException {
         ClassData classData = findClassData(name);
         // Instruments the classes if the profiler's enabled
@@ -755,7 +748,7 @@ public class ASURLClassLoader
             throw new ClassNotFoundException(name);
         }
 
-        // search thru the JARs for a file of the form java/lang/Object.class
+        // search through the JARs for a file of the form java/lang/Object.class
         String entryName = name.replace('.', '/') + ".class";
 
         for (URLEntry u : this.urlSet) {
@@ -765,9 +758,9 @@ public class ASURLClassLoader
 
             byte[] result = loadClassData0(u, entryName);
             if (result != null) {
-                if (System.getSecurityManager() == null)
+                if (System.getSecurityManager() == null) {
                     return new ClassData(result, u.pd);
-                else {
+                } else {
                     //recreate the pd to include the declared permissions
                     CodeSource cs = u.pd.getCodeSource();
                     PermissionCollection pc = this.getPermissions(cs);
@@ -813,6 +806,7 @@ public class ASURLClassLoader
      *
      * @return   a string representation of this class loader
      */
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(getClassLoaderName()).append(" : \n");
@@ -830,6 +824,7 @@ public class ASURLClassLoader
         return buffer.toString();
     }
 
+    @Override
     public InputStream getResourceAsStream(final String name) {
         InputStream stream = super.getResourceAsStream(name);
         /*
@@ -882,6 +877,7 @@ public class ASURLClassLoader
          * 6. java.util.zip.ZipFile.close()
          * I
          */
+        @Override
         public void close() {
             // do nothing
         }
@@ -898,9 +894,14 @@ public class ASURLClassLoader
         /**
          * @see java.lang.Object#finalize()
          */
+        @Override
         protected void finalize() throws IOException {
             reallyClose();
-            super.finalize();
+            try {
+                super.finalize();
+            } catch (Throwable t ) {
+                throw new IOException(t);
+            }
         }
     }
 
@@ -923,8 +924,7 @@ public class ASURLClassLoader
             ensure thread visibility by making it 'volatile'  */
         volatile boolean isJar  = false;
 
-        /** ensure thread visibility by making it 'volatile'  */
-        volatile Map<String,String> table = null;
+        private Predicate<String> presenceCheck;
 
         /** ProtectionDomain with signers if jar is signed,
             ensure thread visibility by making it 'volatile'  */
@@ -942,124 +942,21 @@ public class ASURLClassLoader
 
                 if (isJar) {
                     zip = new ProtectedJarFile(file);
+                    // negative lookups in jar are cheap
+                    presenceCheck = (any) -> true;
+                } else {
+                    Path path = file.toPath();
+                    presenceCheck = (item) -> DirWatcher.hasItem(path, item);
+                    DirWatcher.register(path);
                 }
 
-                table = new ConcurrentHashMap<>();
             } catch (URISyntaxException use) {
-                IOException ioe= new IOException();
-                ioe.initCause(use);
-                throw ioe;
+                throw new IOException(use);
             }
         }
-
-        private void fillTable(File f, Map<String, String> t, String parent) throws IOException {
-            String localName = (parent.equals("")) ? "" : parent + "/";
-            File[] children = f.listFiles();
-            if (children != null) {
-                for (File aChildren : children) {
-                    processFile(aChildren, t, localName);
-                }
-            }
-        }
-
-        /**
-         *Adds a file (or, if a directory, the directory's contents) to the table
-         *of files this loader knows about.
-         *<p>
-         *Invokes fillTable for subdirectories which in turn invokes processFile
-         *recursively.
-         *@param fileToProcess the File to be processed
-         *@param t the Map that holds the files the loader knows about
-         *@param parentLocalName prefix to be used for the full path; should be
-         *non-empty only for recursive invocations
-         *@throws IOException in case of errors working with the fileToProcess
-         */
-        private void processFile(File fileToProcess, Map<String, String> t, String parentLocalName) throws IOException {
-            String key = parentLocalName + fileToProcess.getName();
-            if (fileToProcess.isFile()) {
-                t.put(key, key);
-            } else if (fileToProcess.isDirectory()) {
-                fillTable(fileToProcess, t, key);
-            }
-        }
-
 
         boolean hasItem(String item) {
-            // in the case of ejbc stub compilation, asurlclassloader is created before stubs
-            // gets generated, thus we need to return true for this case.
-            if (table.isEmpty()) {
-                return true;
-            }
-
-            /*
-             *Even with the previous special handling, a file could be created
-             *in a directory after the loader was created and its table of
-             *URLEntry names populated.  So check the table first and, if
-             *the target item is not there and this URLEntry is for a directory, look for
-             *the file.  If the file is now present but was not when the loader
-             *was created, add an entry for the file in the table.
-             */
-            String target = item;
-            // special handling
-            if (item.startsWith("./")) {
-                target = item.substring(2);
-            }
-
-            boolean result = table.containsKey(target);
-            if ( ! result && ! isJar) {
-                /*
-                 *If the file exists now then it has been added to the directory since the
-                 *loader was created.  Add it to the table of files we
-                 *know about.
-                 */
-                File targetFile = privilegedCheckForFile(target);
-                if (targetFile != null) {
-                    try {
-                        processFile(targetFile, table, "");
-                        result = true;
-                    } catch (IOException ioe) {
-                        _logger.log(Level.SEVERE,
-                                CULoggerInfo.getString(CULoggerInfo.exceptionProcessingFile, target, file.getAbsolutePath()),
-                                ioe);
-                        return false;
-                    }
-                }
-            }
-            return result;
-        }
-
-        /**
-         *Returns a File object for the requested path within the URLEntry.
-         *<p>
-         *Runs privileged because user code could trigger invocations of this
-         *method.
-         *@param targetPath the relative path to look for
-         *@return File object for the requested file; null if it does not exist or
-         *in case of error
-         */
-        private File privilegedCheckForFile(final String targetPath) {
-            /*
-             *Check for the file existence with privs, because this code can
-             *be invoked from user code which may not otherwise have access
-             *to the directories of interest.
-             */
-            try {
-                return AccessController.doPrivileged((PrivilegedExceptionAction<File>) () -> {
-                    File targetFile = new File(file, targetPath);
-                    if ( ! targetFile.exists()) {
-                        targetFile = null;
-                    }
-                    return targetFile;
-                });
-            } catch (PrivilegedActionException pae) {
-                /*
-                 *Log any exception and return false.
-                 */
-                _logger.log(Level.SEVERE,
-                        CULoggerInfo.getString(CULoggerInfo.exceptionCheckingFile, targetPath, file.getAbsolutePath()),
-                        pae.getCause());
-                return null;
-            }
+            return presenceCheck.test(item);
         }
 
           /**
@@ -1069,10 +966,11 @@ public class ASURLClassLoader
            */
          public void setProtectionDomain (ClassLoader ejbClassLoader, Certificate[] signers) throws MalformedURLException {
              if (pd == null) {
-                 pd = new ProtectionDomain(new CodeSource(file.toURL(),signers),null, ejbClassLoader, null );
+                 pd = new ProtectionDomain(new CodeSource(file.toURI().toURL(),signers),null, ejbClassLoader, null );
              }
          }
 
+        @Override
         public String toString() {
             return "URLEntry : " + source.toString();
         }
@@ -1083,6 +981,7 @@ public class ASURLClassLoader
          * @param  obj   URLEntry to compare against
          * @return       true if both entry has equal URL
          */
+        @Override
         public boolean equals(Object obj) {
 
             boolean tf = false;
@@ -1108,6 +1007,7 @@ public class ASURLClassLoader
         /**
          * Since equals is overridden, we need to override hashCode as well.
          */
+        @Override
         public int hashCode() {
             try {
  	 	        return source.toURI().hashCode();
@@ -1119,14 +1019,20 @@ public class ASURLClassLoader
             }
         }
 
-    }
-
-    /**
-     *Returns the vector of open streams; creates it if needed.
-     *@return Vector<SentinelInputStream> holding open streams
-     */
-    private List<SentinelInputStream> getStreams() {
-        return streams;
+        public void close() {
+            if (zip != null) {
+                try {
+                    zip.reallyClose();
+                } catch (IOException ioe) {
+                    _logger.log(Level.INFO,
+                            CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, source),
+                            ioe);
+                }
+            }
+            if (!isJar) {
+                DirWatcher.unregister(file.toPath());
+            }
+        }
     }
 
     /**
@@ -1175,6 +1081,7 @@ public class ASURLClassLoader
         /**
          * Closes underlying input stream.
          */
+        @Override
         public void close() throws IOException {
             _close();
         }
@@ -1186,6 +1093,7 @@ public class ASURLClassLoader
          * 'closed' is 'volatile', but it's a race condition to check it and how this code
          * relates to _close() is unclear.
          */
+        @Override
         protected void finalize() throws Throwable {
             if (!closed && this.in != null){
                 try {
@@ -1198,6 +1106,15 @@ public class ASURLClassLoader
                 report();
             }
             super.finalize();
+        }
+        
+        /**
+         * Returns the vector of open streams; creates it if needed.
+         *
+         * @return Vector<SentinelInputStream> holding open streams
+         */
+        private List<SentinelInputStream> getStreams() {
+            return streams;
         }
 
         private synchronized void _close() throws IOException {
@@ -1252,6 +1169,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.JarURLConnection#getJarFile()
          */
+        @Override
         public JarFile getJarFile() throws IOException {
             return mRes.zip;
         }
@@ -1259,6 +1177,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLConnection#connect()
          */
+        @Override
         public void connect() throws IOException {
             // Nothing
         }
@@ -1266,6 +1185,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLConnection#getInputStream()
          */
+        @Override
         public InputStream getInputStream() throws IOException {
             // When there is no entry name specified (this can happen for url like jar:file:///tmp/foo.jar!/),
             // we must throw an IOException as that's the behavior of JarURLConnection as well.
@@ -1307,6 +1227,7 @@ public class ASURLClassLoader
         /**
          * @see java.net.URLStreamHandler#openConnection(java.net.URL)
          */
+        @Override
         protected URLConnection openConnection(final URL u) throws IOException {
             String path = u.getPath();
             int separator = path.lastIndexOf('!');
@@ -1410,6 +1331,7 @@ public class ASURLClassLoader
          * This method uses the delegate to use class bytes and then defines
          * the class using this class loader
          */
+        @Override
         protected Class findClass(String name) throws ClassNotFoundException {
             ClassData classData = delegate.findClassData(name);
             // Define package information if necessary
@@ -1451,10 +1373,12 @@ public class ASURLClassLoader
             }
         }
 
+        @Override
         protected URL findResource(String name) {
             return delegate.findResource(name);
         }
 
+        @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             return delegate.findResources(name);
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,12 +66,13 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
-public class GarbageCollectorHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker> {
+public class GarbageCollectorHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker> {
 
-    private long youngLastCollectionCount;
-    private long youngLastCollectionTime;
-    private long oldLastCollectionCount;
-    private long oldLastCollectionTime;
+    private volatile long youngLastCollectionCount;
+    private volatile long youngLastCollectionTime;
+    private volatile long oldLastCollectionCount;
+    private volatile long oldLastCollectionTime;
 
     @PostConstruct
     void postConstruct() {
@@ -89,7 +90,7 @@ public class GarbageCollectorHealthCheck extends BaseThresholdHealthCheck<Health
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
 
         List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();

@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -141,10 +142,11 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
-        for (String uuid : commandResult.keySet()) {
+        for (Entry<String,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
+            String uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
-                result.put(id, commandResult.get(uuid));
+                result.put(id, entry.getValue());
             }
         }
         return result;
@@ -169,10 +171,11 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
-        for (String uuid : commandResult.keySet()) {
+        for (Entry<String,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
+            String uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
-                result.put(id, commandResult.get(uuid));
+                result.put(id, entry.getValue());
             }
         }
         return result;
@@ -193,10 +196,11 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         Map<String, Future<T>> runCallable = instanceService.runCallable(callable);
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
-        for (String uuid : runCallable.keySet()) {
+        for (Entry<String, Future<T>> entry : runCallable.entrySet()) {
+            String uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
-                result.put(id, runCallable.get(uuid));
+                result.put(id, entry.getValue());
             }
         }
         return result;
@@ -221,10 +225,11 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         Map<String, Future<T>> runCallable = instanceService.runCallable(memberUUIDs,callable);
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
-        for (String uuid : runCallable.keySet()) {
+        for (Entry<String, Future<T>> entry : runCallable.entrySet()) {
+            String uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
-                result.put(id, runCallable.get(uuid));
+                result.put(id, entry.getValue());
             }
         }
         return result;

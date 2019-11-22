@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -221,7 +222,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
     @Override
     protected Serializable getInfo(TimerPrimaryKey timerId) throws FinderException {
         // Check non-persistent timers first
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             return super.getInfo(timerId);
         }
 
@@ -399,7 +400,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
     protected EJBTimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
         // Check non-persistent timers first
         EJBTimerSchedule ts = null;
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             ts = super.getTimerSchedule(timerId);
         } else {
 
@@ -445,7 +446,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
     @Override
     protected boolean isPersistent(TimerPrimaryKey timerId) throws FinderException {
         // Check non-persistent timers first
-        if (!super.isPersistent(timerId)) {
+        if (isNonpersistent(timerId)) {
             // Found and active
             return false;
         }
@@ -530,8 +531,8 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
             }
         }
 
-        for (String pk : toRestore.keySet()) {
-            pkCache.put(pk, toRestore.get(pk));
+        for (Entry<String, HZTimer> entry : toRestore.entrySet()) {
+            pkCache.put(entry.getKey(), entry.getValue());
             totalTimersMigrated++;
         }
 

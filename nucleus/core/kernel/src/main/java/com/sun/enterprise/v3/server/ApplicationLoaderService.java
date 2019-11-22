@@ -37,17 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.enterprise.admin.report.HTMLActionReporter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -83,6 +80,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.*;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
 import org.jvnet.hk2.annotations.Optional;
@@ -159,7 +157,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Invoke the deployer load() method for each application.
      */
     public void postConstruct() {
-        
+
         assert env!=null;
         try{
             logger.fine("Satisfying Optional Packages dependencies...");
@@ -200,7 +198,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         for (Application app : allApplications) {
           appOrderInfoMap.put(app.getName(), Integer.valueOf(appOrder++));
         }
-        
+
         for (Application systemApp : systemApplications.getApplications()) {
             // check to see if we need to load up this system application
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
@@ -215,8 +213,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         // load standalone resource adapters first
         for (Application standaloneAdapter : standaloneAdapters) {
-            // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS when application is 
+            // load the referenced enabled applications on this instance
+            // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
@@ -226,12 +224,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         // then the rest of the applications
         for (Application app : allApplications) {
-            if (app.isStandaloneModule() && 
+            if (app.isStandaloneModule() &&
                 app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
-            // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS when application is 
+            // load the referenced enabled applications on this instance
+            // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
@@ -253,7 +251,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         if (defaultParam!=null) {
 
             initializeRuntimeDependencies();
-            
+
             File sourceFile;
             if (defaultParam.equals(".")) {
                 sourceFile = new File(System.getProperty("user.dir"));
@@ -284,7 +282,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             logger.log(Level.WARNING, KernelLoggerInfo.cantDeleteTempFile, path);
                         }
                         File tmpDir = new File(path);
-                        tmpDir.deleteOnExit();
+                        FileUtils.deleteOnExit(tmpDir);
                         events.register(new org.glassfish.api.event.EventListener() {
                             public void event(Event event) {
                                 if (event.is(EventTypes.SERVER_SHUTDOWN)) {
@@ -306,7 +304,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                         }
                     }
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, parameters, report).source(sourceArchive).build();
-                    
+
                     Deployment.ApplicationDeployment appDeployment = deployment.prepare(null, depContext);
                     if (appDeployment==null) {
 
@@ -360,15 +358,14 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
-        initializeRuntimeDependencies();        
+        initializeRuntimeDependencies();
 
         String source = app.getLocation();
         final String appName = app.getName();
 
         // lifecycle modules are loaded separately
-        if (Boolean.valueOf(app.getDeployProperties().getProperty
-            (ServerTags.IS_LIFECYCLE))) {
-            return ImmutableList.of();
+        if (Boolean.valueOf(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
+            return Collections.emptyList();
         }
 
         URI uri;
@@ -376,7 +373,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             uri = new URI(source);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.cantDetermineLocation, e.getLocalizedMessage());
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
@@ -384,11 +381,11 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             try {
                 ReadableArchive archive = null;
                 try {
-
+                    StructuredDeploymentTracing structuredTracing = deploymentTracingEnabled != null
+                            ? StructuredDeploymentTracing.create(app.getName())
+                            : StructuredDeploymentTracing.createDisabled(app.getName());
                     DeploymentTracing tracing = null;
-                    if (deploymentTracingEnabled != null) {
-                        tracing = new DeploymentTracing();
-                    }
+
                     DeployCommandParameters deploymentParams =
                         app.getDeployParameters(appRef);
                     deploymentParams.target = server.getName();
@@ -406,9 +403,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
                     ActionReport report = new HTMLActionReporter();
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, deploymentParams, report).source(archive).build();
-                    if (tracing!=null) {
-                        depContext.addModuleMetaData(tracing);
-                    }
+                    tracing = structuredTracing.register(depContext);
 
                     depContext.getAppProps().putAll(app.getDeployProperties());
                     depContext.setModulePropsMap(app.getModulePropertiesMap());
@@ -443,7 +438,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         } else {
             logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
-        return FluentIterable.from(appDeployments).filter(Predicates.notNull()).toList();
+        appDeployments.removeIf(t -> t == null);
+        return appDeployments;
     }
 
 
@@ -483,7 +479,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             stopApplication(app, appInfo);
         }
 
-        // now stop the applications which are not registered in the 
+        // now stop the applications which are not registered in the
         // domain.xml like timer service application
         Set<String> allAppNames = new HashSet<String>();
         allAppNames.addAll(appRegistry.getAllApplicationNames());
@@ -558,7 +554,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     private List<Deployment.ApplicationDeployment> loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report) {
         if (app.getAppTenants() == null) {
-            return ImmutableList.of();
+            return Collections.unmodifiableList(Collections.emptyList());
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
@@ -604,7 +600,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 }
             }
         }
-        return ImmutableList.copyOf(appDeployments);
+        return Collections.unmodifiableList(appDeployments);
     }
 
     private boolean loadAppOnDAS(String appName) {
@@ -612,12 +608,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
             for (String target : targets) {
                 if (!DeploymentUtils.isDASTarget(target)) {
-                    // if application is referenced by any non-DAS target 
+                    // if application is referenced by any non-DAS target
                     // we need to partially load it on DAS
                     return true;
                 }
             }
-        } 
+        }
         return false;
     }
 }

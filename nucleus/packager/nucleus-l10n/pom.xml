@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-l10n</artifactId>
     <name>Nucleus l10n Package</name>
@@ -59,84 +59,84 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-cli-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-admin-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-autodeploy-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.flashlight</groupId>
+            <groupId>fish.payara.server.internal.flashlight</groupId>
             <artifactId>flashlight-framework-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>kernel-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>launcher-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>logging-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
       <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>server-mgmt-l10n</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>

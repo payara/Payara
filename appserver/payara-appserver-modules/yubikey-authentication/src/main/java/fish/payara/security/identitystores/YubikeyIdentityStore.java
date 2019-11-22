@@ -76,13 +76,12 @@ public class YubikeyIdentityStore implements IdentityStore {
     
     private static final Logger LOG = Logger.getLogger(YubikeyIdentityStore.class.getName());
     
-    @Inject
     private YubicoAPI yubicoAPI;
     
     private RequestTracingService requestTracing;
     private int priority; //priority is handled as immediate, not deferred
         
-    public YubikeyIdentityStore init (YubikeyIdentityStoreDefinition definition){
+    public YubikeyIdentityStore init(YubikeyIdentityStoreDefinition definition) {
         try {
             this.requestTracing = Globals.get(RequestTracingService.class);
         } catch (NullPointerException e) {
@@ -90,7 +89,7 @@ public class YubikeyIdentityStore implements IdentityStore {
                     + "during initialisation of Yubikey Identity Store - NullPointerException");
         }
         priority = definition.priority();
-        yubicoAPI.init(definition.yubikeyAPIClientID(), definition.yubikeyAPIKey());
+        yubicoAPI = new YubicoAPI(definition.yubikeyAPIClientID(), definition.yubikeyAPIKey());
         return this;
     }
 

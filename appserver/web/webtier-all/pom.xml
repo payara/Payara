@@ -43,10 +43,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main.web</groupId>
+        <groupId>fish.payara.server.internal.web</groupId>
     	<artifactId>web</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>webtier-all</artifactId>
@@ -66,63 +65,63 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>websecurity</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>jstl-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>jersey-mvc-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>jsf-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>jspcaching-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-cli</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-embed-api</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-ha</artifactId>
             <version>${project.version}</version>
     	</dependency>

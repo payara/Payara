@@ -39,35 +39,53 @@
  */
 package fish.payara.micro.impl;
 
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
+import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.PayaraMicroBoot;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
+import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.RuntimeOptions;
+import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.net.JarURLConnection;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -75,26 +93,6 @@ import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.glassfish.bootstrap.Constants;
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
-import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.loader.OpenURLClassLoader;
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
-import fish.payara.micro.cmd.options.RUNTIME_OPTION;
-import fish.payara.micro.cmd.options.ValidationException;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -1518,7 +1516,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     File file = new File(entry);
                     String deployContext = file.getName();
                     String name = deployContext.substring(0, deployContext.length() - 4);
-                    if (deployContext.endsWith(".ear") || deployContext.endsWith(".war") || deployContext.endsWith(".jar") || deployContext.endsWith(".rar")) {
+                    if (hasJavaArchiveExtension(deployContext)) {
                         deployContext = name;
                     }
 
@@ -1545,33 +1543,40 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         // Deploy command line provided files
         if (deployments != null) {
-            for (File war : deployments) {      
-                
-                boolean hasDefinedContextRoot = (contextRoot != null && !contextRoot.isEmpty());
-                
-                if (war.exists() && war.canRead()) {
-                    String deployContext = war.isDirectory() ? war.getName() : war.getName().substring(0, war.getName().length() - 4);
-                    if (contextRoots != null && contextRoots.containsKey(war.getName())) {
-                        deployContext = contextRoots.getProperty(war.getName());
+            for (File deploymentFile : deployments) {
+                if (deploymentFile.exists() && deploymentFile.canRead()) {
+                    String deployContext = null;
+                    if (contextRoots != null && contextRoots.containsKey(deploymentFile.getName())) {
+                        deployContext = contextRoots.getProperty(deploymentFile.getName());
                     } else if (contextRoot != null) {
                         deployContext = contextRoot;
                         //unset so only used once
                         contextRoot = null;
                     }
-                    
-                    if (war.getName().startsWith("ROOT.")) {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
+
+                    if (deploymentFile.getName().startsWith("ROOT.")) {
+                        deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        if (hasDefinedContextRoot) {
-                            deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                        if (deployContext != null) {
+                            if (deployContext.equals("ROOT")) {
+                                deployContext = "/";
+                            }
+
+                            if (hasJavaArchiveExtension(deployContext)) {
+                                deployContext = deployContext.substring(0, deployContext.length() - 4);
+                            }
+
+                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                        } else if (deploymentFile.isDirectory()) {
+                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deploymentFile.getName());
                         } else {
-                            deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");  
+                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                         }
                     }
-                    
+
                     deploymentCount++;
                 } else {
-                    LOGGER.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
+                    LOGGER.log(Level.WARNING, "{0} is not a valid deployment", deploymentFile.getAbsolutePath());
                 }
             }
         }
@@ -1584,28 +1589,35 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             deploymentDirEntries.sort(new DeploymentComparator());
 
             for (File entry : deploymentDirEntries) {
-                
-                boolean hasDefinedContextRoot = (contextRoot != null && !contextRoot.isEmpty());
-                
                 String entryPath = entry.getAbsolutePath();
-                if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
-                    String deployContext = entry.getName().substring(0, entry.getName().length() - 4);
-                        if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
-                            deployContext = contextRoots.getProperty(entry.getName());
-                        } else if (contextRoot != null) {
-                            deployContext = contextRoot;
-                            // unset so only used once
-                            contextRoot = null;
+                if (entry.isFile() && entry.canRead() && hasJavaArchiveExtension(entryPath)) {
+                    String deployContext = null;
+                    if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
+                        deployContext = contextRoots.getProperty(entry.getName());
+                    } else if (contextRoot != null) {
+                        deployContext = contextRoot;
+                        // unset so only used once
+                        contextRoot = null;
                     }
+                    
                     if (entry.getName().startsWith("ROOT.")) {
                         deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        if (hasDefinedContextRoot) {
+                        if (deployContext != null) {
+                            if (deployContext.equals("ROOT")) {
+                                deployContext = "/";
+                            }
+                            
+                            if (hasJavaArchiveExtension(deployContext)) {
+                                deployContext = deployContext.substring(0, deployContext.length() - 4);
+                            }
+                            
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else {
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                         }
                     }
+                    
                     deploymentCount++;
                 }
             }
@@ -1637,6 +1649,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
+    }
+    
+    private boolean hasJavaArchiveExtension(String filePath) {        
+        return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
     }
 
     private void addShutdownHook() {

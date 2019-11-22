@@ -37,18 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * ProcessStreamDrainer.java
- *
- * Created on October 26, 2006, 9:56 PM
- *
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
-
-import java.io.*;
-import java.util.*;
 
 /**
  * If you don't drain a process' stdout and stderr it will cause a deadlock after a few hundred bytes of output.
@@ -75,6 +66,7 @@ import java.util.*;
  * </pre>
  *
  * @author bnevins
+ * @since October 26, 2006
  */
 public class ProcessStreamDrainer
 {
@@ -169,21 +161,21 @@ public class ProcessStreamDrainer
             processName = "UnknownProcessName";
         
         redirectStandardStreams = redirect;
-
-        ProcessStreamDrainerWorker worker;
         
-        if(redirectStandardStreams)
+        if(redirectStandardStreams) {
             outWorker = new ProcessStreamDrainerWorker(process.getInputStream(), System.out, save);
-        else
+        } else {
             outWorker = new ProcessStreamDrainerWorker(process.getInputStream(), null, save);
+        }
 
         outThread = new Thread(outWorker, processName + "-" + OUT_DRAINER);
         outThread.setDaemon(true);
         
-        if(redirectStandardStreams)
+        if(redirectStandardStreams) {
             errWorker = new ProcessStreamDrainerWorker(process.getErrorStream(), System.err, save);
-        else
+        } else {
             errWorker = new ProcessStreamDrainerWorker(process.getErrorStream(), null, save);
+        }
         
         errThread = new Thread(errWorker, processName + "-" + ERROR_DRAINER);
         errThread.setDaemon(true);

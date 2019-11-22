@@ -517,7 +517,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
     public static String createUniqueFilenameAmongst(String trialName, Vector<String> otherNames) {
 
         /* extract file.ext */
-        int p = trialName.lastIndexOf(".");
+        int p = trialName.lastIndexOf('.');
         if (p < 0) {
             return uniquifyString(trialName, otherNames, 0);
         }

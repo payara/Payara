@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fish.payara.appserver</groupId>
+    <groupId>fish.payara.server.internal.docker</groupId>
     <artifactId>docker</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -18,33 +18,33 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-admin</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

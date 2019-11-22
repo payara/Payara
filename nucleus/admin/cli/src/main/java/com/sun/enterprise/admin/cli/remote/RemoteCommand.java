@@ -45,28 +45,39 @@ import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
 import com.sun.appserv.management.client.prefs.StoreException;
-import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.admin.cli.DirectoryClassLoader;
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-import com.sun.enterprise.admin.util.*;
+import com.sun.enterprise.admin.util.CachedCommandModel;
+import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+
+import java.io.*;
+import java.net.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -135,8 +146,14 @@ public class RemoteCommand extends CLICommand {
          */
         @Override
         protected boolean updateAuthentication() {
-            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-                if (programOpts.isInteractive() && console != null) {
+
+            LineReader lineReader = null;
+            try {
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
+
+                if (programOpts.isInteractive() && lineReader != null) {
                     // if appropriate, tell the user why authentication failed
                     PasswordLocation pwloc = programOpts.getPasswordLocation();
                     if (pwloc == PasswordLocation.PASSWORD_FILE) {
@@ -156,13 +173,7 @@ public class RemoteCommand extends CLICommand {
                     // correct username to begin with and all we need is the
                     // password.
                     if (programOpts.getUser() == null) {
-                        console.setPrompt(strings.get("AdminUserPrompt"));
-
-                        try {
-                            user = console.readLine();
-                        } catch (IOException ioe) {
-                            logger.log(Level.WARNING, "Error reading input", ioe);
-                        }
+                        user = lineReader.readLine(strings.get("AdminUserPrompt"));
 
                         if (user == null)
                             return false;
@@ -187,6 +198,15 @@ public class RemoteCommand extends CLICommand {
                 }
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error reading input", ioe);
+            }
+            finally {
+                if (lineReader != null && lineReader.getTerminal() != null) {
+                    try {
+                        lineReader.getTerminal().close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing terminal", ioe);
+                    }
+                }
             }
 
             return false;
@@ -628,7 +648,7 @@ public class RemoteCommand extends CLICommand {
     @Override
     protected void inject() throws CommandException {
         try {
-            super.prevalidate();
+            super.inject();
         } catch (CommandValidationException ex) {
             reExecuteAfterMetadataUpdate();
             throw ex;
@@ -917,16 +937,12 @@ public class RemoteCommand extends CLICommand {
      * (jar files) in the <INSTALL_ROOT>/modules directory.
      */
     private static synchronized ClassLoader getModuleClassLoader() {
-        if (moduleClassLoader != null){
+        if (moduleClassLoader != null) {
             return moduleClassLoader;
         }
-        try {
-            File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File modulesDir = new File(installDir, "modules");
-            moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
-            return moduleClassLoader;
-        } catch (IOException ioex) {
-            return null;
-        }
+        File installDir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        File modulesDir = new File(installDir, "modules");
+        moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
+        return moduleClassLoader;
     }
 }

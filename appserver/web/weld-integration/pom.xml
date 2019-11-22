@@ -46,10 +46,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	      <groupId>org.glassfish.main.web</groupId>
+	      <groupId>fish.payara.server.internal.web</groupId>
     	  <artifactId>web</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>weld-integration</artifactId>
@@ -99,13 +98,13 @@
             <artifactId>jakarta.faces</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -113,7 +112,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
             <!-- Since weld-integration artifact is part of web distro and we
@@ -147,6 +146,10 @@
                     <artifactId>cdi-api</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>javassist</groupId>
                     <artifactId>javassist</artifactId>
                 </exclusion>
@@ -161,17 +164,17 @@
             <artifactId>bcel</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-weld-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -181,8 +184,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>
@@ -196,13 +199,13 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
+            <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>
          <dependency>
-             <groupId>javax.xml.ws</groupId>
-             <artifactId>jaxws-api</artifactId>
+             <groupId>jakarta.xml.ws</groupId>
+             <artifactId>jakarta.xml.ws-api</artifactId>
          </dependency>
     </dependencies>
 </project>

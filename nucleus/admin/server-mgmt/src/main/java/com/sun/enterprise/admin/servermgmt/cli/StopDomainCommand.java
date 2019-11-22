@@ -48,6 +48,7 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -172,8 +173,9 @@ public class StopDomainCommand extends LocalDomainCommand {
             StringBuilder runningDomains = new StringBuilder();
             try {
                 Map<String, Boolean> domains = listDomains.getDomains();
-                for (String domain : domains.keySet()) {
-                    if (domains.get(domain)) {
+                for (Entry<String, Boolean> entry : domains.entrySet()) {
+                    String domain = entry.getKey();
+                    if (entry.getValue()) {
                         runningDomains.append("\n").append(domain);
                     }
                 }

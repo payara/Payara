@@ -44,10 +44,14 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import com.sun.enterprise.security.auth.realm.certificate.OID;
+
 import org.glassfish.security.common.PrincipalImpl;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityContextProxy;
+
+import javax.security.auth.x500.X500Principal;
 
 public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy {
 
@@ -55,8 +59,8 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
 
     private char[] password;
     private X509Certificate[] certificates;
-    private boolean useCertificate;
-    private SecurityContext securityContext;
+    private final boolean useCertificate;
+    private final SecurityContext securityContext;
     private Principal customPrincipal;
 
     public WebPrincipal(Principal principal, SecurityContext context) {
@@ -74,7 +78,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
 
     public WebPrincipal(String user, char[] pwd, SecurityContext context) {
         super(user);
-        
+
         // Copy the password to another reference before storing it to the
         // instance field.
         this.password = pwd == null ? null : Arrays.copyOf(pwd, pwd.length);
@@ -82,11 +86,11 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         this.useCertificate = false;
         this.securityContext = context;
     }
-    
+
     public WebPrincipal(X509Certificate[] certs, SecurityContext context) {
         this(certs, context, false);
     }
-    
+
     public WebPrincipal(X509Certificate[] certificates, SecurityContext context, boolean nameFromContext) {
         super(getPrincipalName(certificates, context, nameFromContext));
         this.certificates = certificates;
@@ -117,7 +121,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.getName();
         }
-            
+
         return customPrincipal.getName();
     }
 
@@ -126,7 +130,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.equals(another);
         }
-        
+
         return customPrincipal.equals(another);
     }
 
@@ -135,7 +139,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.hashCode();
         }
-        
+
         return customPrincipal.hashCode();
     }
 
@@ -144,19 +148,19 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.toString();
         }
-        
+
         return customPrincipal.toString();
     }
 
     public Principal getCustomPrincipal() {
         return customPrincipal;
     }
-    
+
     private static String getPrincipalName(X509Certificate[] certificates, SecurityContext context, boolean nameFromContext) {
         if (nameFromContext) {
             // Use the principal name from the security context, ensuring the context caller principal and
             // the web principal have the same name.
-            // 
+            //
             // This will typically be an org.glassfish.security.common.PrincipalImpl which as its name has
             // the name obtained from javax.security.auth.x500.X500Principal, which is obtained from
             // certificates[0].getSubjectX500Principal().
@@ -169,11 +173,10 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
             // C=UK,ST=lak,L=zak,O=kaz,OU=bar,CN=lfoo
             return context.getCallerPrincipal().getName();
         }
-        
-        // Use the full DN name from the certificates. This should normally be the same as 
+
+        // Use the full DN name from the certificates. This should normally be the same as
         // context.getCallerPrincipal(), but a realm could have decided to map the name in which
         // case they will be different.
-        return certificates[0].getSubjectX500Principal().getName();
+        return certificates[0].getSubjectX500Principal().getName(X500Principal.RFC2253, OID.getOIDMap());
     }
-
 }

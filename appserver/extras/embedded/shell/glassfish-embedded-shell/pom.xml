@@ -47,11 +47,11 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-shell</artifactId>
     <name>Embedded GlassFish Shell</name>
 
@@ -145,12 +145,12 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>

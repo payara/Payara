@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util;
 
@@ -53,7 +53,7 @@ public final class RegexUtil
         // disallow instantiation
     }
 
-    private final static char BACKSLASH = '\\';
+    private static final char BACKSLASH = '\\';
 
     /**
     These characters will be escaped by wildcardToJavaRegex()
@@ -119,7 +119,7 @@ public final class RegexUtil
                 else if (REGEX_SPECIALS.indexOf(theChar) >= 0)
                 {
                     // '[' begins a set of characters
-                    buf.append("" + BACKSLASH + theChar);
+                    buf.append("").append(BACKSLASH).append(theChar);
                 }
                 else
                 {
@@ -134,4 +134,3 @@ public final class RegexUtil
     }
 
 }
-

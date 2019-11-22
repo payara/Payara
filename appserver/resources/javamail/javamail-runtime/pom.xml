@@ -39,15 +39,15 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.resources</groupId>
+        <groupId>fish.payara.server.internal.resources</groupId>
         <artifactId>javamail</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     
     <artifactId>javamail-runtime</artifactId>
@@ -89,32 +89,32 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
          <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
+            <groupId>fish.payara.server.internal.resources</groupId>
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
          <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
+            <groupId>fish.payara.server.internal.resources</groupId>
             <artifactId>javamail-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
         </dependency>
         <dependency> <!-- for FindBugs -->
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

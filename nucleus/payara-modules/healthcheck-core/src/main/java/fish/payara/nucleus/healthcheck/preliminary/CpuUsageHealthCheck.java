@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
-import fish.payara.nucleus.healthcheck.entity.ThreadTimes;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -53,8 +52,6 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
@@ -64,11 +61,11 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-cpu")
 @RunLevel(StartupRunLevel.VAL)
-public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> {
+public class CpuUsageHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> {
 
-    private long timeBefore = 0;
-    private long totalTimeBefore = 0;
-    private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
+    private volatile long nanotimeBefore = System.nanoTime();
+    private volatile long totalCpuNanosBefore = 0;
 
     @PostConstruct
     void postConstruct() {
@@ -86,10 +83,7 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
     }
 
     @Override
-    public HealthCheckResult doCheck() {
-        if (!getOptions().isEnabled()) {
-            return null;
-        }
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
@@ -98,50 +92,29 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
             return result;
         }
 
-        final long[] ids = threadBean.getAllThreadIds();
-        for (long id : ids) {
-            if (id == java.lang.Thread.currentThread().getId())
-                continue;
-            final long c = threadBean.getThreadCpuTime(id);
-            final long u = threadBean.getThreadUserTime(id);
-
-            if (c == -1 || u == -1)
-                continue;
-
-            ThreadTimes times = threadTimes.get(id);
-            if (times == null) {
-                times = new ThreadTimes();
-                times.setId(id);
-                times.setStartCpuTime(c);
-                times.setEndCpuTime(c);
-                times.setStartUserTime(u);
-                times.setEndUserTime(u);
-                threadTimes.put(id, times);
-            }
-            else {
-                times.setEndCpuTime(c);
-                times.setEndUserTime(u);
+        long currentThreadId = Thread.currentThread().getId();
+        long totalCpuNanos = 0L;
+        for (long id : threadBean.getAllThreadIds()) {
+            if (id != currentThreadId) {
+                final long threadCpuTime = threadBean.getThreadCpuTime(id);
+                if (threadCpuTime >= 0L) {
+                    totalCpuNanos += threadCpuTime;
+                }
             }
         }
+        long nanotime = System.nanoTime();
+        long timeDelta = nanotime - nanotimeBefore;
+        long cpuTimeDelta = totalCpuNanos - totalCpuNanosBefore;
+        double percentage = Math.max(0d, Math.min(100d, 100d * cpuTimeDelta / timeDelta));
 
-        long  totalCpuTime = getTotalCpuTime();
-        long time = System.nanoTime();
-        double percentage = ((double)(totalCpuTime - totalTimeBefore) / (double)(time - timeBefore)) * 100;
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), 
+                "CPU%: " + new DecimalFormat("#.00").format(percentage)
+                + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(cpuTimeDelta))));
 
-            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
-                    + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime() - totalTimeBefore))));
-
-        totalTimeBefore = totalCpuTime;
-        timeBefore = time;
+        totalCpuNanosBefore = totalCpuNanos;
+        nanotimeBefore = nanotime;
 
         return result;
     }
 
-    public long getTotalCpuTime( ) {
-        final Collection<ThreadTimes>  threadTimesValues = threadTimes.values();
-        long time = 0L;
-        for (ThreadTimes times : threadTimesValues)
-            time += times.getEndCpuTime() - times.getStartCpuTime();
-        return time;
-    }
 }

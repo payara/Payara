@@ -44,10 +44,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main.deployment</groupId>
+        <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-javaee-core</artifactId>
@@ -99,11 +98,11 @@
 
     <dependencies>
        <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -112,34 +111,35 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
-            <artifactId>kernel</artifactId>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

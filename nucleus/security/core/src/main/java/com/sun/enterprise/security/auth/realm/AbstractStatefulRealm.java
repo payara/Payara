@@ -44,131 +44,137 @@ import static com.sun.enterprise.security.auth.realm.Realm.JAAS_CONTEXT_PARAM;
 import static com.sun.enterprise.security.auth.realm.RealmsManagerStore._getRealmsManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * This class is the base for all Payara Realm classes, and contains common
  * object state such as the realm name, general properties and the assign groups.
- * 
- * @author Arjan Tijms
  *
+ * @author Arjan Tijms
  */
 public abstract class AbstractStatefulRealm extends AbstractRealm implements Comparable<Realm> {
-    
+
+    private static final Logger LOG = Logger.getLogger(AbstractStatefulRealm.class.getName());
+
+    // keep it public, so descendants should see all parameters defined by their parents.
+    /** Realm parameter: {@value #PARAM_GROUP_MAPPING} */
     public static final String PARAM_GROUP_MAPPING = "group-mapping";
-    
-    // For assign-groups
-    
-    private static final String PARAM_GROUPS = "assign-groups";
-    private static final String GROUPS_SEP = ",";
-    private static final String DEFAULT_DEF_DIG_ALGO_VAL = "SHA-256";
-    
-    // All realms have a set of properties from config file, consolidate.
-    
-    private String realmName;
-    private Properties contextProperties;
-    private List<String> assignGroups;
-    private String defaultDigestAlgorithm;
-    
-    protected GroupMapper groupMapper;
-    
-    // ---[ Instance methods ]------------------------------------------------
-    
+
     /**
-     * The default the constructor creates a realm which will later be initialized, 
+     * Realm parameter: {@value #PARAM_GROUPS}.
+     * <p>
+     * Comma separated.
+     * All users authenticated by this realm will be in these groups
+     */
+    public static final String PARAM_GROUPS = "assign-groups";
+
+    /** Realm parameter: {@value #PARAM_DEFAULT_DIGEST_ALGORITHM} */
+    public static final String PARAM_DEFAULT_DIGEST_ALGORITHM = "default-digest-algorithm";
+
+    /** Separator of group values: {@value #GROUPS_SEP} */
+    protected static final String GROUPS_SEP = ",";
+    private static final String DEFAULT_DIG_ALGORITHM = "SHA-256";
+
+    // All realms have a set of properties from config file, consolidate.
+    private String realmName;
+    private List<String> assignGroups = Collections.emptyList();
+    private final Properties contextProperties;
+
+    protected GroupMapper groupMapper;
+
+
+    /**
+     * The default the constructor creates a realm which will later be initialized,
      * either from properties or by deserializing.
      */
     protected AbstractStatefulRealm() {
         contextProperties = new Properties();
     }
 
+
     /**
-     * Initialize a realm with some properties. This can be used when instantiating realms from their
-     * descriptions. This method may only be called a single time.
+     * Initialize a realm with some properties. This can be used when instantiating realms from
+     * their descriptions. This method may only be called a single time.
      *
      * @param properties initialization parameters used by this realm.
-     * @exception BadRealmException if the configuration parameters identify a corrupt realm
-     * @exception NoSuchRealmException if the configuration parameters specify a realm which doesn't
-     * exist
+     * @throws BadRealmException if the configuration parameters identify a corrupt realm
+     * @throws NoSuchRealmException if the configuration parameters specify a realm which doesn't
+     *             exist
      */
     protected void init(Properties properties) throws BadRealmException, NoSuchRealmException {
-        String groupList = properties.getProperty(PARAM_GROUPS);
-        
-        if (groupList != null && groupList.length() > 0) {
+        LOG.config(() -> String.format("init(properties: %s)", properties));
+
+        final String groupList = properties.getProperty(PARAM_GROUPS);
+        if (groupList != null && !groupList.isEmpty()) {
             setProperty(PARAM_GROUPS, groupList);
-            
-            assignGroups = new ArrayList<String>();
+            assignGroups = new ArrayList<>();
             for (String group :  groupList.split(GROUPS_SEP)) {
                 if (!assignGroups.contains(group)) {
                     assignGroups.add(group);
                 }
             }
         }
-        
-        String groupMapping = properties.getProperty(PARAM_GROUP_MAPPING);
+
+        final String groupMapping = properties.getProperty(PARAM_GROUP_MAPPING);
         if (groupMapping != null) {
             groupMapper = new GroupMapper();
             groupMapper.parse(groupMapping);
         }
-        
-        String defaultDigestAlgo = null;
-        if (_getRealmsManager() != null) {
-            defaultDigestAlgo = _getRealmsManager().getDefaultDigestAlgorithm();
+
+        final String defaultDigestAlg;
+        if (_getRealmsManager() == null) {
+            defaultDigestAlg = DEFAULT_DIG_ALGORITHM;
+        } else {
+            defaultDigestAlg = _getRealmsManager().getDefaultDigestAlgorithm();
         }
-        
-        defaultDigestAlgorithm = defaultDigestAlgo == null ? DEFAULT_DEF_DIG_ALGO_VAL : defaultDigestAlgo;
+        setProperty(DEFAULT_DIG_ALGORITHM, defaultDigestAlg);
     }
-    
+
     /**
-     * Add assign groups to given array of groups. To be used by getGroupNames.
+     * Add assign groups to given array of groups.
      *
-     * @param groups
-     * @return
+     * @param groups user's groups to merge with {@value #PARAM_GROUPS} parameter. Can be null.
+     * @return merged array of group names. Never null.
      */
     protected String[] addAssignGroups(String[] groups) {
-        String[] resultGroups = groups;
-        
-        if (assignGroups != null && assignGroups.size() > 0) {
-            List<String> groupList = new ArrayList<>();
-            if (groups != null && groups.length > 0) {
-                for (String group : groups) {
-                    groupList.add(group);
-                }
-            }
 
-            for (String assignGroup : assignGroups) {
-                if (!groupList.contains(assignGroup)) {
-                    groupList.add(assignGroup);
-                }
-            }
-            resultGroups = groupList.toArray(new String[groupList.size()]);
+        if (groups == null || groups.length == 0) {
+            return assignGroups.toArray(new String[assignGroups.size()]);
         }
-        
-        return resultGroups;
+
+        if (assignGroups.isEmpty()) {
+            // groups cannot be null nor empty here
+            return groups;
+        }
+        return Stream.concat(Arrays.stream(groups), assignGroups.stream()).distinct().toArray(String[]::new);
     }
 
     protected ArrayList<String> getMappedGroupNames(String group) {
         if (groupMapper == null) {
             return null;
         }
-        
-        ArrayList<String> result = new ArrayList<String>();
+
+        ArrayList<String> result = new ArrayList<>();
         groupMapper.getMappedGroups(group, result);
-        
+
         return result;
     }
-    
+
     /**
      * Refreshes the realm data so that new users/groups are visible.
      *
      * @param configName
-     * @exception BadRealmException if realm data structures are bad
+     * @throws BadRealmException if realm data structures are bad
      */
     public void refresh(String configName) throws BadRealmException {
         // do nothing
     }
-    
+
     /**
      * Returns the name of this realm.
      *
@@ -177,7 +183,7 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
     public final String getName() {
         return realmName;
     }
-    
+
     /**
      * Assigns the name of this realm, and stores it in the cache of realms. Used when initializing a
      * newly created in-memory realm object; if the realm already has a name, there is no effect.
@@ -188,20 +194,24 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
         if (realmName != null) {
             return;
         }
-        
+
         realmName = name;
     }
 
+    /**
+     * @return default digest algorithm, for example: {@value #DEFAULT_DIG_ALGORITHM}
+     */
     protected String getDefaultDigestAlgorithm() {
-        return defaultDigestAlgorithm;
+        return contextProperties.getProperty(PARAM_DEFAULT_DIGEST_ALGORITHM);
     }
-    
+
     /**
      * Get a realm property.
+     * <p>
+     * Note: requires server restart when updating or removing.
      *
      * @param name property name.
-     * @return
-     * @returns value.
+     * @return value.
      *
      */
     public synchronized String getProperty(String name) {
@@ -210,19 +220,21 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
 
     /**
      * Set a realm property.
+     * <p>
+     * Note: requires server restart when updating or removing.
      *
      * @param name property name.
-     * @param value property value.
-     *
+     * @param value property value. Nulls are ignored.
      */
     public synchronized void setProperty(String name, String value) {
+        if (value == null) {
+            return;
+        }
         contextProperties.setProperty(name, value);
     }
 
     /**
-     * Return properties of the realm.
-     *
-     * @return
+     * @return properties of the realm.
      */
     protected synchronized Properties getProperties() {
         return contextProperties;
@@ -238,12 +250,11 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
      * Default implementation uses value of realm's property {@code jaas-context}.
      *
      * @return String containing JAAS context name.
-     *
      */
     public synchronized String getJAASContext() {
         return contextProperties.getProperty(JAAS_CONTEXT_PARAM);
     }
-    
+
     /**
      * Returns the name of this realm.
      *
@@ -255,13 +266,13 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
     }
 
     /**
-     * Compares a realm to another. 
-     * 
+     * Compares a realm to another.
+     *
      * <p>
-     * The comparison first considers the authentication type, so that realms supporting the same 
-     * kind of user authentication are grouped together. 
-     * Then it compares realm realm names. Realms compare "before" other kinds of objects 
-     * (i.e. there's only a partial order defined, in the case that those other objects compare themselves 
+     * The comparison first considers the authentication type, so that realms supporting the same
+     * kind of user authentication are grouped together.
+     * Then it compares realm realm names. Realms compare "before" other kinds of objects
+     * (i.e. there's only a partial order defined, in the case that those other objects compare themselves
      * "before" a realm object).
      */
     @Override

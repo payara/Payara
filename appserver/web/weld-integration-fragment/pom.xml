@@ -46,10 +46,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.web</groupId>
+        <groupId>fish.payara.server.internal.web</groupId>
         <artifactId>web</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
     <artifactId>weld-integration-fragment</artifactId>
@@ -83,7 +82,7 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Fragment-Host>org.jboss.weld.osgi-bundle;bundle-version=${weld-bundle.version}</Fragment-Host>
+                                <Fragment-Host>org.jboss.weld.osgi-bundle;bundle-version=${weld.version}</Fragment-Host>
                                 <!-- The export of javassist.util.proxy is done to ensure that the weld-generated proxy has access to the ProxyFactory class
                                in that package. This "partial" export of the javassist package would not cause the problem described in IT 12368, because
                                javassist has fixed the issue in JASSIST-104, and as part of WELD-570, the new javassist version is integrated in Weld 1.1.Beta2

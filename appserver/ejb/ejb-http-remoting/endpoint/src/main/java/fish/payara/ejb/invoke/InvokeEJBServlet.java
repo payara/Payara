@@ -40,6 +40,10 @@
 package fish.payara.ejb.invoke;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
+import fish.payara.ejb.http.admin.EjbInvokerConfiguration;
+
+import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -67,19 +71,33 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
+ * @deprecated Replaced by {@link EjbOverHttpResource}
  */
+@Deprecated
 @WebServlet("/ejb/*")
 public class InvokeEJBServlet extends HttpServlet {
+
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(InvokeEJBServlet.class.getName());
+
+    private boolean securityEnabled;
+
+    private String[] roles;
+
+    @Override
+    public void init() throws ServletException {
+            EjbInvokerConfiguration config = Globals.getDefaultBaseServiceLocator()
+                .getService(EjbInvokerConfiguration.class);
+            roles = config.getRoles().split(",");
+            securityEnabled = Boolean.parseBoolean(config.getSecurityEnabled());
+     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -89,6 +107,14 @@ public class InvokeEJBServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         JsonObject requestPayload = readJsonObject(request.getReader());
+
+        if(securityEnabled) {
+            for(String role : roles) {
+                if(!request.isUserInRole(role)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                }
+            }
+        }
 
         String beanName = requestPayload.getString("lookup");
         if (request.getRequestURI().endsWith("lookup")) {

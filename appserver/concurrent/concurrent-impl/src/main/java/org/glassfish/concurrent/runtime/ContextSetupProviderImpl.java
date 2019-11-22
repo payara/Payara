@@ -94,9 +94,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private boolean classloading, security, naming, workArea;
 
-    private RequestTracingService requestTracing;
-    private OpenTracingService openTracing;
-    private StuckThreadsStore stuckThreads;
+    private transient RequestTracingService requestTracing;
+    private transient OpenTracingService openTracing;
+    private transient StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
@@ -111,26 +111,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.applicationRegistry = applicationRegistry;
         this.applications = applications;
         this.transactionManager = transactionManager;
-        
-        try {
-            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        try {
-            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving OpenTracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
-        }
-        
+
+        initialiseServices();
+
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
                 case CLASSLOADING:
@@ -235,39 +218,30 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (transactionManager != null) {
             transactionManager.clearThreadTx();
         }
-        
+
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             startConcurrentContextSpan(invocation, handle);
         }
-        
+
         if (stuckThreads != null){
             stuckThreads.registerThread(Thread.currentThread().getId());
         }
-        
+
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
-    
+
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
         Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-        
-        SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
-        
-        if (spanContext != null) {
-            // Start a trace in the request tracing system
-            SpanBuilder builder = tracer.buildSpan("executeConcurrentContext")
-                    .asChildOf(spanContext)
-                    .withTag("App Name", invocation.getAppName())
-                    .withTag("Component ID", invocation.getComponentId())
-                    .withTag("Module Name", invocation.getModuleName());
 
-            Object instance = invocation.getInstance();
-            if (instance != null) {
-                builder.withTag("Class Name", instance.getClass().getName());
-            }
-            
-            builder.withTag("Thread Name", Thread.currentThread().getName());
-            
+        // Start a trace in the request tracing system
+        SpanBuilder builder = tracer.buildSpan("executeConcurrentContext");
+
+        // Check for propagated span
+        if (handle.getSpanContextMap() != null) {
+            SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
+            builder.asChildOf(spanContext);
+
             // Check for the presence of a propagated parent operation name
             try {
                 String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
@@ -277,11 +251,24 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             } catch (ClassCastException cce) {
                 logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
             }
-            
-            builder.startActive(true);
         }
+
+        if (invocation != null) {
+            builder = builder.withTag("App Name", invocation.getAppName())
+                    .withTag("Component ID", invocation.getComponentId())
+                    .withTag("Module Name", invocation.getModuleName());
+
+            Object instance = invocation.getInstance();
+            if (instance != null) {
+                builder.withTag("Class Name", instance.getClass().getName());
+            }
+        }
+
+        builder.withTag("Thread Name", Thread.currentThread().getName());
+
+        builder.startActive(true);
     }
-    
+
     @Override
     public void reset(ContextHandle contextHandle) {
         if (! (contextHandle instanceof InvocationContext)) {
@@ -316,7 +303,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
           transactionManager.clearThreadTx();
         }
-        
+
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
         }
@@ -324,14 +311,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
-    
+
     private boolean isApplicationEnabled(String appId) {
         boolean result = false;
         if (appId != null) {
             Application app = applications.getApplication(appId);
             if (app != null) {
                 result = deployment.isAppEnabled(app);
-            } else { 
+            } else {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
@@ -383,6 +370,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (!nullTransactionManager) {
             transactionManager = concurrentRuntime.getTransactionManager();
         }
+        initialiseServices();
     }
 
     private static class PairKey {
@@ -431,6 +419,28 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
             return eq;
         }
+    }
+    
+    private void initialiseServices() {
+        try {
+            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        try {
+            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        try {
+            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving OpenTracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException", ex);
+        }
+        
     }
 }
 

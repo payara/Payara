@@ -39,19 +39,24 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 -->
 <!--
   modules used to build glassfish packages
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
+    
+    <groupId>fish.payara.server.internal.packager</groupId>
+    <artifactId>nucleus-packages</artifactId>
+    <packaging>pom</packaging>
+    
+    <name>Glassfish Nucleus packages</name>
 
     <developers>
         <developer>
@@ -72,12 +77,6 @@
             </roles>
         </developer>
     </developers>
-
-
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.packager</groupId>
-    <artifactId>nucleus-packages</artifactId>
-    <name>Glassfish Nucleus packages</name>
 
     <properties>
         <install.dir.name>nucleus</install.dir.name>
@@ -113,26 +112,219 @@
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
         <module>payara-api-package</module>
-	<module>payara-executor-service-package</module>
+	    <module>payara-executor-service-package</module>
     </modules>
 
     <build>
         <outputDirectory>${temp.dir}</outputDirectory>
+        
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <configuration>
+                        <includeEmptyDirs>true</includeEmptyDirs>
+                    </configuration>
+                </plugin>
+                
+                <!-- 
+                    4. The heart of the packager, in each packager module, copy the listed jar dependencies and unpack any of the listed .zip dependencies 
+                    of that module to e.g. target/stage/payara5/glassfish/modules/ 
+                 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        
+                        <!-- Copy jar dependencies -->
+                        <execution>
+                            <id>process-step1</id>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${temp.modules.dir}</outputDirectory>
+                                <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <includeScope>compile</includeScope>
+                                <includeScope>runtime</includeScope>
+                                <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                                <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
+                                <excludeTransitive>true</excludeTransitive>
+                                <excludeTypes>zip,war</excludeTypes>
+                                <stripVersion>true</stripVersion>
+                                <silent>false</silent>
+                            </configuration>
+                        </execution>
+                        
+                        <!-- Copy source dependencies. This extra step is activated by the "embed-source" profile (see below). -->
+                        <execution>
+                            <id>process-step1a</id>
+                            <phase>does not exists</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <classifier>sources</classifier>
+                                <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+                                <outputDirectory>${temp.modules.dir}</outputDirectory>
+                                <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <includeScope>compile</includeScope>
+                                <includeScope>runtime</includeScope>
+                                <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                                <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
+                                <excludeTransitive>true</excludeTransitive>
+                                <excludeTypes>zip,war</excludeTypes>
+                                <stripVersion>true</stripVersion>
+                                <silent>false</silent>
+                            </configuration>
+                        </execution>
+                        
+                        <!-- Unpack dependencies -->
+                        <execution>
+                            <id>process-step2</id>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${temp.dir}</outputDirectory>
+                                <includeTypes>zip</includeTypes>
+                                <excludes>${zip.excludes}</excludes>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <excludeTransitive>true</excludeTransitive>
+                                <silent>true</silent>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                
+                
+                <!-- 
+                    4. Process any assembly directives in the module, if present 
+                       Assembly files essentially copy dependencies to the staging/glassfish/modules folder
+                       and occasionally some dependencies to alternative folders like staging/glassfish/lib.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>process-step3</id>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
+                        </descriptors>
+                        <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                        <finalName>${stage.dir.name}</finalName>
+                        <attach>false</attach>
+                        <appendAssemblyId>false</appendAssemblyId>
+                        <useProjectArtifact>false</useProjectArtifact>
+                    </configuration>
+                </plugin>
+                
+                
+                <!-- 
+                    16. Merge sources into the main jars. This extra step is activated by the "embed-source" profile (see below).
+                 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>ant-contrib</groupId>
+                            <artifactId>ant-contrib</artifactId>
+                            <version>1.0b3</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>ant</groupId>
+                                    <artifactId>ant</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>process-step3a</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <configuration>
+                                <target>
+                                    <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
+                                    <if> <available file="${temp.modules.dir}" type="dir" /> <then>
+                                        <for param="file">
+                                        <path>
+                                            <fileset dir="${temp.modules.dir}">
+                                                <include name="*.jar" />
+                                                <exclude name="*-sources.jar"/>
+                                            </fileset>
+                                        </path>
+                                        <sequential>
+                                            <local name="filename" />
+                                            <basename property="filename" file="@{file}" suffix=".jar"/>
+                                            <echo message="Merging ${filename}" />
+                                            
+                                            <!-- Create new archive with bin and source embedded -->
+                                            <zip destfile="${temp.modules.dir}/${filename}-aaaa.jar">
+                                                <zipfileset src="${temp.modules.dir}/${filename}-sources.jar" includes="**/*.java" erroronmissingarchive="false"/>
+                                                <zipgroupfileset dir="${temp.modules.dir}" includes="${filename}.jar" />
+                                            </zip>
+        
+                                           <!-- Delete the original separate bin and source archives -->
+                                           <delete>
+                                                <fileset dir="${temp.modules.dir}" includes="${filename}-sources.jar" />
+                                                <fileset dir="${temp.modules.dir}" includes="${filename}.jar" />
+                                            </delete>
+                                        </sequential>
+                                        </for>
+                
+                                        <!-- 
+                                            Ant Move is not powerful enough to be able to move from *something.jar to *.jar, even though it should.
+                                            Therefore we move in two steps. 
+                                        -->
+                                        <move todir="${temp.modules.dir}">
+                                            <fileset dir="${temp.modules.dir}" includes="**/*.jar" />
+                                            <mapper type="glob" from="*.jar" to="*.zip" />
+                                        </move>
+                                        
+                                        <echo>Moving to ${temp.modules.dir}</echo>
+                                        
+                                        <move todir="${temp.modules.dir}">
+                                            <fileset dir="${temp.modules.dir}" includes="*.zip" />
+                                            <globmapper from="*-aaaa.zip" to="*.jar"/>
+                                        </move>
+                                        
+                                        <echo>Following dir will be zipped: ${project.build.directory}/${stage.dir.name}</echo>
+                                    </then> </if>
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        
+        
+        <!-- Default steps for all modules, package without source -->
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <includeEmptyDirs>true</includeEmptyDirs>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -140,65 +332,29 @@
                     <execution>
                         <id>process-step1</id>
                         <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${temp.modules.dir}</outputDirectory>
-                            <useSubDirectoryPerType>false</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
-                            <excludeTransitive>true</excludeTransitive>
-                            <excludeTypes>zip,war</excludeTypes>
-                            <stripVersion>true</stripVersion>
-                            <silent>true</silent>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>process-step2</id>
                         <phase>process-resources</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${temp.dir}</outputDirectory>
-                            <includeTypes>zip</includeTypes>
-                            <excludes>${zip.excludes}</excludes>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeTransitive>true</excludeTransitive>
-                            <silent>true</silent>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            
+            <!-- 4. Assembly files copy dependencies to staging folder -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>process-step3</id>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
                         <phase>process-resources</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <descriptors>
-                        <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
-                    </descriptors>
-                    <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-                    <finalName>${stage.dir.name}</finalName>
-                    <attach>false</attach>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <useProjectArtifact>false</useProjectArtifact>
-                </configuration>
             </plugin>
+            
+            <!-- 
+                17. The second core step of the packager: zip all dependencies into the final .zip file
+             -->
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -208,6 +364,40 @@
             </plugin>
         </plugins>
     </build>
+    
+    <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
+    <profiles>
+        <profile>
+            <id>embed-source</id>
+            <build>
+                <plugins>
+                    
+                    <!-- 4. Copy source jars, if present. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step1a</id>
+                                <phase>process-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+        
+                    <!--  16. Merge sources into the main jars -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step3a</id>
+                                <phase>prepare-package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
-

@@ -19,672 +19,789 @@
 -->
 <!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <title>create-domain</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="css/style.css" rel="stylesheet">
-    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
-  </head>
-  <body>
-<table id="doc-title" cellspacing="0" cellpadding="0">
-  <tr>
-  <td align="left" valign="top">
-  <b>create-domain</b><br />
-  </td>
-  </tr>
-</table>
-<hr />
+    <head>
+        <meta charset="utf-8"/>
+        <title>create-domain</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="css/style.css" rel="stylesheet">
+        <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+    </head>
+    <body>
+        <table id="doc-title" cellspacing="0" cellpadding="0">
+            <tr>
+                <td align="left" valign="top">
+                    <b>create-domain</b><br />
+                </td>
+            </tr>
+        </table>
+        <hr />
 
-<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
-	<colgroup>
-		<col width="12%"/>
-		<col width="12%"/>
-		<col width="*"/>
-	</colgroup>
-	<tr>
-		<td align="left">
-		<a href="create-custom-resource.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
+        <table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+            <colgroup>
+                <col width="12%"/>
+                <col width="12%"/>
+                <col width="*"/>
+            </colgroup>
+            <tr>
+                <td align="left">
+                    <a href="create-custom-resource.html">
+                        <span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Previous</span>
+                    </a>
+                </td>
 
-		<td align="left">
-		<a href="create-file-user.html">
-			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
-		</a>
-		</td>
+                <td align="left">
+                    <a href="create-file-user.html">
+                        <span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Next</span>
+                    </a>
+                </td>
 
-		<td align="right">
-		<a href="toc.html">
-			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Contents</span>
-		</a>
-		</td>
-	</tr>
-</table>
+                <td align="right">
+                    <a href="toc.html">
+                        <span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Contents</span>
+                    </a>
+                </td>
+            </tr>
+        </table>
 
 
-<div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p><a id="create-domain-1"></a><a id="GSRFM00023"></a><a id="create-domain"></a></p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_create_domain">create-domain</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>creates a domain</p>
-</div>
-<div id="sthref208" class="paragraph">
-<p>Synopsis</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-domain [--help]
-[--adminport adminport]
-[--instanceport instanceport]
-[--portbase portbase]
-[--profile profile-name]
-[--template template-name]
-[--domaindir domaindir]
-[--savemasterpassword={false|true}]
-[--usemasterpassword={false|true}]
-[--domainproperties (name=value)[:name=value]*]
-[--keytooloptions (name=value)[:name=value]*]
-[--savelogin={false|true}]
-[--checkports={true|false}]
-[--nopassword={false|true}]
-domain-name</code></pre>
-</div>
-</div>
-<div id="sthref209" class="paragraph">
-<p>Description</p>
-</div>
-<div class="paragraph">
-<p>The <code>create-domain</code> subcommand creates a \{product---name} domain. A
-domain in \{product---name} is an administrative namespace that complies
-with the Java Platform, Enterprise Edition (Java EE) standard. Every
-domain has a configuration, which is stored in a set of files. Any
-number of domains, each of which has a distinct administrative identity,
-can be created in a given installation of \{product---name}. A domain
-can exist independently of other domains.</p>
-</div>
-<div class="paragraph">
-<p>Any user who has access to the <code>asadmin</code> utility on a given system can
-create a domain and store its configuration in a folder of the user&#8217;s
-choosing. By default, the domain configuration is created in the default
-directory for domains. You can override this location to store the
-configuration elsewhere.</p>
-</div>
-<div class="paragraph">
-<p>If domain customizers are found in JAR files in the as-install`/modules`
-directory when the <code>create-domain</code> subcommand is run, the customizers
-are processed. A domain customizer is a class that implements the
-<code>DomainInitializer</code> interface.</p>
-</div>
-<div class="paragraph">
-<p>The <code>create-domain</code> subcommand creates a domain with a single
-administrative user specified by the <code>asadmin</code> utility option <code>--user</code>.
-If the <code>--user</code> option is not specified, and the <code>--nopassword</code> option
-is set to true, the default administrative user, <code>admin</code>, is used. If
-the <code>--nopassword</code> option is set to false (the default), a username is
-required. In this case, if you have not specified the user name by using
-the <code>--user</code> option, you are prompted to do so.</p>
-</div>
-<div class="paragraph">
-<p>You choose an appropriate profile for the domain, depending on the
-applications that you want to run on your new domain. You can choose the
-developer, cluster, or enterprise profile for the domain you create.</p>
-</div>
-<div class="paragraph">
-<p>This subcommand is supported in local mode only.</p>
-</div>
-<div id="sthref210" class="paragraph">
-<p>Options</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">asadmin-options</dt>
-<dd>
-<p>Options for the <code>asadmin</code> utility. For information about these
-options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
-</dd>
-<dt class="hdlist1"><code>--help</code></dt>
-<dt class="hdlist1"><code>-?</code></dt>
-<dd>
-<p>Displays the help text for the subcommand.</p>
-</dd>
-<dt class="hdlist1"><code>--adminport</code></dt>
-<dd>
-<p>The HTTP port or the HTTPS port for administration. This port is the
-port in the URL that you specify in your web browser to manage the
-domain, for example, <code>http://localhost:4949</code>. The <code>--adminport</code> option
-cannot be used with the <code>--portbase</code> option. The default value is</p>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>+
-The <code>--adminport</code> option overrides the <code>domain.adminPort</code> property of
-the <code>--domainproperties</code> option.</p>
-</li>
-</ol>
-</div>
-</dd>
-<dt class="hdlist1"><code>--instanceport</code></dt>
-<dd>
-<p>The domain provides services so that applications can run when
-deployed. This HTTP port specifies where the web application context
-roots are available for a web browser to connect to. This port is a
-positive integer and must be available at the time of domain creation.
-The <code>--instanceport</code> option cannot be used with the <code>--portbase</code>
-option. The default value is 8080.<br>
-The <code>--instanceport</code> option overrides the <code>domain.instancePort</code>
-property of the <code>--domainproperties</code> option.</p>
-</dd>
-<dt class="hdlist1"><code>--portbase</code></dt>
-<dd>
-<p>Determines the number with which port assignments should start. A
-domain uses a certain number of ports that are statically assigned.
-The portbase value determines where the assignment should start. The
-values for the ports are calculated as follows:<br></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Administration port: portbase + 48</p>
-</li>
-<li>
-<p>HTTP listener port: portbase + 80</p>
-</li>
-<li>
-<p>HTTPS listener port: portbase + 81</p>
-</li>
-<li>
-<p>JMS port: portbase + 76</p>
-</li>
-<li>
-<p>IIOP listener port: portbase + 37</p>
-</li>
-<li>
-<p>Secure IIOP listener port: portbase + 38</p>
-</li>
-<li>
-<p>Secure IIOP with mutual authentication port: portbase + 39</p>
-</li>
-<li>
-<p>JMX port: portbase + 86</p>
-</li>
-<li>
-<p>JPDA debugger port: portbase + 9</p>
-</li>
-<li>
-<p>Felix shell service port for OSGi module management: portbase + 66<br>
-When the <code>--portbase</code> option is specified, the output of this
-subcommand includes a complete list of used ports.<br>
-The <code>--portbase</code> option cannot be used with the <code>--adminport</code>,
-<code>--instanceport</code>, or the <code>--domainproperties</code> option.</p>
-</li>
-</ul>
-</div>
-</dd>
-<dt class="hdlist1"><code>--profile</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--template</code></dt>
-<dd>
-<p>The file name, including a relative or absolute path, of a domain
-configuration template to use for creating the domain. If a relative
-path is specified, the subcommand appends the path to the
-as-install`/lib/templates` directory to locate the file. If it is an
-absolute pathname, the subcommand locates the file in the specified
-path.<br>
-This option enables domains of different types to be created and
-custom domain templates to be defined.</p>
-</dd>
-<dt class="hdlist1"><code>--domaindir</code></dt>
-<dd>
-<p>The directory where the domain is to be created. If specified, the
-path must be accessible in the filesystem. If not specified, the
-domain is created in the default domain directory,
-as-install`/domains`.</p>
-</dd>
-<dt class="hdlist1"><code>--savemasterpassword</code></dt>
-<dd>
-<p>Setting this option to <code>true</code> allows the master password to be written
-to the file system. If this option is <code>true</code>, the
-<code>--usemasterpassword</code> option is also true, regardless of the value
-that is specified on the command line. The default value is <code>false</code>.<br>
-A master password is really a password for the secure key store. A
-domain is designed to keep its own certificate (created at the time of
-domain creation) in a safe place in the configuration location. This
-certificate is called the domain&#8217;s SSL server certificate. When the
-domain is contacted by a web browser over a secure channel (HTTPS),
-this certificate is presented by the domain. The master password is
-supposed to protect the store (a file) that contains this certificate.
-This file is called <code>keystore.jks</code> and is created in the configuration
-directory of the domain created. If however, this option is chosen,
-the master password is saved on the disk in the domain&#8217;s configuration
-location. The master password is stored in a file called
-<code>master-password</code>, which is a Java JCEKS type keystore. The reason for
-using the <code>--savemasterpassword</code> option is for unattended system
-boots. In this case, the master password is not prompted for when the
-domain starts because the password will be extracted from this file.<br>
-It is best to create a master password when creating a domain, because
-the master password is used by the <code>start-domain</code> subcommand. For
-security purposes, the default setting should be false, because saving
-the master password on the disk is an insecure practice, unless file
-system permissions are properly set. If the master password is saved,
-then <code>start-domain</code> does not prompt for it. The master password gives
-an extra level of security to the environment.</p>
-</dd>
-<dt class="hdlist1"><code>--usemasterpassword</code></dt>
-<dd>
-<p>Specifies whether the key store is encrypted with a master password
-that is built into the system or a user-defined master password.<br>
-If <code>false</code> (default), the keystore is encrypted with a well-known
-password that is built into the system. Encrypting the keystore with a
-password that is built into the system provides no additional
-security.<br>
-If <code>true</code>, the subcommand obtains the master password from the
-<code>AS_ADMIN_MASTERPASSWORD</code> entry in the password file or prompts for
-the master password. The password file is specified in the
-<code>--passwordfile</code> option of the
-<a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a>utility.<br>
-If the <code>--savemasterpassword</code> option is <code>true</code>, this option is also
-true, regardless of the value that is specified on the command line.</p>
-</dd>
-<dt class="hdlist1"><code>--domainproperties</code></dt>
-<dd>
-<p>Setting the optional name/value pairs overrides the default values for
-the properties of the domain to be created. The list must be separated
-by the colon (:) character. The <code>--portbase</code> options cannot be used
-with the <code>--domainproperties</code> option. The following properties are
-available:<br></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><code>domain.adminPort</code></dt>
-<dd>
-<p>This property specifies the port number of the HTTP port or the
-HTTPS port for administration. This port is the port in the URL that
-you specify in your web browser to manage the instance, for example,
-<code>http://localhost:4949</code>. Valid values are 1-65535. On UNIX, creating
-sockets that listen on ports 1-1024 requires superuser privileges.<br>
-The <code>domain.adminPort</code> property is overridden by the <code>--adminport</code>
-option.</p>
-</dd>
-<dt class="hdlist1"><code>domain.instancePort</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used to
-listen for HTTP requests. Valid values are 1-65535. On UNIX,
-creating sockets that listen on ports 1-1024 requires superuser
-privileges.<br>
-The <code>domain.instancePort</code> property is overridden by <code>--instanceport</code>
-option.</p>
-</dd>
-<dt class="hdlist1"><code>domain.jmxPort</code></dt>
-<dd>
-<p>This property specifies the port number on which the JMX connector
-listens. Valid values are 1-65535. On UNIX, creating sockets that
-listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>http.ssl.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used to
-listen for HTTPS requests. Valid values are 1-65535. On UNIX,
-creating sockets that listen on ports 1-1024 requires superuser
-privileges.</p>
-</dd>
-<dt class="hdlist1"><code>java.debugger.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used for
-connections to the Java Platform Debugger Architecture (JPDA)
-debugger. Valid values are 1-65535. On UNIX, creating sockets that
-listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>jms.port</code></dt>
-<dd>
-<p>This property specifies the port number for the Java Message Service
-provider. Valid values are 1-65535. On UNIX, creating sockets that
-listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>orb.listener.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used for
-IIOP connections. Valid values are 1-65535. On UNIX, creating
-sockets that listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>orb.mutualauth.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used for
-secure IIOP connections with client authentication. Valid values are
-1-65535. On UNIX, creating sockets that listen on ports 1-1024
-requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>orb.ssl.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used for
-secure IIOP connections. Valid values are 1-65535. On UNIX, creating
-sockets that listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-<dt class="hdlist1"><code>osgi.shell.telnet.port</code></dt>
-<dd>
-<p>This property specifies the port number of the port that is used for
-connections to the
-<a href="http://felix.apache.org/site/apache-felix-remote-shell.html">Apache
-Felix Remote Shell</a>
-(<a href="http://felix.apache.org/site/apache-felix-remote-shell.html" class="bare">http://felix.apache.org/site/apache-felix-remote-shell.html</a>). This
-shell uses the Felix shell service to interact with the OSGi module
-management subsystem. Valid values are 1-65535. On UNIX, creating
-sockets that listen on ports 1-1024 requires superuser privileges.</p>
-</dd>
-</dl>
-</div>
-</dd>
-<dt class="hdlist1"><code>--keytooloptions</code></dt>
-<dd>
-<p>Specifies an optional list of name-value pairs of keytool options for
-a self-signed server certificate. The certificate is generated during
-the creation of the domain. Each pair in the list must be separated by
-the colon (:) character.<br>
-Allowed options are as follows:<br></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><code>CN</code></dt>
-<dd>
-<p>Specifies the common name of the host that is to be used for the
-self-signed certificate. This option name is case insensitive.<br>
-By default, the name is the fully-qualified name of the host where
-the <code>create-domain</code> subcommand is run.</p>
-</dd>
-</dl>
-</div>
-</dd>
-<dt class="hdlist1"><code>--savelogin</code></dt>
-<dd>
-<p>If set to true, this option saves the administration user name and
-password. Default value is false. The username and password are stored
-in the <code>.asadminpass</code> file in user&#8217;s home directory. A domain can only
-be created locally. Therefore, when using the <code>--savelogin</code> option,
-the host name saved in <code>.asadminpass</code> is always <code>localhost</code>. If the
-user has specified default administration port while creating the
-domain, there is no need to specify <code>--user</code>, <code>--passwordfile</code>,
-<code>--host</code>, or <code>--port</code> on any of the subsequent <code>asadmin</code> remote
-commands. These values will be obtained automatically.<br></p>
-</dd>
-</dl>
-</div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 100%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>Note:</p>
-</div>
-<div class="paragraph">
-<p>When the same user creates multiple domains that have the same
-administration port number on the same or different host (where the
-home directory is NFS mounted), the subcommand does not ask if the
-password should be overwritten. The password will always be
-overwritten.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><code>--checkports</code></dt>
-<dd>
-<p>Specifies whether to check for the availability of the administration,
-HTTP, JMS, JMX, and IIOP ports. The default value is true.</p>
-</dd>
-<dt class="hdlist1"><code>--nopassword</code></dt>
-<dd>
-<p>Specifies whether the administrative user will have a password. If
-false (the default), the password is specified by the
-<code>AS_ADMIN_PASSWORD</code> entry in the <code>asadmin</code> password file (set by using
-the <code>--passwordfile</code> option). If false and the <code>AS_ADMIN_PASSWORD</code> is
-not set, you are prompted for the password.<br>
-If true, the administrative user is created without a password. If a
-user name for the domain is not specified by using the <code>--user</code>
-option, and the <code>--nopassword</code> option is set to true, the default user
-name, <code>admin</code>, is used.</p>
-</dd>
-</dl>
-</div>
-<div id="sthref211" class="paragraph">
-<p>Operands</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">domain-name</dt>
-<dd>
-<p>The name of the domain to be created. The name may contain only ASCII
-characters and must be a valid directory name for the operating system
-on the host where the domain is created.</p>
-</dd>
-</dl>
-</div>
-<div id="sthref212" class="paragraph">
-<p>Examples</p>
-</div>
-<div class="paragraph">
-<p><a id="GSRFM471"></a><a id="sthref213"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 1   Creating a Domain</p>
-</div>
-<div class="paragraph">
-<p>This example creates a domain named <code>domain4</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt;create-domain --adminport 4848 domain4
-Enter admin user name [Enter to accept default "admin" / no password]&gt;
-Using port 4848 for Admin.
-Using default port 8080 for HTTP Instance.
-Using default port 7676 for JMS.
-Using default port 3700 for IIOP.
-Using default port 8181 for HTTP_SSL.
-Using default port 3820 for IIOP_SSL.
-Using default port 3920 for IIOP_MUTUALAUTH.
-Using default port 8686 for JMX_ADMIN.
-Using default port 6666 for OSGI_SHELL.
-Distinguished Name of the self-signed X.509 Server Certificate is:
-[CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
-No domain initializers found, bypassing customization step
-Domain domain4 created.
-Domain domain4 admin port is 4848.
-Domain domain4 allows admin login as user "admin" with no password.
-Command create-domain executed successfully.</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><a id="GSRFM472"></a><a id="sthref214"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 2   Creating a Domain in an Alternate Directory</p>
-</div>
-<div class="paragraph">
-<p>This example creates a domain named <code>sampleDomain</code> in the
-<code>/home/someuser/domains</code> directory.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --domaindir /home/someuser/domains --adminport 7070
---instanceport 7071 sampleDomain
-Enter admin user name [Enter to accept default "admin" / no password]&gt;
-Using port 7070 for Admin.
-Using port 7071 for HTTP Instance.
-Using default port 7676 for JMS.
-Using default port 3700 for IIOP.
-Using default port 8181 for HTTP_SSL.
-Using default port 3820 for IIOP_SSL.
-Using default port 3920 for IIOP_MUTUALAUTH.
-Using default port 8686 for JMX_ADMIN.
-Using default port 6666 for OSGI_SHELL.
-Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
-[CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
-No domain initializers found, bypassing customization step
-Domain sampleDomain created.
-Domain sampleDomain admin port is 7070.
-Domain sampleDomain allows admin login as user "admin" with no password.
-Command create-domain executed successfully.</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><a id="GSRFM473"></a><a id="sthref215"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 3   Creating a Domain and Saving the Administration User Name
-and Password</p>
-</div>
-<div class="paragraph">
-<p>This example creates a domain named <code>myDomain</code> and saves the
-administration username and password.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --adminport 8282 --savelogin=true myDomain
-Enter the admin password [Enter to accept default of no password]&gt;
-Enter the master password [Enter to accept default password "changeit"]&gt;
-Using port 8282 for Admin.
-Using default port 8080 for HTTP Instance.
-Using default port 7676 for JMS.
-Using default port 3700 for IIOP.
-Using default port 8181 for HTTP_SSL.
-Using default port 3820 for IIOP_SSL.
-Using default port 3920 for IIOP_MUTUALAUTH.
-Using default port 8686 for JMX_ADMIN.
-Using default port 6666 for OSGI_SHELL.
-Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
-[CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
-No domain initializers found, bypassing customization step
-Domain myDomain created.
-Domain myDomain admin port is 8282.
-Domain myDomain allows admin login as user "admin" with no password.
-Login information relevant to admin user name [admin]
-for this domain [myDomain] stored at
-[/home/someuser/.asadminpass] successfully.
-Make sure that this file remains protected.
-Information stored in this file will be used by
-asadmin commands to manage this domain.
-Command create-domain executed successfully.</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><a id="GSRFM474"></a><a id="sthref216"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 4   Creating a Domain and Designating the Certificate Host</p>
-</div>
-<div class="paragraph">
-<p>This example creates a domain named <code>domain5</code>. The common name of the
-host that is to be used for the self-signed certificate is <code>trio</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --adminport 9898 --keytooloptions CN=trio domain5
-Enter the admin password [Enter to accept default of no password]&gt;
-Enter the master password [Enter to accept default password "changeit"]&gt;
-Using port 9898 for Admin.
-Using default port 8080 for HTTP Instance.
-Using default port 7676 for JMS.
-Using default port 3700 for IIOP.
-Using default port 8181 for HTTP_SSL.
-Using default port 3820 for IIOP_SSL.
-Using default port 3920 for IIOP_MUTUALAUTH.
-Using default port 8686 for JMX_ADMIN.
-Using default port 6666 for OSGI_SHELL.
-Distinguished Name of the self-signed X.509 Server Certificate is:
-[CN=trio,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
-No domain initializers found, bypassing customization step
-Domain domain5 created.
-Domain domain5 admin port is 9898.
-Domain domain5 allows admin login as user "admin" with no password.
-Command create-domain executed successfully.</code></pre>
-</div>
-</div>
-<div id="sthref217" class="paragraph">
-<p>Exit Status</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">0</dt>
-<dd>
-<p>subcommand executed successfully</p>
-</dd>
-<dt class="hdlist1">1</dt>
-<dd>
-<p>error in executing the subcommand</p>
-</dd>
-</dl>
-</div>
-<div id="sthref218" class="paragraph">
-<p>See Also</p>
-</div>
-<div class="paragraph">
-<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
-</div>
-<div class="paragraph">
-<p><a href="delete-domain.html#delete-domain-1"><code>delete-domain</code>(1)</a>,
-<a href="list-domains.html#list-domains-1"><code>list-domains</code>(1)</a>,
-<a href="login.html#login-1"><code>login</code>(1)</a>,
-<a href="start-domain.html#start-domain-1"><code>start-domain</code>(1)</a>,
-<a href="stop-domain.html#stop-domain-1"><code>stop-domain</code>(1)</a></p>
-</div>
-<div class="paragraph">
-<p>Apache Felix Remote Shell
-(<code>http://felix.apache.org/site/apache-felix-remote-shell.html</code>)</p>
-</div>
-</div>
-</div>
+        <div id="preamble">
+            <div class="sectionbody">
+                <div class="paragraph">
+                    <p><a id="create-domain-1"></a><a id="GSRFM00023"></a><a id="create-domain"></a></p>
+                </div>
+            </div>
+        </div>
+        <div class="sect1">
+            <h2 id="_create_domain">create-domain</h2>
+            <div class="sectionbody">
+                <div class="paragraph">
+                    <p>creates a domain</p>
+                </div>
+                <div id="sthref208" class="paragraph">
+                    <p>Synopsis</p>
+                </div>
+                <div class="listingblock">
+                    <div class="content">
+                        <pre class="prettyprint highlight">
+                            <code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-domain [--help]
+                                [--adminport adminport]
+                                [--instanceport instanceport]
+                                [--portbase portbase]
+                                [--profile profile-name]
+                                [--template template-name]
+                                [--domaindir domaindir]
+                                [--savemasterpassword={false|true}]
+                                [--usemasterpassword={false|true}]
+                                [--hazelcastdasport hazelcastdasport]
+                                [--hazelcaststartport hazelcaststartport]
+                                [--hazelcastautoincrement={false|true}]
+                                [--domainproperties (name=value)[:name=value]*]
+                                [--keytooloptions (name=value)[:name=value]*]
+                                [--savelogin={false|true}]
+                                [--checkports={true|false}]
+                                [--nopassword={false|true}]
+                                domain-name
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                <div id="sthref209" class="paragraph">
+                    <p>Description</p>
+                </div>
+                <div class="paragraph">
+                    <p>The <code>create-domain</code> subcommand creates a \{product---name} domain. A
+                        domain in \{product---name} is an administrative namespace that complies
+                        with the Java Platform, Enterprise Edition (Java EE) standard. Every
+                        domain has a configuration, which is stored in a set of files. Any
+                        number of domains, each of which has a distinct administrative identity,
+                        can be created in a given installation of \{product---name}. A domain
+                        can exist independently of other domains.</p>
+                </div>
+                <div class="paragraph">
+                    <p>Any user who has access to the <code>asadmin</code> utility on a given system can
+                        create a domain and store its configuration in a folder of the user&#8217;s
+                        choosing. By default, the domain configuration is created in the default
+                        directory for domains. You can override this location to store the
+                        configuration elsewhere.</p>
+                </div>
+                <div class="paragraph">
+                    <p>If domain customizers are found in JAR files in the as-install`/modules`
+                        directory when the <code>create-domain</code> subcommand is run, the customizers
+                        are processed. A domain customizer is a class that implements the
+                        <code>DomainInitializer</code> interface.</p>
+                </div>
+                <div class="paragraph">
+                    <p>The <code>create-domain</code> subcommand creates a domain with a single
+                        administrative user specified by the <code>asadmin</code> utility option <code>--user</code>.
+                        If the <code>--user</code> option is not specified, and the <code>--nopassword</code> option
+                        is set to true, the default administrative user, <code>admin</code>, is used. If
+                        the <code>--nopassword</code> option is set to false (the default), a username is
+                        required. In this case, if you have not specified the user name by using
+                        the <code>--user</code> option, you are prompted to do so.</p>
+                </div>
+                <div class="paragraph">
+                    <p>You choose an appropriate profile for the domain, depending on the
+                        applications that you want to run on your new domain. You can choose the
+                        developer, cluster, or enterprise profile for the domain you create.</p>
+                </div>
+                <div class="paragraph">
+                    <p>This subcommand is supported in local mode only.</p>
+                </div>
+                <div id="sthref210" class="paragraph">
+                    <p>Options</p>
+                </div>
+                <div class="dlist">
+                    <dl>
+                        <dt class="hdlist1">asadmin-options</dt>
+                        <dd>
+                            <p>Options for the <code>asadmin</code> utility. For information about these
+                                options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--help</code></dt>
+                        <dt class="hdlist1"><code>-?</code></dt>
+                        <dd>
+                            <p>Displays the help text for the subcommand.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--adminport</code></dt>
+                        <dd>
+                            <p>The HTTP port or the HTTPS port for administration. This port is the
+                                port in the URL that you specify in your web browser to manage the
+                                domain, for example, <code>http://localhost:4949</code>. The <code>--adminport</code> option
+                                cannot be used with the <code>--portbase</code> option. The default value is 4848</p>
+                            <div class="olist arabic">
+                                <ol class="arabic">
+                                    <li>
+                                        <p>+
+                                            The <code>--adminport</code> option overrides the <code>domain.adminPort</code> property of
+                                            the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ol>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--instanceport</code></dt>
+                        <dd>
+                            <p>The domain provides services so that applications can run when
+                                deployed. This HTTP port specifies where the web application context
+                                roots are available for a web browser to connect to. This port is a
+                                positive integer and must be available at the time of domain creation.
+                                The <code>--instanceport</code> option cannot be used with the <code>--portbase</code>
+                                option. The default value is 8080.
+                            <div class="olist arabic">
+                                <ol class="arabic">
+                                    <li>
+                                        <p>+
+                                            The <code>--instanceport</code> option overrides the <code>domain.instancePort</code>
+                                            property of the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ol>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--portbase</code></dt>
+                        <dd>
+                            <p>Determines the number with which port assignments should start. A
+                                domain uses a certain number of ports that are statically assigned.
+                                The portbase value determines where the assignment should start. The
+                                values for the ports are calculated as follows:<br></p>
+                            <div class="ulist">
+                                <ul>
+                                    <li>
+                                        <p>Administration port: portbase + 48</p>
+                                    </li>
+                                    <li>
+                                        <p>HTTP listener port: portbase + 80</p>
+                                    </li>
+                                    <li>
+                                        <p>HTTPS listener port: portbase + 81</p>
+                                    </li>
+                                    <li>
+                                        <p>JMS port: portbase + 76</p>
+                                    </li>
+                                    <li>
+                                        <p>IIOP listener port: portbase + 37</p>
+                                    </li>
+                                    <li>
+                                        <p>Secure IIOP listener port: portbase + 38</p>
+                                    </li>
+                                    <li>
+                                        <p>Secure IIOP with mutual authentication port: portbase + 39</p>
+                                    </li>
+                                    <li>
+                                        <p>JMX port: portbase + 86</p>
+                                    </li>
+                                    <li>
+                                        <p>JPDA debugger port: portbase + 9</p>
+                                    </li>
+                                    <li>
+                                        <p>Hazelcast DAS port: portbase + 49</p>
+                                    </li>
+                                    <li>
+                                        <p>Hazelcast Start port: portbase + 59</p>
+                                    </li> 
+                                    <li>
+                                        <p>Felix shell service port for OSGi module management: portbase + 66<br>
+                                            When the <code>--portbase</code> option is specified, the output of this
+                                            subcommand includes a complete list of used ports.<br>
+                                            The <code>--portbase</code> option cannot be used with the <code>--adminport</code>,
+                                            <code>--instanceport</code>, or the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--profile</code></dt>
+                        <dd>
+                            <p>Do not specify this option. This option is retained for compatibility
+                                with earlier releases. If you specify this option, a syntax error does
+                                not occur. Instead, the subcommand runs successfully and displays a
+                                warning message that the option is ignored.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--template</code></dt>
+                        <dd>
+                            <p>The file name, including a relative or absolute path, of a domain
+                                configuration template to use for creating the domain. If a relative
+                                path is specified, the subcommand appends the path to the
+                                as-install`/lib/templates` directory to locate the file. If it is an
+                                absolute pathname, the subcommand locates the file in the specified
+                                path.<br>
+                                This option enables domains of different types to be created and
+                                custom domain templates to be defined.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--domaindir</code></dt>
+                        <dd>
+                            <p>The directory where the domain is to be created. If specified, the
+                                path must be accessible in the filesystem. If not specified, the
+                                domain is created in the default domain directory,
+                                as-install`/domains`.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--savemasterpassword</code></dt>
+                        <dd>
+                            <p>Setting this option to <code>true</code> allows the master password to be written
+                                to the file system. If this option is <code>true</code>, the
+                                <code>--usemasterpassword</code> option is also true, regardless of the value
+                                that is specified on the command line. The default value is <code>false</code>.<br>
+                                A master password is really a password for the secure key store. A
+                                domain is designed to keep its own certificate (created at the time of
+                                domain creation) in a safe place in the configuration location. This
+                                certificate is called the domain&#8217;s SSL server certificate. When the
+                                domain is contacted by a web browser over a secure channel (HTTPS),
+                                this certificate is presented by the domain. The master password is
+                                supposed to protect the store (a file) that contains this certificate.
+                                This file is called <code>keystore.jks</code> and is created in the configuration
+                                directory of the domain created. If however, this option is chosen,
+                                the master password is saved on the disk in the domain&#8217;s configuration
+                                location. The master password is stored in a file called
+                                <code>master-password</code>, which is a Java JCEKS type keystore. The reason for
+                                using the <code>--savemasterpassword</code> option is for unattended system
+                                boots. In this case, the master password is not prompted for when the
+                                domain starts because the password will be extracted from this file.<br>
+                                It is best to create a master password when creating a domain, because
+                                the master password is used by the <code>start-domain</code> subcommand. For
+                                security purposes, the default setting should be false, because saving
+                                the master password on the disk is an insecure practice, unless file
+                                system permissions are properly set. If the master password is saved,
+                                then <code>start-domain</code> does not prompt for it. The master password gives
+                                an extra level of security to the environment.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--usemasterpassword</code></dt>
+                        <dd>
+                            <p>Specifies whether the key store is encrypted with a master password
+                                that is built into the system or a user-defined master password.<br>
+                                If <code>false</code> (default), the keystore is encrypted with a well-known
+                                password that is built into the system. Encrypting the keystore with a
+                                password that is built into the system provides no additional
+                                security.<br>
+                                If <code>true</code>, the subcommand obtains the master password from the
+                                <code>AS_ADMIN_MASTERPASSWORD</code> entry in the password file or prompts for
+                                the master password. The password file is specified in the
+                                <code>--passwordfile</code> option of the
+                                <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a>utility.<br>
+                                If the <code>--savemasterpassword</code> option is <code>true</code>, this option is also
+                                true, regardless of the value that is specified on the command line.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--hazelcastdasport</code></dt>
+                        <dd>
+                            <p>The port to run Hazelcast on for the DAS. If this port is busy, 
+                                the port specified will be incremented until a valid port is found.
+                                The <code>--hazelcastdasport</code> option cannot be used with the <code>--portbase</code> 
+                                option. The default value is 4900.</p>
+                            <div class="olist arabic">
+                                <ol class="arabic">
+                                    <li>
+                                        <p>+
+                                            The <code>--hazelcastdasport</code> option overrides the <code>hazelcast.das.port</code> property of
+                                            the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ol>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--hazelcaststartport</code></dt>
+                        <dd>
+                            <p>The port the other Payara Server instances use to run Hazelcast on. 
+                                If this port is busy, the port specified will be incremented until 
+                                a valid port is found.
+                                The <code>--hazelcaststartport</code> option cannot be used with the <code>--portbase</code> 
+                                option. The default value is 5900.</p>
+                            <div class="olist arabic">
+                                <ol class="arabic">
+                                    <li>
+                                        <p>+
+                                            The <code>--hazelcaststartport</code> option overrides the <code>hazelcast.start.port</code> property of
+                                            the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ol>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--hazelcastautoincrement</code></dt>
+                        <dd>
+                            <p>By default the cluster uses the next unoccupied port that is 
+                                available starting with the start port. When auto-increment is 
+                                turned off an occupied start port results in a startup failure 
+                                instead.</p>
+                            <div class="olist arabic">
+                                <ol class="arabic">
+                                    <li>
+                                        <p>+
+                                            The <code>--hazelcastautoincrement</code> option overrides the <code>hazelcast.auto.increment</code> property of
+                                            the <code>--domainproperties</code> option.</p>
+                                    </li>
+                                </ol>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--domainproperties</code></dt>
+                        <dd>
+                            <p>Setting the optional name/value pairs overrides the default values for
+                                the properties of the domain to be created. The list must be separated
+                                by the colon (:) character. The <code>--portbase</code> options cannot be used
+                                with the <code>--domainproperties</code> option. The following properties are
+                                available:<br></p>
+                            <div class="dlist">
+                                <dl>
+                                    <dt class="hdlist1"><code>domain.adminPort</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the HTTP port or the
+                                            HTTPS port for administration. This port is the port in the URL that
+                                            you specify in your web browser to manage the instance, for example,
+                                            <code>http://localhost:4949</code>. Valid values are 1-65535. On UNIX, creating
+                                            sockets that listen on ports 1-1024 requires superuser privileges.<br>
+                                            The <code>domain.adminPort</code> property is overridden by the <code>--adminport</code>
+                                            option.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>domain.instancePort</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used to
+                                            listen for HTTP requests. Valid values are 1-65535. On UNIX,
+                                            creating sockets that listen on ports 1-1024 requires superuser
+                                            privileges.<br>
+                                            The <code>domain.instancePort</code> property is overridden by <code>--instanceport</code>
+                                            option.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>domain.jmxPort</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number on which the JMX connector
+                                            listens. Valid values are 1-65535. On UNIX, creating sockets that
+                                            listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>http.ssl.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used to
+                                            listen for HTTPS requests. Valid values are 1-65535. On UNIX,
+                                            creating sockets that listen on ports 1-1024 requires superuser
+                                            privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>java.debugger.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used for
+                                            connections to the Java Platform Debugger Architecture (JPDA)
+                                            debugger. Valid values are 1-65535. On UNIX, creating sockets that
+                                            listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>jms.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number for the Java Message Service
+                                            provider. Valid values are 1-65535. On UNIX, creating sockets that
+                                            listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>orb.listener.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used for
+                                            IIOP connections. Valid values are 1-65535. On UNIX, creating
+                                            sockets that listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>orb.mutualauth.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used for
+                                            secure IIOP connections with client authentication. Valid values are
+                                            1-65535. On UNIX, creating sockets that listen on ports 1-1024
+                                            requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>orb.ssl.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used for
+                                            secure IIOP connections. Valid values are 1-65535. On UNIX, creating
+                                            sockets that listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>osgi.shell.telnet.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is used for
+                                            connections to the
+                                            <a href="http://felix.apache.org/site/apache-felix-remote-shell.html">Apache
+                                                Felix Remote Shell</a>
+                                            (<a href="http://felix.apache.org/site/apache-felix-remote-shell.html" class="bare">http://felix.apache.org/site/apache-felix-remote-shell.html</a>). This
+                                            shell uses the Felix shell service to interact with the OSGi module
+                                            management subsystem. Valid values are 1-65535. On UNIX, creating
+                                            sockets that listen on ports 1-1024 requires superuser privileges.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>hazelcast.das.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port that is 
+                                            used to run Hazelcast on for the DAS. If this port is busy, the 
+                                            port specified will be incremented until a valid port is found. 
+                                            Valid values are 1-65535. On UNIX, creating sockets that listen 
+                                            on ports 1-1024 requires superuser privileges.<br>
+                                            The <code>hazelcast.das.port</code> property is overridden by the <code>--hazelcastdasport</code>
+                                            option.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>hazelcast.start.port</code></dt>
+                                    <dd>
+                                        <p>This property specifies the port number of the port the other 
+                                            Payara Server instances use to run Hazelcast on. If this port is 
+                                            busy, the port specified will be incremented until a valid port 
+                                            is found. Valid values are 1-65535. On UNIX, creating sockets 
+                                            that listen on ports 1-1024 requires superuser privileges.<br>
+                                            The <code>hazelcast.start.port</code> property is overridden by the <code>--hazelcaststartport</code>
+                                            option.</p>
+                                    </dd>
+                                    <dt class="hdlist1"><code>hazelcast.auto.increment</code></dt>
+                                    <dd>
+                                        <p>This property specifies whether or not to use the next unoccupied
+                                            port that is available starting with the start port. When 
+                                            auto-increment is turned off an occupied start port results in a 
+                                            startup failure instead.<br>
+                                            The <code>hazelcast.auto.increment</code> property is overridden by the <code>--hazelcastautoincrement</code>
+                                            option.</p>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--keytooloptions</code></dt>
+                        <dd>
+                            <p>Specifies an optional list of name-value pairs of keytool options for
+                                a self-signed server certificate. The certificate is generated during
+                                the creation of the domain. Each pair in the list must be separated by
+                                the colon (:) character.<br>
+                                Allowed options are as follows:<br></p>
+                            <div class="dlist">
+                                <dl>
+                                    <dt class="hdlist1"><code>CN</code></dt>
+                                    <dd>
+                                        <p>Specifies the common name of the host that is to be used for the
+                                            self-signed certificate. This option name is case insensitive.<br>
+                                            By default, the name is the fully-qualified name of the host where
+                                            the <code>create-domain</code> subcommand is run.</p>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </dd>
+                        <dt class="hdlist1"><code>--savelogin</code></dt>
+                        <dd>
+                            <p>If set to true, this option saves the administration user name and
+                                password. Default value is false. The username and password are stored
+                                in the <code>.asadminpass</code> file in user&#8217;s home directory. A domain can only
+                                be created locally. Therefore, when using the <code>--savelogin</code> option,
+                                the host name saved in <code>.asadminpass</code> is always <code>localhost</code>. If the
+                                user has specified default administration port while creating the
+                                domain, there is no need to specify <code>--user</code>, <code>--passwordfile</code>,
+                                <code>--host</code>, or <code>--port</code> on any of the subsequent <code>asadmin</code> remote
+                                commands. These values will be obtained automatically.<br></p>
+                        </dd>
+                    </dl>
+                </div>
+                <table class="tableblock frame-all grid-all spread">
+                    <colgroup>
+                        <col style="width: 100%;">
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td class="tableblock halign-left valign-top"><div><div class="paragraph">
+                                        <p>Note:</p>
+                                    </div>
+                                    <div class="paragraph">
+                                        <p>When the same user creates multiple domains that have the same
+                                            administration port number on the same or different host (where the
+                                            home directory is NFS mounted), the subcommand does not ask if the
+                                            password should be overwritten. The password will always be
+                                            overwritten.</p>
+                                    </div></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="dlist">
+                    <dl>
+                        <dt class="hdlist1"><code>--checkports</code></dt>
+                        <dd>
+                            <p>Specifies whether to check for the availability of the administration,
+                                HTTP, JMS, JMX, and IIOP ports. The default value is true.</p>
+                        </dd>
+                        <dt class="hdlist1"><code>--nopassword</code></dt>
+                        <dd>
+                            <p>Specifies whether the administrative user will have a password. If
+                                false (the default), the password is specified by the
+                                <code>AS_ADMIN_PASSWORD</code> entry in the <code>asadmin</code> password file (set by using
+                                the <code>--passwordfile</code> option). If false and the <code>AS_ADMIN_PASSWORD</code> is
+                                not set, you are prompted for the password.<br>
+                                If true, the administrative user is created without a password. If a
+                                user name for the domain is not specified by using the <code>--user</code>
+                                option, and the <code>--nopassword</code> option is set to true, the default user
+                                name, <code>admin</code>, is used.</p>
+                        </dd>
+                    </dl>
+                </div>
+                <div id="sthref211" class="paragraph">
+                    <p>Operands</p>
+                </div>
+                <div class="dlist">
+                    <dl>
+                        <dt class="hdlist1">domain-name</dt>
+                        <dd>
+                            <p>The name of the domain to be created. The name may contain only ASCII
+                                characters and must be a valid directory name for the operating system
+                                on the host where the domain is created.</p>
+                        </dd>
+                    </dl>
+                </div>
+                <div id="sthref212" class="paragraph">
+                    <p>Examples</p>
+                </div>
+                <div class="paragraph">
+                    <p><a id="GSRFM471"></a><a id="sthref213"></a></p>
+                </div>
+                <div class="paragraph">
+                    <p>Example 1   Creating a Domain</p>
+                </div>
+                <div class="paragraph">
+                    <p>This example creates a domain named <code>domain4</code>.</p>
+                </div>
+                <div class="listingblock">
+                    <div class="content">
+                        <pre class="prettyprint highlight">
+                            <code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt;create-domain --adminport 4848 domain4
+                                Enter admin user name [Enter to accept default "admin" / no password]&gt;
+                                Using port 4848 for Admin.
+                                Using default port 8080 for HTTP Instance.
+                                Using default port 7676 for JMS.
+                                Using default port 3700 for IIOP.
+                                Using default port 8181 for HTTP_SSL.
+                                Using default port 3820 for IIOP_SSL.
+                                Using default port 3920 for IIOP_MUTUALAUTH.
+                                Using default port 8686 for JMX_ADMIN.
+                                Using default port 6666 for OSGI_SHELL.
+                                Using default port 4900 for Hazelcast DAS.
+                                Using default port 5900 for Hazelcast Start.
+                                Distinguished Name of the self-signed X.509 Server Certificate is:
+                                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
+                                No domain initializers found, bypassing customization step
+                                Domain domain4 created.
+                                Domain domain4 admin port is 4848.
+                                Domain domain4 allows admin login as user "admin" with no password.
+                                Command create-domain executed successfully.
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                <div class="paragraph">
+                    <p><a id="GSRFM472"></a><a id="sthref214"></a></p>
+                </div>
+                <div class="paragraph">
+                    <p>Example 2   Creating a Domain in an Alternate Directory</p>
+                </div>
+                <div class="paragraph">
+                    <p>This example creates a domain named <code>sampleDomain</code> in the
+                        <code>/home/someuser/domains</code> directory.</p>
+                </div>
+                <div class="listingblock">
+                    <div class="content">
+                        <pre class="prettyprint highlight">
+                            <code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --domaindir /home/someuser/domains --adminport 7070
+                                --instanceport 7071 sampleDomain
+                                Enter admin user name [Enter to accept default "admin" / no password]&gt;
+                                Using port 7070 for Admin.
+                                Using port 7071 for HTTP Instance.
+                                Using default port 7676 for JMS.
+                                Using default port 3700 for IIOP.
+                                Using default port 8181 for HTTP_SSL.
+                                Using default port 3820 for IIOP_SSL.
+                                Using default port 3920 for IIOP_MUTUALAUTH.
+                                Using default port 8686 for JMX_ADMIN.
+                                Using default port 6666 for OSGI_SHELL.
+                                Using default port 4900 for Hazelcast DAS.
+                                Using default port 5900 for Hazelcast Start.
+                                Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
+                                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
+                                No domain initializers found, bypassing customization step
+                                Domain sampleDomain created.
+                                Domain sampleDomain admin port is 7070.
+                                Domain sampleDomain allows admin login as user "admin" with no password.
+                                Command create-domain executed successfully.
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                <div class="paragraph">
+                    <p><a id="GSRFM473"></a><a id="sthref215"></a></p>
+                </div>
+                <div class="paragraph">
+                    <p>Example 3   Creating a Domain and Saving the Administration User Name
+                        and Password</p>
+                </div>
+                <div class="paragraph">
+                    <p>This example creates a domain named <code>myDomain</code> and saves the
+                        administration username and password.</p>
+                </div>
+                <div class="listingblock">
+                    <div class="content">
+                        <pre class="prettyprint highlight">
+                            <code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --adminport 8282 --savelogin=true myDomain
+                                Enter the admin password [Enter to accept default of no password]&gt;
+                                Enter the master password [Enter to accept default password "changeit"]&gt;
+                                Using port 8282 for Admin.
+                                Using default port 8080 for HTTP Instance.
+                                Using default port 7676 for JMS.
+                                Using default port 3700 for IIOP.
+                                Using default port 8181 for HTTP_SSL.
+                                Using default port 3820 for IIOP_SSL.
+                                Using default port 3920 for IIOP_MUTUALAUTH.
+                                Using default port 8686 for JMX_ADMIN.
+                                Using default port 6666 for OSGI_SHELL.
+                                Using default port 4900 for Hazelcast DAS.
+                                Using default port 5900 for Hazelcast Start.
+                                Enterprise ServiceDistinguished Name of the self-signed X.509 Server Certificate is:
+                                [CN=sr1-usca-22,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
+                                No domain initializers found, bypassing customization step
+                                Domain myDomain created.
+                                Domain myDomain admin port is 8282.
+                                Domain myDomain allows admin login as user "admin" with no password.
+                                Login information relevant to admin user name [admin]
+                                for this domain [myDomain] stored at
+                                [/home/someuser/.asadminpass] successfully.
+                                Make sure that this file remains protected.
+                                Information stored in this file will be used by
+                                asadmin commands to manage this domain.
+                                Command create-domain executed successfully.
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                <div class="paragraph">
+                    <p><a id="GSRFM474"></a><a id="sthref216"></a></p>
+                </div>
+                <div class="paragraph">
+                    <p>Example 4   Creating a Domain and Designating the Certificate Host</p>
+                </div>
+                <div class="paragraph">
+                    <p>This example creates a domain named <code>domain5</code>. The common name of the
+                        host that is to be used for the self-signed certificate is <code>trio</code>.</p>
+                </div>
+                <div class="listingblock">
+                    <div class="content">
+                        <pre class="prettyprint highlight">
+                            <code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-domain --adminport 9898 --keytooloptions CN=trio domain5
+                                Enter the admin password [Enter to accept default of no password]&gt;
+                                Enter the master password [Enter to accept default password "changeit"]&gt;
+                                Using port 9898 for Admin.
+                                Using default port 8080 for HTTP Instance.
+                                Using default port 7676 for JMS.
+                                Using default port 3700 for IIOP.
+                                Using default port 8181 for HTTP_SSL.
+                                Using default port 3820 for IIOP_SSL.
+                                Using default port 3920 for IIOP_MUTUALAUTH.
+                                Using default port 8686 for JMX_ADMIN.
+                                Using default port 6666 for OSGI_SHELL.
+                                Using default port 4900 for Hazelcast DAS.
+                                Using default port 5900 for Hazelcast Start.
+                                Distinguished Name of the self-signed X.509 Server Certificate is:
+                                [CN=trio,OU=GlassFish,O=Oracle Corp.,L=Redwood Shores,ST=California,C=US]
+                                No domain initializers found, bypassing customization step
+                                Domain domain5 created.
+                                Domain domain5 admin port is 9898.
+                                Domain domain5 allows admin login as user "admin" with no password.
+                                Command create-domain executed successfully.
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                <div id="sthref217" class="paragraph">
+                    <p>Exit Status</p>
+                </div>
+                <div class="dlist">
+                    <dl>
+                        <dt class="hdlist1">0</dt>
+                        <dd>
+                            <p>subcommand executed successfully</p>
+                        </dd>
+                        <dt class="hdlist1">1</dt>
+                        <dd>
+                            <p>error in executing the subcommand</p>
+                        </dd>
+                    </dl>
+                </div>
+                <div id="sthref218" class="paragraph">
+                    <p>See Also</p>
+                </div>
+                <div class="paragraph">
+                    <p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+                </div>
+                <div class="paragraph">
+                    <p><a href="delete-domain.html#delete-domain-1"><code>delete-domain</code>(1)</a>,
+                        <a href="list-domains.html#list-domains-1"><code>list-domains</code>(1)</a>,
+                        <a href="login.html#login-1"><code>login</code>(1)</a>,
+                        <a href="start-domain.html#start-domain-1"><code>start-domain</code>(1)</a>,
+                        <a href="stop-domain.html#stop-domain-1"><code>stop-domain</code>(1)</a></p>
+                </div>
+                <div class="paragraph">
+                    <p>Apache Felix Remote Shell
+                        (<code>http://felix.apache.org/site/apache-felix-remote-shell.html</code>)</p>
+                </div>
+            </div>
+        </div>
 
-<hr />
+        <hr />
 
-<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
-	<colgroup>
-		<col width="12%"/>
-		<col width="12%"/>
-		<col width="*"/>
-	</colgroup>
-	<tr>		
-		<td align="left">
-		<a href="create-custom-resource.html">
-			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
+        <table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+            <colgroup>
+                <col width="12%"/>
+                <col width="12%"/>
+                <col width="*"/>
+            </colgroup>
+            <tr>		
+                <td align="left">
+                    <a href="create-custom-resource.html">
+                        <span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Previous</span>
+                    </a>
+                </td>
 
-		<td align="left">
-		<a href="create-file-user.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
-		</a>
-		</td>
+                <td align="left">
+                    <a href="create-file-user.html">
+                        <span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Next</span>
+                    </a>
+                </td>
 
-		<td align="right">
-		<a href="toc.html">
-			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Contents</span>
-		</a>
-		</td>
-	</tr>
-</table>
+                <td align="right">
+                    <a href="toc.html">
+                        <span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+                        <span style="position:relative;top:-2px;">Contents</span>
+                    </a>
+                </td>
+            </tr>
+        </table>
 
-<span id="copyright">
-        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
-        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
-</span>
+        <span id="copyright">
+            <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+            <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+        </span>
 
-</body>
+    </body>
 </html>

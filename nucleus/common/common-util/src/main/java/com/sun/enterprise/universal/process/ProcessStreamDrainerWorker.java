@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
@@ -49,8 +50,9 @@ class ProcessStreamDrainerWorker implements Runnable
 {
     ProcessStreamDrainerWorker(InputStream in, PrintStream Redirect, boolean save)
     {
-        if(in == null)
+        if(in == null) {
             throw new NullPointerException("InputStream argument was null.");
+        }
         
         reader = new BufferedInputStream(in);
         redirect = Redirect;
@@ -60,35 +62,35 @@ class ProcessStreamDrainerWorker implements Runnable
         }
     }
     
-    public void run()
-    {
-        if(reader == null)
+    @Override
+    public void run() {
+        if (reader == null) {
             return;
-        
-        try
-        {
+        }
+
+        try {
             int count = 0;
             byte[] buffer = new byte[4096];
-            
-            while ((count = reader.read(buffer)) != -1)
-            {
-                if(redirect != null)
-                    redirect.write(buffer, 0, count);
 
-               if(sb != null)
-                   sb.append(new String(buffer, 0, count));
+            while ((count = reader.read(buffer)) != -1) {
+                if (redirect != null) {
+                    redirect.write(buffer, 0, count);
+                }
+
+                if (sb != null) {
+                    sb.append(new String(buffer, 0, count));
+                }
             }
-        } 
-        catch (IOException e)
-        {
+        } catch (IOException e) {
         }
     }
 
     String getString() {
-        if(sb != null)
+        if(sb != null) {
             return sb.toString();
-        else
+        } else {
             return "";
+        }
     }
     
     private final   BufferedInputStream reader;

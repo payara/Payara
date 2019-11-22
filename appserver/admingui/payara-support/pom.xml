@@ -41,15 +41,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.admingui</groupId>
+        <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>payara-support</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Support</name>
-        
+
     <developers>
         <!-- See parent POM -->
     </developers>
@@ -70,7 +69,7 @@
                         <!-- _include does not work. See Felix-620.
                         <_include>osgi.bundle</_include>
                         -->
-                        <Export-Package>fish.payara.admingui.payara-support</Export-Package>
+                        <Export-Package>fish.payara.admingui.support</Export-Package>
                     </instructions>
                 </configuration>
                 <executions>
@@ -110,16 +109,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

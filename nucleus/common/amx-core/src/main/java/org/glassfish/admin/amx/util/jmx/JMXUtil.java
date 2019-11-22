@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -68,8 +68,7 @@ public final class JMXUtil
         return "" + objectName;
     }
 
-    public final static String MBEAN_SERVER_DELEGATE =
-            "JMImplementation:type=MBeanServerDelegate";
+    public static final String MBEAN_SERVER_DELEGATE = "JMImplementation:type=MBeanServerDelegate";
 
     public static MBeanServerDelegateMBean getMBeanServerDelegateMBean(final MBeanServerConnection server)
     {
@@ -89,30 +88,28 @@ public final class JMXUtil
         return clazz.cast(MBeanServerInvocationHandler.newProxyInstance(conn, objectName, clazz, notificationBroadcaster));
     }
 
-    public final static String MBEAN_SERVER_ID_ATTRIBUTE_NAME =
-            "MBeanServerId";
+    public static final String MBEAN_SERVER_ID_ATTRIBUTE_NAME = "MBeanServerId";
 
     /**
     The wilcard property at the end of an ObjectName which indicates
     that it's an ObjectName pattern.
      */
-    public final static String WILD_PROP = ",*";
+    public static final String WILD_PROP = ",*";
 
     /**
     The wilcard property at the end of an ObjectName which indicates
     that all properties should be matched.
      */
-    public final static String WILD_ALL = "*";
+    public static final String WILD_ALL = "*";
 
-    public static ObjectName getMBeanServerDelegateObjectName()
-    {
+    public static ObjectName getMBeanServerDelegateObjectName() {
         return (newObjectName("JMImplementation:type=MBeanServerDelegate"));
     }
 
     public static String getMBeanServerDelegateInfo(final MBeanServer server)
     {
         final MBeanServerDelegateMBean delegate = getMBeanServerDelegateMBean(server);
-        final String mbeanServerInfo = "MBeanServerDelegate: {" +
+        return "MBeanServerDelegate: {" +
                                        "MBeanServerId = " + delegate.getMBeanServerId() +
                                        ", ImplementationMame = " + delegate.getImplementationName() +
                                        ", ImplementationVendor = " + delegate.getImplementationVendor() +
@@ -121,7 +118,6 @@ public final class JMXUtil
                                        ", SpecificationVendor = " + delegate.getSpecificationVendor() +
                                        ", SpecificationVersion = " + delegate.getSpecificationVersion() +
                                        " }";
-        return mbeanServerInfo;
     }
 
     public static void listenToMBeanServerDelegate(
@@ -266,7 +262,7 @@ public final class JMXUtil
 
     private JMXUtil()
     {
-        // disallow;
+        // disallow
     }
 
     public static final String GET = "get";
@@ -669,7 +665,7 @@ public final class JMXUtil
             final Attribute attr = (Attribute) attrs.get(i);
 
             final Object value = attr.getValue();
-            final String s = (String) (value == null ? null : "" + value);
+            final String s = (value == null ? null : "" + value);
             map.put(attr.getName(), s);
         }
 
@@ -814,16 +810,11 @@ public final class JMXUtil
                 final Object value = conn.getAttribute(objectName, name);
 
                 attrs.add(new Attribute(name, value));
-            }
-            catch (Exception e)
-            {
+            } catch (InstanceNotFoundException e) {
                 // if the MBean disappeared while processing, just consider it gone
                 // from the start, even if we got some Attributes
-                if (e instanceof InstanceNotFoundException)
-                {
-                    throw (InstanceNotFoundException) e;
-                }
-
+                throw e;
+            } catch (Exception e) {
                 if (problemNames != null)
                 {
                     problemNames.add(name);
@@ -889,85 +880,7 @@ public final class JMXUtil
 
         return (attrs);
     }
-
-    /**
-    Return true if the two MBeanAttributeInfo[] contain the same attributes
-    WARNING: arrays will be sorted to perform the comparison if they are the same length.
-    boolean
-    sameAttributes( MBeanAttributeInfo[] infos1, MBeanAttributeInfo[] infos2 )
-    {
-    boolean	equal	= false;
-
-    if( infos1.length == infos2.length )
-    {
-    equal	= ArrayUtil.arraysEqual( infos1, infos2 );
-    if ( ! equal )
-    {
-    // could still be equal, just in different order
-    Arrays.sort( infos1, MBeanAttributeInfoComparator.INSTANCE );
-    Arrays.sort( infos2, MBeanAttributeInfoComparator.INSTANCE );
-
-    equal	= true;	// reset to false upon failure
-    for( int i = 0; i < infos1.length; ++i )
-    {
-    if ( ! infos1[ i ].equals( infos2[ i ] ) )
-    {
-    equal	= false;
-    break;
-    }
-    }
-    }
-    else
-    {
-    equal	= true;
-    }
-    }
-    return( equal );
-    }
-     */
-    /**
-    Return true if the two MBeanAttributeInfo[] contain the same operations
-    WARNING: arrays will be sorted to perform the comparison if they are the same length.
-    boolean
-    sameOperations( final MBeanOperationInfo[] infos1, final MBeanOperationInfo[] infos2 )
-    {
-    boolean	equal	= false;
-
-    if ( infos1.length == infos2.length )
-    {
-    // if they're in identical order, this is the quickest test if they ultimately succeed
-    equal	= ArrayUtil.arraysEqual( infos1, infos2 );
-    if ( ! equal )
-    {
-    // could still be equal, just in different order
-    Arrays.sort( infos1, MBeanOperationInfoComparator.INSTANCE );
-    Arrays.sort( infos2, MBeanOperationInfoComparator.INSTANCE );
-
-    equal	= true;	// reset to false upon failure
-    for( int i = 0; i < infos1.length; ++i )
-    {
-    if ( ! infos1[ i ].equals( infos2[ i ] ) )
-    {
-    equal	= false;
-    break;
-    }
-    }
-    }
-    }
-    return( equal );
-    }
-     */
-    /**
-    Return true if the MBeanInfos have the same interface (for Attributes and
-    operations).  MBeanInfo.equals() is not sufficient as it will fail if the
-    infos are in different order, but are actually the same.
-    boolean
-    sameInterface( MBeanInfo info1, MBeanInfo info2 )
-    {
-    return( sameAttributes( info1.getAttributes(), info2.getAttributes() ) &&
-    sameOperations( info1.getOperations(), info2.getOperations() ) );
-    }
-     */
+    
     public static boolean isIs(final Method method)
     {
         return (method.getName().startsWith(IS) && method.getParameterTypes().length == 0);
@@ -1047,19 +960,14 @@ public final class JMXUtil
         return (isGetter(method) || isIs(method));
     }
 
-    public static String getAttributeName(final Method method)
-    {
+    public static String getAttributeName(final Method method) {
         final String methodName = method.getName();
-        String attrName = null;
 
         int prefixLength;
 
-        if (methodName.startsWith(GET) || methodName.startsWith(SET))
-        {
+        if (methodName.startsWith(GET) || methodName.startsWith(SET)) {
             prefixLength = 3;
-        }
-        else
-        {
+        } else {
             prefixLength = 2;
         }
 
@@ -1071,7 +979,7 @@ public final class JMXUtil
         return (method.getName().startsWith(SET) &&
                 method.getParameterTypes().length == 1 &&
                 method.getParameterTypes()[ 0] != Attribute.class &&
-                method.getReturnType().getName().equals("void"));
+                method.getReturnType().equals(Void.TYPE));
     }
 
     public static boolean isGetAttribute(Method m)
@@ -1261,28 +1169,6 @@ public final class JMXUtil
             }
         }
 
-        /*
-        java.util.Iterator	iter	= null;
-        trace( "-------------------- getterSetters -------------------" );
-        iter	= getterSetters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getName() + ", " );
-        }
-        trace( "-------------------- getters -------------------" );
-        iter	= getters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getName() + ", " );
-        }
-        trace( "-------------------- setters -------------------" );
-        iter	= setters.values().iterator();
-        while ( iter.hasNext() )
-        {
-        trace( ((Method)iter.next()).getName() + ", " );
-        }
-         */
-
         final MBeanAttributeInfo[] attrInfos =
                 generateMBeanAttributeInfos(getterSetters.values(),
                 getters.values(), setters.values());
@@ -1466,39 +1352,7 @@ public final class JMXUtil
         final MBeanConstructorInfo[] merged = new MBeanConstructorInfo[all.size()];
         return all.toArray(merged);
     }
-
-    /**
-    Merge two MBeanInfo.  'info1' takes priority in conflicts, name, etc.
-
-    @param info1
-    @param info2
-    public static MBeanInfo
-    mergeMBeanInfos(
-    final MBeanInfo info1,
-    final MBeanInfo info2 )
-    {
-    if ( info1 == null )
-    {
-    return info2;
-    }
-    else if ( info2 == null )
-    {
-    return( info1 );
-    }
-
-    return( new MBeanInfo(
-    info1.getClassName(),
-    info1.getDescription(),
-    mergeMBeanAttributeInfos( info1.getAttributes(), info2.getAttributes() ),
-    mergeMBeanConstructorInfos( info1.getConstructors(), info2.getConstructors() ),
-    mergeMBeanOperationInfos( info1.getOperations(), info2.getOperations() ),
-    mergeMBeanNotificationInfos( info1.getNotifications(), info2.getNotifications() ),
-    ) );
-
-    fix to merge descriptors!
-
-    }
-     */
+   
     /**
     Make a new MBeanInfo from an existing one, substituting MBeanAttributeInfo[]
 
@@ -1574,35 +1428,24 @@ public final class JMXUtil
         return resultIdx;
     }
 
-    public static boolean domainMatches(
-            final String defaultDomain,
-            final ObjectName pattern,
-            final ObjectName candidate)
-    {
+    public static boolean domainMatches(final String defaultDomain, final ObjectName pattern, final ObjectName candidate) {
         boolean matches;
 
         final String candidateDomain = candidate.getDomain();
-        if (pattern.isDomainPattern())
-        {
-            final String regex =
-                    RegexUtil.wildcardToJavaRegex(pattern.getDomain());
+        if (pattern.isDomainPattern()) {
+            final String regex = RegexUtil.wildcardToJavaRegex(pattern.getDomain());
 
             matches = Pattern.matches(regex, candidateDomain);
-        }
-        else
-        {
+        } else {
             // domain is not a pattern
 
             String patternDomain = pattern.getDomain();
-            if (patternDomain.length() == 0)
-            {
+            if (patternDomain.length() == 0) {
                 patternDomain = defaultDomain;
             }
 
             matches = patternDomain.equals(candidateDomain);
         }
-
-        //dm( "MBeanProxyMgrImpl.domainMatches: " + matches + " " + pattern + " vs " + candidate );
 
         return (matches);
     }
@@ -1618,12 +1461,12 @@ public final class JMXUtil
         {
             final String patternProps = pattern.getCanonicalKeyPropertyListString();
             final String candidateProps = candidate.getCanonicalKeyPropertyListString();
-            assert (patternProps.indexOf("*") < 0);
-            assert (candidateProps.indexOf("*") < 0);
+            assert (patternProps.indexOf('*') < 0);
+            assert (candidateProps.indexOf('*') < 0);
 
             // Since we used canonical form any match means the pattern props String
             // must be a substring of candidateProps
-            if (candidateProps.indexOf(patternProps) >= 0)
+            if (candidateProps.contains(patternProps))
             {
                 matches = true;
             }
@@ -1725,7 +1568,7 @@ public final class JMXUtil
         {
             // ignore, can't happen.
         }
-        return null;
+        return Collections.emptySet();
     }
 
     /**
@@ -1789,11 +1632,6 @@ public final class JMXUtil
         return removed;
     }
 
-    private static String NL()
-    {
-        return StringUtil.NEWLINE();
-    }
-
     private static String title(final MBeanFeatureInfo info)
     {
         return info.getName() + ", \"" + info.getDescription() + "\"";
@@ -1801,7 +1639,7 @@ public final class JMXUtil
 
     public static String toString(final Descriptor d, final int indent)
     {
-        final String NL = NL();
+        final String NL = StringUtil.LS;
         final StringBuilder buf = new StringBuilder();
         if (d != null && d.getFieldNames().length != 0)
         {
@@ -1818,32 +1656,29 @@ public final class JMXUtil
     public static String impactStr(final int impact)
     {
         String s;
-        if (impact == MBeanOperationInfo.INFO)
-        {
-            s = "INFO";
-        }
-        else if (impact == MBeanOperationInfo.ACTION)
-        {
-            s = "ACTION";
-        }
-        else if (impact == MBeanOperationInfo.UNKNOWN)
-        {
-            s = "UNKNOWN";
-        }
-        else if (impact == MBeanOperationInfo.ACTION_INFO)
-        {
-            s = "ACTION_INFO";
-        }
-        else
-        {
-            s = "" + impact;
+        switch (impact) {
+            case MBeanOperationInfo.INFO:
+                s = "INFO";
+                break;
+            case MBeanOperationInfo.ACTION:
+                s = "ACTION";
+                break;
+            case MBeanOperationInfo.UNKNOWN:
+                s = "UNKNOWN";
+                break;
+            case MBeanOperationInfo.ACTION_INFO:
+                s = "ACTION_INFO";
+                break;
+            default:
+                s = "" + impact;
+                break;
         }
         return s;
     }
 
     public static String toString(final MBeanOperationInfo info, final int indent)
     {
-        final String NL = NL();
+        final String NL = StringUtil.LS;
         final StringBuilder buf = new StringBuilder();
 
         final String idt = idt(indent + 2);
@@ -1864,7 +1699,7 @@ public final class JMXUtil
 
     public static String toString(final MBeanAttributeInfo info, final int indent)
     {
-        final String NL = NL();
+        final String NL = StringUtil.LS;
         final StringBuilder buf = new StringBuilder();
 
         final String idt = idt(indent + 2);
@@ -1912,7 +1747,7 @@ public final class JMXUtil
     public static String toString(final MBeanInfo info)
     {
         final StringBuilder buf = new StringBuilder();
-        final String NL = NL();
+        final String NL = StringUtil.LS;
 
         int indent = 2;
         buf.append("Classname: ").append(info.getClassName()).append(NL);
@@ -1968,4 +1803,3 @@ public final class JMXUtil
     }
 
 }
-

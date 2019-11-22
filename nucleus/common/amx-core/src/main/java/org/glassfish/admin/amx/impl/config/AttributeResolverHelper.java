@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.config;
 
-import org.glassfish.admin.amx.config.AMXConfigProxy;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
 import org.jvnet.hk2.config.TranslationException;
@@ -66,13 +67,6 @@ import org.jvnet.hk2.config.VariableResolver;
 @Taxonomy( stability = Stability.UNCOMMITTED)
 public class AttributeResolverHelper extends VariableResolver {
 
-    private static void debug(final String s) {
-        System.out.println("##### " + s);
-    }
-
-    public AttributeResolverHelper(final AMXConfigProxy amx) {
-    }
-
     @Override
     protected String getVariableValue(final String varName) throws TranslationException {
         String result = varName;
@@ -90,17 +84,13 @@ public class AttributeResolverHelper extends VariableResolver {
      * Return true if the string is a template string of the for ${...}
      */
     public static boolean needsResolving(final String value) {
-        return value != null && value.indexOf("${") >= 0;
+        return value != null && value.contains("${");
     }
 
     /**
      * Resolve the String using the target resolver (MBean).
      */
     public String resolve(final String in) throws TranslationException {
-        final String result = translate(in);
-
-        //debug( "AttributeResolverHelper.resolve(): " + in + " ===> " + result );
-
-        return result;
+        return translate(in);
     }
 }

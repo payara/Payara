@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-jpa</artifactId>
     <name>Glassfish JPA Package</name>
@@ -125,22 +125,22 @@
 
     <dependencies>
        <dependency>
-           <groupId>org.glassfish.main.persistence</groupId>
+           <groupId>fish.payara.server.internal.persistence</groupId>
            <artifactId>jpa-container</artifactId>
            <version>${project.version}</version>
         </dependency>
        <dependency>
-           <groupId>org.glassfish.main.persistence</groupId>
+           <groupId>fish.payara.server.internal.persistence</groupId>
            <artifactId>gf-jpa-connector</artifactId>
            <version>${project.version}</version>
         </dependency>
        <dependency>
-           <groupId>org.glassfish.main.persistence</groupId>
+           <groupId>fish.payara.server.internal.persistence</groupId>
            <artifactId>persistence-common</artifactId>
            <version>${project.version}</version>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.main.persistence</groupId>
+           <groupId>fish.payara.server.internal.persistence</groupId>
            <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
            <version>${project.version}</version>
         </dependency>
@@ -159,7 +159,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-            <version>${eclipselink.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -183,7 +183,7 @@
         </dependency>
         <!-- JPA hazelcast cache coordination -->
         <dependency>
-            <groupId>fish.payara.persistence.coordination</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>hazelcast-eclipselink-coordination</artifactId>
             <version>${project.version}</version>
         </dependency>

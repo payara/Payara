@@ -41,11 +41,11 @@
    Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] 
 -->
 
-<sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open.png" 
+<sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open-new.png" 
               style="border-width: 0px"
               productImageDescription="$resource{theme.productName}"
-              productImageWidth="327"
-              productImageHeight="23"
+              productImageWidth="191"
+              productImageHeight="91"
               userInfo="#{userName}"  userInfoLabel="$resource{i18n.masthead.userInfoLabel}"
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"

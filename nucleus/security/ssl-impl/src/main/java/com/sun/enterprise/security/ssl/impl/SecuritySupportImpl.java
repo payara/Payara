@@ -45,7 +45,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -118,7 +118,7 @@ public class SecuritySupportImpl extends SecuritySupport {
 
     protected static final Logger _logger = Logger.getLogger(SEC_SSL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
-    @LogMessageInfo(message = "The SSL certificate has expired: {0}", level = "SEVERE", cause = "Certificate expired.", action = "Check the expiration date of the certicate.")
+    @LogMessageInfo(message = "The SSL certificate has expired: {0}", level = "WARNING", cause = "Certificate expired.", action = "Check the expiration date of the certificate.")
     private static final String SSL_CERT_EXPIRED = "NCLS-SECURITY-05054";
 
     private static final String DEFAULT_KEYSTORE_PASS = "changeit";
@@ -569,7 +569,7 @@ public class SecuritySupportImpl extends SecuritySupport {
             Certificate certificate = keyStore.getCertificate(aliases.nextElement());
             if (certificate instanceof X509Certificate) {
                 if (((X509Certificate) certificate).getNotAfter().before(initDate)) {
-                    _logger.log(SEVERE, SSL_CERT_EXPIRED, certificate);
+                    _logger.log(WARNING, SSL_CERT_EXPIRED, certificate);
                 }
             }
         }

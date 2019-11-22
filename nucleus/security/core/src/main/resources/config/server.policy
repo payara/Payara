@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 // classes in lib get all permissions by default
 grant codeBase "file:${com.sun.aas.installRoot}/lib/-" {
@@ -62,6 +63,7 @@ grant codeBase "file:${com.sun.aas.imqLib}/-" {
 grant codeBase "file:${com.sun.aas.derbyRoot}/lib/-" {
     permission java.lang.RuntimePermission "createClassLoader";
     permission java.io.FilePermission       "<<ALL FILES>>", "read,write";
+    permission org.apache.derby.security.SystemPermission "engine", "usederbyinternals";
 }; 
 
 
@@ -117,7 +119,7 @@ grant {
     permission java.lang.RuntimePermission "closeClassLoader";
     permission java.io.SerializablePermission "enableSubstitution";
     permission java.security.SecurityPermission "getProperty.package.definition";
-
+    permission java.security.SecurityPermission "createPolicy.JavaPolicy";
 };
 
 

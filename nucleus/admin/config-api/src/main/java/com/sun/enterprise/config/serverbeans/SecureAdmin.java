@@ -193,7 +193,7 @@ public interface SecureAdmin extends ConfigBeanProxy {
                 
         
         public static List<SecureAdminInternalUser> secureAdminInternalUsers(final SecureAdmin secureAdmin) {
-            return (secureAdmin == null) ? Collections.EMPTY_LIST : secureAdmin.getSecureAdminInternalUser();
+            return (secureAdmin == null) ? Collections.emptyList() : secureAdmin.getSecureAdminInternalUser();
         }
         
         public static SecureAdminInternalUser secureAdminInternalUser(final SecureAdmin secureAdmin) {

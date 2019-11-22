@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -45,13 +45,12 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
-public class TabularDataStringifier implements Stringifier
-{
+/**
+ * Creates a String representation of an {@link TabularData}
+ * @see Object#toString() 
+ */
+public class TabularDataStringifier implements Stringifier {
     public static final TabularDataStringifier DEFAULT = new TabularDataStringifier();
-
-    public TabularDataStringifier()
-    {
-    }
 
     @Override
     public String stringify(Object o)
@@ -78,22 +77,3 @@ public class TabularDataStringifier implements Stringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

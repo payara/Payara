@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -75,18 +75,31 @@ public final class JDK {
         return update;
     }
 
+    public static String getVendor() {
+        return vendor;
+    }
+
     public static class Version {
+        private final Optional<String> vendor;
         private final int major;
         private final Optional<Integer> minor;
         private final Optional<Integer> subminor;
         private final Optional<Integer> update;
 
-        private Version(String string) {
+        private Version(String version) {
             // split java version into it's constituent parts, i.e.
             // 1.2.3.4 -> [ 1, 2, 3, 4]
             // 1.2.3u4 -> [ 1, 2, 3, 4]
             // 1.2.3_4 -> [ 1, 2, 3, 4]
-            String[] split = string.split("[\\._u\\-]+");
+            
+            if (version.contains("-")) {
+                String[] versionSplit = version.split("-");
+                vendor = versionSplit.length > 0 ? Optional.of(versionSplit[0]) : Optional.empty();
+                version = versionSplit.length > 1 ? versionSplit[1] : "";
+            } else {
+                vendor = Optional.empty();
+            }
+            String[] split = version.split("[\\._u\\-]+");
 
             major = split.length > 0 ? Integer.parseInt(split[0]) : 0;
             minor = split.length > 1 ? Optional.of(Integer.parseInt(split[1])) : Optional.empty();
@@ -95,6 +108,7 @@ public final class JDK {
         }
 
         private Version() {
+            vendor = Optional.of(JDK.vendor);
             major = JDK.major;
             minor = Optional.of(JDK.minor);
             subminor = Optional.of(JDK.subminor);
@@ -140,7 +154,7 @@ public final class JDK {
 
             return false;
         }
-
+        
         private static boolean greaterThan(Optional<Integer> leftHandSide, Optional<Integer> rightHandSide) {
             return leftHandSide.orElse(0) > rightHandSide.orElse(0);
         }
@@ -240,13 +254,38 @@ public final class JDK {
     }
 
     public static boolean isCorrectJDK(Optional<Version> minVersion, Optional<Version> maxVersion) {
+        return isCorrectJDK(Optional.of(JDK_VERSION), minVersion, maxVersion);
+    }
+    
+    public static boolean isCorrectJDK(Optional<Version> reference, Optional<Version> minVersion, Optional<Version> maxVersion) {
+        return isCorrectJDK(reference, Optional.empty(), minVersion, maxVersion);
+    }
+
+    /**
+     * Check if the reference version falls between the minVersion and maxVersion.
+     *
+     * @param reference The version to compare; falls back to the current JDK version if empty.
+     * @param vendor The inclusive JDK vendor.
+     * @param minVersion The inclusive minimum version.
+     * @param maxVersion The inclusive maximum version.
+     * @return true if within the version range, false otherwise
+     */
+    public static boolean isCorrectJDK(Optional<Version> reference, Optional<String> vendor, Optional<Version> minVersion, Optional<Version> maxVersion) {
+        Version version = reference.orElse(JDK_VERSION);
         boolean correctJDK = true;
-        if (minVersion.isPresent()) {
-            correctJDK = JDK_VERSION.newerOrEquals(minVersion.get());
+
+        if (vendor.isPresent()) {
+            correctJDK = JDK.vendor.contains(vendor.get());
         }
+
+        if (correctJDK && minVersion.isPresent()) {
+            correctJDK = version.newerOrEquals(minVersion.get());
+        }
+
         if (correctJDK && maxVersion.isPresent()) {
-            correctJDK = JDK_VERSION.olderOrEquals(maxVersion.get());
+            correctJDK = version.olderOrEquals(maxVersion.get());
         }
+
         return correctJDK;
     }
 
@@ -271,6 +310,7 @@ public final class JDK {
     private static int minor;
     private static int subminor;
     private static int update;
+    private static String vendor;
     private static Version JDK_VERSION;
 
     // silently fall back to ridiculous defaults if something is crazily wrong...
@@ -278,7 +318,8 @@ public final class JDK {
         major = 1;
         minor = subminor = update = 0;
         try {
-            String jv = System.getProperty("java.version");
+            String javaVersion = System.getProperty("java.version");
+            vendor = System.getProperty("java.vendor");
             /*In JEP 223 java.specification.version will be a single number versioning , not a dotted versioning . So if we get a single
             integer as versioning we know that the JDK is post JEP 223
             For JDK 8:
@@ -292,7 +333,7 @@ public final class JDK {
             String[] jsvSplit = javaSpecificationVersion.split("\\.");
             if (jsvSplit.length == 1) {
                 //This is handle Early Access build .Example 9-ea
-                String[] jvSplit = jv.split("-");
+                String[] jvSplit = javaVersion.split("-");
                 String jvReal = jvSplit[0];
                 String[] split = jvReal.split("[\\.]+");
 
@@ -311,10 +352,10 @@ public final class JDK {
                     }
                 }
             } else {
-                if (!StringUtils.ok(jv))
+                if (!StringUtils.ok(javaVersion))
                     return; // not likely!!
 
-                String[] ss = jv.split("\\.");
+                String[] ss = javaVersion.split("\\.");
 
                 if (ss.length < 3 || !ss[0].equals("1"))
                     return;

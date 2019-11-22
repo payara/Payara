@@ -83,7 +83,7 @@ public class LoggingConfigImpl implements LoggingConfig {
     static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
     static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
-    public static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
+    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
     static {
         DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
@@ -233,6 +233,7 @@ public class LoggingConfigImpl implements LoggingConfig {
       * @throws  IOException
       */
 
+    @Override
     public synchronized Map<String, String> getLoggingProperties() throws IOException {
         return getLoggingProperties(true);
     }
@@ -342,7 +343,7 @@ public class LoggingConfigImpl implements LoggingConfig {
       *
       * @throws  IOException
       */
-
+    @Override
     public String createZipFile(String sourceDir) throws IOException {
         String zipFile = getZipFileName(sourceDir);
         add(sourceDir, zipFile);
@@ -439,7 +440,7 @@ public class LoggingConfigImpl implements LoggingConfig {
     /* Return a logging file details  in the logging.properties file.
       * @throws  IOException
       */
-
+    @Override
     public synchronized String getLoggingFileDetails() throws IOException {
         loadLoggingProperties();
 

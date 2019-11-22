@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.ArrayList;
@@ -51,7 +53,6 @@ import java.util.logging.Logger;
 import javax.management.*;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.core.AMXValidator;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 
@@ -70,7 +71,7 @@ public final class ComplianceMonitor implements NotificationListener {
     /** offloads the validation so as not to block during Notifications */
     private final ValidatorThread mValidatorThread;
 
-    private final Logger mLogger = AMXLoggerInfo.getLogger();
+    private static final Logger MLOGGER = AMXLoggerInfo.getLogger();
 
     private ComplianceMonitor(final DomainRoot domainRoot) {
         mDomainRoot = domainRoot;
@@ -84,7 +85,7 @@ public final class ComplianceMonitor implements NotificationListener {
 
         mValidatorThread = new ValidatorThread(mServer, mValidationLevel, mUnregisterNonCompliant, mLogInaccessibleAttributes);
 
-        mLogger.log(Level.INFO, AMXLoggerInfo.aMXComplianceMonitorLevel, new Object[] {mValidationLevel, mUnregisterNonCompliant,
+        MLOGGER.log(Level.INFO, AMXLoggerInfo.aMXComplianceMonitorLevel, new Object[] {mValidationLevel, mUnregisterNonCompliant,
                 mLogInaccessibleAttributes});
     }
 
@@ -103,7 +104,6 @@ public final class ComplianceMonitor implements NotificationListener {
         // queue all existing MBeans
         final Set<ObjectName> existing = JMXUtil.queryLocalMBeans(mServer, mDomainRoot.objectName().getDomain(), System.getProperty("com.sun.ass.instanceName"));
         for (final ObjectName objectName : existing) {
-            //debug( "Queueing for validation: " + objectName );
             validate(objectName);
         }
     }
@@ -139,6 +139,7 @@ public final class ComplianceMonitor implements NotificationListener {
         }
     }
 
+    @Override
     public void handleNotification(final Notification notifIn, final Object handback) {
         if ((notifIn instanceof MBeanServerNotification) &&
                 notifIn.getType().equals(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
@@ -198,6 +199,7 @@ public final class ComplianceMonitor implements NotificationListener {
             mMBeans.add(objectName);
         }
 
+        @Override
         public void run() {
             try {
                 doRun();
@@ -206,8 +208,7 @@ public final class ComplianceMonitor implements NotificationListener {
             }
         }
 
-        protected void doRun() throws InterruptedException {
-            //debug( "ValidatorThread.doRun(): started" );                
+        protected void doRun() throws InterruptedException {;                
             while (true) {
                 final ObjectName next = mMBeans.take(); // BLOCK until ready
                 final List<ObjectName> toValidate = new ArrayList<ObjectName>();
@@ -220,7 +221,6 @@ public final class ComplianceMonitor implements NotificationListener {
                 // process available MBeans as a group so we can emit summary information as a group.
                 final AMXValidator validator = new AMXValidator(mServer, mValidationLevel, mUnregisterNonCompliant, mLogInaccessibleAttributes);
                 try {
-                    //debug( "VALIDATING MBeans: " + toValidate.size() );
                     final ObjectName[] objectNames = new ObjectName[toValidate.size()];
                     toValidate.toArray(objectNames);
                     final AMXValidator.ValidationResult result = validator.validate(objectNames);
@@ -238,29 +238,4 @@ public final class ComplianceMonitor implements NotificationListener {
         }
     }
 
-    private static void debug(final Object o) {
-        System.out.println(o.toString());
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

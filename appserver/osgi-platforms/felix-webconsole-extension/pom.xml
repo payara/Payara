@@ -45,9 +45,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.osgi-platforms</groupId>
+        <groupId>fish.payara.server.internal.osgi-platforms</groupId>
         <artifactId>osgi-console-extensions</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>felix-webconsole-extension</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -91,12 +91,12 @@
         </dependency>
         <!-- TangYong's contribution towards Glassfish-12975 begins -->
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-services</artifactId>
              <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>

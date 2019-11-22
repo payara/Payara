@@ -62,7 +62,7 @@ import org.jvnet.hk2.config.DomDocument;
  */
 public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
-    private static Set<String> alreadyGenerated = new HashSet<String>();
+    private static Set<String> alreadyGenerated = Collections.synchronizedSet(new HashSet<String>());
     ServiceLocator habitat;
 
     public ResourcesGeneratorBase(ServiceLocator habitat) {
@@ -376,12 +376,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      * @return true if the given className is already generated. false otherwise.
      */
     protected boolean alreadyGenerated(String className) {
-        boolean retVal = true;
-        if (!alreadyGenerated.contains(className)) {
-            alreadyGenerated.add(className);
-            retVal = false;
-        }
-        return retVal;
+        return !alreadyGenerated.add(className);
     }
 
     /**

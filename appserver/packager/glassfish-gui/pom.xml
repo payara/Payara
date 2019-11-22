@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-gui</artifactId>
     <name>Glassfish Admin GUI Package</name>
@@ -82,7 +82,7 @@
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -103,7 +103,7 @@
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -119,44 +119,35 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>dataprovider</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>
-            <groupId>fish.payara.admingui</groupId>
-            <artifactId>console-updatecenter-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency> -->
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-payara-branding-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-reference-manual-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>        
-            <groupId>fish.payara.admingui</groupId>
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>dist-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -164,89 +155,95 @@
         <!-- TODO: move cluster plugin jars back to glassfish-cluster package
         once nucleus distro assembly moves to its own workspace -->
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-cluster-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-web-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-jdbc-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-jca-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
-            <groupId>fish.payara.admingui.connector</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>gf-admingui-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>cdieventbus-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>datadog-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>email-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>eventbus-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>healthcheck-service-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>hipchat-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>jmx-monitoring-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>microprofile-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>newrelic-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>slack-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>snmp-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>xmpp-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>

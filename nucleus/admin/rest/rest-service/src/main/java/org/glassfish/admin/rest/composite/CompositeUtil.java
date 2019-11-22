@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -98,10 +98,10 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
-import org.glassfish.hk2.external.org.objectweb.asm.ClassWriter;
-import org.glassfish.hk2.external.org.objectweb.asm.FieldVisitor;
-import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -418,7 +418,7 @@ public class CompositeUtil {
 
         Set<ConstraintViolation<T>> constraintViolations = beanValidator.validate(model);
         if (constraintViolations == null || constraintViolations.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         return constraintViolations;
@@ -637,50 +637,41 @@ public class CompositeUtil {
      *
      * @param similarClass
      */
-    private void loadModelExtensionMetadata(Class<?> similarClass) {
-        BufferedReader reader = null;
+    private static void loadModelExtensionMetadata(Class<?> similarClass) {
         try {
             Enumeration<URL> urls = similarClass.getClassLoader().getResources("META-INF/restmodelextensions");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                while (reader.ready()) {
-                    final String line = reader.readLine();
-                    if ((line == null) || line.isEmpty()) {
-                        continue;
-                    }
-                    if (line.charAt(0) != '#') {
-                        if (!line.contains(":")) {
-                            RestLogging.restLogger.log(Level.INFO,
-                                    RestLogging.INCORRECTLY_FORMATTED_ENTRY,
-                                    new String[]{
-                                        "META-INF/restmodelextensions",
-                                        line
-                                    });
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                    while (reader.ready()) {
+                        final String line = reader.readLine();
+                        if ((line == null) || line.isEmpty()) {
+                            continue;
                         }
-                        String[] entry = line.split(":");
-                        String base = entry[0];
-                        String ext = entry[1];
-                        List<String> list = modelExtensions.get(base);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            modelExtensions.put(base, list);
+                        if (line.charAt(0) != '#') {
+                            if (!line.contains(":")) {
+                                RestLogging.restLogger.log(Level.INFO,
+                                        RestLogging.INCORRECTLY_FORMATTED_ENTRY,
+                                        new String[]{
+                                                "META-INF/restmodelextensions",
+                                                line
+                                });
+                            }
+                            String[] entry = line.split(":");
+                            String base = entry[0];
+                            String ext = entry[1];
+                            List<String> list = modelExtensions.get(base);
+                            if (list == null) {
+                                list = new ArrayList<>();
+                                modelExtensions.put(base, list);
+                            }
+                            list.add(ext);
                         }
-                        list.add(ext);
                     }
                 }
-
             }
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
-                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
-                }
-            }
         }
     }
 
@@ -941,7 +932,7 @@ public class CompositeUtil {
                     final String paramName = values.getKey();
                     Object paramValue = values.getValue();
                     if (Class.class.isAssignableFrom(paramValue.getClass())) {
-                        paramValue = org.glassfish.hk2.external.org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
+                        paramValue = org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
                     }
                     if (paramValue.getClass().isArray() && (Array.getLength(paramValue) == 0)) {
                         continue;

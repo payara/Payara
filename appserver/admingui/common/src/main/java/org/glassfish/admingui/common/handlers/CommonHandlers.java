@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * CommonHandlers.java
@@ -567,7 +568,7 @@ public class CommonHandlers {
     })
     public static void setValueExpression(HandlerContext handlerCtx) {
         MiscUtil.setValueExpression((String) handlerCtx.getHandler().getInputValue("expression"), 
-                (Object) handlerCtx.getInputValue("value"));
+                handlerCtx.getInputValue("value"));
     }
 
     
@@ -719,7 +720,7 @@ public class CommonHandlers {
 
         // Concurrent acces problems?
         for (Map child : table) {
-            if (value.equals(child.get(key))) {
+            if (value != null && value.equals(child.get(key))) {
                 if (keep) {
                     results.add(child);
                 } else {
@@ -850,7 +851,7 @@ public class CommonHandlers {
 	if (pageSession == null) {
 	    pageSession = PageSessionResolver.createPageSession(ctx, root);
 	}
-        String request = (String) ctx.getExternalContext().getRequestParameterMap().get("bare");
+        String request = ctx.getExternalContext().getRequestParameterMap().get("bare");
 	if (request != null) {
 	    // It was specified, use this.
 	    if (request.equalsIgnoreCase("true")) {
@@ -883,14 +884,14 @@ public class CommonHandlers {
         String sep = "?";
         // If a query string exists (i.e., the url already has "?foo=bar", then we
         // want to append to that string rather than starting a new one
-        if (url.indexOf("?") > -1) {
+        if (url.indexOf('?') > -1) {
             sep = "&";
         }
         String insert = sep + name + "=" + value; // TODO: HTML encode this
 
         // Should the url have a hash in it, we need the query string (addition) to
         // be inserted before that.
-        int hash = url.indexOf("#");
+        int hash = url.indexOf('#');
         if (hash > -1) {
             url = url.substring(0, hash-1) + insert + url.substring(hash);
         } else {

@@ -43,7 +43,7 @@
 <!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-<hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+<hazelcast-runtime-configuration start-port="%%%HAZELCAST_DAS_PORT%%%" das-port="%%%HAZELCAST_START_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
       <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
@@ -205,10 +205,15 @@
         <!-- Hazelcast internal package access requirement to get the best performance results. -->
         <jvm-options>[9|]--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/java.lang=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.net=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.util=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -265,6 +270,9 @@
         <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
         <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
         <jvm-options>[9|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+        <jvm-options>[|8]-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
+        <jvm-options>[|8]-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
+        <jvm-options>[Azul-1.8.0u222|1.8.0u500]-XX:+UseOpenJSSE</jvm-options>
       </java-config>
       <availability-service>
           <web-container-availability/>
@@ -415,15 +423,21 @@
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-server</jvm-options>
+             <jvm-options>-client</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
              <!-- Hazelcast internal package access requirement to get the best performance results. -->
              <jvm-options>[9|]--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/java.lang=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.base/java.net=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.base/java.util=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -478,6 +492,9 @@
              <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
              <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
              <jvm-options>[9|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+             <jvm-options>[|8]-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
+             <jvm-options>[|8]-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
+             <jvm-options>[Azul-1.8.0u222|1.8.0u500]-XX:+UseOpenJSSE</jvm-options>
         </java-config>
          <availability-service>
              <web-container-availability/>

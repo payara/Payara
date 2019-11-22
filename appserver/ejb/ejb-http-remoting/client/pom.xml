@@ -44,24 +44,31 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.ejb.http</groupId>
+        <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
 
+    <groupId>fish.payara.extras</groupId>
     <artifactId>ejb-http-client</artifactId>
 
     <name>EJB - HTTP Client</name>
     <description>
         Module providing support for the EJB HTTP Client. This contains an InitialContext based lookup mechanism that
-        uses HTTP calls back
-        to Payara to lookup EJB beans, as well as a proxy mechanism to invoke methods on an EJB, which will be sent via
-        HTTP all well
-        to Payara.
+        uses HTTP calls back to Payara to lookup EJB beans, as well as a proxy mechanism to invoke methods on an EJB,
+        which will be sent via HTTP to Payara.
     </description>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -85,30 +92,36 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.1.0</version>
-                <configuration>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
                 <executions>
-                    <!-- enable flattening -->
                     <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <!-- ensure proper cleanup -->
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -123,8 +136,8 @@
             <artifactId>jersey-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
         </dependency>
 
         <dependency>
@@ -134,8 +147,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -155,13 +168,32 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Required to do component testing with grizzly HTTP server -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>ejb-http-endpoint</artifactId>
+            <version>${project.version}</version>
+            <classifier>tester</classifier>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -239,28 +239,15 @@ public class ASenvPropertyReader {
         private void setProperties(File configDir) {
             //Read in asenv.conf/bat and set system properties accordingly
             File asenv = new File(configDir,
-                    GFLauncherUtils.isWindows() ?
-                        WINDOWS_ASENV_FILENAME : UNIX_ASENV_FILENAME);
+                    GFLauncherUtils.isWindows() ? WINDOWS_ASENV_FILENAME : UNIX_ASENV_FILENAME);
 
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(asenv));
+            try (BufferedReader reader = new BufferedReader(new FileReader(asenv))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     setProperty(line);
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
             // Nothing to do
-            }
-            finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                }
-                catch (Exception ex) {
-                }
             }
         }
 
@@ -275,7 +262,7 @@ public class ASenvPropertyReader {
          *
          */
         private void setProperty(String line) {
-            int pos = line.indexOf("=");
+            int pos = line.indexOf('=');
 
             if (pos > 0) {
                 String lhs = (line.substring(0, pos)).trim();
@@ -285,10 +272,10 @@ public class ASenvPropertyReader {
                     lhs = (lhs.substring(3)).trim();
                 }
                 else {      // take the quotes out
-                    pos = rhs.indexOf("\"");
+                    pos = rhs.indexOf('"');
                     if (pos != -1) {
                         rhs = (rhs.substring(pos + 1)).trim();
-                        pos = rhs.indexOf("\"");
+                        pos = rhs.indexOf('"');
                         if (pos != -1) {
                             rhs = (rhs.substring(0, pos)).trim();
                         }
@@ -304,7 +291,7 @@ public class ASenvPropertyReader {
             }
         }
 
-        static private String getHostname() {
+        private static String getHostname() {
             String hostname = "localhost";
             try {
                 // canonical name checks to make sure host is proper
@@ -363,7 +350,7 @@ public class ASenvPropertyReader {
             return null;
         }
 
-        static private boolean isValidJavaRoot(String javaRootName) {
+        private static boolean isValidJavaRoot(String javaRootName) {
             if (!GFLauncherUtils.ok(javaRootName))
                 return false;
 
@@ -380,7 +367,7 @@ public class ASenvPropertyReader {
 
     }
 
-    static private Map<String, String> envToPropMap = new HashMap<String, String>();
+    private static Map<String, String> envToPropMap = new HashMap<String, String>();
     {
         envToPropMap.put("AS_DERBY_INSTALL", DERBY_ROOT_PROPERTY);
         envToPropMap.put("AS_H2_INSTALL", H2_ROOT_PROPERTY);
@@ -400,6 +387,6 @@ public class ASenvPropertyReader {
      * will share the same map. The key to the propsMap is the install dir that
      * is passed to the constructor.
      */
-    static private final HashMap<File, ASenvMap> propsMap = new HashMap<File, ASenvMap>();
+    private static final HashMap<File, ASenvMap> propsMap = new HashMap<File, ASenvMap>();
     private ASenvMap props;
 }

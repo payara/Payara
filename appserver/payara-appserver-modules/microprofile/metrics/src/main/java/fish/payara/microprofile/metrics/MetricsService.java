@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,12 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import java.beans.PropertyChangeEvent;
+
+import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -72,15 +77,22 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToLongFunction;
 import java.util.logging.Logger;
+import org.eclipse.microprofile.metrics.MetricID;
 
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsService implements EventListener {
+public class MetricsService implements EventListener, ConfigListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
@@ -88,18 +100,24 @@ public class MetricsService implements EventListener {
     Events events;
 
     @Inject
-    private ServerEnvironment serverEnv;
+    ApplicationRegistry applicationRegistry;
+
+    @Inject
+    MetricsServiceConfiguration configuration;
     
+    @Inject
+    private ServerEnvironment serverEnv;
+
     @Inject
     ServiceLocator serviceLocator;
-    
+
     @Inject
     private MBeanMetadataHelper helper;
-    
+
     private MetricsServiceConfiguration metricsServiceConfiguration;
-    
+
     private Boolean metricsEnabled;
-    
+
     private Boolean metricsSecure;
 
     private List<MBeanMetadata> unresolvedBaseMetadataList;
@@ -109,20 +127,77 @@ public class MetricsService implements EventListener {
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
     public MetricsService() {
-        
+
     }
 
     @PostConstruct
     public void init() {
+        if(events == null){
+            events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
+        }
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         // Only start if metrics are enabled
-        if (isMetricsEnabled()) {
+        if (isEnabled()) {
             PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
             payaraExecutor.submit(() -> {
                 bootstrap();
             });
         }
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        if (!isEnabled())
+            return;
+        MonitoringDataCollector metricsCollector = rootCollector.in("metric");
+        for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
+            collectRegistry(registry, metricsCollector);
+        }
+    }
+
+    private static void collectRegistry(Entry<String, MetricRegistry> registry, MonitoringDataCollector collector) {
+        for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
+            Object value = gauge.getValue().getValue();
+            if (value instanceof Number) {
+                tagCollector(gauge.getKey(), collector).collect(toName(gauge.getKey()), ((Number) value));
+            }
+        }
+        collectMetrics(registry.getValue().getCounters(), counter -> counter.getCount(), collector);
+        collectMetrics(registry.getValue().getConcurrentGauges(), gauge -> gauge.getCount(), collector);
+        collectMetrics(registry.getValue().getHistograms(), histogram -> histogram.getCount(), collector);
+        collectMetrics(registry.getValue().getMeters(), meter -> meter.getCount(), collector);
+        collectMetrics(registry.getValue().getTimers(), timer -> timer.getCount(), collector);
+    }
+
+    private static <T extends Metric> void collectMetrics(Map<MetricID, T> metrics, ToLongFunction<T> count, 
+            MonitoringDataCollector collector) {
+        for (Entry<MetricID, T> metric : metrics.entrySet()) {
+            tagCollector(metric.getKey(), collector).collect(toName(metric.getKey()), count.applyAsLong(metric.getValue()));
+        }
+    }
+
+    private static CharSequence toName(MetricID metric) {
+        String name = metric.getName();
+        return name.indexOf(' ') < 0 ? name : name.replace(' ', '.'); // trying to avoid replace
+    }
+
+    private static MonitoringDataCollector tagCollector(MetricID metric, MonitoringDataCollector collector) {
+        Map<String, String> tags = metric.getTags();
+        if (tags.isEmpty()) {
+            return collector;
+        }
+        StringBuilder tag = new StringBuilder();
+        for (Entry<String, String> e : metric.getTags().entrySet()) {
+            if (tag.length() > 0) {
+                tag.append('_');
+            }
+            if (!"name".equals(e.getKey())) {
+                tag.append(e.getKey().replace(' ', '.'));
+            }
+            tag.append(e.getValue().replace(' ', '.'));
+        }
+        return collector.group(tag);
     }
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
@@ -162,18 +237,17 @@ public class MetricsService implements EventListener {
      * @param metadataConfig
      */
     private void initMetadataConfig(List<MBeanMetadata> baseMetadataList, List<MBeanMetadata> vendorMetadataList, boolean isRetry) {
-        Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
         if (!baseMetadataList.isEmpty()) {
             unresolvedBaseMetadataList = helper.registerMetadata(
                     getOrAddRegistry(BASE.getName()),
                     baseMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
         if (!vendorMetadataList.isEmpty()) {
             unresolvedVendorMetadataList = helper.registerMetadata(
                     getOrAddRegistry(VENDOR.getName()),
                     vendorMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
     }
 
@@ -209,7 +283,7 @@ public class MetricsService implements EventListener {
         return config;
     }
 
-    public Boolean isMetricsEnabled() {
+    public Boolean isEnabled() {
         if (metricsEnabled == null) {
             metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
         }
@@ -226,12 +300,16 @@ public class MetricsService implements EventListener {
         }
         return metricsSecure;
     }
-    
+
     public void resetMetricsSecureProperty() {
         metricsSecure = null;
     }
+    
+    public boolean isSecurityEnabled() {
+        return Boolean.parseBoolean(metricsServiceConfiguration.getSecurityEnabled());
+    }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
         return registry.getMetrics();
     }
@@ -241,14 +319,27 @@ public class MetricsService implements EventListener {
         return registry.getMetadata();
     }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
-        Map<String, Metric> metricMap = registry.getMetrics();
-        if (metricMap.containsKey(metricName)) {
-            return Collections.singletonMap(metricName, metricMap.get(metricName));
-        } else {
-            throw new NoSuchMetricException(metricName);
+        Map<MetricID, Metric> metricMap = registry.getMetrics();
+        Set<MetricID> metricIDs = new HashSet<>();
+        for (MetricID id: metricMap.keySet()) {
+            if (id.getName().contains(metricName)) {
+                metricIDs.add(id);
+            }
         }
+        return metricIDs;
+    }
+    
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException {
+        MetricRegistry registry = getRegistry(registryName);
+        Map<MetricID, Metric> metricMap = new HashMap<>();
+        for (Map.Entry<MetricID, Metric> metricPair: registry.getMetrics().entrySet()) {
+            if (metricPair.getKey().getName().equals(metricName)) {
+                metricMap.put(metricPair.getKey(), metricPair.getValue());
+            }
+        }
+        return metricMap;
     }
         
     public Map<String, Metadata> getMetadataAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
@@ -313,6 +404,7 @@ public class MetricsService implements EventListener {
      * @return 
      */
     public MetricRegistry removeRegistry(String registryName) {
+        registryName = registryName.toLowerCase();
         return REGISTRIES.remove(registryName);
     }
     
@@ -359,5 +451,15 @@ public class MetricsService implements EventListener {
         MBeanMetadataConfig metadataConfig = getConfig();
         checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
         initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
+        for(PropertyChangeEvent event : events) {
+                unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile Metrics configuration changed:" + event.getPropertyName()
+                        + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
+            }
+        return new UnprocessedChangeEvents(unchangedList);
     }
 }

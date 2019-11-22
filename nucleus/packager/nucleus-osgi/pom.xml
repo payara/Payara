@@ -44,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.packager</groupId>
+        <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.194-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-osgi</artifactId>
     <name>Glassfish OSGi Support Package</name>
@@ -94,17 +94,17 @@
            <artifactId>org.apache.felix.scr</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <groupId>fish.payara.server.internal.osgi-platforms</groupId>
             <artifactId>osgi-cli-remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <groupId>fish.payara.server.internal.osgi-platforms</groupId>
             <artifactId>osgi-cli-interactive</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <groupId>fish.payara.server.internal.osgi-platforms</groupId>
             <artifactId>osgi-container</artifactId>
             <version>${project.version}</version>
         </dependency>

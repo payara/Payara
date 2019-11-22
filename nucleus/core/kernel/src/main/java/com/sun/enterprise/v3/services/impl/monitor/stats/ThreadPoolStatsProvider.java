@@ -134,6 +134,14 @@ public class ThreadPoolStatsProvider implements StatsProvider {
         return currentThreadsBusy;
     }
 
+    public CountStatistic getCurrentThreadUsage() {
+        long usage = 100 * getCurrentThreadsBusy().getCount() / getCurrentThreadCount().getCount();
+        CountStatisticImpl stats = new CountStatisticImpl("CurrentThreadUsage",
+                "%", "Percentage of threads currently busy");
+        stats.setCount(usage);
+        return stats;
+    }
+
     @ProbeListener("glassfish:kernel:thread-pool:setMaxThreadsEvent")
     public void setMaxThreadsEvent(
             @ProbeParam("monitoringId") String monitoringId,

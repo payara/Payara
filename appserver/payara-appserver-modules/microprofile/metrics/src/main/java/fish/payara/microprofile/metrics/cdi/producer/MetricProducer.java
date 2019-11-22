@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,16 +47,17 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import javax.interceptor.Interceptor;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @Dependent
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class MetricProducer {
 
     @Inject
@@ -67,33 +68,94 @@ public class MetricProducer {
 
     @Produces
     private Counter counter(InjectionPoint ip) {
-        return registry.counter(helper.metadataOf(ip, Counter.class));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) &&
+                    annotation.absolute() && annotation.description().isEmpty() && annotation.displayName().isEmpty())) {
+                return registry.counter(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.counter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
+        } else {
+            return registry.counter(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
+        }
+    }
+    
+    @Produces
+    private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.concurrentGauge(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.concurrentGauge(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
+        } else {
+            return registry.concurrentGauge(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
+        }
     }
 
     @Produces
     private <T> Gauge<T> gauge(InjectionPoint ip) {
-        return () -> (T) registry.getGauges().get(helper.metricNameOf(ip)).getValue();
+        return () -> (T) registry.getGauges().get(helper.metricIDOf(ip)).getValue();
     }
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
-        return registry.histogram(helper.metadataOf(ip, Histogram.class));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) || annotation.description().isEmpty() || annotation.displayName().isEmpty())
+                    || annotation.absolute()) {
+                return registry.histogram(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.histogram(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
+        } else {
+            return registry.histogram(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
+        }
     }
 
     @Produces
     private Meter meter(InjectionPoint ip) {
-        return registry.meter(helper.metadataOf(ip, Meter.class));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.meter(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.meter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
+        } else {
+            return registry.meter(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
+        }
     }
 
     @Produces
     private Timer timer(InjectionPoint ip) {
-        return registry.timer(helper.metadataOf(ip, Timer.class));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.timer(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.timer(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
+        } else {
+            return registry.timer(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
+        }
     }
 
     @Produces
     @Metric
     private Counter counterMetric(InjectionPoint ip) {
         return counter(ip);
+    }
+    
+    @Produces
+    @Metric
+    private ConcurrentGauge concurrentGaugeMetric(InjectionPoint ip) {
+        return concurrentGauge(ip);
     }
 
     @Produces

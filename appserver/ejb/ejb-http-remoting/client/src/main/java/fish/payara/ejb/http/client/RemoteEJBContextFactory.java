@@ -42,6 +42,8 @@ package fish.payara.ejb.http.client;
 import java.util.Hashtable;
 
 import javax.naming.Context;
+import static javax.naming.Context.SECURITY_CREDENTIALS;
+import static javax.naming.Context.SECURITY_PRINCIPAL;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
@@ -70,16 +72,24 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String FACTORY_CLASS = RemoteEJBContextFactory.class.getName();
     public static final String CLIENT_ADAPTER = "fish.payara.clientAdapter";
 
+    public static final String PROVIDER_AUTH_TYPE = "fish.payara.provider.authType";
+    public static final String PROVIDER_PRINCIPAL = "fish.payara.provider.principal";
+    public static final String PROVIDER_CREDENTIALS = "fish.payara.provider.credentials";
+
+    public static final String JAXRS_CLIENT_REQUEST_FILTER = "fish.payara.requestFilter";
+    public static final String JAXRS_CLIENT_RESPONSE_FILTER = "fish.payara.responseFilter";
     public static final String JAXRS_CLIENT_CONFIG = "fish.payara.withConfig";
     public static final String JAXRS_CLIENT_TRUST_STORE = "fish.payara.trustStore";
     public static final String JAXRS_CLIENT_SSL_CONTEXT = "fish.payara.sslContext";
     public static final String JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
     public static final String JAXRS_CLIENT_READ_TIMEOUT = "fish.payara.readTimeout";
     public static final String JAXRS_CLIENT_KEY_STORE = "fish.payara.keyStore";
+    public static final String JAXRS_CLIENT_KEY_STORE_PASSOWRD = "fish.payara.keyStorePassword";
     public static final String JAXRS_CLIENT_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
     public static final String JAXRS_CLIENT_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String JAXRS_CLIENT_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
-
+    public static final String JAXRS_CLIENT_SERIALIZATION = "fish.payara.ejb.http.serialization";
+    public static final String JAXRS_CLIENT_PROTOCOL_VERSION = "fish.payara.ejb.http.version";
 
     @Deprecated
     public static final String FISH_PAYARA_WITH_CONFIG = JAXRS_CLIENT_CONFIG;
@@ -140,13 +150,16 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
             JAXRS_CLIENT_READ_TIMEOUT,
             JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE,
             JAXRS_CLIENT_SSL_CONTEXT,
-            JAXRS_CLIENT_TRUST_STORE};
+            JAXRS_CLIENT_TRUST_STORE,
+            JAXRS_CLIENT_SERIALIZATION,
+            JAXRS_CLIENT_PROTOCOL_VERSION,
+    };
 
     @SuppressWarnings("unchecked")
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
         applySystemPropertiesFallbacks((Hashtable<String, Object>) environment);
-        return new RemoteEJBContext(environment);
+        return new RemoteEJBContext((Hashtable<String, Object>) environment);
     }
 
     private void applySystemPropertiesFallbacks(Hashtable<String, Object> environment) {
