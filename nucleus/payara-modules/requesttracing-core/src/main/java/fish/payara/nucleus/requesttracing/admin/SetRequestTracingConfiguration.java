@@ -39,12 +39,14 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -83,6 +85,7 @@ import java.util.logging.Logger;
 public class SetRequestTracingConfiguration implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(SetRequestTracingConfiguration.class);
 
     @Inject
     ServerEnvironment server;
@@ -166,63 +169,70 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             try {
                 ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
                     @Override
-                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
+                    public Object run(final RequestTracingServiceConfiguration proxy) throws
                             PropertyVetoException, TransactionFailure {
+                        boolean warn = false;
                         if (enabled != null) {
-                            requestTracingServiceConfigurationProxy.enabled(enabled.toString());
+                            proxy.enabled(enabled.toString());
                         }
                         
                         if (sampleRate != null) {
-                            requestTracingServiceConfigurationProxy.setSampleRate(sampleRate);
+                            proxy.setSampleRate(sampleRate);
                         }
                         if (adaptiveSamplingEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
+                            proxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
                         }
                         if (adaptiveSamplingTargetCount != null) {
-                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
+                            proxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
                         }
                         if (adaptiveSamplingTimeValue != null) {
-                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue.toString());
+                            proxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue.toString());
                         }
                         if (adaptiveSamplingTimeUnit != null) {
-                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
+                            proxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
                         }
                         
                         if (applicationsOnlyEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
+                            proxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
                         }
                         if (thresholdValue != null) {
-                            requestTracingServiceConfigurationProxy.setThresholdValue(thresholdValue);
+                            proxy.setThresholdValue(thresholdValue);
                         }
                         if (thresholdUnit != null) {
-                            requestTracingServiceConfigurationProxy.setThresholdUnit(thresholdUnit);
+                            proxy.setThresholdUnit(thresholdUnit);
                         }
                         if (sampleRateFirstEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
+                            proxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
                         }
                         
                         if (traceStoreSize != null) {
-                            requestTracingServiceConfigurationProxy.setTraceStoreSize(traceStoreSize.toString());
+                            warn = !traceStoreSize.toString().equals(proxy.getTraceStoreSize());
+                            proxy.setTraceStoreSize(traceStoreSize.toString());
                         }
                         if (traceStoreTimeout != null) {
-                            requestTracingServiceConfigurationProxy.setTraceStoreTimeout(traceStoreTimeout);
+                            warn = !traceStoreTimeout.equals(proxy.getTraceStoreTimeout());
+                            proxy.setTraceStoreTimeout(traceStoreTimeout);
                         }
                         if (reservoirSamplingEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
+                            proxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
                         }
                         
                         if (historicTraceStoreEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreEnabled(historicTraceStoreEnabled.toString());
+                            proxy.setHistoricTraceStoreEnabled(historicTraceStoreEnabled.toString());
                         }
                         if (historicTraceStoreSize != null) {
-                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreSize(historicTraceStoreSize.toString());
+                            warn = !historicTraceStoreSize.toString().equals(proxy.getHistoricTraceStoreSize());
+                            proxy.setHistoricTraceStoreSize(historicTraceStoreSize.toString());
                         }
                         if (historicTraceStoreTimeout != null) {
-                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
+                            warn = !historicTraceStoreTimeout.equals(proxy.getHistoricTraceStoreTimeout());
+                            proxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
                         }
-
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return requestTracingServiceConfigurationProxy;
+                        actionReport.setActionExitCode(ExitCode.SUCCESS);
+                        if (warn) {
+                            actionReport.setMessage(STRINGS.get("requesttracing.configure.store.size.warning"));
+                        }
+                        return proxy;
                     }
                 }, requestTracingServiceConfiguration);
             } catch (TransactionFailure ex) {
