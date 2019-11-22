@@ -110,6 +110,8 @@ public final class Constants {
 
     public static final String ACCESS_LOG_WRITE_INTERVAL_PROPERTY =
         "accessLogWriteInterval";
+    
+    public static final String ACCESS_LOG_PREFIX = "accessLogPrefix";
 
     public static final String ACCESS_LOGGING_ENABLED = "accessLoggingEnabled";
 

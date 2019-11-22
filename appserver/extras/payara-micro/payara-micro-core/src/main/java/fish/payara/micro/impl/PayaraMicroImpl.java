@@ -163,7 +163,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
-    private int accessLogInterval = 60;
+    private int accessLogInterval = 300;
+    private String accessLogSuffix = "yyyy-MM-dd";
+    private String accessLogPrefix;
     private boolean enableRequestTracing = false;
     private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
@@ -1391,6 +1393,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case accessloginterval:
                         accessLogInterval = Integer.parseInt(value);
                         break;
+                    case accesslogsuffix:
+                        accessLogSuffix = value;
+                        break;
+                    case accesslogprefix:
+                        accessLogPrefix = value;
+                        break;
                     default:
                         break;
                 }
@@ -1811,6 +1819,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-log=" + userAccessLogDirectory));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-logging-enabled=true"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.access-log.write-interval-seconds=" + accessLogInterval));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.access-log.rotation-suffix=" + accessLogSuffix));
+            if(accessLogPrefix != null && !accessLogPrefix.trim().isEmpty()) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.property.accessLogPrefix=" + accessLogPrefix));
+            }
             if (enableAccessLogFormat) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.access-log.format=" + accessLogFormat));
             }
@@ -2218,7 +2230,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
         publicAddress = getProperty("payaramicro.publicAddress");
         contextRoot = getProperty("payaramicro.contextRoot");
-        accessLogInterval = getIntegerProperty("payaramicro.accessLogInterval", Integer.MIN_VALUE);
+        accessLogInterval = getIntegerProperty("payaramicro.accessLogInterval", accessLogInterval);
+        accessLogSuffix = getProperty("payaramicro.accessLogSuffix", accessLogSuffix);
+        accessLogPrefix = getProperty("payaramicro.accessLogPrefix", accessLogPrefix);
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2392,6 +2406,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (accessLogInterval != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.accessLogInterval", Integer.toString(accessLogInterval));
+        }
+        
+        if (accessLogPrefix != null) {
+            props.setProperty("payaramicro.customlog", accessLogPrefix);
         }
         
         if (httpPort != Integer.MIN_VALUE) {

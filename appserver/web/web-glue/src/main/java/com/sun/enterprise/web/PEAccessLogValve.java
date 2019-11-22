@@ -663,18 +663,22 @@ public final class PEAccessLogValve
     boolean configure(String vsId, VirtualServer vsBean,
             HttpService httpService, Domain domain, ServiceLocator habitat,
             WebContainerFeatureFactory fac, String globalAccessLogBufferSize,
-            String globalAccessLogWriteInterval) {
-
+            String globalAccessLogWriteInterval, String globalAccessLogPrefix) {
+            
+        /*if(globalAccessLogPrefix != null && !globalAccessLogPrefix.trim().isEmpty() && !globalAccessLogPrefix.equals("null")) {
+            setPrefix(vsId + globalAccessLogPrefix + fac.getDefaultAccessLogPrefix());
+        }*/
+        
         setPrefix(vsId + fac.getDefaultAccessLogPrefix());
-
+        
         boolean start = updateVirtualServerProperties(
                 vsId, vsBean, domain, habitat, globalAccessLogBufferSize,
-                globalAccessLogWriteInterval);
+                globalAccessLogWriteInterval, globalAccessLogPrefix);
         updateAccessLogAttributes(httpService, fac);
 
         return start;
     }
-
+    
     /**
      * Configures this accesslog valve with the accesslog related properties
      * of the given <virtual-server> bean.
@@ -685,7 +689,8 @@ public final class PEAccessLogValve
             Domain domain,
             ServiceLocator services,
             String accessLogBufferSize,
-            String accessLogWriteInterval) {
+            String accessLogWriteInterval,
+            String accessLogPrefix) {
 
         /*
          * Determine the virtual server's access log directory, which may be
@@ -766,7 +771,12 @@ public final class PEAccessLogValve
                         acBufferSize);
             }
         }
-
+        
+        String acFilePrefix = vsBean.getPropertyValue(Constants.ACCESS_LOG_PREFIX);
+        if(acFilePrefix != null && !acFilePrefix.trim().isEmpty() && !"null".equals(acFilePrefix) && !"null".equals(accessLogPrefix)) {
+            setPrefix(acFilePrefix);
+        }
+        
         return true;
     }
 
@@ -843,7 +853,7 @@ public final class PEAccessLogValve
 
         // rotation-suffix
         setSuffix(fac.getDefaultAccessLogSuffix());
-
+           
         setAddDateStampToFirstAccessLogFile(Boolean.valueOf(
                 accessLogConfig.getDateStampToFirstAccessLogFileEnabled()));
 

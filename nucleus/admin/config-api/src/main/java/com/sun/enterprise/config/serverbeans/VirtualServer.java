@@ -406,6 +406,8 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
                     + "the buffer is full or when the interval expires. If the value is 0, the buffer is always written even if "
                     + "it is not full. This means that each time the server is accessed, the log message is stored directly to the file. "
                     + "To set this property for all virtual servers, set it as a property of the parent http-service"),
+            @PropertyDesc(name = "accessLogPrefix", defaultValue = "", dataType = String.class,
+                    description = "Custom file prefix for access log"),
             @PropertyDesc(name = "allowRemoteAddress",
                 description =
                     "Comma-separated list of regular expression patterns that the remote client's IP address is "

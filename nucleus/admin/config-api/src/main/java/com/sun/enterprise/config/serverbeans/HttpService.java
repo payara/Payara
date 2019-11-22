@@ -114,6 +114,10 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     String getAccessLoggingEnabled();
 
     void setAccessLoggingEnabled(String enabled);
+    
+    String getAccessLogPrefix();
+    
+    void setAccessLogPrefix(String name);
 
     /**
      * If true, single sign-on is enabled by default for all web applications on all virtual servers on this
