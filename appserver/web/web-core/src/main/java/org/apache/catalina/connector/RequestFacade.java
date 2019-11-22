@@ -102,14 +102,14 @@ public class RequestFacade implements HttpServletRequest {
     // ----------------------------------------------------------- DoPrivileged
 
     private final class GetAttributePrivilegedAction implements PrivilegedAction<Enumeration<String>> {
-
+        @Override
         public Enumeration<String> run() {
             return request.getAttributeNames();
         }
     }
 
     private final class GetParameterMapPrivilegedAction implements PrivilegedAction<Map<String, String[]>> {
-
+        @Override
         public Map<String, String[]> run() {
             return request.getParameterMap();
         }
@@ -117,12 +117,13 @@ public class RequestFacade implements HttpServletRequest {
 
     private final class GetRequestDispatcherPrivilegedAction implements PrivilegedAction<RequestDispatcher> {
 
-        private String path;
+        private final String path;
 
         public GetRequestDispatcherPrivilegedAction(String path) {
             this.path = path;
         }
 
+        @Override
         public RequestDispatcher run() {
             return request.getRequestDispatcher(path);
         }
@@ -136,13 +137,14 @@ public class RequestFacade implements HttpServletRequest {
             this.name = name;
         }
 
+        @Override
         public String run() {
             return request.getParameter(name);
         }
     }
 
     private final class GetParameterNamesPrivilegedAction implements PrivilegedAction<Enumeration<String>> {
-
+        @Override
         public Enumeration<String> run() {
             return request.getParameterNames();
         }
@@ -156,20 +158,21 @@ public class RequestFacade implements HttpServletRequest {
             this.name = name;
         }
 
+        @Override
         public String[] run() {
             return request.getParameterValues(name);
         }
     }
 
     private final class GetCookiesPrivilegedAction implements PrivilegedAction<Cookie[]> {
-
+        @Override
         public Cookie[] run() {
             return request.getCookies();
         }
     }
 
     private final class GetCharacterEncodingPrivilegedAction implements PrivilegedAction<String> {
-
+        @Override
         public String run() {
             return request.getCharacterEncoding();
         }
@@ -177,33 +180,34 @@ public class RequestFacade implements HttpServletRequest {
 
     private final class GetHeadersPrivilegedAction implements PrivilegedAction<Enumeration<String>> {
 
-        private String name;
+        private final String name;
 
         public GetHeadersPrivilegedAction(String name) {
             this.name = name;
         }
 
+        @Override
         public Enumeration<String> run() {
             return request.getHeaders(name);
         }
     }
 
     private final class GetHeaderNamesPrivilegedAction implements PrivilegedAction<Enumeration<String>> {
-
+        @Override
         public Enumeration<String> run() {
             return request.getHeaderNames();
         }
     }
 
     private final class GetLocalePrivilegedAction implements PrivilegedAction<Locale> {
-
+        @Override
         public Locale run() {
             return request.getLocale();
         }
     }
 
     private final class GetLocalesPrivilegedAction implements PrivilegedAction<Enumeration<Locale>> {
-
+        @Override
         public Enumeration<Locale> run() {
             return request.getLocales();
         }
@@ -217,6 +221,7 @@ public class RequestFacade implements HttpServletRequest {
             this.create = create;
         }
 
+        @Override
         public HttpSession run() {
             return request.getSession(create);
         }
@@ -277,7 +282,10 @@ public class RequestFacade implements HttpServletRequest {
 
     /**
      * Prevent cloning the facade.
+     * @return never
+     * @throws CloneNotSupportedException always
      */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }

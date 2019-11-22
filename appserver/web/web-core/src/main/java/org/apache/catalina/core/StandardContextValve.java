@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -103,8 +103,8 @@ final class StandardContextValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
 
     }
@@ -118,6 +118,7 @@ final class StandardContextValve
      * 
      * @see org.apache.catalina.Contained#setContainer(org.apache.catalina.Container)
      */
+    @Override
     public void setContainer(Container container) {
         super.setContainer(container);
         if (container instanceof StandardContext) {
@@ -218,9 +219,7 @@ final class StandardContextValve
 
         try {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        } catch (IllegalStateException e) {
-            // Ignore
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
             // Ignore
         }
 

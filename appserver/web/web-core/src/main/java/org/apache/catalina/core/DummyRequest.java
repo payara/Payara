@@ -80,7 +80,7 @@ import java.util.*;
  * @author Remy Maucherat
  * @version $Revision: 1.5.6.2 $ $Date: 2008/04/17 18:37:07 $
  */
-
+@SuppressWarnings("override")
 public class DummyRequest implements HttpRequest, HttpServletRequest {
 
     protected String queryString;
@@ -102,19 +102,23 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     private String method;
     // END PWC 4707989
 
-    private static Enumeration<String> dummyEnum = new Enumeration<String>(){
+    private static final Enumeration<String> dummyEnum = new Enumeration<String>(){
+        @Override
         public boolean hasMoreElements(){
             return false;
         }
+        @Override
         public String nextElement(){
             return null;
         }
     };
 
+    @Override
     public String getContextPath() {
         return null;
     }
 
+    @Override
     public ServletRequest getRequest() {
         return this;
     }
@@ -123,59 +127,73 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
         return getRequest();
     }
 
+    @Override
     public String getDecodedRequestURI() {
         return null;
     }
 
+    @Override
     public FilterChain getFilterChain() {
         return filterChain;
     }
 
+    @Override
     public void setFilterChain(FilterChain filterChain) {
         this.filterChain = filterChain;
     }
 
+    @Override
     public String getQueryString() {
         return queryString;
     }
 
+    @Override
     public void setQueryString(String query) {
         queryString = query;
     }
 
+    @Override
     public String getPathInfo() {
         return pathInfo;
     }
 
+    @Override
     public void setPathInfo(String path) {
         pathInfo = path;
     }
 
+    @Override
     public DataChunk getRequestPathMB() {
         return null;
     }
 
+    @Override
     public String getServletPath() {
         return servletPath;
     }
 
+    @Override
     public void setServletPath(String path) {
         servletPath = path;
     }
 
+    @Override
     public Wrapper getWrapper() {
         return wrapper;
     }
 
+    @Override
     public void setWrapper(Wrapper wrapper) {
         this.wrapper = wrapper;
     }
 
     // START PWC 4707989
+    @Override
     public void setMethod(String method) {
         this.method = method;
     }
 
+    @Override
     public String getMethod() {
         return method;
     }
@@ -320,7 +338,9 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     /**
      * Set whether or not access to resources under WEB-INF or META-INF
      * needs to be checked.
+     * @param check whether access needs to be checked
      */
+    @Override
     public void setCheckRestrictedResources(boolean check) {
         checkRestrictedResources = check;
     }
@@ -329,6 +349,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
      * Return whether or not access to resources under WEB-INF or META-INF
      * needs to be checked.
      */
+    @Override
     public boolean getCheckRestrictedResources() {
         return checkRestrictedResources;
     }
@@ -343,6 +364,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
      * @return The jroute id of this request, or null if this request does not
      * carry any jroute id
      */
+    @Override
     public String getJrouteId() {
         return null;
     }
@@ -351,7 +373,9 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     /**
      * This object does not implement a session ID generator. Provide
      * a dummy implementation so that the default one will be used.
+     * @return {@code null}
      */
+    @Override
     public String generateSessionId() {
         return null;
     }
@@ -363,14 +387,17 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
      * @return the servlet context to which this servlet request was last
      * dispatched
      */
+    @Override
     public ServletContext getServletContext() {
         return null;
     }
 
+    @Override
     public Session lockSession() {
         return null;
     }
 
+    @Override
     public void unlockSession() {}
 
 }

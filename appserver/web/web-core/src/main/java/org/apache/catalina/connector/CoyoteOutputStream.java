@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -101,7 +102,10 @@ public class CoyoteOutputStream
 
     /**
     * Prevent cloning the facade.
+     * @return throws {@link CloneNotSupportedException}
+     * @throws CloneNotSupportedException always
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -121,7 +125,7 @@ public class CoyoteOutputStream
 
     // --------------------------------------------------- OutputStream Methods
 
-
+    @Override
     public void write(int i)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -132,7 +136,7 @@ public class CoyoteOutputStream
         ob.writeByte(i);
     }
 
-
+    @Override
     public void write(byte[] b)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -143,7 +147,7 @@ public class CoyoteOutputStream
         write(b, 0, b.length);
     }
 
-
+    @Override
     public void write(byte[] b, int off, int len)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -158,6 +162,7 @@ public class CoyoteOutputStream
     /**
      * Will send the buffer to the client.
      */
+    @Override
     public void flush()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -169,8 +174,8 @@ public class CoyoteOutputStream
     }
 
 
-    public void close()
-        throws IOException {
+    @Override
+    public void close() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -183,6 +188,7 @@ public class CoyoteOutputStream
     // -------------------------------------------- ServletOutputStream Methods
 
 
+    @Override
     public void print(String s)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -194,6 +200,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public boolean isReady() {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
@@ -203,6 +210,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public void setWriteListener(WriteListener writeListener) {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {

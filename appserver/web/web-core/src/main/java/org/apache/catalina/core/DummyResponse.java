@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -80,7 +81,7 @@ import java.util.Locale;
  * @author Remy Maucherat
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:34 $
  */
-
+@SuppressWarnings("override")
 public class DummyResponse
     implements HttpResponse, HttpServletResponse {
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -129,7 +130,7 @@ class AsyncContextImpl implements AsyncContext {
     private final AtomicBoolean isAsyncCompleted = new AtomicBoolean();
     private volatile boolean delayAsyncDispatchAndComplete = true;
 
-    private ThreadLocal<Boolean> isStartAsyncInScope = new ThreadLocal<Boolean>() {
+    private final ThreadLocal<Boolean> isStartAsyncInScope = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return Boolean.FALSE;
@@ -591,7 +592,7 @@ class AsyncContextImpl implements AsyncContext {
     }
 
     boolean isStartAsyncInScope() {
-        return isStartAsyncInScope.get().booleanValue();
+        return isStartAsyncInScope.get();
     }
 
     /*
@@ -724,9 +725,9 @@ class AsyncContextImpl implements AsyncContext {
      */
     private static class AsyncListenerContext {
 
-        private AsyncListener listener;
-        private ServletRequest request;
-        private ServletResponse response;
+        private final AsyncListener listener;
+        private final ServletRequest request;
+        private final ServletResponse response;
 
         public AsyncListenerContext(AsyncListener listener,
                                     ServletRequest request,
@@ -772,7 +773,7 @@ class AsyncContextImpl implements AsyncContext {
 
     private static class PrivilegedSetTccl implements PrivilegedAction<Void> {
 
-        private ClassLoader cl;
+        private final ClassLoader cl;
 
         PrivilegedSetTccl(ClassLoader cl) {
             this.cl = cl;

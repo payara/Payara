@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -355,16 +356,17 @@ public class CoyoteServerSocketFactory
     // --------------------------------------------------------- Public Methods
 
 
+    @Override
     public ServerSocket createSocket(int port) {
         return (null);
     }
 
-
+    @Override
     public ServerSocket createSocket(int port, int backlog) {
         return (null);
     }
 
-
+    @Override
     public ServerSocket createSocket(int port, int backlog,
                                      InetAddress ifAddress) {
         return (null);

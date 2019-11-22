@@ -55,11 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
 import org.apache.catalina.*;
-import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ServerInfo;
 
@@ -103,8 +103,7 @@ public class ApplicationContext implements ServletContext {
         super();
         this.context = context;
 
-        setAttribute("com.sun.faces.useMyFaces",
-                     Boolean.valueOf(context.isUseMyFaces()));
+        setAttribute("com.sun.faces.useMyFaces", context.isUseMyFaces());
     }
 
     public StandardContext getStandardContext() {
@@ -127,19 +126,17 @@ public class ApplicationContext implements ServletContext {
     /**
      * The context attributes for this context.
      */
-    private Map<String, Object> attributes =
-        new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
     /**
      * List of read only attributes for this context.
      */
-    private HashMap<String, String> readOnlyAttributes =
-        new HashMap<String, String>();
+    private final HashMap<String, String> readOnlyAttributes = new HashMap<String, String>();
 
     /**
      * Lock for synchronizing attributes and readOnlyAttributes
      */
-    private Object attributesLock = new Object();
+    private final Object attributesLock = new Object();
 
     /**
      * The Context instance with which we are associated.
@@ -161,13 +158,12 @@ public class ApplicationContext implements ServletContext {
     /**
      * The facade around this object.
      */
-    private ServletContext facade = new ApplicationContextFacade(this);
+    private final ServletContext facade = new ApplicationContextFacade(this);
 
     /**
      * The merged context initialization parameters for this Context.
      */
-    private ConcurrentMap<String, String> parameters =
-        new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
 
     private boolean isRestricted;
 

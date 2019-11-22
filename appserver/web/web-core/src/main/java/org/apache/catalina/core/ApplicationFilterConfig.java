@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -164,6 +165,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
     /**
      * Return the name of the filter we are configuring.
      */
+    @Override
     public String getFilterName() {
         return (filterDef.getFilterName());
     }
@@ -188,6 +190,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
      *
      * @param name Name of the requested initialization parameter
      */
+    @Override
     public String getInitParameter(String name) {
         return filterDef.getInitParameter(name);
     }
@@ -197,6 +200,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
      * Return an <code>Enumeration</code> of the names of the initialization
      * parameters for this Filter.
      */
+    @Override
     public Enumeration<String> getInitParameterNames() {
         return filterDef.getInitParameterNames();
     }
@@ -205,6 +209,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
     /**
      * Return the ServletContext of our associated web application.
      */
+    @Override
     public ServletContext getServletContext() {
         return (this.context.getServletContext());
     }
@@ -213,6 +218,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ApplicationFilterConfig[");
         sb.append("name=");

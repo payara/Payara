@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -235,8 +236,8 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
-    public void close()
-        throws IOException {
+    @Override
+    public void close() throws IOException {
 
         if (suspended)
             return;
@@ -251,8 +252,8 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
-    public void flush()
-        throws IOException {
+    @Override
+    public void flush() throws IOException {
         doFlush(true);
     }
 
@@ -288,11 +289,12 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
+    @Override
     public void realWriteBytes(byte buf[], int off, int cnt)
 	throws IOException {
 
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "realWrite(b, " + off + ", " + cnt + ") " + grizzlyResponse);
+            log.log(Level.FINE, "realWrite(b, {0}, {1}) {2}", new Object[]{off, cnt, grizzlyResponse});
 
         if (grizzlyResponse == null)
             return;
@@ -354,8 +356,8 @@ public class OutputBuffer extends Writer
     // ------------------------------------------------- Chars Handling Methods
 
 
-    public void write(int c)
-        throws IOException {
+    @Override
+    public void write(int c) throws IOException {
 
         if (suspended)
             return;
@@ -365,9 +367,8 @@ public class OutputBuffer extends Writer
         
     }
 
-
-    public void write(char c[])
-        throws IOException {
+    @Override
+    public void write(char c[]) throws IOException {
 
         if (suspended)
             return;
@@ -376,12 +377,11 @@ public class OutputBuffer extends Writer
 
     }
 
-
-    public void write(char c[], int off, int len)
-        throws IOException {
-
-        if (suspended)
+    @Override
+    public void write(char c[], int off, int len) throws IOException {
+        if (suspended) {
             return;
+        }
 
         grizzlyOutputBuffer.write(c, off, len);
         charsWritten += len;
@@ -391,8 +391,8 @@ public class OutputBuffer extends Writer
     /**
      * Append a string to the buffer
      */
-    public void write(String s, int off, int len)
-        throws IOException {
+    @Override
+    public void write(String s, int off, int len) throws IOException {
 
         if (suspended)
             return;
@@ -403,9 +403,8 @@ public class OutputBuffer extends Writer
         grizzlyOutputBuffer.write(s, off, len);
     }
 
-
-    public void write(String s)
-        throws IOException {
+    @Override
+    public void write(String s) throws IOException {
 
         if (suspended)
             return;
@@ -738,6 +737,7 @@ public class OutputBuffer extends Writer
             writeListener = listener;
         }
 
+        @Override
         public void onWritePossible() {
             if (disable) {
                 return;
@@ -797,6 +797,7 @@ public class OutputBuffer extends Writer
             }
         }
 
+        @Override
         public void onError(final Throwable t) {
             if (disable) {
                 return;
@@ -857,7 +858,7 @@ public class OutputBuffer extends Writer
 
     private static class PrivilegedSetTccl implements PrivilegedAction<Void> {
 
-        private ClassLoader cl;
+        private final ClassLoader cl;
 
         PrivilegedSetTccl(ClassLoader cl) {
             this.cl = cl;

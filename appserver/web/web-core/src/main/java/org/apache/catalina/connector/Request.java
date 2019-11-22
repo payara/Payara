@@ -115,8 +115,7 @@ import static java.lang.Integer.parseInt;
  * @author Rajiv Mordani
  * @version $Revision: 1.67.2.9 $ $Date: 2008/04/17 18:37:34 $
  */
-public class Request
-        implements HttpRequest, HttpServletRequest {
+public class Request implements HttpRequest, HttpServletRequest {
 
     private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
@@ -363,7 +362,7 @@ public class Request
     private String jrouteId;
     // END SJSAS 6346226
     // START GlassFish 896
-    private SessionTracker sessionTracker = new SessionTracker();
+    private final SessionTracker sessionTracker = new SessionTracker();
     // END GlassFish 896
     // START GlassFish 1024
     private boolean isDefaultContext = false;
@@ -417,7 +416,7 @@ public class Request
     // has passed a filter or servlet that does not support async
     // operation, in which case async operation will be disabled
     private boolean isAsyncSupported = true;
-    private AtomicBoolean asyncStarted = new AtomicBoolean();
+    private final AtomicBoolean asyncStarted = new AtomicBoolean();
     private AsyncContextImpl asyncContext;
     private Thread asyncStartedThread;
 
@@ -1002,7 +1001,9 @@ public class Request
     /**
      * Return an Iterator containing the String names of all notes bindings
      * that exist for this request.
+     * @return Iterator containing the String names
      */
+    @Override
     public Iterator<String> getNoteNames() {
         return notes.keySet().iterator();
     }
@@ -2335,7 +2336,7 @@ public class Request
             parseCookies();
         }
 
-        if (cookies.size() == 0) {
+        if (cookies.isEmpty()) {
             return null;
         }
 
@@ -3768,8 +3769,7 @@ public class Request
     }
 
     void setAsyncTimeout(long timeout) {
-        coyoteRequest.getResponse().getSuspendContext().setTimeout(
-                timeout, TimeUnit.MILLISECONDS);;
+        coyoteRequest.getResponse().getSuspendContext().setTimeout(timeout, TimeUnit.MILLISECONDS);
     }
 
     /**

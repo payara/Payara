@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -198,8 +199,9 @@ public class NamingContextListener
     public void setName(String name) {
 
         this.name = name;
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "setName " + name);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "setName {0}", name);
+        }
     }
 
 
@@ -339,6 +341,7 @@ public class NamingContextListener
      *
      * @param event ContainerEvent that has occurred
      */
+    @Override
     public void containerEvent(ContainerEvent event) {
 
         if (!initialized)
@@ -490,6 +493,7 @@ public class NamingContextListener
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         if (!initialized)
@@ -528,120 +532,114 @@ public class NamingContextListener
                                               Object oldValue,
                                               Object newValue) {
 
-        if (name.equals("ejb")) {
-            if (oldValue != null) {
-                ContextEjb ejb = (ContextEjb) oldValue;
-                if (ejb.getName() != null) {
-                    removeEjb(ejb.getName());
-                }
-            }
-            if (newValue != null) {
-                ContextEjb ejb = (ContextEjb) newValue;
-                if (ejb.getName() != null) {
-                    addEjb(ejb);
-                }
-            }
-        } else if (name.equals("environment")) {
-            if (oldValue != null) {
-                ContextEnvironment env = (ContextEnvironment) oldValue;
-                if (env.getName() != null) {
-                    removeEnvironment(env.getName());
-                }
-            }
-            if (newValue != null) {
-                ContextEnvironment env = (ContextEnvironment) newValue;
-                if (env.getName() != null) {
-                    addEnvironment(env);
-                }
-            }
-        } else if (name.equals("localEjb")) {
-            if (oldValue != null) {
-                ContextLocalEjb ejb = (ContextLocalEjb) oldValue;
-                if (ejb.getName() != null) {
-                    removeLocalEjb(ejb.getName());
-                }
-            }
-            if (newValue != null) {
-                ContextLocalEjb ejb = (ContextLocalEjb) newValue;
-                if (ejb.getName() != null) {
-                    addLocalEjb(ejb);
-                }
-            }
-        } else if (name.equals("resource")) {
-            if (oldValue != null) {
-                ContextResource resource = (ContextResource) oldValue;
-                if (resource.getName() != null) {
-                    removeResource(resource.getName());
-                }
-            }
-            if (newValue != null) {
-                ContextResource resource = (ContextResource) newValue;
-                if (resource.getName() != null) {
-                    addResource(resource);
-                }
-            }
-        } else if (name.equals("resourceEnvRef")) {
-            if (oldValue != null) {
-                String update = (String) oldValue;
-                int colon = update.indexOf(':');
-                removeResourceEnvRef(update.substring(0, colon));
-            }
-            if (newValue != null) {
-                String update = (String) newValue;
-                int colon = update.indexOf(':');
-                addResourceEnvRef(update.substring(0, colon),
-                                  update.substring(colon + 1));
-            }
-        } else if (name.equals("resourceLink")) {
-            if (oldValue != null) {
-                ContextResourceLink rl = (ContextResourceLink) oldValue;
-                if (rl.getName() != null) {
-                    removeResourceLink(rl.getName());
-                }
-            }
-            if (newValue != null) {
-                ContextResourceLink rl = (ContextResourceLink) newValue;
-                if (rl.getName() != null) {
-                    addResourceLink(rl);
-                }
-            }
-        } else if (name.equals("resourceParams")) {
-            String resourceParamsName = null;
-            ResourceParams rp = null;
-            if (oldValue != null) {
-                rp = (ResourceParams) oldValue;
-            }
-            if (newValue != null) {
-                rp = (ResourceParams) newValue;
-            }
-            if (rp != null) {
-                resourceParamsName = rp.getName();
-            }
-            if (resourceParamsName != null) {
-                ContextEjb ejb = namingResources.findEjb(resourceParamsName);
-                if (ejb != null) {
-                    removeEjb(resourceParamsName);
-                    addEjb(ejb);
-                }
-                ContextResource resource = 
-                    namingResources.findResource(resourceParamsName);
-                if (resource != null) {
-                    removeResource(resourceParamsName);
-                    addResource(resource);
-                }
-                String resourceEnvRefValue = 
-                    namingResources.findResourceEnvRef(resourceParamsName);
-                if (resourceEnvRefValue != null) {
-                    removeResourceEnvRef(resourceParamsName);
-                    addResourceEnvRef(resourceParamsName, resourceEnvRefValue);
-                }
-                ContextResourceLink resourceLink = 
-                    namingResources.findResourceLink(resourceParamsName);
-                if (resourceLink != null) {
-                    removeResourceLink(resourceParamsName);
-                    addResourceLink(resourceLink);
-                }
-            }
+        switch (name) {
+            case "ejb":
+                if (oldValue != null) {
+                    ContextEjb ejb = (ContextEjb) oldValue;
+                    if (ejb.getName() != null) {
+                        removeEjb(ejb.getName());
+                    }
+                }   if (newValue != null) {
+                    ContextEjb ejb = (ContextEjb) newValue;
+                    if (ejb.getName() != null) {
+                        addEjb(ejb);
+                    }
+                }   break;
+            case "environment":
+                if (oldValue != null) {
+                    ContextEnvironment env = (ContextEnvironment) oldValue;
+                    if (env.getName() != null) {
+                        removeEnvironment(env.getName());
+                    }
+                }   if (newValue != null) {
+                    ContextEnvironment env = (ContextEnvironment) newValue;
+                    if (env.getName() != null) {
+                        addEnvironment(env);
+                    }
+                }   break;
+            case "localEjb":
+                if (oldValue != null) {
+                    ContextLocalEjb ejb = (ContextLocalEjb) oldValue;
+                    if (ejb.getName() != null) {
+                        removeLocalEjb(ejb.getName());
+                    }
+                }   if (newValue != null) {
+                    ContextLocalEjb ejb = (ContextLocalEjb) newValue;
+                    if (ejb.getName() != null) {
+                        addLocalEjb(ejb);
+                    }
+                }   break;
+            case "resource":
+                if (oldValue != null) {
+                    ContextResource resource = (ContextResource) oldValue;
+                    if (resource.getName() != null) {
+                        removeResource(resource.getName());
+                    }
+                }   if (newValue != null) {
+                    ContextResource resource = (ContextResource) newValue;
+                    if (resource.getName() != null) {
+                        addResource(resource);
+                    }
+                }   break;
+            case "resourceEnvRef":
+                if (oldValue != null) {
+                    String update = (String) oldValue;
+                    int colon = update.indexOf(':');
+                    removeResourceEnvRef(update.substring(0, colon));
+                }   if (newValue != null) {
+                    String update = (String) newValue;
+                    int colon = update.indexOf(':');
+                    addResourceEnvRef(update.substring(0, colon),
+                            update.substring(colon + 1));
+                }   break;
+            case "resourceLink":
+                if (oldValue != null) {
+                    ContextResourceLink rl = (ContextResourceLink) oldValue;
+                    if (rl.getName() != null) {
+                        removeResourceLink(rl.getName());
+                    }
+                }   if (newValue != null) {
+                    ContextResourceLink rl = (ContextResourceLink) newValue;
+                    if (rl.getName() != null) {
+                        addResourceLink(rl);
+                    }
+                }   break;
+            case "resourceParams":
+                String resourceParamsName = null;
+                ResourceParams rp = null;
+                if (oldValue != null) {
+                    rp = (ResourceParams) oldValue;
+                }   if (newValue != null) {
+                    rp = (ResourceParams) newValue;
+                }   if (rp != null) {
+                    resourceParamsName = rp.getName();
+                }   if (resourceParamsName != null) {
+                    ContextEjb ejb = namingResources.findEjb(resourceParamsName);
+                    if (ejb != null) {
+                        removeEjb(resourceParamsName);
+                        addEjb(ejb);
+                    }
+                    ContextResource resource =
+                            namingResources.findResource(resourceParamsName);
+                    if (resource != null) {
+                        removeResource(resourceParamsName);
+                        addResource(resource);
+                    }
+                    String resourceEnvRefValue =
+                            namingResources.findResourceEnvRef(resourceParamsName);
+                    if (resourceEnvRefValue != null) {
+                        removeResourceEnvRef(resourceParamsName);
+                        addResourceEnvRef(resourceParamsName, resourceEnvRefValue);
+                    }
+                    ContextResourceLink resourceLink =
+                            namingResources.findResourceLink(resourceParamsName);
+                    if (resourceLink != null) {
+                        removeResourceLink(resourceParamsName);
+                        addResourceLink(resourceLink);
+                    }
+                }   break;
+            default:
+                break;
         }
 
 
@@ -651,8 +649,7 @@ public class NamingContextListener
     /**
      * Create and initialize the JNDI naming context.
      */
-    private void createNamingContext()
-        throws NamingException {
+    private void createNamingContext() throws NamingException {
 
         // Creating the comp subcontext
         if (container instanceof Server) {
@@ -769,19 +766,19 @@ public class NamingContextListener
                 value = env.getValue();
             } else if (type.equals("java.lang.Byte")) {
                 if (env.getValue() == null) {
-                    value = Byte.valueOf((byte) 0);
+                    value = (byte) 0;
                 } else {
                     value = Byte.decode(env.getValue());
                 }
             } else if (type.equals("java.lang.Short")) {
                 if (env.getValue() == null) {
-                    value = Short.valueOf((short) 0);
+                    value = (short) 0;
                 } else {
                     value = Short.decode(env.getValue());
                 }
             } else if (type.equals("java.lang.Integer")) {
                 if (env.getValue() == null) {
-                    value = Integer.valueOf(0);
+                    value = (int) 0;
                 } else {
                     value = Integer.decode(env.getValue());
                 }
@@ -807,10 +804,10 @@ public class NamingContextListener
                 }
             } else if (type.equals("java.lang.Character")) {
                 if (env.getValue() == null) {
-                    value = Character.valueOf((char) 0);
+                    value = (char) 0;
                 } else {
                     if (env.getValue().length() == 1) {
-                        value = Character.valueOf(env.getValue().charAt(0));
+                        value = env.getValue().charAt(0);
                     } else {
                         throw new IllegalArgumentException();
                     }
@@ -1073,7 +1070,7 @@ public class NamingContextListener
         if (!(container instanceof Container)) {
             if (log.isLoggable(Level.INFO)) {
                 // Did not localize this message
-                log.log(Level.INFO, logName() + ": " + message);
+                log.log(Level.INFO, "{0}: {1}", new Object[]{logName(), message});
             }
             return;
         }
@@ -1083,7 +1080,7 @@ public class NamingContextListener
             logger.log(logName() + ": " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, logName() + ": " + message);
+                log.log(Level.INFO, "{0}: {1}", new Object[]{logName(), message});
             }
         }
     }

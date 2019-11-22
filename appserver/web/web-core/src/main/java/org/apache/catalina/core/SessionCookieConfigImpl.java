@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
-import org.apache.catalina.Globals;
 import org.apache.catalina.LogFacade;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import javax.servlet.SessionCookieConfig;
 
 /**
@@ -60,7 +59,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     private String comment;
     private boolean httpOnly = true;
     private boolean secure;
-    private StandardContext ctx;
+    private final StandardContext ctx;
     private int maxAge = -1;
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
@@ -81,6 +80,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setName(String name) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -97,6 +97,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * @return the cookie name set via {@link #setName}, or
      * <tt>JSESSIONID</tt> if {@link #setName} was never called
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -109,6 +110,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setDomain(String domain) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -124,6 +126,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * @return the cookie domain set via {@link #setDomain}, or
      * <tt>null</tt> if {@link #setDomain} was never called
      */
+    @Override
     public String getDomain() {
         return domain;
     }
@@ -136,6 +139,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setPath(String path) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -153,6 +157,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * <tt>SessionCookieConfig</tt> was acquired if {@link #setPath}
      * was never called
      */
+    @Override
     public String getPath() {
         return path;
     }
@@ -165,6 +170,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setComment(String comment) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -180,6 +186,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * @return the cookie comment set via {@link #setComment}, or
      * <tt>null</tt> if {@link #setComment} was never called
      */
+    @Override
     public String getComment() {
         return comment;
     }
@@ -195,6 +202,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setHttpOnly(boolean httpOnly) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -211,6 +219,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * <tt>ServletContext</tt> from which this <tt>SessionCookieConfig</tt>
      * was acquired will be marked as <i>HttpOnly</i>, false otherwise
      */
+    @Override
     public boolean isHttpOnly() {
         return httpOnly;
     }
@@ -229,6 +238,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * from which this <tt>SessionCookieConfig</tt> was acquired has
      * already been initialized
      */
+    @Override
     public void setSecure(boolean secure) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -249,11 +259,12 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      * only if the request that initiated the corresponding session was
      * also secure
      */
+    @Override
     public boolean isSecure() {
         return secure;
     }
 
-
+    @Override
     public void setMaxAge(int maxAge) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
@@ -264,7 +275,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
         this.maxAge = maxAge;
     }
 
-
+    @Override
     public int getMaxAge() {
         return maxAge;
     }

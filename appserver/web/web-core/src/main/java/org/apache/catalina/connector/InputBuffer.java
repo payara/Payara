@@ -589,7 +589,7 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
 
     private static class PrivilegedSetTccl implements PrivilegedAction<Void> {
 
-        private ClassLoader cl;
+        private final ClassLoader cl;
 
         PrivilegedSetTccl(ClassLoader cl) {
             this.cl = cl;

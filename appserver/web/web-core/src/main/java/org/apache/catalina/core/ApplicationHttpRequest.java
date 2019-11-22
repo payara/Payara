@@ -935,27 +935,25 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         ArrayList<String> results = new ArrayList<String>();
 
-        if (values1 == null)
-            ;
-        else if (values1 instanceof String)
-            results.add((String)values1);
-        else if (values1 instanceof String[]) {
+        if (values1 == null) {
+        } else if (values1 instanceof String) {
+            results.add((String) values1);
+        } else if (values1 instanceof String[]) {
             String values[] = (String[]) values1;
-            for (int i = 0; i < values.length; i++)
-                results.add(values[i]);
-        } else
+            results.addAll(Arrays.asList(values));
+        } else {
             results.add(values1.toString());
+        }
 
-        if (values2 == null)
-            ;
-        else if (values2 instanceof String)
-            results.add((String)values2);
-        else if (values2 instanceof String[]) {
+        if (values2 == null) {
+        } else if (values2 instanceof String) {
+            results.add((String) values2);
+        } else if (values2 instanceof String[]) {
             String values[] = (String[]) values2;
-            for (int i = 0; i < values.length; i++)
-                results.add(values[i]);
-        } else
+            results.addAll(Arrays.asList(values));
+        } else {
             results.add(values2.toString());
+        }
 
         String values[] = new String[results.size()];
         return results.toArray(values);
@@ -1037,12 +1035,14 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             }
         }
 
+        @Override
         public boolean hasMoreElements() {
             return (specialNames != null && specialNames.hasNext())
                     || (next != null)
                     || ((next = findNext()) != null);
         }
 
+        @Override
         public String nextElement() {
 
             if (specialNames != null && specialNames.hasNext()) {

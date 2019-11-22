@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -67,8 +68,8 @@ import java.io.Serializable;
  * @author Shing Wai Chan
  */
 public class DispatchTargetsInfo implements Serializable {
-    private String[] targets = new String[2];
-    private boolean[] named = new boolean[2];
+    private final String[] targets = new String[2];
+    private final boolean[] named = new boolean[2];
 
     DispatchTargetsInfo() {
     }

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -287,8 +288,7 @@ class ApplicationDispatcherForward {
         request.setAttribute(Globals.DISPATCHER_REQUEST_PATH_ATTR,
                              errorPageLocation);
 
-        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
-                             Integer.valueOf(errorCode));
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, errorCode);
 
         request.setAttribute(RequestDispatcher.ERROR_MESSAGE, errorMessage);
     }
@@ -414,17 +414,15 @@ class ApplicationDispatcherForward {
 
     private static void closeResponse(ServletResponse response) {
         try {
-            PrintWriter writer = response.getWriter();
-            writer.flush();
-            writer.close();
+            try (PrintWriter writer = response.getWriter()) {
+                writer.flush();
+            }
         } catch (IllegalStateException e) {
             try {
-                ServletOutputStream stream = response.getOutputStream();
-                stream.flush();
-                stream.close();
-            } catch (IllegalStateException f) {
-                ;
-            } catch (IOException f) {
+                try (ServletOutputStream stream = response.getOutputStream()) {
+                    stream.flush();
+                }
+            } catch (IllegalStateException | IOException f) {
                 ;
             }
         } catch (IOException e) {

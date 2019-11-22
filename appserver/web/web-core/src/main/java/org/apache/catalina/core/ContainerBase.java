@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -174,7 +175,7 @@ public abstract class ContainerBase
     protected class PrivilegedAddChild
         implements PrivilegedAction<Void> {
 
-        private Container child;
+        private final Container child;
 
         PrivilegedAddChild(Container child) {
             this.child = child;
@@ -237,7 +238,7 @@ public abstract class ContainerBase
      */
     protected Loader loader = null;
 
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     protected Lock readLock = lock.readLock();
     protected Lock writeLock = lock.writeLock();
 
@@ -684,6 +685,7 @@ public abstract class ContainerBase
      * @exception IllegalArgumentException if this Container refuses to become
      *  attached to the specified Container
      */
+    @Override
     public void setParent(Container container) {
 
         Container oldParent = this.parent;
@@ -943,7 +945,7 @@ public abstract class ContainerBase
     private void addChildInternal(Container child) {
         
         if(log.isLoggable(Level.FINEST))
-            log.log(Level.FINEST, "Add child " + child + " " + this);
+            log.log(Level.FINEST, "Add child {0} {1}", new Object[]{child, this});
         synchronized(children) {
             if (children.get(child.getName()) != null) {
                 String msg = MessageFormat.format(rb.getString(LogFacade.DUPLICATE_CHILD_NAME_EXCEPTION),
@@ -1271,22 +1273,20 @@ public abstract class ContainerBase
         }
 
         // Stop our child containers, if any
-        Container children[] = findChildren();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof Lifecycle) {
+        for (Container child : findChildren()) {
+            if (child instanceof Lifecycle) {
                 try {
-                    ((Lifecycle) children[i]).stop();
+                    ((Lifecycle) child).stop();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_STOPPING_CONTAINER), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_STOPPING_CONTAINER), child);
                     log.log(Level.SEVERE, msg, t);
                 }
             }
         }
 
         // Remove children - so next start can work
-        children = findChildren();
-        for (int i = 0; i < children.length; i++) {
-            removeChild(children[i]);
+        for (Container child : findChildren()) {
+            removeChild(child);
         }
 
         // Stop our subordinate components, if any
@@ -1543,19 +1543,17 @@ public abstract class ContainerBase
      * Starts the children of this container.
      */
     protected void startChildren() {
-
-        Container children[] = findChildren();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof Lifecycle) {
+        for (Container child : findChildren()) {
+            if (child instanceof Lifecycle) {
                 try {
-                    ((Lifecycle) children[i]).start();
+                    ((Lifecycle) child).start();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(LogFacade.CONTAINER_NOT_STARTED_EXCEPTION), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.CONTAINER_NOT_STARTED_EXCEPTION), child);
                     log.log(Level.SEVERE, msg, t);
-                    if (children[i] instanceof Context) {
-                        ((Context) children[i]).setAvailable(false);
-                    } else if (children[i] instanceof Wrapper) {
-                        ((Wrapper) children[i]).setAvailable(Long.MAX_VALUE);
+                    if (child instanceof Context) {
+                        ((Context) child).setAvailable(false);
+                    } else if (child instanceof Wrapper) {
+                        ((Wrapper) child).setAvailable(Long.MAX_VALUE);
                     }
                 }
             }
@@ -1667,7 +1665,7 @@ public abstract class ContainerBase
         throws Exception
     {
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Create ObjectName " + domain + " " + parent);
+            log.log(Level.FINE, "Create ObjectName {0} {1}", new Object[]{domain, parent});
         return null;
     }
 
@@ -1754,6 +1752,7 @@ public abstract class ContainerBase
      */
     protected class ContainerBackgroundProcessor implements Runnable {
 
+        @Override
         public void run() {
             while (!threadDone) {
                 try {
@@ -1786,9 +1785,9 @@ public abstract class ContainerBase
                 Thread.currentThread().setContextClassLoader(cl);
             }
             Container[] children = container.findChildren();
-            for (int i = 0; i < children.length; i++) {
-                if (children[i].getBackgroundProcessorDelay() <= 0) {
-                    processChildren(children[i], cl);
+            for (Container child : children) {
+                if (child.getBackgroundProcessorDelay() <= 0) {
+                    processChildren(child, cl);
                 }
             }
         }

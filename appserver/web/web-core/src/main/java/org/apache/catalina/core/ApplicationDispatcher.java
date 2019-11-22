@@ -124,6 +124,7 @@ public final class ApplicationDispatcher
             this.dispatcherType = dispatcherType;
         }
 
+        @Override
         public Void run() throws java.lang.Exception {
             doDispatch(request, response, dispatcherType);
             return null;
@@ -132,14 +133,15 @@ public final class ApplicationDispatcher
 
     protected class PrivilegedInclude implements PrivilegedExceptionAction<Void> {
 
-        private ServletRequest request;
-        private ServletResponse response;
+        private final ServletRequest request;
+        private final ServletResponse response;
 
         PrivilegedInclude(ServletRequest request, ServletResponse response) {
             this.request = request;
             this.response = response;
         }
 
+        @Override
         public Void run() throws ServletException, IOException {
             doInclude(request,response);
             return null;
@@ -321,6 +323,7 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
+    @Override
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
         dispatch(request, response, DispatcherType.FORWARD);
@@ -555,9 +558,8 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
-    public void include(ServletRequest request, ServletResponse response)
-        throws ServletException, IOException
-    {
+    @Override
+    public void include(ServletRequest request, ServletResponse response) throws ServletException, IOException {
         if (Globals.IS_SECURITY_ENABLED) {
             try {
                 PrivilegedInclude dp = new PrivilegedInclude(request,response);
@@ -670,7 +672,7 @@ public final class ApplicationDispatcher
             throws IOException, ServletException {
         //START OF 6364900 original invoke has been renamed to doInvoke
         boolean crossContext = false;
-        if (crossContextFlag != null && crossContextFlag.booleanValue()) {
+        if (crossContextFlag != null && crossContextFlag) {
             crossContext = true;
         }
         if (crossContext) {
@@ -803,8 +805,7 @@ public final class ApplicationDispatcher
                 if (reqFacHelper != null) {
                     reqFacHelper.incrementDispatchDepth();
                     if (reqFacHelper.isMaxDispatchDepthReached()) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED),
-                                                          new Object[]{Integer.valueOf(Request.getMaxDispatchDepth())});
+                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED), new Object[]{Request.getMaxDispatchDepth()});
                         throw new ServletException(msg);
                     }
                 }

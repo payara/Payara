@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] 
 
 package org.apache.catalina.connector;
 
@@ -109,8 +109,7 @@ public class Connector
      * Coyote Adapter class name.
      * Defaults to the CoyoteAdapter.
      */
-    private String defaultClassName =
-        "org.apache.catalina.connector.CoyoteAdapter";
+    private final String defaultClassName = "org.apache.catalina.connector.CoyoteAdapter";
     // END SJSAS 6363251
 
     
@@ -119,7 +118,7 @@ public class Connector
     /**
      * Holder for our configured properties.
      */
-    private Map<String, String> properties = new HashMap<String, String>();
+    private final Map<String, String> properties = new HashMap<String, String>();
 
     /**
      * The <code>Service</code> we are associated with (if any).
@@ -748,6 +747,7 @@ public class Connector
      * @param maxPostSize The new maximum size in bytes of a POST which will 
      * be automatically parsed by the container
      */
+    @Override
     public void setMaxPostSize(int maxPostSize) {
         this.maxPostSize = maxPostSize;
         setProperty("maxPostSize", String.valueOf(maxPostSize));
@@ -756,11 +756,11 @@ public class Connector
     /**
      * Return the maximum size of a POST which will be saved by the container
      * during authentication.
+     * @return maximum size in bytes
      */
+    @Override
     public int getMaxSavePostSize() {
-
         return (maxSavePostSize);
-
     }
 
     /**
@@ -841,14 +841,17 @@ public class Connector
      * @param protocol The Coyote protocol name
      */
     public void setProtocol(String protocol) {
-        if (protocol.equals("HTTP/1.1")) {
-            setProtocolHandlerClassName
-                ("org.glassfish.grizzly.tcp.http11.Http11Protocol");
-        } else if (protocol.equals("AJP/1.3")) {
-            setProtocolHandlerClassName
-                ("org.apache.jk.server.JkCoyoteHandler");
-        } else {
-            setProtocolHandlerClassName(null);
+        switch (protocol) {
+            case "HTTP/1.1":
+                setProtocolHandlerClassName("org.glassfish.grizzly.tcp.http11.Http11Protocol");
+                break;
+            case "AJP/1.3":
+                setProtocolHandlerClassName
+                        ("org.apache.jk.server.JkCoyoteHandler");
+                break;
+            default:
+                setProtocolHandlerClassName(null);
+                break;
         }
     }
 
@@ -1107,16 +1110,14 @@ public class Connector
      */
     @Override
     public void setURIEncoding(String uriEncoding) {
-    	if (Charset.isSupported(uriEncoding)) {
-        this.uriEncoding = uriEncoding;
-        setProperty("uRIEncoding", uriEncoding);
-    	} else {
-			if (log.isLoggable(Level.WARNING)) {
-				log.log(Level.WARNING, uriEncoding
-						+ "is not supported .Setting default URLEncoding as "
-						+ this.uriEncoding);
-			}
-		}
+        if (Charset.isSupported(uriEncoding)) {
+            this.uriEncoding = uriEncoding;
+            setProperty("uRIEncoding", uriEncoding);
+        } else {
+            if (log.isLoggable(Level.WARNING)) {
+                log.log(Level.WARNING, "{0}is not supported .Setting default URLEncoding as {1}", new Object[]{uriEncoding, this.uriEncoding});
+            }
+        }
     }
 
     /**
@@ -1269,10 +1270,12 @@ public class Connector
     }
     // END SJSAS 6331392
 
+    @Override
     public void setJvmRoute(String jvmRoute) {
         this.jvmRoute = jvmRoute;
     }
 
+    @Override
     public String getJvmRoute() {
         return jvmRoute;
     }
@@ -1540,23 +1543,26 @@ public class Connector
      * internal protocol names.
      */
     private String translateAttributeName(String name) {
-	if ("clientAuth".equals(name)) {
-	    return "clientauth";
-	} else if ("keystoreFile".equals(name)) {
-	    return "keystore";
-	} else if ("randomFile".equals(name)) {
-	    return "randomfile";
-	} else if ("rootFile".equals(name)) {
-	    return "rootfile";
-	} else if ("keystorePass".equals(name)) {
-	    return "keypass";
-	} else if ("keystoreType".equals(name)) {
-	    return "keytype";
-	} else if ("sslProtocol".equals(name)) {
-	    return "protocol";
-	} else if ("sslProtocols".equals(name)) {
-	    return "protocols";
-	}
+	if (null != name) switch (name) {
+            case "clientAuth":
+                return "clientauth";
+            case "keystoreFile":
+                return "keystore";
+            case "randomFile":
+                return "randomfile";
+            case "rootFile":
+                return "rootfile";
+            case "keystorePass":
+                return "keypass";
+            case "keystoreType":
+                return "keytype";
+            case "sslProtocol":
+                return "protocol";
+            case "sslProtocols":
+                return "protocols";
+            default:
+                break;
+        }
 	return name;
     }
 
@@ -1918,7 +1924,7 @@ public class Connector
     public void destroy() throws Exception {
         if( oname!=null && controller==oname ) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Unregister itself " + oname );
+                log.log(Level.FINE, "Unregister itself {0}", oname);
             }
         }
         if( getService() == null)
