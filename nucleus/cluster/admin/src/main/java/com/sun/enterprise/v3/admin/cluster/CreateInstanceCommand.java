@@ -142,7 +142,7 @@ public class CreateInstanceCommand implements AdminCommand {
     @Param(name = "instance_name", primary = true)
     private String instance;
     
-    @Param(name = "dataGridStartPort", optional = true, shortName = "dgp", defaultValue = "0")
+    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
     private String dataGridStartPort;
     
     @Inject
