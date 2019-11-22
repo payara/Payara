@@ -77,6 +77,7 @@ import org.slf4j.LoggerFactory;
 
 import static fish.payara.test.containers.tools.junit.WaitForExecutable.waitFor;
 import static fish.payara.test.containers.tst.jta.timeout.war.SlowJpaPartitioner.TIMEOUT_IN_SECONDS;
+import static javax.transaction.Status.STATUS_MARKED_ROLLBACK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
@@ -176,7 +177,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
     public void testTimeoutOnly() throws Throwable {
         callService("1");
         waitFor(() -> assertThat("log entries count", domainLog.getSize(), equalTo(2)), 5000L);
-        final Matcher<String> matchers = Matchers.allOf(getPatternForRollbackMessage(4));
+        final Matcher<String> matchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
         assertAll( //
             () -> assertThat("log entry 0", domainLog.pop().getMessage().toString(), matchesPattern(P_TIMEOUT)), //
             () -> assertThat("log entry 1", domainLog.pop().getMessage().toString(), matchers) //
@@ -193,7 +194,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
             .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB "
                 + ASYNCJOB_CLASS.getSimpleName() + ", method: public void " + ASYNCJOB_CLASS.getName()
                 + ".timeoutingAsyncWithFailingNextStep\\(\\)\\|\\#\\]");
-        final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(4));
+        final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
         assertAll( //
             () -> assertThat("log entry 0", domainLog.pop().getMessage().toString(), matchesPattern(P_TIMEOUT)), //
             () -> assertThat("log entry 1", domainLog.pop().getMessage().toString(), matchesPattern(P_SYS_EXCEPTION_P)),
@@ -213,7 +214,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
             .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB "
                 + ASYNCJOB_CLASS.getSimpleName() + ", method: public void " + ASYNCJOB_CLASS.getName()
                 + ".timeoutingAsyncWithFailingNextStepCatchingExceptionAndRedo\\(\\)\\|\\#\\]");
-        final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(1));
+        final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
         assertAll( //
             () -> assertThat("log entry 0", domainLog.pop().getMessage().toString(), matchesPattern(P_TIMEOUT)), //
             () -> assertThat("log entry 1", domainLog.pop().getMessage().toString(), matchesPattern(P_SYS_EXCEPTION_P)),

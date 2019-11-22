@@ -86,16 +86,18 @@ public class WaitForExecutable implements Executable {
      */
     public static WaitForExecutable waitForPasses(final Executable executable, final long timeoutInMillis) {
         final Executable newExecutable = () -> {
-            final long start = System.currentTimeMillis();
+            long currentTimeMillis = System.currentTimeMillis();
+            final long limit = currentTimeMillis + timeoutInMillis;
             while (true) {
                 try {
                     executable.execute();
                     return;
                 } catch (final AssertionError e) {
-                    if (System.currentTimeMillis() - start > timeoutInMillis) {
+                    final long now = System.currentTimeMillis();
+                    if (now > limit) {
                         throw e;
                     }
-                    LOG.warn("Nope. Waiting ...");
+                    LOG.warn("Nope. Remaining time is {} ms. Waiting ...", limit - now);
                     Thread.sleep(100L);
                 } catch (final Throwable e) {
                     fail(e);

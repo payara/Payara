@@ -143,5 +143,9 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.test.containers.tst.tempnodes;
+package fish.payara.test.containers.tst.nodes;
 
 import fish.payara.test.containers.tools.container.AsadminCommandException;
 import fish.payara.test.containers.tools.container.NetworkTarget;
@@ -100,8 +100,10 @@ public class DockerNodesITest extends DockerITest {
 
     private static Set<DockerContainerId> containersToPreserve;
 
+
     /**
-     * FIXME: use simplier manager to only unzip payara, not managing domain - it is not used.
+     * Test uses local docker service. We don't want to remove docker containers we did not create.
+     *
      * @throws Exception
      */
     @BeforeAll
@@ -203,7 +205,7 @@ public class DockerNodesITest extends DockerITest {
             createResponse.trim(), "createInstanceResponse"); //
 
         final Executable listStoppedInstances = getListInstanceActionToWaitFor(domain, INSTANCE_STATUS_STOPPED);
-        waitFor(listStoppedInstances, 60 * 1000L);
+        waitFor(listStoppedInstances, 3 * 60 * 1000L);
 
         final String listInstancesResponse = domain.asAdmin("list-instances");
         assertNotNull(listInstancesResponse, "listInstancesResponse"); //
