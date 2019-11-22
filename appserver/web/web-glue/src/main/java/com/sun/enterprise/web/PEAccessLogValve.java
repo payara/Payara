@@ -770,7 +770,7 @@ public final class PEAccessLogValve
         
         String acFilePrefix = vsBean.getPropertyValue(Constants.ACCESS_LOG_PREFIX);
         if(acFilePrefix != null && !acFilePrefix.trim().isEmpty() && !"null".equals(acFilePrefix) && !"null".equals(accessLogPrefix)) {
-            setPrefix(acFilePrefix);
+            setPrefix(acFilePrefix + ".");
         }
         
         return true;
