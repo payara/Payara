@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -128,7 +129,7 @@ public final class Tool {
     /**
      * The pathname of our installation base directory.
      */
-    private static String catalinaHome = System.getProperty("catalina.home");
+    private static final String catalinaHome = System.getProperty("catalina.home");
 
 
     /**
@@ -177,23 +178,34 @@ public final class Tool {
 
         // Process command line options
         int index = 0;
+        OUTER:
         while (true) {
             if (index == args.length) {
                 usage();
                 System.exit(1);
             }
-            if ("-ant".equals(args[index]))
-                ant = true;
-            else if ("-common".equals(args[index]))
-                common = true;
-            //else if ("-debug".equals(args[index]))
-            //    debug = true;
-            else if ("-server".equals(args[index]))
-                server = true;
-            else if ("-shared".equals(args[index]))
-                shared = true;
-            else
-                break;
+            if (null == args[index]) {
+                break OUTER;
+            } else {
+                switch (args[index]) {
+                    case "-ant":
+                        ant = true;
+                        break;
+                    case "-common":
+                        common = true;
+                        //else if ("-debug".equals(args[index]))
+                        //    debug = true;
+                        break;
+                    case "-server":
+                        server = true;
+                        break;
+                    case "-shared":
+                        shared = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
             index++;
         }
         if (index > args.length) {
@@ -250,7 +262,7 @@ public final class Tool {
         String className = args[index++];
         try {
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Loading application class " + className);
+                log.log(Level.FINE, "Loading application class {0}", className);
             clazz = classLoader.loadClass(className);
         } catch (Throwable t) {
             String msg = MessageFormat.format(rb.getString(LogFacade.CREATING_INSTANCE_EXCEPTION),

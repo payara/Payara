@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.ssi;
 
@@ -73,12 +74,12 @@ public class ExpressionParseTree {
      * Contains the current set of completed nodes. This is a workspace for the
      * parser.
      */
-    private LinkedList<Node> nodeStack = new LinkedList<Node>();
+    private final LinkedList<Node> nodeStack = new LinkedList<Node>();
     /**
      * Contains operator nodes that don't yet have values. This is a workspace
      * for the parser.
      */
-    private LinkedList<OppNode> oppStack = new LinkedList<OppNode>();
+    private final LinkedList<OppNode> oppStack = new LinkedList<OppNode>();
     /**
      * The root node after the expression has been parsed.
      */
@@ -86,7 +87,7 @@ public class ExpressionParseTree {
     /**
      * The SSIMediator to use when evaluating the expressions.
      */
-    private SSIMediator ssiMediator;
+    private final SSIMediator ssiMediator;
 
 
     /**
@@ -119,7 +120,7 @@ public class ExpressionParseTree {
             return;
         }
         while (true) {
-            if (oppStack.size() == 0) break;
+            if (oppStack.isEmpty()) break;
             OppNode top = oppStack.get(0);
             // If the top is a spacer then don't pop
             // anything
@@ -228,13 +229,13 @@ public class ExpressionParseTree {
         }
         // Finish off the rest of the opps
         resolveGroup();
-        if (nodeStack.size() == 0) {
+        if (nodeStack.isEmpty()) {
             throw new ParseException("No nodes created.", et.getIndex());
         }
         if (nodeStack.size() > 1) {
             throw new ParseException("Extra nodes created.", et.getIndex());
         }
-        if (oppStack.size() != 0) {
+        if (!oppStack.isEmpty()) {
             throw new ParseException("Unused opp nodes exist.", et.getIndex());
         }
         root = nodeStack.get(0);
@@ -275,11 +276,12 @@ public class ExpressionParseTree {
         /**
          * Returns true if the string is not empty.
          */
+        @Override
         public boolean evaluate() {
             return !(getValue().length() == 0);
         }
 
-
+        @Override
         public String toString() {
             return value.toString();
         }
@@ -320,11 +322,12 @@ public class ExpressionParseTree {
         }
     }
     private final class NotNode extends OppNode {
+        @Override
         public boolean evaluate() {
             return !left.evaluate();
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_NOT;
         }
@@ -333,45 +336,48 @@ public class ExpressionParseTree {
         /**
          * Overridden to pop only one value.
          */
+        @Override
         public void popValues(List<Node> values) {
             left = values.remove(0);
         }
 
-
+        @Override
         public String toString() {
             return left + " NOT";
         }
     }
     private final class AndNode extends OppNode {
+        @Override
         public boolean evaluate() {
             if (!left.evaluate()) // Short circuit
                 return false;
             return right.evaluate();
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_LOGICAL;
         }
 
-
+        @Override
         public String toString() {
             return left + " " + right + " AND";
         }
     }
     private final class OrNode extends OppNode {
+        @Override
         public boolean evaluate() {
             if (left.evaluate()) // Short circuit
                 return true;
             return right.evaluate();
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_LOGICAL;
         }
 
-
+        @Override
         public String toString() {
             return left + " " + right + " OR";
         }
@@ -384,46 +390,49 @@ public class ExpressionParseTree {
         }
     }
     private final class EqualNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() == 0);
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
-
+        @Override
         public String toString() {
             return left + " " + right + " EQ";
         }
     }
     private final class GreaterThanNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() > 0);
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
-
+        @Override
         public String toString() {
             return left + " " + right + " GT";
         }
     }
     private final class LessThanNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() < 0);
         }
 
-
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
-
+        @Override
         public String toString() {
             return left + " " + right + " LT";
         }

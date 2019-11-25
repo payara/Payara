@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -171,6 +172,7 @@ public class Catalina extends Embedded {
      *
      * @param server The new server
      */
+    @Override
     public void setServer(Server server) {
         this.server = server;
     }
@@ -230,23 +232,23 @@ public class Catalina extends Embedded {
             return (false);
         }
 
-        for (int i = 0; i < args.length; i++) {
+        for (String arg : args) {
             if (isConfig) {
-                configFile = args[i];
+                configFile = arg;
                 isConfig = false;
-            } else if (args[i].equals("-config")) {
+            } else if (arg.equals("-config")) {
                 isConfig = true;
-            } else if (args[i].equals("-debug")) {
+            } else if (arg.equals("-debug")) {
                 debug = 1;
-            } else if (args[i].equals("-nonaming")) {
+            } else if (arg.equals("-nonaming")) {
                 setUseNaming( false );
-            } else if (args[i].equals("-help")) {
+            } else if (arg.equals("-help")) {
                 usage();
                 return (false);
-            } else if (args[i].equals("start")) {
+            } else if (arg.equals("start")) {
                 starting = true;
                 stopping = false;
-            } else if (args[i].equals("stop")) {
+            } else if (arg.equals("stop")) {
                 starting = false;
                 stopping = true;
             } else {
@@ -367,8 +369,9 @@ public class Catalina extends Embedded {
                                                       parentClassLoader));
 
         long t2=System.currentTimeMillis();
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Digester for server.xml created " + ( t2-t1 ));
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Digester for server.xml created {0}", t2-t1);
+        }
         return (digester);
 
     }
@@ -588,6 +591,7 @@ public class Catalina extends Embedded {
 
     }
 
+    @Override
     public void destroy() {
 
     }
@@ -595,6 +599,7 @@ public class Catalina extends Embedded {
     /**
      * Start a new server instance.
      */
+    @Override
     public void start() {
 
         if (server == null) {
@@ -638,6 +643,7 @@ public class Catalina extends Embedded {
     /**
      * Stop an existing server instance.
      */
+    @Override
     public void stop() {
 
         try {
@@ -692,6 +698,7 @@ public class Catalina extends Embedded {
      */
     protected class CatalinaShutdownHook extends Thread {
 
+        @Override
         public void run() {
 
             if (server != null) {
@@ -724,6 +731,7 @@ final class SetParentClassLoaderRule extends Rule {
 
     ClassLoader parentClassLoader = null;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         if (digester.getDebug() >= 1)

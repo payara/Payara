@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.ssi;
 
@@ -78,6 +79,7 @@ public class SSIEcho implements SSICommand {
     /**
      * @see SSICommand
      */
+    @Override
     public long process(SSIMediator ssiMediator, String commandName,
             String[] paramNames, String[] paramValues, PrintWriter writer) {
         String encoding = DEFAULT_ENCODING;

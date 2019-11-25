@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -78,9 +79,7 @@ import java.util.logging.Level;
  * @author Bip Thelin
  * @version $Revision: 1.8 $, $Date: 2007/05/05 05:32:19 $
  */
-
-public abstract class StoreBase
-    implements Lifecycle, Store {
+public abstract class StoreBase implements Lifecycle, Store {
 
     private static final java.util.logging.Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
@@ -147,6 +146,7 @@ public abstract class StoreBase
     /**
      * Return the info for this Store.
      */
+    @Override
     public String getInfo() {
         return(info);
     }
@@ -182,6 +182,7 @@ public abstract class StoreBase
      *
      * @param manager The newly associated Manager
      */
+    @Override
     public void setManager(Manager manager) {
         Manager oldManager = this.manager;
         this.manager = manager;
@@ -191,6 +192,7 @@ public abstract class StoreBase
     /**
      * Return the Manager with which the Store is associated.
      */
+    @Override
     public Manager getManager() {
         return(this.manager);
     }
@@ -203,6 +205,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -212,6 +215,7 @@ public abstract class StoreBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this Store.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -222,6 +226,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -231,6 +236,7 @@ public abstract class StoreBase
      *
      * @param listener a value of type 'PropertyChangeListener'
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -240,6 +246,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -329,27 +336,25 @@ public abstract class StoreBase
             return;
         }
 
-        for (int i = 0; i < keys.length; i++) {
+        for (String key : keys) {
             try {
-                StandardSession session = (StandardSession) load(keys[i]);
+                StandardSession session = (StandardSession) load(key);
                 if (session == null) {
                     continue;
                 }
                 int timeIdle = (int) ((timeNow - session.thisAccessedTime) / 1000L);
                 if (timeIdle < session.getMaxInactiveInterval()) {
                     continue;
-                } 
-                if ( ( (PersistentManagerBase) manager).isLoaded( keys[i] )) {
+                }
+                if (( (PersistentManagerBase) manager).isLoaded(key)) {
                     // recycle old backup session
                     session.recycle();
                 } else {
                     // expire swapped out session
                     session.expire();
                 }
-                remove(keys[i]);
-            } catch (IOException e) {
-                log("Error during processExpires", e);
-            } catch (ClassNotFoundException e) {
+                remove(key);
+            }catch (IOException | ClassNotFoundException e) {
                 log("Error during processExpires", e);
             }
         }
@@ -372,7 +377,7 @@ public abstract class StoreBase
             logger.log(getStoreName()+"[" + containerName + "]: " +
                        message);
         } else {
-            log.log(Level.FINE, getStoreName() + "[" + containerName + "]: " + message);
+            log.log(Level.FINE, "{0}[{1}]: {2}", new Object[]{getStoreName(), containerName, message});
         }
     }
 
@@ -426,6 +431,7 @@ public abstract class StoreBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // Validate and update our current component state
         if (started)
@@ -445,6 +451,7 @@ public abstract class StoreBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         // Validate and update our current component state
         if (!started)

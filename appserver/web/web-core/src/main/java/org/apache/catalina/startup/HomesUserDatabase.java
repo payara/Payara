@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -96,7 +97,7 @@ public final class HomesUserDatabase
     /**
      * The set of home directories for all defined users, keyed by username.
      */
-    private Hashtable<String, String> homes = new Hashtable<String, String>();
+    private final Hashtable<String, String> homes = new Hashtable<String, String>();
 
 
     /**
@@ -111,10 +112,9 @@ public final class HomesUserDatabase
     /**
      * Return the UserConfig listener with which we are associated.
      */
+    @Override
     public UserConfig getUserConfig() {
-
         return (this.userConfig);
-
     }
 
 
@@ -123,8 +123,8 @@ public final class HomesUserDatabase
      *
      * @param userConfig The new UserConfig listener
      */
+    @Override
     public void setUserConfig(UserConfig userConfig) {
-
         this.userConfig = userConfig;
         init();
 
@@ -139,20 +139,18 @@ public final class HomesUserDatabase
      *
      * @param user User for which a home directory should be retrieved
      */
+    @Override
     public String getHome(String user) {
-
         return homes.get(user);
-
     }
 
 
     /**
      * Return an enumeration of the usernames defined on this server.
      */
+    @Override
     public Enumeration<String> getUsers() {
-
         return (homes.keys());
-
     }
 
 
@@ -170,11 +168,11 @@ public final class HomesUserDatabase
             return;
         String homeBaseFiles[] = homeBaseDir.list();
 
-        for (int i = 0; i < homeBaseFiles.length; i++) {
-            File homeDir = new File(homeBaseDir, homeBaseFiles[i]);
+        for (String homeBaseFile : homeBaseFiles) {
+            File homeDir = new File(homeBaseDir, homeBaseFile);
             if (!homeDir.isDirectory() || !homeDir.canRead())
                 continue;
-            homes.put(homeBaseFiles[i], homeDir.toString());
+            homes.put(homeBaseFile, homeDir.toString());
         }
 
 

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -318,6 +319,7 @@ public class ContextConfig
      *
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event)
             throws LifecycleException {
 
@@ -332,14 +334,20 @@ public class ContextConfig
 
         // Called from ContainerBase.addChild() -> StandardContext.start()
         // Process the event that has occurred
-        if (event.getType().equals(Lifecycle.START_EVENT)) {
-            start();
-        } else if (event.getType().equals(Lifecycle.STOP_EVENT)) {
-            stop();
-        // START GlassFish 2439
-        } else if (event.getType().equals(Lifecycle.INIT_EVENT)) {
-            init();
-        // END GlassFish 2439
+        switch (event.getType()) {
+            case Lifecycle.START_EVENT:
+                start();
+                break;
+            case Lifecycle.STOP_EVENT:
+                stop();
+                // START GlassFish 2439
+                break;
+            case Lifecycle.INIT_EVENT:
+                init();
+                // END GlassFish 2439
+                break;
+            default:
+                break;
         }
     }
 
@@ -488,9 +496,10 @@ public class ContextConfig
                 if ((basic != null) && (basic instanceof Authenticator))
                     return;
                 GlassFishValve valves[] = pipeline.getValves();
-                for (int i = 0; i < valves.length; i++) {
-                    if (valves[i] instanceof Authenticator)
+                for (GlassFishValve valve : valves) {
+                    if (valve instanceof Authenticator) {
                         return;
+                    }
                 }
             }
         } else {
@@ -742,7 +751,7 @@ public class ContextConfig
         
         long t2=System.currentTimeMillis();
         if( (t2-t1) > 200 && log.isLoggable(Level.FINE) )
-            log.log(Level.FINE, "Processed default web.xml " + file + " "  + ( t2-t1));
+            log.log(Level.FINE, "Processed default web.xml {0} {1}", new Object[]{file, t2-t1});
     }
 
 
@@ -769,8 +778,7 @@ public class ContextConfig
      */
     protected void processContextConfig(File baseDir, String resourceName) {
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Processing context [" + context.getName() +
-                    "] configuration file " + baseDir + " " + resourceName);
+            log.log(Level.FINE, "Processing context [{0}] configuration file {1} {2}", new Object[]{context.getName(), baseDir, resourceName});
 
         InputSource source = null;
         InputStream stream = null;
@@ -830,9 +838,8 @@ public class ContextConfig
                     ok = false;
                 }
                 if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Successfully processed context [" +
-                            context.getName() + "] configuration file " +
-                            baseDir + " " + resourceName);
+                    log.log(Level.FINE, "Successfully processed context [{0}] configuration file {1} {2}",
+                            new Object[]{context.getName(), baseDir, resourceName});
             } catch (SAXParseException e) {
                 String msg = MessageFormat.format(rb.getString(LogFacade.PARSE_ERROR_IN_DEFAULT_WEB_XML_EXCEPTION),
                                                   new Object[] {e.getLineNumber(), e.getColumnNumber()});
@@ -1086,8 +1093,8 @@ public class ContextConfig
             if (pipeline != null)
                 valves = pipeline.getValves();
             if (valves != null) {
-                for (int i = 0; i < valves.length; i++) {
-                    log.log(Level.FINEST, "  " + valves[i].getInfo());
+                for (GlassFishValve valve : valves) {
+                    log.log(Level.FINEST, "  " + valve.getInfo());
                 }
             }
             log.log(Level.FINEST, "======================");
@@ -1250,8 +1257,8 @@ public class ContextConfig
 
         // Check role names used in <servlet> elements
         Container wrappers[] = context.findChildren();
-        for (int i = 0; i < wrappers.length; i++) {
-            Wrapper wrapper = (Wrapper) wrappers[i];
+        for (Container wrapper1 : wrappers) {
+            Wrapper wrapper = (Wrapper) wrapper1;
             String runAs = wrapper.getRunAs();
             if ((runAs != null) && !context.hasSecurityRole(runAs)) {
                 if (log.isLoggable(Level.INFO)) {
@@ -1261,8 +1268,8 @@ public class ContextConfig
                 context.addSecurityRole(runAs);
             }
             String names[] = wrapper.findSecurityReferences();
-            for (int j = 0; j < names.length; j++) {
-                String link = wrapper.findSecurityReference(names[j]);
+            for (String name : names) {
+                String link = wrapper.findSecurityReference(name);
                 if ((link != null) && !context.hasSecurityRole(link)) {
                     if (log.isLoggable(Level.INFO)) {
                         log.log(Level.INFO, LogFacade.SECURITY_ROLE_NAME_USED_IN_LINK_WITHOUT_DEFINITION,
@@ -1280,14 +1287,17 @@ public class ContextConfig
     protected class ContextErrorHandler
         implements ErrorHandler {
 
+        @Override
         public void error(SAXParseException exception) {
             parseException = exception;
         }
 
+        @Override
         public void fatalError(SAXParseException exception) {
             parseException = exception;
         }
 
+        @Override
         public void warning(SAXParseException exception) {
             parseException = exception;
         }

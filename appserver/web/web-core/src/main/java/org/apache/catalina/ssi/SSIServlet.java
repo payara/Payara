@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.ssi;
 
@@ -107,6 +108,7 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
+    @Override
     public void init() throws ServletException {
         
         if (getServletConfig().getInitParameter("debug") != null)
@@ -143,6 +145,7 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doGet()");
@@ -163,8 +166,8 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-            throws IOException, ServletException {
+    @Override
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doPost()");
         requestHandler(req, res);
     }
@@ -206,8 +209,7 @@ public class SSIServlet extends HttpServlet {
         }
         res.setContentType(resourceMimeType + ";charset=" + outputEncoding);
         if (expires != null) {
-            res.setDateHeader("Expires", (new java.util.Date()).getTime()
-                    + expires.longValue() * 1000);
+            res.setDateHeader("Expires", (new java.util.Date()).getTime() + expires * 1000);
         }
         req.setAttribute(Globals.SSI_FLAG_ATTR, "true");
         processSSI(req, res, resource);

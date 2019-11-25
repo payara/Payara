@@ -55,12 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * BaseSessionLocker.java
- *
- * Created on January 18, 2006, 4:46 PM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -73,6 +68,7 @@ import javax.servlet.ServletRequest;
 /**
  *
  * @author lwhite
+ * @since January 18, 2006
  */
 public class BaseSessionLocker implements SessionLocker {
     
@@ -80,14 +76,17 @@ public class BaseSessionLocker implements SessionLocker {
     public BaseSessionLocker() {
     }
     
+    @Override
     public void init(Context context) {
         _context = context;
     }
     
+    @Override
     public boolean lockSession(ServletRequest req) throws ServletException {
         return true;
     }
     
+    @Override
     public void unlockSession(ServletRequest req) {
     }
     

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.ssi;
 
@@ -76,7 +77,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
-import org.glassfish.grizzly.http.util.Constants;
 import org.glassfish.grizzly.utils.Charsets;
 
 /**
@@ -116,6 +116,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
+    @Override
     public void log(String message, Throwable throwable) {
         //We can't assume that Servlet.log( message, null )
         //is the same as Servlet.log( message ), since API
@@ -128,9 +129,9 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
+    @Override
     public void addVariableNames(Collection<String> variableNames) {
-        for (int i = 0; i < VARIABLE_NAMES.length; i++) {
-            String variableName = VARIABLE_NAMES[i];
+        for (String variableName : VARIABLE_NAMES) {
             String variableValue = getVariableValue(variableName);
             if (variableValue != null) {
                 variableNames.add(variableName);
@@ -174,6 +175,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
+    @Override
     public void setVariableValue(String name, String value) {
         if (!isNameReserved(name)) {
             req.setAttribute(name, value);
@@ -181,6 +183,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
+    @Override
     public String getVariableValue(String name) {
         String retVal = null;
         Object object = getReqAttributeIgnoreCase(name);
@@ -226,46 +229,49 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
         } else if (name.equalsIgnoreCase("GATEWAY_INTERFACE")) {
             retVal = "CGI/1.1";
         } else if (nameParts[0].equals("HTTP")) {
-            if (nameParts[1].equals("ACCEPT")) {
-                String accept = null;
-                if (nameParts.length == 2) {
-                    accept = "Accept";
-                } else if (nameParts[2].equals("ENCODING")) {
-                    requiredParts = 3;
-                    accept = "Accept-Encoding";
-                } else if (nameParts[2].equals("LANGUAGE")) {
-                    requiredParts = 3;
-                    accept = "Accept-Language";
-                }
-                if (accept != null) {
-                    Enumeration<String> acceptHeaders = req.getHeaders(accept);
-                    if (acceptHeaders != null)
-                        if (acceptHeaders.hasMoreElements()) {
-                            StringBuilder rv = new StringBuilder(
-                                    acceptHeaders.nextElement());
-                            while (acceptHeaders.hasMoreElements()) {
-                                rv.append(", ");
-                                rv.append(acceptHeaders.nextElement());
-                            }
-                        retVal = rv.toString();
-                    }
-                }
-            }
-            else if (nameParts[1].equals("CONNECTION")) {
-                retVal = req.getHeader("Connection");
-            }
-            else if (nameParts[1].equals("HOST")) {
-                retVal = req.getHeader("Host");
-            }
-            else if (nameParts[1].equals("REFERER")) {
-                retVal = req.getHeader("Referer");
-            }
-            else if (nameParts[1].equals("USER"))
-                if (nameParts.length == 3)
-                    if (nameParts[2].equals("AGENT")) {
+            switch (nameParts[1]) {
+                case "ACCEPT":
+                    String accept = null;
+                    if (nameParts.length == 2) {
+                        accept = "Accept";
+                    } else if (nameParts[2].equals("ENCODING")) {
                         requiredParts = 3;
-                        retVal = req.getHeader("User-Agent");
-                    }
+                        accept = "Accept-Encoding";
+                    } else if (nameParts[2].equals("LANGUAGE")) {
+                        requiredParts = 3;
+                        accept = "Accept-Language";
+                    }   if (accept != null) {
+                        Enumeration<String> acceptHeaders = req.getHeaders(accept);
+                        if (acceptHeaders != null)
+                            if (acceptHeaders.hasMoreElements()) {
+                                StringBuilder rv = new StringBuilder(
+                                        acceptHeaders.nextElement());
+                                while (acceptHeaders.hasMoreElements()) {
+                                    rv.append(", ");
+                                    rv.append(acceptHeaders.nextElement());
+                                }
+                                retVal = rv.toString();
+                            }
+                    }   break;
+                case "CONNECTION":
+                    retVal = req.getHeader("Connection");
+                    break;
+                case "HOST":
+                    retVal = req.getHeader("Host");
+                    break;
+                case "REFERER":
+                    retVal = req.getHeader("Referer");
+                    break;
+                case "USER":
+                    if (nameParts.length == 3)
+                        if (nameParts[2].equals("AGENT")) {
+                            requiredParts = 3;
+                            retVal = req.getHeader("User-Agent");
+                        }
+                    break;
+                default:
+                    break;
+            }
 
         } else if (nameParts[0].equals("PATH")) {
             if (nameParts[1].equals("INFO")) {
@@ -318,16 +324,24 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
                 }
             }
         } else if(nameParts[0].equals("REMOTE")) {
-            if (nameParts[1].equals("ADDR")) {
-                retVal = req.getRemoteAddr();
-            } else if (nameParts[1].equals("HOST")) {
-                retVal = req.getRemoteHost();
-            } else if (nameParts[1].equals("IDENT")) {
-                retVal = null; // Not implemented
-            } else if (nameParts[1].equals("PORT")) {
-                retVal = Integer.toString( req.getRemotePort());
-            } else if (nameParts[1].equals("USER")) {
-                retVal = req.getRemoteUser();
+            switch (nameParts[1]) {
+                case "ADDR":
+                    retVal = req.getRemoteAddr();
+                    break;
+                case "HOST":
+                    retVal = req.getRemoteHost();
+                    break;
+                case "IDENT":
+                    retVal = null; // Not implemented
+                    break;
+                case "PORT":
+                    retVal = Integer.toString( req.getRemotePort());
+                    break;
+                case "USER":
+                    retVal = req.getRemoteUser();
+                    break;
+                default:
+                    break;
             }
         } else if(nameParts[0].equals("REQUEST")) {
             if (nameParts[1].equals("METHOD")) {
@@ -351,21 +365,28 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             if (nameParts[1].equals("ADDR")) {
                 retVal = req.getLocalAddr();
             }
-            if (nameParts[1].equals("NAME")) {
-                retVal = req.getServerName();
-            } else if (nameParts[1].equals("PORT")) {
-                retVal = Integer.toString(req.getServerPort());
-            } else if (nameParts[1].equals("PROTOCOL")) {
-                retVal = req.getProtocol();
-            } else if (nameParts[1].equals("SOFTWARE")) {
-                StringBuilder rv = new StringBuilder(context.getServerInfo());
-                rv.append(" ");
-                rv.append(System.getProperty("java.vm.name"));
-                rv.append("/");
-                rv.append(System.getProperty("java.vm.version"));
-                rv.append(" ");
-                rv.append(System.getProperty("os.name"));
-                retVal = rv.toString();
+            switch (nameParts[1]) {
+                case "NAME":
+                    retVal = req.getServerName();
+                    break;
+                case "PORT":
+                    retVal = Integer.toString(req.getServerPort());
+                    break;
+                case "PROTOCOL":
+                    retVal = req.getProtocol();
+                    break;
+                case "SOFTWARE":
+                    StringBuilder rv = new StringBuilder(context.getServerInfo());
+                    rv.append(" ");
+                    rv.append(System.getProperty("java.vm.name"));
+                    rv.append("/");
+                    rv.append(System.getProperty("java.vm.version"));
+                    rv.append(" ");
+                    rv.append(System.getProperty("os.name"));
+                    retVal = rv.toString();
+                    break;
+                default:
+                    break;
             }
         } else if (name.equalsIgnoreCase("UNIQUE_ID")) {
             retVal = req.getRequestedSessionId();
@@ -374,6 +395,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             return retVal;
     }
 
+    @Override
     public Date getCurrentDate() {
         return new Date();
     }
@@ -432,7 +454,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             throw new IOException("A non-virtual path can't be absolute: "
                     + nonVirtualPath);
         }
-        if (nonVirtualPath.indexOf("../") >= 0) {
+        if (nonVirtualPath.contains("../")) {
             throw new IOException("A non-virtual path can't contain '../' : "
                     + nonVirtualPath);
         }
@@ -519,8 +541,8 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
-    public long getFileLastModified(String path, boolean virtual)
-            throws IOException {
+    @Override
+    public long getFileLastModified(String path, boolean virtual) throws IOException {
         long lastModified = 0;
         try {
             URLConnection urlConnection = getURLConnection(path, virtual);
@@ -532,6 +554,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     }
 
 
+    @Override
     public long getFileSize(String path, boolean virtual) throws IOException {
         long fileSize = -1;
         try {
@@ -547,8 +570,8 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     //We are making lots of unnecessary copies of the included data here. If
     //someone ever complains that this is slow, we should connect the included
     // stream to the print writer that SSICommand uses.
-    public String getFileText(String originalPath, boolean virtual)
-            throws IOException {
+    @Override
+    public String getFileText(String originalPath, boolean virtual) throws IOException {
         try {
             ServletContextAndPath csAndP = getServletContextAndPath(
                     originalPath, virtual);

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -261,7 +262,7 @@ public final class Bootstrap {
         Method method = 
             catalinaDaemon.getClass().getMethod(methodName, paramTypes);
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Calling startup class " + method);
+            log.log(Level.FINE, "Calling startup class {0}", method);
         method.invoke(catalinaDaemon, param);
 
     }
@@ -278,8 +279,8 @@ public final class Bootstrap {
 
         // Read the arguments
         if (arguments != null) {
-            for (int i = 0; i < arguments.length; i++) {
-                if (arguments[i].equals("-debug")) {
+            for (String argument : arguments) {
+                if (argument.equals("-debug")) {
                     debug = 1;
                 }
             }
@@ -337,7 +338,7 @@ public final class Bootstrap {
         Class paramTypes[] = new Class[1];
         paramTypes[0] = Boolean.TYPE;
         Object paramValues[] = new Object[1];
-        paramValues[0] = Boolean.valueOf(await);
+        paramValues[0] = await;
         Method method = 
             catalinaDaemon.getClass().getMethod("setAwait", paramTypes);
         method.invoke(catalinaDaemon, paramValues);
@@ -352,7 +353,7 @@ public final class Bootstrap {
         Method method =
             catalinaDaemon.getClass().getMethod("getAwait", paramTypes);
         Boolean b=(Boolean)method.invoke(catalinaDaemon, paramValues);
-        return b.booleanValue();
+        return b;
     }
 
     /**

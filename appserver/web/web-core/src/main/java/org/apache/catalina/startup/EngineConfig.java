@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -128,6 +129,7 @@ public final class EngineConfig
      *
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the engine we are associated with

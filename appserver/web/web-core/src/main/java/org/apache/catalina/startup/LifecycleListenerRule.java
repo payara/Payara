@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -104,13 +105,13 @@ public class LifecycleListenerRule extends Rule {
      * The attribute name of an attribute that can override the
      * implementation class name.
      */
-    private String attributeName;
+    private final String attributeName;
 
 
     /**
      * The name of the <code>LifecycleListener</code> implementation class.
      */
-    private String listenerClass;
+    private final String listenerClass;
 
 
     // --------------------------------------------------------- Public Methods
@@ -123,6 +124,7 @@ public class LifecycleListenerRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Instantiate a new LifecyleListener implementation object

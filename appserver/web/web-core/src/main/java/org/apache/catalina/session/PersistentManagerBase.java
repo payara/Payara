@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -89,10 +89,7 @@ import java.util.logging.Level;
  * @author Jean-Francois Arcand
  * @version $Revision: 1.16 $ $Date: 2007/05/05 05:32:19 $
  */
-
-public abstract class PersistentManagerBase
-    extends ManagerBase
-    implements Lifecycle, PropertyChangeListener {
+public abstract class PersistentManagerBase extends ManagerBase implements Lifecycle, PropertyChangeListener {
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedStoreClear
@@ -102,6 +99,7 @@ public abstract class PersistentManagerBase
             // NOOP
         }
 
+        @Override
         public Void run() throws Exception{
            store.clear();
            return null;
@@ -111,12 +109,13 @@ public abstract class PersistentManagerBase
      private class PrivilegedStoreRemove
         implements PrivilegedExceptionAction<Void> {
 
-        private String id;    
+        private final String id;    
             
         PrivilegedStoreRemove(String id) {     
             this.id = id;
         }
 
+        @Override
         public Void run() throws Exception{
            store.remove(id);
            return null;
@@ -126,12 +125,13 @@ public abstract class PersistentManagerBase
     private class PrivilegedStoreLoad
         implements PrivilegedExceptionAction<Session> {
 
-        private String id;    
+        private final String id;    
             
         PrivilegedStoreLoad(String id) {     
             this.id = id;
         }
 
+        @Override
         public Session run() throws Exception{
            return store.load(id);
         }                       
@@ -140,12 +140,13 @@ public abstract class PersistentManagerBase
     private class PrivilegedStoreSave
         implements PrivilegedExceptionAction<Void> {
 
-        private Session session;    
+        private final Session session;    
             
         PrivilegedStoreSave(Session session) {     
             this.session = session;
         }
 
+        @Override
         public Void run() throws Exception{
            store.save(session);
            return null;
@@ -159,6 +160,7 @@ public abstract class PersistentManagerBase
             // NOOP
         }
 
+        @Override
         public String[] run() throws Exception{
            return store.keys();
         }                       
@@ -371,6 +373,7 @@ public abstract class PersistentManagerBase
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
 
         // De-register from the old Container (if any)
@@ -409,10 +412,9 @@ public abstract class PersistentManagerBase
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
-
         return (this.info);
-
     }
 
 
@@ -468,6 +470,7 @@ public abstract class PersistentManagerBase
     /**
      * Return the descriptive short name of this Manager implementation.
      */
+    @Override
     public String getName() {
         return (name);
     }
@@ -553,6 +556,7 @@ public abstract class PersistentManagerBase
     /*
      * Releases any resources held by this session manager.
      */
+    @Override
     public void release() {
         super.release();
         clearStore();
@@ -596,22 +600,22 @@ public abstract class PersistentManagerBase
 
         Session sessions[] = findSessions();
 
-        for (int i = 0; i < sessions.length; i++) {
-            StandardSession session = (StandardSession) sessions[i];
+        for (Session session1 : sessions) {
+            StandardSession session = (StandardSession) session1;
             /* START CR 6363689
             if (!session.isValid()) {
             */
             // START CR 6363689
             if(!session.getIsValid() || session.hasExpired()) {
-            // END CR 6363689            
+                // END CR 6363689
                 if(session.lockBackground()) { 
                     try {
                         session.expire();
                     } finally {
                         session.unlockBackground();
                     }
-                }                                
-	    }            
+                }
+            }            
         }
     }        
 
@@ -644,9 +648,7 @@ public abstract class PersistentManagerBase
         for (Map.Entry<String, Long> e : invalidatedSessions.entrySet()) {
             String id = e.getKey();
             Long timeAdded = e.getValue();
-            if ((timeAdded == null)
-                    || (timeNow - timeAdded.longValue() >
-                                    rememberInvalidatedSessionIdMilliSecs)) {
+            if ((timeAdded == null) || (timeNow - timeAdded > rememberInvalidatedSessionIdMilliSecs)) {
                 removeFromInvalidatedSessions(id);
             }
         }
@@ -723,6 +725,7 @@ public abstract class PersistentManagerBase
      * @exception IOException if an input/output error occurs while
      *  processing this request
      */
+    @Override
     public Session findSession(String id) throws IOException {
         
         //6406580 START
@@ -807,6 +810,7 @@ public abstract class PersistentManagerBase
      * class. In order to use it, a subclass must specifically call it,
      * for example in the start() and/or processPersistenceChecks() methods.
      */
+    @Override
     public void load() {
 
         // Initialize our internal data structures
@@ -855,6 +859,7 @@ public abstract class PersistentManagerBase
      *
      * @param session Session to be removed
      */
+    @Override
     public void remove(Session session) {
         remove(session, true);
     }
@@ -907,8 +912,7 @@ public abstract class PersistentManagerBase
      * @param sessionId session id to be added
      */
     public void addToInvalidatedSessions(String sessionId) {
-        invalidatedSessions.put(sessionId,
-                                Long.valueOf(System.currentTimeMillis()));
+        invalidatedSessions.put(sessionId, System.currentTimeMillis());
     }
 
     
@@ -941,6 +945,7 @@ public abstract class PersistentManagerBase
      * class. In order to use it, a subclass must specifically call it,
      * for example in the stop() and/or processPersistenceChecks() methods.
      */
+    @Override
     public void unload() {
 
         if (store == null)
@@ -1157,6 +1162,7 @@ public abstract class PersistentManagerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
 
         lifecycle.addLifecycleListener(listener);
@@ -1168,6 +1174,7 @@ public abstract class PersistentManagerBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this session manager.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -1178,6 +1185,7 @@ public abstract class PersistentManagerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
 
         lifecycle.removeLifecycleListener(listener);
@@ -1193,6 +1201,7 @@ public abstract class PersistentManagerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1231,6 +1240,7 @@ public abstract class PersistentManagerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
    public void stop() throws LifecycleException {
 
         if (log.isLoggable(Level.FINE))
@@ -1252,8 +1262,8 @@ public abstract class PersistentManagerBase
         } else {
             // Expire all active sessions
             Session sessions[] = findSessions();
-            for (int i = 0; i < sessions.length; i++) {
-                StandardSession session = (StandardSession) sessions[i];
+            for (Session session1 : sessions) {
+                StandardSession session = (StandardSession) session1;
                 if (!session.isValid())
                     continue;
                 session.expire();
@@ -1280,6 +1290,7 @@ public abstract class PersistentManagerBase
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         // Validate the source of this event
@@ -1289,8 +1300,7 @@ public abstract class PersistentManagerBase
         // Process a relevant property change
         if (event.getPropertyName().equals("sessionTimeout")) {
             try {
-                setMaxInactiveIntervalSeconds
-                    ( ((Integer) event.getNewValue()).intValue()*60 );
+                setMaxInactiveIntervalSeconds(((Integer) event.getNewValue())*60 );
             } catch (NumberFormatException e) {
                 log.log(Level.SEVERE, LogFacade.INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION, event.getNewValue().toString());
             }
@@ -1317,16 +1327,15 @@ public abstract class PersistentManagerBase
         // FIXME: What's preventing us from mangling a session during
         // a request?
         if (maxIdleSwap >= 0) {
-            for (int i = 0; i < sessions.length; i++) {
-                StandardSession session = (StandardSession) sessions[i];
+            for (Session session1 : sessions) {
+                StandardSession session = (StandardSession) session1;
                 if (!session.isValid())
                     continue;
                 int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
+                        (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                 if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, LogFacade.SWAPPING_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
-                                Integer.valueOf(timeIdle)});
+                        log.log(Level.FINE, LogFacade.SWAPPING_SESSION_TO_STORE, new Object[] {session.getIdInternal(), timeIdle});
                     }
                     try {
                         swapOut(session);
@@ -1369,8 +1378,7 @@ public abstract class PersistentManagerBase
                 //skip the session if it cannot be locked
                 if(session.lockBackground()) {
                     if(log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, LogFacade.SWAP_OUT_SESSION, new Object[] {session.getIdInternal(),
-                                Integer.valueOf(timeIdle)});
+                        log.log(Level.FINE, LogFacade.SWAP_OUT_SESSION, new Object[] {session.getIdInternal(), timeIdle});
                     }
                     try {
                         swapOut(session);
@@ -1405,18 +1413,17 @@ public abstract class PersistentManagerBase
 
         // Back up all sessions idle longer than maxIdleBackup
         if (maxIdleBackup >= 0) {
-            for (int i = 0; i < sessions.length; i++) {
-                StandardSession session = (StandardSession) sessions[i];
+            for (Session session1 : sessions) {
+                StandardSession session = (StandardSession) session1;
                 if (!session.isValid())
                     continue;                
                 int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
+                        (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                 if (timeIdle > maxIdleBackup) { 
                     //if session cannot be background locked then skip it
                     if (session.lockBackground()) {                         
                         if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, LogFacade.BACKUP_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
-                                    Integer.valueOf(timeIdle)});
+                            log.log(Level.FINE, LogFacade.BACKUP_SESSION_TO_STORE, new Object[] {session.getIdInternal(), timeIdle});
                         }
                         try {
                             writeSession(session);

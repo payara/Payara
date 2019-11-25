@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -155,6 +156,7 @@ public class ContextRuleSet extends RuleSetBase {
      * @param digester Digester instance to which the new Rule instances
      *  should be added.
      */
+    @Override
     public void addRuleInstances(Digester digester) {
         
         if (create) {            
@@ -295,10 +297,11 @@ final class CreateLoaderRule extends Rule {
 
     }
 
-    private String attributeName;
+    private final String attributeName;
 
-    private String loaderClass;
+    private final String loaderClass;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Look up the required parent class loader
@@ -325,6 +328,7 @@ final class CreateLoaderRule extends Rule {
 
     }
 
+    @Override
     public void end() throws Exception {
 
         Loader loader = (Loader) digester.pop();

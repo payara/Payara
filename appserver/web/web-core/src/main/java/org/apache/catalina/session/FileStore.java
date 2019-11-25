@@ -55,14 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Loader;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
@@ -93,7 +92,6 @@ import java.util.logging.Logger;
  * @author Craig R. McClanahan
  * @version $Revision: 1.4 $ $Date: 2007/01/04 01:31:57 $
  */
-
 public final class FileStore extends StoreBase {
 
     private static final Logger LOGGER = LogFacade.getLogger();
@@ -179,6 +177,7 @@ public final class FileStore extends StoreBase {
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -195,6 +194,7 @@ public final class FileStore extends StoreBase {
     /**
      * Return the name for this Store, used for logging.
      */
+    @Override
     public String getStoreName() {
         return(storeName);
     }
@@ -205,6 +205,7 @@ public final class FileStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public int getSize() throws IOException {
 
         // Acquire the list of files in our storage directory
@@ -216,8 +217,8 @@ public final class FileStore extends StoreBase {
 
         // Figure out which files are sessions
         int keycount = 0;
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].endsWith(FILE_EXT)) {
+        for (String file1 : files) {
+            if (file1.endsWith(FILE_EXT)) {
                 keycount++;
             }
         }
@@ -234,12 +235,13 @@ public final class FileStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void clear()
         throws IOException {
 
         String[] keys = keys();
-        for (int i = 0; i < keys.length; i++) {
-            remove(keys[i]);
+        for (String key : keys) {
+            remove(key);
         }
 
     }
@@ -252,6 +254,7 @@ public final class FileStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurred
      */
+    @Override
     public String[] keys() throws IOException {
 
         // Acquire the list of files in our storage directory
@@ -264,9 +267,9 @@ public final class FileStore extends StoreBase {
         // Build and return the list of session identifiers
         ArrayList<String> list = new ArrayList<String>();
         int n = FILE_EXT.length();
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].endsWith(FILE_EXT)) {
-                list.add(files[i].substring(0, files[i].length() - n));
+        for (String file1 : files) {
+            if (file1.endsWith(FILE_EXT)) {
+                list.add(file1.substring(0, file1.length() - n));
             }
         }
         return list.toArray(new String[list.size()]);
@@ -284,6 +287,7 @@ public final class FileStore extends StoreBase {
      * @exception ClassNotFoundException if a deserialization error occurs
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public Session load(String id)
         throws ClassNotFoundException, IOException {
 
@@ -345,6 +349,7 @@ public final class FileStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void remove(String id) throws IOException {
 
         File file = file(id);
@@ -361,7 +366,7 @@ public final class FileStore extends StoreBase {
         sessions.remove(id);
         //HERCULES: addition
         if (!file.delete() && LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Cannot delete file: " + file);
+            LOGGER.log(Level.FINE, "Cannot delete file: {0}", file);
         }
     }
 
@@ -374,6 +379,7 @@ public final class FileStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void save(Session session) throws IOException {
 
         // Open an output stream to the specified pathname, if any
