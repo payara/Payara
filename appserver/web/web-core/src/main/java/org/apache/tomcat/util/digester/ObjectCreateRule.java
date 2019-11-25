@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -227,6 +228,7 @@ public class ObjectCreateRule extends Rule {
      *
      * @param attributes The attribute list of this element
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Identify the name of the class to instantiate
@@ -238,8 +240,7 @@ public class ObjectCreateRule extends Rule {
             }
         }
         if (digester.log.isLoggable(Level.FINE)) {
-            digester.log.log(Level.FINE, "[ObjectCreateRule]{" + digester.match +
-                    "}New " + realClassName);
+            digester.log.log(Level.FINE, "[ObjectCreateRule]'{'{0}'}'New {1}", new Object[]{digester.match, realClassName});
         }
 
         // Instantiate the new object and push it on the context stack
@@ -253,12 +254,12 @@ public class ObjectCreateRule extends Rule {
     /**
      * Process the end of this element.
      */
+    @Override
     public void end() throws Exception {
 
         Object top = digester.pop();
         if (digester.log.isLoggable(Level.FINE)) {
-            digester.log.log(Level.FINE, "[ObjectCreateRule]{" + digester.match +
-                    "} Pop " + top.getClass().getName());
+            digester.log.log(Level.FINE, "[ObjectCreateRule]'{'{0}'}' Pop {1}", new Object[]{digester.match, top.getClass().getName()});
         }
 
     }
@@ -267,6 +268,7 @@ public class ObjectCreateRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ObjectCreateRule[");

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -213,6 +214,7 @@ public class SetNextRule extends Rule {
     /**
      * Process the end of this element.
      */
+    @Override
     public void end() throws Exception {
 
         // Identify the objects to be used
@@ -220,13 +222,10 @@ public class SetNextRule extends Rule {
         Object parent = digester.peek(1);
         if (digester.log.isLoggable(Level.FINE)) {
             if (parent == null) {
-                digester.log.log(Level.FINE, "[SetNextRule]{" + digester.match +
-                        "} Call [NULL PARENT]." +
-                        methodName + "(" + child + ")");
+                digester.log.log(Level.FINE, "[SetNextRule]'{'{0}'}' Call [NULL PARENT].{1}({2})", new Object[]{digester.match, methodName, child});
             } else {
-                digester.log.log(Level.FINE, "[SetNextRule]{" + digester.match +
-                        "} Call " + parent.getClass().getName() + "." +
-                        methodName + "(" + child + ")");
+                digester.log.log(Level.FINE, "[SetNextRule]'{'{0}'}' Call {1}.{2}({3})",
+                        new Object[]{digester.match, parent.getClass().getName(), methodName, child});
             }
         }
 
@@ -240,6 +239,7 @@ public class SetNextRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetNextRule[");

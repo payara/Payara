@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -94,10 +95,9 @@ public final class RemoteHostValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -116,12 +116,9 @@ public final class RemoteHostValve
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
-    public int invoke(Request request, Response response)
-        throws IOException, ServletException {
-
-        return process(request.getRequest().getRemoteHost(),
-                request, response);
-
+    @Override
+    public int invoke(Request request, Response response) throws IOException, ServletException {
+        return process(request.getRequest().getRemoteHost(), request, response);
     }
 
 
