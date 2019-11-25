@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>classpath</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.194</version>
     </parent>
 
     <artifactId>embedded-vs-jersey</artifactId>

@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 5.193!
+Thank you for downloading Payara Server 5.194!
 
 Here are a few short steps to get you started...
 
@@ -16,7 +16,7 @@ Payara Server currently supports the following Java Virtual Machines:
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.193.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.194.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -49,13 +49,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 5.193 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-193.html
+Make sure to also check the Payara Server 5.194 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-194.html
 
 
 5. Documentation
 ================
 
-Payara Server 5.193 Release Notes: https://docs.payara.fish/release-notes/release-notes-193.html
+Payara Server 5.194 Release Notes: https://docs.payara.fish/release-notes/release-notes-194.html
 
 Payara Server Documentation: https://docs.payara.fish/
 

@@ -43,7 +43,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.194</version>
     </parent>
 
     <artifactId>hazelcast-jbatch-store</artifactId>

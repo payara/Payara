@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.194</version>
     </parent>
     <!--<groupId>fish.payara.server.internal.packager</groupId>-->
     <artifactId>payara-api</artifactId>
