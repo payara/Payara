@@ -1,0 +1,10 @@
+
+setOSConditions:
+
+restart-server:
+
+restart-server-unix:
+     [echo] Successfully restarted the domain
+     [echo] Command restart-domain executed successfully.
+
+restart-server-windows:
