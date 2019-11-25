@@ -113,6 +113,12 @@
                 <version>${payara.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>fish.payara.server.appclient</groupId>
+                <artifactId>payara-client</artifactId>
+                <version>${payara.version}</version>
+            </dependency>
+
             <!-- APIs -->
             <!-- Aggregate APIs -->
             <dependency>
@@ -323,17 +329,10 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Payara Micro Container 1.2 is faulty. We'll likely release new version before 5.194 is out. -->
-            <!--            <dependency>-->
-            <!--                <groupId>fish.payara.arquillian</groupId>-->
-            <!--                <artifactId>arquillian-payara-micro-managed</artifactId>-->
-            <!--                <version>${payara-arquillian-container.version}</version>-->
-            <!--                <scope>test</scope>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
-                <artifactId>arquillian-payara-micro-5-managed</artifactId>
-                <version>1.0.Beta3</version>
+                <artifactId>arquillian-payara-micro-managed</artifactId>
+                <version>${payara-arquillian-container.version}</version>
                 <scope>test</scope>
             </dependency>
 
