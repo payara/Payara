@@ -117,6 +117,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     // Technically deprecated syntax
     @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
     private boolean autoName;
+    
+    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
+    private String dataGridStartPort;
 
     // Override for hostname, as getting it from the system can be fragile when comparing against node config
     @Param(name = "ip", optional = true)
@@ -249,6 +252,23 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
             throw new CommandException(msg, ce);
         }
+        
+        if (StringUtils.ok(dataGridStartPort)) {
+            try {
+                RemoteCLICommand rc = new RemoteCLICommand("set-hazelcast-configuration", this.programOpts, this.env);
+                rc.execute("set-hazelcast-configuration", "--configSpecificDataGridStartPort", dataGridStartPort, "--target", instanceName);
+                
+            } catch (CommandException cex) {
+                String msg = "Something went wrong when setting config specific Data Grid start port for instance " + instanceName;
+                if (cex.getLocalizedMessage() != null) {
+                    msg = msg + ": " + cex.getLocalizedMessage();
+                }
+                logger.severe(msg);
+                throw new CommandException(msg, cex);
+            }
+
+        }
+        
         return exitCode;
     }
 
