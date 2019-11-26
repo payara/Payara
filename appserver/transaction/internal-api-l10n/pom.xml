@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.transaction</groupId>
         <artifactId>transaction</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>transaction-internal-api-l10n</artifactId>
     

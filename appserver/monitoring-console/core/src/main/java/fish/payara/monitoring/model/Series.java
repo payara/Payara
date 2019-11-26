@@ -62,13 +62,39 @@ public final class Series implements Comparable<Series>, Serializable {
     private final String[] tags;
     private final String[] values;
 
+    /**
+     * Parses the given series key.
+     * 
+     * Valid keys are:
+     * 
+     * <pre>
+     * simpleName
+     * tag:value metricName
+     * tag1:value1 tag2:value2 metricName
+     * </pre>
+     * 
+     * Tags and metric name are spaced by a single space, comma or semi-colon. Tag name and tag value must be separated
+     * by a colon.
+     * 
+     * Tag names, values and metric names should be alphanumeric but anything other than space, comma, colon and
+     * semi-colon are permitted. In particular dashes and underscores symbols can be used. A asterisk can be used as
+     * wild-card for tag value or metric name.
+     * 
+     * @param key series in text form, not null
+     * @throws IllegalArgumentException in case the key is null, empty or otherwise malformed
+     */
     public Series(String key) {
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("Series key cannot be null or empty!");
+        }
         String[] parts = key.split(SPLIT_PATTERN);
         this.tags = new String[parts.length - 1];
         this.values = new String[tags.length];
         this.metric = parts[parts.length - 1].intern();
         for (int i = 0; i < parts.length - 1; i++) {
             int eqIndex = parts[i].indexOf(TAG_ASSIGN);
+            if (eqIndex <= 0)
+                throw new IllegalArgumentException("Malformed series key, `" + TAG_ASSIGN + "` missing or misplaced in " + key);
             tags[i] = parts[i].substring(0, eqIndex).intern();
             values[i] = parts[i].substring(eqIndex + 1).intern();
         }

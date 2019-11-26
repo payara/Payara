@@ -28,6 +28,7 @@
         <module>openid</module>
         <module>asadmin</module>
         <module>microprofile-endpoints</module>
+        <module>realm-identity-stores</module>
     </modules>
 
     <dependencies>
@@ -36,8 +37,8 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.samples</groupId>
@@ -141,6 +142,7 @@
             </activation>
             <properties>
                 <payara.directory.name>payara41</payara.directory.name>
+                <payara.container.version>1.3</payara.container.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -217,7 +219,7 @@
                 <!-- The actual Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>arquillian-payara-server-4-managed</artifactId>
+                    <artifactId>arquillian-payara-server-managed</artifactId>
                     <version>${payara.container.version}</version>
                     <scope>test</scope>
                 </dependency>
@@ -293,8 +295,8 @@
                 <!-- The Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>arquillian-payara-micro-5-managed</artifactId>
-                    <version>${payara.container.version}</version>
+                    <artifactId>arquillian-payara-micro-managed</artifactId>
+                    <version>${payara.micro.container.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -360,7 +362,7 @@
                 <!-- The actual Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>arquillian-payara-server-4-remote</artifactId>
+                    <artifactId>arquillian-payara-server-remote</artifactId>
                     <version>${payara.container.version}</version>
                     <scope>test</scope>
                 </dependency>

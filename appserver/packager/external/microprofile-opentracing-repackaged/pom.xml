@@ -93,7 +93,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
-            <version>${microprofile-opentracing.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>admin</artifactId>
         <version>4.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.server.internal.admin.runtime</groupId>
     <artifactId>runtime</artifactId>

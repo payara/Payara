@@ -50,7 +50,6 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>console-devtests</artifactId>
@@ -110,12 +109,6 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>console-updatecenter-plugin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency> -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>console-web-plugin</artifactId>
@@ -187,17 +180,6 @@
     </dependencies>
     <build>
         <defaultGoal>install</defaultGoal>
-        <pluginManagement>
-            <plugins>
-            <!--
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>selenium-maven-plugin</artifactId>
-              <version>1.1</version>
-            </plugin>
-            -->
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -223,9 +205,6 @@
                 </dependencies>
                 <configuration>
                     <forkMode>never</forkMode>
-                    <!--
-                    <parallel>classes</parallel>
-                    -->
                 </configuration>
             </plugin>
             <plugin>

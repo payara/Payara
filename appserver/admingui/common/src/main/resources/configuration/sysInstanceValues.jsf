@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2019 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,8 +56,8 @@
             setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/common/configuration/sysInstanceValues.jsf?configName=#{pageSession.configName}");
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
             setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/system-properties");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/system-property/#{pageSession.propName}", method="get",
-                result="#{requestScope.result}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/system-property/#{pageSession.propName}", 
+            method="get", result="#{requestScope.result}");
             setPageSessionAttribute(key="defaultValue", value="#{requestScope.result.data.extraProperties.entity.value}");
 
             // Get instance to cluster mapping
@@ -107,9 +107,9 @@
                         <!command
                             foreach (var="row" list="#{pageSession.tableList}") {
                                 createMap(result="#{requestScope.attrs}");
-                                mapPut(map="#{requestScope.attrs}", key="value", value="#{row.overrideValue}");
-                                gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{row.instance}/system-properties/#{pageSession.propName}", method="POST",
-                                    data="#{requestScope.attrs}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
+                                mapPut(map="#{requestScope.attrs}", key="#{pageSession.propName}", value="#{row.overrideValue}");
+                                gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{row.instance}/system-properties", method="POST",
+                                    attrs="#{requestScope.attrs}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
                             }
                             prepareSuccessfulMsg();
                             //gf.redirect(page="#{pageSession.parentPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

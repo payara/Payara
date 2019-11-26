@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-batch-connector</artifactId>
@@ -60,8 +59,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <groupId>jakarta.batch</groupId>
+            <artifactId>jakarta.batch-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>

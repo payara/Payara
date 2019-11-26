@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>admin</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>cli-optional-l10n</artifactId>
     

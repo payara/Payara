@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.jdbc</groupId>
         <artifactId>jdbc</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jdbc-runtime-l10n</artifactId>
     

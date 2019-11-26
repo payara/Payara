@@ -50,6 +50,7 @@ import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import fish.payara.api.admin.config.NameGenerator;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -58,8 +59,6 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Scope;
 import javax.inject.Singleton;
-
-import fish.payara.api.admin.config.NameGenerator;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel;

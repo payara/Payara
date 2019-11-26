@@ -46,7 +46,6 @@
         <groupId>fish.payara.server.internal.grizzly</groupId>
         <artifactId>glassfish-grizzly</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-grizzly-container</artifactId>
@@ -82,8 +81,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enterprise.deploy-api</artifactId>
+            <groupId>jakarta.enterprise.deploy</groupId>
+            <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
     </dependencies>
 </project>

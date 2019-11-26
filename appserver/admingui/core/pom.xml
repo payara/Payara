@@ -47,16 +47,11 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    
-    <name>Admin Console Core Jar</name>
 
-    <developers>
-        <!-- See parent POM -->
-    </developers>
+    <name>Admin Console Core Jar</name>
 
     <build>
         <plugins>
@@ -90,84 +85,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
-            <artifactId>deployment-client</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Woodstock dependency -->
-        <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf-suntheme</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.faces.extensions</groupId>
-                    <artifactId>jsf-extensions-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.faces.extensions</groupId>
-                    <artifactId>jsf-extensions-dynamic-faces</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.woodstock.dependlibs</groupId>
-                    <artifactId>jh</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.woodstock.dependlibs</groupId>
-                    <artifactId>jhall</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.woodstock.dependlibs</groupId>
-                    <artifactId>jhbasic</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.woodstock.dependlibs</groupId>
-                    <artifactId>portlet</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-digester</groupId>
-                    <artifactId>commons-digester</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.woodstock.dependlibs</groupId>
-                    <artifactId>dataprovider</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.woodstock.dependlibs</groupId>
-            <artifactId>json</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.woodstock.dependlibs</groupId>
-            <artifactId>dojo-ajax-nodemo</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.woodstock.dependlibs</groupId>
-            <artifactId>prototype</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
@@ -186,28 +103,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>gf-admingui-connector</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>com.sun.woodstock</groupId>
+            <artifactId>webui-jsf</artifactId>
         </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
-        </dependency> 
-        <dependency> <!-- for FindBugs -->
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <scope>provided</scope>
-        </dependency> 
-        <dependency> <!-- for FindBugs -->
-            <groupId>com.sun.pkg</groupId>
-            <artifactId>pkg-java</artifactId>
-            <version>1.0.0-alpha-1</version>
-            <scope>provided</scope>
-        </dependency> 
-
-
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+        </dependency>
     </dependencies>
 </project>

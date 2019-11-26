@@ -1,0 +1,1 @@
+create-file-user --groups ROLE_ADMIN --passwordfile ${user.dir}/src/test/resources/password.txt test

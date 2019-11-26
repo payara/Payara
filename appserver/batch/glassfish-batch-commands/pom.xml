@@ -47,7 +47,6 @@
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-batch-commands</artifactId>
@@ -56,13 +55,12 @@
     <name>Batch Commands for Glassfish</name>
     <dependencies>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <groupId>jakarta.batch</groupId>
+            <artifactId>jakarta.batch-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>${com.ibm.jbatch.container.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.batch</groupId>

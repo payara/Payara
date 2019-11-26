@@ -192,8 +192,8 @@
             <artifactId>stax2-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.xml.registry</groupId>
-            <artifactId>javax.xml.registry-api</artifactId>
+            <groupId>jakarta.xml.registry</groupId>
+            <artifactId>jakarta.xml.registry-api</artifactId>
         </dependency>
     </dependencies>
 </project>
