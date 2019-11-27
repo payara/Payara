@@ -10,6 +10,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static java.util.Arrays.asList;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -34,7 +36,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
     String [] counts = callListTimers(timers, serverIds);
 
-    assert counts[0].equals("2");
+    assertEquals("2", counts[0]);
   }
 
   @Test
@@ -43,7 +45,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
     String [] counts = callListTimers(timers, serverIds);
 
-    assert counts[0].equals("1");
+    assertEquals("1", counts[0]);
   }
 
   @Test
@@ -53,7 +55,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
     String [] counts = callListTimers(timers, serverIds);
 
     for (String count : counts) {
-      assert count != null : "Even for missing timers/server ids no null is expected but rather some representation of zero";
+      assertNotNull("Even for missing timers/server ids no null is expected but rather some representation of zero", count);
     }
   }
 
@@ -63,9 +65,9 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
     String [] counts = callListTimers(timers, serverIds);
 
-    assert counts[0].equals("1");
-    assert counts[1].equals("0");
-    assert counts[2].equals("2");
+    assertEquals("1", counts[0]);
+    assertEquals("0", counts[1]);
+    assertEquals("2", counts[2]);
   }
 }
 

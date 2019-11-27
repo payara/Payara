@@ -5,6 +5,8 @@ import java.util.Collections;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class HazelcastTimerStoreEmptyTimersTest extends HazelcastTimerStoreTestBase {
   private Collection<HZTimer> timers = Collections.emptyList();
 
@@ -14,7 +16,7 @@ public class HazelcastTimerStoreEmptyTimersTest extends HazelcastTimerStoreTestB
 
     String [] counts = callListTimers(timers, serverIds);
 
-    assert counts[0].equals("0") : "With no timers defined, zero timers is expected for given server id";
+    assertEquals("With no timers defined, zero timers is expected for given server id", "0", counts[0]);
   }
 
   @Test
@@ -23,7 +25,7 @@ public class HazelcastTimerStoreEmptyTimersTest extends HazelcastTimerStoreTestB
 
     String [] counts = callListTimers(timers, serverIds);
 
-    assert counts.length == serverIds.length : "Size of counters array shall match the size of server ids array";
+    assertEquals("Size of counters array shall match the size of server ids array", serverIds.length, counts.length);
   }
 }
 
