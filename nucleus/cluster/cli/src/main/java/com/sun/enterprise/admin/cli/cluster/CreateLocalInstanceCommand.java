@@ -43,14 +43,6 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
@@ -58,9 +50,16 @@ import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -70,8 +69,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.admin.cli.cluster.NamingHelper;
-import fish.payara.util.cluster.PayaraServerNameGenerator;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 
 /**
@@ -86,12 +84,16 @@ import fish.payara.util.cluster.PayaraServerNameGenerator;
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
     private static final String CONFIG = "config";
     private static final String CLUSTER = "cluster";
+    private static final String DEPLOYMENT_GROUP = "deploymentGroup";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
 
     @Param(name = CLUSTER, optional = true)
     private String clusterName;
+    
+    @Param(name = DEPLOYMENT_GROUP, optional = true)
+    private String deploymentGroup;
 
     @Param(name="lbenabled", optional = true)
     private Boolean lbEnabled;
@@ -115,6 +117,13 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     // Technically deprecated syntax
     @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
     private boolean autoName;
+    
+    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
+    private String dataGridStartPort;
+
+    // Override for hostname, as getting it from the system can be fragile when comparing against node config
+    @Param(name = "ip", optional = true)
+    private String ip;
 
     private String masterPassword = null;
 
@@ -147,12 +156,19 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             //If we are on Windows, call _validate-node on DAS instead of relying on the path processing in the local validation.
             String nodeInstallDir = getNodeInstallDir();
             if (nodeInstallDir == null || nodeInstallDir.isEmpty() || TokenResolver.hasToken(nodeInstallDir) || OS.isWindows()) {
-                validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, getProductRootPath(), ip);
+                } else {
+                    validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                }
             } else {
                 validateNodeInstallDirLocal(nodeInstallDir, getProductRootPath());
-                validateNode(node, null, getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, null, ip);
+                } else {
+                    validateNode(node, null, getInstanceHostName(true));
+                }
             }
-
         }
 
         if (!rendezvousWithDAS()) {
@@ -236,6 +252,23 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
             throw new CommandException(msg, ce);
         }
+        
+        if (StringUtils.ok(dataGridStartPort)) {
+            try {
+                RemoteCLICommand rc = new RemoteCLICommand("set-hazelcast-configuration", this.programOpts, this.env);
+                rc.execute("set-hazelcast-configuration", "--configSpecificDataGridStartPort", dataGridStartPort, "--target", instanceName);
+                
+            } catch (CommandException cex) {
+                String msg = "Something went wrong when setting config specific Data Grid start port for instance " + instanceName;
+                if (cex.getLocalizedMessage() != null) {
+                    msg = msg + ": " + cex.getLocalizedMessage();
+                }
+                logger.severe(msg);
+                throw new CommandException(msg, cex);
+            }
+
+        }
+        
         return exitCode;
     }
 
@@ -350,6 +383,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         if (clusterName != null) {
             argsList.add("--cluster");
             argsList.add(clusterName);
+        }
+        if (deploymentGroup != null) {
+            argsList.add("--deploymentgroup");
+            argsList.add(deploymentGroup);
         }
         if (lbEnabled != null) {
             argsList.add("--lbenabled");

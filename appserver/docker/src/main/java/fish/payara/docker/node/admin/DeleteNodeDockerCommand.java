@@ -59,7 +59,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.logging.Logger;
 
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 
@@ -99,7 +98,6 @@ public class DeleteNodeDockerCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
-        Logger logger = context.getLogger();
         Node node = nodes.getNode(name);
 
         if (node == null) {

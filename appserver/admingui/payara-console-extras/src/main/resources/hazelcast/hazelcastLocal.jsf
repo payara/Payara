@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation and/or its affiliatess. 
+ Copyright (c) 2016-2019 Payara Foundation and/or its affiliatess. 
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -39,6 +39,12 @@
         if (#{pageSession.valueMap['enabled']}=true) {
            setPageSessionAttribute(key="enabledSelected", value="true");
         }
+
+        setPageSessionAttribute(key="showConfigSpecificDataGridStartPort", value="#{true}");
+        if (#{pageSession.configName}=server-config) {
+            setPageSessionAttribute(key="showConfigSpecificDataGridStartPort", value="#{false}");
+        }
+        
         setPageSessionAttribute(key="dynamic", value="false");
         setPageSessionAttribute(key="lite", value="#{pageSession.valueMap['lite']}");
         />
@@ -73,6 +79,9 @@
         </sun:property>
         <sun:property id="lite" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
             <sun:checkbox id="lite" selected="#{pageSession.lite}" selectedValue="true" />
+        </sun:property>
+         <sun:property id="configPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configPort}" rendered="#{pageSession.showConfigSpecificDataGridStartPort}" helpText="$resource{i18nhc.hazelcast.configuration.configPortHelp}">
+            <sun:textField id="configPort" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['configSpecificDataGridStartPort']}" rendered="#{pageSession.showConfigSpecificDataGridStartPort}" />
         </sun:property>
         <sun:property id="publicAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.publicAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.publicAddressHelp}">
             <sun:textField id="publicAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['publicAddress']}" />

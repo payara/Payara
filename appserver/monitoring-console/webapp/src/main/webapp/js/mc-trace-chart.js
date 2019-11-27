@@ -132,7 +132,7 @@ MonitoringConsole.Chart.Trace = (function() {
    function autoLink(text) {
       if (text.startsWith('http://') || text.startsWith('https://'))
          return $('<a/>', { href: text, text: text});
-      return $(document.createTextNode(text));
+      return $('<span/>', { text: text });
    }
 
    function addCustomTooltip(chart, spans) {
@@ -226,6 +226,7 @@ MonitoringConsole.Chart.Trace = (function() {
    }
 
    function onOpenPopup(series) {
+      $('#chart-grid').hide();
       $('#panel-trace').show();
       model.series = series;
       let menu = { id: 'TraceMenu', groups: [
@@ -246,6 +247,7 @@ MonitoringConsole.Chart.Trace = (function() {
          chart = undefined;
       }
       $('#panel-trace').hide();
+      $('#chart-grid').show();
    }
 
    function onSortByWallTime() {

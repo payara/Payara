@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime</artifactId>
@@ -200,8 +199,8 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-	    <groupId>javax.interceptor</groupId>
-	    <artifactId>javax.interceptor-api</artifactId>
+	    <groupId>jakarta.interceptor</groupId>
+	    <artifactId>jakarta.interceptor-api</artifactId>
         </dependency>
     </dependencies>
 </project>

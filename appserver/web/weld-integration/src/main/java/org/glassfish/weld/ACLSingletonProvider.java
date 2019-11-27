@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -45,7 +45,6 @@ package org.glassfish.weld;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.Singleton;
-import org.glassfish.javaee.full.deployment.EarLibClassLoader;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 
@@ -163,10 +162,7 @@ public class ACLSingletonProvider extends SingletonProvider
         // There are exceptions like hybrid app to this rule.
         // So, we have to walk upto bootstrapCL in worst case.
         while (cl != ccl && cl != bootstrapCL) {
-          if (cl instanceof EarLibClassLoader) {
-//                    System.out.println("ACLSingletonProvider.getClassLoader():\n" +
-//                            "Application Class Loader = [ " + cl + "],\n" +
-//                            "Thread Context Class Loader = [" + tccl + "]");
+          if (cl.getClass().getName().equals("org.glassfish.javaee.full.deployment.EarLibClassLoader")) {
             return cl;
           } else {
             if (cl instanceof WebappClassLoader) {

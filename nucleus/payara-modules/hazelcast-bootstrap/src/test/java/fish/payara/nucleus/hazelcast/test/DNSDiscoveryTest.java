@@ -72,7 +72,7 @@ public class DNSDiscoveryTest {
     }
     
     @Test
-    public void sinlgeRecordTest() {
+    public void singleRecordTest() {
         DnsDiscoveryService service = new DnsDiscoveryService(new String[]{DOMAIN_PAYARA});
         Iterator nodes = service.discoverNodes().iterator();
         Assert.assertTrue(nodes.hasNext());

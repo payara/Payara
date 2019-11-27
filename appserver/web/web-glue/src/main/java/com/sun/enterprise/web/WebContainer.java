@@ -48,6 +48,7 @@ import static com.sun.enterprise.web.Constants.ACCESS_LOGGING_ENABLED;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_PROPERTY;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_PREFIX;
 import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
 import static com.sun.enterprise.web.Constants.ERROR_REPORT_VALVE;
 import static com.sun.enterprise.web.Constants.SSO_ENABLED;
@@ -328,6 +329,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     protected String globalAccessLogWriteInterval;
 
+    /**
+     * AccessLog prefix
+     */
+    protected String globalAccessLogPrefix;
+    
     /**
      * The default-redirect port
      */
@@ -1071,6 +1077,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         globalAccessLoggingEnabled = ConfigBeansUtilities.toBoolean(httpService.getAccessLoggingEnabled());
         globalAccessLogWriteInterval = httpService.getAccessLog().getWriteIntervalSeconds();
         globalAccessLogBufferSize = httpService.getAccessLog().getBufferSizeBytes();
+        globalAccessLogPrefix = httpService.getAccessLog().getPropertyValue(Constants.ACCESS_LOG_PREFIX);
         if (httpServiceProps != null) {
             for (Property httpServiceProp : httpServiceProps) {
                 String propName = httpServiceProp.getName();
@@ -1204,7 +1211,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         PEAccessLogValve accessLogValve = virtualServer.getAccessLogValve();
         boolean startAccessLog = accessLogValve.configure(
                 virtualServerId, vsBean, httpService, domain, serviceLocator, webContainerFeatureFactory, globalAccessLogBufferSize,
-                globalAccessLogWriteInterval);
+                globalAccessLogWriteInterval, globalAccessLogPrefix);
         
         if (startAccessLog && virtualServer.isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
             virtualServer.addValve((GlassFishValve) accessLogValve);
@@ -2568,7 +2575,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             updateHostProperties(vsBean, prop.getName(), prop.getValue(), securityService, virtualServer);
         }
         virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-        virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+        virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
 
         // old listener names
         List<String> oldListenerList = StringUtils.parseStringList(vsBean.getNetworkListeners(), ",");
@@ -2720,13 +2727,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         } else if ("setCacheControl".equals(name)) {
             virtualServer.configureCacheControl(value);
         } else if (ACCESS_LOGGING_ENABLED.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix); 
+        } else if (ACCESS_LOG_PREFIX.equals(name)) {
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if ("allowRemoteHost".equals(name) || "denyRemoteHost".equals(name)) {
             virtualServer.configureRemoteHostFilterValve();
         } else if ("allowRemoteAddress".equals(name) || "denyRemoteAddress".equals(name)) {
@@ -2771,7 +2780,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         globalAccessLogWriteInterval = httpService.getAccessLog().getWriteIntervalSeconds();
         globalAccessLogBufferSize = httpService.getAccessLog().getBufferSizeBytes();
         globalAccessLoggingEnabled = ConfigBeansUtilities.toBoolean(httpService.getAccessLoggingEnabled());
-
+        globalAccessLogPrefix = httpService.getAccessLog().getPropertyValue(Constants.ACCESS_LOG_PREFIX);
         // for availability-service.web-container-availability
         webContainerFeatureFactory = getWebContainerFeatureFactory();
 
@@ -2779,7 +2788,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             VirtualServer vs = (VirtualServer) getEngine().findChild(virtualServer.getId());
             if (vs != null) {
                 vs.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
                 updateHost(virtualServer);
             }
         }

@@ -45,7 +45,6 @@
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>nucleus-security</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>security-services-l10n</artifactId>

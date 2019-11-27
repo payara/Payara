@@ -42,9 +42,12 @@ package fish.payara.monitoring.web;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -69,6 +72,8 @@ import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 @RequestScoped
 public class MonitoringConsoleResource {
 
+    private static final Logger LOGGER = Logger.getLogger(MonitoringConsoleResource.class.getName());
+
     private static MonitoringDataRepository getDataStore() {
         return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
     }
@@ -77,10 +82,20 @@ public class MonitoringConsoleResource {
         return Globals.getDefaultBaseServiceLocator().getService( RequestTracingService.class).getRequestTraceStore();
     }
 
+    private static Series seriesOrNull(String series) {
+        try {
+            return new Series(series);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.FINE, "Failed to parse series", e);
+            return null;
+        }
+    }
+
     @GET
     @Path("/series/data/{series}/")
     public List<SeriesResponse> getSeriesData(@PathParam("series") String series) {
-        return SeriesResponse.from(getDataStore().selectSeries(new Series(series)));
+        Series key = seriesOrNull(series);
+        return key == null ? Collections.emptyList() : SeriesResponse.from(getDataStore().selectSeries(key));
     }
 
     @POST
@@ -89,8 +104,8 @@ public class MonitoringConsoleResource {
     public Map<Series, List<SeriesResponse>> getSeriesData(SeriesRequest request) {
         Map<Series, List<SeriesResponse>> res = new HashMap<>();
         for (SeriesQuery query : request.queries) {
-            Series key = new Series(query.series);
-            List<SeriesDataset> value = getDataStore().selectSeries(key, query.instances);
+            Series key = seriesOrNull(query.series);
+            List<SeriesDataset> value = key == null ? null : getDataStore().selectSeries(key, query.instances);
             if (value != null && !value.isEmpty()) {
                 if (res.containsKey(key)) {
                     res.get(key).addAll(SeriesResponse.from(value));

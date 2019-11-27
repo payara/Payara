@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -205,6 +205,8 @@ public class OpenApiWalker implements ApiWalker {
 
         // OpenAPI response types
         processAnnotations(RequestBody.class, visitor::visitRequestBody);
+        //redo schema, now all others have been to ensure sub-schemas work
+        processAnnotations(Schema.class, visitor::visitSchema);
     }
 
     @SafeVarargs

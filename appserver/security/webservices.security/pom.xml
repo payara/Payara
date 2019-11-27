@@ -48,13 +48,12 @@
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
-    </parent>    
+    </parent>
     <artifactId>webservices.security</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>WebServices Security and JSR 196 implementation</name>
-    
+
     <developers>
         <developer>
             <id>kumarjayanti</id>

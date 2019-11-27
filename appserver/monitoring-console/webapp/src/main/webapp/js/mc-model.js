@@ -339,13 +339,18 @@ MonitoringConsole.Model = (function() {
 						if (spanX == 0) {
 							if (!widget.grid)
 								widget.grid = { column: col, span: span }; // init grid
-							widget.grid.item = column.length; // update item position
+							widget.grid.item = row0; // update item position
 						} else {
 							while (column.length < row0)
 								column.push(null); // null marks empty cells
 						}
 						for (let spanY = 0; spanY < span; spanY++) {
-							column.push(spanX === 0 && spanY === 0 ? info : undefined);
+							let cell = spanX === 0 && spanY === 0 ? info : undefined;
+							if (row0 + spanY > column.length) {
+								column.push(cell);	
+							} else {
+								column[row0 + spanY] = cell;
+							}
 						}
 					}
 				}
@@ -379,7 +384,8 @@ MonitoringConsole.Model = (function() {
 		 * @return {number} row position in column where n rows are still empty ('null' marks empty)
 		 */
       	function getEmptyRowIndex(column, n) {
-			return Math.max(column.length, column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null))); 
+      		let row = column.findIndex((elem,index,array) => array.slice(index, index + n).every(e => e === null));
+			return row < 0 ? column.length : row;
       	}
 		
 		return {
@@ -537,9 +543,17 @@ MonitoringConsole.Model = (function() {
 				doStore();
 			},
 			
-			select: function(series) {
-				let widget = pages[settings.home].widgets[series];
+			select: function(series, exclusive) {
+				let page = pages[settings.home];
+				let widget = page.widgets[series];
 				widget.selected = widget.selected !== true;
+				if (exclusive) {
+					Object.values(page.widgets).forEach(function(widget) {
+						if (widget.series != series) {
+							widget.selected = false;
+						}
+					});
+				}
 				doStore();
 				return widget.selected === true;
 			},
@@ -775,7 +789,9 @@ MonitoringConsole.Model = (function() {
 	let Update = (function() {
 
 		function retainLastMinute(data) {
-			let startOfLastMinute = Date.now() - 65000;
+			if (!data)
+				return [];
+			let startOfLastMinute = Date.now() - 62000;
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
 				if (src.length == 4 && src[2] >= startOfLastMinute) {
@@ -792,6 +808,15 @@ MonitoringConsole.Model = (function() {
 				}
 			});
 			return data.filter(seriesData => seriesData.points.length >= 2);
+		}
+
+		function adjustDecimals(data, factor, divisor) {
+			data.forEach(function(seriesData) {
+				seriesData.points = seriesData.points.map((val, index) => index % 2 == 0 ? val : val * factor / divisor);
+				seriesData.observedMax = seriesData.observedMax * factor / divisor; 
+				seriesData.observedMin = seriesData.observedMin * factor / divisor;
+				seriesData.observedSum = seriesData.observedSum * factor / divisor;
+			});
 		}
 
 		function perSecond(data) {
@@ -847,6 +872,8 @@ MonitoringConsole.Model = (function() {
 			return function(response) {
 				Object.values(widgets).forEach(function(widget) {
 					let data = retainLastMinute(response[widget.series]);
+					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
+						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
 						perSecond(data);
 					addAssessment(widget, data);
@@ -1092,11 +1119,11 @@ MonitoringConsole.Model = (function() {
 	            }),
 
 				moveUp: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item = 0;
+                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span);
 	            }),
 
 	            moveDown: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item += 1.1;
+                    widget.grid.item += widget.grid.span;
 	            }),
 
 	            spanMore: (series) => doConfigureWidget(series, function(widget) {

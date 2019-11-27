@@ -51,7 +51,9 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -116,10 +118,18 @@ class DirWatcher {
             // Quite often the root path doesn't even exist yet (and registering for watch would fail)
             // In such case we register watcher for parent directory so it would register the main watcher
             // when directory is created
-            processors.computeIfAbsent(path, p -> ItemChecker.registerNonExisting(p, watchService));
-            processors.computeIfAbsent(path.getParent(), p -> new ParentWatcher(p, watchService));
+            processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerNonExisting(p, watchService) : watcher.subscribe());
+
+            for(;;) {
+                path = path.getParent();
+                WatchProcessor watcher = processors.computeIfAbsent(path, p -> new ParentWatcher(p, watchService));
+                if (watcher.registered || Files.exists(path)) {
+                    watcher.register();
+                    break;
+                }
+            }
         } else {
-            processors.computeIfAbsent(path, p -> ItemChecker.registerExisting(p, watchService));
+            processors.compute(path, (p, watcher) -> watcher == null ? ItemChecker.registerExisting(p, watchService) : watcher.subscribe());
         }
     }
 
@@ -171,15 +181,17 @@ class DirWatcher {
             boolean valid = key.reset();
             if (!valid) {
                 processor.cancelled();
-                processors.remove(root);
             }
         }
     }
 
     private void unregisterFromFilesystem(Path path) {
-        WatchProcessor processor = processors.remove(path);
+        WatchProcessor processor = processors.get(path);
         if (processor != null) {
-            processor.cancelled();
+            if (processor.unsubscribe()) {
+                processor.cancelled();
+                processors.remove(path);
+            }
         }
     }
 
@@ -188,20 +200,35 @@ class DirWatcher {
 
         ParentWatcher(Path p, WatchService watchService) {
             super(p, watchService);
-            register();
         }
+
+        @Override
+        protected void register() {
+            super.register();
+            try (Stream<Path> stream = Files.list(root)){
+                stream.forEach(this::registerSubProcessor);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, "Error when listing directory",e);
+            }
+        }
+
         @Override
         protected boolean created(Path filename) {
-            LOGGER.info(() -> "In parent directory "+root+": created "+filename);
+            LOGGER.fine(() -> "In parent directory "+root+": created "+filename);
             Path path = root.resolve(filename);
-            if (filename.getNameCount() == 1 && Files.isDirectory(path)) {
+            registerSubProcessor(path);
+            return true;
+        }
+
+        private void registerSubProcessor(Path path) {
+            if (Files.isDirectory(path)) {
                 WatchProcessor processor = processors.get(path);
                 if (processor != null) {
                     processor.register();
                 }
             }
-            return true;
         }
+
     }
 
 

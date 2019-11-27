@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.resources</groupId>
         <artifactId>javamail</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     
     <artifactId>javamail-connector-l10n</artifactId>

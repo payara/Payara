@@ -40,13 +40,17 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
-import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
-import static java.util.logging.Level.SEVERE;
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
-import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
-import static org.glassfish.api.ActionReport.ExitCode.WARNING;
-import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.util.ExceptionUtil;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.io.InstanceDirs;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,10 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
-
-import fish.payara.util.cluster.PayaraServerNameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -73,18 +74,15 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.util.ExceptionUtil;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.io.InstanceDirs;
+import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
+import static java.util.logging.Level.SEVERE;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 /**
  * Remote AdminCommand to create an instance.  This command is run only on DAS.
@@ -144,6 +142,9 @@ public class CreateInstanceCommand implements AdminCommand {
     @Param(name = "instance_name", primary = true)
     private String instance;
     
+    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
+    private String dataGridStartPort;
+    
     @Inject
     private CommandRunner commandRunner;
     
@@ -158,6 +159,9 @@ public class CreateInstanceCommand implements AdminCommand {
     
     @Inject
     private ServerEnvironment env;
+    
+    @Inject
+    private Target targetUtil;
     
     private Logger logger; // set in execute and all references occur after that assignment
     private AdminCommandContext ctx;
@@ -278,6 +282,22 @@ public class CreateInstanceCommand implements AdminCommand {
 
         if (extraTerse) {
             report.setMessage(instance);
+        }
+
+        if (StringUtils.ok(dataGridStartPort)) {
+            commandInvocation = commandRunner.getCommandInvocation("set-hazelcast-configuration", report, context.getSubject());
+            commandParameters = new ParameterMap();
+            commandParameters.add("configSpecificDataGridStartPort", dataGridStartPort);
+            commandParameters.add("target", targetUtil.getConfig(instance).getName());
+            commandInvocation.parameters(commandParameters);
+            commandInvocation.execute();
+
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+                // If we couldn't update domain.xml then stop!
+                return;
+            }
+
         }
     }
 

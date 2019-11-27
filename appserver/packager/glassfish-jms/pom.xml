@@ -84,7 +84,7 @@
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -105,7 +105,7 @@
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -121,48 +121,48 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
-       <dependency>
-           <groupId>fish.payara.server.internal.admingui</groupId>
-           <artifactId>console-jms-plugin</artifactId>
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>console-jms-plugin</artifactId>
             <version>${project.version}</version>
-       </dependency>
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.jms</groupId>
-	    <artifactId>jms-core</artifactId>
+            <artifactId>jms-core</artifactId>
             <version>${project.version}</version>
-       </dependency> 
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.jms</groupId>
-	    <artifactId>gf-jms-injection</artifactId>
+            <artifactId>gf-jms-injection</artifactId>
             <version>${project.version}</version>
-       </dependency> 
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.jms</groupId>
-       	    <artifactId>jms-admin</artifactId>
+            <artifactId>jms-admin</artifactId>
             <version>${project.version}</version>
-       </dependency> 
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.jms</groupId>
-       	    <artifactId>gf-jms-connector</artifactId>
+            <artifactId>gf-jms-connector</artifactId>
             <version>${project.version}</version>
-       </dependency>
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.connectors</groupId>
-       	    <artifactId>connectors-inbound-runtime</artifactId>
+            <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
-       </dependency>
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>jakarta.jms</groupId>
-	    <artifactId>jakarta.jms-api</artifactId>
-       </dependency>
-       <dependency>
+            <artifactId>jakarta.jms-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jmsra</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-       </dependency>
+        </dependency>
        <!-- JMS Annotation handlers -->
         <dependency>
             <groupId>fish.payara.server.internal.jms</groupId>

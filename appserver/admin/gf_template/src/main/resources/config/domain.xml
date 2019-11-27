@@ -43,7 +43,7 @@
 <!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-<hazelcast-runtime-configuration start-port="%%%HAZELCAST_DAS_PORT%%%" das-port="%%%HAZELCAST_START_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
+<hazelcast-runtime-configuration start-port="%%%HAZELCAST_START_PORT%%%" das-port="%%%HAZELCAST_DAS_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
       <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
@@ -199,7 +199,7 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-client</jvm-options>
+        <jvm-options>-server</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
         <!-- Hazelcast internal package access requirement to get the best performance results. -->
@@ -423,7 +423,6 @@
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-server</jvm-options>
-             <jvm-options>-client</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
              <!-- Hazelcast internal package access requirement to get the best performance results. -->

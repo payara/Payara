@@ -58,7 +58,6 @@ import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.util.Utility;
-
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import java.beans.PropertyChangeEvent;
@@ -411,6 +410,14 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
         }
         
+        int port = Integer.valueOf(configuration.getStartPort());
+
+        int configPort = Integer.valueOf(nodeConfig.getConfigSpecificDataGridStartPort());
+
+        if (configPort > 0) {
+            port = configPort;
+        }
+        
         String discoveryMode = configuration.getDiscoveryMode();
         if (discoveryMode.startsWith("tcpip")) {
             TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
@@ -432,17 +439,18 @@ public class HazelcastCore implements EventListener, ConfigListener {
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
                     .setProperty(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace())
                     .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName())
-                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), configuration.getStartPort());
+                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), String.valueOf(port));
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);            
         }
-        int port = Integer.valueOf(configuration.getStartPort());
+               
         if (env.isDas() && !env.isMicro()) {
             port = Integer.valueOf(configuration.getDasPort());
         }
+        
         config.getNetworkConfig().setPort(port);
         config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getAutoIncrementPort()));
     }

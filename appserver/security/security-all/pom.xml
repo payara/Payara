@@ -49,8 +49,7 @@
          <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
-    </parent>    
+    </parent>
     <artifactId>security-all</artifactId>
     <packaging>pom</packaging>
     <name>Security Related Implementation for GlassFish</name>

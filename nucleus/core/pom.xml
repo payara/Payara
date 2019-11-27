@@ -47,12 +47,11 @@
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
     </parent>
     <groupId>fish.payara.server.internal.core</groupId>
     <artifactId>nucleus-core</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Core modules</name>  
+    <name>GlassFish Nucleus Core modules</name>
     <modules>
         <module>bootstrap</module>
         <module>kernel</module>

@@ -47,10 +47,9 @@
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-corba-plugin-l10n</artifactId>
-    
+
     <name>Admin Console Corba Plugin l10n</name>
     <description>Corba plugin bundle for Payara Admin Console Localization</description>
 
@@ -58,12 +57,12 @@
         <javadoc.skip>true</javadoc.skip>
         <deploy.skip>true</deploy.skip>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
               <groupId>org.glassfish.hk2</groupId>
-              <artifactId>osgiversion-maven-plugin</artifactId>            
+              <artifactId>osgiversion-maven-plugin</artifactId>
               <executions>
                   <execution>
                       <id>compute-osgi-version</id>

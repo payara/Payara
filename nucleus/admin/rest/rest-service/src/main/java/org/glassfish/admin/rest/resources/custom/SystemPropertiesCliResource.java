@@ -256,7 +256,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
         return options.toString();
     }
-
+    
     protected Response saveProperties(Map<String, String> data) {
         return saveProperties(null, data);
     }

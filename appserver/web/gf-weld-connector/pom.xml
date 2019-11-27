@@ -48,7 +48,6 @@
 	<groupId>fish.payara.server.internal.web</groupId>
     	<artifactId>web</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>gf-weld-connector</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -72,8 +71,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

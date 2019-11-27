@@ -46,7 +46,6 @@
         <groupId>fish.payara.server.internal.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-inbound-runtime-l10n</artifactId>

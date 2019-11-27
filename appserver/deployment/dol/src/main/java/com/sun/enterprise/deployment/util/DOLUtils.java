@@ -103,9 +103,6 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -165,6 +162,7 @@ public class DOLUtils {
     private static final String ID_SEPARATOR = "_";
     private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.apache.jasper.", "fish.payara.", "com.ibm.jbatch.",
                             "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax."};
+    private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
     
     /** no need to creates new DOLUtils */
     private DOLUtils() {
@@ -1003,6 +1001,13 @@ public class DOLUtils {
                 return true;
             }
         }
+        
+        for(String packageName : SYSTEM_RESOURCES) {
+            if(className.startsWith(packageName)) {
+                return true;
+            }
+        }
+        
         for (String packageName : application.getWhitelistPackages()) {
             if (className.startsWith(packageName)) {
                 return true;

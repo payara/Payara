@@ -255,13 +255,6 @@
                         <version>1.8.1</version>
                         <scope>runtime</scope>
                     </dependency>
-                    <dependency>
-                        <groupId>com.sun</groupId>
-                        <artifactId>tools-jar</artifactId>
-                        <version>1</version>
-                        <scope>system</scope>
-                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -275,23 +268,33 @@
             </properties>
         </profile>
 
-        <!-- <profile>
+         <profile>
             <id>tools_jar</id>
             <activation>
                 <file>
                     <exists>${java.home}/../lib/tools.jar</exists>
                 </file>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools-jar</artifactId>
-                    <version>1</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile> -->
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-antrun-plugin</artifactId>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>com.sun</groupId>
+                                    <artifactId>tools-jar</artifactId>
+                                    <version>1</version>
+                                    <scope>system</scope>
+                                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
 
         <profile>
             <id>report</id>

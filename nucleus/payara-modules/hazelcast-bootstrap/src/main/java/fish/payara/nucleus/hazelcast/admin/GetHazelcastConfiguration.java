@@ -103,7 +103,6 @@ public class GetHazelcastConfiguration implements AdminCommand {
        
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        StringBuilder builder = new StringBuilder();
         String headers[] = {"Property Name","PropertyValue","Scope"};
         
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
@@ -137,6 +136,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"Scheduled Executor Pool Size",nodeConfiguration.getScheduledExecutorPoolSize(),"Config"});
         columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
         columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
+        columnFormatter.addRow(new Object[]{"Config Specific Data Grid Start Port",nodeConfiguration.getConfigSpecificDataGridStartPort(),"Config"});
         
         Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
@@ -170,6 +170,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("publicAddress", nodeConfiguration.getPublicAddress());
         map.put("kubernetesNamespace", runtimeConfiguration.getKubernetesNamespace());
         map.put("kubernetesServiceName", runtimeConfiguration.getKubernetesServiceName());
+        map.put("configSpecificDataGridStartPort",nodeConfiguration.getConfigSpecificDataGridStartPort());
         
         extraProps.put("getHazelcastConfiguration",map);
                 
