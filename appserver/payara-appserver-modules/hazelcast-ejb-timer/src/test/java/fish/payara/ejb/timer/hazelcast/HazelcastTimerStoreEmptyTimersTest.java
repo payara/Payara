@@ -12,20 +12,16 @@ public class HazelcastTimerStoreEmptyTimersTest extends HazelcastTimerStoreTestB
 
   @Test
   public void emptyTimersShallResultInZeroTimersCountedForServer() {
-    String [] serverIds = new String[] { "a" };
-
-    String [] counts = callListTimers(timers, serverIds);
+    String [] counts = callListTimers(timers, "a");
 
     assertEquals("With no timers defined, zero timers is expected for given server id", "0", counts[0]);
   }
 
   @Test
   public void emptyTimersShallResultInArrayOfTheSameSizeAsServerIds() {
-    String [] serverIds = new String[] { "a", "b", "c", "d" };
+    String [] counts = callListTimers(timers, "a", "b", "c", "d");
 
-    String [] counts = callListTimers(timers, serverIds);
-
-    assertEquals("Size of counters array shall match the size of server ids array", serverIds.length, counts.length);
+    assertEquals("Size of counters array shall match the size of server ids array", 4, counts.length);
   }
 }
 

@@ -32,27 +32,21 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
   @Test
   public void twoTimersForTheSameMemberNameShallBeCountedForTheSameServerId() {
-    String [] serverIds = new String[] { "jb" };
-
-    String [] counts = callListTimers(timers, serverIds);
+    String [] counts = callListTimers(timers, "jb");
 
     assertEquals("2", counts[0]);
   }
 
   @Test
   public void countOneTimer() {
-    String [] serverIds = new String[] { "hz" };
-
-    String [] counts = callListTimers(timers, serverIds);
+    String [] counts = callListTimers(timers, "hz");
 
     assertEquals("1", counts[0]);
   }
 
   @Test
   public void noNullsExpectedInCountsForMissingTimers() {
-    String [] serverIds = new String[] { "jb", "ltd", "hz" };
-
-    String [] counts = callListTimers(timers, serverIds);
+    String [] counts = callListTimers(timers, "jb", "ltd", "hz");
 
     for (String count : counts) {
       assertNotNull("Even for missing timers/server ids no null is expected but rather some representation of zero", count);
@@ -61,9 +55,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
   @Test
   public void countersShallFollowServerIdOrder() {
-    String [] serverIds = new String[] { "hz", "ltd", "jb" };
-
-    String [] counts = callListTimers(timers, serverIds);
+    String [] counts = callListTimers(timers, "hz", "ltd", "jb");
 
     assertEquals("1", counts[0]);
     assertEquals("0", counts[1]);
