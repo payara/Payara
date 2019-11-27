@@ -59,6 +59,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <!-- A workaround for case when module redefines its version (rest-monitoring-war) -->
+                <version>${project.parent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Java EE -->
             <dependency>
                 <groupId>jakarta.platform</groupId>
