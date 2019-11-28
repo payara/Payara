@@ -90,8 +90,7 @@ public class EjbInvokerService implements EventListener, ConfigListener {
         if (event.is(Deployment.APPLICATION_PREPARED)) {
             DeploymentContext context = (DeploymentContext) event.hook();
             Application app = context.getModuleMetaData(Application.class);
-            if (app != null
-                    && EJB_INVOKER_APP.equals(app.getAppName())
+            if (EJB_INVOKER_APP.equals(app.getAppName())
                     && Boolean.parseBoolean(config.getSecurityEnabled())) {
                 for (WebBundleDescriptor descriptor : app.getBundleDescriptors(WebBundleDescriptor.class)) {
                     SunWebAppImpl webApp = (SunWebAppImpl) descriptor.getSunDescriptor();
