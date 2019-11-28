@@ -138,7 +138,7 @@ public class JdbcConnectionPoolValidator
                 }
                 
                 if (maxPoolSizeValue < steadyPoolSizeValue 
-                        || steadyPoolSizeValue <= 0 
+                        || steadyPoolSizeValue < 0
                         || maxPoolSizeValue <= 0) {
                     //Value(s) are invalid so return error
                     return false;
