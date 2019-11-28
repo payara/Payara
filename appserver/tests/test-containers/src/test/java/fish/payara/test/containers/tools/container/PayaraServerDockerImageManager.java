@@ -160,6 +160,7 @@ public class PayaraServerDockerImageManager
         // 1) share file with the container
         // 2) copy shared file after we unzip the payara server to the correct place.
         files.put("/logging.properties", forClasspathResource("server-side/logging.properties"));
+        files.put("/logging-everything.properties", forClasspathResource("server-side/logging-everything.properties"));
         return files;
     }
 
