@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.spi.util;
-
-
-import com.sun.enterprise.deployment.InterceptorDescriptor;
 
 import java.util.*;
 
@@ -52,19 +50,17 @@ import java.lang.reflect.Method;
 
 public class InterceptorInfo {
 
-    private List aroundConstructInterceptors = new LinkedList();
-    private List postConstructInterceptors = new LinkedList();
-    private List preDestroyInterceptors = new LinkedList();
-
-    private Map<Method, List> aroundInvokeChains = new HashMap<Method, List>();
-
-    private Set<String> interceptorClassNames = new HashSet<String>();
+    private List<?> aroundConstructInterceptors = new LinkedList<>();
+    private List<?> postConstructInterceptors = new LinkedList<>();
+    private List<?> preDestroyInterceptors = new LinkedList<>();
+    private Map<Method, List<?>> aroundInvokeChains = new HashMap<>();
+    private Set<String> interceptorClassNames = new HashSet<>();
 
     // True if a system interceptor needs to be added dynamically
     private boolean supportRuntimeDelegate;
 
     private Object targetObjectInstance;
-    private Class targetClass;
+    private Class<?> targetClass;
 
     private boolean hasTargetClassAroundInvoke = false;
 
@@ -76,48 +72,48 @@ public class InterceptorInfo {
         return targetObjectInstance;
     }
 
-    public void setTargetClass(Class targetClass) {
+    public void setTargetClass(Class<?> targetClass) {
         this.targetClass = targetClass;
     }
 
-    public Class getTargetClass() {
+    public Class<?> getTargetClass() {
         return this.targetClass;
     }
 
-    public void setAroundConstructInterceptors(List interceptors) {
+    public void setAroundConstructInterceptors(List<?> interceptors) {
         aroundConstructInterceptors = interceptors;
     }
 
-    public List getAroundConstructInterceptors() {
-        return new LinkedList(aroundConstructInterceptors);
+    public List<?> getAroundConstructInterceptors() {
+        return new LinkedList<>(aroundConstructInterceptors);
     }
 
-    public void setPostConstructInterceptors(List interceptors) {
+    public void setPostConstructInterceptors(List<?> interceptors) {
         postConstructInterceptors = interceptors;
     }
 
-    public List getPostConstructInterceptors() {
-        return new LinkedList(postConstructInterceptors);
+    public List<?> getPostConstructInterceptors() {
+        return new LinkedList<>(postConstructInterceptors);
     }
 
-    public void setPreDestroyInterceptors(List interceptors) {
+    public void setPreDestroyInterceptors(List<?> interceptors) {
         preDestroyInterceptors = interceptors;
     }
 
-    public List getPreDestroyInterceptors() {
-        return new LinkedList(preDestroyInterceptors);
+    public List<?> getPreDestroyInterceptors() {
+        return new LinkedList<>(preDestroyInterceptors);
     }
 
     public void setInterceptorClassNames(Set<String> names) {
-        interceptorClassNames = new HashSet<String>(names);
+        interceptorClassNames = new HashSet<>(names);
     }
 
     public Set<String> getInterceptorClassNames() {
         return interceptorClassNames;
     }
 
-    public void setAroundInvokeInterceptorChains(Map<Method, List> chains) {
-        aroundInvokeChains = new HashMap<Method, List>(chains);
+    public void setAroundInvokeInterceptorChains(Map<Method, List<?>> chains) {
+        aroundInvokeChains = new HashMap<>(chains);
     }
 
 
@@ -128,10 +124,8 @@ public class InterceptorInfo {
     public boolean getHasTargetClassAroundInvoke() {
         return hasTargetClassAroundInvoke;
     }
-     
 
-    public List getAroundInvokeInterceptors(Method m) {
-
+    public List<?> getAroundInvokeInterceptors(Method m) {
         return aroundInvokeChains.get(m);
     }
 

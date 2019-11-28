@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         trace = new LinkedList<>();
         spanLogs = new LinkedList<>();
     }
-    
+
     private boolean started;
     private boolean completed;
     private Instant startTime;
@@ -70,7 +70,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     private long elapsedTime;
     private final LinkedList<RequestTraceSpan> trace;
     private final List<RequestTraceSpanLog> spanLogs;
-    
+
     /**
      * Add a new event to the series being traced
      * @param span 
@@ -82,7 +82,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                 && span.getEventType() != PROPAGATED_TRACE) {
             return;
         }
-        
+
         if (null != span.getEventType()) {
             switch (span.getEventType()) {
                 case TRACE_START:
@@ -91,10 +91,9 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                 case PROPAGATED_TRACE:
                     handlePropagatedTrace(span);
                     break;
-                case REQUEST_EVENT: {
+                case REQUEST_EVENT:
                     handleRequestEvent(span);
                     break;
-                }
                 default:
                     break;
             }
@@ -117,10 +116,9 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                 case PROPAGATED_TRACE:
                     handlePropagatedTrace(span);
                     break;
-                case REQUEST_EVENT: {
+                case REQUEST_EVENT:
                     handleRequestEvent(span, timestampMillis);
                     break;
-                }
                 default:
                     break;
             }
@@ -147,7 +145,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         if (!started) {
             return;
         }
-        
+
         RequestTraceSpan rootSpan = trace.getFirst();
         span.setTraceId(rootSpan.getTraceId());
         span.setSpanDuration(span.getStartInstant().until(Instant.now(), ChronoUnit.NANOS));
@@ -159,7 +157,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         if (!started) {
             return;
         }
-        
+
         RequestTraceSpan rootSpan = trace.getFirst();
         span.setTraceId(rootSpan.getTraceId());
         span.setSpanDuration(span.getStartInstant().until(Instant.ofEpochMilli(timestampMillis), ChronoUnit.NANOS));

@@ -37,23 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployapi.config;
 
 import java.io.*;
-import java.util.Iterator;
 
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.model.J2eeApplicationObject;
 import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 
-import org.glassfish.deployapi.config.DConfigBeanRootFactoryImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
@@ -73,7 +70,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
 	  new LocalStringManagerImpl(SunDeploymentConfiguration.class);
     
     /** Creates a new instance of SunDeploymentConfiguration */
-    public SunDeploymentConfiguration(DeployableObject deployObject) throws ConfigurationException {
+    public SunDeploymentConfiguration(DeployableObject deployObject) {
         this.deployObject = deployObject;
     }
         

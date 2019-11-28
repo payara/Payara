@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -165,7 +166,7 @@ public final class ConnectionPoolObjectsUtils {
                 ResourceAdapter.MAX_WAIT_TIME_IN_MILLIS));
         connectorPoolObj.setIdleTimeoutInSeconds((String) sunRAXML.getValue(
                 ResourceAdapter.IDLE_TIMEOUT_IN_SECONDS));
-        connectorPoolObj.setPoolResizeQuantity((String) "2");
+        connectorPoolObj.setPoolResizeQuantity("2");
         connectorPoolObj.setFailAllConnections(false);
         connectorPoolObj.setMatchConnections(true); //always
 
@@ -300,8 +301,9 @@ public final class ConnectionPoolObjectsUtils {
                 return TransactionSupport.LOCAL_TRANSACTION;
             case ConnectorConstants.XA_TRANSACTION_INT:
                 return TransactionSupport.XA_TRANSACTION;
+            default:
+                return null;
         }
-        return null;
     }
 
     public static String getValueFromMCF(String prop, PoolInfo poolInfo,
@@ -330,12 +332,10 @@ public final class ConnectionPoolObjectsUtils {
                         new PasswordCredential(prin.getName(),
                                 password.toCharArray());
                 pc.setManagedConnectionFactory(mcf);
-                AccessController.doPrivileged(new PrivilegedAction() {
-                    public Object run() {
-                        tempSubject.getPrincipals().add(prin);
-                        tempSubject.getPrivateCredentials().add(pc);
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                    tempSubject.getPrincipals().add(prin);
+                    tempSubject.getPrivateCredentials().add(pc);
+                    return null;
                 });
             }
         }
@@ -369,17 +369,9 @@ public final class ConnectionPoolObjectsUtils {
         }
 
         // If pool name contains more than 2 #, return false as the 
-        // default system pool will have exacly one # for a standalone rar
+        // default system pool will have exactly one # for a standalone rar
         // and exactly two #s for an embedded rar
-        ResourcesUtil resUtil = ResourcesUtil.createInstance();
-        switch (matchCount) {
-
-            case 1:
-                if (resUtil.belongToStandAloneRar(moduleNameFromPoolName))
-                    return true;
-            default:
-                return false;
-        }
+        return matchCount == 1 && ResourcesUtil.createInstance().belongToStandAloneRar(moduleNameFromPoolName);
     }
 
 

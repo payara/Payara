@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.acc;
 
@@ -80,7 +81,7 @@ public class HTTPInputArchive extends AbstractReadableArchive {
 
     private URI archiveURI = null;
     private URL archiveURL = null;
-    
+
     /** caches the manifest so we read if from the JAR at most once */
     private Manifest cachedManifest = null;
 
@@ -101,9 +102,8 @@ public class HTTPInputArchive extends AbstractReadableArchive {
         } catch (FileNotFoundException e) {
             return null;
         }
-        
     }
-    
+
     private URL entryURL(String name) throws MalformedURLException {
         if (! (name.charAt(0) == '/')) {
             name = "/" + name;
@@ -146,15 +146,13 @@ public class HTTPInputArchive extends AbstractReadableArchive {
         if (exists != null) {
             return exists.booleanValue();
         }
-        InputStream is = null;
-        exists = Boolean.FALSE;
-        try {
-            is = archiveURL.openStream();
-            exists = Boolean.TRUE;
-            is.close();
-        } finally {
-            return exists.booleanValue();
+        exists = false;
+        try (InputStream is = archiveURL.openStream()) {
+            exists = is != null;
+        } catch (IOException ex) {
+            // also considered non existing
         }
+        return exists.booleanValue();
     }
 
     @Override
@@ -275,21 +273,11 @@ public class HTTPInputArchive extends AbstractReadableArchive {
 
     @Override
     public boolean isDirectory(String name) {
-        JarInputStream jis = null;
-        try {
-            jis = new JarInputStream(entryURL(name).openStream());
+        try (JarInputStream jis = new JarInputStream(entryURL(name).openStream())) {
             JarEntry entry = jis.getNextJarEntry();
             return entry.isDirectory();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
-        } finally {
-            if (jis != null) {
-                try {
-                    jis.close();
-                } catch (IOException ignore) {
-
-                }
-            }
         }
     }
 
