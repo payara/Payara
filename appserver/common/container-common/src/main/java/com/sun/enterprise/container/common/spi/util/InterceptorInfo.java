@@ -43,6 +43,8 @@ package com.sun.enterprise.container.common.spi.util;
 
 import java.util.*;
 
+import com.sun.enterprise.deployment.InterceptorDescriptor;
+
 import java.lang.reflect.Method;
 
 /**
@@ -50,10 +52,10 @@ import java.lang.reflect.Method;
 
 public class InterceptorInfo {
 
-    private List<?> aroundConstructInterceptors = new LinkedList<>();
-    private List<?> postConstructInterceptors = new LinkedList<>();
-    private List<?> preDestroyInterceptors = new LinkedList<>();
-    private Map<Method, List<?>> aroundInvokeChains = new HashMap<>();
+    private List<? extends InterceptorDescriptor> aroundConstructInterceptors = new LinkedList<>();
+    private List<? extends InterceptorDescriptor> postConstructInterceptors = new LinkedList<>();
+    private List<? extends InterceptorDescriptor> preDestroyInterceptors = new LinkedList<>();
+    private Map<Method, List<? extends InterceptorDescriptor>> aroundInvokeChains = new HashMap<>();
     private Set<String> interceptorClassNames = new HashSet<>();
 
     // True if a system interceptor needs to be added dynamically
@@ -80,27 +82,27 @@ public class InterceptorInfo {
         return this.targetClass;
     }
 
-    public void setAroundConstructInterceptors(List<?> interceptors) {
+    public void setAroundConstructInterceptors(List<? extends InterceptorDescriptor> interceptors) {
         aroundConstructInterceptors = interceptors;
     }
 
-    public List<?> getAroundConstructInterceptors() {
+    public List<? extends InterceptorDescriptor> getAroundConstructInterceptors() {
         return new LinkedList<>(aroundConstructInterceptors);
     }
 
-    public void setPostConstructInterceptors(List<?> interceptors) {
+    public void setPostConstructInterceptors(List<? extends InterceptorDescriptor> interceptors) {
         postConstructInterceptors = interceptors;
     }
 
-    public List<?> getPostConstructInterceptors() {
+    public List<? extends InterceptorDescriptor> getPostConstructInterceptors() {
         return new LinkedList<>(postConstructInterceptors);
     }
 
-    public void setPreDestroyInterceptors(List<?> interceptors) {
+    public void setPreDestroyInterceptors(List<? extends InterceptorDescriptor> interceptors) {
         preDestroyInterceptors = interceptors;
     }
 
-    public List<?> getPreDestroyInterceptors() {
+    public List<? extends InterceptorDescriptor> getPreDestroyInterceptors() {
         return new LinkedList<>(preDestroyInterceptors);
     }
 
@@ -112,7 +114,7 @@ public class InterceptorInfo {
         return interceptorClassNames;
     }
 
-    public void setAroundInvokeInterceptorChains(Map<Method, List<?>> chains) {
+    public void setAroundInvokeInterceptorChains(Map<Method, List<? extends InterceptorDescriptor>> chains) {
         aroundInvokeChains = new HashMap<>(chains);
     }
 
@@ -125,7 +127,7 @@ public class InterceptorInfo {
         return hasTargetClassAroundInvoke;
     }
 
-    public List<?> getAroundInvokeInterceptors(Method m) {
+    public List<? extends InterceptorDescriptor> getAroundInvokeInterceptors(Method m) {
         return aroundInvokeChains.get(m);
     }
 

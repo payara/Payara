@@ -85,6 +85,7 @@ import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.InterceptorDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
@@ -243,7 +244,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                         interceptorInfo.setHasTargetClassAroundInvoke(true);
                     }
 
-                    Map<Method, List<?>> interceptorChains = new HashMap<>();
+                    Map<Method, List<? extends InterceptorDescriptor>> interceptorChains = new HashMap<>();
                     for(Method m : targetClass.getMethods()) {
                         interceptorChains.put(m, next.getAroundInvokeInterceptors(m) );
                     }
