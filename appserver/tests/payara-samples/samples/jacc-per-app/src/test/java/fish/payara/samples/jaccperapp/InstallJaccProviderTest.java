@@ -2,10 +2,8 @@
 
 package fish.payara.samples.jaccperapp;
 
-import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertTrue;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,9 +18,10 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fish.payara.arquillian.ws.rs.WebApplicationException;
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
+import static javax.ws.rs.client.ClientBuilder.newClient;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This sample tests that we can install a custom JACC provider
@@ -100,25 +99,18 @@ public class InstallJaccProviderTest {
     @RunAsClient
     public void testNotAuthenticated() throws IOException {
 
-        try {
-            String response =
-                    newClient()
-                         .target(
-                             URI.create(new URL(base, "protected/servlet").toExternalForm()))
-                         .request(TEXT_PLAIN)
-                         .get(String.class);
+        String response =
+                newClient()
+                     .target(
+                         URI.create(new URL(base, "protected/servlet").toExternalForm()))
+                     .request(TEXT_PLAIN)
+                     .get(String.class);
 
-            System.out.println("-------------------------------------------------------------------------");
-            System.out.println("Response: \n\n" + response);
-            System.out.println("-------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------");
+        System.out.println("Response: \n\n" + response);
+        System.out.println("-------------------------------------------------------------------------");
 
-            assertTrue(
-                !response.contains("web user has role \"a\": true")
-            );
-        } catch (WebApplicationException e) {
-            // Ignore, no access
-        }
-
+        assertTrue(!response.contains("web user has role \"a\": true"));
     }
 
 }
