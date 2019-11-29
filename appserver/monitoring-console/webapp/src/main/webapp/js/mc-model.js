@@ -55,6 +55,8 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
+	const DEFAULT_COLOR_SCHEME = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
@@ -251,6 +253,9 @@ MonitoringConsole.Model = (function() {
 			let isPagesOnly = !userInterface.pages || !userInterface.settings;
 			if (!isPagesOnly)
 				settings = userInterface.settings;
+			if (settings.colors === undefined) {
+				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME };
+			}
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -393,6 +398,13 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
+			scheme: function(colors) {
+				if (colors === undefined)
+					return settings.colors.scheme || [];
+				settings.colors.scheme = colors || [];
+				doStore();
+			},
+
 			currentPage: function() {
 				return pages[settings.home];
 			},
@@ -1020,6 +1032,10 @@ MonitoringConsole.Model = (function() {
 				UI.Refresh.interval(duration);
 				Interval.resume(UI.Refresh.interval());				
 			},
+		},
+
+		Colors: {
+			scheme: UI.scheme,
 		},
 		
 		Settings: {

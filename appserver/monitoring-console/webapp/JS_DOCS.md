@@ -52,12 +52,13 @@ interval        = number
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring }
 series     = string
 target     = string
 displayName= string
 type       = 'line' | 'bar'
 unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+coloring   = 'instance' | 'series' | 'index'
 scaleFactor= number
 grid       = { item, column, span }
 item       = number

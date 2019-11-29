@@ -191,6 +191,8 @@ MonitoringConsole.View.Components = (function() {
         let value = model.value;
         if (value === undefined && model.defaultValue !== undefined)
           value = model.defaultValue;
+        if (Array.isArray(value))
+          return createMultiColorInput(model);
         let config = { id: model.id, type: 'color', value: value };
         if (model.description && !model.label)
           config.title = model.description;
@@ -213,6 +215,54 @@ MonitoringConsole.View.Components = (function() {
           onChange(undefined);
           input.val(model.defaultValue);
         }));
+      }
+
+      function createMultiColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (!Array.isArray(value))
+          value = [value];
+        let list = $('<span/>');
+        //TODO model id goes where?
+        let colors = [...value];
+        let onChange = enhancedOnChange(model.onChange);
+        for (let i = 0; i < value.length; i++) {
+          list.append(createMultiColorItemInput(colors, i, onChange));
+        }
+        let add = $('<input/>', {type: 'button', value: '+'});
+        add.click(() => {
+          colors.push(getRandomColor());
+          createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
+          onChange(colors);
+        });
+        let remove = $('<input/>', {type: 'button', value: '-'});
+        remove.click(() => {
+          if (colors.length > 1) {
+            colors.length -= 1;
+            list.children('input[type=color]').last().remove();
+            onChange(colors);
+          }
+        });
+        list.append(add);
+        list.append(remove);
+        return list;
+      }
+
+      function getRandomColor() {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
+      function createMultiColorItemInput(colors, index, onChange) {
+        return createColorInput({ value: colors[index], onChange: (val) => {
+          colors[index] = val;
+          onChange(colors);
+        }});
       }
 
       function createInput(model) {

@@ -146,6 +146,8 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
+	const DEFAULT_COLOR_SCHEME = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
@@ -342,6 +344,9 @@ MonitoringConsole.Model = (function() {
 			let isPagesOnly = !userInterface.pages || !userInterface.settings;
 			if (!isPagesOnly)
 				settings = userInterface.settings;
+			if (settings.colors === undefined) {
+				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME };
+			}
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -484,6 +489,13 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
+			scheme: function(colors) {
+				if (colors === undefined)
+					return settings.colors.scheme || [];
+				settings.colors.scheme = colors || [];
+				doStore();
+			},
+
 			currentPage: function() {
 				return pages[settings.home];
 			},
@@ -1112,6 +1124,10 @@ MonitoringConsole.Model = (function() {
 				Interval.resume(UI.Refresh.interval());				
 			},
 		},
+
+		Colors: {
+			scheme: UI.scheme,
+		},
 		
 		Settings: {
 			isDispayed: UI.showSettings,
@@ -1697,6 +1713,8 @@ MonitoringConsole.View.Components = (function() {
         let value = model.value;
         if (value === undefined && model.defaultValue !== undefined)
           value = model.defaultValue;
+        if (Array.isArray(value))
+          return createMultiColorInput(model);
         let config = { id: model.id, type: 'color', value: value };
         if (model.description && !model.label)
           config.title = model.description;
@@ -1719,6 +1737,54 @@ MonitoringConsole.View.Components = (function() {
           onChange(undefined);
           input.val(model.defaultValue);
         }));
+      }
+
+      function createMultiColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (!Array.isArray(value))
+          value = [value];
+        let list = $('<span/>');
+        //TODO model id goes where?
+        let colors = [...value];
+        let onChange = enhancedOnChange(model.onChange);
+        for (let i = 0; i < value.length; i++) {
+          list.append(createMultiColorItemInput(colors, i, onChange));
+        }
+        let add = $('<input/>', {type: 'button', value: '+'});
+        add.click(() => {
+          colors.push(getRandomColor());
+          createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
+          onChange(colors);
+        });
+        let remove = $('<input/>', {type: 'button', value: '-'});
+        remove.click(() => {
+          if (colors.length > 1) {
+            colors.length -= 1;
+            list.children('input[type=color]').last().remove();
+            onChange(colors);
+          }
+        });
+        list.append(add);
+        list.append(remove);
+        return list;
+      }
+
+      function getRandomColor() {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
+      function createMultiColorItemInput(colors, index, onChange) {
+        return createColorInput({ value: colors[index], onChange: (val) => {
+          colors[index] = val;
+          onChange(colors);
+        }});
       }
 
       function createInput(model) {
@@ -2984,6 +3050,7 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
+            { label: 'Color Scheme', type: 'color', value: MonitoringConsole.Model.Colors.scheme(), onChange: (colors) => MonitoringConsole.Model.Colors.scheme(colors) },
         ]};
     }
 
@@ -3030,6 +3097,8 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color scheme' },
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [

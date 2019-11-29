@@ -232,6 +232,7 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
+            { label: 'Color Scheme', type: 'color', value: MonitoringConsole.Model.Colors.scheme(), onChange: (colors) => MonitoringConsole.Model.Colors.scheme(colors) },
         ]};
     }
 
@@ -278,6 +279,8 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color scheme' },
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
