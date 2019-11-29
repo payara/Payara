@@ -200,6 +200,10 @@ MonitoringConsole.Model = (function() {
 				widget.grid = {};
 			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
+			if (typeof widget.decorations.waterline !== 'object') {
+				let value = typeof widget.decorations.waterline === 'number' ? widget.decorations.waterline : undefined;
+				widget.decorations.waterline = { value: value };
+			}
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
 			if (typeof widget.decorations.thresholds.alarming !== 'object')

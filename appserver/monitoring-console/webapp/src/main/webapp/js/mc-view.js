@@ -280,16 +280,21 @@ MonitoringConsole.View = (function() {
             ]},
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
-            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
-            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Waterline', input: [
+                { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: '#00ffff', onChange: (widget, value) => widget.decorations.waterline.color = value },
+            ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: '#FFD700', onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: '#dc143c', onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
             //TODO add color for each threshold
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [

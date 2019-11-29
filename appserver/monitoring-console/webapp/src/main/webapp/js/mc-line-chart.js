@@ -181,14 +181,18 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-    if (widget.decorations.waterline) {
-      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    let decorations = widget.decorations;
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || 'Aqua';
+      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.alarming.display) {
-      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    if (decorations.thresholds.alarming.display) {
+      let color = decorations.thresholds.alarming.color || 'gold';
+      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.critical.display) {
-      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    if (decorations.thresholds.critical.display) {
+      let color = decorations.thresholds.critical.color || 'crimson';
+      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;
   }

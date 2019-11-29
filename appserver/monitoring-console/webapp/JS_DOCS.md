@@ -78,7 +78,7 @@ options    = {
 	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }
-waterline  = number
+waterline  = { value:number color:string }
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
 alarming   = THRESHOLD
@@ -217,11 +217,12 @@ GROUP       = { id, caption, entries }
 id 		    = string
 caption     = string
 entries     = [ENTRY]
-ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description } 
+ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue } 
 label       = string
-type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text'
+type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text' | 'color'
 unit        = string
 value       = number | string
+defaultValue= number | string
 min         = number
 max         = number
 options     = { *:string }
@@ -241,6 +242,7 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'dropdown' : { label, value, options, onChange }
 'value'    : { label, value, unit, onChange }
 'text'     : { label, value, onChange }
+'color'    : { label, value, defaultValue, onChange }
 ```
 * `onChange` may be ommitted for _text_ inputs which makes the field _readonly_.
 * Settings of type `'value'` are inputs for a number that depends on the `unit` 

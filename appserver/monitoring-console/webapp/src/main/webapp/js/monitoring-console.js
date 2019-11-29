@@ -291,6 +291,10 @@ MonitoringConsole.Model = (function() {
 				widget.grid = {};
 			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
+			if (typeof widget.decorations.waterline !== 'object') {
+				let value = typeof widget.decorations.waterline === 'number' ? widget.decorations.waterline : undefined;
+				widget.decorations.waterline = { value: value };
+			}
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
 			if (typeof widget.decorations.thresholds.alarming !== 'object')
@@ -1597,36 +1601,46 @@ MonitoringConsole.View.Components = (function() {
         return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
       }
 
+      function enhancedOnChange(onChange, updatePage) {
+        if (onChange.length == 2) {
+          return (checked) => {
+            let layout = Selection.configure((widget) => onChange(widget, checked));
+            if (updatePage) {
+              MonitoringConsole.View.onPageUpdate(layout);
+            }
+          };
+        }
+        return onChange;
+      }
+
       function createCheckboxInput(model) {
         let config = { id: model.id, type: 'checkbox', checked: model.value };
         if (model.description && !model.label)
-          config.title = model.description;  
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
         return $("<input/>", config)
           .on('change', function() {
             let checked = this.checked;
-            if (model.onChange.length == 2) {
-              Selection.configure((widget) => model.onChange(widget, checked)); 
-            } else if (model.onChange.length == 1) {
-              model.onChange(checked);
-            }
+            onChange(checked);
           });
       }
 
       function createRangeInput(model) {
-         let config = { id: model.id, type: 'number', value: model.value};
-         if (model.min)
-            config.min = model.min;
-         if (model.max)
-            config.max = model.max;
-         if (model.description && !model.label)
-            config.title = model.description;       
-         return $('<input/>', config)
-             .on('input change', function() {  
-                let val = this.valueAsNumber;
-                if (Number.isNaN(val))
-                  val = undefined;
-                MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
-             });
+        let config = { id: model.id, type: 'number', value: model.value};
+        if (model.min)
+          config.min = model.min;
+        if (model.max)
+          config.max = model.max;
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange, true);
+        return $('<input/>', config)
+          .on('input change', function() {  
+            let val = this.valueAsNumber;
+            if (Number.isNaN(val))
+              val = undefined;
+            onChange(val);
+          });
       }
 
       function createDropdownInput(model) {
@@ -1634,17 +1648,19 @@ MonitoringConsole.View.Components = (function() {
          if (model.description && !model.label)
           config.title = description;
          let dropdown = $('<select/>',  );
-         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', 
+            {text:model.options[option], value:option, selected: model.value === option})));
+         let onChange = enhancedOnChange(model.onChange, true);
+         dropdown.change(() => onChange(dropdown.val()));
          return dropdown;
       }
 
       function createValueInput(model) {
-         if (model.unit === 'percent')
-            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
-         if (model.unit === 'count')
-            return createRangeInput(model);
-         return createTextInput(model, Units.converter(model.unit));
+        if (model.unit === 'percent')
+          return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+        if (model.unit === 'count')
+          return createRangeInput(model);
+        return createTextInput(model, Units.converter(model.unit));
       }
 
       function createTextInput(model, converter) {
@@ -1666,18 +1682,43 @@ MonitoringConsole.View.Components = (function() {
         }
         let input = $('<input/>', config);
         if (!readonly) {
+          let onChange = enhancedOnChange(model.onChange, true);
           input.on('input change paste', function() {
             let val = converter.parse(this.value);
-            if (model.onChange.length == 2) {
-              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
-            } else if (model.onChange.length == 1) {
-              model.onChange(val);
-            }
+            onChange(val);
           });          
         } else {
           input.prop('readonly', true);
         }
         return input;
+      }
+
+      function createColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        let config = { id: model.id, type: 'color', value: value };
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
+        let input = $('<input/>', config)
+          .on('input change', function() { 
+            let val = this.value;
+            if (val === model.defaultValue)
+              val = undefined;
+            onChange(val);
+          });
+        if (model.defaultValue === undefined)
+          return input;
+        return $('<span/>').append(input).append($('<input/>', { 
+          type: 'button', 
+          value: ' ',
+          title: 'Reset to default color', 
+          style: 'background-color: ' + model.defaultValue,
+        }).click(() => {
+          onChange(undefined);
+          input.val(model.defaultValue);
+        }));
       }
 
       function createInput(model) {
@@ -1687,6 +1728,7 @@ MonitoringConsole.View.Components = (function() {
             case 'range'   : return createRangeInput(model);
             case 'value'   : return createValueInput(model);
             case 'text'    : return createTextInput(model);
+            case 'color'   : return createColorInput(model);
             default        : return model.input;
          }
       }
@@ -2193,14 +2235,18 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-    if (widget.decorations.waterline) {
-      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    let decorations = widget.decorations;
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || 'Aqua';
+      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.alarming.display) {
-      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    if (decorations.thresholds.alarming.display) {
+      let color = decorations.thresholds.alarming.color || 'gold';
+      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.critical.display) {
-      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    if (decorations.thresholds.critical.display) {
+      let color = decorations.thresholds.critical.color || 'crimson';
+      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;
   }
@@ -2986,16 +3032,21 @@ MonitoringConsole.View = (function() {
             ]},
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
-            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
-            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Waterline', input: [
+                { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: '#00ffff', onChange: (widget, value) => widget.decorations.waterline.color = value },
+            ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: '#FFD700', onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: '#dc143c', onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
             //TODO add color for each threshold
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
