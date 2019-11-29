@@ -19,5 +19,10 @@
             <groupId>org.omnifaces</groupId>
             <artifactId>jacc-provider</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

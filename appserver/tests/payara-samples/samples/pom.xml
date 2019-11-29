@@ -183,7 +183,6 @@
                 <dependency>
                     <groupId>fish.payara.distributions</groupId>
                     <artifactId>payara</artifactId>
-                    <version>${payara.version}</version>
                     <type>zip</type>
                 </dependency>
 
@@ -191,7 +190,6 @@
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>arquillian-payara-server-managed</artifactId>
-                    <version>${payara.container.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
