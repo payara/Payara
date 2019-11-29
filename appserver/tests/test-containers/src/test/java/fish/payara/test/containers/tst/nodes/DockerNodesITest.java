@@ -43,8 +43,9 @@ import fish.payara.test.containers.tools.container.AsadminCommandException;
 import fish.payara.test.containers.tools.container.NetworkTarget;
 import fish.payara.test.containers.tools.container.PayaraServerContainer;
 import fish.payara.test.containers.tools.container.PayaraServerContainerConfiguration;
+import fish.payara.test.containers.tools.env.DockerEnvironment;
 import fish.payara.test.containers.tools.env.DockerEnvironmentConfiguration;
-import fish.payara.test.containers.tools.junit.DockerITest;
+import fish.payara.test.containers.tools.env.TestConfiguration;
 import fish.payara.test.containers.tools.junit.DockerITestExtension;
 
 import java.io.StringReader;
@@ -91,14 +92,16 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author David Matejcek
  */
 @ExtendWith(DockerITestExtension.class)
-public class DockerNodesITest extends DockerITest {
+public class DockerNodesITest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerNodesITest.class);
 
     private static final String INSTANCE_STATUS_RUNNING = "running";
     private static final String INSTANCE_STATUS_STOPPED = "not running";
 
+    private static DockerEnvironment environment;
     private static Set<DockerContainerId> containersToPreserve;
+
 
 
     /**
@@ -109,6 +112,7 @@ public class DockerNodesITest extends DockerITest {
     @BeforeAll
     public static void init() throws Exception {
         LOG.debug("init()");
+        environment = DockerEnvironment.getInstance();
         containersToPreserve = getDockerIds();
         LOG.warn("These containers existed before the test and will be preserved: \n  {}", containersToPreserve);
     }
@@ -116,7 +120,7 @@ public class DockerNodesITest extends DockerITest {
 
     @AfterAll
     public static void deleteDeadContainers() throws Exception {
-        final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
+        final PayaraServerContainer domain = environment.getPayaraContainer();
         final Set<DockerContainerId> containersAfterTests = getDockerIds();
         for (DockerContainerId id : containersAfterTests) {
             if (containersToPreserve.contains(id)) {
@@ -130,7 +134,7 @@ public class DockerNodesITest extends DockerITest {
 
     @Test
     public void testTemporaryDockerNodeInstanceLifeCycle() throws Throwable {
-        final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
+        final PayaraServerContainer domain = environment.getPayaraContainer();
         final String createResponse = domain.docker("containers/create", getCreateContainerJSon(domain));
         assertThat("curl create container output", createResponse, stringContainsInOrder("HTTP/1.1 201 Created"));
         final String containerId = getDockerId(createResponse);
@@ -175,16 +179,16 @@ public class DockerNodesITest extends DockerITest {
 
     @Test
     public void testDASManagedDockerInstanceLifeCycle() throws Throwable {
-        final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
+        final PayaraServerContainer domain = environment.getPayaraContainer();
         // we use same computer as DAS for simplicity - in fact it is still host's docker.
-        final DockerEnvironmentConfiguration dockerConfiguration = getDockerEnvironment().getConfiguration();
+        final DockerEnvironmentConfiguration dockerConfiguration = environment.getConfiguration();
         final PayaraServerContainerConfiguration dasConfiguration = dockerConfiguration.getPayaraServerConfiguration();
         final NetworkTarget dockerNode = dasConfiguration.getDockerHostAndPort();
         final String nodeName = "DockerNode1";
         domain.asAdmin("create-node-docker", //
             "--dockerPasswordFile", dasConfiguration.getPasswordFile().getAbsolutePath(), //
             "--nodehost", dockerNode.getHost(), "--dockerport", Integer.toString(dockerNode.getPort()), //
-            "--dockerimage", "payara/server-node:" + getTestConfiguration().getPayaraServerNodeTag(), //
+            "--dockerimage", "payara/server-node:" + TestConfiguration.getInstance().getPayaraServerNodeTag(), //
             nodeName);
 
         final String instanceName = "DockerInstance1";
@@ -263,10 +267,10 @@ public class DockerNodesITest extends DockerITest {
 
 
     private String getCreateContainerJSon(final PayaraServerContainer domain) {
-        final PayaraServerContainerConfiguration dasCfg = getDockerEnvironment().getConfiguration()
+        final PayaraServerContainerConfiguration dasCfg = environment.getConfiguration()
             .getPayaraServerConfiguration();
         return "{\n" //
-            + "\"Image\": \"payara/server-node:" + getTestConfiguration().getPayaraServerNodeTag() + "\",\n" //
+            + "\"Image\": \"payara/server-node:" + TestConfiguration.getInstance().getPayaraServerNodeTag() + "\",\n" //
                 + "\"HostConfig\": {\n" //
                 + "    \"Mounts\": [\n" //
                 + "      {\n" //
@@ -301,7 +305,7 @@ public class DockerNodesITest extends DockerITest {
     }
 
     private static Set<DockerContainerId> getDockerIds() throws Exception {
-        final PayaraServerContainer domain = getDockerEnvironment().getPayaraContainer();
+        final PayaraServerContainer domain = environment.getPayaraContainer();
         final String listJson = domain.docker("GET", "containers/json?all=true", "");
         final String[] lines = listJson.split("\n");
         final Pattern pattern = Pattern.compile(Pattern.quote("[{\"Id\":\"") + ".*");

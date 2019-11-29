@@ -192,7 +192,8 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
      * @param command - command name
      * @param arguments - arguments. Can be null.
      * @return standard output
-     * @throws AsadminCommandException
+     * @throws AsadminCommandException- if the command exit code was not zero; message contains
+     *             error output
      */
     public String asLocalAdmin(final String command, final String... arguments) throws AsadminCommandException {
         // FIXME: --echo breaks change-admin-password
@@ -209,7 +210,8 @@ public class PayaraServerContainer extends FixedHostPortGenericContainer<PayaraS
      * @param arguments - arguments. Can be null and should not contain parameters used before
      *            the command.
      * @return standard ouptut
-     * @throws AsadminCommandException
+     * @throws AsadminCommandException- if the command exit code was not zero; message contains
+     *             error output
      */
     public String asAdmin(final String command, final String... arguments) throws AsadminCommandException {
         final String[] defaultArgs = new String[] {"--terse", "--user", "admin", //
