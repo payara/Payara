@@ -98,7 +98,9 @@ MonitoringConsole.Model = (function() {
 							grid: { item: 0, column: 0, span: 1 }, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
-							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
+							status: { missing: { hint: TEXT_REQUEST_TRACING }},
+							coloring: 'series',
+						}
 					]
 				},
 				http: {
@@ -254,7 +256,7 @@ MonitoringConsole.Model = (function() {
 			if (!isPagesOnly)
 				settings = userInterface.settings;
 			if (settings.colors === undefined) {
-				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME };
+				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME, opacity: 20 };
 			}
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
@@ -398,10 +400,17 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			scheme: function(colors) {
+			colorScheme: function(colors) {
 				if (colors === undefined)
 					return settings.colors.scheme || [];
 				settings.colors.scheme = colors || [];
+				doStore();
+			},
+
+			colorOpacity: function(opacity) {
+				if (opacity === undefined)
+					return settings.colors.opacity || 20;
+				settings.colors.opacity = opacity || 20;
 				doStore();
 			},
 
@@ -1035,7 +1044,8 @@ MonitoringConsole.Model = (function() {
 		},
 
 		Colors: {
-			scheme: UI.scheme,
+			scheme: UI.colorScheme,
+			opacity: UI.colorOpacity,
 		},
 		
 		Settings: {

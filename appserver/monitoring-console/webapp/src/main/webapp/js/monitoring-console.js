@@ -189,7 +189,9 @@ MonitoringConsole.Model = (function() {
 							grid: { item: 0, column: 0, span: 1 }, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
-							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
+							status: { missing: { hint: TEXT_REQUEST_TRACING }},
+							coloring: 'series',
+						}
 					]
 				},
 				http: {
@@ -345,7 +347,7 @@ MonitoringConsole.Model = (function() {
 			if (!isPagesOnly)
 				settings = userInterface.settings;
 			if (settings.colors === undefined) {
-				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME };
+				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME, opacity: 20 };
 			}
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
@@ -489,10 +491,17 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			scheme: function(colors) {
+			colorScheme: function(colors) {
 				if (colors === undefined)
 					return settings.colors.scheme || [];
 				settings.colors.scheme = colors || [];
+				doStore();
+			},
+
+			colorOpacity: function(opacity) {
+				if (opacity === undefined)
+					return settings.colors.opacity || 20;
+				settings.colors.opacity = opacity || 20;
 				doStore();
 			},
 
@@ -1126,7 +1135,8 @@ MonitoringConsole.Model = (function() {
 		},
 
 		Colors: {
-			scheme: UI.scheme,
+			scheme: UI.colorScheme,
+			opacity: UI.colorOpacity,
 		},
 		
 		Settings: {
@@ -1563,6 +1573,93 @@ MonitoringConsole.View.Units = (function() {
 /*jshint esversion: 8 */
 
 /**
+ * Utilities to convert color values.
+ **/
+MonitoringConsole.View.Colors = (function() {
+
+   let colorIndexMaps = {};
+
+   function lookup(coloring, key, scheme) {
+      let mapName = coloring || 'instance';
+      let map = colorIndexMaps[mapName];
+      if (map === undefined) {
+         map = {};
+         colorIndexMaps[mapName] = map;
+      }
+      let index = map[key];
+      if (index === undefined) {
+         index = Object.keys(map).length;
+         map[key] = index;
+      }
+      return scheme[index % scheme.length];
+   }
+
+   function random() {
+     const letters = '0123456789ABCDEF';
+     let color = '#';
+     for (let i = 0; i < 6; i++) {
+       color += letters[Math.floor(Math.random() * 16)];
+     }
+     return color;
+   }
+
+   function hex2rgba(hex, alpha = 1) {
+      const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+      return `rgba(${r},${g},${b},${alpha})`;
+   }
+
+   /**
+    * Public API of the color utility module.
+    */
+   return {
+      lookup: lookup,
+      random: random,
+      hex2rgba: hex2rgba,
+   };
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
  * Data/Model driven view components.
  *
  * Each of them gets passed a model which updates the view of the component to the model state.
@@ -1570,6 +1667,7 @@ MonitoringConsole.View.Units = (function() {
 MonitoringConsole.View.Components = (function() {
 
    const Units = MonitoringConsole.View.Units;
+   const Colors = MonitoringConsole.View.Colors;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    /**
@@ -1582,28 +1680,29 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createHeaderRow(model) {
-         let caption = model.label;
-         let config = {colspan: 2};
-         if (model.description)
+        let caption = model.label;
+        let config = {colspan: 2};
+        if (model.description)
           config.title = model.description;
-         return $('<tr/>').append($('<th/>', config)
-             .html(caption)
-             .click(function() {
-                 let tr = $(this).closest('tr').next();
-                 let toggleAll = tr.children('th').length > 0;
-                 while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
-                     if (tr.children('th').length == 0) {
-                         tr.children().toggle();                    
-                     }
-                     tr = tr.next();
-                 }
-         }));
+        let th = $('<th/>', config);
+        let showHide = function() {
+          let tr = th.closest('tr').next();
+          let toggleAll = tr.children('th').length > 0;
+          while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+              if (tr.children('th').length == 0) {
+                  tr.toggle();                    
+              }
+              tr = tr.next();
+          }
+        };
+        return $('<tr/>').append(
+            th.html(caption).click(showHide));
       }
 
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption, description: model.description }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description, collapsed: model.collapsed }));
         return table;
       }
 
@@ -1614,7 +1713,11 @@ MonitoringConsole.View.Components = (function() {
         let config = {};
         if (model.description)
           config.title = model.description;
-        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
+        let tr = $('<tr/>');
+        tr.append($('<td/>', config).text(model.label)).append($('<td/>').append(components));
+        if (model.collapsed)
+          tr.css('display', 'none');
+        return tr;
       }
 
       function enhancedOnChange(onChange, updatePage) {
@@ -1754,7 +1857,7 @@ MonitoringConsole.View.Components = (function() {
         }
         let add = $('<input/>', {type: 'button', value: '+'});
         add.click(() => {
-          colors.push(getRandomColor());
+          colors.push(Colors.random());
           createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
           onChange(colors);
         });
@@ -1769,15 +1872,6 @@ MonitoringConsole.View.Components = (function() {
         list.append(add);
         list.append(remove);
         return list;
-      }
-
-      function getRandomColor() {
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
       }
 
       function createMultiColorItemInput(colors, index, onChange) {
@@ -1802,9 +1896,11 @@ MonitoringConsole.View.Components = (function() {
       function onUpdate(model) {
          let panel = emptyPanel();
          let syntheticId = 0;
+         let collapsed = false;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
+            collapsed = group.collapsed === true;
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
                syntheticId++;
@@ -1814,7 +1910,9 @@ MonitoringConsole.View.Components = (function() {
                let input = entry.input;
                if (entry.id === undefined)
                  entry.id = 'setting_' + syntheticId;
+               entry.collapsed = collapsed;
                if (type == 'header' || auto && input === undefined) {
+                  collapsed = entry.collapsed === true;
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
                   table.append(createRow(entry, createInput(entry)));
@@ -2032,27 +2130,6 @@ MonitoringConsole.View.Components = (function() {
 
 MonitoringConsole.Chart.Common = (function() {
 
-   const DEFAULT_BG_COLORS = [
-      'rgba(240, 152, 27, 0.2)',
-      'rgba(0, 140, 196, 0.2)',
-      'rgba(153, 102, 255, 0.2)',
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(54, 162, 235, 0.2)',
-      'rgba(255, 206, 86, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-      'rgba(255, 159, 64, 0.2)'
-   ];
-   const DEFAULT_LINE_COLORS = [
-      'rgba(240, 152, 27, 1)',
-      'rgba(0, 140, 196, 1)',
-      'rgba(153, 102, 255, 1)',
-      'rgba(255, 99, 132, 1)',
-      'rgba(54, 162, 235, 1)',
-      'rgba(255, 206, 86, 1)',
-      'rgba(75, 192, 192, 1)',
-      'rgba(255, 159, 64, 1)'
-   ];
-
    function createCustomTooltipFunction(createHtmlTooltip) {
       return function(tooltipModel) {
         let tooltip = $('#chartjs-tooltip');
@@ -2111,10 +2188,6 @@ MonitoringConsole.Chart.Common = (function() {
        */
       createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
       formatDate: (date) => formatDate(date),
-      backgroundColor: (n) => DEFAULT_BG_COLORS[n],
-      backgroundColors: () => DEFAULT_BG_COLORS,
-      lineColor: (n) => DEFAULT_LINE_COLORS[n],
-      lineColors: () => DEFAULT_LINE_COLORS,
    };
 
 })();
@@ -2166,7 +2239,6 @@ MonitoringConsole.Chart.Common = (function() {
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -2411,7 +2483,6 @@ MonitoringConsole.Chart.Line = (function() {
 MonitoringConsole.Chart.Bar = (function() {
 
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
       let series = [];
@@ -2591,6 +2662,7 @@ MonitoringConsole.Chart.Bar = (function() {
 MonitoringConsole.Chart.Trace = (function() {
 
    const Components = MonitoringConsole.View.Components;
+   const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
 
    var model = {};
@@ -2611,6 +2683,8 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
+      let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
+      let scheme = MonitoringConsole.Model.Colors.scheme();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -2622,9 +2696,11 @@ MonitoringConsole.Chart.Trace = (function() {
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
             if (!operations[span.operation]) {
+               let color = Colors.lookup('index', 'line-' + colorCounter, scheme);
+               colorCounter++;
                operations[span.operation] = {
-                  color: Common.lineColor(colorCounter),
-                  bgColor: Common.backgroundColor(colorCounter++),
+                  color: color,
+                  bgColor: Colors.hex2rgba(color, alpha),
                   count: 1,
                   duration: span.endTime - span.startTime,
                };
@@ -2877,6 +2953,7 @@ MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
+    const Colors = MonitoringConsole.View.Colors;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -2936,10 +3013,12 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
+            let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
             let settings = [];
-            settings.push(createGlobalSettings());
+            settings.push(createGlobalSettings(singleSelection));
+            settings.push(createColorSettings());
             settings.push(createPageSettings());
-            if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
+            if (singleSelection) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
             Components.onSettingsUpdate(settings);
@@ -3040,8 +3119,8 @@ MonitoringConsole.View = (function() {
             .append(Components.onMenuCreation(menu));
     }
 
-    function createGlobalSettings() {
-        return { id: 'settings-global', caption: 'Global', entries: [
+    function createGlobalSettings(initiallyCollapsed) {
+        return { id: 'settings-global', caption: 'Global', collapsed: initiallyCollapsed, entries: [
             { label: 'Data Refresh', input: [
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
                 { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
@@ -3050,7 +3129,14 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
-            { label: 'Color Scheme', type: 'color', value: MonitoringConsole.Model.Colors.scheme(), onChange: (colors) => MonitoringConsole.Model.Colors.scheme(colors) },
+        ]};
+    }
+
+    function createColorSettings() {
+        let colorModel = MonitoringConsole.Model.Colors;
+        return { id: 'settings-colors', caption: 'Colors', collapsed: true, entries: [
+            { label: 'Data #', type: 'color', value: colorModel.scheme(), onChange: (colors) => colorModel.scheme(colors) },
+            { label: 'Background Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
 
@@ -3074,6 +3160,8 @@ MonitoringConsole.View = (function() {
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color scheme' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -3097,8 +3185,6 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
-            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color scheme' },
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -3118,7 +3204,7 @@ MonitoringConsole.View = (function() {
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
             //TODO add color for each threshold
         ]});
-        settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
+        settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
@@ -3224,6 +3310,8 @@ MonitoringConsole.View = (function() {
         }
         let legend = [];
         let format = Units.converter(widget.unit).format;
+        let scheme = MonitoringConsole.Model.Colors.scheme();
+        let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -3239,11 +3327,13 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
+            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), scheme);
+            let bgColor = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
                 value: value, 
-                color: MonitoringConsole.Chart.Common.lineColor(j),
-                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                color: color,
+                backgroundColor: bgColor,
                 assessments: seriesData.assessments,
             };
             legend.push(item);
@@ -3251,6 +3341,15 @@ MonitoringConsole.View = (function() {
         }
         return legend;
     }
+
+    function getColorKey(widget, seriesData, index) {
+        switch (widget.coloring) {
+            case 'index': return 'line-' + index;
+            case 'series': return seriesData.series;
+            case 'instance': 
+            default: return seriesData.instance;
+        }
+    } 
 
     function createIndicatorComponent(widget, data) {
         if (!data)
@@ -3350,6 +3449,7 @@ MonitoringConsole.View = (function() {
      */
     return {
         Units: Units,
+        Colors: Colors,
         Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model

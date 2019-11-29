@@ -59,6 +59,7 @@ MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
+    const Colors = MonitoringConsole.View.Colors;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -118,10 +119,12 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
+            let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
             let settings = [];
-            settings.push(createGlobalSettings());
+            settings.push(createGlobalSettings(singleSelection));
+            settings.push(createColorSettings());
             settings.push(createPageSettings());
-            if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
+            if (singleSelection) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
             Components.onSettingsUpdate(settings);
@@ -222,8 +225,8 @@ MonitoringConsole.View = (function() {
             .append(Components.onMenuCreation(menu));
     }
 
-    function createGlobalSettings() {
-        return { id: 'settings-global', caption: 'Global', entries: [
+    function createGlobalSettings(initiallyCollapsed) {
+        return { id: 'settings-global', caption: 'Global', collapsed: initiallyCollapsed, entries: [
             { label: 'Data Refresh', input: [
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
                 { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
@@ -232,7 +235,14 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
-            { label: 'Color Scheme', type: 'color', value: MonitoringConsole.Model.Colors.scheme(), onChange: (colors) => MonitoringConsole.Model.Colors.scheme(colors) },
+        ]};
+    }
+
+    function createColorSettings() {
+        let colorModel = MonitoringConsole.Model.Colors;
+        return { id: 'settings-colors', caption: 'Colors', collapsed: true, entries: [
+            { label: 'Data #', type: 'color', value: colorModel.scheme(), onChange: (colors) => colorModel.scheme(colors) },
+            { label: 'Background Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
 
@@ -256,6 +266,8 @@ MonitoringConsole.View = (function() {
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color scheme' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -279,8 +291,6 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
-            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color scheme' },
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -300,7 +310,7 @@ MonitoringConsole.View = (function() {
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
             //TODO add color for each threshold
         ]});
-        settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
+        settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
@@ -406,6 +416,8 @@ MonitoringConsole.View = (function() {
         }
         let legend = [];
         let format = Units.converter(widget.unit).format;
+        let scheme = MonitoringConsole.Model.Colors.scheme();
+        let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -421,11 +433,13 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
+            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), scheme);
+            let bgColor = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
                 value: value, 
-                color: MonitoringConsole.Chart.Common.lineColor(j),
-                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                color: color,
+                backgroundColor: bgColor,
                 assessments: seriesData.assessments,
             };
             legend.push(item);
@@ -433,6 +447,15 @@ MonitoringConsole.View = (function() {
         }
         return legend;
     }
+
+    function getColorKey(widget, seriesData, index) {
+        switch (widget.coloring) {
+            case 'index': return 'line-' + index;
+            case 'series': return seriesData.series;
+            case 'instance': 
+            default: return seriesData.instance;
+        }
+    } 
 
     function createIndicatorComponent(widget, data) {
         if (!data)
@@ -532,6 +555,7 @@ MonitoringConsole.View = (function() {
      */
     return {
         Units: Units,
+        Colors: Colors,
         Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model

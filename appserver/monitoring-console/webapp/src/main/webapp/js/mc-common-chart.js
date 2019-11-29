@@ -42,27 +42,6 @@
 
 MonitoringConsole.Chart.Common = (function() {
 
-   const DEFAULT_BG_COLORS = [
-      'rgba(240, 152, 27, 0.2)',
-      'rgba(0, 140, 196, 0.2)',
-      'rgba(153, 102, 255, 0.2)',
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(54, 162, 235, 0.2)',
-      'rgba(255, 206, 86, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-      'rgba(255, 159, 64, 0.2)'
-   ];
-   const DEFAULT_LINE_COLORS = [
-      'rgba(240, 152, 27, 1)',
-      'rgba(0, 140, 196, 1)',
-      'rgba(153, 102, 255, 1)',
-      'rgba(255, 99, 132, 1)',
-      'rgba(54, 162, 235, 1)',
-      'rgba(255, 206, 86, 1)',
-      'rgba(75, 192, 192, 1)',
-      'rgba(255, 159, 64, 1)'
-   ];
-
    function createCustomTooltipFunction(createHtmlTooltip) {
       return function(tooltipModel) {
         let tooltip = $('#chartjs-tooltip');
@@ -121,10 +100,6 @@ MonitoringConsole.Chart.Common = (function() {
        */
       createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
       formatDate: (date) => formatDate(date),
-      backgroundColor: (n) => DEFAULT_BG_COLORS[n],
-      backgroundColors: () => DEFAULT_BG_COLORS,
-      lineColor: (n) => DEFAULT_LINE_COLORS[n],
-      lineColors: () => DEFAULT_LINE_COLORS,
    };
 
 })();

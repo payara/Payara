@@ -48,6 +48,7 @@
 MonitoringConsole.View.Components = (function() {
 
    const Units = MonitoringConsole.View.Units;
+   const Colors = MonitoringConsole.View.Colors;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    /**
@@ -60,28 +61,29 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createHeaderRow(model) {
-         let caption = model.label;
-         let config = {colspan: 2};
-         if (model.description)
+        let caption = model.label;
+        let config = {colspan: 2};
+        if (model.description)
           config.title = model.description;
-         return $('<tr/>').append($('<th/>', config)
-             .html(caption)
-             .click(function() {
-                 let tr = $(this).closest('tr').next();
-                 let toggleAll = tr.children('th').length > 0;
-                 while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
-                     if (tr.children('th').length == 0) {
-                         tr.children().toggle();                    
-                     }
-                     tr = tr.next();
-                 }
-         }));
+        let th = $('<th/>', config);
+        let showHide = function() {
+          let tr = th.closest('tr').next();
+          let toggleAll = tr.children('th').length > 0;
+          while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+              if (tr.children('th').length == 0) {
+                  tr.toggle();                    
+              }
+              tr = tr.next();
+          }
+        };
+        return $('<tr/>').append(
+            th.html(caption).click(showHide));
       }
 
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption, description: model.description }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description, collapsed: model.collapsed }));
         return table;
       }
 
@@ -92,7 +94,11 @@ MonitoringConsole.View.Components = (function() {
         let config = {};
         if (model.description)
           config.title = model.description;
-        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
+        let tr = $('<tr/>');
+        tr.append($('<td/>', config).text(model.label)).append($('<td/>').append(components));
+        if (model.collapsed)
+          tr.css('display', 'none');
+        return tr;
       }
 
       function enhancedOnChange(onChange, updatePage) {
@@ -232,7 +238,7 @@ MonitoringConsole.View.Components = (function() {
         }
         let add = $('<input/>', {type: 'button', value: '+'});
         add.click(() => {
-          colors.push(getRandomColor());
+          colors.push(Colors.random());
           createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
           onChange(colors);
         });
@@ -247,15 +253,6 @@ MonitoringConsole.View.Components = (function() {
         list.append(add);
         list.append(remove);
         return list;
-      }
-
-      function getRandomColor() {
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
       }
 
       function createMultiColorItemInput(colors, index, onChange) {
@@ -280,9 +277,11 @@ MonitoringConsole.View.Components = (function() {
       function onUpdate(model) {
          let panel = emptyPanel();
          let syntheticId = 0;
+         let collapsed = false;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
+            collapsed = group.collapsed === true;
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
                syntheticId++;
@@ -292,7 +291,9 @@ MonitoringConsole.View.Components = (function() {
                let input = entry.input;
                if (entry.id === undefined)
                  entry.id = 'setting_' + syntheticId;
+               entry.collapsed = collapsed;
                if (type == 'header' || auto && input === undefined) {
+                  collapsed = entry.collapsed === true;
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
                   table.append(createRow(entry, createInput(entry)));

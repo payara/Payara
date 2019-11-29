@@ -59,7 +59,7 @@ select {
 input[type=color] {
   border-radius: 2px;
   padding: 0;
-  margin: 0 2px 3px 2px;
+  margin: 1px;
   display: inline-block;
   vertical-align: middle;
   width: 30px;
@@ -67,7 +67,7 @@ input[type=color] {
 input[type=button] {
   border-radius: 2px;
   border: 2px outset #ccc;
-  margin: 0 1px;
+  margin: 1px;
   vertical-align: middle;
   display: inline-block;
 }

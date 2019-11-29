@@ -121,6 +121,7 @@
                             <source>src/main/webapp/js/mc-main.js</source>
                             <source>src/main/webapp/js/mc-model.js</source>
                             <source>src/main/webapp/js/mc-view-units.js</source>
+                            <source>src/main/webapp/js/mc-view-colors.js</source>
                             <source>src/main/webapp/js/mc-view-components.js</source>
                             <source>src/main/webapp/js/mc-common-chart.js</source>
                             <source>src/main/webapp/js/mc-line-chart.js</source>

@@ -46,7 +46,6 @@
 MonitoringConsole.Chart.Bar = (function() {
 
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
       let series = [];

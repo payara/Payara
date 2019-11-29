@@ -46,7 +46,6 @@
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.

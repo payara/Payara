@@ -214,11 +214,11 @@ Describes the model expected by the `Settings` component.
 
 ```
 SETTINGS    = [GROUP]
-GROUP       = { id, caption, entries }
+GROUP       = { id, caption, entries, collapsed }
 id 		    = string
 caption     = string
 entries     = [ENTRY]
-ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue } 
+ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue, collapsed } 
 label       = string
 type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text' | 'color'
 unit        = string
@@ -230,14 +230,16 @@ options     = { *:string }
 input       = fn () => string | fn () => jquery | string | jquery | [ENTRY]
 onChange    = fn (widget, newValue) => () | fn (newValue) => ()
 description = string
+collapsed   = boolean
 ```
 * When `caption` is provided this adds a _header_ entry identical to adding a _header_ entry explicitly as first element of the `entries` array.
 * The `options` object is used as map where the attribute names are the values of the options and the attribute values are the _string_ labels displayed for that option.
 * `description` is optional for any type of `ENTRY`
+* set `collapsed` to initially collapse the setting group
 
 Mandatory members of `ENTRY` depend on `type` member. Variants are:
 ```
-'header'   : { label }
+'header'   : { label, collapsed }
 'checkbox' : { label, value, onChange }
 'range'    : { label, value, min, max, onChange }
 'dropdown' : { label, value, options, onChange }
