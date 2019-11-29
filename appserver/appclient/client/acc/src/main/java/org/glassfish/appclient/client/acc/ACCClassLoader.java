@@ -90,9 +90,9 @@ public class ACCClassLoader extends URLClassLoader {
         final boolean currentCLWasAgentCL = currentCL.getClass().getName().equals(
                     AGENT_LOADER_CLASS_NAME);
         final ClassLoader parentForACCCL = currentCLWasAgentCL ? currentCL.getParent() : currentCL;
-
-        instance = AccessController.doPrivileged((PrivilegedAction<ACCClassLoader>) 
-                () -> new ACCClassLoader(userClassPath(), parentForACCCL, shouldTransform));
+        PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(userClassPath(), parentForACCCL,
+                shouldTransform);
+        instance = AccessController.doPrivileged(action);
 
         if (currentCLWasAgentCL) {
             try {
@@ -198,8 +198,8 @@ public class ACCClassLoader extends URLClassLoader {
 
     synchronized ACCClassLoader shadow() {
         if (shadow == null) {
-            shadow = AccessController.doPrivileged((PrivilegedAction<ACCClassLoader>) 
-                    () -> new ACCClassLoader(getURLs(), getParent()));
+            PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(getURLs(), getParent());
+            shadow = AccessController.doPrivileged(action);
         }
         return shadow;
     }

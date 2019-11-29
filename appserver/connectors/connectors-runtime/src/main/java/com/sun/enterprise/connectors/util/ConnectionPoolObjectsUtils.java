@@ -332,11 +332,12 @@ public final class ConnectionPoolObjectsUtils {
                         new PasswordCredential(prin.getName(),
                                 password.toCharArray());
                 pc.setManagedConnectionFactory(mcf);
-                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                PrivilegedAction<Void> action = () -> {
                     tempSubject.getPrincipals().add(prin);
                     tempSubject.getPrivateCredentials().add(pc);
                     return null;
-                });
+                };
+                AccessController.doPrivileged(action);
             }
         }
         return tempSubject;

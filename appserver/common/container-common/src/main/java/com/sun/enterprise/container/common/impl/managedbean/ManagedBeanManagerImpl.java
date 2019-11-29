@@ -45,6 +45,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,7 +60,6 @@ import javax.naming.InitialContext;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -137,7 +137,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     public void event(Event<?> event) {
 
          if (event.is(Deployment.APPLICATION_LOADED) ) {
-             ApplicationInfo info =  Deployment.APPLICATION_LOADED.getHook((Event<ApplicationInfo>) event);
+             ApplicationInfo info =  Deployment.APPLICATION_LOADED.getHook(castEvent(event));
 
              loadManagedBeans(info);
 
@@ -145,19 +145,24 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
          } else if( event.is(Deployment.APPLICATION_UNLOADED) ) {
 
-             ApplicationInfo info =  Deployment.APPLICATION_UNLOADED.getHook((Event<ApplicationInfo>) event);
+             ApplicationInfo info =  Deployment.APPLICATION_UNLOADED.getHook(castEvent(event));
              Application app = info.getMetaData(Application.class);
 
              doCleanup(app);
 
          } else if( event.is(Deployment.DEPLOYMENT_FAILURE) ) {
 
-             Application app = Deployment.DEPLOYMENT_FAILURE.getHook((Event<DeploymentContext>) event).getModuleMetaData(Application.class);
+             Application app = Deployment.DEPLOYMENT_FAILURE.getHook(castEvent(event)).getModuleMetaData(Application.class);
 
              doCleanup(app);
 
          }
     }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Event<T> castEvent(final Event<?> event) {
+         return (Event<T>) event;
+    } 
 
     private void doCleanup(Application app) {
 
@@ -392,8 +397,13 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     }
 
     private boolean bundleEligible(BundleDescriptor bundle) {
-        return processType.isServer() && (bundle instanceof WebBundleDescriptor || bundle instanceof EjbBundleDescriptor)
-                || processType == ProcessType.ACC && bundle instanceof ApplicationClientDescriptor;
+        if (processType.isServer()) {
+            return (bundle instanceof WebBundleDescriptor || bundle instanceof EjbBundleDescriptor);
+        }
+        if (processType == ProcessType.ACC) {
+            return bundle instanceof ApplicationClientDescriptor;
+        }
+        return false;
     }
 
     @Override
@@ -632,12 +642,13 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 Field proxyField = managedBean.getClass().getDeclaredField("__ejb31_delegate");
 
                 final Field finalF = proxyField;
-                java.security.AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+                PrivilegedExceptionAction<Void> action = () -> {
                     if (!finalF.isAccessible()) {
                         finalF.setAccessible(true);
                     }
                     return null;
-                });
+                };
+                AccessController.doPrivileged(action);
 
                 Proxy proxy = (Proxy) proxyField.get(managedBean);
 

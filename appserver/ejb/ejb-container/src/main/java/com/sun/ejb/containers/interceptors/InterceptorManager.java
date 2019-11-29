@@ -43,6 +43,7 @@ package com.sun.ejb.containers.interceptors;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -729,11 +730,9 @@ public class InterceptorManager {
                 break;
             }
             try {
-                Method method = beanClass.getMethod(pre30LCMethodNames[i],
-                        (Class[]) null);
+                Method method = beanClass.getMethod(pre30LCMethodNames[i], (Class[]) null);
                 if (method != null) {
-                    CallbackInterceptor meta = new BeanCallbackInterceptor(
-                            method);
+                    CallbackInterceptor meta = new BeanCallbackInterceptor(method);
                     metaArray[i].add(meta);
                     _logger.log(Level.FINE,
                             "**##[ejbCreate] bean has 2.x style ejbCreate: " + meta);
@@ -862,12 +861,13 @@ class AroundInvokeInterceptor {
                     finalM.setAccessible(true);
                 }
             } else {
-                java.security.AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+                PrivilegedExceptionAction<Void> action = () -> {
                     if (!finalM.isAccessible()) {
                         finalM.setAccessible(true);
                     }
                     return null;
-                });
+                };
+                AccessController.doPrivileged(action);
             }
         } catch(Exception e) {
             throw new EJBException(e);
@@ -882,8 +882,8 @@ class AroundInvokeInterceptor {
             if( System.getSecurityManager() != null ) {
             // Wrap actual value insertion in doPrivileged to
             // allow for private/protected field access.
-                return java.security.AccessController.doPrivileged(
-                        (PrivilegedExceptionAction<Object>) () -> method.invoke(interceptors[index], invCtx));
+                PrivilegedExceptionAction<Object> action = () -> method.invoke(interceptors[index], invCtx);
+                return AccessController.doPrivileged(action);
             }
             return method.invoke(interceptors[index], invCtx);
         } catch (java.lang.reflect.InvocationTargetException invEx) {
@@ -917,8 +917,8 @@ class BeanAroundInvokeInterceptor
             if( System.getSecurityManager() != null ) {
                 // Wrap actual value insertion in doPrivileged to
                 // allow for private/protected field access.
-                return java.security.AccessController.doPrivileged(
-                        (PrivilegedExceptionAction<Object>) () -> method.invoke(invCtx.getTarget(), invCtx));
+                PrivilegedExceptionAction<Object> action = () -> method.invoke(invCtx.getTarget(), invCtx);
+                return AccessController.doPrivileged(action);
             }
             return method.invoke(invCtx.getTarget(), invCtx);
         } catch (java.lang.reflect.InvocationTargetException invEx) {
@@ -948,12 +948,13 @@ class CallbackInterceptor {
                     finalM.setAccessible(true);
                 }
             } else {
-                java.security.AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+                PrivilegedExceptionAction<Void> action = () -> {
                     if (!finalM.isAccessible()) {
                         finalM.setAccessible(true);
                     }
                     return null;
-                });
+                };
+                AccessController.doPrivileged(action);
             }
         } catch(Exception e) {
             throw new EJBException(e);
@@ -971,8 +972,8 @@ class CallbackInterceptor {
             if( System.getSecurityManager() != null ) {
                 // Wrap actual value insertion in doPrivileged to
                 // allow for private/protected field access.
-                return java.security.AccessController.doPrivileged(
-                        (PrivilegedExceptionAction<Object>) () -> method.invoke(interceptors[index], invContext));
+                PrivilegedExceptionAction<Object> action = () -> method.invoke(interceptors[index], invContext);
+                return AccessController.doPrivileged(action);
             }
             return method.invoke(interceptors[index], invContext);
         } catch (java.lang.reflect.InvocationTargetException invEx) {
@@ -1012,10 +1013,11 @@ class BeanCallbackInterceptor
             if( System.getSecurityManager() != null ) {
             // Wrap actual value insertion in doPrivileged to
             // allow for private/protected field access.
-                java.security.AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+                PrivilegedExceptionAction<Void> action = () -> {
                     method.invoke(invContext.getTarget(), NULL_ARGS);
                     return null;
-                });
+                };
+                AccessController.doPrivileged(action);
             } else {
                 method.invoke(invContext.getTarget(), NULL_ARGS);
             }
