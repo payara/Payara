@@ -1063,7 +1063,8 @@ MonitoringConsole.Model = (function() {
 		if (UI.Refresh.interval() === undefined) {
 			UI.Refresh.interval(DEFAULT_INTERVAL);
 		}
-		Interval.resume(UI.Refresh.interval());
+		if (!UI.Refresh.isPaused())
+			Interval.resume(UI.Refresh.interval());
 		Rotation.init(() => onPageUpdate(doSwitchPage()));
 		if (UI.Rotation.isEnabled()) {
 			Rotation.resume(UI.Rotation.interval());	
