@@ -252,7 +252,7 @@ MonitoringConsole.Model = (function() {
 		/**
 		 * General settings for the user interface
 		 */
-		var settings = {};
+		var settings = sanityCheckSettings({});
 		
 		/**
 		 * Makes sure the page data structure has all required attributes.
