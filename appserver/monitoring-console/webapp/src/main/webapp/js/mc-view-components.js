@@ -238,7 +238,7 @@ MonitoringConsole.View.Components = (function() {
         }
         let add = $('<input/>', {type: 'button', value: '+'});
         add.click(() => {
-          colors.push(Colors.random());
+          colors.push(Colors.random(colors));
           createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
           onChange(colors);
         });

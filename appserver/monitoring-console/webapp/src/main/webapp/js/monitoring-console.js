@@ -146,7 +146,8 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
-	const DEFAULT_COLOR_SCHEME = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+	const DEFAULT_COLOR_PALETTE = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+	const DEFAULT_COLOR_OPACITY = 20;
 
 	const UI_PRESETS = {
 			pages: {
@@ -317,6 +318,20 @@ MonitoringConsole.Model = (function() {
 				widget.status.critical = {};
 			return widget;
 		}
+
+		function sanityCheckSettings(settings) {
+			if (settings === undefined)
+				settings = {};
+			if (settings.colors === undefined)
+				settings.colors = {};
+			if (settings.colors.palette === undefined)
+				settings.colors.palette = DEFAULT_COLOR_PALETTE; 
+			if (settings.colors.opacity === undefined)
+				settings.colors.opacity = DEFAULT_COLOR_OPACITY;
+			if (settings.colors.defaults === undefined)
+				settings.colors.defaults = {};
+			return settings;
+		}
 		
 		function doStore() {
 			window.localStorage.setItem(LOCAL_UI_KEY, doExport());
@@ -338,17 +353,14 @@ MonitoringConsole.Model = (function() {
 			settings.home = page.id;
 			return page;
 		}
+
 		
 		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
-			let isPagesOnly = !userInterface.pages || !userInterface.settings;
-			if (!isPagesOnly)
-				settings = userInterface.settings;
-			if (settings.colors === undefined) {
-				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME, opacity: 20 };
-			}
+			if (userInterface.pages && userInterface.settings)
+				settings = sanityCheckSettings(userInterface.settings);
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -491,17 +503,24 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			colorScheme: function(colors) {
+			colorPalette: function(colors) {
 				if (colors === undefined)
-					return settings.colors.scheme || [];
-				settings.colors.scheme = colors || [];
+					return settings.colors.palette || DEFAULT_COLOR_PALETTE;
+				settings.colors.palette = colors || DEFAULT_COLOR_PALETTE;
 				doStore();
 			},
 
 			colorOpacity: function(opacity) {
 				if (opacity === undefined)
-					return settings.colors.opacity || 20;
-				settings.colors.opacity = opacity || 20;
+					return settings.colors.opacity || DEFAULT_COLOR_OPACITY;
+				settings.colors.opacity = opacity || DEFAULT_COLOR_OPACITY;
+				doStore();
+			},
+
+			colorDefault: function(name, color) {
+				if (color === undefined)
+					return settings.colors.defaults[name];
+				settings.colors.defaults[name] = color;
 				doStore();
 			},
 
@@ -1135,8 +1154,9 @@ MonitoringConsole.Model = (function() {
 		},
 
 		Colors: {
-			scheme: UI.colorScheme,
+			palette: UI.colorPalette,
 			opacity: UI.colorOpacity,
+			default: UI.colorDefault,
 		},
 		
 		Settings: {
@@ -1573,13 +1593,73 @@ MonitoringConsole.View.Units = (function() {
 /*jshint esversion: 8 */
 
 /**
- * Utilities to convert color values.
+ * Utilities to convert color values and handle color schemes.
+ *
+ * Color schemes are named sets of colors that are applied to the model.
+ * This is build purely on top of the model. 
+ * The model does not remember a scheme, 
+ * schemes are just a utility to reset color configurations to a certain set.
  **/
 MonitoringConsole.View.Colors = (function() {
 
+   const Colors = MonitoringConsole.Model.Colors;
+
+   const SCHEMES = {
+      Payara: {
+         name: 'Payara',
+         palette: [ '#F0981B', '#008CC4', '#8B79BC', '#87BC25', '#FF70DA' ],
+         opacity: 20,
+         defaults:  { waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c' }
+      },
+
+      a: {
+         name: '80s',
+         opacity: 30,
+         palette: [ '#ff48c4', '#2bd1fc', '#f3ea5f', '#c04df9', '#ff3f3f'],
+         defaults:  { waterline: '#2bd1fc', alarming: '#f3ea5f', critical: '#ff3f3f' }
+      },
+
+      b: {
+         name: '80s Pastel',
+         opacity: 40,
+         palette: [ '#bd6283', '#96c0bc', '#dbd259', '#d49e54', '#b95f51'],
+         defaults:  { waterline: '#96c0bc', alarming: '#dbd259', critical: '#b95f51' }
+      },
+
+      c: {
+         name: '80s Neon',
+         opacity: 15,
+         palette: [ '#cb268b', '#f64e0c', '#eff109', '#6cf700', '#00aff3'],
+         defaults:  { waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c' }
+      },
+
+      d: {
+         name: 'VaporWave',
+         opacity: 20,
+         palette: [ '#05ffa1', '#b8a9df', '#01cdfe', '#b967ff', '#fffb96'],
+         defaults:  { waterline: '#01cdfe', alarming: '#fffb96', critical: '#FB637A' }
+      },
+
+      e: {
+         name: 'Solarized',
+         opacity: 20,
+         palette: [ '#b58900', '#cb4b16', '#dc322f', '#d32682', '#c671c4', '#268bd2', '#2aa198', '#859900'],
+         defaults:  { waterline: '#268bd2', alarming: '#b58900', critical: '#dc322f' }
+      }
+   };
+
+   /**
+    * Object used as map to remember the colors by coloring stratgey.
+    * Each strategy leads to an object map that remebers the key as fields 
+    * and the index associated with the key as value.
+    * This is a mapping from e.g. the name 'DAS' to index 0. 
+    * The index is then used to pick a color form the palette.
+    * This makes sure that same key, for example the instance name,
+    * always uses the same color accross widgets and pages.
+    */
    let colorIndexMaps = {};
 
-   function lookup(coloring, key, scheme) {
+   function lookup(coloring, key, palette) {
       let mapName = coloring || 'instance';
       let map = colorIndexMaps[mapName];
       if (map === undefined) {
@@ -1591,21 +1671,79 @@ MonitoringConsole.View.Colors = (function() {
          index = Object.keys(map).length;
          map[key] = index;
       }
-      return scheme[index % scheme.length];
+      return derive(palette, index);
    }
 
-   function random() {
-     const letters = '0123456789ABCDEF';
-     let color = '#';
-     for (let i = 0; i < 6; i++) {
-       color += letters[Math.floor(Math.random() * 16)];
-     }
-     return color;
+   /**
+    * Returns a palette color.
+    * If index is outside of the palette given a color is derived from the palette.
+    * The derived colors are intentionally biased towards light non-grayish colors.
+    */
+   function derive(palette, index = 1) {
+      let color = palette[index % palette.length];
+      if (index < palette.length)
+         return color;
+      let [r, g, b] = hex2rgb(color);
+      let offset = index - palette.length + 1;
+      let shift = (offset * 110) % 255;
+      r = (r + shift) % 255;
+      g = (g + shift) % 255;
+      b = (b + shift) % 255;
+      let variant = offset % 6;
+      if (variant == 0 || variant == 3 || variant == 4)
+         r = Math.round(r / 2);
+      if (variant == 1 || variant == 3 || variant == 5)
+         g = Math.round(g / 2);
+      if (variant == 2 || variant == 4 || variant == 5)
+         b = Math.round(b / 2);
+      if (r + g + b < 380 && r < 120) r = 255 - r;
+      if (r + g + b < 380 && g < 120) g = 255 - g;
+      if (r + g + b < 380 && b < 120) b = 255 - b;
+      return rgb2hex(r, g, b);
+   }
+
+   function random(palette) {
+      if (Array.isArray(palette))
+         return derive([palette[0]], palette.length); 
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+         color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+   }
+
+   function hex2rgb(hex) {
+      return hex.match(/\w\w/g).map(x => parseInt(x, 16));
+   }
+
+   function rgb2hex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
    }
 
    function hex2rgba(hex, alpha = 1) {
-      const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+      const [r, g, b] = hex2rgb(hex);
       return `rgba(${r},${g},${b},${alpha})`;
+   }
+
+   function schemeOptions() {
+      return Object.keys(SCHEMES).reduce(function(result, key) {
+         result[key] = SCHEMES[key].name;
+         return result;
+      }, { _: '(Select to apply)' });
+   }
+
+   function applyScheme(name) {
+      let scheme = SCHEMES[name];
+      if (scheme) {
+         Colors.palette(scheme.palette);
+         Colors.opacity(scheme.opacity);
+         if (scheme.defaults) {
+            for (let [name, color] of Object.entries(scheme.defaults)) {
+               Colors.default(name, color);
+            }
+         }            
+      }
    }
 
    /**
@@ -1615,6 +1753,8 @@ MonitoringConsole.View.Colors = (function() {
       lookup: lookup,
       random: random,
       hex2rgba: hex2rgba,
+      schemes: schemeOptions,
+      scheme: applyScheme,
    };
 })();
 /*
@@ -1857,7 +1997,7 @@ MonitoringConsole.View.Components = (function() {
         }
         let add = $('<input/>', {type: 'button', value: '+'});
         add.click(() => {
-          colors.push(Colors.random());
+          colors.push(Colors.random(colors));
           createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
           onChange(colors);
         });
@@ -2239,6 +2379,8 @@ MonitoringConsole.Chart.Common = (function() {
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
+  const Colors = MonitoringConsole.View.Colors;
+  const ColorModel = MonitoringConsole.Model.Colors;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -2375,15 +2517,15 @@ MonitoringConsole.Chart.Line = (function() {
 		}
     let decorations = widget.decorations;
     if (decorations.waterline && decorations.waterline.value) {
-      let color = decorations.waterline.color || 'Aqua';
+      let color = decorations.waterline.color || ColorModel.default('waterline');
       datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
     if (decorations.thresholds.alarming.display) {
-      let color = decorations.thresholds.alarming.color || 'gold';
+      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
       datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
     if (decorations.thresholds.critical.display) {
-      let color = decorations.thresholds.critical.color || 'crimson';
+      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
       datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;
@@ -2684,7 +2826,7 @@ MonitoringConsole.Chart.Trace = (function() {
       let colors = [];
       let bgColors = [];
       let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
-      let scheme = MonitoringConsole.Model.Colors.scheme();
+      let palette = MonitoringConsole.Model.Colors.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -2696,7 +2838,7 @@ MonitoringConsole.Chart.Trace = (function() {
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
             if (!operations[span.operation]) {
-               let color = Colors.lookup('index', 'line-' + colorCounter, scheme);
+               let color = Colors.lookup('index', 'line-' + colorCounter, palette);
                colorCounter++;
                operations[span.operation] = {
                   color: color,
@@ -3134,13 +3276,20 @@ MonitoringConsole.View = (function() {
 
     function createColorSettings() {
         let colorModel = MonitoringConsole.Model.Colors;
-        return { id: 'settings-colors', caption: 'Colors', collapsed: true, entries: [
-            { label: 'Data #', type: 'color', value: colorModel.scheme(), onChange: (colors) => colorModel.scheme(colors) },
-            { label: 'Background Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
+        return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
+            { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
+            { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
+            { label: 'Defaults', input: [
+                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
+                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
+                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
+            ]},
+            { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
 
     function createWidgetSettings(widget) {
+        let colorModel = MonitoringConsole.Model.Colors;
         let options = widget.options;
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
@@ -3161,7 +3310,7 @@ MonitoringConsole.View = (function() {
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
             { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color scheme' },            
+                description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -3189,16 +3338,16 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
                 { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
-                { type: 'color', value: widget.decorations.waterline.color, defaultValue: '#00ffff', onChange: (widget, value) => widget.decorations.waterline.color = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: colorModel.default('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
             ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
-                { type: 'color', value: thresholds.alarming.color, defaultValue: '#FFD700', onChange: (widget, value) => thresholds.alarming.color = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: colorModel.default('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
-                { type: 'color', value: thresholds.critical.color, defaultValue: '#dc143c', onChange: (widget, value) => thresholds.critical.color = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: colorModel.default('critical'), onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
@@ -3310,7 +3459,7 @@ MonitoringConsole.View = (function() {
         }
         let legend = [];
         let format = Units.converter(widget.unit).format;
-        let scheme = MonitoringConsole.Model.Colors.scheme();
+        let palette = MonitoringConsole.Model.Colors.palette();
         let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
@@ -3327,7 +3476,7 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
-            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), scheme);
+            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
             let bgColor = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 

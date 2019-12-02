@@ -68,7 +68,7 @@ MonitoringConsole.Chart.Trace = (function() {
       let colors = [];
       let bgColors = [];
       let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
-      let scheme = MonitoringConsole.Model.Colors.scheme();
+      let palette = MonitoringConsole.Model.Colors.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -80,7 +80,7 @@ MonitoringConsole.Chart.Trace = (function() {
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
             if (!operations[span.operation]) {
-               let color = Colors.lookup('index', 'line-' + colorCounter, scheme);
+               let color = Colors.lookup('index', 'line-' + colorCounter, palette);
                colorCounter++;
                operations[span.operation] = {
                   color: color,

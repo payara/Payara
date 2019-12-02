@@ -46,6 +46,8 @@
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
+  const Colors = MonitoringConsole.View.Colors;
+  const ColorModel = MonitoringConsole.Model.Colors;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -182,15 +184,15 @@ MonitoringConsole.Chart.Line = (function() {
 		}
     let decorations = widget.decorations;
     if (decorations.waterline && decorations.waterline.value) {
-      let color = decorations.waterline.color || 'Aqua';
+      let color = decorations.waterline.color || ColorModel.default('waterline');
       datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
     if (decorations.thresholds.alarming.display) {
-      let color = decorations.thresholds.alarming.color || 'gold';
+      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
       datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
     if (decorations.thresholds.critical.display) {
-      let color = decorations.thresholds.critical.color || 'crimson';
+      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
       datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;

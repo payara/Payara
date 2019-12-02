@@ -34,7 +34,7 @@ id              = string
 numberOfColumns = number
 rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display, home, refresh, rotation }
+settings        = { display, home, refresh, rotation, colors }
 display         = boolean
 home            = string
 refresh         = { paused, interval }
@@ -42,12 +42,18 @@ rotation        = { enabled, interval }
 paused          = boolean
 enabled         = boolean
 interval        = number
+colors          = { palette, opacity, defaults }
+palette         = [COLOR]
+opacity         = number
+defaults        = { *:COLOR }
+COLOR           = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
 * `widgets` can be ommitted for an empty page
 * `numberOfColumns` can be ommitted
 * `widgets` is allowed to be an array - if so it is made into an object using each widget's `series` for the attribute name
 * `home` is the `PAGE.id` of the currently shown page
+* names for `defaults` colors used so far are: `'alarming'`, `'critical'` and `'waterline'`
 
 ### Widget Model
 

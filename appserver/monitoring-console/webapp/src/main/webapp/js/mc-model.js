@@ -55,7 +55,8 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
-	const DEFAULT_COLOR_SCHEME = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+	const DEFAULT_COLOR_PALETTE = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
+	const DEFAULT_COLOR_OPACITY = 20;
 
 	const UI_PRESETS = {
 			pages: {
@@ -226,6 +227,20 @@ MonitoringConsole.Model = (function() {
 				widget.status.critical = {};
 			return widget;
 		}
+
+		function sanityCheckSettings(settings) {
+			if (settings === undefined)
+				settings = {};
+			if (settings.colors === undefined)
+				settings.colors = {};
+			if (settings.colors.palette === undefined)
+				settings.colors.palette = DEFAULT_COLOR_PALETTE; 
+			if (settings.colors.opacity === undefined)
+				settings.colors.opacity = DEFAULT_COLOR_OPACITY;
+			if (settings.colors.defaults === undefined)
+				settings.colors.defaults = {};
+			return settings;
+		}
 		
 		function doStore() {
 			window.localStorage.setItem(LOCAL_UI_KEY, doExport());
@@ -247,17 +262,14 @@ MonitoringConsole.Model = (function() {
 			settings.home = page.id;
 			return page;
 		}
+
 		
 		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
-			let isPagesOnly = !userInterface.pages || !userInterface.settings;
-			if (!isPagesOnly)
-				settings = userInterface.settings;
-			if (settings.colors === undefined) {
-				settings.colors = {	scheme: DEFAULT_COLOR_SCHEME, opacity: 20 };
-			}
+			if (userInterface.pages && userInterface.settings)
+				settings = sanityCheckSettings(userInterface.settings);
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -400,17 +412,24 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			colorScheme: function(colors) {
+			colorPalette: function(colors) {
 				if (colors === undefined)
-					return settings.colors.scheme || [];
-				settings.colors.scheme = colors || [];
+					return settings.colors.palette || DEFAULT_COLOR_PALETTE;
+				settings.colors.palette = colors || DEFAULT_COLOR_PALETTE;
 				doStore();
 			},
 
 			colorOpacity: function(opacity) {
 				if (opacity === undefined)
-					return settings.colors.opacity || 20;
-				settings.colors.opacity = opacity || 20;
+					return settings.colors.opacity || DEFAULT_COLOR_OPACITY;
+				settings.colors.opacity = opacity || DEFAULT_COLOR_OPACITY;
+				doStore();
+			},
+
+			colorDefault: function(name, color) {
+				if (color === undefined)
+					return settings.colors.defaults[name];
+				settings.colors.defaults[name] = color;
 				doStore();
 			},
 
@@ -1044,8 +1063,9 @@ MonitoringConsole.Model = (function() {
 		},
 
 		Colors: {
-			scheme: UI.colorScheme,
+			palette: UI.colorPalette,
 			opacity: UI.colorOpacity,
+			default: UI.colorDefault,
 		},
 		
 		Settings: {

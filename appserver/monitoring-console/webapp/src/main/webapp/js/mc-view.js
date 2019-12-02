@@ -240,13 +240,20 @@ MonitoringConsole.View = (function() {
 
     function createColorSettings() {
         let colorModel = MonitoringConsole.Model.Colors;
-        return { id: 'settings-colors', caption: 'Colors', collapsed: true, entries: [
-            { label: 'Data #', type: 'color', value: colorModel.scheme(), onChange: (colors) => colorModel.scheme(colors) },
-            { label: 'Background Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
+        return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
+            { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
+            { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
+            { label: 'Defaults', input: [
+                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
+                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
+                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
+            ]},
+            { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
 
     function createWidgetSettings(widget) {
+        let colorModel = MonitoringConsole.Model.Colors;
         let options = widget.options;
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
@@ -267,7 +274,7 @@ MonitoringConsole.View = (function() {
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
             { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color scheme' },            
+                description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -295,16 +302,16 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
                 { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
-                { type: 'color', value: widget.decorations.waterline.color, defaultValue: '#00ffff', onChange: (widget, value) => widget.decorations.waterline.color = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: colorModel.default('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
             ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
-                { type: 'color', value: thresholds.alarming.color, defaultValue: '#FFD700', onChange: (widget, value) => thresholds.alarming.color = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: colorModel.default('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
-                { type: 'color', value: thresholds.critical.color, defaultValue: '#dc143c', onChange: (widget, value) => thresholds.critical.color = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: colorModel.default('critical'), onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
@@ -416,7 +423,7 @@ MonitoringConsole.View = (function() {
         }
         let legend = [];
         let format = Units.converter(widget.unit).format;
-        let scheme = MonitoringConsole.Model.Colors.scheme();
+        let palette = MonitoringConsole.Model.Colors.palette();
         let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
@@ -433,7 +440,7 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
-            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), scheme);
+            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
             let bgColor = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
