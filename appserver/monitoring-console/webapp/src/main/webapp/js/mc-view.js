@@ -568,6 +568,7 @@ MonitoringConsole.View = (function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
             onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
+            Colors.scheme('Payara', false);
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),

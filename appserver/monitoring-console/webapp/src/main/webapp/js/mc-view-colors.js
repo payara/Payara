@@ -181,14 +181,17 @@ MonitoringConsole.View.Colors = (function() {
       }, { _: '(Select to apply)' });
    }
 
-   function applyScheme(name) {
+   function applyScheme(name, override = true) {
       let scheme = SCHEMES[name];
       if (scheme) {
-         Colors.palette(scheme.palette);
-         Colors.opacity(scheme.opacity);
+         if (override || Colors.palette() === undefined)
+            Colors.palette(scheme.palette);
+         if (override || Colors.opacity() === undefined)
+            Colors.opacity(scheme.opacity);
          if (scheme.defaults) {
             for (let [name, color] of Object.entries(scheme.defaults)) {
-               Colors.default(name, color);
+               if (override || Colors.default(name) === undefined)
+                  Colors.default(name, color);
             }
          }            
       }

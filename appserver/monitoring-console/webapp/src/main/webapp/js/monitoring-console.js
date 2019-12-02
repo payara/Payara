@@ -146,9 +146,6 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
-	const DEFAULT_COLOR_PALETTE = [ '#F0981B', '#008CC4', '#87BC25', '#8B79BC', '#FF70DA' ];
-	const DEFAULT_COLOR_OPACITY = 20;
-
 	const UI_PRESETS = {
 			pages: {
 				core: {
@@ -324,10 +321,6 @@ MonitoringConsole.Model = (function() {
 				settings = {};
 			if (settings.colors === undefined)
 				settings.colors = {};
-			if (settings.colors.palette === undefined)
-				settings.colors.palette = DEFAULT_COLOR_PALETTE; 
-			if (settings.colors.opacity === undefined)
-				settings.colors.opacity = DEFAULT_COLOR_OPACITY;
 			if (settings.colors.defaults === undefined)
 				settings.colors.defaults = {};
 			return settings;
@@ -505,15 +498,15 @@ MonitoringConsole.Model = (function() {
 		return {
 			colorPalette: function(colors) {
 				if (colors === undefined)
-					return settings.colors.palette || DEFAULT_COLOR_PALETTE;
-				settings.colors.palette = colors || DEFAULT_COLOR_PALETTE;
+					return settings.colors.palette;
+				settings.colors.palette = colors;
 				doStore();
 			},
 
 			colorOpacity: function(opacity) {
 				if (opacity === undefined)
-					return settings.colors.opacity || DEFAULT_COLOR_OPACITY;
-				settings.colors.opacity = opacity || DEFAULT_COLOR_OPACITY;
+					return settings.colors.opacity;
+				settings.colors.opacity = opacity;
 				doStore();
 			},
 
@@ -1734,14 +1727,17 @@ MonitoringConsole.View.Colors = (function() {
       }, { _: '(Select to apply)' });
    }
 
-   function applyScheme(name) {
+   function applyScheme(name, override = true) {
       let scheme = SCHEMES[name];
       if (scheme) {
-         Colors.palette(scheme.palette);
-         Colors.opacity(scheme.opacity);
+         if (override || Colors.palette() === undefined)
+            Colors.palette(scheme.palette);
+         if (override || Colors.opacity() === undefined)
+            Colors.opacity(scheme.opacity);
          if (scheme.defaults) {
             for (let [name, color] of Object.entries(scheme.defaults)) {
-               Colors.default(name, color);
+               if (override || Colors.default(name) === undefined)
+                  Colors.default(name, color);
             }
          }            
       }
@@ -3605,6 +3601,7 @@ MonitoringConsole.View = (function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
             onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
+            Colors.scheme('Payara', false);
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
