@@ -42,48 +42,44 @@
 package com.sun.enterprise.server.logging;
 
 import java.io.File;
-import java.util.concurrent.*;
+import java.nio.file.Files;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test class to exercise the LogEvent notification mechanism.
- *
  */
 public class LogEventListenerTest {
 
-    private static final String FILE_SEP = File.pathSeparator;
-
-    private static final String USER_DIR = System.getProperty("user.dir");
-
-    private static final String BASE_PATH = USER_DIR + FILE_SEP + "target";
-
-    private static final String TEST_EVENTS_LOG =  BASE_PATH + FILE_SEP + "test-events.log";
+    private static final String LOGGER_NAME = "javax.enterprise.test.logging.events";
+    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
     private static GFFileHandler gfFileHandler;
-
-    private static final String LOGGER_NAME = "javax.enterprise.test.logging.events";
-
-    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
+    private static TestLogEventListener logEventListener;
 
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
-        File basePath = new File(BASE_PATH);
-        basePath.mkdirs();
-        File testLog = new File(TEST_EVENTS_LOG);
+        final File tempDir = Files.createTempDirectory("LogEventListenerTest_").toFile();
+        final File logFile = new File(tempDir, "test-events.log");
+        System.out.println("Using temporary file: " + logFile);
 
         // Add a file handler with UniformLogFormatter
         gfFileHandler = new GFFileHandler();
-        gfFileHandler.changeFileName(testLog);
-        UniformLogFormatter formatter = new UniformLogFormatter();
+        final UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setLogEventBroadcaster(gfFileHandler);
         gfFileHandler.setFormatter(formatter );
-        gfFileHandler.initializePump();
+        gfFileHandler.setLogFile(logFile.getAbsolutePath());
+        gfFileHandler.setLogToFile(true);
 
         logEventListener = new TestLogEventListener();
         gfFileHandler.addLogEventListener(logEventListener);
@@ -93,15 +89,14 @@ public class LogEventListenerTest {
         LOGGER.setUseParentHandlers(false);
     }
 
-    private static TestLogEventListener logEventListener;
 
     @Test
     public void testLogEventListenerNotifications() throws Exception {
         String msg = "Test message for testLogEventListenerNotifications";
         LOGGER.info(msg);
-        LogEvent event = logEventListener.logEvents.take();
+        LogEvent event = logEventListener.logEvents.poll(1L, TimeUnit.SECONDS);
+        assertNotNull("Waiting on the event timed out", event);
         assertEquals(msg, event.getMessage());
-        System.out.println("Test testLogEventListenerNotifications passed.");
     }
 
     @AfterClass
@@ -116,7 +111,7 @@ public class LogEventListenerTest {
 
     private static class TestLogEventListener implements LogEventListener {
 
-        private BlockingQueue<LogEvent> logEvents = new ArrayBlockingQueue<>(100);
+        private final BlockingQueue<LogEvent> logEvents = new ArrayBlockingQueue<>(100);
 
         @Override
         public void messageLogged(LogEvent event) {
@@ -124,5 +119,4 @@ public class LogEventListenerTest {
         }
 
     }
-
 }

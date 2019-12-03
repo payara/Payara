@@ -50,17 +50,27 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
-import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;;
-import java.io.*;
+import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
@@ -70,8 +80,10 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import java.util.zip.GZIPOutputStream;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import org.glassfish.api.logging.Task;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PostConstruct;
@@ -89,21 +101,26 @@ import static java.security.AccessController.doPrivileged;
  *
  * @author Jerome Dochez
  * @author Carla Mott
+ * @author David Matejcek
  */
 @Service
 @Singleton
-@ContractsProvided(
-    {GFFileHandler.class, java.util.logging.Handler.class,
-        LogEventBroadcaster.class, LoggingRuntime.class}
-)
-public class GFFileHandler extends StreamHandler implements
-    PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
+@ContractsProvided({ //
+    GFFileHandler.class, java.util.logging.Handler.class, LogEventBroadcaster.class, LoggingRuntime.class //
+})
+public class GFFileHandler extends StreamHandler
+    implements PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(GFFileHandler.class);
+    private static final String GF_FILE_HANDLER_ID = GFFileHandler.class.getCanonicalName() ;
+
+    private static final int DEFAULT_BUFFER_CAPACITY = 10000;
     private static final int DEFAULT_ROTATION_LIMIT_BYTES = 2000000;
     public static final int DISABLE_LOG_FILE_ROTATION_VALUE = 0;
 
-    private final static LocalStringManagerImpl LOCAL_STRINGS =
-        new LocalStringManagerImpl(GFFileHandler.class);
+    private static final String LOGS_DIR = "logs";
+    private static final String LOG_FILE_NAME = "server.log";
+    private static final String GZIP_EXTENSION = ".gz";
 
     private static final String RECORD_BEGIN_MARKER = "[#|";
     private static final String RECORD_END_MARKER = "|#]";
@@ -123,15 +140,14 @@ public class GFFileHandler extends StreamHandler implements
     // written out to the stream
     private MeteredStream meter;
 
-    protected static final String LOGS_DIR = "logs";
-    private static final String LOG_FILE_NAME = "server.log";
-    private static final String GZIP_EXTENSION = ".gz";
-
-    private String absoluteServerLogName = null;
-    private File absoluteFile = null;
+    /** Configuration value, evaluated to absolute path */
+    private File configuredLogFile = null;
+    /** Effective value */
+    private File currentLogFile = null;
+    /** Count of flushed records in one batch, not a frequency at all */
     private int flushFrequency = 1;
     private int maxHistoryFiles = 10;
-    private boolean logToFile = true;
+    private boolean logToFile;
     private boolean rotationOnDateChange;
     private String excludeFields;
     private Integer rotationLimitAttrValue;
@@ -140,17 +156,17 @@ public class GFFileHandler extends StreamHandler implements
     private boolean multiLineMode;
     private String fileHandlerFormatter = "";
     private String currentFileHandlerFormatter = "";
+
     private boolean logStandardStreams;
-    
-    private PrintStream oStdOutBackup = System.out;
-    private PrintStream oStdErrBackup = System.err;
-    private LoggingOutputStream stdoutOutputStream=null;
-    private LoggingOutputStream stderrOutputStream=null;
+    private final PrintStream oStdOutBackup = System.out;
+    private final PrintStream oStdErrBackup = System.err;
+    private LoggingOutputStream stdoutOutputStream = null;
+    private LoggingOutputStream stderrOutputStream = null;
 
     /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
 
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(10000);
+    private LogRecordBuffer logRecordBuffer;
 
     /**Rotation can be done in 3 ways: <ol>
      * <li> Based on the Size: Rotate when some Threshold number of bytes are
@@ -159,43 +175,34 @@ public class GFFileHandler extends StreamHandler implements
      * <li> Rotate now </li></ol>
      * For mechanisms 2 and 3 we will use this flag. The rotate() will always
      * be fired from the publish( ) method for consistency */
-    private AtomicBoolean rotationRequested = new AtomicBoolean(false);
+    private final AtomicBoolean rotationRequested = new AtomicBoolean(false);
 
     private final Object rotationLock = new Object();
 
-    private static final String LOG_ROTATE_DATE_FORMAT =
-            "yyyy-MM-dd'T'HH-mm-ss";
+    private static final String LOG_ROTATE_DATE_FORMAT = "yyyy-MM-dd'T'HH-mm-ss";
 
     private static final String DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
 
     public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500*1000;
 
-    private BooleanLatch done = new BooleanLatch();
-    
+    private final BooleanLatch done = new BooleanLatch();
+
     private boolean dayBasedFileRotation = false;
 
-    private List<LogEventListener> logEventListeners = new ArrayList<>();
+    private final List<LogEventListener> logEventListeners = new ArrayList<>();
 
     private Thread pump;
 
-    protected String logFileProperty = "";
+    protected String logFileProperty = null;
+
     private final LogManager manager = LogManager.getLogManager();
     private final String className = getClass().getName();
-    private static final String GF_FILE_HANDLER = GFFileHandler.class.getCanonicalName() ;
-    private LogRecord logRecord = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
+
 
     @Override
     public void postConstruct() {
-
-        String filename = evaluateFileName();
-
-        File logFile = new File(filename);
-        absoluteServerLogName = filename;
-        if (!logFile.isAbsolute()) {
-            logFile = new File(env.getInstanceRoot(), filename);
-            absoluteServerLogName = env.getInstanceRoot() + File.separator + filename;
-        }
-        changeFileName(logFile);
+        configuredLogFile = evaluateFile();
+        changeFileName(configuredLogFile);
 
         // Reading just few lines of log file to get the log formatter used.
         String strLine;
@@ -204,10 +211,10 @@ public class GFFileHandler extends StreamHandler implements
         int otherFormatter = 0;
         boolean mustRotate = false;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(configuredLogFile))) {
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
-                if (!strLine.equals("")) {
+                if (!strLine.isEmpty()) {
                     if (LogFormatHelper.isUniformFormatLogHeader(strLine)) {  // for ufl formatter
                         uniformLogFormatter++;
                     } else if (LogFormatHelper.isODLFormatLogHeader(strLine)) {
@@ -238,23 +245,11 @@ public class GFFileHandler extends StreamHandler implements
             currentFileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
-        String propertyValue = manager.getProperty(className + ".logtoFile");
-        boolean logToFile = true;
-        if (propertyValue != null) {
-            logToFile = Boolean.parseBoolean(propertyValue);
-        }
-        setLogToFile(logToFile);
+        initLogToFile();
+        earlyLog(Level.INFO, LogFacade.GF_VERSION_INFO, Version.getFullVersion());
+        timeBasedRotation();
 
-        logRecord.setParameters(new Object[]{Version.getFullVersion()});
-        logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        logRecord.setThreadID((int) Thread.currentThread().getId());
-        logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-        EarlyLogHandler.earlyMessages.add(logRecord);
-
-        propertyValue = manager.getProperty(className + ".rotationOnDateChange");
-        timeBasedRotation(propertyValue);
-
-        propertyValue = manager.getProperty(className + ".rotationLimitInBytes");
+        String propertyValue = manager.getProperty(className + ".rotationLimitInBytes");
         rotationOnFileSizeLimit(propertyValue);
 
         //setLevel(Level.ALL);
@@ -263,12 +258,7 @@ public class GFFileHandler extends StreamHandler implements
             try {
                 flushFrequency = Integer.parseInt(propertyValue);
             } catch (NumberFormatException e) {
-                logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-                logRecord.setParameters(new Object[]{propertyValue, "flushFrequency"});
-                logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                logRecord.setThreadID((int) Thread.currentThread().getId());
-                logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                EarlyLogHandler.earlyMessages.add(logRecord);
+                earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "flushFrequency");
             }
         }
         if (flushFrequency <= 0) {
@@ -281,12 +271,7 @@ public class GFFileHandler extends StreamHandler implements
                 maxHistoryFiles = Integer.parseInt(propertyValue);
             }
         } catch (NumberFormatException e) {
-            logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            logRecord.setParameters(new Object[]{propertyValue, "maxHistoryFiles"});
-            logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            logRecord.setThreadID((int) Thread.currentThread().getId());
-            logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(logRecord);
+            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "maxHistoryFiles");
         }
 
         if (maxHistoryFiles < 0) {
@@ -298,7 +283,7 @@ public class GFFileHandler extends StreamHandler implements
         if (propertyValue != null) {
             compressionOnRotation = Boolean.parseBoolean(propertyValue);
         }
-   
+
         propertyValue = manager.getProperty(className + ".logStandardStreams");
         if (propertyValue != null) {
             logStandardStreams = Boolean.parseBoolean(propertyValue);
@@ -308,7 +293,7 @@ public class GFFileHandler extends StreamHandler implements
         }
 
         String formatterName = manager.getProperty(className + ".formatter");
-        formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName;
+        formatterName = formatterName == null ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName;
 
         // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
         // log messages logged under same server.log file.
@@ -323,6 +308,65 @@ public class GFFileHandler extends StreamHandler implements
         multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
         configureLogFormatter(formatterName, excludeFields, multiLineMode);
 
+    }
+
+    @Override
+    public void preDestroy() {
+        // stop the Queue consumer thread.
+        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
+            LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
+        }
+
+        System.setOut(oStdOutBackup);
+        System.setErr(oStdErrBackup);
+
+        try {
+            if (stdoutOutputStream != null) {
+                stdoutOutputStream.close();
+            }
+
+            if (stderrOutputStream != null) {
+                stderrOutputStream.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        done.tryReleaseShared(1);
+        if (pump != null) {
+            pump.interrupt();
+        }
+
+        drainAllPendingRecords();
+        flush();
+    }
+
+    @Override
+    public File getCurrentLogFile() {
+        return currentLogFile;
+    }
+
+    /**
+     * @return if the file is not configured, this filename in standard server directory structure
+     *         will be used.
+     */
+    protected String getDefaultFileName() {
+        return LOG_FILE_NAME;
+    }
+
+    private void initLogToFile() {
+        final String propertyValue = manager.getProperty(className + ".logtoFile");
+        final boolean logToFileProperty;
+        if (propertyValue == null) {
+            logToFileProperty = true;
+        } else {
+            logToFileProperty = Boolean.parseBoolean(propertyValue);
+        }
+        if (logToFileProperty) {
+            final String capacityProp = manager.getProperty(className + ".bufferCapacity");
+            final int capacity = capacityProp == null ? DEFAULT_BUFFER_CAPACITY : Integer.parseInt(capacityProp);
+            enableLogToFile(capacity);
+        }
     }
 
     private void configureLogFormatter(String formatterName, String excludeFields, boolean multiLineMode) {
@@ -340,12 +384,7 @@ public class GFFileHandler extends StreamHandler implements
             if (currentFormatter == null || !currentFormatter.getClass().getName().equals(formatterName)) {
                 Formatter formatter = findFormatterService(formatterName);
                 if (formatter == null) {
-                    logRecord = new LogRecord(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME);
-                    logRecord.setParameters(new Object[]{formatterName});
-                    logRecord.setThreadID((int) Thread.currentThread().getId());
-                    logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                    logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                    EarlyLogHandler.earlyMessages.add(logRecord);
+                    earlyLog(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME, formatterName);
                     // Fall back to the GlassFish default
                     configureDefaultFormatter(excludeFields, multiLineMode);
                 } else {
@@ -354,47 +393,36 @@ public class GFFileHandler extends StreamHandler implements
             }
         }
 
-        formatterName = this.getFormatter().getClass().getName();
-        logRecord = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);
-        logRecord.setParameters(new Object[]{formatterName});
-        logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        logRecord.setThreadID((int) Thread.currentThread().getId());
-        logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-        EarlyLogHandler.earlyMessages.add(logRecord);
+        earlyLog(Level.INFO, LogFacade.LOG_FORMATTER_INFO, getFormatter().getClass().getName());
     }
 
-    private void timeBasedRotation(String propertyValue) {
+    private void timeBasedRotation() {
+        final String dateChangeProperty = manager.getProperty(className + ".rotationOnDateChange");
         rotationOnDateChange = false;
-
-        if (propertyValue != null) {
-            rotationOnDateChange = Boolean.parseBoolean(propertyValue);
+        if (dateChangeProperty != null) {
+            rotationOnDateChange = Boolean.parseBoolean(dateChangeProperty);
         }
-
         if (rotationOnDateChange) {
             rotationOnDateChange();
-        } else {
-            rotationTimeLimitValue = 0L;
-            try {
-                propertyValue = manager.getProperty(className + ".rotationTimelimitInMinutes");
-                if (propertyValue != null) {
-                    rotationTimeLimitValue = Long.parseLong(propertyValue);
-                }
-            } catch (NumberFormatException e) {
-                logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-                logRecord.setParameters(new Object[]{propertyValue, "rotationTimelimitInMinutes"});
-                logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                logRecord.setThreadID((int) Thread.currentThread().getId());
-                logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                EarlyLogHandler.earlyMessages.add(logRecord);
-            }
-            rotationOnTimeLimit();
+            return;
         }
+        rotationTimeLimitValue = 0L;
+        final String propertyValue = manager.getProperty(className + ".rotationTimelimitInMinutes");
+        try {
+            if (propertyValue != null) {
+                rotationTimeLimitValue = Long.parseLong(propertyValue);
+            }
+        } catch (NumberFormatException e) {
+            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationTimelimitInMinutes");
+        }
+        rotationOnTimeLimit();
     }
 
      private void rotationOnDateChange() {
         dayBasedFileRotation = true;
         rotationTimeLimitValue = 0L;
 
+        // FIXME: not true!!! (time corrections, summer/winter transitions, etc.)
         int millisecondsInDay = 1000 * 60 * 60 * 24;
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
@@ -402,53 +430,43 @@ public class GFFileHandler extends StreamHandler implements
         long systemTime = System.currentTimeMillis();
         String nextDate = dateFormat.format(date.getTime() + millisecondsInDay);
         Date nextDay;
-
         try {
             nextDay = dateFormat.parse(nextDate);
         } catch (ParseException e) {
             nextDay = new Date();
-            logRecord = new LogRecord(Level.WARNING, LogFacade.DATE_PARSING_FAILED);
-            logRecord.setParameters(new Object[]{nextDate});
-            logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            logRecord.setThreadID((int) Thread.currentThread().getId());
-            logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(logRecord);
+            earlyLog(Level.WARNING, LogFacade.DATE_PARSING_FAILED, nextDate);
         }
 
         long nextDaySystemTime = nextDay.getTime();
         rotationTimeLimitValue = nextDaySystemTime - systemTime;
 
-        Task rotationTask = () -> {
+        Task<Void> rotationTask = () -> {
             rotate();
             return null;
         };
 
-        if (className.equals(GF_FILE_HANDLER)) {
-            LogRotationTimer.getInstance().startTimer(
-                    new LogRotationTimerTask(rotationTask,
-                            rotationTimeLimitValue / 60000));
+        if (className.equals(GF_FILE_HANDLER_ID)) {
+            LogRotationTimer.getInstance()
+                .startTimer(new LogRotationTimerTask(rotationTask, rotationTimeLimitValue / 60000));
         } else {
-            PayaraNotificationLogRotationTimer.getInstance().startTimer(
-                    new LogRotationTimerTask(rotationTask,
-                            rotationTimeLimitValue / 60000));
+            PayaraNotificationLogRotationTimer.getInstance()
+                .startTimer(new LogRotationTimerTask(rotationTask, rotationTimeLimitValue / 60000));
         }
     }
 
     private void rotationOnTimeLimit() {
         if (rotationTimeLimitValue > 0) {
-            Task rotationTask = () -> {
+            Task<Void> rotationTask = () -> {
                 rotate();
                 return null;
             };
 
-            if (className.equals(GF_FILE_HANDLER)) {
-                LogRotationTimer.getInstance().startTimer(
-                        new LogRotationTimerTask(rotationTask,
-                                rotationTimeLimitValue));
+            if (className.equals(GF_FILE_HANDLER_ID)) {
+                LogRotationTimer.getInstance()
+                    .startTimer(new LogRotationTimerTask(rotationTask, rotationTimeLimitValue));
             } else {
-                PayaraNotificationLogRotationTimer.getInstance().startTimer(
-                        new LogRotationTimerTask(rotationTask,
-                                rotationTimeLimitValue));
+                PayaraNotificationLogRotationTimer.getInstance()
+                    .startTimer(new LogRotationTimerTask(rotationTask, rotationTimeLimitValue));
             }
         }
     }
@@ -461,12 +479,7 @@ public class GFFileHandler extends StreamHandler implements
                 rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
             }
         } catch (NumberFormatException e) {
-            logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            logRecord.setParameters(new Object[]{propertyValue, "rotationLimitInBytes"});
-            logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            logRecord.setThreadID((int) Thread.currentThread().getId());
-            logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(logRecord);
+            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationLimitInBytes");
         }
         // We set the LogRotation limit here. The rotation limit is the
         // Threshold for the number of bytes in the log file after which
@@ -476,16 +489,21 @@ public class GFFileHandler extends StreamHandler implements
         }
     }
 
-    protected String evaluateFileName() {
-        String cname = getClass().getName();
-        LogManager manager = LogManager.getLogManager();
-
-        logFileProperty = manager.getProperty(cname + ".file");
-        if(logFileProperty==null || logFileProperty.trim().equals("")) {
-            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
-                    LOG_FILE_NAME;
+    private File evaluateFile() {
+        final String filename = evaluateFileName();
+        final File logFile = new File(filename);
+        if (logFile.isAbsolute()) {
+            return logFile;
         }
+        return new File(env.getInstanceRoot(), filename);
+    }
 
+    private String evaluateFileName() {
+        logFileProperty = manager.getProperty(getClass().getName() + ".file");
+        if (logFileProperty == null || logFileProperty.trim().isEmpty()) {
+            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator
+                + getDefaultFileName();
+        }
         return TranslatedConfigView.expandConfigValue(logFileProperty);
     }
 
@@ -499,8 +517,7 @@ public class GFFileHandler extends StreamHandler implements
         return null;
     }
 
-    private void configureDefaultFormatter(String excludeFields,
-            boolean multiLineMode) {
+    private void configureDefaultFormatter(String excludeFields, boolean multiLineMode) {
         configureUniformLogFormatter(excludeFields, multiLineMode);
     }
 
@@ -522,7 +539,6 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     private void configureUniformLogFormatter(String excludeFields, boolean multiLineMode) {
-        LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
         // this loop is used for UFL formatter
         UniformLogFormatter formatterClass;
@@ -540,22 +556,22 @@ public class GFFileHandler extends StreamHandler implements
         formatterClass.setLogEventBroadcaster(this);
         formatterClass.noAnsi();
         String recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
-        if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
+        if (recordBeginMarker == null || recordBeginMarker.isEmpty()) {
             recordBeginMarker = RECORD_BEGIN_MARKER;
         }
 
         String recordEndMarker = manager.getProperty(cname + ".logFormatEndMarker");
-        if (recordEndMarker == null || ("").equals(recordEndMarker)) {
+        if (recordEndMarker == null || recordEndMarker.isEmpty()) {
             recordEndMarker = RECORD_END_MARKER;
         }
 
         String recordFieldSeparator = manager.getProperty(cname + ".logFormatFieldSeparator");
-        if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
+        if (recordFieldSeparator == null || recordFieldSeparator.isEmpty() || recordFieldSeparator.length() > 1) {
             recordFieldSeparator = RECORD_FIELD_SEPARATOR;
         }
 
         String recordDateFormat = manager.getProperty(cname + ".logFormatDateFormat");
-        if (recordDateFormat != null && !("").equals(recordDateFormat)) {
+        if (recordDateFormat != null && !recordDateFormat.isEmpty()) {
             SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
             try {
                 sdf.format(new Date());
@@ -572,90 +588,43 @@ public class GFFileHandler extends StreamHandler implements
         formatterClass.setRecordFieldSeparator(recordFieldSeparator);
     }
 
-    void initializePump() {
-        pump = new Thread() { //Not using the PayaraExecutorService here as it prevents shutdown happening quickly, see PAYARA-4118
+    private void initializePump() {
+        // Not using the PayaraExecutorService here as it prevents shutdown happening quickly
+        pump = new Thread() {
             @Override
             public void run() {
-                while (!done.isSignalled() && logToFile) {
-                        try {
-                            log();
-                        } catch (Exception e) {
-                            // GLASSFISH-19125
-                            // Continue the loop without exiting
-                        }
+                earlyLog(Level.CONFIG, "Logging pump for " + logRecordBuffer + " started.");
+                while (logToFile && !done.isSignalled()) {
+                    try {
+                        log();
+                    } catch (Exception e) {
+                        // Continue the loop without exiting
+                        // Something is broken, but we cannot log
                     }
                 }
+            }
         };
         pump.setName("GFFileHandler log pump");
         pump.setDaemon(true);
+        pump.setPriority(Thread.MAX_PRIORITY);
         pump.start();
     }
 
-    @Override
-    public void preDestroy() {
-        // stop the Queue consumer thread.
-        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
-            LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
-        }
-        
-        System.setOut(oStdOutBackup);
-        System.setErr(oStdErrBackup);
-
-        try {
-            if (stdoutOutputStream != null) {
-                stdoutOutputStream.close();
-            }
-
-            if (stderrOutputStream != null) {
-                stderrOutputStream.close();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        done.tryReleaseShared(1);
-        if (pump != null) {
-            pump.interrupt();
-        }
-
-        // drain and return all
-        drainAllPendingRecords();
-        flush();
-    }
-
     private void drainAllPendingRecords() {
-        drainPendingRecords(0);
-    }
-
-    /**
-     * Drains the amount of {@link LogRecord}s in the pending records queue.
-     * If passed in the amount <= 0 all of the records get drained.
-     * @param flushAmount number of records to drain from the queue of pending records.
-     */
-    private void drainPendingRecords(int flushAmount) {
-        if (!pendingRecords.isEmpty()) {
-            Collection<LogRecord> records;
-            if (flushAmount > 0) {
-                records = new ArrayList<>(flushAmount);
-                pendingRecords.drainTo(records, flushAmount);
-            } else {
-                records = new ArrayList<>(pendingRecords.size());
-                pendingRecords.drainTo(records);
-            }
-            for (LogRecord record : records) {
-                super.publish(record);
+        if (!logToFile) {
+            return;
+        }
+        while (true) {
+            if (!publishRecord(this.logRecordBuffer.poll())) {
+                return;
             }
         }
     }
 
-    /**
-     * This method is invoked from LogManager.reInitializeLoggers() to
-     * change the location of the file.
-     */
-    void changeFileName(File file) {
+    private void changeFileName(final File file) {
         // If the file name is same as the current file name, there
         // is no need to change the filename
-        if (file.equals(absoluteFile)) {
+        if (file == null || file.equals(currentLogFile)) {
             return;
         }
         synchronized (rotationLock) {
@@ -663,7 +632,7 @@ public class GFFileHandler extends StreamHandler implements
             super.close();
             try {
                 openFile(file);
-                absoluteFile = file;
+                currentLogFile = file;
             } catch (IOException ix) {
                 new ErrorManager().error(
                         "FATAL ERROR: COULD NOT OPEN LOG FILE. " +
@@ -672,7 +641,7 @@ public class GFFileHandler extends StreamHandler implements
                                 " default server.log", ix, ErrorManager.OPEN_FAILURE);
                 try {
                     // Reverting back to the old server.log
-                    openFile(absoluteFile);
+                    openFile(currentLogFile);
                 } catch (Exception e) {
                     new ErrorManager().error(
                             "FATAL ERROR: COULD NOT RE-OPEN SERVER LOG FILE. ", e,
@@ -682,15 +651,6 @@ public class GFFileHandler extends StreamHandler implements
         }
     }
 
-
-    /**
-     * A simple getter to access the current log file written by
-     * this FileHandler.
-     */
-    @Override
-    public File getCurrentLogFile() {
-        return absoluteFile;
-    }
 
     /**
      * A package private method to set the limit for File Rotation.
@@ -797,15 +757,17 @@ public class GFFileHandler extends StreamHandler implements
      * If "max_history_files" is defined without value, then default that number to be 10;
      * If "max_history_files" is defined with value 0, any number of history files are kept.
      */
-    public void cleanUpHistoryLogFiles() {
-        if (maxHistoryFiles == 0)
+    private void cleanUpHistoryLogFiles() {
+        if (maxHistoryFiles == 0) {
             return;
+        }
 
         synchronized (rotationLock) {
-            File dir = absoluteFile.getParentFile();
-            String logFileName = absoluteFile.getName();
-            if (dir == null)
+            File dir = currentLogFile.getParentFile();
+            String logFileName = currentLogFile.getName();
+            if (dir == null) {
                 return;
+            }
             File[] fset = dir.listFiles();
             List<String> candidates = new ArrayList<>();
             for (int i = 0; fset != null && i < fset.length; i++) {
@@ -814,8 +776,9 @@ public class GFFileHandler extends StreamHandler implements
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }
-            if (candidates.size() <= maxHistoryFiles)
+            if (candidates.size() <= maxHistoryFiles) {
                 return;
+            }
             Object[] paths = candidates.toArray();
             java.util.Arrays.sort(paths);
             try {
@@ -842,93 +805,88 @@ public class GFFileHandler extends StreamHandler implements
      */
     public void rotate() {
         final GFFileHandler thisInstance = this;
-        		doPrivileged((PrivilegedAction<Object>) () -> {
-                    synchronized (thisInstance.rotationLock) {
-                        if (thisInstance.meter != null
-                                && thisInstance.meter.written <= 0) {
-                            return null;
-                        }
-                        thisInstance.flush();
-                        thisInstance.close();
-                        try {
-                            if (!absoluteFile.exists()) {
-                                File creatingDeletedLogFile = new File(
-                                        absoluteFile.getAbsolutePath());
-                                if (creatingDeletedLogFile.createNewFile()) {
-                                    absoluteFile = creatingDeletedLogFile;
-                                }
-                            } else {
-                                File oldFile = absoluteFile;
-                                StringBuffer renamedFileName = new StringBuffer(
-                                        absoluteFile + "_");
-                                new SimpleDateFormat(LOG_ROTATE_DATE_FORMAT)
-                                        .format(new Date(), renamedFileName, new FieldPosition(0));
-                                File rotatedFile = new File(renamedFileName.toString());
-                                boolean renameSuccess = oldFile.renameTo(rotatedFile);
-                                if (!renameSuccess) {
-                                    // If we don't succeed with file rename which
-                                    // most likely can happen on Windows because
-                                    // of multiple file handles opened. We go through
-                                    // Plan B to copy bytes explicitly to a renamed
-                                    // file.
-                                    FileUtils.copy(absoluteFile, rotatedFile);
-                                    File freshServerLogFile = getLogFileName();
-                                    // We do this to make sure that server.log
-                                    // contents are flushed out to start from a
-                                    // clean file again after the rename..
-                                    FileOutputStream fo = new FileOutputStream(
-                                            freshServerLogFile);
-                                    fo.close();
-                                }
-                                FileOutputStream oldFileFO = new FileOutputStream(oldFile);
-                                oldFileFO.close();
-                                openFile(getLogFileName());
-                                absoluteFile = getLogFileName();
-                                // This will ensure that the log rotation timer
-                                // will be restarted if there is a value set
-                                // for time based log rotation
-                                restartTimeBasedLogRotation();
-                                if (compressionOnRotation) {
-                                    boolean compressed = gzipFile(rotatedFile);
-                                    if (compressed) {
-                                        boolean deleted = rotatedFile.delete();
-                                        if (!deleted) {
-                                             throw new IOException("Could not delete uncompressed log file: "
-                                                    + rotatedFile.getAbsolutePath());
-                                        }
-                                    } else {
-                                        throw new IOException("Could not compress log file: "
-                                                + rotatedFile.getAbsolutePath());
-                                    }
-                                }
-
-                                cleanUpHistoryLogFiles();
-                            }
-                        } catch (IOException ix) {
-                            new ErrorManager().error("Error, could not rotate log file", ix, ErrorManager.GENERIC_FAILURE);
+		final PrivilegedAction<Void> action = () -> {
+            synchronized (thisInstance.rotationLock) {
+                if (thisInstance.meter != null
+                        && thisInstance.meter.written <= 0) {
+                    return null;
+                }
+                thisInstance.flush();
+                thisInstance.close();
+                try {
+                    if (!currentLogFile.exists()) {
+                        File creatingDeletedLogFile = new File(currentLogFile.getAbsolutePath());
+                        if (creatingDeletedLogFile.createNewFile()) {
+                            currentLogFile = creatingDeletedLogFile;
                         }
                         return null;
                     }
+
+                    File oldFile = currentLogFile;
+                    StringBuffer renamedFileName = new StringBuffer(currentLogFile + "_");
+                    new SimpleDateFormat(LOG_ROTATE_DATE_FORMAT).format(new Date(), renamedFileName,
+                        new FieldPosition(0));
+                    File rotatedFile = new File(renamedFileName.toString());
+                    boolean renameSuccess = oldFile.renameTo(rotatedFile);
+                    if (!renameSuccess) {
+                        // If we don't succeed with file rename which
+                        // most likely can happen on Windows because
+                        // of multiple file handles opened. We go through
+                        // Plan B to copy bytes explicitly to a renamed
+                        // file.
+                        FileUtils.copy(currentLogFile, rotatedFile);
+                        File freshServerLogFile = getLogFileName();
+                        // We do this to make sure that server.log
+                        // contents are flushed out to start from a
+                        // clean file again after the rename..
+                        FileOutputStream fo = new FileOutputStream(
+                                freshServerLogFile);
+                        fo.close();
+                    }
+                    FileOutputStream oldFileFO = new FileOutputStream(oldFile);
+                    oldFileFO.close();
+                    openFile(getLogFileName());
+                    currentLogFile = getLogFileName();
+                    // This will ensure that the log rotation timer
+                    // will be restarted if there is a value set
+                    // for time based log rotation
+                    restartTimeBasedLogRotation();
+                    if (compressionOnRotation) {
+                        boolean compressed = gzipFile(rotatedFile);
+                        if (compressed) {
+                            boolean deleted = rotatedFile.delete();
+                            if (!deleted) {
+                                 throw new IOException("Could not delete uncompressed log file: "
+                                        + rotatedFile.getAbsolutePath());
+                            }
+                        } else {
+                            throw new IOException("Could not compress log file: "
+                                    + rotatedFile.getAbsolutePath());
+                        }
+                    }
+
+                    cleanUpHistoryLogFiles();
+                } catch (IOException ix) {
+                    new ErrorManager().error("Error, could not rotate log file", ix, ErrorManager.GENERIC_FAILURE);
                 }
-                );
+                return null;
+            }
+        };
+        doPrivileged(action);
     }
 
     private void restartTimeBasedLogRotation() {
         if (dayBasedFileRotation) {
-            if (className.equals(GF_FILE_HANDLER)) {
-                LogRotationTimer.getInstance()
-                        .restartTimerForDayBasedRotation();
+            if (className.equals(GF_FILE_HANDLER_ID)) {
+                LogRotationTimer.getInstance().restartTimerForDayBasedRotation();
             } else {
-                PayaraNotificationLogRotationTimer.getInstance()
-                        .restartTimerForDayBasedRotation();
+                PayaraNotificationLogRotationTimer.getInstance().restartTimerForDayBasedRotation();
             }
         } else {
-            if (className.equals(GF_FILE_HANDLER)) {
-                LogRotationTimer.getInstance()
-                        .restartTimer();
+            if (className.equals(GF_FILE_HANDLER_ID)) {
+                LogRotationTimer.getInstance().restartTimer();
             } else {
-                PayaraNotificationLogRotationTimer.getInstance()
-                        .restartTimer();
+                PayaraNotificationLogRotationTimer.getInstance().restartTimer();
             }
         }
 
@@ -938,41 +896,49 @@ public class GFFileHandler extends StreamHandler implements
      * 5005
      * Retrieves the LogRecord from our Queue and store them in the file
      */
-    public void log() {
-
-        if (logToFile) {
-            LogRecord record;
-
-            // take is blocking so we take one record off the queue
-            try {
-                record = pendingRecords.take();
-                super.publish(record);
-            } catch (InterruptedException e) {
-                return;
-            }
-
-            if (flushFrequency > 1) {
-                // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-                drainPendingRecords(flushFrequency - 1);
-            }
-
-            flush();
-            if ((rotationRequested.get())
-                    || ((limitForFileRotation > 0)
-                    && (meter.written >= limitForFileRotation))) {
-                // If we have written more than the limit set for the
-                // file, or rotation requested from the Timer Task or LogMBean
-                // start fresh with a new file after renaming the old file.
-                synchronized (rotationLock) {
-                    rotate();
-                    rotationRequested.set(false);
+    private void log() {
+        if (!publishRecord(logRecordBuffer.pollOrWait())) {
+            return;
+        }
+        if (flushFrequency > 1) {
+            // starting from 1, one record was already published
+            for (int i = 1; i < flushFrequency; i++) {
+                if (!publishRecord(logRecordBuffer.poll())) {
+                    break;
                 }
+            }
+        }
+
+        flush();
+        if (rotationRequested.get() || (limitForFileRotation > 0 && meter.written >= limitForFileRotation)) {
+            // If we have written more than the limit set for the
+            // file, or rotation requested from the Timer Task or LogMBean
+            // start fresh with a new file after renaming the old file.
+            synchronized (rotationLock) {
+                rotate();
+                rotationRequested.set(false);
             }
         }
     }
 
     /**
-     * Publishes the logrecord storing it in our queue
+     * Really publishes record via super.publish method call.
+     *
+     * @param record
+     * @return true if the record was not null
+     */
+    private boolean publishRecord(final LogRecord record) {
+        if (record == null) {
+            return false;
+        }
+        super.publish(record);
+        return true;
+    }
+
+
+    /**
+     * Does not publish the record, but puts it into the queue buffer to be processed by an internal
+     * thread.
      */
     @Override
     public void publish(LogRecord record) {
@@ -989,34 +955,15 @@ public class GFFileHandler extends StreamHandler implements
         // ***
         // PAYARA-406 Check if the LogRecord passed in is already a GFLogRecord,
         // and just cast the passed record if it is
-        GFLogRecord recordWrapper;
-        if (record.getClass().getSimpleName().equals("GFLogRecord")) {
+        final GFLogRecord recordWrapper;
+        if (record instanceof GFLogRecord) {
             recordWrapper = (GFLogRecord) record;
-
-            // Check there is actually a set thread name
-            if (recordWrapper.getThreadName() == null) {
-                recordWrapper.setThreadName(Thread.currentThread().getName());
-            }
-        }
-        else {
+        } else {
             recordWrapper = new GFLogRecord(record);
-            // set the thread id to be the current thread that is logging the message
-            recordWrapper.setThreadName(Thread.currentThread().getName());
         }
 
         if (logToFile) {
-            try {
-                pendingRecords.add(recordWrapper);
-            } catch (IllegalStateException e) {
-                // queue is full, start waiting.
-                new ErrorManager().error("GFFileHandler: Queue full. Waiting to submit.", e, ErrorManager.GENERIC_FAILURE);
-                try {
-                    pendingRecords.put(recordWrapper);
-                } catch (InterruptedException e1) {
-                    // too bad, record is lost...
-                    new ErrorManager().error("GFFileHandler: Waiting was interrupted. Log record lost.", e1, ErrorManager.GENERIC_FAILURE);
-                }
-            }
+            logRecordBuffer.add(recordWrapper);
         }
 
         Formatter formatter = this.getFormatter();
@@ -1028,8 +975,7 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     protected File getLogFileName() {
-        return new File(absoluteServerLogName);
-
+        return configuredLogFile;
     }
 
     public boolean addLogEventListener(LogEventListener listener) {
@@ -1043,7 +989,6 @@ public class GFFileHandler extends StreamHandler implements
         return logEventListeners.remove(listener);
     }
 
-
     @Override
     public void informLogEventListeners(LogEvent logEvent) {
         for (LogEventListener listener : logEventListeners) {
@@ -1052,45 +997,39 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     private boolean gzipFile(File infile) {
-
-        boolean status = false;
-
-        try (
-            FileInputStream  fis  = new FileInputStream(infile);
-            FileOutputStream fos  = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
-            GZIPOutputStream gzos = new GZIPOutputStream(fos)
-        ) {
+        try ( //
+            FileInputStream fis = new FileInputStream(infile); //
+            FileOutputStream fos = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION); //
+            GZIPOutputStream gzos = new GZIPOutputStream(fos) //
+        ) { //
             byte[] buffer = new byte[1024];
             int len;
-            while ((len=fis.read(buffer)) != -1 ) {
+            while ((len = fis.read(buffer)) != -1) {
                 gzos.write(buffer, 0, len);
             }
             gzos.finish();
-
-            status = true;
-
+            return true;
         } catch (IOException ix) {
             new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
+            return false;
         }
-
-        return status;
     }
-    
+
     private void logStandardStreams() {
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
-  
+
         Logger _ologger = LogFacade.STDOUT_LOGGER;
         stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
         LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
-    
+
         Logger _elogger = LogFacade.STDERR_LOGGER;
         stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
         LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
         System.setErr(perr);
     }
-    
+
     public synchronized void setLogFile(String fileName) {
         String logFileName = TranslatedConfigView.expandConfigValue(fileName);
         File logFile = new File(logFileName);
@@ -1098,14 +1037,23 @@ public class GFFileHandler extends StreamHandler implements
             logFile = new File(env.getInstanceRoot(), logFileName);
          }
         changeFileName(logFile);
-        absoluteServerLogName = logFileName;
+        configuredLogFile = logFile;
     }
 
-    public synchronized void setLogToFile(boolean logToFile) {
-        this.logToFile = logToFile;
-        initializePump();
+    public synchronized void enableLogToFile(final int bufferCapacity) {
+        // enable before pump initialization - thread checks this field
+        this.logToFile = true;
+        if (this.logToFile) {
+            this.logRecordBuffer = new LogRecordBuffer(bufferCapacity);
+            initializePump();
+        }
     }
 
+    public synchronized void disableLogToFile() {
+        // this is all, pump will take it as a signal to stop.
+        this.logToFile = false;
+    }
+// prekopat, nastaveni atomicky, do toho commitu jen navysit kapacitu.
     public synchronized void setRotationOnDateChange(boolean rotationOnDateChange) {
         this.rotationOnDateChange = rotationOnDateChange;
         restartTimeBasedLogRotation();
@@ -1170,5 +1118,40 @@ public class GFFileHandler extends StreamHandler implements
             System.setOut(oStdOutBackup);
             System.setErr(oStdErrBackup);
         }
+    }
+
+    /**
+     * @param logToFile
+     */
+    public void setLogToFile(boolean logToFile) {
+        if (logToFile) {
+            enableLogToFile(DEFAULT_BUFFER_CAPACITY);
+        } else {
+            disableLogToFile();
+        }
+    }
+
+    /**
+     * Used to make logging usable before it is configured. Uses {@link EarlyLogHandler} - it has
+     * internal queue with the capacity limited to 200 records. If the capacity is reached, further
+     * records are ignored - it is still better strategy than blocking initialization threads.
+     */
+    private void earlyLog(final Level level, final String messageKey, final Object... messageParameters) {
+        final EarlyLogHandler handler = new EarlyLogHandler();
+        handler.publish(createLogRecord(level, messageKey, messageParameters));
+    }
+
+    private LogRecord createLogRecord(final Level level, final String messageKey, final Object... messageParameters) {
+        final LogRecord logRecord = createLogRecord(level, messageKey);
+        logRecord.setParameters(messageParameters);
+        logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+        return logRecord;
+    }
+
+    private LogRecord createLogRecord(final Level level, final String message) {
+        final LogRecord logRecord = new LogRecord(level, message);
+        logRecord.setThreadID((int) Thread.currentThread().getId());
+        logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+        return logRecord;
     }
 }

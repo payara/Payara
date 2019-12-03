@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016 - 2019] [Payara Foundation]
 
 package com.sun.common.util.logging;
 
@@ -47,41 +47,56 @@ import java.util.logging.Level;
 
 /**
  * This class provides additional attributes not supported by JUL LogRecord
+ *
  * @author rinamdar
+ * @author David Matejcek refactoring
  */
 public class GFLogRecord extends LogRecord {
-    
-    /**
-     * SVUID for serialization compatibility 
-     */
+
     private static final long serialVersionUID = -818792012235891720L;
-    
-    private String threadName;
-    
+
+    private final String threadName;
+
+
+    /**
+     * Creates new record.
+     *
+     * @param level
+     * @param msg
+     */
     public GFLogRecord(Level level, String msg) {
         super(level, msg);
-    }
-        
-    public GFLogRecord(LogRecord record) {
-        this(record.getLevel(), record.getMessage());
-        
-        this.setLoggerName(record.getLoggerName());
-        this.setMillis(record.getMillis());
-        this.setParameters(record.getParameters());
-        this.setResourceBundle(record.getResourceBundle());
-        this.setResourceBundleName(record.getResourceBundleName());
-        this.setSequenceNumber(record.getSequenceNumber());
-        this.setSourceClassName(record.getSourceClassName());
-        this.setSourceMethodName(record.getSourceMethodName());
-        this.setThreadID(record.getThreadID());
-        this.setThrown(record.getThrown());
+        this.threadName = Thread.currentThread().getName();
     }
 
+    /**
+     * Coypies the log record.
+     *
+     * FIXME: wrap it instead, faster!
+     *
+     * @param record
+     */
+    public GFLogRecord(final LogRecord record) {
+        super(record.getLevel(), record.getMessage());
+        setLoggerName(record.getLoggerName());
+        setMillis(record.getMillis());
+        setParameters(record.getParameters());
+        setResourceBundle(record.getResourceBundle());
+        setResourceBundleName(record.getResourceBundleName());
+        setSequenceNumber(record.getSequenceNumber());
+        setSourceClassName(record.getSourceClassName());
+        setSourceMethodName(record.getSourceMethodName());
+        setThrown(record.getThrown());
+        setThreadID(record.getThreadID());
+
+        this.threadName = Thread.currentThread().getName();
+    }
+
+
+    /**
+     * @return name of the thread which created this log record.
+     */
     public String getThreadName() {
         return threadName;
-    }
-
-    public void setThreadName(String threadName) {
-        this.threadName = threadName;
     }
 }
