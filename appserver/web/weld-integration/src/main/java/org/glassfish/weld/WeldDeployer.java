@@ -313,10 +313,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
 
-        DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
         ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
         externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
-        externalConfiguration.setBeanIndexOptimization(dc != null ? !dc.isAvailabilityEnabled() : true);
+        externalConfiguration.setBeanIndexOptimization(!deployParams.isAvailabilityEnabled());
         externalConfiguration.setNonPortableMode(false);
         configureConcurrentDeployment(context, externalConfiguration);
         

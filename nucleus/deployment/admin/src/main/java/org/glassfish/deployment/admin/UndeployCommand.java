@@ -51,6 +51,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.v3.server.HotSwapService;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.api.ActionReport;
@@ -151,6 +152,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     @Inject
     Events events;
 
+    @Inject
+    HotSwapService hotSwapService;
+
     private ActionReport report;
     private Logger logger;
     private List<String> matchedVersions;
@@ -243,8 +247,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     @Override
     public void execute(AdminCommandContext context) {
 
-
-
         // for each matched version
         for (String appName : matchedVersions) {
             if (target == null) {
@@ -332,6 +334,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 }
                 return;
             }
+
+            hotSwapService.removeApplicationState(sourceFile);
 
             // now start the normal undeploying
             this.name = appName;

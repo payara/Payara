@@ -86,6 +86,18 @@ public class DeployCommandParameters extends OpsParams {
         return hotDeploy;
     }
 
+    @Param(name = ParameterNames.SOURCES_CHANGED, separator=',', optional = true)
+    public String[] sourcesChanged;
+    public String[] getSourcesChanged() {
+        return sourcesChanged;
+    }
+
+    @Param(name = ParameterNames.DESCRIPTOR_CHANGED, optional=true, defaultValue="false")
+    public Boolean descriptorChanged = false;
+    public Boolean isDescriptorChanged() {
+        return descriptorChanged;
+    }
+
     @Param(optional=true, defaultValue="false")
     public Boolean forceName = false;
     public Boolean isForceName() {
@@ -292,6 +304,8 @@ public class DeployCommandParameters extends OpsParams {
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
         public static final String HOT_DEPLOY = "hotdeploy";
+        public static final String SOURCES_CHANGED = "sourcesChanged";
+        public static final String DESCRIPTOR_CHANGED = "descriptorChanged";
     }
     
 }

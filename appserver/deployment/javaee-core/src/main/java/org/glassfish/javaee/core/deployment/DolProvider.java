@@ -85,6 +85,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 
 /**
@@ -215,7 +216,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         sourceArchive.removeExtraData(Types.class);
         sourceArchive.removeExtraData(Parser.class);
 
-        Logger.getAnonymousLogger().log(Level.FINE, "DOL Loading time" + (System.currentTimeMillis() - start));
+        Logger.getAnonymousLogger().log(FINE, "DOL Loading time{0}", System.currentTimeMillis() - start);
 
         return application;
     }

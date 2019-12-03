@@ -59,6 +59,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
@@ -85,22 +88,22 @@ import org.jvnet.hk2.config.types.Property;
  */
 public class ModuleInfo {
 
-    protected Set<EngineRef> engines = new LinkedHashSet<EngineRef>();
+    protected Set<EngineRef> engines = new LinkedHashSet<>();
 
     // The reversed engines contain the same elements as engines but just in
     // reversed order, they are used when stopping/unloading the module.
     // The engines should be stopped/unloaded in the reverse order of what
     // they were originally loaded/started.
-    protected LinkedList<EngineRef> reversedEngines = new LinkedList<EngineRef>();
+    protected LinkedList<EngineRef> reversedEngines = new LinkedList<>();
 
-    final protected Map<Class<? extends Object>, Object> metaData = new HashMap<Class<? extends Object>, Object>();
+    final protected Map<Class<? extends Object>, Object> metaData = new HashMap<>();
 
     protected final String name;
     protected final Events events;
     private Properties moduleProps;
-    private boolean started=false;
+    private boolean started = false;
     private ClassLoader moduleClassLoader;
-    private Set<ClassLoader> classLoaders = new HashSet<ClassLoader>();
+    private Set<ClassLoader> classLoaders = new HashSet<>();
     
   
     public ModuleInfo(final Events events, String name, Collection<EngineRef> refs, 
@@ -117,7 +120,7 @@ public class ModuleInfo {
     }
 
     public Set<EngineRef> getEngineRefs() {
-        Set<EngineRef> copy = new LinkedHashSet<EngineRef>();
+        Set<EngineRef> copy = new LinkedHashSet<>();
         copy.addAll(_getEngineRefs());
         return copy; 
     }
@@ -135,7 +138,7 @@ public class ModuleInfo {
     }
 
     public void cleanClassLoaders() {
-        classLoaders = null; 
+        classLoaders.clear();
         moduleClassLoader = null;
     }
 
@@ -176,7 +179,7 @@ public class ModuleInfo {
      * @return array of sniffer that loaded the application's module
      */
     public Collection<Sniffer> getSniffers() {
-        List<Sniffer> sniffers = new ArrayList<Sniffer>();
+        List<Sniffer> sniffers = new ArrayList<>();
         for (EngineRef engine : _getEngineRefs()) {
             sniffers.add(engine.getContainerInfo().getSniffer());
         }
@@ -190,32 +193,32 @@ public class ModuleInfo {
 
         moduleClassLoader = context.getClassLoader();
 
-        Set<EngineRef> filteredEngines = new LinkedHashSet<EngineRef>();
-        LinkedList<EngineRef> filteredReversedEngines = new LinkedList<EngineRef>();
+        Set<EngineRef> filteredEngines = new LinkedHashSet<>();
+        LinkedList<EngineRef> filteredReversedEngines = new LinkedList<>();
 
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
         try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, name, DeploymentTracing.AppStage.LOAD)){
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             for (EngineRef engine : _getEngineRefs()) {
-    
+
                 final EngineInfo engineInfo = engine.getContainerInfo();
 
                 // get the container.
                 Deployer deployer = engineInfo.getDeployer();
 
                 try (DeploymentSpan containerSpan = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD)) {
-                   ApplicationContainer appCtr = deployer.load(engineInfo.getContainer(), context);
-                   if (appCtr==null) {
-                       String msg = "Cannot load application in " + engineInfo.getContainer().getName() + " container";
-                       logger.fine(msg);
-                       continue;
-                   }
-                   engine.load(context, tracker);
-                   engine.setApplicationContainer(appCtr);
-                   filteredEngines.add(engine);
-                   filteredReversedEngines.addFirst(engine);
-                } catch(Exception e) {
-                    logger.log(Level.SEVERE, "Exception while invoking " + deployer.getClass() + " load method", e);
+                    ApplicationContainer appCtr = deployer.load(engineInfo.getContainer(), context);
+                    if (appCtr == null) {
+                        String msg = "Cannot load application in " + engineInfo.getContainer().getName() + " container";
+                        logger.fine(msg);
+                        continue;
+                    }
+                    engine.load(context, tracker);
+                    engine.setApplicationContainer(appCtr);
+                    filteredEngines.add(engine);
+                    filteredReversedEngines.addFirst(engine);
+                } catch (Exception e) {
+                    logger.log(SEVERE, "Exception while invoking " + deployer.getClass() + " load method", e);
                     throw e;
                 }
             }
@@ -272,30 +275,30 @@ public class ModuleInfo {
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             // registers all deployed items.
             for (EngineRef engine : _getEngineRefs()) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("starting " + engine.getContainerInfo().getSniffer().getModuleType());
+                if (logger.isLoggable(FINE)) {
+                    logger.log(FINE, "starting {0}", engine.getContainerInfo().getSniffer().getModuleType());
                 }
 
                 try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.CONTAINER,  engine.getContainerInfo().getSniffer().getModuleType(), DeploymentTracing.AppStage.START)){
                     if (!engine.start( context, tracker)) {
-                        logger.log(Level.SEVERE, "Module not started " +  engine.getApplicationContainer().toString());
+                        logger.log(SEVERE, "Module not started {0}", engine.getApplicationContainer().toString());
                         throw new Exception( "Module not started " +  engine.getApplicationContainer().toString());
                     }
                 } catch(Exception e) { 
                     DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
                     if(dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)){
-                        logger.log(Level.WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
+                        logger.log(WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
                     } else {
-                        logger.log(Level.SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
+                        logger.log(SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
                         throw e;
                     }
                 }
             }
             started=true;
             if (events!=null) {
-                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_STARTED.type());
-                events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
-                innerSpan.close();
+                try (DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_STARTED.type())) {
+                    events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
+                }
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
@@ -310,13 +313,13 @@ public class ModuleInfo {
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
-            for (EngineRef module : reversedEngines) {
+            for (EngineRef engine : reversedEngines) {
                 try {
                     context.setClassLoader(moduleClassLoader);
-                    module.stop(context);
+                    engine.stop(context);
                 } catch(Exception e) {
-                    logger.log(Level.SEVERE, "Cannot stop module " +
-                        module.getContainerInfo().getSniffer().getModuleType(),e );
+                    logger.log(SEVERE, "Cannot stop module " +
+                        engine.getContainerInfo().getSniffer().getModuleType(),e );
                 }
             }
             started=false;
@@ -335,13 +338,14 @@ public class ModuleInfo {
         try {
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
             for (EngineRef engine : reversedEngines) {
-                if (engine.getApplicationContainer()!=null && engine.getApplicationContainer().getClassLoader()!=null) {
+                if (engine.getApplicationContainer() != null
+                        && engine.getApplicationContainer().getClassLoader() != null) {
                     classLoaders.add(engine.getApplicationContainer().getClassLoader());
                     try {
                         context.setClassLoader(moduleClassLoader);
                         engine.unload(context);
                     } catch(Throwable e) {
-                        logger.log(Level.SEVERE, "Failed to unload from container type : " +
+                        logger.log(SEVERE, "Failed to unload from container type : " +
                             engine.getContainerInfo().getSniffer().getModuleType(), e);
                     }
                 }
@@ -379,7 +383,7 @@ public class ModuleInfo {
                 engine.getApplicationContainer().suspend();
             } catch(Exception e) {
                 isSuccess = false;
-                logger.log(Level.SEVERE, "Error suspending module " +
+                logger.log(SEVERE, "Error suspending module " +
                            engine.getContainerInfo().getSniffer().getModuleType(),e );
             }
         }
@@ -396,7 +400,7 @@ public class ModuleInfo {
                 module.getApplicationContainer().resume();
             } catch(Exception e) {
                 isSuccess = false;
-                logger.log(Level.SEVERE, "Error resuming module " +
+                logger.log(SEVERE, "Error resuming module " +
                            module.getContainerInfo().getSniffer().getModuleType(),e );
             }
         }
@@ -405,10 +409,12 @@ public class ModuleInfo {
     }
 
     /**
-     * Saves its state to the configuration. this method must be called within a transaction
-     * to the configured module instance.
+     * Saves its state to the configuration.this method must be called within a
+     * transaction to the configured module instance.
      *
      * @param module the module being persisted
+     * @throws org.jvnet.hk2.config.TransactionFailure
+     * @throws java.beans.PropertyVetoException
      */
     public void save(Module module) throws TransactionFailure, PropertyVetoException {
         // write out the module properties only for composite app
@@ -430,5 +436,9 @@ public class ModuleInfo {
             module.getEngines().add(engine);
             ref.save(engine);
         }
+    }
+
+    public void reset() {
+        started = false;
     }
 }

@@ -1699,7 +1699,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         Map<String, AdHocServletInfo> adHocSubtrees = null;
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
-              Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
+            Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
@@ -1726,11 +1726,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 return webModule;
             } else if(Boolean.TRUE.equals(hotDeploy)){
                 webModule.stop();
-                _embedded.updateContext(webModule,
-                        virtualServer.getDefaultContextXmlLocation(),
-                        virtualServer.getDefaultWebXmlLocation(),
-                        useDOLforDeployment, webModuleConfig);
-                processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+                if (webModule.getWebModuleConfig() != webModuleConfig
+                        || webModule.getWebBundleDescriptor() != webModuleConfig.getDescriptor()) {
+                    _embedded.updateContext(webModule,
+                            virtualServer.getDefaultContextXmlLocation(),
+                            virtualServer.getDefaultWebXmlLocation(),
+                            useDOLforDeployment, webModuleConfig);
+                    processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+                }
+                processWebAppClassLoader(webModule, webModuleConfig);
                 webModule.start();
                 return webModule;
             } else {
@@ -1806,6 +1810,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setParentClassLoader(parentLoader);
 
        processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+       processWebAppClassLoader(webModule, webModuleConfig);
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
@@ -1901,8 +1906,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             webModule.setAlternateDocBases(virtualServer.getProperties());
         }
 
+        // Configure the session manager and other related settings
+        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
+    }
+
+    private void processWebAppClassLoader(WebModule webModule, WebModuleConfig webModuleConfig) {
+        WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
+
         // Configure the class loader delegation model, classpath etc
-        Loader loader = webModule.configureLoader(iasBean);
+        Loader loader = webModule.configureLoader(webModule.getIasWebAppConfigBean());
 
         // Set the class loader on the DOL object
         if (webBundleDescriptor != null && webBundleDescriptor.hasWebServices()) {
@@ -1914,9 +1926,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 ((ContextConfig) listener).setClassLoader(webModuleConfig.getAppClassLoader());
             }
         }
-
-        // Configure the session manager and other related settings
-        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
     }
     
     private List<String> getServletNames(WebBundleDescriptor webBundleDescriptor) {

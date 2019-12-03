@@ -41,6 +41,8 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.v3.server.HotSwapService;
+import com.sun.enterprise.v3.server.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -153,14 +155,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     @Inject
     VersioningService versioningService;
 
+    @Inject
+    HotSwapService hotSwapService;
+
     private File safeCopyOfApp = null;
     private File safeCopyOfDeploymentPlan = null;
     private File safeCopyOfAltDD = null;
     private File safeCopyOfRuntimeAltDD = null;
     private File originalPathValue;
     private List<String> previousTargets = new ArrayList<>();
-    private Properties previousVirtualServers = new Properties();
-    private Properties previousEnabledAttributes = new Properties();
+    private final Properties previousVirtualServers = new Properties();
+    private final Properties previousEnabledAttributes = new Properties();
     private Logger logger;
     private ExtendedDeploymentContext initialContext;
     private ExtendedDeploymentContext deploymentContext;
@@ -268,6 +273,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create an initial  context
             initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
+
+            if (hotDeploy && !descriptorChanged) {
+                    hotSwapService.getApplicationState(path)
+                            .ifPresent(s -> s.copyPreviousState(initialContext));
+            } else {
+                hotSwapService.removeApplicationState(path);
+            }
 
             structuredTracing.register(initialContext);
 
@@ -388,6 +400,15 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         long deploymentTimeMillis = 0;
 
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
+
+            if (hotDeploy && !hotSwapService.isApplicationStateExist(path)) {
+                ApplicationState applicationState = new ApplicationState(path);
+                applicationState.setName(name);
+                applicationState.setTarget(target);
+                applicationState.setDeploymentContext(initialContext);
+                hotSwapService.addApplicationState(applicationState);
+            }
+
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
             if (interceptors != null) {
@@ -406,13 +427,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             Properties undeployProps = null;
             if (!hotDeploy) {
                 undeployProps = handleRedeploy(name, report, context);
-            }
+            } 
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
 
             // clean up any left over repository files
-            if (!keepreposdir.booleanValue()) {
+            if (!keepreposdir) {
                 span.start(DeploymentTracing.AppStage.CLEANUP, "applications");
                 final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
                 if (reposDir.exists()) {
@@ -537,6 +558,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if (deplResult != null && !loadOnly) {
+                hotSwapService.getApplicationState(deploymentContext)
+                            .ifPresent(s -> s.storeTransientAppMetaData(deploymentContext));
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
@@ -564,7 +587,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                     timeTakenToDeploy = timing.elapsed();
                     deploymentTimeMillis = System.currentTimeMillis();
-                    if (!hotDeploy) {
+                    if (tx != null) {
                         Application application = deploymentContext.getTransientAppMetaData("application", Application.class);
                         // Set the application deploy time
                         application.setDeploymentTime(Long.toString(timeTakenToDeploy));

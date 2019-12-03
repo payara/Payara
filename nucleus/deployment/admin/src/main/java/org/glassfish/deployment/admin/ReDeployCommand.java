@@ -119,9 +119,7 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
         final ParameterMapExtractor extractor = new ParameterMapExtractor(this);
         try {
             paramMap = extractor.extract(excludedDeployCommandParamNames);
-        } catch (IllegalArgumentException ex) {
-            throw new RuntimeException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
 
