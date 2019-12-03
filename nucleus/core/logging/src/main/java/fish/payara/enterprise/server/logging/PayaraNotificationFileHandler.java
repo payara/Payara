@@ -41,10 +41,6 @@ package fish.payara.enterprise.server.logging;
 
 import com.sun.enterprise.server.logging.GFFileHandler;
 
-import java.io.File;
-import java.util.logging.LogManager;
-import org.glassfish.config.support.TranslatedConfigView;
-
 /**
  * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
  * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
@@ -56,16 +52,7 @@ public class PayaraNotificationFileHandler extends GFFileHandler {
     private static final String NOTIFICATION_FILENAME = "notification.log";
 
     @Override
-    protected String evaluateFileName() {
-        String cname = getClass().getName();
-        LogManager manager = LogManager.getLogManager();
-
-        logFileProperty = manager.getProperty(cname + ".file");
-        if (logFileProperty == null || logFileProperty.trim().equals("")) {
-            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator
-                    + NOTIFICATION_FILENAME;
-        }
-
-        return TranslatedConfigView.expandValue(logFileProperty);
+    protected String getDefaultFileName() {
+        return NOTIFICATION_FILENAME;
     }
 }

@@ -68,7 +68,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     private Logger logger;
     private final Level level;
 
-    private final ThreadLocal reentrant = new ThreadLocal();
+    private final ThreadLocal<LoggingOutputStream> reentrant = new ThreadLocal<>();
 
     private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(MAX_RECORDS);
 
@@ -115,8 +115,6 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         // output correct thread-name if done asynchronously. Note that
         // this fix is limited to records published through this handler only.
         GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
-        logRecordWrapper.setThreadName(Thread.currentThread().getName());
-
         pendingRecords.offer(logRecordWrapper);
     }
 
@@ -136,6 +134,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         };
         pump.setName("Logging output pump");
         pump.setDaemon(true);
+        pump.setPriority(Thread.MAX_PRIORITY);
         pump.start();
     }
 
@@ -217,7 +216,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     public class LoggingPrintStream extends PrintStream {
         LogManager logManager = LogManager.getLogManager();
 
-        private ThreadLocal<StackTraceObjects> perThreadStObjects = new ThreadLocal<>();
+        private final ThreadLocal<StackTraceObjects> perThreadStObjects = new ThreadLocal<>();
 
         public LoggingPrintStream(ByteArrayOutputStream os) {
             super(os, true);
@@ -229,7 +228,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(Object x) {
-            if (!checkLocks()) return;
+            if (!checkLocks()) {
+                return;
+            }
 
             if (!(x instanceof java.lang.Throwable)) {
                 // No special processing if it is not an exception.
@@ -284,10 +285,12 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(String str) {
-            if (!checkLocks()) return;
+            if (!checkLocks()) {
+                return;
+            }
 
             StackTraceObjects sTO;
-            sTO = (StackTraceObjects) perThreadStObjects.get();
+            sTO = perThreadStObjects.get();
             if (sTO == null) {
                 // lets get done with the common case fast
                 super.println(str);
@@ -308,15 +311,17 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void print(String x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.print(x);
+            }
         }
 
 
         @Override
         public void print(Object x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.print(x);
+            }
         }
 
         @Override
@@ -328,8 +333,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(boolean x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -341,8 +347,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(char x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -354,8 +361,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(int x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -367,8 +375,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(long x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -380,8 +389,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(float x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -393,8 +403,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(double x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
         @Override
@@ -406,8 +417,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         @Override
         public void println(char[] x) {
-            if (checkLocks())
+            if (checkLocks()) {
                 super.println(x);
+            }
         }
 
 
@@ -422,11 +434,13 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         public void write(byte[] buf, int off, int len) {
             try {
                 synchronized (this) {
-                    if (out == null)
+                    if (out == null) {
                         throw new IOException("Stream closed");
+                    }
                     out.write(buf, off, len);
-                    if (len <= 8129)
+                    if (len <= 8129) {
                         out.flush();
+                    }
                 }
             }
             catch (InterruptedIOException x) {
@@ -466,7 +480,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         private boolean checkLocks() {
             Thread t = Thread.currentThread();
-            return !t.holdsLock(logger) && !t.holdsLock(logManager);
+            return !Thread.holdsLock(logger) && !Thread.holdsLock(logManager);
         }
     }
 
@@ -493,7 +507,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             stStream = new PrintStream(stackTraceBuf, true);
             comparisonBuf = new ByteArrayOutputStream();
             cbStream = new PrintStream(comparisonBuf, true);
-            ((Throwable) x).printStackTrace(stStream);
+            x.printStackTrace(stStream);
             stString = stackTraceBuf.toString();
             stackTraceBufBytes = stackTraceBuf.size();
             // helps keep our stack trace skipping logic simpler.

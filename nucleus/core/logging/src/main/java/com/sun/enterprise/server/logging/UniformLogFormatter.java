@@ -86,14 +86,14 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
 
-    private ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
+    private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key
-    private HashMap loggerResourceBundleTable;
-    private LogManager logManager;
+    private final HashMap loggerResourceBundleTable;
+    private final LogManager logManager;
     // A Dummy Container Date Object is used to format the date
-    private Date date = new Date();
+    private final Date date = new Date();
 
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
@@ -141,7 +141,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
     private static final String INDENT = "  ";
 
-    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
 
     private String productId = "";
 
@@ -268,7 +268,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
         try {
 
             LogEventImpl logEvent = new LogEventImpl();
-
+// FIXME: sloooooow
             SimpleDateFormat dateFormatter = new SimpleDateFormat(getRecordDateFormat() != null ? getRecordDateFormat() : RFC_3339_DATE_FORMAT);
 
             StringBuilder recordBuffer = new StringBuilder(getRecordBeginMarker() != null ? getRecordBeginMarker() : RECORD_BEGIN_MARKER);
