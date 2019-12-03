@@ -135,44 +135,19 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
     @Override
     public void event(Event<?> event) {
-
-         if (event.is(Deployment.APPLICATION_LOADED) ) {
-             ApplicationInfo info =  Deployment.APPLICATION_LOADED.getHook(castEvent(event));
-
-             loadManagedBeans(info);
-
-             registerAppLevelDependencies(info);
-
-         } else if( event.is(Deployment.APPLICATION_UNLOADED) ) {
-
-             ApplicationInfo info =  Deployment.APPLICATION_UNLOADED.getHook(castEvent(event));
-             Application app = info.getMetaData(Application.class);
-
-             doCleanup(app);
-
-         } else if( event.is(Deployment.DEPLOYMENT_FAILURE) ) {
-
-             Application app = Deployment.DEPLOYMENT_FAILURE.getHook(castEvent(event)).getModuleMetaData(Application.class);
-
-             doCleanup(app);
-
-         }
+        Deployment.APPLICATION_LOADED.onMatch(event, info -> {
+            loadManagedBeans(info);
+            registerAppLevelDependencies(info);
+        });
+        Deployment.APPLICATION_UNLOADED.onMatch(event, info -> doCleanup(info.getMetaData(Application.class)));
+        Deployment.DEPLOYMENT_FAILURE.onMatch(event, info -> doCleanup(info.getModuleMetaData(Application.class)));
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> Event<T> castEvent(final Event<?> event) {
-         return (Event<T>) event;
-    } 
-
     private void doCleanup(Application app) {
-
         if( app != null ) {
-
             unloadManagedBeans(app);
-
             unregisterAppLevelDependencies(app);
         }
-
     }
 
     private void registerAppLevelDependencies(ApplicationInfo appInfo) {
