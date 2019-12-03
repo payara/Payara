@@ -448,8 +448,11 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
             Map<Object, JCDIService.JCDIInjectionContext<?>> bundleNonManagedObjs =
                 jcdiManagedBeanInstanceMap.get(bundleDescriptor);
             bundleNonManagedObjs.put(callerObject, jcdiContext);
-
-        } else if (desc != null) {
+        } else {
+            if (desc == null) {
+                throw new IllegalArgumentException(
+                        "CDI not enabled and no managed bean found for class: " + managedBeanClass.getName());
+            }
             JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
                 desc.getInterceptorBuilder();
 
@@ -524,7 +527,11 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 jcdiManagedBeanInstanceMap.get(bundleDescriptor);
             bundleNonManagedObjs.put(callerObject, jcdiContext);
 
-        } else if (desc != null) {
+        } else {
+            if (desc == null) {
+                throw new IllegalArgumentException(
+                        "CDI not enabled and no managed bean found for class: " + managedBeanClass.getName());
+            }
             JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
                 desc.getInterceptorBuilder();
 
