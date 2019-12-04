@@ -146,7 +146,11 @@
                        <validationSet>
                            <dir>src/main/resources/config</dir>
                            <includes>
+                               <include>default-web.xml</include>
                                <include>domain.xml</include>
+                               <include>glassfish-acc.xml</include>
+                               <include>wss-server-config-1.0.xml</include>
+                               <include>wss-server-config-2.0.xml</include>
                            </includes>
                        </validationSet>
                    </validationSets>
