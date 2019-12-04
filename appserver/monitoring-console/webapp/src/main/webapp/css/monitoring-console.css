@@ -56,6 +56,21 @@ select {
   border-radius: 2px;
   margin-bottom: 2px;
 }
+input[type=color] {
+  border-radius: 2px;
+  padding: 0;
+  margin: 1px;
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+}
+input[type=button] {
+  border-radius: 2px;
+  border: 2px outset #ccc;
+  margin: 1px;
+  vertical-align: middle;
+  display: inline-block;
+}
 input[type=text], input[type=number] {
 	border: 1px solid #ccc;
   padding: 3px 5px;

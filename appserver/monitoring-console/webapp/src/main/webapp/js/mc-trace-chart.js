@@ -46,6 +46,7 @@
 MonitoringConsole.Chart.Trace = (function() {
 
    const Components = MonitoringConsole.View.Components;
+   const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
 
    var model = {};
@@ -66,6 +67,8 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
+      let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
+      let palette = MonitoringConsole.Model.Colors.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -77,9 +80,11 @@ MonitoringConsole.Chart.Trace = (function() {
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
             if (!operations[span.operation]) {
+               let color = Colors.lookup('index', 'line-' + colorCounter, palette);
+               colorCounter++;
                operations[span.operation] = {
-                  color: Common.lineColor(colorCounter),
-                  bgColor: Common.backgroundColor(colorCounter++),
+                  color: color,
+                  bgColor: Colors.hex2rgba(color, alpha),
                   count: 1,
                   duration: span.endTime - span.startTime,
                };

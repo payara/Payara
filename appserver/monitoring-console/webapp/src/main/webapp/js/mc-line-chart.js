@@ -46,7 +46,8 @@
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
+  const Colors = MonitoringConsole.View.Colors;
+  const ColorModel = MonitoringConsole.Model.Colors;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -181,14 +182,18 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-    if (widget.decorations.waterline) {
-      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    let decorations = widget.decorations;
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || ColorModel.default('waterline');
+      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.alarming.display) {
-      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    if (decorations.thresholds.alarming.display) {
+      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
+      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.critical.display) {
-      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    if (decorations.thresholds.critical.display) {
+      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
+      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;
   }

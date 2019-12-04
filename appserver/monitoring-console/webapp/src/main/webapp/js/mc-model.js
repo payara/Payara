@@ -96,7 +96,9 @@ MonitoringConsole.Model = (function() {
 							grid: { item: 0, column: 0, span: 1 }, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
-							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
+							status: { missing: { hint: TEXT_REQUEST_TRACING }},
+							coloring: 'series',
+						}
 					]
 				},
 				http: {
@@ -156,7 +158,7 @@ MonitoringConsole.Model = (function() {
 		/**
 		 * General settings for the user interface
 		 */
-		var settings = {};
+		var settings = sanityCheckSettings({});
 		
 		/**
 		 * Makes sure the page data structure has all required attributes.
@@ -200,6 +202,10 @@ MonitoringConsole.Model = (function() {
 				widget.grid = {};
 			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
+			if (typeof widget.decorations.waterline !== 'object') {
+				let value = typeof widget.decorations.waterline === 'number' ? widget.decorations.waterline : undefined;
+				widget.decorations.waterline = { value: value };
+			}
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
 			if (typeof widget.decorations.thresholds.alarming !== 'object')
@@ -217,6 +223,16 @@ MonitoringConsole.Model = (function() {
 			if (typeof widget.status.critical !== 'object')
 				widget.status.critical = {};
 			return widget;
+		}
+
+		function sanityCheckSettings(settings) {
+			if (settings === undefined)
+				settings = {};
+			if (settings.colors === undefined)
+				settings.colors = {};
+			if (settings.colors.defaults === undefined)
+				settings.colors.defaults = {};
+			return settings;
 		}
 		
 		function doStore() {
@@ -239,14 +255,14 @@ MonitoringConsole.Model = (function() {
 			settings.home = page.id;
 			return page;
 		}
+
 		
 		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
-			let isPagesOnly = !userInterface.pages || !userInterface.settings;
-			if (!isPagesOnly)
-				settings = userInterface.settings;
+			if (userInterface.pages && userInterface.settings)
+				settings = sanityCheckSettings(userInterface.settings);
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -389,6 +405,27 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
+			colorPalette: function(colors) {
+				if (colors === undefined)
+					return settings.colors.palette;
+				settings.colors.palette = colors;
+				doStore();
+			},
+
+			colorOpacity: function(opacity) {
+				if (opacity === undefined)
+					return settings.colors.opacity;
+				settings.colors.opacity = opacity;
+				doStore();
+			},
+
+			colorDefault: function(name, color) {
+				if (color === undefined)
+					return settings.colors.defaults[name];
+				settings.colors.defaults[name] = color;
+				doStore();
+			},
+
 			currentPage: function() {
 				return pages[settings.home];
 			},
@@ -928,7 +965,8 @@ MonitoringConsole.Model = (function() {
 		if (UI.Refresh.interval() === undefined) {
 			UI.Refresh.interval(DEFAULT_INTERVAL);
 		}
-		Interval.resume(UI.Refresh.interval());
+		if (!UI.Refresh.isPaused())
+			Interval.resume(UI.Refresh.interval());
 		Rotation.init(() => onPageUpdate(doSwitchPage()));
 		if (UI.Rotation.isEnabled()) {
 			Rotation.resume(UI.Rotation.interval());	
@@ -1016,6 +1054,12 @@ MonitoringConsole.Model = (function() {
 				UI.Refresh.interval(duration);
 				Interval.resume(UI.Refresh.interval());				
 			},
+		},
+
+		Colors: {
+			palette: UI.colorPalette,
+			opacity: UI.colorOpacity,
+			default: UI.colorDefault,
 		},
 		
 		Settings: {

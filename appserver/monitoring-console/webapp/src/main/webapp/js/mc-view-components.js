@@ -48,6 +48,7 @@
 MonitoringConsole.View.Components = (function() {
 
    const Units = MonitoringConsole.View.Units;
+   const Colors = MonitoringConsole.View.Colors;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    /**
@@ -60,28 +61,29 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createHeaderRow(model) {
-         let caption = model.label;
-         let config = {colspan: 2};
-         if (model.description)
+        let caption = model.label;
+        let config = {colspan: 2};
+        if (model.description)
           config.title = model.description;
-         return $('<tr/>').append($('<th/>', config)
-             .html(caption)
-             .click(function() {
-                 let tr = $(this).closest('tr').next();
-                 let toggleAll = tr.children('th').length > 0;
-                 while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
-                     if (tr.children('th').length == 0) {
-                         tr.children().toggle();                    
-                     }
-                     tr = tr.next();
-                 }
-         }));
+        let th = $('<th/>', config);
+        let showHide = function() {
+          let tr = th.closest('tr').next();
+          let toggleAll = tr.children('th').length > 0;
+          while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+              if (tr.children('th').length == 0) {
+                  tr.toggle();                    
+              }
+              tr = tr.next();
+          }
+        };
+        return $('<tr/>').append(
+            th.html(caption).click(showHide));
       }
 
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption, description: model.description }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description, collapsed: model.collapsed }));
         return table;
       }
 
@@ -92,39 +94,53 @@ MonitoringConsole.View.Components = (function() {
         let config = {};
         if (model.description)
           config.title = model.description;
-        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
+        let tr = $('<tr/>');
+        tr.append($('<td/>', config).text(model.label)).append($('<td/>').append(components));
+        if (model.collapsed)
+          tr.css('display', 'none');
+        return tr;
+      }
+
+      function enhancedOnChange(onChange, updatePage) {
+        if (onChange.length == 2) {
+          return (checked) => {
+            let layout = Selection.configure((widget) => onChange(widget, checked));
+            if (updatePage) {
+              MonitoringConsole.View.onPageUpdate(layout);
+            }
+          };
+        }
+        return onChange;
       }
 
       function createCheckboxInput(model) {
         let config = { id: model.id, type: 'checkbox', checked: model.value };
         if (model.description && !model.label)
-          config.title = model.description;  
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
         return $("<input/>", config)
           .on('change', function() {
             let checked = this.checked;
-            if (model.onChange.length == 2) {
-              Selection.configure((widget) => model.onChange(widget, checked)); 
-            } else if (model.onChange.length == 1) {
-              model.onChange(checked);
-            }
+            onChange(checked);
           });
       }
 
       function createRangeInput(model) {
-         let config = { id: model.id, type: 'number', value: model.value};
-         if (model.min)
-            config.min = model.min;
-         if (model.max)
-            config.max = model.max;
-         if (model.description && !model.label)
-            config.title = model.description;       
-         return $('<input/>', config)
-             .on('input change', function() {  
-                let val = this.valueAsNumber;
-                if (Number.isNaN(val))
-                  val = undefined;
-                MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
-             });
+        let config = { id: model.id, type: 'number', value: model.value};
+        if (model.min)
+          config.min = model.min;
+        if (model.max)
+          config.max = model.max;
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange, true);
+        return $('<input/>', config)
+          .on('input change', function() {  
+            let val = this.valueAsNumber;
+            if (Number.isNaN(val))
+              val = undefined;
+            onChange(val);
+          });
       }
 
       function createDropdownInput(model) {
@@ -132,17 +148,19 @@ MonitoringConsole.View.Components = (function() {
          if (model.description && !model.label)
           config.title = description;
          let dropdown = $('<select/>',  );
-         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', 
+            {text:model.options[option], value:option, selected: model.value === option})));
+         let onChange = enhancedOnChange(model.onChange, true);
+         dropdown.change(() => onChange(dropdown.val()));
          return dropdown;
       }
 
       function createValueInput(model) {
-         if (model.unit === 'percent')
-            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
-         if (model.unit === 'count')
-            return createRangeInput(model);
-         return createTextInput(model, Units.converter(model.unit));
+        if (model.unit === 'percent')
+          return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+        if (model.unit === 'count')
+          return createRangeInput(model);
+        return createTextInput(model, Units.converter(model.unit));
       }
 
       function createTextInput(model, converter) {
@@ -164,18 +182,84 @@ MonitoringConsole.View.Components = (function() {
         }
         let input = $('<input/>', config);
         if (!readonly) {
+          let onChange = enhancedOnChange(model.onChange, true);
           input.on('input change paste', function() {
             let val = converter.parse(this.value);
-            if (model.onChange.length == 2) {
-              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
-            } else if (model.onChange.length == 1) {
-              model.onChange(val);
-            }
+            onChange(val);
           });          
         } else {
           input.prop('readonly', true);
         }
         return input;
+      }
+
+      function createColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (Array.isArray(value))
+          return createMultiColorInput(model);
+        let config = { id: model.id, type: 'color', value: value };
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
+        let input = $('<input/>', config)
+          .on('input change', function() { 
+            let val = this.value;
+            if (val === model.defaultValue)
+              val = undefined;
+            onChange(val);
+          });
+        if (model.defaultValue === undefined)
+          return input;
+        return $('<span/>').append(input).append($('<input/>', { 
+          type: 'button', 
+          value: ' ',
+          title: 'Reset to default color', 
+          style: 'background-color: ' + model.defaultValue,
+        }).click(() => {
+          onChange(undefined);
+          input.val(model.defaultValue);
+        }));
+      }
+
+      function createMultiColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (!Array.isArray(value))
+          value = [value];
+        let list = $('<span/>');
+        //TODO model id goes where?
+        let colors = [...value];
+        let onChange = enhancedOnChange(model.onChange);
+        for (let i = 0; i < value.length; i++) {
+          list.append(createMultiColorItemInput(colors, i, onChange));
+        }
+        let add = $('<input/>', {type: 'button', value: '+'});
+        add.click(() => {
+          colors.push(Colors.random(colors));
+          createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
+          onChange(colors);
+        });
+        let remove = $('<input/>', {type: 'button', value: '-'});
+        remove.click(() => {
+          if (colors.length > 1) {
+            colors.length -= 1;
+            list.children('input[type=color]').last().remove();
+            onChange(colors);
+          }
+        });
+        list.append(add);
+        list.append(remove);
+        return list;
+      }
+
+      function createMultiColorItemInput(colors, index, onChange) {
+        return createColorInput({ value: colors[index], onChange: (val) => {
+          colors[index] = val;
+          onChange(colors);
+        }});
       }
 
       function createInput(model) {
@@ -185,6 +269,7 @@ MonitoringConsole.View.Components = (function() {
             case 'range'   : return createRangeInput(model);
             case 'value'   : return createValueInput(model);
             case 'text'    : return createTextInput(model);
+            case 'color'   : return createColorInput(model);
             default        : return model.input;
          }
       }
@@ -192,9 +277,11 @@ MonitoringConsole.View.Components = (function() {
       function onUpdate(model) {
          let panel = emptyPanel();
          let syntheticId = 0;
+         let collapsed = false;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
+            collapsed = group.collapsed === true;
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
                syntheticId++;
@@ -204,7 +291,9 @@ MonitoringConsole.View.Components = (function() {
                let input = entry.input;
                if (entry.id === undefined)
                  entry.id = 'setting_' + syntheticId;
+               entry.collapsed = collapsed;
                if (type == 'header' || auto && input === undefined) {
+                  collapsed = entry.collapsed === true;
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
                   table.append(createRow(entry, createInput(entry)));

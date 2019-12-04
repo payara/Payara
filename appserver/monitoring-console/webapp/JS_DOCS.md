@@ -34,7 +34,7 @@ id              = string
 numberOfColumns = number
 rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display, home, refresh, rotation }
+settings        = { display, home, refresh, rotation, colors }
 display         = boolean
 home            = string
 refresh         = { paused, interval }
@@ -42,22 +42,29 @@ rotation        = { enabled, interval }
 paused          = boolean
 enabled         = boolean
 interval        = number
+colors          = { palette, opacity, defaults }
+palette         = [COLOR]
+opacity         = number
+defaults        = { *:COLOR }
+COLOR           = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
 * `widgets` can be ommitted for an empty page
 * `numberOfColumns` can be ommitted
 * `widgets` is allowed to be an array - if so it is made into an object using each widget's `series` for the attribute name
 * `home` is the `PAGE.id` of the currently shown page
+* names for `defaults` colors used so far are: `'alarming'`, `'critical'` and `'waterline'`
 
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring }
 series     = string
 target     = string
 displayName= string
 type       = 'line' | 'bar'
 unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+coloring   = 'instance' | 'series' | 'index'
 scaleFactor= number
 grid       = { item, column, span }
 item       = number
@@ -78,7 +85,7 @@ options    = {
 	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }
-waterline  = number
+waterline  = { value:number color:string }
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
 alarming   = THRESHOLD
@@ -213,34 +220,38 @@ Describes the model expected by the `Settings` component.
 
 ```
 SETTINGS    = [GROUP]
-GROUP       = { id, caption, entries }
+GROUP       = { id, caption, entries, collapsed }
 id 		    = string
 caption     = string
 entries     = [ENTRY]
-ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description } 
+ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue, collapsed } 
 label       = string
-type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text'
+type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text' | 'color'
 unit        = string
 value       = number | string
+defaultValue= number | string
 min         = number
 max         = number
 options     = { *:string }
 input       = fn () => string | fn () => jquery | string | jquery | [ENTRY]
 onChange    = fn (widget, newValue) => () | fn (newValue) => ()
 description = string
+collapsed   = boolean
 ```
 * When `caption` is provided this adds a _header_ entry identical to adding a _header_ entry explicitly as first element of the `entries` array.
 * The `options` object is used as map where the attribute names are the values of the options and the attribute values are the _string_ labels displayed for that option.
 * `description` is optional for any type of `ENTRY`
+* set `collapsed` to initially collapse the setting group
 
 Mandatory members of `ENTRY` depend on `type` member. Variants are:
 ```
-'header'   : { label }
+'header'   : { label, collapsed }
 'checkbox' : { label, value, onChange }
 'range'    : { label, value, min, max, onChange }
 'dropdown' : { label, value, options, onChange }
 'value'    : { label, value, unit, onChange }
 'text'     : { label, value, onChange }
+'color'    : { label, value, defaultValue, onChange }
 ```
 * `onChange` may be ommitted for _text_ inputs which makes the field _readonly_.
 * Settings of type `'value'` are inputs for a number that depends on the `unit` 

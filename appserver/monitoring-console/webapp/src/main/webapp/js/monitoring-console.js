@@ -187,7 +187,9 @@ MonitoringConsole.Model = (function() {
 							grid: { item: 0, column: 0, span: 1 }, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
-							status: { missing: { hint: TEXT_REQUEST_TRACING }}}
+							status: { missing: { hint: TEXT_REQUEST_TRACING }},
+							coloring: 'series',
+						}
 					]
 				},
 				http: {
@@ -247,7 +249,7 @@ MonitoringConsole.Model = (function() {
 		/**
 		 * General settings for the user interface
 		 */
-		var settings = {};
+		var settings = sanityCheckSettings({});
 		
 		/**
 		 * Makes sure the page data structure has all required attributes.
@@ -291,6 +293,10 @@ MonitoringConsole.Model = (function() {
 				widget.grid = {};
 			if (typeof widget.decorations !== 'object')
 				widget.decorations = {};
+			if (typeof widget.decorations.waterline !== 'object') {
+				let value = typeof widget.decorations.waterline === 'number' ? widget.decorations.waterline : undefined;
+				widget.decorations.waterline = { value: value };
+			}
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
 			if (typeof widget.decorations.thresholds.alarming !== 'object')
@@ -308,6 +314,16 @@ MonitoringConsole.Model = (function() {
 			if (typeof widget.status.critical !== 'object')
 				widget.status.critical = {};
 			return widget;
+		}
+
+		function sanityCheckSettings(settings) {
+			if (settings === undefined)
+				settings = {};
+			if (settings.colors === undefined)
+				settings.colors = {};
+			if (settings.colors.defaults === undefined)
+				settings.colors.defaults = {};
+			return settings;
 		}
 		
 		function doStore() {
@@ -330,14 +346,14 @@ MonitoringConsole.Model = (function() {
 			settings.home = page.id;
 			return page;
 		}
+
 		
 		function doImport(userInterface, replaceExisting) {
 			if (!userInterface) {
 				return false;
 			}
-			let isPagesOnly = !userInterface.pages || !userInterface.settings;
-			if (!isPagesOnly)
-				settings = userInterface.settings;
+			if (userInterface.pages && userInterface.settings)
+				settings = sanityCheckSettings(userInterface.settings);
 			let importedPages = !userInterface.pages ? userInterface : userInterface.pages;
 			// override or add the entry in pages from userInterface
 			if (Array.isArray(importedPages)) {
@@ -480,6 +496,27 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
+			colorPalette: function(colors) {
+				if (colors === undefined)
+					return settings.colors.palette;
+				settings.colors.palette = colors;
+				doStore();
+			},
+
+			colorOpacity: function(opacity) {
+				if (opacity === undefined)
+					return settings.colors.opacity;
+				settings.colors.opacity = opacity;
+				doStore();
+			},
+
+			colorDefault: function(name, color) {
+				if (color === undefined)
+					return settings.colors.defaults[name];
+				settings.colors.defaults[name] = color;
+				doStore();
+			},
+
 			currentPage: function() {
 				return pages[settings.home];
 			},
@@ -1019,7 +1056,8 @@ MonitoringConsole.Model = (function() {
 		if (UI.Refresh.interval() === undefined) {
 			UI.Refresh.interval(DEFAULT_INTERVAL);
 		}
-		Interval.resume(UI.Refresh.interval());
+		if (!UI.Refresh.isPaused())
+			Interval.resume(UI.Refresh.interval());
 		Rotation.init(() => onPageUpdate(doSwitchPage()));
 		if (UI.Rotation.isEnabled()) {
 			Rotation.resume(UI.Rotation.interval());	
@@ -1107,6 +1145,12 @@ MonitoringConsole.Model = (function() {
 				UI.Refresh.interval(duration);
 				Interval.resume(UI.Refresh.interval());				
 			},
+		},
+
+		Colors: {
+			palette: UI.colorPalette,
+			opacity: UI.colorOpacity,
+			default: UI.colorDefault,
 		},
 		
 		Settings: {
@@ -1543,6 +1587,216 @@ MonitoringConsole.View.Units = (function() {
 /*jshint esversion: 8 */
 
 /**
+ * Utilities to convert color values and handle color schemes.
+ *
+ * Color schemes are named sets of colors that are applied to the model.
+ * This is build purely on top of the model. 
+ * The model does not remember a scheme, 
+ * schemes are just a utility to reset color configurations to a certain set.
+ **/
+MonitoringConsole.View.Colors = (function() {
+
+   const Colors = MonitoringConsole.Model.Colors;
+
+   const SCHEMES = {
+      Payara: {
+         name: 'Payara',
+         palette: [ '#F0981B', '#008CC4', '#8B79BC', '#87BC25', '#FF70DA' ],
+         opacity: 20,
+         defaults:  { waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c' }
+      },
+
+      a: {
+         name: '80s',
+         opacity: 30,
+         palette: [ '#ff48c4', '#2bd1fc', '#f3ea5f', '#c04df9', '#ff3f3f'],
+         defaults:  { waterline: '#2bd1fc', alarming: '#f3ea5f', critical: '#ff3f3f' }
+      },
+
+      b: {
+         name: '80s Pastel',
+         opacity: 40,
+         palette: [ '#bd6283', '#96c0bc', '#dbd259', '#d49e54', '#b95f51'],
+         defaults:  { waterline: '#96c0bc', alarming: '#dbd259', critical: '#b95f51' }
+      },
+
+      c: {
+         name: '80s Neon',
+         opacity: 15,
+         palette: [ '#cb268b', '#f64e0c', '#eff109', '#6cf700', '#00aff3'],
+         defaults:  { waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c' }
+      },
+
+      d: {
+         name: 'VaporWave',
+         opacity: 20,
+         palette: [ '#05ffa1', '#b8a9df', '#01cdfe', '#b967ff', '#fffb96'],
+         defaults:  { waterline: '#01cdfe', alarming: '#fffb96', critical: '#FB637A' }
+      },
+
+      e: {
+         name: 'Solarized',
+         opacity: 20,
+         palette: [ '#b58900', '#cb4b16', '#dc322f', '#d32682', '#c671c4', '#268bd2', '#2aa198', '#859900'],
+         defaults:  { waterline: '#268bd2', alarming: '#b58900', critical: '#dc322f' }
+      }
+   };
+
+   /**
+    * Object used as map to remember the colors by coloring stratgey.
+    * Each strategy leads to an object map that remebers the key as fields 
+    * and the index associated with the key as value.
+    * This is a mapping from e.g. the name 'DAS' to index 0. 
+    * The index is then used to pick a color form the palette.
+    * This makes sure that same key, for example the instance name,
+    * always uses the same color accross widgets and pages.
+    */
+   let colorIndexMaps = {};
+
+   function lookup(coloring, key, palette) {
+      let mapName = coloring || 'instance';
+      let map = colorIndexMaps[mapName];
+      if (map === undefined) {
+         map = {};
+         colorIndexMaps[mapName] = map;
+      }
+      let index = map[key];
+      if (index === undefined) {
+         index = Object.keys(map).length;
+         map[key] = index;
+      }
+      return derive(palette, index);
+   }
+
+   /**
+    * Returns a palette color.
+    * If index is outside of the palette given a color is derived from the palette.
+    * The derived colors are intentionally biased towards light non-grayish colors.
+    */
+   function derive(palette, index = 1) {
+      let color = palette[index % palette.length];
+      if (index < palette.length)
+         return color;
+      let [r, g, b] = hex2rgb(color);
+      let offset = index - palette.length + 1;
+      let shift = (offset * 110) % 255;
+      r = (r + shift) % 255;
+      g = (g + shift) % 255;
+      b = (b + shift) % 255;
+      let variant = offset % 6;
+      if (variant == 0 || variant == 3 || variant == 4)
+         r = Math.round(r / 2);
+      if (variant == 1 || variant == 3 || variant == 5)
+         g = Math.round(g / 2);
+      if (variant == 2 || variant == 4 || variant == 5)
+         b = Math.round(b / 2);
+      if (r + g + b < 380 && r < 120) r = 255 - r;
+      if (r + g + b < 380 && g < 120) g = 255 - g;
+      if (r + g + b < 380 && b < 120) b = 255 - b;
+      return rgb2hex(r, g, b);
+   }
+
+   function random(palette) {
+      if (Array.isArray(palette))
+         return derive([palette[0]], palette.length); 
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+         color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+   }
+
+   function hex2rgb(hex) {
+      return hex.match(/\w\w/g).map(x => parseInt(x, 16));
+   }
+
+   function rgb2hex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+   }
+
+   function hex2rgba(hex, alpha = 1) {
+      const [r, g, b] = hex2rgb(hex);
+      return `rgba(${r},${g},${b},${alpha})`;
+   }
+
+   function schemeOptions() {
+      return Object.keys(SCHEMES).reduce(function(result, key) {
+         result[key] = SCHEMES[key].name;
+         return result;
+      }, { _: '(Select to apply)' });
+   }
+
+   function applyScheme(name, override = true) {
+      let scheme = SCHEMES[name];
+      if (scheme) {
+         if (override || Colors.palette() === undefined)
+            Colors.palette(scheme.palette);
+         if (override || Colors.opacity() === undefined)
+            Colors.opacity(scheme.opacity);
+         if (scheme.defaults) {
+            for (let [name, color] of Object.entries(scheme.defaults)) {
+               if (override || Colors.default(name) === undefined)
+                  Colors.default(name, color);
+            }
+         }            
+      }
+   }
+
+   /**
+    * Public API of the color utility module.
+    */
+   return {
+      lookup: lookup,
+      random: random,
+      hex2rgba: hex2rgba,
+      schemes: schemeOptions,
+      scheme: applyScheme,
+   };
+})();
+/*
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  
+   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+  
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://github.com/payara/Payara/blob/master/LICENSE.txt
+   See the License for the specific
+   language governing permissions and limitations under the License.
+  
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at glassfish/legal/LICENSE.txt.
+  
+   GPL Classpath Exception:
+   The Payara Foundation designates this particular file as subject to the "Classpath"
+   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+   file that accompanied this code.
+  
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+  
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+*/
+
+/*jshint esversion: 8 */
+
+/**
  * Data/Model driven view components.
  *
  * Each of them gets passed a model which updates the view of the component to the model state.
@@ -1550,6 +1804,7 @@ MonitoringConsole.View.Units = (function() {
 MonitoringConsole.View.Components = (function() {
 
    const Units = MonitoringConsole.View.Units;
+   const Colors = MonitoringConsole.View.Colors;
    const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    /**
@@ -1562,28 +1817,29 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createHeaderRow(model) {
-         let caption = model.label;
-         let config = {colspan: 2};
-         if (model.description)
+        let caption = model.label;
+        let config = {colspan: 2};
+        if (model.description)
           config.title = model.description;
-         return $('<tr/>').append($('<th/>', config)
-             .html(caption)
-             .click(function() {
-                 let tr = $(this).closest('tr').next();
-                 let toggleAll = tr.children('th').length > 0;
-                 while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
-                     if (tr.children('th').length == 0) {
-                         tr.children().toggle();                    
-                     }
-                     tr = tr.next();
-                 }
-         }));
+        let th = $('<th/>', config);
+        let showHide = function() {
+          let tr = th.closest('tr').next();
+          let toggleAll = tr.children('th').length > 0;
+          while (tr.length > 0 && (toggleAll || tr.children('th').length == 0)) {
+              if (tr.children('th').length == 0) {
+                  tr.toggle();                    
+              }
+              tr = tr.next();
+          }
+        };
+        return $('<tr/>').append(
+            th.html(caption).click(showHide));
       }
 
       function createTable(model) {
         let table = $('<table />', { id: model.id });
         if (model.caption)
-          table.append(createHeaderRow({ label: model.caption, description: model.description }));
+          table.append(createHeaderRow({ label: model.caption, description: model.description, collapsed: model.collapsed }));
         return table;
       }
 
@@ -1594,39 +1850,53 @@ MonitoringConsole.View.Components = (function() {
         let config = {};
         if (model.description)
           config.title = model.description;
-        return $('<tr/>').append($('<td/>', config).text(model.label)).append($('<td/>').append(components));   
+        let tr = $('<tr/>');
+        tr.append($('<td/>', config).text(model.label)).append($('<td/>').append(components));
+        if (model.collapsed)
+          tr.css('display', 'none');
+        return tr;
+      }
+
+      function enhancedOnChange(onChange, updatePage) {
+        if (onChange.length == 2) {
+          return (checked) => {
+            let layout = Selection.configure((widget) => onChange(widget, checked));
+            if (updatePage) {
+              MonitoringConsole.View.onPageUpdate(layout);
+            }
+          };
+        }
+        return onChange;
       }
 
       function createCheckboxInput(model) {
         let config = { id: model.id, type: 'checkbox', checked: model.value };
         if (model.description && !model.label)
-          config.title = model.description;  
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
         return $("<input/>", config)
           .on('change', function() {
             let checked = this.checked;
-            if (model.onChange.length == 2) {
-              Selection.configure((widget) => model.onChange(widget, checked)); 
-            } else if (model.onChange.length == 1) {
-              model.onChange(checked);
-            }
+            onChange(checked);
           });
       }
 
       function createRangeInput(model) {
-         let config = { id: model.id, type: 'number', value: model.value};
-         if (model.min)
-            config.min = model.min;
-         if (model.max)
-            config.max = model.max;
-         if (model.description && !model.label)
-            config.title = model.description;       
-         return $('<input/>', config)
-             .on('input change', function() {  
-                let val = this.valueAsNumber;
-                if (Number.isNaN(val))
-                  val = undefined;
-                MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));
-             });
+        let config = { id: model.id, type: 'number', value: model.value};
+        if (model.min)
+          config.min = model.min;
+        if (model.max)
+          config.max = model.max;
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange, true);
+        return $('<input/>', config)
+          .on('input change', function() {  
+            let val = this.valueAsNumber;
+            if (Number.isNaN(val))
+              val = undefined;
+            onChange(val);
+          });
       }
 
       function createDropdownInput(model) {
@@ -1634,17 +1904,19 @@ MonitoringConsole.View.Components = (function() {
          if (model.description && !model.label)
           config.title = description;
          let dropdown = $('<select/>',  );
-         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', {text:model.options[option], value:option, selected: model.value === option})));
-         dropdown.change(() => MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, dropdown.val()))));
+         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', 
+            {text:model.options[option], value:option, selected: model.value === option})));
+         let onChange = enhancedOnChange(model.onChange, true);
+         dropdown.change(() => onChange(dropdown.val()));
          return dropdown;
       }
 
       function createValueInput(model) {
-         if (model.unit === 'percent')
-            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
-         if (model.unit === 'count')
-            return createRangeInput(model);
-         return createTextInput(model, Units.converter(model.unit));
+        if (model.unit === 'percent')
+          return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+        if (model.unit === 'count')
+          return createRangeInput(model);
+        return createTextInput(model, Units.converter(model.unit));
       }
 
       function createTextInput(model, converter) {
@@ -1666,18 +1938,84 @@ MonitoringConsole.View.Components = (function() {
         }
         let input = $('<input/>', config);
         if (!readonly) {
+          let onChange = enhancedOnChange(model.onChange, true);
           input.on('input change paste', function() {
             let val = converter.parse(this.value);
-            if (model.onChange.length == 2) {
-              MonitoringConsole.View.onPageUpdate(Selection.configure((widget) => model.onChange(widget, val)));  
-            } else if (model.onChange.length == 1) {
-              model.onChange(val);
-            }
+            onChange(val);
           });          
         } else {
           input.prop('readonly', true);
         }
         return input;
+      }
+
+      function createColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (Array.isArray(value))
+          return createMultiColorInput(model);
+        let config = { id: model.id, type: 'color', value: value };
+        if (model.description && !model.label)
+          config.title = model.description;
+        let onChange = enhancedOnChange(model.onChange);
+        let input = $('<input/>', config)
+          .on('input change', function() { 
+            let val = this.value;
+            if (val === model.defaultValue)
+              val = undefined;
+            onChange(val);
+          });
+        if (model.defaultValue === undefined)
+          return input;
+        return $('<span/>').append(input).append($('<input/>', { 
+          type: 'button', 
+          value: ' ',
+          title: 'Reset to default color', 
+          style: 'background-color: ' + model.defaultValue,
+        }).click(() => {
+          onChange(undefined);
+          input.val(model.defaultValue);
+        }));
+      }
+
+      function createMultiColorInput(model) {
+        let value = model.value;
+        if (value === undefined && model.defaultValue !== undefined)
+          value = model.defaultValue;
+        if (!Array.isArray(value))
+          value = [value];
+        let list = $('<span/>');
+        //TODO model id goes where?
+        let colors = [...value];
+        let onChange = enhancedOnChange(model.onChange);
+        for (let i = 0; i < value.length; i++) {
+          list.append(createMultiColorItemInput(colors, i, onChange));
+        }
+        let add = $('<input/>', {type: 'button', value: '+'});
+        add.click(() => {
+          colors.push(Colors.random(colors));
+          createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
+          onChange(colors);
+        });
+        let remove = $('<input/>', {type: 'button', value: '-'});
+        remove.click(() => {
+          if (colors.length > 1) {
+            colors.length -= 1;
+            list.children('input[type=color]').last().remove();
+            onChange(colors);
+          }
+        });
+        list.append(add);
+        list.append(remove);
+        return list;
+      }
+
+      function createMultiColorItemInput(colors, index, onChange) {
+        return createColorInput({ value: colors[index], onChange: (val) => {
+          colors[index] = val;
+          onChange(colors);
+        }});
       }
 
       function createInput(model) {
@@ -1687,6 +2025,7 @@ MonitoringConsole.View.Components = (function() {
             case 'range'   : return createRangeInput(model);
             case 'value'   : return createValueInput(model);
             case 'text'    : return createTextInput(model);
+            case 'color'   : return createColorInput(model);
             default        : return model.input;
          }
       }
@@ -1694,9 +2033,11 @@ MonitoringConsole.View.Components = (function() {
       function onUpdate(model) {
          let panel = emptyPanel();
          let syntheticId = 0;
+         let collapsed = false;
          for (let t = 0; t < model.length; t++) {
             let group = model[t];
             let table = createTable(group);
+            collapsed = group.collapsed === true;
             panel.append(table);
             for (let r = 0; r < group.entries.length; r++) {
                syntheticId++;
@@ -1706,7 +2047,9 @@ MonitoringConsole.View.Components = (function() {
                let input = entry.input;
                if (entry.id === undefined)
                  entry.id = 'setting_' + syntheticId;
+               entry.collapsed = collapsed;
                if (type == 'header' || auto && input === undefined) {
+                  collapsed = entry.collapsed === true;
                   table.append(createHeaderRow(entry));
                } else if (!auto) {
                   table.append(createRow(entry, createInput(entry)));
@@ -1924,27 +2267,6 @@ MonitoringConsole.View.Components = (function() {
 
 MonitoringConsole.Chart.Common = (function() {
 
-   const DEFAULT_BG_COLORS = [
-      'rgba(240, 152, 27, 0.2)',
-      'rgba(0, 140, 196, 0.2)',
-      'rgba(153, 102, 255, 0.2)',
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(54, 162, 235, 0.2)',
-      'rgba(255, 206, 86, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-      'rgba(255, 159, 64, 0.2)'
-   ];
-   const DEFAULT_LINE_COLORS = [
-      'rgba(240, 152, 27, 1)',
-      'rgba(0, 140, 196, 1)',
-      'rgba(153, 102, 255, 1)',
-      'rgba(255, 99, 132, 1)',
-      'rgba(54, 162, 235, 1)',
-      'rgba(255, 206, 86, 1)',
-      'rgba(75, 192, 192, 1)',
-      'rgba(255, 159, 64, 1)'
-   ];
-
    function createCustomTooltipFunction(createHtmlTooltip) {
       return function(tooltipModel) {
         let tooltip = $('#chartjs-tooltip');
@@ -2003,10 +2325,6 @@ MonitoringConsole.Chart.Common = (function() {
        */
       createCustomTooltipFunction: (createHtmlTooltip) => createCustomTooltipFunction(createHtmlTooltip),
       formatDate: (date) => formatDate(date),
-      backgroundColor: (n) => DEFAULT_BG_COLORS[n],
-      backgroundColors: () => DEFAULT_BG_COLORS,
-      lineColor: (n) => DEFAULT_LINE_COLORS[n],
-      lineColors: () => DEFAULT_LINE_COLORS,
    };
 
 })();
@@ -2058,7 +2376,8 @@ MonitoringConsole.Chart.Common = (function() {
 MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
+  const Colors = MonitoringConsole.View.Colors;
+  const ColorModel = MonitoringConsole.Model.Colors;
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -2193,14 +2512,18 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-    if (widget.decorations.waterline) {
-      datasets.push(createHorizontalLineDataset(' waterline ', points, widget.decorations.waterline, 'Aqua', [2,2]));
+    let decorations = widget.decorations;
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || ColorModel.default('waterline');
+      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.alarming.display) {
-      datasets.push(createHorizontalLineDataset(' alarming ', points, widget.decorations.thresholds.alarming.value, 'gold', [2,2]));
+    if (decorations.thresholds.alarming.display) {
+      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
+      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
-    if (widget.decorations.thresholds.critical.display) {
-      datasets.push(createHorizontalLineDataset(' critical ', points, widget.decorations.thresholds.critical.value, 'crimson', [2,2]));      
+    if (decorations.thresholds.critical.display) {
+      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
+      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
 	  return datasets;
   }
@@ -2299,7 +2622,6 @@ MonitoringConsole.Chart.Line = (function() {
 MonitoringConsole.Chart.Bar = (function() {
 
   const Units = MonitoringConsole.View.Units;
-  const Common = MonitoringConsole.Chart.Common;
 
    function createData(widget, response) {
       let series = [];
@@ -2479,6 +2801,7 @@ MonitoringConsole.Chart.Bar = (function() {
 MonitoringConsole.Chart.Trace = (function() {
 
    const Components = MonitoringConsole.View.Components;
+   const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
 
    var model = {};
@@ -2499,6 +2822,8 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
+      let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
+      let palette = MonitoringConsole.Model.Colors.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -2510,9 +2835,11 @@ MonitoringConsole.Chart.Trace = (function() {
             minToMaxValues.push(span.endTime - span.startTime);
             labels.push(span.operation);
             if (!operations[span.operation]) {
+               let color = Colors.lookup('index', 'line-' + colorCounter, palette);
+               colorCounter++;
                operations[span.operation] = {
-                  color: Common.lineColor(colorCounter),
-                  bgColor: Common.backgroundColor(colorCounter++),
+                  color: color,
+                  bgColor: Colors.hex2rgba(color, alpha),
                   count: 1,
                   duration: span.endTime - span.startTime,
                };
@@ -2765,6 +3092,7 @@ MonitoringConsole.View = (function() {
 
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
+    const Colors = MonitoringConsole.View.Colors;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -2824,10 +3152,12 @@ MonitoringConsole.View = (function() {
             if (!panelConsole.hasClass('state-show-settings')) {
                 panelConsole.addClass('state-show-settings');                
             }
+            let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
             let settings = [];
-            settings.push(createGlobalSettings());
+            settings.push(createGlobalSettings(singleSelection));
+            settings.push(createColorSettings());
             settings.push(createPageSettings());
-            if (MonitoringConsole.Model.Page.Widgets.Selection.isSingle()) {
+            if (singleSelection) {
                 settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
             Components.onSettingsUpdate(settings);
@@ -2928,8 +3258,8 @@ MonitoringConsole.View = (function() {
             .append(Components.onMenuCreation(menu));
     }
 
-    function createGlobalSettings() {
-        return { id: 'settings-global', caption: 'Global', entries: [
+    function createGlobalSettings(initiallyCollapsed) {
+        return { id: 'settings-global', caption: 'Global', collapsed: initiallyCollapsed, entries: [
             { label: 'Data Refresh', input: [
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Refresh.interval(), onChange: (val) => MonitoringConsole.Model.Refresh.interval(val) },
                 { label: 'paused', type: 'checkbox', value: MonitoringConsole.Model.Refresh.isPaused(), onChange: function(checked) { MonitoringConsole.Model.Refresh.paused(checked); updateMenu(); } },
@@ -2941,7 +3271,22 @@ MonitoringConsole.View = (function() {
         ]};
     }
 
+    function createColorSettings() {
+        let colorModel = MonitoringConsole.Model.Colors;
+        return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
+            { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
+            { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
+            { label: 'Defaults', input: [
+                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
+                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
+                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
+            ]},
+            { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
+        ]};
+    }
+
     function createWidgetSettings(widget) {
+        let colorModel = MonitoringConsole.Model.Colors;
         let options = widget.options;
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
@@ -2961,6 +3306,8 @@ MonitoringConsole.View = (function() {
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -2986,19 +3333,24 @@ MonitoringConsole.View = (function() {
             ]},
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
-            { label: 'Waterline', type: 'value', unit: unit, value: widget.decorations.waterline, onChange: (widget, value) => widget.decorations.waterline = value },
-            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Waterline', input: [
+                { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: colorModel.default('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
+            ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: colorModel.default('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: colorModel.default('critical'), onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
             //TODO add color for each threshold
         ]});
-        settings.push({ id: 'settings-status', caption: 'Status', description: 'Set a text for an assessment status', entries: [
+        settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
@@ -3104,6 +3456,8 @@ MonitoringConsole.View = (function() {
         }
         let legend = [];
         let format = Units.converter(widget.unit).format;
+        let palette = MonitoringConsole.Model.Colors.palette();
+        let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -3119,11 +3473,13 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
+            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
+            let bgColor = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
                 value: value, 
-                color: MonitoringConsole.Chart.Common.lineColor(j),
-                backgroundColor: MonitoringConsole.Chart.Common.backgroundColor(j),
+                color: color,
+                backgroundColor: bgColor,
                 assessments: seriesData.assessments,
             };
             legend.push(item);
@@ -3131,6 +3487,15 @@ MonitoringConsole.View = (function() {
         }
         return legend;
     }
+
+    function getColorKey(widget, seriesData, index) {
+        switch (widget.coloring) {
+            case 'index': return 'line-' + index;
+            case 'series': return seriesData.series;
+            case 'instance': 
+            default: return seriesData.instance;
+        }
+    } 
 
     function createIndicatorComponent(widget, data) {
         if (!data)
@@ -3230,11 +3595,13 @@ MonitoringConsole.View = (function() {
      */
     return {
         Units: Units,
+        Colors: Colors,
         Components: Components,
         onPageReady: function() {
             // connect the view to the model by passing the 'onDataUpdate' function to the model
             // which will call it when data is received
             onPageChange(MonitoringConsole.Model.init(onDataUpdate, onPageChange));
+            Colors.scheme('Payara', false);
         },
         onPageChange: (layout) => onPageChange(layout),
         onPageUpdate: (layout) => onPageUpdate(layout),
