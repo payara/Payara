@@ -39,7 +39,7 @@
  */
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 
-package com.sun.common.util.logging;
+package com.sun.enterprise.server.logging;
 
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
@@ -49,17 +49,25 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  *
  * @author Jerome Dochez
  */
-public class BooleanLatch extends AbstractQueuedSynchronizer {
-        public boolean isSignalled() { return getState() != 0; }
+class BooleanLatch extends AbstractQueuedSynchronizer {
 
-        @Override
-        public int tryAcquireShared(int ignore) {
-            return isSignalled()? 1 : -1;
-        }
+    private static final long serialVersionUID = -4058541846490788827L;
 
-        @Override
-        public boolean tryReleaseShared(int ignore) {
-            setState(1);
-            return true;
-        }
+
+    public boolean isSignalled() {
+        return getState() != 0;
+    }
+
+
+    @Override
+    public int tryAcquireShared(int ignore) {
+        return isSignalled() ? 1 : -1;
+    }
+
+
+    @Override
+    public boolean tryReleaseShared(int ignore) {
+        setState(1);
+        return true;
+    }
 }

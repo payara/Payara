@@ -50,9 +50,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 
-import com.sun.common.util.logging.BooleanLatch;
-import com.sun.common.util.logging.GFLogRecord;
-
 import javax.inject.Singleton;
 
 import java.text.SimpleDateFormat;
@@ -77,11 +74,12 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     private Syslog sysLogger;
     private Thread pump= null;
-    private BooleanLatch done = new BooleanLatch();
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
-    private SimpleFormatter simpleFormatter = new SimpleFormatter();
+    private final BooleanLatch done = new BooleanLatch();
+    private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(5000);
+    private final SimpleFormatter simpleFormatter = new SimpleFormatter();
 
 
+    @Override
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
@@ -101,6 +99,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     private void initializePump() {
         // start the Queue consummer thread.
         pump = new Thread() {
+            @Override
             public void run() {
                 try {
                     while (!done.isSignalled()) {
@@ -126,6 +125,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
     }
 
+    @Override
     public void preDestroy() {
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
@@ -182,26 +182,28 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
      */
     @Override
     public void publish( LogRecord record ) {
-        if (pump == null)
+        if (pump == null) {
             return;
+        }
 
-        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
-            pendingRecords.add(wrappedRecord);
+            pendingRecords.add(record);
         } catch(IllegalStateException e) {
             // queue is full, start waiting.
             try {
-                pendingRecords.put(wrappedRecord);
+                pendingRecords.put(record);
             } catch (InterruptedException e1) {
                 // to bad, record is lost...
             }
         }
     }
 
+    @Override
     public void close() {
 
     }
 
+    @Override
     public void flush() {
 
     }
