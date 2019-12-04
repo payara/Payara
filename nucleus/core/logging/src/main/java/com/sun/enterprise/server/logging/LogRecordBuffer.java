@@ -39,8 +39,6 @@
  */
 package com.sun.enterprise.server.logging;
 
-import com.sun.common.util.logging.GFLogRecord;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -52,7 +50,7 @@ public class LogRecordBuffer {
 
     private final int capacity;
     private final int maxWait;
-    private final ArrayBlockingQueue<GFLogRecord> pendingRecords;
+    private final ArrayBlockingQueue<EnhancedLogRecord> pendingRecords;
 
 
     /**
@@ -115,7 +113,7 @@ public class LogRecordBuffer {
     }
 
 
-    public GFLogRecord pollOrWait() {
+    public EnhancedLogRecord pollOrWait() {
         try {
             return this.pendingRecords.take();
         } catch (final InterruptedException e) {
@@ -124,12 +122,12 @@ public class LogRecordBuffer {
     }
 
 
-    public GFLogRecord poll() {
+    public EnhancedLogRecord poll() {
         return this.pendingRecords.poll();
     }
 
 
-    public void add(final GFLogRecord record) {
+    public void add(final EnhancedLogRecord record) {
         if (maxWait > 0) {
             addWithTimeout(record);
         } else {
@@ -142,7 +140,7 @@ public class LogRecordBuffer {
      * This prevents deadlock - when the waiting is not successful, it forcibly drops all waiting records.
      * Logs an error after that.
      */
-    private void addWithTimeout(final GFLogRecord record) {
+    private void addWithTimeout(final EnhancedLogRecord record) {
         try {
             if (this.pendingRecords.offer(record)) {
                 return;
@@ -156,15 +154,19 @@ public class LogRecordBuffer {
         }
 
         this.pendingRecords.clear();
-        this.pendingRecords.offer(new GFLogRecord(Level.SEVERE, this + ": The buffer was forcibly dropped after "
-            + maxWait + " s timeout for adding the log record [" + record + "]. Log records were lost."));
+        // note: the record is not meaningful for the message. The cause is in another place.
+        this.pendingRecords.offer(new EnhancedLogRecord(Level.SEVERE, //
+            this + ": The buffer was forcibly cleared after " + maxWait + " s timeout for adding another log record." //
+                + " Log records were lost." //
+                + " It might be caused by a recursive deadlock," //
+                + " you can increase the capacity or the timeout to avoid this."));
     }
 
 
     /**
      * This prevents losing any records, but may end up in deadlock if the capacity is reached.
      */
-    private void addWithUnlimitedWaiting(final GFLogRecord record) {
+    private void addWithUnlimitedWaiting(final EnhancedLogRecord record) {
         if (this.pendingRecords.offer(record)) {
             return;
         }

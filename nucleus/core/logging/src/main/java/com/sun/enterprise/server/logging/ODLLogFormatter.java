@@ -44,7 +44,7 @@ package com.sun.enterprise.server.logging;
 
 
 import com.sun.appserv.server.util.Version;
-import com.sun.common.util.logging.GFLogRecord;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
@@ -259,8 +259,8 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
                 recordBuffer.append(record.getThreadID());
                 logEvent.setThreadId(record.getThreadID());
                 String threadName;
-                if (record instanceof GFLogRecord) {
-                    threadName = ((GFLogRecord)record).getThreadName();
+                if (record instanceof EnhancedLogRecord) {
+                    threadName = ((EnhancedLogRecord)record).getThreadName();
                 } else {
                     threadName = Thread.currentThread().getName();
                 }

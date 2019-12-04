@@ -40,14 +40,12 @@
 // Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package com.sun.enterprise.server.logging;
 
-import com.sun.common.util.logging.BooleanLatch;
-import com.sun.common.util.logging.GFLogRecord;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -105,7 +103,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             // avoid empty records
             return;
         }
-        final GFLogRecord logRecord = new GFLogRecord(level, logMessage);
+        final EnhancedLogRecord logRecord = new EnhancedLogRecord(level, logMessage);
         logRecordBuffer.add(logRecord);
     }
 

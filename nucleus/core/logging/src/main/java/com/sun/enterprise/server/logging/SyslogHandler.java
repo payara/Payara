@@ -50,8 +50,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 
-import com.sun.common.util.logging.BooleanLatch;
-
 import javax.inject.Singleton;
 
 import java.text.SimpleDateFormat;

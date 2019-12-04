@@ -42,8 +42,6 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.appserv.server.util.Version;
-import com.sun.common.util.logging.BooleanLatch;
-import com.sun.common.util.logging.GFLogRecord;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -953,13 +951,13 @@ public class GFFileHandler extends StreamHandler
         // output correct thread-name if done asynchronously. Note that
         // this fix is limited to records published through this handler only.
         // ***
-        // PAYARA-406 Check if the LogRecord passed in is already a GFLogRecord,
+        // PAYARA-406 Check if the LogRecord passed in is already a EnhancedLogRecord,
         // and just cast the passed record if it is
-        final GFLogRecord recordWrapper;
-        if (record instanceof GFLogRecord) {
-            recordWrapper = (GFLogRecord) record;
+        final EnhancedLogRecord recordWrapper;
+        if (record instanceof EnhancedLogRecord) {
+            recordWrapper = (EnhancedLogRecord) record;
         } else {
-            recordWrapper = new GFLogRecord(record);
+            recordWrapper = new EnhancedLogRecord(record);
         }
 
         if (logToFile) {

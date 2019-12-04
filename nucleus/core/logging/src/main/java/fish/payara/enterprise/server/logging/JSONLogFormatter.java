@@ -40,7 +40,7 @@
  // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package fish.payara.enterprise.server.logging;
 
-import com.sun.common.util.logging.GFLogRecord;
+import com.sun.enterprise.server.logging.EnhancedLogRecord;
 import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
 import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;
@@ -278,8 +278,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 // Thread Name
                 String threadName;
 
-                if (record instanceof GFLogRecord) {
-                    threadName = ((GFLogRecord)record).getThreadName();
+                if (record instanceof EnhancedLogRecord) {
+                    threadName = ((EnhancedLogRecord)record).getThreadName();
                 } else {
                     threadName = Thread.currentThread().getName();
                 }
