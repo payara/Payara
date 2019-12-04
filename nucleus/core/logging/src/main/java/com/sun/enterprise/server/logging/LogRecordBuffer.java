@@ -39,10 +39,11 @@
  */
 package com.sun.enterprise.server.logging;
 
+import com.sun.common.util.logging.GFLogRecord;
+
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.logging.ErrorManager;
-import java.util.logging.LogRecord;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * @author David Matejcek
@@ -50,10 +51,48 @@ import java.util.logging.LogRecord;
 public class LogRecordBuffer {
 
     private final int capacity;
-    private final BlockingQueue<LogRecord> pendingRecords;
+    private final int maxWait;
+    private final ArrayBlockingQueue<GFLogRecord> pendingRecords;
 
+
+    /**
+     * The buffer for log records.
+     * <p>
+     * If it is full and another record is comming to the buffer, the record will wait until the
+     * buffer would have a free capacity, maybe forever.
+     * <p>
+     * See also the another constructor.
+     *
+     * @param capacity capacity of the buffer.
+     */
     public LogRecordBuffer(final int capacity) {
+        this(capacity, 0);
+    }
+
+
+    /**
+     * The buffer for log records.
+     * <p>
+     * If it is full and another record is comming to the buffer, the record will wait until the
+     * buffer would have a free capacity, but only for a maxWait seconds.
+     * <p>
+     * If the buffer would not have free capacity even after the maxWait time, the buffer will be
+     * automatically cleared, the incomming record will be lost and there will be a stacktrace in
+     * standard error output - but that may be redirected to JUL again, so this must be reliable.
+     * <ul>
+     * <li>After this error handling procedure the logging will be available again in full capacity
+     * but it's previous unprocessed log records would be lost.
+     * <li>If the maxWait is lower than 1, the calling thread would be blocked until some records would
+     * be processed. It may remain blocked forever.
+     * </ul>
+     *
+     * @param capacity capacity of the buffer.
+     * @param maxWait maximal time in seconds to wait for the free capacity. If &lt; 1, can wait
+     *            forever.
+     */
+    public LogRecordBuffer(final int capacity, final int maxWait) {
         this.capacity = capacity;
+        this.maxWait = maxWait;
         this.pendingRecords = new ArrayBlockingQueue<>(capacity);
     }
 
@@ -76,30 +115,64 @@ public class LogRecordBuffer {
     }
 
 
-    public LogRecord pollOrWait() {
+    public GFLogRecord pollOrWait() {
         try {
             return this.pendingRecords.take();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             return null;
         }
     }
 
 
-    public LogRecord poll() {
+    public GFLogRecord poll() {
         return this.pendingRecords.poll();
     }
 
 
-    public void add(final LogRecord record) {
-        if (pendingRecords.offer(record)) {
+    public void add(final GFLogRecord record) {
+        if (maxWait > 0) {
+            addWithTimeout(record);
+        } else {
+            addWithUnlimitedWaiting(record);
+        }
+    }
+
+
+    /**
+     * This prevents deadlock - when the waiting is not successful, it forcibly drops all waiting records.
+     * Logs an error after that.
+     */
+    private void addWithTimeout(final GFLogRecord record) {
+        try {
+            if (this.pendingRecords.offer(record)) {
+                return;
+            }
+            Thread.yield();
+            if (this.pendingRecords.offer(record, this.maxWait, TimeUnit.SECONDS)) {
+                return;
+            }
+        } catch (final InterruptedException e) {
+            // do nothing
+        }
+
+        this.pendingRecords.clear();
+        this.pendingRecords.offer(new GFLogRecord(Level.SEVERE, this + ": The buffer was forcibly dropped after "
+            + maxWait + " s timeout for adding the log record [" + record + "]. Log records were lost."));
+    }
+
+
+    /**
+     * This prevents losing any records, but may end up in deadlock if the capacity is reached.
+     */
+    private void addWithUnlimitedWaiting(final GFLogRecord record) {
+        if (this.pendingRecords.offer(record)) {
             return;
         }
-        // queue is full, start waiting.
-        error("GFFileHandler: Queue full. Waiting to submit.", null);
         try {
-            pendingRecords.put(record);
+            Thread.yield();
+            this.pendingRecords.put(record);
         } catch (final InterruptedException e) {
-            error("GFFileHandler: Waiting was interrupted. Log record lost.", e);
+            // do nothing
         }
     }
 
@@ -107,15 +180,10 @@ public class LogRecordBuffer {
     /**
      * Returns simple name of this class and size/capacity
      *
-     * @return ie.: LogRecordBuffer[5/10000]
+     * @return ie.: LogRecordBuffer@2b488078[5/10000]
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + getSize() + "/" + getCapacity() + "]";
-    }
-
-
-    private void error(final String message, final Exception cause) {
-        new ErrorManager().error(message, cause, ErrorManager.GENERIC_FAILURE);
+        return super.toString() + "[" + getSize() + "/" + getCapacity() + "]";
     }
 }

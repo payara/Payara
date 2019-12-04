@@ -44,7 +44,6 @@ package com.sun.enterprise.server.logging;
 import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.BooleanLatch;
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.common.util.logging.LoggingOutputStream;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -115,6 +114,7 @@ public class GFFileHandler extends StreamHandler
     private static final String GF_FILE_HANDLER_ID = GFFileHandler.class.getCanonicalName() ;
 
     private static final int DEFAULT_BUFFER_CAPACITY = 10000;
+    private static final int DEFAULT_BUFFER_TIMEOUT = 0;
     private static final int DEFAULT_ROTATION_LIMIT_BYTES = 2000000;
     public static final int DISABLE_LOG_FILE_ROTATION_VALUE = 0;
 
@@ -192,8 +192,6 @@ public class GFFileHandler extends StreamHandler
     private final List<LogEventListener> logEventListeners = new ArrayList<>();
 
     private Thread pump;
-
-    protected String logFileProperty = null;
 
     private final LogManager manager = LogManager.getLogManager();
     private final String className = getClass().getName();
@@ -365,7 +363,9 @@ public class GFFileHandler extends StreamHandler
         if (logToFileProperty) {
             final String capacityProp = manager.getProperty(className + ".bufferCapacity");
             final int capacity = capacityProp == null ? DEFAULT_BUFFER_CAPACITY : Integer.parseInt(capacityProp);
-            enableLogToFile(capacity);
+            final String timeoutProp = manager.getProperty(className + ".bufferTimeout");
+            final int timeout = timeoutProp == null ? DEFAULT_BUFFER_TIMEOUT : Integer.parseInt(timeoutProp);
+            enableLogToFile(capacity, timeout);
         }
     }
 
@@ -499,10 +499,10 @@ public class GFFileHandler extends StreamHandler
     }
 
     private String evaluateFileName() {
-        logFileProperty = manager.getProperty(getClass().getName() + ".file");
+        final String logFileProperty = manager.getProperty(getClass().getName() + ".file");
         if (logFileProperty == null || logFileProperty.trim().isEmpty()) {
-            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator
-                + getDefaultFileName();
+            return TranslatedConfigView.expandConfigValue(env.getInstanceRoot().getAbsolutePath() + File.separator
+                + LOGS_DIR + File.separator + getDefaultFileName());
         }
         return TranslatedConfigView.expandConfigValue(logFileProperty);
     }
@@ -593,13 +593,13 @@ public class GFFileHandler extends StreamHandler
         pump = new Thread() {
             @Override
             public void run() {
-                earlyLog(Level.CONFIG, "Logging pump for " + logRecordBuffer + " started.");
+                earlyLog(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
                 while (logToFile && !done.isSignalled()) {
                     try {
-                        log();
+                        publishBatchFromBuffer();
                     } catch (Exception e) {
                         // Continue the loop without exiting
-                        // Something is broken, but we cannot log
+                        // Something is broken, but we cannot log it
                     }
                 }
             }
@@ -896,7 +896,7 @@ public class GFFileHandler extends StreamHandler
      * 5005
      * Retrieves the LogRecord from our Queue and store them in the file
      */
-    private void log() {
+    private void publishBatchFromBuffer() {
         if (!publishRecord(logRecordBuffer.pollOrWait())) {
             return;
         }
@@ -1016,16 +1016,15 @@ public class GFFileHandler extends StreamHandler
     }
 
     private void logStandardStreams() {
-        // redirect stderr and stdout, a better way to do this
-        //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
-
-        Logger _ologger = LogFacade.STDOUT_LOGGER;
-        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
+        final Logger _ologger = LogFacade.STDOUT_LOGGER;
+        // FIXME: capacity
+        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO, 5000);
         LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
 
-        Logger _elogger = LogFacade.STDERR_LOGGER;
-        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
+        final Logger _elogger = LogFacade.STDERR_LOGGER;
+        // FIXME: capacity
+        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE, 1000);
         LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
         System.setErr(perr);
     }
@@ -1040,11 +1039,11 @@ public class GFFileHandler extends StreamHandler
         configuredLogFile = logFile;
     }
 
-    public synchronized void enableLogToFile(final int bufferCapacity) {
+    public synchronized void enableLogToFile(final int bufferCapacity, final int bufferTimeout) {
         // enable before pump initialization - thread checks this field
         this.logToFile = true;
         if (this.logToFile) {
-            this.logRecordBuffer = new LogRecordBuffer(bufferCapacity);
+            this.logRecordBuffer = new LogRecordBuffer(bufferCapacity, bufferTimeout);
             initializePump();
         }
     }
@@ -1053,7 +1052,7 @@ public class GFFileHandler extends StreamHandler
         // this is all, pump will take it as a signal to stop.
         this.logToFile = false;
     }
-// prekopat, nastaveni atomicky, do toho commitu jen navysit kapacitu.
+
     public synchronized void setRotationOnDateChange(boolean rotationOnDateChange) {
         this.rotationOnDateChange = rotationOnDateChange;
         restartTimeBasedLogRotation();
@@ -1120,12 +1119,10 @@ public class GFFileHandler extends StreamHandler
         }
     }
 
-    /**
-     * @param logToFile
-     */
     public void setLogToFile(boolean logToFile) {
         if (logToFile) {
-            enableLogToFile(DEFAULT_BUFFER_CAPACITY);
+            // FIXME: read it from configuration!
+            enableLogToFile(DEFAULT_BUFFER_CAPACITY, DEFAULT_BUFFER_TIMEOUT);
         } else {
             disableLogToFile();
         }

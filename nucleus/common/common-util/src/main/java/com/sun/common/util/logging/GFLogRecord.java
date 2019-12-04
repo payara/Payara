@@ -99,4 +99,12 @@ public class GFLogRecord extends LogRecord {
     public String getThreadName() {
         return threadName;
     }
+
+    /**
+     * Returns only a message.
+     */
+    @Override
+    public String toString() {
+        return getMessage();
+    }
 }
