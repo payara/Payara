@@ -38,15 +38,16 @@
  * holder.
  */
 // Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
-package com.sun.common.util.logging;
+package com.sun.enterprise.server.logging;
+
+import com.sun.common.util.logging.BooleanLatch;
+import com.sun.common.util.logging.GFLogRecord;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -56,23 +57,18 @@ import java.util.logging.Logger;
  * Implementation of a OutputStream that flush the records to a Logger.
  * This is useful to redirect stderr and stdout to loggers.
  * <p/>
- * User: Jerome Dochez
- * author: Jerome Dochez, Carla Mott
+ * @author Jerome Dochez
+ * @author Carla Mott
+ * @author David Matejcek
  */
 public class LoggingOutputStream extends ByteArrayOutputStream {
 
-    private static final int MAX_RECORDS = 5000;
-
     private final String lineSeparator;
+    private final Level level;
+    private final BooleanLatch done = new BooleanLatch();
+    private final LogRecordBuffer logRecordBuffer;
 
     private Logger logger;
-    private final Level level;
-
-    private final ThreadLocal<LoggingOutputStream> reentrant = new ThreadLocal<>();
-
-    private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(MAX_RECORDS);
-
-    private final BooleanLatch done = new BooleanLatch();
     private Thread pump;
 
     /**
@@ -80,11 +76,13 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      *
      * @param logger Logger to write to
      * @param level  Level at which to write the log message
+     * @param bufferCapacity maximal count of unprocessed records.
      */
-    public LoggingOutputStream(Logger logger, Level level) {
+    public LoggingOutputStream(Logger logger, Level level, int bufferCapacity) {
         super();
         this.logger = logger;
         this.level = level;
+        this.logRecordBuffer = new LogRecordBuffer(bufferCapacity);
         lineSeparator = System.lineSeparator();
         initializePump();
     }
@@ -97,25 +95,18 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      */
     @Override
     public void flush() throws IOException {
-
-        String logMessage = null;
+        final String logMessage;
         synchronized (this) {
             super.flush();
-            logMessage = this.toString();
+            logMessage = this.toString().trim();
             super.reset();
         }
-        if (logMessage.trim().length() == 0 || logMessage.trim().equals(lineSeparator)) {
+        if (logMessage.isEmpty() || lineSeparator.equals(logMessage)) {
             // avoid empty records
             return;
         }
-        LogRecord logRecord = new LogRecord(level, logMessage);
-
-        // JUL LogRecord does not capture thread-name. Create a wrapper to
-        // capture the name of the logging thread so that a formatter can
-        // output correct thread-name if done asynchronously. Note that
-        // this fix is limited to records published through this handler only.
-        GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
-        pendingRecords.offer(logRecordWrapper);
+        final GFLogRecord logRecord = new GFLogRecord(level, logMessage);
+        logRecordBuffer.add(logRecord);
     }
 
     private void initializePump() {
@@ -124,95 +115,82 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             public void run() {
                 while (!done.isSignalled()) {
                     try {
-                        log();
+                        logAllPendingRecords();
                     } catch (Exception e) {
-                        // GLASSFISH-19125
                         // Continue the loop without exiting
+                        // Something is broken, but we cannot log it
                     }
                 }
             }
         };
-        pump.setName("Logging output pump");
+        pump.setName("Logging pump for '" + logger.getName() + "'");
         pump.setDaemon(true);
         pump.setPriority(Thread.MAX_PRIORITY);
         pump.start();
     }
 
     /**
-     * Retrieves the LogRecord from our Queue and log them
+     * Retrieves all log records from the buffer and logs them
      */
-    public void log() {
-
-        LogRecord record;
-
-        // take is blocking so we take one record off the queue
-        try {
-            record = pendingRecords.take();
-            if (reentrant.get() != null) {
-                return;
-            }
-            try {
-                reentrant.set(this);
-                logger.log(record);
-            } finally {
-                reentrant.set(null);
-            }
-        } catch (InterruptedException e) {
+    private void logAllPendingRecords() {
+        if (!logRecord(logRecordBuffer.pollOrWait())) {
             return;
         }
-
-        // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-        List<LogRecord> v = new ArrayList<>();
-        final int size = pendingRecords.size();
-        int msgs = pendingRecords.drainTo(v, size);
-        for (int j = 0; j < msgs; j++) {
-            logger.log(v.get(j));
+        while (true) {
+            if (!logRecord(logRecordBuffer.poll())) {
+                // end if there was nothing more to log
+                return;
+            }
         }
-
     }
 
     @Override
     public void close() throws IOException {
         done.tryReleaseShared(1);
-        pump.interrupt();
-
-        // Drain and log the remaining messages
-        final int size = pendingRecords.size();
-        if (size > 0) {
-            Collection<LogRecord> records = new ArrayList<>(size);
-            pendingRecords.drainTo(records, size);
-            for (LogRecord record : records) {
-                logger.log(record);
+        while (true) {
+            if (!logRecord(logRecordBuffer.poll())) {
+                // end if there was nothing more to log
+                break;
             }
         }
-
         super.close();
     }
 
-/*
- * LoggingPrintStream creates a PrintStream with a
- * LoggingByteArrayOutputStream as its OutputStream. Once it is
- * set as the System.out or System.err, all outputs to these
- * PrintStreams will end up in LoggingByteArrayOutputStream
- * which will log these on a flush.
- * This simple behavious has a negative side effect that
- * stack traces are logged with each line being a new log record.
- * The reason for above is that printStackTrace converts each line
- * into a separate println, causing a flush at the end of each.
- * One option that was thought of to smooth this over was to see
- * if the caller of println is Throwable.[some set of methods].
- * Unfortunately, there are others who interpose on System.out and err
- * (like jasper) which makes that check untenable.
- * Hence the logic currently used is to see if there is a println(Throwable)
- * and do a printStackTrace and log the complete StackTrace ourselves.
- * If this is followed by a series of printlns, then we keep ignoring
- * those printlns as long as they were the same as that recorded by
- * the stackTrace. This needs to be captured on a per thread basis
- * to take care of potentially parallel operations.
- * Care is taken to optimise the frequently used path where exceptions
- * are not being printed.
- */
+    /**
+     * @return true if the record was not null
+     */
+    private boolean logRecord(final LogRecord record) {
+        if (record == null) {
+            return false;
+        }
+        logger.log(record);
+        return true;
+    }
 
+
+    /**
+     * LoggingPrintStream creates a PrintStream with a LoggingByteArrayOutputStream as its
+     * OutputStream. Once it is set as the System.out or System.err, all outputs to these
+     * PrintStreams will end up in {@link LoggingOutputStream} which will log these on a flush.
+     * <p>
+     * This simple behavious has a negative side effect that stack traces are logged with
+     * each line being a new log record. The reason for above is that printStackTrace converts each
+     * line into a separate println, causing a flush at the end of each.
+     * <p>
+     * One option that was thought of to smooth this over was to see if the caller of println is
+     * Throwable.[some set of methods].
+     * Unfortunately, there are others who interpose on System.out and err
+     * (like jasper) which makes that check untenable.
+     * Hence the logic currently used is to see if there is a println(Throwable)
+     * and do a printStackTrace and log the complete StackTrace ourselves.
+     * If this is followed by a series of printlns, then we keep ignoring
+     * those printlns as long as they were the same as that recorded by
+     * the stackTrace. This needs to be captured on a per thread basis
+     * to take care of potentially parallel operations.
+     * <p>
+     * Care is taken to optimise the frequently used path where exceptions
+     * are not being printed.
+     */
     public class LoggingPrintStream extends PrintStream {
         LogManager logManager = LogManager.getLogManager();
 
@@ -458,39 +436,40 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
 
-        /*
-          LoggingPrintStream class is to support the java System.err and System.out
-          redirection to Appserver log file--server.log.
-          When Java IO is redirected and System.out.println(...) is invoked by a thread with
-          LogManager or Logger(SYSTEMERR_LOGGER,SYSTEOUT_LOGGER) locked, all kind of dead
-          locks among threads will happen.
-          These dead locks are easily reproduced when jvm system properties
-          "-Djava.security.manager" and "-Djava.security.debug=access,failure" are defined.
-          These dead lcoks are basically because each thread has its own sequence of
-          acquiring lock objects(LogManager,Logger,FileandSysLogHandler, the buffer inside
-          LoggingPrintStream).
-          There is no obvious way to define the lock hierarchy and control the lock sequence;
-          Trylock is not a strightforward solution either.Beside they both create heavy
-          dependence on the detail implementation of JDK and Appserver.
 
-          This method(checkLocks) is to find which locks current thread has and
-          LoggingPrintStream object will decide whether to continue to do printing or
-          give ip up to avoid the dead lock.
+        /**
+         * LoggingPrintStream class is to support the java System.err and System.out
+         * redirection to Appserver log file--server.log.
+         * <p>
+         * When Java IO is redirected and System.out.println(...) is invoked by a thread with
+         * LogManager or Logger(SYSTEMERR_LOGGER,SYSTEOUT_LOGGER) locked, all kind of dead
+         * locks among threads will happen.
+         * <p>
+         * These dead locks are easily reproduced when jvm system properties
+         * "-Djava.security.manager" and "-Djava.security.debug=access,failure" are defined.
+         * These dead locks are basically because each thread has its own sequence of
+         * acquiring lock objects(LogManager,Logger,FileandSysLogHandler, the buffer inside
+         * LoggingPrintStream).
+         * <p>
+         * There is no obvious way to define the lock hierarchy and control the lock sequence;
+         * Trylock is not a strightforward solution either.Beside they both create heavy
+         * dependence on the detail implementation of JDK and Appserver.
+         * <p>
+         * This method(checkLocks) is to find which locks current thread has and
+         * LoggingPrintStream object will decide whether to continue to do printing or
+         * give ip up to avoid the dead lock.
          */
-
         private boolean checkLocks() {
-            Thread t = Thread.currentThread();
             return !Thread.holdsLock(logger) && !Thread.holdsLock(logManager);
         }
     }
 
-/*
- * StackTraceObjects keeps track of StackTrace printed
- * by a thread as a result of println(Throwable) and
- * it keeps track of subsequent println(String) to
- * avoid duplicate logging of stacktrace
- */
-
+    /**
+     * StackTraceObjects keeps track of StackTrace printed
+     * by a thread as a result of println(Throwable) and
+     * it keeps track of subsequent println(String) to
+     * avoid duplicate logging of stacktrace
+     */
     private static class StackTraceObjects {
 
         private final ByteArrayOutputStream stackTraceBuf;
@@ -539,5 +518,4 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return charsIgnored >= stackTraceBufBytes;
         }
     }
-
 }
