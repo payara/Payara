@@ -101,6 +101,9 @@ public class MBeanAttributeReadHandler extends ReadHandler {
         try {
             Object attribute = delegate
                     .getMBeanAttribute(mbeanname, attributename);
+            if (attribute == null) {
+                return JsonValue.NULL;
+            }
             TypeProcessor<?> processor = ProcessorFactory.getTypeProcessor(attribute);
             
             return processor.processObject(attribute);
