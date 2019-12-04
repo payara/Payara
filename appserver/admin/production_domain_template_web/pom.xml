@@ -129,6 +129,29 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                   <validationSets>
+                       <validationSet>
+                           <dir>src/main/resources/config</dir>
+                           <includes>
+                               <include>domain.xml</include>
+                           </includes>
+                       </validationSet>
+                   </validationSets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
