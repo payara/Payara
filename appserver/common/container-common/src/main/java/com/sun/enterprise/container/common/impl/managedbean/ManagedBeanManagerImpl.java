@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
@@ -45,6 +45,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -83,6 +85,7 @@ import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.InterceptorDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
@@ -119,51 +122,32 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     private ProcessType processType;
 
     // Keep track of contexts for managed bean instances instantiated via JCDI
-    private Map<BundleDescriptor, Map<Object, JCDIService.JCDIInjectionContext>> jcdiManagedBeanInstanceMap =
-            new HashMap<BundleDescriptor, Map<Object, JCDIService.JCDIInjectionContext>>();
+    private Map<BundleDescriptor, Map<Object, JCDIService.JCDIInjectionContext<?>>> jcdiManagedBeanInstanceMap = new HashMap<>();
 
     // Used to hold managed beans in app client container
-    private Map<String, NamingObjectProxy> appClientManagedBeans = new HashMap<String, NamingObjectProxy>();
+    private Map<String, NamingObjectProxy> appClientManagedBeans = new HashMap<>();
 
+    @Override
     public void postConstruct() {
         events.register(this);
         processType = processEnv.getProcessType();
     }
 
-    public void event(Event event) {
-
-         if (event.is(Deployment.APPLICATION_LOADED) ) {
-             ApplicationInfo info =  Deployment.APPLICATION_LOADED.getHook(event);
-
-             loadManagedBeans(info);
-
-             registerAppLevelDependencies(info);
-
-         } else if( event.is(Deployment.APPLICATION_UNLOADED) ) {
-
-             ApplicationInfo info =  Deployment.APPLICATION_UNLOADED.getHook(event);
-             Application app = info.getMetaData(Application.class);
-
-             doCleanup(app);
-
-         } else if( event.is(Deployment.DEPLOYMENT_FAILURE) ) {
-
-             Application app = Deployment.DEPLOYMENT_FAILURE.getHook(event).getModuleMetaData(Application.class);
-
-             doCleanup(app);
-
-         }
+    @Override
+    public void event(Event<?> event) {
+        Deployment.APPLICATION_LOADED.onMatch(event, info -> {
+            loadManagedBeans(info);
+            registerAppLevelDependencies(info);
+        });
+        Deployment.APPLICATION_UNLOADED.onMatch(event, info -> doCleanup(info.getMetaData(Application.class)));
+        Deployment.DEPLOYMENT_FAILURE.onMatch(event, info -> doCleanup(info.getModuleMetaData(Application.class)));
     }
 
     private void doCleanup(Application app) {
-
         if( app != null ) {
-
             unloadManagedBeans(app);
-
             unregisterAppLevelDependencies(app);
         }
-
     }
 
     private void registerAppLevelDependencies(ApplicationInfo appInfo) {
@@ -208,6 +192,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         loadManagedBeans(app);
     }
 
+    @Override
     public void loadManagedBeans(Application app) {
 
         JCDIService jcdiService = habitat.getService(JCDIService.class);
@@ -224,7 +209,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 try {
                     Set<String> interceptorClasses = next.getAllInterceptorClasses();
 
-                    Class targetClass = bundle.getClassLoader().loadClass(next.getBeanClassName());
+                    Class<?> targetClass = bundle.getClassLoader().loadClass(next.getBeanClassName());
                     InterceptorInfo interceptorInfo = new InterceptorInfo();
                     interceptorInfo.setTargetClass(targetClass);
                     interceptorInfo.setInterceptorClassNames(interceptorClasses);
@@ -239,7 +224,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                         interceptorInfo.setHasTargetClassAroundInvoke(true);
                     }
 
-                    Map<Method, List> interceptorChains = new HashMap<Method, List>();
+                    Map<Method, List<? extends InterceptorDescriptor>> interceptorChains = new HashMap<>();
                     for(Method m : targetClass.getMethods()) {
                         interceptorChains.put(m, next.getAroundInvokeInterceptors(m) );
                     }
@@ -279,12 +264,12 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
             }
 
             jcdiManagedBeanInstanceMap.put(bundle,
-                Collections.synchronizedMap(new HashMap<Object, JCDIService.JCDIInjectionContext>()));
+                Collections.synchronizedMap(new HashMap<>()));
         }
 
     }
 
-    private Constructor getConstructor(Class clz, boolean isCDIBundle) throws Exception {
+    private static Constructor<?> getConstructor(Class<?> clz, boolean isCDIBundle) throws Exception {
         if (isCDIBundle) {
             Constructor<?>[] ctors = clz.getDeclaredConstructors();
             for(Constructor<?> ctor : ctors) {
@@ -298,19 +283,10 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         return clz.getConstructor();
     }
 
+    @Override
     public Object getManagedBean(String globalJndiName) throws Exception {
-
         NamingObjectProxy proxy = appClientManagedBeans.get(globalJndiName);
-
-        Object managedBean = null;
-
-        if( proxy != null ) {
-
-            managedBean = proxy.create(new InitialContext());
-
-        }
-
-        return managedBean;
+        return proxy == null ? null :  proxy.create(new InitialContext());
     }
 
     /**
@@ -319,20 +295,15 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @param bundle bundle descripto
      *
      */
+    @Override
     public void registerRuntimeInterceptor(Object interceptorInstance, BundleDescriptor bundle) {
-
-
         for(ManagedBeanDescriptor next :  bundle.getManagedBeans()) {
-
-            JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
-                       next.getInterceptorBuilder();
-
-            interceptorBuilder.addRuntimeInterceptor(interceptorInstance);
-
+            JavaEEInterceptorBuilder builder = (JavaEEInterceptorBuilder) next.getInterceptorBuilder();
+            builder.addRuntimeInterceptor(interceptorInstance);
         }
-
     }
 
+    @Override
     public void unloadManagedBeans(Application app) {
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
@@ -341,11 +312,11 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 continue;
             }
 
-            Map<Object, JCDIService.JCDIInjectionContext> jcdiInstances =
+            Map<Object, JCDIService.JCDIInjectionContext<?>> jcdiInstances =
                     jcdiManagedBeanInstanceMap.remove(bundle);
 
             if( jcdiInstances != null ) {
-                for(JCDIService.JCDIInjectionContext next : jcdiInstances.values()) {
+                for(JCDIService.JCDIInjectionContext<?> next : jcdiInstances.values()) {
                     try {
                         next.cleanup(true);
                     } catch(Exception e) {
@@ -401,21 +372,16 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     }
 
     private boolean bundleEligible(BundleDescriptor bundle) {
-
-        boolean eligible = false;
-
-        if( processType.isServer() ) {
-
-            eligible = (bundle instanceof WebBundleDescriptor) ||
-                (bundle instanceof EjbBundleDescriptor);
-
-        } else if( processType == ProcessType.ACC ) {
-            eligible = (bundle instanceof ApplicationClientDescriptor);
+        if (processType.isServer()) {
+            return (bundle instanceof WebBundleDescriptor || bundle instanceof EjbBundleDescriptor);
         }
-
-        return eligible;
+        if (processType == ProcessType.ACC) {
+            return bundle instanceof ApplicationClientDescriptor;
+        }
+        return false;
     }
 
+    @Override
     public <T> T createManagedBean(Class<T> managedBeanClass) throws Exception {
         ManagedBeanDescriptor managedBeanDesc = null;
 
@@ -429,6 +395,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         return createManagedBean(managedBeanDesc, managedBeanClass);
     }
 
+    @Override
     public <T> T createManagedBean(Class<T> managedBeanClass, boolean invokePostConstruct) throws Exception {
         ManagedBeanDescriptor managedBeanDesc = null;
 
@@ -449,6 +416,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @return
      * @throws Exception
      */
+    @Override
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass) throws Exception {
 
         JCDIService jcdiService = habitat.getService(JCDIService.class);
@@ -472,18 +440,19 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
             // Have 299 create, inject, and call PostConstruct on managed bean
 
-            JCDIService.JCDIInjectionContext jcdiContext =
+            JCDIService.JCDIInjectionContext<?> jcdiContext =
                 jcdiService.createManagedObject(managedBeanClass, bundleDescriptor);
             callerObject = (T) jcdiContext.getInstance();
 
             // Need to keep track of context in order to destroy properly
-            Map<Object, JCDIService.JCDIInjectionContext> bundleNonManagedObjs =
+            Map<Object, JCDIService.JCDIInjectionContext<?>> bundleNonManagedObjs =
                 jcdiManagedBeanInstanceMap.get(bundleDescriptor);
             bundleNonManagedObjs.put(callerObject, jcdiContext);
-
         } else {
-
-
+            if (desc == null) {
+                throw new IllegalArgumentException(
+                        "CDI not enabled and no managed bean found for class: " + managedBeanClass.getName());
+            }
             JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
                 desc.getInterceptorBuilder();
 
@@ -525,6 +494,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @return
      * @throws Exception
      */
+    @Override
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass,
         boolean invokePostConstruct) throws Exception {
 
@@ -549,17 +519,19 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
             // Have 299 create, inject, and call PostConstruct (if desired) on managed bean
 
-            JCDIService.JCDIInjectionContext jcdiContext =
+            JCDIService.JCDIInjectionContext<?> jcdiContext =
                 jcdiService.createManagedObject(managedBeanClass, bundleDescriptor, invokePostConstruct);
             callerObject = (T) jcdiContext.getInstance();
             // Need to keep track of context in order to destroy properly
-            Map<Object, JCDIService.JCDIInjectionContext> bundleNonManagedObjs =
+            Map<Object, JCDIService.JCDIInjectionContext<?>> bundleNonManagedObjs =
                 jcdiManagedBeanInstanceMap.get(bundleDescriptor);
             bundleNonManagedObjs.put(callerObject, jcdiContext);
 
         } else {
-
-
+            if (desc == null) {
+                throw new IllegalArgumentException(
+                        "CDI not enabled and no managed bean found for class: " + managedBeanClass.getName());
+            }
             JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
                 desc.getInterceptorBuilder();
 
@@ -586,22 +558,13 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
             desc.addBeanInstanceInfo(managedBean, interceptorInvoker);
 
         }
-
         return callerObject;
-
     }
 
+    @Override
     public boolean isManagedBean(Object object) {
-
-        JavaEEInterceptorBuilderFactory interceptorBuilderFactory =
-                            habitat.getService(JavaEEInterceptorBuilderFactory.class);
-
-        if (interceptorBuilderFactory != null) {
-            return interceptorBuilderFactory.isClientProxy(object);
-        } else {
-            return false;
-        }
-
+        JavaEEInterceptorBuilderFactory factory = habitat.getService(JavaEEInterceptorBuilderFactory.class);
+        return factory != null && factory.isClientProxy(object);
     }
 
     private void inject(Object instance, ManagedBeanDescriptor managedBeanDesc)
@@ -615,10 +578,12 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         }
     }
 
+    @Override
     public void destroyManagedBean(Object managedBean)  {
         destroyManagedBean(managedBean, true);
     }
 
+    @Override
     public void destroyManagedBean(Object managedBean, boolean validate)  {
 
         BundleDescriptor bundle = getBundle();
@@ -626,7 +591,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(bundle)) {
-            Map<Object, JCDIService.JCDIInjectionContext> bundleNonManagedObjs = jcdiManagedBeanInstanceMap.get(bundle);
+            Map<Object, JCDIService.JCDIInjectionContext<?>> bundleNonManagedObjs = jcdiManagedBeanInstanceMap.get(bundle);
             // in a failure scenario it's possible that bundleNonManagedObjs is null
             if ( bundleNonManagedObjs == null ) {
                 if (validate) {
@@ -636,7 +601,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 _logger.log(Level.FINE, "Unknown JCDI-enabled managed bean " +
                             managedBean + " of class " + managedBean.getClass());
             } else {
-                JCDIService.JCDIInjectionContext context = bundleNonManagedObjs.remove(managedBean);
+                JCDIService.JCDIInjectionContext<?> context = bundleNonManagedObjs.remove(managedBean);
                 if( context == null ) {
                     if (validate) {
                         throw new IllegalStateException("Unknown JCDI-enabled managed bean " +
@@ -659,15 +624,13 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 Field proxyField = managedBean.getClass().getDeclaredField("__ejb31_delegate");
 
                 final Field finalF = proxyField;
-                    java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
-                        public java.lang.Object run() throws Exception {
-                            if( !finalF.isAccessible() ) {
-                                finalF.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
+                PrivilegedExceptionAction<Void> action = () -> {
+                    if (!finalF.isAccessible()) {
+                        finalF.setAccessible(true);
+                    }
+                    return null;
+                };
+                AccessController.doPrivileged(action);
 
                 Proxy proxy = (Proxy) proxyField.get(managedBean);
 
