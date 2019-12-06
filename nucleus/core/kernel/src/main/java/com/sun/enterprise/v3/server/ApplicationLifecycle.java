@@ -413,10 +413,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             span.start(DeploymentTracing.AppStage.PREPARE, "Sniffer");
 
             sniffers = getSniffers(handler, sniffers, context);
-            final Set<String> snifferTypes = sniffers.stream()
-                    .map(Sniffer::getModuleType)
-                    .collect(toSet());
-            appState.ifPresent(s -> s.setSniffers(snifferTypes));
+            final Collection<? extends Sniffer> selectedSniffers = sniffers;
+            appState.ifPresent(s -> s.setSniffers(selectedSniffers));
 
             span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
 
@@ -491,7 +489,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.PREPARE, "Module")){
                 if (appState.map(ApplicationState::getModuleInfo).isPresent()) {
                     moduleInfo = appState.get().getModuleInfo();
-                    moduleInfo.cleanClassLoaders();
                     moduleInfo.reset();
                 } else {
                     moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
@@ -517,19 +514,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             // the deployer did not take care of populating the application info, this
             // is not a composite module.
-            appInfo = context.getModuleMetaData(ApplicationInfo.class);
-            if (appInfo == null) {
+            if (appState.map(ApplicationState::getApplicationInfo).isPresent()) {
+                appInfo = appState.get().getApplicationInfo();
+                appInfo.reset(context.getSource());
+            } else {
                 appInfo = new ApplicationInfo(events, context.getSource(), appName);
                 appInfo.addModule(moduleInfo);
-
-                for (Object m : context.getModuleMetadata()) {
-                    moduleInfo.addMetaData(m);
-                    appInfo.addMetaData(m);
-                }
-            } else {
-                for (EngineRef ref : moduleInfo.getEngineRefs()) {
-                    appInfo.add(ref);
-                }
+                appState.ifPresent(s -> s.setApplicationInfo(appInfo));
+            }
+            for (Object metadata : context.getModuleMetadata()) {
+                moduleInfo.addMetaData(metadata);
+                appInfo.addMetaData(metadata);
             }
 
             // remove the temp application info from the registry
@@ -975,7 +970,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                         innerSpan.close();
 
-                        if (containersInfo == null || containersInfo.size() == 0) {
+                        if (containersInfo == null || containersInfo.isEmpty()) {
                             String msg = "Cannot start container(s) associated to application of type : " + sniffer.getModuleType();
                             report.failure(logger, msg, null);
                             throw new Exception(msg);

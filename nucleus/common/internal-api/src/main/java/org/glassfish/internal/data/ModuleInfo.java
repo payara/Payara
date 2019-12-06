@@ -137,7 +137,7 @@ public class ModuleInfo {
         return moduleClassLoader;
     }
 
-    public void cleanClassLoaders() {
+    protected void cleanClassLoaders() {
         classLoaders.clear();
         moduleClassLoader = null;
     }
@@ -439,6 +439,7 @@ public class ModuleInfo {
     }
 
     public void reset() {
+        cleanClassLoaders();
         started = false;
     }
 }

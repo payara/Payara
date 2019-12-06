@@ -238,7 +238,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
         super.load(containerStarter, dc);
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "EjbDeployer Loading app from: " + dc.getSourceDir());
+            _logger.log(Level.FINE, "EjbDeployer Loading app from: {0}", dc.getSourceDir());
         }
         // Register the EjbSecurityComponentInvocationHandler
 

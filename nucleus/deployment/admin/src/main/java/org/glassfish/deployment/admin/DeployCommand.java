@@ -275,8 +275,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             initialContext.setArchiveHandler(archiveHandler);
 
             if (hotDeploy && !descriptorChanged) {
-                    hotSwapService.getApplicationState(path)
-                            .ifPresent(s -> s.copyPreviousState(initialContext));
+                hotSwapService.getApplicationState(path)
+                        .ifPresent(s -> s.copyPreviousState(initialContext, events));
             } else {
                 hotSwapService.removeApplicationState(path);
             }
@@ -371,7 +371,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
-        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        final List<AccessCheck> accessChecks = new ArrayList<>();
         accessChecks.add(new AccessCheck(DeploymentCommandUtils.getResourceNameForApps(domain), "create"));
         accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "create"));
 
@@ -398,15 +398,15 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     public void execute(AdminCommandContext context) {
         long timeTakenToDeploy = 0;
         long deploymentTimeMillis = 0;
-
+        Optional<ApplicationState> appState = Optional.empty();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
 
-            if (hotDeploy && !hotSwapService.isApplicationStateExist(path)) {
-                ApplicationState applicationState = new ApplicationState(path);
-                applicationState.setName(name);
+            appState = hotSwapService.getApplicationState(initialContext);
+            if (hotDeploy && !appState.isPresent()) {
+                ApplicationState applicationState = new ApplicationState(name, path, initialContext);
                 applicationState.setTarget(target);
-                applicationState.setDeploymentContext(initialContext);
                 hotSwapService.addApplicationState(applicationState);
+                appState = Optional.of(applicationState);
             }
 
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
@@ -425,9 +425,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             ApplicationConfigInfo savedAppConfig
                     = new ApplicationConfigInfo(apps.getModule(Application.class, name));
             Properties undeployProps = null;
-            if (!hotDeploy) {
+            if (!hotDeploy || descriptorChanged) {
                 undeployProps = handleRedeploy(name, report, context);
-            } 
+            }
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
@@ -492,8 +492,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
                             source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
-            structuredTracing.register(deploymentContext);
-
 
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
@@ -558,8 +556,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if (deplResult != null && !loadOnly) {
-                hotSwapService.getApplicationState(deploymentContext)
-                            .ifPresent(s -> s.storeTransientAppMetaData(deploymentContext));
+                appState.ifPresent(s -> s.storeDescriptorMetaData(deploymentContext));
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
@@ -691,6 +688,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
+            appState.ifPresent(ApplicationState::cleanPreviousClassloaders);
         }
     }
 

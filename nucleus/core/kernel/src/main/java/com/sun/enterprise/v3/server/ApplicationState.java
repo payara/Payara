@@ -40,14 +40,30 @@
 
 package com.sun.enterprise.v3.server;
 
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toSet;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.data.ModuleInfo;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
@@ -62,18 +78,22 @@ public class ApplicationState {
     private String name;
     private String target;
 
-    private ExtendedDeploymentContext deploymentContext;
-    private Map<String, Object> descriptorMetadata;
+    private List<ClassLoader> previousClassLoaders;
 
+    private ExtendedDeploymentContext deploymentContext;
+    private ApplicationInfo applicationInfo;
     private ModuleInfo moduleInfo;
     private List<EngineInfo> engineInfos;
     private Set<String> sniffers;
-
+    private Map<String, Object> descriptorMetadata;
+    
     private static final String WEB_INF = "WEB-INF";
     private static final String META_INF = "META-INF";
 
-    public ApplicationState(File path) {
+    public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
+        this.name = name;
         this.path = path;
+        this.deploymentContext = deploymentContext;
     }
 
     public File getPath() {
@@ -82,10 +102,6 @@ public class ApplicationState {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getTarget() {
@@ -98,18 +114,6 @@ public class ApplicationState {
 
     public ExtendedDeploymentContext getDeploymentContext() {
         return deploymentContext;
-    }
-
-    public void setDeploymentContext(ExtendedDeploymentContext deploymentContext) {
-        this.deploymentContext = deploymentContext;
-    }
-    
-    public void storeTransientAppMetaData(ExtendedDeploymentContext deploymentContext) {
-       this.descriptorMetadata = deploymentContext.getTransientAppMetadata()
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().startsWith(WEB_INF) || e.getKey().startsWith(META_INF))
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     public Map<String, Object> getDescriptorMetadata() {
@@ -132,27 +136,80 @@ public class ApplicationState {
         this.moduleInfo = moduleInfo;
     }
 
+    public ApplicationInfo getApplicationInfo() {
+        return applicationInfo;
+    }
+
+    public void setApplicationInfo(ApplicationInfo applicationInfo) {
+        this.applicationInfo = applicationInfo;
+    }
+
     public Set<String> getSniffers() {
         return sniffers;
     }
 
-    public void setSniffers(Set<String> sniffers) {
-        if (!sniffers.equals(this.sniffers)) {
-            this.sniffers = sniffers;
+    public void setSniffers(Collection<? extends Sniffer> sniffers) {
+        final Set<String> snifferTypes = sniffers.stream()
+                    .map(s -> Sniffer.class.cast(s))
+                    .map(Sniffer::getModuleType)
+                    .collect(toSet());
+        if (!snifferTypes.equals(this.sniffers)) {
+            this.sniffers = snifferTypes;
             this.moduleInfo = null;
             this.engineInfos = null;
         }
     }
     
-    public void copyPreviousState(ExtendedDeploymentContext context) {
-        ExtendedDeploymentContext previousDC = this.getDeploymentContext();
-        context.getAppProps().putAll(previousDC.getAppProps());
-        context.getModulePropsMap().putAll(previousDC.getModulePropsMap());
-        previousDC.getModuleMetadata().forEach(context::addModuleMetaData);
+    public void copyPreviousState(ExtendedDeploymentContext newContext, Events events) {
+        newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
+        newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
+        this.deploymentContext.getModuleMetadata().forEach(newContext::addModuleMetaData);
         this.getDescriptorMetadata()
                 .entrySet()
-                .forEach(e -> context.addTransientAppMetaData(e.getKey(), e.getValue()));
-        this.setDeploymentContext(context);
+                .forEach(e -> newContext.addTransientAppMetaData(e.getKey(), e.getValue()));
+        this.deploymentContext = newContext;
+        this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+        events.send(
+                new EventListener.Event<ApplicationInfo>(
+                        Deployment.APPLICATION_UNLOADED,
+                        this.applicationInfo
+                ),
+                false
+        );
+    }
+    
+    public void storeDescriptorMetaData(ExtendedDeploymentContext deploymentContext) {
+        this.descriptorMetadata = deploymentContext.getTransientAppMetadata()
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().startsWith(WEB_INF) || e.getKey().startsWith(META_INF)) //descriptor metadata
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    }
+
+    private List<ClassLoader> getClassLoaders(ApplicationInfo appInfo) {
+        List<ClassLoader> classLoaders = new ArrayList<>(appInfo.getClassLoaders());
+        classLoaders.add(appInfo.getModuleClassLoader());
+        classLoaders.add(appInfo.getAppClassLoader());
+
+        for (ModuleInfo module : appInfo.getModuleInfos()) {
+            classLoaders.addAll(module.getClassLoaders());
+            classLoaders.add(module.getModuleClassLoader());
+        }
+        return classLoaders;
+    }
+
+    public void cleanPreviousClassloaders() {
+        if (previousClassLoaders != null) {
+            for (ClassLoader cloader : previousClassLoaders) {
+                try {
+                    PreDestroy.class.cast(cloader).preDestroy();
+                } catch (Exception e) {
+                    // ignore, the class loader does not need to be 
+                    // explicitely stopped or already stopped
+                }
+            }
+            previousClassLoaders.clear();
+        }
     }
 
 }

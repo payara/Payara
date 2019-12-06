@@ -191,9 +191,9 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             wbd.setClassLoader(dc.getClassLoader());
         }
 
-        boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
+        Boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
         WebModuleConfig wmInfo = dc.getModuleMetaData(WebModuleConfig.class);
-        if (!hotDeploy || wmInfo == null) {
+        if (Boolean.FALSE.equals(hotDeploy) || wmInfo == null) {
             wmInfo = new WebModuleConfig();
             dc.addModuleMetaData(wmInfo);
         }
