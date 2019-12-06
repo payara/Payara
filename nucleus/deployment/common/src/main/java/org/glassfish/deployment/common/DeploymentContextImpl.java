@@ -57,7 +57,6 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -70,6 +69,8 @@ import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
@@ -120,7 +121,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     private String originalAppName = null;
     private File tenantDir = null;
 
-    /** Creates a new instance of DeploymentContext */
+    /**
+     * Creates a new instance of DeploymentContext
+     *
+     * @param builder
+     * @param env
+     */
     public DeploymentContextImpl(Deployment.DeploymentContextBuilder builder, ServerEnvironment env) {
         this(builder.report(),  builder.sourceAsArchive(), builder.params(), env);
     }
@@ -363,7 +369,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * key value pair at then end of deployment. That allows individual
      * Deployers implementation to store some information at the
      * application level that should be available upon server restart.
-     * Application level propertries are shared by all the modules.
+     * Application level properties are shared by all the modules.
      *
      * @return the application's properties.
      */
@@ -400,7 +406,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * class loader
      * @throws UnsupportedOperationException if the class loader we use does not support the
      * registration of a ClassFileTransformer. In such case, the deployer should either fail
-     * deployment or revert to a mode without the byteocode enhancement feature.
+     * deployment or revert to a mode without the bytecode enhancement feature.
      */
     public void addTransformer(ClassFileTransformer transformer) {
 
@@ -451,7 +457,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
                     parameters.libraries(), env);
             for (URL url : urls) {
                 File file = new File(url.getFile());
-                deplLogger.log(Level.FINE, "Specified library jar: "+file.getAbsolutePath());
+                deplLogger.log(FINE, "Specified library jar: {0}", file.getAbsolutePath());
                 if (file.exists()){
                     libURIs.add(url.toURI());
                 } else {
@@ -469,9 +475,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         URL[] extensionListLibraries = ASClassLoaderUtil.getLibrariesAsURLs(extensionList, env);
         for (URL url : extensionListLibraries) {
             libURIs.add(url.toURI());
-            if (deplLogger.isLoggable(Level.FINEST)) {
-                deplLogger.log(Level.FINEST, "Detected [EXTENSION_LIST]" +
-                               " installed-library [ " + url + " ] for archive [ "+source.getName()+ "]");
+            if (deplLogger.isLoggable(FINEST)) {
+                deplLogger.log(FINEST, "Detected [EXTENSION_LIST] installed-library [ {0} ] for archive [ {1}]", new Object[]{url, source.getName()});
             }
         }
 
@@ -588,7 +593,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         this.moduleUri = moduleUri;
     }
 
-
     /**
      * Gets the archive handlers for modules
      *
@@ -639,8 +643,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         File f = getRootTenantDirForApp(originalAppName);
         f = new File(f, tenant);
         if (!f.exists() && !f.mkdirs()) {
-          if (deplLogger.isLoggable(Level.FINEST)) {
-              deplLogger.log(Level.FINEST, "Unable to create directory " + f.getAbsolutePath());
+          if (deplLogger.isLoggable(FINEST)) {
+              deplLogger.log(FINEST, "Unable to create directory {0}", f.getAbsolutePath());
           }
           
         }
@@ -685,8 +689,10 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     }
 
     /**
-     * Prepare the scratch directories, creating the directories
-     * if they do not exist
+     * Prepare the scratch directories, creating the directories if they do not
+     * exist
+     *
+     * @throws java.io.IOException
      */
     public void prepareScratchDirs() throws IOException {
         prepareScratchDir(getScratchDir("ejb"));

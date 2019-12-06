@@ -272,7 +272,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
     // get the object type from the application manifest file if
     // it is present. Application can be user application or system
-    // appliction.
+    // application.
     protected String getObjectType(DeploymentContext context) {
         try{
             Manifest manifest = context.getSource().getManifest();

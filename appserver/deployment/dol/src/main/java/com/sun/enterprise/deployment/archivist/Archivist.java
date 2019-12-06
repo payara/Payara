@@ -560,7 +560,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
     
     /**
-     * Process annotations in a bundle descriptor, the annoation processing
+     * Process annotations in a bundle descriptor, the annotation processing
      * is dependent on the type of descriptor being passed.
      */
     protected ProcessingResult processAnnotations(RootDeploymentDescriptor bundleDesc,
