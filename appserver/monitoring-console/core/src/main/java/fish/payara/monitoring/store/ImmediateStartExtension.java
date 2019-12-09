@@ -44,7 +44,10 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+
+import fish.payara.monitoring.alert.AlertService;
 
 /**
  * The sole purpose of this extension is to eagerly create the {@link MonitoringDataRepository}.
@@ -54,6 +57,8 @@ import org.glassfish.internal.api.Globals;
 public class ImmediateStartExtension implements Extension {
 
     void beforeBeanDiscovery(@SuppressWarnings("unused") @Observes BeforeBeanDiscovery beforeBeanDiscovery) {
-        Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        serviceLocator.getService(MonitoringDataRepository.class);
+        serviceLocator.getService(AlertService.class);
     }
 }

@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
-    private static final char QUERY_WILDCARD = '*';
+    public static final char QUERY_WILDCARD = '*';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
@@ -155,6 +155,10 @@ public final class Series implements Comparable<Series>, Serializable {
         return metric.hashCode() ^ Arrays.hashCode(values);
     }
 
+    public boolean equalTo(Series other) {
+        return metric.equals(other.metric) && Arrays.equals(tags, other.tags) && Arrays.equals(values, other.values);
+    }
+
     @Override
     public int compareTo(Series other) {
         int res = metric.compareTo(other.metric);
@@ -208,4 +212,5 @@ public final class Series implements Comparable<Series>, Serializable {
         }
         return false;
     }
+
 }

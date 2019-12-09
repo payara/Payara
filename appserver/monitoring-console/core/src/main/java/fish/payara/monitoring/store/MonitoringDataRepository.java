@@ -45,15 +45,14 @@ import java.util.Set;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 
 @Contract
-public interface MonitoringDataRepository {
+public interface MonitoringDataRepository extends SeriesLookup {
 
     Iterable<SeriesDataset> selectAllSeries();
-
-    List<SeriesDataset> selectSeries(Series series, String... instances);
 
     Set<String> instances();
 }

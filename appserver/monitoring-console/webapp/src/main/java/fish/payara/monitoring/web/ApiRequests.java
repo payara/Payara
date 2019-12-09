@@ -42,17 +42,56 @@ package fish.payara.monitoring.web;
 import fish.payara.monitoring.model.Series;
 
 /**
- * A query for a particular {@link Series} or set of {@link Series} by giving its {@link #series} name or pattern
- * and the {@link #instances} to include in the result data.
+ * Types used in the web API to map requests.
+ * 
+ * @see ApiResponses
+ * 
+ * @author Jan Bernitt
  */
-public class SeriesQuery {
+public final class ApiRequests {
+    /**
+     * A container for a full request consisting of one or more {@link SeriesQuery}s.
+     */
+    public static final class SeriesRequest {
+
+        public SeriesQuery[] queries;
+
+        public SeriesRequest() {
+            // from JSON
+        }
+
+        SeriesRequest(String series) {
+            this(new SeriesQuery(series));
+        }
+
+        SeriesRequest(SeriesQuery...queries) {
+            this.queries = queries;
+        }
+
+    }
 
     /**
-     * The name or pattern of the series (* can be used as wild-card for tag values)
+     * A query for a particular {@link Series} or set of {@link Series} by giving its {@link #series} name or pattern
+     * and the {@link #instances} to include in the result data.
      */
-    public String series;
-    /**
-     * What instances to include in the result, an empty or null set includes all available sets
-     */
-    public String[] instances;
+    public static final class SeriesQuery {
+
+        /**
+         * The name or pattern of the series (* can be used as wild-card for tag values)
+         */
+        public String series;
+        /**
+         * What instances to include in the result, an empty or null set includes all available sets
+         */
+        public String[] instances;
+
+        public SeriesQuery() {
+            // from JSON
+        }
+
+        SeriesQuery(String series, String... instances) {
+            this.series = series;
+            this.instances = instances;
+        }
+    }
 }

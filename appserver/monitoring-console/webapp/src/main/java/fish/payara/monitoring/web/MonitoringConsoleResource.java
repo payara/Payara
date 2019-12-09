@@ -39,13 +39,12 @@
  */
 package fish.payara.monitoring.web;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,9 +59,15 @@ import javax.ws.rs.core.MediaType;
 
 import org.glassfish.internal.api.Globals;
 
+import fish.payara.monitoring.alert.AlertService;
+import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
+import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
+import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
+import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
+import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
@@ -74,12 +79,20 @@ public class MonitoringConsoleResource {
 
     private static final Logger LOGGER = Logger.getLogger(MonitoringConsoleResource.class.getName());
 
+    private static <T> T getService(Class<T> type) {
+        return Globals.getDefaultBaseServiceLocator().getService(type);
+    }
+
     private static MonitoringDataRepository getDataStore() {
-        return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
+        return getService(MonitoringDataRepository.class);
+    }
+
+    public static AlertService getAlertService() {
+        return getService(AlertService.class);
     }
 
     private static RequestTraceStoreInterface getRequestTracingStore() {
-        return Globals.getDefaultBaseServiceLocator().getService( RequestTracingService.class).getRequestTraceStore();
+        return getService( RequestTracingService.class).getRequestTraceStore();
     }
 
     private static Series seriesOrNull(String series) {
@@ -93,30 +106,24 @@ public class MonitoringConsoleResource {
 
     @GET
     @Path("/series/data/{series}/")
-    public List<SeriesResponse> getSeriesData(@PathParam("series") String series) {
-        Series key = seriesOrNull(series);
-        return key == null ? Collections.emptyList() : SeriesResponse.from(getDataStore().selectSeries(key));
+    public SeriesResponse getSeriesData(@PathParam("series") String series) {
+        return getSeriesData(new SeriesRequest(series));
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
-    public Map<Series, List<SeriesResponse>> getSeriesData(SeriesRequest request) {
-        Map<Series, List<SeriesResponse>> res = new HashMap<>();
+    public SeriesResponse getSeriesData(SeriesRequest request) {
+        List<List<SeriesDataset>> data = new ArrayList<>(request.queries.length);
+        List<Collection<Watch>> watches = new ArrayList<>(request.queries.length);
+        MonitoringDataRepository dataStore = getDataStore();
+        AlertService alertService = getAlertService();
         for (SeriesQuery query : request.queries) {
             Series key = seriesOrNull(query.series);
-            List<SeriesDataset> value = key == null ? null : getDataStore().selectSeries(key, query.instances);
-            if (value != null && !value.isEmpty()) {
-                if (res.containsKey(key)) {
-                    res.get(key).addAll(SeriesResponse.from(value));
-                } else {
-                    res.put(key, SeriesResponse.from(value));
-                }
-            } else {
-                res.put(key, new ArrayList<>());
-            }
+            data.add(key == null ? emptyList() : dataStore.selectSeries(key, query.instances));
+            watches.add(key == null ? emptyList() : alertService.wachtesFor(key));
         }
-        return res;
+        return new SeriesResponse(data, watches, alertService.getAlertStatistics());
     }
 
     @GET

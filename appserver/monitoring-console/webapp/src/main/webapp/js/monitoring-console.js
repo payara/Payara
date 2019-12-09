@@ -998,8 +998,8 @@ MonitoringConsole.Model = (function() {
 
 		function createOnSuccess(widgets, onDataUpdate) {
 			return function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					let data = retainLastMinute(response[widget.series]);
+				Object.values(widgets).forEach(function(widget, index) {
+					let data = retainLastMinute(response.matches[index].data);
 					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)

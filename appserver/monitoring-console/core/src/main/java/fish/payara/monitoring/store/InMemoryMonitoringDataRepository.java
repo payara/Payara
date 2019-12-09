@@ -44,9 +44,8 @@ import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
-import static org.jvnet.hk2.config.Dom.unwrap;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.beans.PropertyChangeEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,17 +68,13 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -89,7 +84,6 @@ import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -108,17 +102,24 @@ import java.util.logging.Logger;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryMonitoringDataRepository implements MonitoringDataRepository, ConfigListener {
+public class InMemoryMonitoringDataRepository extends ConfigListeningService implements MonitoringDataRepository {
+
     /**
      * The topic name used to share data of instances with the DAS.
      */
     private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
-    private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
     private final Set<String> sourcesFailingBefore = ConcurrentHashMap.newKeySet();
-
+    @Inject
     private ServiceLocator serviceLocator;
+    @Inject
     private ServerEnvironment serverEnv;
+    @Inject
     private PayaraExecutorService executor;
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+    @Inject
+    private HazelcastCore hazelcastCore;
+
     private boolean isDas;
     private String instanceName;
     private ITopic<SeriesDatasetsSnapshot> exchange;
@@ -127,25 +128,17 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
     private final Set<String> instances = ConcurrentHashMap.newKeySet();
-    private final AtomicReference<ScheduledFuture<?>> dataCollectionJob = new AtomicReference<>();
+    private final JobHandle dataCollectionJob = new JobHandle("monitoring data collection");
     private long collectedSecond;
     private int estimatedNumberOfSeries = 50;
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private Config serverConfig;
-    private MonitoringService monitoringConfig;
-
     @PostConstruct
     public void init() {
-        serviceLocator = Globals.getDefaultBaseServiceLocator();
-        monitoringConfig = serverConfig.getMonitoringService();
-        serverEnv = serviceLocator.getService(ServerEnvironment.class);
         isDas = serverEnv.isDas();
-        executor = serviceLocator.getService(PayaraExecutorService.class);
-        HazelcastCore hz = serviceLocator.getService(HazelcastCore.class);
-        if (hz.isEnabled()) {
-            instanceName = hz.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
-            exchange = hz.getInstance().getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
+        if (hazelcastCore.isEnabled()) {
+            HazelcastInstance hz = hazelcastCore.getInstance();
+            instanceName = hz.getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+            exchange = hz.getTopic(InMemoryMonitoringDataRepository.MONITORING_DATA_TOPIC_NAME);
         } else {
             instanceName = "server";
         }
@@ -154,58 +147,16 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             MessageListener<SeriesDatasetsSnapshot> subscriber = this::addRemoteDatasets;
             exchange.addMessageListener(subscriber);
         }
-        enableDataSourceCollection(parseBoolean(monitoringConfig.getMonitoringEnabled()));
+        changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
     }
 
     @Override
-    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-        for (PropertyChangeEvent e : events) {
-            if (e.getSource() instanceof ConfigBeanProxy) {
-                Class<?> source = unwrap((ConfigBeanProxy)e.getSource()).getImplementationClass();
-                if (source == MonitoringService.class) {
-                    String property = e.getPropertyName();
-                    if ("monitoring-enabled".equals(property)) {
-                        enableDataSourceCollection(parseBoolean(e.getNewValue().toString()));
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private void enableDataSourceCollection(boolean enabled) {
-        if (enabled) {
-            enableDataSourceCollection();
+    void changedConfig(boolean enabled) {
+        if (!enabled) {
+            dataCollectionJob.stop();
         } else {
-            disableDataSourceCollection();
-        }
-    }
-
-    private void enableDataSourceCollection() {
-        if (dataCollectionJob.get() != null) {
-            return; // don't start another job
-        }
-        LOGGER.info("Starting monitoring data collection for " + instanceName);
-        ScheduledFuture<?> task = isDas
-                ? executor.scheduleAtFixedRate(this::collectSourcesToMemory, 0L, 1L, TimeUnit.SECONDS)
-                : executor.scheduleAtFixedRate(this::collectSourcesToPublish, 0L, 1L, TimeUnit.SECONDS);
-        if (!dataCollectionJob.compareAndSet(null, task)) {
-            cancelDataCollection(task);
-        }
-    }
-
-    private void disableDataSourceCollection() {
-        cancelDataCollection(dataCollectionJob.getAndUpdate(job -> null));
-    }
-
-    private void cancelDataCollection(ScheduledFuture<?> task) {
-        if (task != null) {
-            LOGGER.info("Stopping monitoring data collection for " + instanceName);
-            try {
-                task.cancel(false);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to cancel monitoring data collection.", e);
-            }
+            LOGGER.info("Starting monitoring data collection for " + instanceName);
+            dataCollectionJob.start(executor, 1, SECONDS, isDas ? this::collectSourcesToMemory : this::collectSourcesToPublish);
         }
     }
 
@@ -413,5 +364,6 @@ public class InMemoryMonitoringDataRepository implements MonitoringDataRepositor
             values[numberOfSeries++] = value;
         }
     }
+
 }
 
