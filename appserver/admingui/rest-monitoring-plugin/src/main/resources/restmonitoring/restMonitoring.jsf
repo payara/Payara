@@ -69,6 +69,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 </event>
     <sun:form id="propertyForm">
 #include "/common/monitor/monitoringConfigTabs.inc"
+#include "/jmxmonitoring/jmxmonitoringSubTabs.inc
 #include "/common/shared/alertMsg.inc"
         <!-- Page Title -->
         <sun:title id="propertyContentPage" title="$resource{i18nrest.monitoring.rest.Title}" helpText="$resource{i18nrest.monitoring.rest.PageHelp}">

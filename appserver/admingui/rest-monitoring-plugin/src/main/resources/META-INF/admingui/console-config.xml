@@ -42,9 +42,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     
     <integration-point
         id="restMonitoringTab"
-        type="fish.payara.admingui:monitoringConfigTabs"
+        type="fish.payara.admingui:jmxConfigSubtabs"
         priority="50"
-        parentId="monitoringConfigTabs"
+        parentId="jmxConfigSubtabs"
         content="restmonitoring/restMonitoringTab.jsf"
     />
     

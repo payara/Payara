@@ -1,7 +1,8 @@
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -38,14 +39,18 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     holder.
 -->
 
-<sun:tab id="restMonitoringTab" immediate="true" text="$resource{i18nrest.monitoring.rest.tab.tabText}" 
-         toolTip="$resource{i18nrest.monitoring.rest.tab.tabToolTip}">
-    <!beforeCreate
-        setResourceBundle(key="i18nrest" bundle="fish.payara.admingui.monitoring.rest.Strings");
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+<sun:tabSet id="jmxConfigSubtabs" immediate="$boolean{true}" selected="#{sessionScope.jmxConfigSubtabs}" text="JMX" toolTip="JMX Logging Tabs">
+    <sun:tab id="jmxConfigGeneralSubTab" immediate="$boolean{true}" 
+             text="$resource{i18njmx.jmxmonitoring.configuration.generalSubtab}" 
+             toolTip="$resource{i18njmx.jmxmonitoring.configuration.generalSubtab} Tab" >
+        <!command
+          setSessionAttribute(key="jmxConfigSubtabs" value="jmxConfigGeneralSubTab");
+          gf.redirect(page="#{request.contextPath}/jmxmonitoring/jmxmonitoring.jsf?configName=#{pageSession.configName}");
+        />
+    </sun:tab>
+</sun:tabSet>
+<event>
+    <!afterCreate
+        includeIntegrations(type="fish.payara.admingui:jmxConfigSubtabs");
     />
-    <!command
-        setSessionAttribute(key="jmxConfigSubtabs" value="restMonitoringTab");
-        gf.redirect(page="#{request.contextPath}/restmonitoring/restMonitoring.jsf?configName=#{pageSession.configName}");
-    />
-</sun:tab>
+</event>
