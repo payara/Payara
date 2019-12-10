@@ -54,6 +54,7 @@ MonitoringConsole.View = (function() {
         map: 'Cluster Map Storage Statistics',
         topic: 'Cluster Topic IO Statistics',
         mc: 'Monitoring Console Internals',
+        health: 'Health Checks',
         other: 'Other',
     };
 
@@ -349,6 +350,7 @@ MonitoringConsole.View = (function() {
         let widgetsSelection = $('<select/>').attr('disabled', true);
         nsSelection.change(function() {
             widgetsSelection.empty();
+            widgetsSelection.append($('<option/>').val('').text('(Please Select)'));
             MonitoringConsole.Model.listSeries(function(names) {
                 $.each(names, function() {
                     let key = this;

@@ -2379,6 +2379,17 @@ MonitoringConsole.Chart.Line = (function() {
   const Colors = MonitoringConsole.View.Colors;
   const ColorModel = MonitoringConsole.Model.Colors;
 
+  function timeLable(secondsAgo, index, lastIndex) {
+    if (index == lastIndex && secondsAgo == 0)
+      return 'now';
+    if (index == 0 || index == lastIndex && secondsAgo > 0) {
+      if (Math.abs(secondsAgo - 60) == 1)
+        secondsAgo = 60; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
+      return secondsAgo +'s ago';
+    }
+    return undefined;
+  }
+
   /**
    * This is like a constant but it needs to yield new objects for each chart.
    */
@@ -2406,9 +2417,16 @@ MonitoringConsole.Chart.Line = (function() {
                 return value;
               let lastIndex = values.length - 1;
               let reference = new Date(values[lastIndex].value);
-              let isLive = new Date() - reference < 5000; // is within the last 5 secs
+              let now = new Date();
+              let isLive = now - reference < 5000; // is within the last 5 secs
+              let secondsAgo = values.length < 2 ? 0 : (((values[lastIndex].value - values[index].value)/1000));
               if (isLive) {
-                return index == 0 ? (((values[lastIndex].value - values[0].value)/1000)+1) +'s ago' : index == lastIndex ? 'now' : undefined;
+                return timeLable(secondsAgo, index, lastIndex);
+              }
+              let reference2 = new Date(values[lastIndex-1].value);
+              let isRecent = now - reference < (5000 + (reference - reference2));
+              if (isRecent) {
+                return timeLable(secondsAgo, index, lastIndex);
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
@@ -3087,6 +3105,7 @@ MonitoringConsole.View = (function() {
         map: 'Cluster Map Storage Statistics',
         topic: 'Cluster Topic IO Statistics',
         mc: 'Monitoring Console Internals',
+        health: 'Health Checks',
         other: 'Other',
     };
 
@@ -3382,6 +3401,7 @@ MonitoringConsole.View = (function() {
         let widgetsSelection = $('<select/>').attr('disabled', true);
         nsSelection.change(function() {
             widgetsSelection.empty();
+            widgetsSelection.append($('<option/>').val('-').text('(Please Select)'));
             MonitoringConsole.Model.listSeries(function(names) {
                 $.each(names, function() {
                     let key = this;

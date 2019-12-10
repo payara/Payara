@@ -22,7 +22,7 @@ import fish.payara.monitoring.model.SeriesDataset;
  * 
  * @author Jan Bernitt
  */
-public final class Alert {
+public final class Alert implements Iterable<Alert.Transition> {
 
     public enum Level {
         /**
@@ -47,11 +47,11 @@ public final class Alert {
         }
     }
 
-    private static final class Transition implements Iterable<SeriesDataset> {
+    public static final class Transition implements Iterable<SeriesDataset> {
         public final Level to;
         public final SeriesDataset cause;
-        private final List<SeriesDataset> captured;
         public final long start;
+        private final List<SeriesDataset> captured;
         long end;
 
         public Transition(Level to, SeriesDataset cause, List<SeriesDataset> captured) {
@@ -64,6 +64,10 @@ public final class Alert {
         @Override
         public Iterator<SeriesDataset> iterator() {
             return captured.iterator();
+        }
+
+        public long getEnd() {
+            return end;
         }
     }
 
@@ -79,16 +83,21 @@ public final class Alert {
 
     public final int serial;
     public final Watch initiator;
+    private final List<Transition> transitions = new CopyOnWriteArrayList<>();
     /**
      * The current state of the alert.
      */
     private Level level = Level.WHITE;
-    private final List<Transition> transitions = new CopyOnWriteArrayList<>();
     private boolean acknowledged;
 
     public Alert(Watch initiator) {
         this.initiator = initiator;
         this.serial = NEXT_SERIAL.incrementAndGet();
+    }
+
+    @Override
+    public Iterator<Transition> iterator() {
+        return transitions.iterator();
     }
 
     public Alert addTransition(Level to, SeriesDataset cause, List<SeriesDataset> captured) {

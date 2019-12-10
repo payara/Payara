@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import fish.payara.monitoring.alert.Watch;
+import fish.payara.monitoring.alert.Alert;
+import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.alert.AlertService.AlertStatistics;
 import fish.payara.monitoring.alert.Circumstance;
 import fish.payara.monitoring.alert.Condition;
@@ -240,6 +242,60 @@ public final class ApiResponses {
             this.endTime = span.getTraceEndTime().toEpochMilli();
             this.duration = span.getSpanDuration();
             this.tags = span.getSpanTags();
+        }
+    }
+
+    public static final class AlertsResponse {
+
+        public final List<AlertData> alerts;
+
+        public AlertsResponse(Collection<Alert> alerts) {
+            this.alerts = alerts.stream().map(AlertData::new).collect(toList());
+        }
+
+    }
+
+    public static final class AlertData {
+
+        public final int serial;
+        public final String level;
+        public final WatchData initiator;
+        public final boolean acknowledged;
+        public final List<AlertFrame> frames;
+
+        public AlertData(Alert alert) {
+            this.serial = alert.serial;
+            this.level = alert.getLevel().name().toLowerCase();
+            this.initiator = new WatchData(alert.initiator);
+            this.acknowledged = alert.isAcknowledged();
+            this.frames = new ArrayList<>();
+            for (Alert.Transition t : alert) {
+                this.frames.add(new AlertFrame(t));
+            }
+        }
+    }
+
+    /**
+     * Each time an {@link Alert} transitions between {@link Level#RED} and {@link Level#AMBER} a new frame is created
+     * capturing the {@link AlertFrame#cause} of the transition as well as the {@link AlertFrame#captured} metrics.
+     */
+    public static final class AlertFrame {
+
+        public final String level;
+        public final SeriesData cause;
+        public final List<SeriesData> captured;
+        public final long start;
+        public final Long end;
+
+        public AlertFrame(Alert.Transition transition) {
+            this.level = transition.to.name().toLowerCase();
+            this.cause = new SeriesData(transition.cause);
+            this.start = transition.start;
+            this.end = transition.getEnd() <= 0 ? null : transition.getEnd();
+            this.captured = new ArrayList<>();
+            for (SeriesDataset capture : transition) {
+                this.captured.add(new SeriesData(capture));
+            }
         }
     }
 }

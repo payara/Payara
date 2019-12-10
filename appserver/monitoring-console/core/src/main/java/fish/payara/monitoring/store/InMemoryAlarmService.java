@@ -105,6 +105,15 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     }
 
     @Override
+    public Collection<Alert> alerts() {
+        List<Alert> all = new ArrayList<>();
+        for (Queue<Alert> queue : alerts.values()) {
+            all.addAll(queue);
+        }
+        return all;
+    }
+
+    @Override
     public Collection<Alert> alertsFor(Series series) {
         if (!series.isPattern()) {
             // this is the usual path called while polling for data so this should not be too expensive

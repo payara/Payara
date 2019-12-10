@@ -31,6 +31,9 @@ public interface AlertService {
     default Collection<Alert> alertsFor(Series series) {
         return alertsMatching(alert -> alert.getSeries().equalTo(series));
     }
+    default Collection<Alert> alerts() {
+        return alertsMatching(alert -> true);
+    }
 
     /*
      * Watches

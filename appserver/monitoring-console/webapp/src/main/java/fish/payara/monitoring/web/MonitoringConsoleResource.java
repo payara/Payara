@@ -66,6 +66,7 @@ import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
 import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
 import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
+import fish.payara.monitoring.web.ApiResponses.AlertsResponse;
 import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
 import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
 import fish.payara.notification.requesttracing.RequestTrace;
@@ -150,5 +151,17 @@ public class MonitoringConsoleResource {
             }
         }
         return response;
+    }
+
+    @GET
+    @Path("/alerts/data/")
+    public AlertsResponse getAlertsData() {
+        return new AlertsResponse(getAlertService().alerts());
+    }
+
+    @GET
+    @Path("/alerts/data/{series}/")
+    public AlertsResponse getAlertsData(@PathParam("series") String series) {
+        return new AlertsResponse(getAlertService().alertsFor(seriesOrNull(series)));
     }
 }

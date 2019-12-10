@@ -380,8 +380,8 @@ table.tags th, table.tags td {
   background-color: rgba(0,36,51,0.5);
 }
 .Indicator.status-missing {
-  border-color: Violet;
-  color: Violet;
+  border-color: #0096D6;
+  color: #0096D6;
 }
 .Indicator.status-alarming {
   border-color: gold; 

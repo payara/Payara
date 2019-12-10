@@ -47,6 +47,7 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,6 +77,7 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import com.sun.enterprise.config.serverbeans.Config;
 
+import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.model.EmptyDataset;
@@ -224,19 +226,23 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
         int failedSources = 0;
+        final long second = collectedSecond / 1000;
         for (MonitoringDataSource source : sources) {
             String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
-            try {
-                collectedSources++;
-                source.collect(collector);
-                sourcesFailingBefore.remove(sourceId);
-            } catch (RuntimeException e) {
-                if (!sourcesFailingBefore.contains(sourceId)) {
-                    // only long once unless being successful again
-                    LOGGER.log(Level.FINE, "Error collecting metrics", e);
+            MonitoringData meta = getMetaAnnotation(source);
+            if (meta == null || second % meta.intervalSeconds() == 0) {
+                try {
+                    collectedSources++;
+                    source.collect(meta == null ? collector : collector.in(meta.ns()));
+                    sourcesFailingBefore.remove(sourceId);
+                } catch (RuntimeException e) {
+                    if (!sourcesFailingBefore.contains(sourceId)) {
+                        // only long once unless being successful again
+                        LOGGER.log(Level.FINE, "Error collecting metrics", e);
+                    }
+                    failedSources++;
+                    sourcesFailingBefore.add(sourceId);
                 }
-                failedSources++;
-                sourcesFailingBefore.add(sourceId);
             }
         }
         long estimatedTotalBytesMemory = 0L;
@@ -251,6 +257,15 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
             .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
             .collect("SourcesCount", collectedSources)
             .collect("FailedCollectionCount", failedSources);
+    }
+
+    private static MonitoringData getMetaAnnotation(MonitoringDataSource source) {
+        try {
+            Method collect = source.getClass().getMethod("collect", MonitoringDataCollector.class);
+            return collect.getAnnotation(MonitoringData.class);
+        } catch (NoSuchMethodException | SecurityException e) {
+           return null; // assume no annotation
+        }
     }
 
     /**

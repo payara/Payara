@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
-    public static final char QUERY_WILDCARD = '*';
+    private static final char QUERY_WILDCARD = '*';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
