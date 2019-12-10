@@ -1,42 +1,43 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
- *     The contents of this file are subject to the terms of either the GNU
- *     General Public License Version 2 only ("GPL") or the Common Development
- *     and Distribution License("CDDL") (collectively, the "License").  You
- *     may not use this file except in compliance with the License.  You can
- *     obtain a copy of the License at
- *     https://github.com/payara/Payara/blob/master/LICENSE.txt
- *     See the License for the specific
- *     language governing permissions and limitations under the License.
+ *  The contents of this file are subject to the terms of either the GNU
+ *  General Public License Version 2 only ("GPL") or the Common Development
+ *  and Distribution License("CDDL") (collectively, the "License").  You
+ *  may not use this file except in compliance with the License.  You can
+ *  obtain a copy of the License at
+ *  https://github.com/payara/Payara/blob/master/LICENSE.txt
+ *  See the License for the specific
+ *  language governing permissions and limitations under the License.
  *
- *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License file at glassfish/legal/LICENSE.txt.
  *
- *     GPL Classpath Exception:
- *     The Payara Foundation designates this particular file as subject to the "Classpath"
- *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
- *     file that accompanied this code.
+ *  GPL Classpath Exception:
+ *  The Payara Foundation designates this particular file as subject to the "Classpath"
+ *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *  file that accompanied this code.
  *
- *     Modifications:
- *     If applicable, add the following below the License Header, with the fields
- *     enclosed by brackets [] replaced by your own identifying information:
- *     "Portions Copyright [year] [name of copyright owner]"
+ *  Modifications:
+ *  If applicable, add the following below the License Header, with the fields
+ *  enclosed by brackets [] replaced by your own identifying information:
+ *  "Portions Copyright [year] [name of copyright owner]"
  *
- *     Contributor(s):
- *     If you wish your version of this file to be governed by only the CDDL or
- *     only the GPL Version 2, indicate your decision by adding "[Contributor]
- *     elects to include this software in this distribution under the [CDDL or GPL
- *     Version 2] license."  If you don't indicate a single choice of license, a
- *     recipient has the option to distribute your version of this file under
- *     either the CDDL, the GPL Version 2 or to extend the choice of license to
- *     its licensees as provided above.  However, if you add GPL Version 2 code
- *     and therefore, elected the GPL Version 2 license, then the option applies
- *     only if the new code is made subject to such option by the copyright
- *     holder.
+ *  Contributor(s):
+ *  If you wish your version of this file to be governed by only the CDDL or
+ *  only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *  elects to include this software in this distribution under the [CDDL or GPL
+ *  Version 2] license."  If you don't indicate a single choice of license, a
+ *  recipient has the option to distribute your version of this file under
+ *  either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *  its licensees as provided above.  However, if you add GPL Version 2 code
+ *  and therefore, elected the GPL Version 2 license, then the option applies
+ *  only if the new code is made subject to such option by the copyright
+ *  holder.
  */
+
 package org.glassfish.main.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -44,6 +45,7 @@ import com.sun.enterprise.util.ExceptionUtil;
 
 import java.sql.Driver;
 import java.util.function.Consumer;
+
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -62,7 +64,8 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reset;
 import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.CUSTOM_VALIDATION_CLASS_NAME_MANDATORY;
-import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.MAX_STEADY_INVALID;
+import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.POOL_SIZE_MAX;
+import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.POOL_SIZE_STEADY;
 import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.RES_TYPE_MANDATORY;
 import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.STMT_WRAPPING_DISABLED;
 import static org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages.TABLE_NAME_MANDATORY;
@@ -90,7 +93,7 @@ public class JdbcConnectionPoolValidatorTest {
     @Test
     public void nulls() {
         // any of message enums
-        this.validator.initialize(createAnnotation(MAX_STEADY_INVALID));
+        this.validator.initialize(createAnnotation(POOL_SIZE_MAX));
         assertTrue("isValid(null, null)", this.validator.isValid(null, null));
     }
 
@@ -110,8 +113,8 @@ public class JdbcConnectionPoolValidatorTest {
 
 
     @Test
-    public void poolSizes() {
-        this.validator.initialize(createAnnotation(MAX_STEADY_INVALID));
+    public void poolSizeSteady() {
+        this.validator.initialize(createAnnotation(POOL_SIZE_STEADY));
         final JdbcConnectionPool pool = createMock();
         assertTrue("everything OK", this.validator.isValid(pool, null));
 
@@ -138,6 +141,26 @@ public class JdbcConnectionPoolValidatorTest {
             assertEquals("root cause.message", "No ConfigProviderResolver implementation found!",
                 ExceptionUtil.getRootCause(e).getMessage());
         }
+
+        updateMock(pool, p -> {
+            expect(p.getSteadyPoolSize()).andStubReturn("8");
+            expect(p.getMaxPoolSize()).andStubReturn("5");
+        });
+        assertTrue("this should not check the max pool size", this.validator.isValid(pool, null));
+    }
+
+
+    @Test
+    public void poolSizeMax() {
+        this.validator.initialize(createAnnotation(POOL_SIZE_MAX));
+        final JdbcConnectionPool pool = createMock();
+        assertTrue("everything OK", this.validator.isValid(pool, null));
+
+        updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn(null));
+        assertTrue("steady pool size null", this.validator.isValid(pool, null));
+
+        updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("-1"));
+        assertTrue("negative steady pool size is not thing checked by max checker", this.validator.isValid(pool, null));
 
         updateMock(pool, p -> {
             expect(p.getSteadyPoolSize()).andStubReturn("8");

@@ -42,8 +42,6 @@ package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 
-import java.util.logging.Logger;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -76,38 +74,6 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
     }
 
 
-    private String getParsedVariable(final String variableToRetrieve) {
-
-        final String[] variableReference = variableToRetrieve.split("=");
-        if (variableReference.length == 1) {
-            // We got a system variable as no split occured
-            return System.getProperty(variableReference[0]);
-        }
-
-        final String variableToFind = variableReference[1];
-        switch (variableReference[0]) {
-            case "ENV":
-                // Check environment variables for requested value
-                String varValue = System.getenv(variableToFind);
-                if (!isEmpty(varValue)) {
-                    return varValue;
-                }
-                break;
-            case "MPCONFIG":
-                // Check microprofile config for requested value
-                final Config config = ConfigProvider.getConfig();
-                varValue = config.getValue(variableToFind, String.class);
-                if (!isEmpty(varValue)) {
-                    return varValue;
-                }
-                break;
-        }
-
-        // If this point is reached, the variable value could not be found
-        return null;
-    }
-
-
     @Override
     public boolean isValid(final ResourcePool pool, final ConstraintValidatorContext context) {
         if (!JdbcConnectionPool.class.isInstance(pool)) {
@@ -119,8 +85,10 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
         }
         final JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
         switch (poolFaults) {
-            case MAX_STEADY_INVALID:
-                return validatePoolSizes(jdbcPool);
+            case POOL_SIZE_STEADY:
+                return validateSteadyPoolSize(jdbcPool);
+            case POOL_SIZE_MAX:
+                return validateMaxPoolSize(jdbcPool);
             case STMT_WRAPPING_DISABLED:
                 return validateWrapping(jdbcPool);
             case TABLE_NAME_MANDATORY:
@@ -135,39 +103,21 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
     }
 
 
-    private boolean validatePoolSizes(final JdbcConnectionPool jdbcPool) {
-        String steadyPoolSize = jdbcPool.getSteadyPoolSize();
-        if (steadyPoolSize == null) {
-            steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
-        } else if (steadyPoolSize.startsWith("$")) {
-            steadyPoolSize = getParsedVariable(steadyPoolSize.substring(2, steadyPoolSize.length() - 1));
-            if (steadyPoolSize == null) {
-                return false;
-            }
-        }
+    private boolean validateSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
+        final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        return steadyPoolSize != null && steadyPoolSize >= 0;
+    }
 
-        String maxPoolSize = jdbcPool.getMaxPoolSize();
-        if (maxPoolSize == null) {
-            maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
-        } else if (maxPoolSize.startsWith("$")) {
-            maxPoolSize = getParsedVariable(maxPoolSize.substring(2, maxPoolSize.length() - 1));
-            if (maxPoolSize == null) {
-                return false;
-            }
-        }
 
-        final int steadyPoolSizeValue;
-        final int maxPoolSizeValue;
-        try {
-            maxPoolSizeValue = Integer.parseInt(maxPoolSize);
-            steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
-        } catch (final NumberFormatException nfe) {
-            final Logger log = Logger.getLogger(JdbcConnectionPoolValidator.class.getName());
-            log.severe(() -> "Exception occured whilst parsing value to int: \n - " + nfe);
+    private boolean validateMaxPoolSize(final JdbcConnectionPool jdbcPool) {
+        final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        final String propertyValue = jdbcPool.getMaxPoolSize();
+        final String value = propertyValue == null ? Constants.DEFAULT_MAX_POOL_SIZE : propertyValue;
+        final Integer maxPoolSize = toInteger(resolve(value));
+        if (maxPoolSize == null || maxPoolSize < 1) {
             return false;
         }
-
-        if (maxPoolSizeValue < steadyPoolSizeValue || steadyPoolSizeValue < 0 || maxPoolSizeValue <= 0) {
+        if (steadyPoolSize != null && steadyPoolSize > maxPoolSize) {
             return false;
         }
         return true;
@@ -246,6 +196,52 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
     }
 
 
+    private Integer getSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
+        final String property = jdbcPool.getSteadyPoolSize();
+        return toInteger(resolve(property == null ? Constants.DEFAULT_STEADY_POOL_SIZE : property));
+    }
+
+
+    private String resolve(final String propertyValue) {
+        if (propertyValue.startsWith("$")) {
+            return getParsedVariable(propertyValue.substring(2, propertyValue.length() - 1));
+        }
+        return propertyValue;
+    }
+
+
+    private String getParsedVariable(final String variableToRetrieve) {
+
+        final String[] variableReference = variableToRetrieve.split("=");
+        if (variableReference.length == 1) {
+            // We got a system variable as no split occured
+            return System.getProperty(variableReference[0]);
+        }
+
+        final String variableToFind = variableReference[1];
+        switch (variableReference[0]) {
+            case "ENV":
+                // Check environment variables for requested value
+                String varValue = System.getenv(variableToFind);
+                if (!isEmpty(varValue)) {
+                    return varValue;
+                }
+                break;
+            case "MPCONFIG":
+                // Check microprofile config for requested value
+                final Config config = ConfigProvider.getConfig();
+                varValue = config.getValue(variableToFind, String.class);
+                if (!isEmpty(varValue)) {
+                    return varValue;
+                }
+                break;
+        }
+
+        // If this point is reached, the variable value could not be found
+        return null;
+    }
+
+
     private boolean isEmpty(final String value) {
         return value == null || value.trim().isEmpty();
     }
@@ -262,5 +258,17 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
 
     private boolean isTrue(final String value) {
         return Boolean.parseBoolean(value);
+    }
+
+
+    private Integer toInteger(final String resolvedValue) {
+        if (isEmpty(resolvedValue)) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(resolvedValue);
+        } catch (final NumberFormatException nfe) {
+            return null;
+        }
     }
 }
