@@ -487,6 +487,34 @@ public class ServerOperations {
         // WildFly ./bin/add-user.sh -a -u u1 -p p1 -g g1
     }
 
+    public static void setupContainerFileIdentityStore(String fileRealmName) {
+
+        String javaEEServer = System.getProperty("javaEEServer");
+
+        if ("glassfish-remote".equals(javaEEServer) || "payara-remote".equals(javaEEServer)) {
+
+            System.out.println("Setting up container File identity store for " + javaEEServer);
+
+            List<String> cmd = new ArrayList<>();
+
+            cmd.add("create-auth-realm");
+            cmd.add("--classname");
+            cmd.add("com.sun.enterprise.security.auth.realm.file.FileRealm");
+            cmd.add("--property");
+            cmd.add("jaas-context=fileRealm:file=" + fileRealmName);
+            cmd.add(fileRealmName);
+
+            CliCommands.payaraGlassFish(cmd);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+
+    }
+
     public static X509Certificate createSelfSignedCertificate(KeyPair keys) {
         try {
             Provider provider = new BouncyCastleProvider();
