@@ -20,6 +20,8 @@ package fish.payara.ha.hazelcast.store;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import javax.inject.Inject;
+
+import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
@@ -36,9 +38,12 @@ public class HazelcastBackingStoreFactory implements BackingStoreFactory {
     @Inject
     HazelcastCore core;
 
+    @Inject
+    ClusteredStore clusteredStore;
+
     @Override
     public <K extends Serializable, V extends Serializable> BackingStore<K, V> createBackingStore(BackingStoreConfiguration<K, V> bsc) throws BackingStoreException {
-        return new HazelcastBackingStore<K, V>(this, bsc.getStoreName(), core);
+        return new HazelcastBackingStore<K, V>(this, bsc.getStoreName(), clusteredStore);
     }
 
     @Override

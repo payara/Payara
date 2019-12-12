@@ -39,12 +39,14 @@
  */
 package fish.payara.ha.hazelcast.store;
 
-import com.hazelcast.core.IMap;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.io.Serializable;
+import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
+
+import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -54,15 +56,14 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
         extends BackingStore<K, V> {
 
     private final BackingStoreFactory factory;
-    private final HazelcastCore core;
     private final String storeName;
-    private IMap<K, V> imap;
     private String instanceName;
+    private ClusteredStore clusteredStore;
 
-    public HazelcastBackingStore(BackingStoreFactory factory, String storeName, HazelcastCore core) {
+    public HazelcastBackingStore(BackingStoreFactory factory, String storeName, ClusteredStore clusteredStore) {
         this.factory = factory;
         this.storeName = storeName;
-        this.core = core;
+        this.clusteredStore = clusteredStore;
     }
 
     @Override
@@ -73,13 +74,19 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
     @Override
     public V load(K k, String string) throws BackingStoreException {
         init();
-        return imap.get(k);
+        try {
+            return (V) clusteredStore.get(storeName, k);
+        } catch (ClassCastException cce) {
+            Logger.getLogger(HazelcastBackingStore.class.getName()).log(Level.WARNING,
+                    "ClassCastException when reading value from store, returning null", cce);
+            return null;
+        }
     }
 
     @Override
     public String save(K k, V v, boolean bln) throws BackingStoreException {
         init();
-        imap.set(k, v);
+        clusteredStore.set(storeName, k, v);
         
         return instanceName;
     }
@@ -87,26 +94,25 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
     @Override
     public void remove(K k) throws BackingStoreException {
         init();
-        imap.delete(k);
+        clusteredStore.remove(storeName, k);
     }
 
     @Override
     public int size() throws BackingStoreException {
         init();
-        return imap.size();
+        return clusteredStore.getMap(storeName).size();
     }
 
     private void init() throws BackingStoreException {
-        if(imap != null) {
+        if(instanceName != null) {
             return;
         }
-        if (!core.isEnabled()) {
+        if (clusteredStore == null) {
+            throw new BackingStoreException("Clustered Store not available, cannot use sessions yet", new IllegalStateException("Initializing"));
+        }
+        if (!clusteredStore.isEnabled()) {
             throw new BackingStoreException("Hazelcast is NOT Enabled please enable Hazelcast");
         }
-        if(core.getInstance() == null) {
-            throw new BackingStoreException("Hazelcast not yet initialized, cannot use sessions yet", new IllegalStateException("Initializing"));
-        }
-        imap = core.getInstance().getMap(storeName);
-        instanceName = core.getInstance().getLocalEndpoint().getUuid();
+        instanceName = clusteredStore.getInstanceId();
     }
 }
