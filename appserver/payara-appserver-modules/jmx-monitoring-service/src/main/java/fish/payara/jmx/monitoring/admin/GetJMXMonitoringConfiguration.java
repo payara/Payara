@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,7 +96,8 @@ import org.jvnet.hk2.config.ConfigView;
 })
 public class GetJMXMonitoringConfiguration implements AdminCommand {
 
-    private final String ATTRIBUTE_HEADERS[] = {"|Object Name|", "|Attribute|", "|Description|"};
+    private final static String JMX_MONITORING_HEADERS[] = {"JMX Monitoring Enabled", "JMX Log Frequency", "JMX Log Frequency Unit"};
+    private final static String ATTRIBUTE_HEADERS[] = {"Object Name", "Attribute", "Description"};
     private final static String NOTIFIER_HEADERS[] = {"Name", "Notifier Enabled"};
 
     @Inject
@@ -127,26 +128,29 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         }
 
         ActionReport actionReport = context.getActionReport();
+        ActionReport jmxMonitoringReport = actionReport.addSubActionsReport();
         ActionReport notifiersReport = actionReport.addSubActionsReport();
         ActionReport attributeReport = actionReport.addSubActionsReport();
+        
+        ColumnFormatter jmxMonitoringColumnFormatter = new ColumnFormatter(JMX_MONITORING_HEADERS);
         ColumnFormatter attributeColumnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);
 
         MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
         List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
-        actionReport.appendMessage("Monitoring Service Configuration is enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getEnabled())) + "\n");
-        actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
-        actionReport.appendMessage(StringUtils.EOL);
+        jmxMonitoringColumnFormatter.addRow(new Object[]{monitoringConfig.getEnabled(), monitoringConfig.getLogFrequency(),
+            monitoringConfig.getLogFrequencyUnit()});
 
-        Map<String, Object> map = new HashMap<>();
-        Properties extraProps = new Properties();
+        Map<String, Object> map = new HashMap<>();       
         map.put("enabled", monitoringConfig.getEnabled());
         map.put("logfrequency", monitoringConfig.getLogFrequency());
         map.put("logfrequencyunit", monitoringConfig.getLogFrequencyUnit());
 
-        extraProps.put("jmxmonitoringConfiguration", map);
-
+        Properties jmxMonitoringProps = new Properties();
+        jmxMonitoringProps.put("jmxmonitoringConfiguration", map);
+        actionReport.setExtraProperties(jmxMonitoringProps);
+        
         List<Map<String, String>> monitoredAttributes = new ArrayList<>();
 
         for (MonitoredAttribute monitoredBean : monitoringConfig.getMonitoredAttributes()) {
@@ -160,10 +164,10 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
             attributeColumnFormatter.addRow(values);
         }
 
+         Properties monitoredAttributeProps = new Properties();
         //Cannot change key in line below - required for admingui propertyDescTable.inc
-        extraProps.put("monitored-beans", monitoredAttributes);
-
-        actionReport.setExtraProperties(extraProps);
+        monitoredAttributeProps.put("monitored-beans", monitoredAttributes);
+        actionReport.setExtraProperties(monitoredAttributeProps);
 
         if (!monitoringConfig.getNotifierList().isEmpty()) {
             List<Class<Notifier>> notifierClassList = monitoringConfig.getNotifierList().stream().map((input) -> {
@@ -195,6 +199,8 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
             }
         }
 
+        jmxMonitoringReport.setMessage(jmxMonitoringColumnFormatter.toString());
+        jmxMonitoringReport.appendMessage(StringUtils.EOL);
         notifiersReport.setMessage(notifiersColumnFormatter.toString());
         notifiersReport.appendMessage(StringUtils.EOL);
         attributeReport.setMessage(attributeColumnFormatter.toString());

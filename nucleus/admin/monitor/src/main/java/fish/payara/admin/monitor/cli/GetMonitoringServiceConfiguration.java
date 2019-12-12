@@ -101,7 +101,7 @@ public class GetMonitoringServiceConfiguration implements AdminCommand {
         }
         MonitoringService monitoringService = config.getMonitoringService();
         AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
-
+        
         final ActionReport actionReport = context.getActionReport();
         final String[] headers= {"Monitoring Enabled", "AMX Enabled", "MBeans Enabled", "DTrace Enabled"};
 
