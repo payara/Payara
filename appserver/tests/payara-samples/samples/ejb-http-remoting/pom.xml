@@ -49,12 +49,12 @@
     </modules>
 
     <!--
-        This test needs to have no dependencies other than the ejb-http-remoting 
+        This test needs to have no dependencies other than the ejb-http-remoting
         module. Make sure that no dependencies are added to the parent.
     -->
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-aggregator</artifactId>
+        <artifactId>payara-samples</artifactId>
         <version>5.201-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
