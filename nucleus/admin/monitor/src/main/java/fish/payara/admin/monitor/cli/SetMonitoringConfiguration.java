@@ -250,7 +250,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     }
 
     private void failureMessage(ActionReport actionReport) {
-        String message = "Failed to excute the command";
+        String message = "Failed to execute the command";
         logger.warning(message);
         actionReport.setActionExitCode(FAILURE);
         actionReport.setMessage(message);
