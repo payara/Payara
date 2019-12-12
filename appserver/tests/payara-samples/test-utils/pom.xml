@@ -5,10 +5,10 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-aggregator</artifactId>
+        <artifactId>payara-samples</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>test-utils</artifactId>
     <name>Payara Samples - test-utils</name>
 
@@ -44,5 +44,5 @@
             <artifactId>bcpkix-jdk15on</artifactId>
         </dependency>
     </dependencies>
-    
+
 </project>
