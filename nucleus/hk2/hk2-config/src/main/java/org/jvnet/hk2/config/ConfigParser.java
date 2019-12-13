@@ -36,30 +36,30 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package org.jvnet.hk2.config;
 
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.Dom.Child;
-
-import javax.validation.constraints.NotNull;
-import javax.xml.stream.XMLInputFactory;
-import static javax.xml.stream.XMLStreamConstants.*;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.stream.StreamSource;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.config.Dom.Child;
 
 /**
  * Parses configuration files, builds {@link Inhabitant}s,
@@ -74,16 +74,27 @@ import java.util.logging.Level;
  * @author Kohsuke Kawaguchi
  */
 public class ConfigParser {
+
+    private static final Logger LOGGER = Logger.getAnonymousLogger();
+
     /**
      * This is where we put parsed inhabitants into.
      */
     protected final ServiceLocator habitat;
 
+    private final List<String> errors;
+
+    private boolean logErrors;
 
     public ConfigParser(ServiceLocator habitat) {
-        this.habitat = habitat;
+        this(habitat, true);
     }
 
+    public ConfigParser(ServiceLocator habitat, boolean logErrors) {
+        this.habitat = habitat;
+        this.logErrors = logErrors;
+        this.errors = new ArrayList<>();
+    }
 
     public DomDocument parse(XMLStreamReader in) throws XMLStreamException {
         DomDocument document = new DomDocument(habitat);
@@ -143,6 +154,10 @@ public class ConfigParser {
         }
     }
 
+    public List<String> getErrors() {
+        return errors;
+    }
+
     /**
      * Parses a whole XML tree and builds a {@link Dom} tree.
      *
@@ -161,34 +176,42 @@ public class ConfigParser {
      *      Null if the XML element didn't yield anything (which can happen if the element is skipped.)
      *      Otherwise fully parsed valid {@link Dom} object.
      */
-    protected Dom handleElement(XMLStreamReader in,DomDocument document, Dom parent) throws XMLStreamException {
+    protected Dom handleElement(XMLStreamReader in, DomDocument document, Dom parent) throws XMLStreamException {
         ConfigModel model = document.getModelByElementName(in.getLocalName());
         if(model==null) {
+            // Get the element name
             String localName = in.getLocalName();
-            Logger.getAnonymousLogger().severe("Ignoring unrecognized element "+in.getLocalName() + " at " + in.getLocation());
+
+            handleError("Ignoring unrecognized element "+in.getLocalName() + " at " + in.getLocation(), Level.SEVERE);
+
             // flush the sub element content from the parser
             int depth=1;
             while(depth>0) {
                 final int tag = in.nextTag();
                 if (tag==START_ELEMENT && in.getLocalName().equals(localName)) {
-                    if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
-                        Logger.getAnonymousLogger().fine("Found child of same type "+localName+" ignoring too");
-                    }
+                    handleError("Found child of same type " + localName + " ignoring too", Level.FINE);
                     depth++;
                 }
                 if (tag==END_ELEMENT && in.getLocalName().equals(localName)) {
-                    if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
-                        Logger.getAnonymousLogger().fine("closing element type " + localName);
-                    }
+                    handleError("Closing element type " + localName, Level.FINE);
                     depth--;
                 }
-                if (Logger.getAnonymousLogger().isLoggable(Level.FINE) && tag==START_ELEMENT) {
-                    Logger.getAnonymousLogger().fine("Jumping over " + in.getLocalName());
+                if (tag == START_ELEMENT) {
+                    handleError("Jumping over " + in.getLocalName(), Level.FINE);
                 }
             }
             return null;
         }
         return handleElement(in,document,parent,model);
+    }
+
+    private void handleError(String errorMessage, Level level) {
+        if (level != null && LOGGER.isLoggable(level)) {
+            if (logErrors) {
+                LOGGER.log(level, errorMessage);
+            }
+            this.errors.add(errorMessage);
+        }
     }
 
     /**

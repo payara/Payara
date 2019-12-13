@@ -75,7 +75,7 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
         File domainXMLFile = getDomainXml();
         logger.log(Level.FINER, "Domain XML file = {0}", domainXMLFile);
         try {
-            DomainXmlVerifier verifier = new DomainXmlVerifier(domainXMLFile.toURI().toURL());
+            DomainXmlVerifier verifier = new DomainXmlVerifier(domainXMLFile.toURI().toURL(), System.out, System.err);
 
             if (verifier.invokeConfigValidator()) {
                 return 1;

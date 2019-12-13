@@ -214,12 +214,14 @@ public class DomainBuilder {
         ZipEntry domainXmlEntry = templateJar.getEntry(DomainConstants.CONFIG_DIR + "/" + DomainConstants.DOMAIN_XML_FILE);
         DomainXmlVerifier validator;
         try (InputStream domainXmlStream = templateJar.getInputStream(domainXmlEntry)) {          
-            validator = new DomainXmlVerifier(domainXmlStream, null);
+            validator = new DomainXmlVerifier(domainXmlStream, null, null);
         } catch (Exception ex) {
-            throw new Exception("Domain.xml is not well formed. " + ex.getMessage(), ex);
+            throw new Exception("Domain.xml is not well formed: " + ex.getMessage(), ex);
         }
-        if (validator.validate()) {
-            throw new Exception("Invalid domain.xml");
+        try {
+            validator.validate();
+        } catch (Exception ex) {
+            throw new Exception("Domain.xml is invalid: " + ex.getMessage(), ex);
         }
     }
      

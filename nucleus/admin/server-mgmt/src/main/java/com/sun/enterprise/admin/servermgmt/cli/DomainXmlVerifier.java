@@ -52,9 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 // config imports
@@ -62,6 +60,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.Result;
 
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigParser;
@@ -76,46 +75,41 @@ import org.jvnet.hk2.config.DomDocument;
  */
 public class DomainXmlVerifier {
 
-    private Domain domain;
-    public boolean error;
-    private PrintStream out;
-    private PrintStream err;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainXmlVerifier.class);
 
-    public DomainXmlVerifier(URL domainXmlUrl) throws Exception {
-        this(createDomainDom(domainXmlUrl));
+    private final PrintStream out;
+    private final PrintStream err;
+
+    private final ConfigParser parser;
+    private Domain domain;
+    private boolean error;
+
+    public DomainXmlVerifier(URL domainXml, PrintStream out, PrintStream err) throws Exception {
+        this(out, err);
+        DomDocument<?> doc = parser.parse(domainXml);
+        this.domain = createDomainDom(doc);
     }
 
-    public DomainXmlVerifier(InputStream domainXmlInputStream) throws Exception {
-        this(createDomainDom(domainXmlInputStream));
+    public DomainXmlVerifier(InputStream domainXml, PrintStream out, PrintStream err) throws Exception {
+        this(out, err);
+        XMLStreamReader domainXmlReader = XMLInputFactory.newInstance().createXMLStreamReader(domainXml);
+        DomDocument<?> doc = parser.parse(domainXmlReader);
+        this.domain = createDomainDom(doc);
     }
 
-    public DomainXmlVerifier(InputStream domainXmlInputStream, PrintStream out) throws Exception {
-        this(createDomainDom(domainXmlInputStream), out);
-    }
-
-    public DomainXmlVerifier(Domain domain) throws Exception {
-        this(domain, System.out);
-    }
-
-    public DomainXmlVerifier(Domain domain, PrintStream out) throws Exception {
-        this(domain, out, out);
-    }
-
-    public DomainXmlVerifier(Domain domain, PrintStream out, PrintStream err) throws Exception {
-        this.domain = domain;
+    private DomainXmlVerifier(PrintStream out, PrintStream err) throws MalformedURLException {
         this.out = out;
         this.err = err;
-        error = false;
+        this.parser = new ConfigParser(Globals.getStaticHabitatWithModules(), false);
     }
 
     /*
      * Returns true if there is an error in the domain.xml or some other problem.
      */
     public boolean invokeConfigValidator() {
-        boolean failed;
+        boolean failed = false;
         try {
-            failed = validate();
+            validate();
         } catch (Exception e) {
             failed = true;
             if (err != null) {
@@ -125,19 +119,25 @@ public class DomainXmlVerifier {
         return failed;
     }
 
-    public boolean validate() {
-        try {
-            checkUnique(Dom.unwrap(domain));
-            if (out != null && !error) {
-                out.println(STRINGS.get("VerifySuccess"));
-            }
-        } catch (Exception e) {
-            error = true;
-            if (err != null) {
-                e.printStackTrace(err);
+    public void validate() {
+        checkUnique(Dom.unwrap(domain));
+        checkParseErrors();
+        if (out != null && !error) {
+            out.println(STRINGS.get("VerifySuccess"));
+        }
+    }
+
+    private void checkParseErrors() {
+        if (parser != null) {
+            List<String> errors = parser.getErrors();
+            if (!errors.isEmpty()) {
+                List<Throwable> exceptions = new ArrayList<>();
+                for (String error : errors) {
+                    exceptions.add(new Exception(error));
+                }
+                throw new MultiException(exceptions);
             }
         }
-        return error;
     }
 
     private void checkUnique(Dom d) {
@@ -201,20 +201,6 @@ public class DomainXmlVerifier {
             Result result = new Result(STRINGS.get("VerifyDupKey", e.getKey(), e.getValue()));
             output(result);
         }
-    }
-
-    private static Domain createDomainDom(URL domainXmlUrl) throws MalformedURLException {
-        ConfigParser parser = new ConfigParser(Globals.getStaticHabitatWithModules());
-        DomDocument<?> doc = parser.parse(domainXmlUrl);
-        return createDomainDom(doc);
-    }
-
-    private static Domain createDomainDom(InputStream domainXmlInputStream)
-            throws MalformedURLException, XMLStreamException, FactoryConfigurationError {
-        ConfigParser parser = new ConfigParser(Globals.getStaticHabitatWithModules());
-        XMLStreamReader domainXmlReader = XMLInputFactory.newInstance().createXMLStreamReader(domainXmlInputStream);
-        DomDocument<?> doc = parser.parse(domainXmlReader);
-        return createDomainDom(doc);
     }
 
     private static Domain createDomainDom(DomDocument<?> domainXmlDocument) {

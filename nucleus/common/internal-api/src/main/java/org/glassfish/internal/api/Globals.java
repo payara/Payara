@@ -187,12 +187,8 @@ public class Globals {
 
         final URL[] urlsA = urls.toArray(new URL[urls.size()]);
 
-        ClassLoader cl = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-                return new URLClassLoader(urlsA, Globals.class.getClassLoader());
-            }
-        });
+        ClassLoader cl = AccessController.doPrivileged(
+                (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(urlsA, Globals.class.getClassLoader()));
 
         ModulesRegistry registry = new StaticModulesRegistry(cl);
         return registry.createServiceLocator("default");
