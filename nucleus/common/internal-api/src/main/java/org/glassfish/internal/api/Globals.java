@@ -37,21 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.internal.api;
 
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.common.util.Constants;
-import org.glassfish.hk2.api.Rank;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import java.io.File;
+import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Global class for storing the service locator for all hk2 services
@@ -65,8 +74,9 @@ import javax.inject.Singleton;
 public class Globals {
 
     private static volatile ServiceLocator defaultHabitat;
+    private static volatile ServiceLocator defaultHabitatWithModules;
 
-    private static Object staticLock = new Object();
+    private static final Object STATIC_LOCK = new Object();
     
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
     @SuppressWarnings("unused")
@@ -134,7 +144,7 @@ public class Globals {
      */
     public static ServiceLocator getStaticHabitat() {
         if (defaultHabitat == null) {
-            synchronized (staticLock) {
+            synchronized (STATIC_LOCK) {
                 if (defaultHabitat == null) {
                     ModulesRegistry modulesRegistry = new StaticModulesRegistry(Globals.class.getClassLoader());
                     defaultHabitat = modulesRegistry.createServiceLocator("default");
@@ -144,7 +154,50 @@ public class Globals {
 
         return defaultHabitat;
     }
+
+    /**
+     * Returns the static service locator, but using the classloader used to load
+     * the modules/ directory. This is useful when you need access to classes from
+     * the modules/ directory from client code.
+     * 
+     * @return the static service locator with modules loaded
+     * @throws MalformedURLException if the URL to a module is invalid
+     */
+    public static ServiceLocator getStaticHabitatWithModules() throws MalformedURLException {
+        if (defaultHabitatWithModules == null) {
+            synchronized(STATIC_LOCK) {
+                if (defaultHabitatWithModules == null) {
+                    defaultHabitatWithModules = createStaticHabitatWithModules();
+                }
+            }
+        }
+        return defaultHabitatWithModules;
+    }
     
+    private static ServiceLocator createStaticHabitatWithModules() throws MalformedURLException {
+        // get the list of JAR files from the modules directory
+        ArrayList<URL> urls = new ArrayList<>();
+        File idir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        File mdir = new File(idir, "modules");
+        for (File f : mdir.listFiles()) {
+            if (f.toString().endsWith(".jar")) {
+                urls.add(f.toURI().toURL());
+            }
+        }
+
+        final URL[] urlsA = urls.toArray(new URL[urls.size()]);
+
+        ClassLoader cl = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                return new URLClassLoader(urlsA, Globals.class.getClassLoader());
+            }
+        });
+
+        ModulesRegistry registry = new StaticModulesRegistry(cl);
+        return registry.createServiceLocator("default");
+    }
+
     /**
      * The point of this service is to ensure that the Globals
      * service is properly initialized by the RunLevelService

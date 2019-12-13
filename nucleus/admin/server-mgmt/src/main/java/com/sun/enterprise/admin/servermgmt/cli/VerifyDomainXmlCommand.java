@@ -36,36 +36,22 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] [Payara Foundation and/or its affiliates]
  */
-
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.File;
-import java.net.URL;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.logging.Level;
 
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigParser;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
 
 /**
- * Implementation for the CLI command verify-domain-xml
- * Verifies the content of the domain.xml file
+ * Implementation for the CLI command verify-domain-xml Verifies the content of
+ * the domain.xml file
  *
  * verify-domain-xml [--domaindir install_dir/domains] [domain_name]
  * 
@@ -79,53 +65,21 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
     private String domainName0;
 
     @Override
-    protected void validate()
-            throws CommandException, CommandValidationException  {
+    protected void validate() throws CommandException, CommandValidationException {
         setDomainName(domainName0);
         super.validate();
     }
 
-    /**
-     */
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
-
+    protected int executeCommand() throws CommandException, CommandValidationException {
         File domainXMLFile = getDomainXml();
         logger.log(Level.FINER, "Domain XML file = {0}", domainXMLFile);
         try {
-            // get the list of JAR files from the modules directory
-            ArrayList<URL> urls = new ArrayList<URL>();
-            File idir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File mdir = new File(idir, "modules");
-            for (File f : mdir.listFiles()) {
-                if (f.toString().endsWith(".jar")) {
-                    urls.add(f.toURI().toURL());
-                }
+            DomainXmlVerifier verifier = new DomainXmlVerifier(domainXMLFile.toURI().toURL());
+
+            if (verifier.invokeConfigValidator()) {
+                return 1;
             }
-                       
-            final URL[] urlsA = urls.toArray(new URL[urls.size()]);   
-            
-            ClassLoader cl = (ClassLoader)AccessController.doPrivileged(
-                    new PrivilegedAction() {
-                        @Override
-                        public Object run() {
-                            return new URLClassLoader(urlsA, Globals.class.getClassLoader());
-                        }
-                    }
-                );
-            
-            ModulesRegistry registry = new StaticModulesRegistry(cl);
-            ServiceLocator serviceLocator = registry.createServiceLocator("default");
-
-            ConfigParser parser = new ConfigParser(serviceLocator);
-            URL domainURL = domainXMLFile.toURI().toURL();
-            DomDocument doc = parser.parse(domainURL);
-            Dom domDomain = doc.getRoot();
-            Domain domain = domDomain.createProxy(Domain.class);            
-            DomainXmlVerifier validator = new DomainXmlVerifier(domain);
-
-            if (validator.invokeConfigValidator()) return 1;
         } catch (Exception e) {
             throw new CommandException(e);
         }

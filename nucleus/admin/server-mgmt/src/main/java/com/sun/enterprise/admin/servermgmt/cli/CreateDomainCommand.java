@@ -359,7 +359,7 @@ public final class CreateDomainCommand extends CLICommand {
             // Saving the login information happens inside this method
             createTheDomain(domainDir, domainProperties);
         } catch (Exception e) {
-            logger.info(e.getLocalizedMessage());
+            logger.severe(e.getLocalizedMessage());
             throw new CommandException(STRINGS.get("CouldNotCreateDomain", domainName), e);
         }
         

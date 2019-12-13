@@ -36,28 +36,14 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018-2019] Payara Foundation and/or affiliates
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
-
 package com.sun.enterprise.admin.servermgmt.domain;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.DomainException;
-import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.servermgmt.RepositoryManager;
-import com.sun.enterprise.admin.servermgmt.SLogger;
-import com.sun.enterprise.admin.servermgmt.pe.PEDomainConfigValidator;
-import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionFactory;
-import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutor;
-import com.sun.enterprise.admin.servermgmt.stringsubs.impl.AttributePreprocessorImpl;
-import com.sun.enterprise.admin.servermgmt.template.TemplateInfoHolder;
-import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Property;
-import com.sun.enterprise.admin.servermgmt.xml.stringsubs.PropertyType;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.io.FileUtils;
+import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
+import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,9 +59,26 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 
-import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
-import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.DomainException;
+import com.sun.enterprise.admin.servermgmt.RepositoryException;
+import com.sun.enterprise.admin.servermgmt.RepositoryManager;
+import com.sun.enterprise.admin.servermgmt.SLogger;
+import com.sun.enterprise.admin.servermgmt.cli.DomainXmlVerifier;
+import com.sun.enterprise.admin.servermgmt.pe.PEDomainConfigValidator;
+import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionFactory;
+import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutor;
+import com.sun.enterprise.admin.servermgmt.stringsubs.impl.AttributePreprocessorImpl;
+import com.sun.enterprise.admin.servermgmt.template.TemplateInfoHolder;
+import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Property;
+import com.sun.enterprise.admin.servermgmt.xml.stringsubs.PropertyType;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.io.FileUtils;
 
 /**
  * Domain builder class.
@@ -193,24 +196,30 @@ public class DomainBuilder {
     /**
      * Validate's the template. 
      *
-     * @throws DomainException If any exception occurs in validation.
+     * @throws Exception If any exception occurs in validation.
      */
-    public void validateTemplate() throws DomainException {
-        try	 {
-            // Sanity check on the repository.
-            RepositoryManager repoManager = new RepositoryManager();
-            repoManager.checkRepository(domainConfig, false);
+    public void validateTemplate() throws Exception {
+        // Sanity check on the repository.
+        RepositoryManager repoManager = new RepositoryManager();
+        repoManager.checkRepository(domainConfig, false);
 
-            // Validate the port values.
-            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPropertiesValue);
-            portValidator.validateAndSetPorts();
-            setProperties();
-            
-            // Validate other domain config parameters.
-            new PEDomainConfigValidator().validate(domainConfig);
+        // Validate the port values.
+        DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPropertiesValue);
+        portValidator.validateAndSetPorts();
+        setProperties();
+        
+        // Validate other domain config parameters.
+        new PEDomainConfigValidator().validate(domainConfig);
 
+        ZipEntry domainXmlEntry = templateJar.getEntry(DomainConstants.CONFIG_DIR + "/" + DomainConstants.DOMAIN_XML_FILE);
+        DomainXmlVerifier validator;
+        try (InputStream domainXmlStream = templateJar.getInputStream(domainXmlEntry)) {          
+            validator = new DomainXmlVerifier(domainXmlStream, null);
         } catch (Exception ex) {
-            throw new DomainException(ex);
+            throw new Exception("Domain.xml is not well formed. " + ex.getMessage(), ex);
+        }
+        if (validator.validate()) {
+            throw new Exception("Invalid domain.xml");
         }
     }
      
@@ -227,7 +236,6 @@ public class DomainBuilder {
 
         if (currentValue != null && !currentValue.equals("")) {
             return currentValue;
-
         }
 
         if (properties != null) {

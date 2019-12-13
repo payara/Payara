@@ -36,48 +36,76 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2018-2019] Payara Foundation and/or affiliates
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.admin.servermgmt.cli;
 
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Dom;
+
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 // config imports
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.Result;
 
-import java.io.PrintStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigParser;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 
 /**
- * Does basic level verification of domain.xml. This is helpful as there
- * is no DTD to validate the domain's config i.e. domain.xml
+ * Does basic level verification of domain.xml. This is helpful as there is no
+ * DTD to validate the domain's config i.e. domain.xml
  * 
  * @author Nandini Ektare
  */
-@SuppressWarnings("CallToPrintStackTrace")
 public class DomainXmlVerifier {
-    
+
     private Domain domain;
     public boolean error;
-    PrintStream out;
+    private PrintStream out;
+    private PrintStream err;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainXmlVerifier.class);
+
+    public DomainXmlVerifier(URL domainXmlUrl) throws Exception {
+        this(createDomainDom(domainXmlUrl));
+    }
+
+    public DomainXmlVerifier(InputStream domainXmlInputStream) throws Exception {
+        this(createDomainDom(domainXmlInputStream));
+    }
+
+    public DomainXmlVerifier(InputStream domainXmlInputStream, PrintStream out) throws Exception {
+        this(createDomainDom(domainXmlInputStream), out);
+    }
 
     public DomainXmlVerifier(Domain domain) throws Exception {
         this(domain, System.out);
     }
-    
+
     public DomainXmlVerifier(Domain domain, PrintStream out) throws Exception {
+        this(domain, out, out);
+    }
+
+    public DomainXmlVerifier(Domain domain, PrintStream out, PrintStream err) throws Exception {
         this.domain = domain;
         this.out = out;
+        this.err = err;
         error = false;
     }
 
@@ -85,12 +113,14 @@ public class DomainXmlVerifier {
      * Returns true if there is an error in the domain.xml or some other problem.
      */
     public boolean invokeConfigValidator() {
-        boolean failed = false;
+        boolean failed;
         try {
-            failed =  validate();
-        } catch(Exception e) {
+            failed = validate();
+        } catch (Exception e) {
             failed = true;
-            e.printStackTrace();
+            if (err != null) {
+                e.printStackTrace(err);
+            }
         }
         return failed;
     }
@@ -98,22 +128,26 @@ public class DomainXmlVerifier {
     public boolean validate() {
         try {
             checkUnique(Dom.unwrap(domain));
-            if (!error)
-               out.println(STRINGS.get("VerifySuccess"));
-        } catch(Exception e) {
+            if (out != null && !error) {
+                out.println(STRINGS.get("VerifySuccess"));
+            }
+        } catch (Exception e) {
             error = true;
-            e.printStackTrace();
+            if (err != null) {
+                e.printStackTrace(err);
+            }
         }
         return error;
     }
-    
+
     private void checkUnique(Dom d) {
 
         try {
             Set<String> eltnames = d.getElementNames();
             Set<String> leafeltnames = d.model.getLeafElementNames();
             for (String elt : eltnames) {
-                if (leafeltnames.contains(elt)) continue;
+                if (leafeltnames.contains(elt))
+                    continue;
                 List<Dom> eltlist;
                 synchronized (d) {
                     eltlist = d.nodeElements(elt);
@@ -123,17 +157,21 @@ public class DomainXmlVerifier {
                     checkUnique(subelt);
                 }
             }
-         } catch(Exception e) {
+        } catch (Exception e) {
             error = true;
-            e.printStackTrace();
+            if (err != null) {
+                e.printStackTrace(err);
+            }
         }
     }
-    
+
     private void output(Result result) {
-        out.println(STRINGS.get("VerifyError", result.result()));
+        if (out != null) {
+            out.println(STRINGS.get("VerifyError", result.result()));
+        }
     }
 
-    private void checkDuplicate(Collection <? extends Dom> beans) {
+    private void checkDuplicate(Collection<? extends Dom> beans) {
         if (beans == null || beans.size() <= 1) {
             return;
         }
@@ -151,8 +189,8 @@ public class DomainXmlVerifier {
             for (int j = i + 1; j < strKeys.length; j++) {
                 // If the keys are same and if the indexes don't match
                 // we have a duplicate. So output that error
-                if ( (strKeys[i].equals(strKeys[j]))) {
-                    errorKeyBeanMap.put(strKeys[i], ((Dom)keyBeanMap.get(strKeys[i])).getProxyType());
+                if ((strKeys[i].equals(strKeys[j]))) {
+                    errorKeyBeanMap.put(strKeys[i], ((Dom) keyBeanMap.get(strKeys[i])).getProxyType());
                     error = true;
                     break;
                 }
@@ -163,5 +201,25 @@ public class DomainXmlVerifier {
             Result result = new Result(STRINGS.get("VerifyDupKey", e.getKey(), e.getValue()));
             output(result);
         }
-    }    
+    }
+
+    private static Domain createDomainDom(URL domainXmlUrl) throws MalformedURLException {
+        ConfigParser parser = new ConfigParser(Globals.getStaticHabitatWithModules());
+        DomDocument<?> doc = parser.parse(domainXmlUrl);
+        return createDomainDom(doc);
+    }
+
+    private static Domain createDomainDom(InputStream domainXmlInputStream)
+            throws MalformedURLException, XMLStreamException, FactoryConfigurationError {
+        ConfigParser parser = new ConfigParser(Globals.getStaticHabitatWithModules());
+        XMLStreamReader domainXmlReader = XMLInputFactory.newInstance().createXMLStreamReader(domainXmlInputStream);
+        DomDocument<?> doc = parser.parse(domainXmlReader);
+        return createDomainDom(doc);
+    }
+
+    private static Domain createDomainDom(DomDocument<?> domainXmlDocument) {
+        Dom domDomain = domainXmlDocument.getRoot();
+        return domDomain.createProxy(Domain.class);
+    }
+
 }
