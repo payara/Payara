@@ -87,5 +87,6 @@ MonitoringConsole.Chart.getAPI = function(widget) {
     default:
     case 'line': return MonitoringConsole.Chart.Line;
     case 'bar': return MonitoringConsole.Chart.Bar;
+    case 'alert': return MonitoringConsole.Chart.Line;
   }
 };

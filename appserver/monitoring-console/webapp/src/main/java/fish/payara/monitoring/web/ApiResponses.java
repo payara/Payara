@@ -81,11 +81,12 @@ public final class ApiResponses {
         public final Alerts alerts;
         public final List<SeriesMatch> matches;
 
-        public SeriesResponse(List<List<SeriesDataset>> data, List<Collection<Watch>> watches, AlertStatistics alerts) {
-            this.alerts = new Alerts(alerts);
+        public SeriesResponse(SeriesQuery[] queries, List<List<SeriesDataset>> data, List<Collection<Watch>> watches,
+                List<Collection<Alert>> alerts, AlertStatistics alertStatistics) {
+            this.alerts = new Alerts(alertStatistics);
             this.matches = new ArrayList<>();
             for (int i = 0; i < data.size(); i++) {
-                matches.add(new SeriesMatch(data.get(i), watches.get(i)));
+                matches.add(new SeriesMatch(queries[i], data.get(i), watches.get(i), alerts.get(i)));
             }
         }
     }
@@ -112,12 +113,14 @@ public final class ApiResponses {
      */
     public static final class SeriesMatch {
 
-        public final List<WatchData> watches;
         public final List<SeriesData> data;
+        public final List<WatchData> watches;
+        public final List<AlertData> alerts;
 
-        public SeriesMatch(List<SeriesDataset> data, Collection<Watch> watches) {
+        public SeriesMatch(SeriesQuery query, List<SeriesDataset> data, Collection<Watch> watches, Collection<Alert> alerts) {
+            this.alerts = alerts.stream().map(alert -> new AlertData(alert, query.truncateAlerts)).collect(toList());
             this.watches = watches.stream().map(WatchData::new).collect(toList());
-            this.data = data.stream().map(SeriesData::new).collect(toList());
+            this.data = data.stream().map(set -> new SeriesData(set, query.truncatePoints)).collect(toList());
         }
     }
 
@@ -193,9 +196,13 @@ public final class ApiResponses {
         public final long stableSince;
 
         public SeriesData(SeriesDataset set) {
+            this(set, false);
+        }
+
+        public SeriesData(SeriesDataset set, boolean truncatePoints) {
             this.instance = set.getInstance();
-            this.series = set.getSeries().toString();
-            this.points = set.points();
+            this.series = set.getSeries().toString(); 
+            this.points = truncatePoints ? new long[] {set.lastTime(), set.lastValue()} : set.points();
             this.observedMax = set.getObservedMax();
             this.observedMin = set.getObservedMin();
             this.observedSum = set.getObservedSum();
@@ -259,18 +266,30 @@ public final class ApiResponses {
 
         public final int serial;
         public final String level;
+        public final String series;
+        public final String instance;
         public final WatchData initiator;
         public final boolean acknowledged;
         public final List<AlertFrame> frames;
 
         public AlertData(Alert alert) {
+            this(alert, false);
+        }
+
+        public AlertData(Alert alert, boolean truncateAlerts) {
             this.serial = alert.serial;
             this.level = alert.getLevel().name().toLowerCase();
+            this.series = alert.getSeries().toString();
+            this.instance = alert.getInstance();
             this.initiator = new WatchData(alert.initiator);
             this.acknowledged = alert.isAcknowledged();
             this.frames = new ArrayList<>();
-            for (Alert.Transition t : alert) {
-                this.frames.add(new AlertFrame(t));
+            if (truncateAlerts) {
+                this.frames.add(new AlertFrame(alert.getEndFrame()));
+            } else {
+                for (Alert.Frame t : alert) {
+                    this.frames.add(new AlertFrame(t));
+                }
             }
         }
     }
@@ -287,14 +306,14 @@ public final class ApiResponses {
         public final long start;
         public final Long end;
 
-        public AlertFrame(Alert.Transition transition) {
-            this.level = transition.to.name().toLowerCase();
-            this.cause = new SeriesData(transition.cause);
-            this.start = transition.start;
-            this.end = transition.getEnd() <= 0 ? null : transition.getEnd();
+        public AlertFrame(Alert.Frame frame) {
+            this.level = frame.level.name().toLowerCase();
+            this.cause = new SeriesData(frame.cause, true); // for now the points data isn't used, change to false if needed
+            this.start = frame.start;
+            this.end = frame.getEnd() <= 0 ? null : frame.getEnd();
             this.captured = new ArrayList<>();
-            for (SeriesDataset capture : transition) {
-                this.captured.add(new SeriesData(capture));
+            for (SeriesDataset capture : frame) {
+                this.captured.add(new SeriesData(capture, true)); // for now the points data isn't used, change to false if needed
             }
         }
     }

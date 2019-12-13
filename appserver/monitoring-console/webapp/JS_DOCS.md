@@ -62,8 +62,9 @@ WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, dec
 series     = string
 target     = string
 displayName= string
-type       = 'line' | 'bar'
-unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+type       = 'line' | 'bar' | 'alert'
+unit       = UNIT
+UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 coloring   = 'instance' | 'series' | 'index'
 scaleFactor= number
 grid       = { item, column, span }
@@ -203,10 +204,12 @@ value    = number
 Assessments are evaluations made by the client to classify the data based on a widgets configuration.
 
 ```
-ASSESSMENTS = { status }
+ASSESSMENTS = { status, color }
 status      = Status
-Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing'
+Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing' | 'white' | 'green' | 'amber' | 'red'
+color       = string
 ```
+* `color` is an optional attribute holding a hex color value associated with the status
 
 
 
@@ -219,7 +222,8 @@ The general idea of model driven UI components is that a model - usually a JS ob
 Describes the model expected by the `Settings` component.
 
 ```
-SETTINGS    = [GROUP]
+SETTINGS    = { id, groups }
+groups      = [GROUP]
 GROUP       = { id, caption, entries, collapsed }
 id 		    = string
 caption     = string
@@ -275,18 +279,18 @@ Describes the model expected by the `Legend` component.
 
 ```
 LEGEND          = [LEGEND_ITEM]
-LEGEND_ITEM     = { label, value, color, backgroundColor, assessments }
+LEGEND_ITEM     = { label, value, color, background, assessments }
 label           = string
 value           = string | number
 color           = string
-backgroundColor = string
+background      = string
 assessments     = ASSESSMENTS
 ```
 * If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
 * `color` is the color of the line or bar used to indicate the item, 
-* `backgroundColor` is the background color of the line or bar should it use a fill
+* `background` is the background color of the line or bar should it use a fill
 * `assessments` help to understand or classify the given value qualitatively 
 
 
@@ -301,7 +305,7 @@ text      = string
 ```
 
 
-### MENU API
+### Menu API
 Describes the model expected by the `MENU` component that is used for any of the text + icon menus or toolbars.
 
 ```
@@ -321,3 +325,38 @@ onClick      = fn () => ()
 * `id` is optional
 * `description` is optional
 * if item in `MENU` array has `items` it is a `BUTTON_GROUP` otherwise it is a `BUTTON`
+
+
+### Alert Table API
+Describes the model expected by the `AlertTable` component.
+This component gives a tabular overview of alerts that occured for the widget `series`.
+
+```
+ALERT_TABLE  = { id, items }
+items        = ALERT_ITEM
+ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch }
+serial       = number
+name         = string
+series       = string
+instance     = instance
+unit         = UNIT
+acknowledged = boolean
+frames       = [ALERT_FRAME]
+ALERT_FRAME  = { level, since, until, color }
+level        = 'red' | 'amber'
+since        = date | number
+until    	 = date | number
+color        = string
+watch        = { serial, red, amber, green }
+red          = CIRCUMSTANCE
+amber        = CIRCUMSTANCE
+green        = CIRCUMSTANCE
+CIRCUMSTANCE = { start, stop }
+start        = CONDITION
+stop         = CONDITION
+CONDITION    = { operator, threshold, forTimes, forPercent, forMillis }
+```
+* `since` is the start date as timestamp or JS date
+* `ALERT_ITEM.color` refers to the series/instance color whereas `ALERT_FRAME.color` refers to the level color
+* `items` and `frames` can be given in any order but might be changed to a particular order while processing the model
+* only one of `forTimes`, `forPercent`, `forMillis` should be set

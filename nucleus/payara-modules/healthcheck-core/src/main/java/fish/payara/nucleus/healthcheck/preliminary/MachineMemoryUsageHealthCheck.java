@@ -40,6 +40,9 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
@@ -65,7 +68,8 @@ import java.util.List;
 @Service(name = "healthcheck-machinemem")
 @RunLevel(StartupRunLevel.VAL)
 public class MachineMemoryUsageHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker> {
+extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker>
+implements MonitoringDataSource {
 
     private static final String MEMTOTAL = "MemTotal:";
     private static final String MEMFREE = "MemFree:";
@@ -74,6 +78,8 @@ public class MachineMemoryUsageHealthCheck
     private static final String INACTIVEFILE = "Inactive(file):";
     private static final String RECLAIMABLE = "SReclaimable:";
     private static final String KB = "kB";
+
+    private final PysicalMemoryUsage stats = new PysicalMemoryUsage();
 
     @PostConstruct
     void postConstruct() {
@@ -92,63 +98,13 @@ public class MachineMemoryUsageHealthCheck
 
     @Override
     protected HealthCheckResult doCheckInternal() {
-        if (isLinux()) {
-            return doCheckLinux();
-        }
-        return doCheckNonLinux();
-    }
-
-    private HealthCheckResult doCheckLinux() {
         HealthCheckResult result = new HealthCheckResult();
         long memTotal = 0;
         try {
-            List<String> lines = Files.readAllLines(Paths.get("/proc/meminfo"), StandardCharsets.UTF_8);
-            if (lines.isEmpty()) {
-                return result;
-            }
-            long memAvailable = 0;
-            long memFree = 0;
-            long memActiveFile = 0;
-            long memInactiveFile = 0;
-            long memReclaimable= 0;
-            boolean memAvailableFound = false;
-
-            for (String line : lines) {
-                String[] parts = line.split("\\s+");
-
-                if (parts.length > 1) {
-                    String part = parts[0];
-                    if (MEMAVAILABLE.equals(part)) {
-                        memAvailable = parseMemInfo(parts);
-                        memAvailableFound = true;
-                    }
-                    if (MEMFREE.equals(part)) {
-                        memFree = parseMemInfo(parts);
-                    }
-                    if (MEMTOTAL.equals(part)) {
-                        memTotal = parseMemInfo(parts);
-                    }
-                    if (ACTIVEFILE.equals(part)) {
-                        memActiveFile = parseMemInfo(parts);
-                    }
-                    if (INACTIVEFILE.equals(part)) {
-                        memInactiveFile = parseMemInfo(parts);
-                    }
-                    if (RECLAIMABLE.equals(part)) {
-                        memReclaimable = parseMemInfo(parts);
-                    }
-                }
-            }
-
-            if (!memAvailableFound) {
-                memAvailable = memFree + memActiveFile + memInactiveFile + memReclaimable;
-            }
-
-            double usedPercentage = memTotal == 0L ? 0d :((double) (memTotal - memAvailable) / memTotal) * 100;
-
+            double usedPercentage = stats.usedPercentage();
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
-                    "Physical Memory Used: " + prettyPrintBytes(memTotal - memAvailable) + " - " +
-                            "Total Physical Memory: " + prettyPrintBytes(memTotal) + " - " +
+                    "Physical Memory Used: " + prettyPrintBytes(stats.getUsedMemory()) + " - " +
+                            "Total Physical Memory: " + prettyPrintBytes(stats.getTotalMemory()) + " - " +
                             "Memory Used%: " + new DecimalFormat("#.00").format(usedPercentage) + "%"));
 
         } catch (IOException exception) {
@@ -159,25 +115,6 @@ public class MachineMemoryUsageHealthCheck
             result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR,
                     "Error occurred while calculating memory usage values. Total memory is " + memTotal,
                     exception));
-        }
-        return result;
-    }
-
-    private HealthCheckResult doCheckNonLinux() {
-        HealthCheckResult result = new HealthCheckResult();
-        try {
-            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-            Long totalPhysicalMemSize = invokeMethodFor(osBean, "getTotalPhysicalMemorySize");
-            Long freePhysicalMemSize = invokeMethodFor(osBean, "getFreePhysicalMemorySize");
-
-            double usedPercentage = ((double) (totalPhysicalMemSize - freePhysicalMemSize) / totalPhysicalMemSize) *
-                    100;
-
-            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
-                    "Physical Memory Used: " + prettyPrintBytes((totalPhysicalMemSize - freePhysicalMemSize)) + " - " +
-                            "Total Physical Memory: " + prettyPrintBytes(totalPhysicalMemSize) + " - " +
-                            "Memory Used%: " + new DecimalFormat("#.00").format(usedPercentage) + "%"));
-
         } catch (Exception exception) {
             result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR,
                     "Operating system methods cannot be invoked for retrieving physical memory usage values",
@@ -186,31 +123,110 @@ public class MachineMemoryUsageHealthCheck
         return result;
     }
 
-    private static boolean isLinux() {
-        String osName = System.getProperty("os.name");
-        return osName.startsWith("Linux") ||
-                osName.startsWith("FreeBSD") ||
-                osName.startsWith("OpenBSD") ||
-                osName.startsWith("gnu") ||
-                osName.startsWith("netbsd");
-    }
-
-    private static long parseMemInfo(String[] parts) {
-        long memory = 0;
-
-        if (parts.length >= 2) {
-            memory = Long.parseLong(parts[1]);
-            if (parts.length > 2 && KB.equals(parts[2])) {
-                memory *= 1024;
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 12)
+    public void collect(MonitoringDataCollector collector) {
+        if (getOptions().isEnabled()) {
+            try {
+                collector.collect("PhysicalMemoryUsed", (long) stats.usedPercentage());
+            } catch (Exception ex) {
+                throw ex instanceof RuntimeException ? (RuntimeException) ex : new RuntimeException(ex);
             }
         }
-        return memory;
     }
 
-    private static Long invokeMethodFor(OperatingSystemMXBean osBean, String methodName) throws Exception {
-        Method m = osBean.getClass().getDeclaredMethod(methodName);
-        m.setAccessible(true);
-        return (Long) m.invoke(osBean);
+    private static final class PysicalMemoryUsage {
+        private volatile long totalMemory;
+        private volatile long availableMemory;
+
+        PysicalMemoryUsage() {
+            // make visible
+        }
+
+        long getTotalMemory() {
+            return totalMemory;
+        }
+
+        long getUsedMemory() {
+            return totalMemory - availableMemory;
+        }
+
+        double usedPercentage() throws Exception {
+            if (isLinux()) {
+                updateLinux();
+            } else {
+                updateNonLinux();
+            }
+            long usedMemory = totalMemory - availableMemory;
+            return totalMemory == 0L ? 0d : 100d * usedMemory / totalMemory;
+        }
+
+        private void updateLinux() throws IOException {
+            List<String> lines = Files.readAllLines(Paths.get("/proc/meminfo"), StandardCharsets.UTF_8);
+            if (lines.isEmpty()) {
+                totalMemory = 0;
+                availableMemory = 0;
+                return;
+            }
+            long otherAvailableMemory = 0;
+            availableMemory = 0;
+            for (String line : lines) {
+                String[] parts = line.split("\\s+");
+                if (parts.length > 1) {
+                    switch(parts[0]) {
+                    case MEMAVAILABLE: 
+                        availableMemory = parseMemInfo(parts);
+                        break;
+                    case MEMTOTAL:
+                        totalMemory = parseMemInfo(parts);
+                        break;
+                    case INACTIVEFILE:
+                    case ACTIVEFILE:
+                    case RECLAIMABLE:
+                    case MEMFREE:
+                        otherAvailableMemory += parseMemInfo(parts); 
+                        break;
+                    }
+                }
+            }
+            if (availableMemory == 0) {
+                availableMemory = otherAvailableMemory;
+            }
+        }
+
+        private void updateNonLinux() throws Exception {
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            totalMemory = invokeMethodFor(osBean, "getTotalPhysicalMemorySize");
+            availableMemory = invokeMethodFor(osBean, "getFreePhysicalMemorySize");
+        }
+
+        private static boolean isLinux() {
+            String osName = System.getProperty("os.name");
+            return osName.startsWith("Linux") ||
+                    osName.startsWith("FreeBSD") ||
+                    osName.startsWith("OpenBSD") ||
+                    osName.startsWith("gnu") ||
+                    osName.startsWith("netbsd");
+        }
+
+        private static long parseMemInfo(String[] parts) {
+            long memory = 0;
+            if (parts.length >= 2) {
+                memory = Long.parseLong(parts[1]);
+                if (parts.length > 2 && KB.equals(parts[2])) {
+                    memory *= 1024;
+                }
+            }
+            return memory;
+        }
+
+        private static Long invokeMethodFor(OperatingSystemMXBean osBean, String methodName) throws Exception {
+            Method m = osBean.getClass().getDeclaredMethod(methodName);
+            m.setAccessible(true);
+            return (Long) m.invoke(osBean);
+        }
     }
+
+
 }
 

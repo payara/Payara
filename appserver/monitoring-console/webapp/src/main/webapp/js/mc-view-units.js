@@ -222,10 +222,19 @@ MonitoringConsole.View.Units = (function() {
       return 'a integer or decimal number, optionally followed by a unit: ' + Object.keys(factors).filter(unit => unit != '_').join(', ');
    }
 
+   function maxAlertLevel(a, b) {
+      const table = ['white', 'green', 'amber', 'red'];
+      return table[Math.max(0, Math.max(table.indexOf(a), table.indexOf(b)))];
+   }
+
    /**
     * Public API below:
     */
    return {
+      Alerts: {
+         maxLevel: maxAlertLevel,
+      },
+      
       formatTime: formatTime,
       formatNumber: formatNumber,
       formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),

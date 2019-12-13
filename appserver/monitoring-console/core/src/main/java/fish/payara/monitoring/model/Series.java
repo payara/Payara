@@ -51,12 +51,15 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
+    
     private static final char QUERY_WILDCARD = '*';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
 
     private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
+
+    public static final Series ANY = new Series("" + QUERY_WILDCARD);
 
     private final String metric;
     private final String[] tags;

@@ -74,7 +74,7 @@ MonitoringConsole.View = (function() {
         let nav = { id: 'Navigation', groups: [
             {label: activePage.name, items: items }
         ]};
-        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
+        $('#Navigation').replaceWith(Components.createMenu(nav));
     }
 
     function updateMenu() {
@@ -108,7 +108,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
             ]},
         ]};
-        $('#Menu').replaceWith(Components.onMenuCreation(menu));
+        $('#Menu').replaceWith(Components.createMenu(menu));
     }
 
     /**
@@ -121,14 +121,14 @@ MonitoringConsole.View = (function() {
                 panelConsole.addClass('state-show-settings');                
             }
             let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
-            let settings = [];
-            settings.push(createGlobalSettings(singleSelection));
-            settings.push(createColorSettings());
-            settings.push(createPageSettings());
+            let groups = [];
+            groups.push(createGlobalSettings(singleSelection));
+            groups.push(createColorSettings());
+            groups.push(createPageSettings());
             if (singleSelection) {
-                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                groups = groups.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(settings);
+            $('#Settings').replaceWith(Components.createSettings({id: 'Settings', groups: groups }));
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -148,8 +148,9 @@ MonitoringConsole.View = (function() {
             } else {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
-                parent.append(Components.onLegendCreation([]));                
-                parent.append(Components.onIndicatorCreation({}));
+                parent.append(Components.createAlertTable({}));
+                parent.append(Components.createLegend([]));                
+                parent.append(Components.createIndicator({}));
             }
         }
         if (widget.selected) {
@@ -223,7 +224,7 @@ MonitoringConsole.View = (function() {
             .append($('<h3/>', {title: 'Select '+series})
                 .html(title)
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.onMenuCreation(menu));
+            .append(Components.createMenu(menu));
     }
 
     function createGlobalSettings(initiallyCollapsed) {
@@ -241,14 +242,18 @@ MonitoringConsole.View = (function() {
 
     function createColorSettings() {
         let colorModel = MonitoringConsole.Model.Colors;
+        function createChangeColorDefaultFn(name) {
+            return (color) => { colorModel.default(name, color); updateSettings(); };
+        }
+        function createColorDefaultSettingMapper(name) {
+            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: colorModel.default(name), onChange: createChangeColorDefaultFn(name) };
+        }        
         return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
             { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
             { label: 'Defaults', input: [
-                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
-                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
-                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
-            ]},
+                ['waterline', 'alarming', 'critical'].map(createColorDefaultSettingMapper),
+                ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
@@ -261,7 +266,7 @@ MonitoringConsole.View = (function() {
         let settings = [];
         settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
-            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
@@ -417,12 +422,13 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegendComponent(widget, data) {
+    function createLegendModel(widget, data, alerts) {
         if (!data)
             return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
-        if (Array.isArray(data) && data.length == 0) {
-            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
-        }
+        if (widget.type == 'alert')
+            return createLegendModelFromAlerts(widget, data, alerts);
+        if (Array.isArray(data) && data.length == 0)
+            return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
         let format = Units.converter(widget.unit).format;
         let palette = MonitoringConsole.Model.Colors.palette();
@@ -443,18 +449,41 @@ MonitoringConsole.View = (function() {
             if (widget.options.perSec)
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
-            let bgColor = Colors.hex2rgba(color, alpha);
+            let background = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
                 value: value, 
                 color: color,
-                backgroundColor: bgColor,
+                background: background,
                 assessments: seriesData.assessments,
             };
             legend.push(item);
-            data[j].legend = item;
+            seriesData.legend = item;
         }
         return legend;
+    }
+
+    function createLegendModelFromAlerts(widget, data, alerts) {
+        if (!Array.isArray(alerts))
+            return []; //TODO use white, green, amber and red to describe the watch in case of single watch
+        const colorModel = MonitoringConsole.Model.Colors;
+        let palette = colorModel.palette();
+        let alpha = colorModel.opacity() / 100;
+        let instances = {};
+        for (let i = 0; i < alerts.length; i++) {
+            let alert = alerts[i];
+            instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
+        }
+        return Object.entries(instances).map(function([instance, level]) {
+            let color = Colors.lookup('instance', instance, palette);
+            return {
+                label: instance,
+                value: level == undefined ? 'White' : level.charAt(0).toUpperCase() + level.slice(1),
+                color: color,
+                background: Colors.hex2rgba(color, alpha),
+                assessments: { status: level, color: colorModel.default(level) },                
+            };
+        });
     }
 
     function getColorKey(widget, seriesData, index) {
@@ -466,7 +495,7 @@ MonitoringConsole.View = (function() {
         }
     } 
 
-    function createIndicatorComponent(widget, data) {
+    function createIndicatorModel(widget, data) {
         if (!data)
             return { status: 'error' };
         if (Array.isArray(data) && data.length == 0)
@@ -481,6 +510,41 @@ MonitoringConsole.View = (function() {
         return { status: status, text: statusInfo.hint };
     }
 
+    function createAlertTableModel(widget, alerts) {
+        let items = [];
+        if (Array.isArray(alerts)) {
+            const colorModel = MonitoringConsole.Model.Colors;
+            let palette = MonitoringConsole.Model.Colors.palette();
+            for (let i = 0; i < alerts.length; i++) {
+                let alert = alerts[i];
+                let include = widget.type === 'alert' || alert.level === 'red' || alert.level === 'amber';
+                if (include) {
+                    let frames = alert.frames.map(function(frame) {
+                        return {
+                            level: frame.level,
+                            since: frame.start,
+                            until: frame.end,
+                            color: colorModel.default(frame.level),
+                        };
+                    });
+                    let instanceColoring = widget.coloring === 'instance' || widget.coloring === undefined;
+                    items.push({
+                        serial: alert.serial,
+                        name: alert.initiator.name,
+                        unit: alert.initiator.unit,
+                        acknowledged: alert.acknowledged,
+                        series: alert.series == widget.series ? undefined : alert.series,
+                        instance: alert.instance,
+                        color: instanceColoring ? Colors.lookup('instance', alert.instance, palette) : undefined,
+                        frames: frames,
+                        watch: alert.initiator,
+                    });                    
+                }
+            }
+        }
+        return { id: widget.target + '_alerts', items: items };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -489,16 +553,19 @@ MonitoringConsole.View = (function() {
     function onDataUpdate(update) {
         let widget = update.widget;
         let data = update.data;
+        let alerts = update.alerts;
         updateDomOfWidget(undefined, widget);
-        let widgetNode = $('#widget-'+widget.target);
+        let widgetNode = $('#widget-' + widget.target);
         let legendNode = widgetNode.find('.Legend').first();
         let indicatorNode = widgetNode.find('.Indicator').first();
-        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
-        if (data) {
+        let alertsNode = widgetNode.find('.AlertTable').first();
+        let legend = createLegendModel(widget, data, alerts); // OBS this has side effect of setting .legend attribute in series data
+        if (data !== undefined && widget.type !== 'alert') {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        legendNode.replaceWith(Components.onLegendCreation(legend));
-        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
+        alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts)));
+        legendNode.replaceWith(Components.createLegend(legend));
+        indicatorNode.replaceWith(Components.createIndicator(createIndicatorModel(widget, data)));
     }
 
     /**

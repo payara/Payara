@@ -825,18 +825,26 @@ MonitoringConsole.Model = (function() {
 	 */ 
 	let Update = (function() {
 
-		function retainLastMinute(data) {
-			if (!data)
+		/**
+		 * Shortens the shown time frame to one common to all series but at least to the last minute.
+		 */
+		function retainCommonTimeFrame(data) {
+			if (!data || data.length == 0)
 				return [];
 			let startOfLastMinute = Date.now() - 62000;
+			let startOfShortestSeries = data.reduce((high, e) => Math.max(e.points[0], high), 0);
+			let startCutoff = Math.min(startOfLastMinute, startOfShortestSeries);
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
-				if (src.length == 4 && src[2] >= startOfLastMinute) {
-					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				if (src.length == 4 && src[2] >= startCutoff) {
+					if (src[1] == src[3]) {
+						// extend a straight line between 2 points to cutoff
+						seriesData.points = [Math.max(seriesData.observedSince, Math.min(startOfShortestSeries, src[2] - 59000)), src[1], src[2], src[3]];						
+					}
 				} else {
 					let points = [];
 					for (let i = 0; i < src.length; i += 2) {
-						if (src[i] >= startOfLastMinute) {
+						if (src[i] >= startCutoff) {
 							points.push(src[i]);
 							points.push(src[i+1]);
 						}
@@ -908,7 +916,8 @@ MonitoringConsole.Model = (function() {
 		function createOnSuccess(widgets, onDataUpdate) {
 			return function(response) {
 				Object.values(widgets).forEach(function(widget, index) {
-					let data = retainLastMinute(response.matches[index].data);
+					let widgetResponse = response.matches[index];
+					let data = retainCommonTimeFrame(widgetResponse.data);
 					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
@@ -917,6 +926,7 @@ MonitoringConsole.Model = (function() {
 					onDataUpdate({
 						widget: widget,
 						data: data,
+						alerts: widgetResponse.alerts,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -946,9 +956,11 @@ MonitoringConsole.Model = (function() {
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			payload.queries = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.values(widgets).map(function(widget) { 
 				return { 
-					series: series,
+					series: widget.series,
+					truncateAlerts: widget.type !== 'alert',
+					truncatePoints: widget.type === 'alert',
 					instances: undefined, // all
 				}; 
 			});

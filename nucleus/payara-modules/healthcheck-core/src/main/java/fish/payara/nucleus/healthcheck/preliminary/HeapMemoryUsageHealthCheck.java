@@ -99,7 +99,7 @@ implements MonitoringDataSource {
     }
 
     @Override
-    @MonitoringData(ns = "health", intervalSeconds = 5)
+    @MonitoringData(ns = "health", intervalSeconds = 4)
     public void collect(MonitoringDataCollector collector) {
         if (getOptions().isEnabled()) {
             collector.collect("HeapUsage", calculatePercentage(getMemoryUsage()));

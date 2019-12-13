@@ -49,13 +49,17 @@ MonitoringConsole.Chart.Line = (function() {
   const Colors = MonitoringConsole.View.Colors;
   const ColorModel = MonitoringConsole.Model.Colors;
 
-  function timeLable(secondsAgo, index, lastIndex) {
+  function timeLable(secondsAgo, index, lastIndex, secondsInterval) {
     if (index == lastIndex && secondsAgo == 0)
       return 'now';
     if (index == 0 || index == lastIndex && secondsAgo > 0) {
-      if (Math.abs(secondsAgo - 60) == 1)
-        secondsAgo = 60; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
-      return secondsAgo +'s ago';
+      if (Math.abs(secondsAgo - 60) <= secondsInterval)
+        return '60s ago'; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
+      if (Math.abs((secondsAgo % 60) - 60) <= secondsInterval)
+        return Math.round(secondsAgo / 60) + 'mins ago';
+      if (secondsAgo <= 60)
+        return secondsAgo +'s ago';
+      return Math.floor(secondsAgo / 60) + 'mins ' + (secondsAgo % 60) + 's ago';
     }
     return undefined;
   }
@@ -89,14 +93,17 @@ MonitoringConsole.Chart.Line = (function() {
               let reference = new Date(values[lastIndex].value);
               let now = new Date();
               let isLive = now - reference < 5000; // is within the last 5 secs
-              let secondsAgo = values.length < 2 ? 0 : (((values[lastIndex].value - values[index].value)/1000));
+              if (values.length == 1)
+                return isLive ? 'now' : Units.formatTime(new Date(reference));
+              let secondsInterval = (values[1].value - values[0].value) / 1000;
+              let secondsAgo = (values[lastIndex].value - values[index].value) / 1000;
               if (isLive) {
-                return timeLable(secondsAgo, index, lastIndex);
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
               }
               let reference2 = new Date(values[lastIndex-1].value);
               let isRecent = now - reference < (5000 + (reference - reference2));
               if (isRecent) {
-                return timeLable(secondsAgo, index, lastIndex);
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
@@ -187,7 +194,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
-    let bgColor = seriesData.legend.backgroundColor;
+    let bgColor = seriesData.legend.background;
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));

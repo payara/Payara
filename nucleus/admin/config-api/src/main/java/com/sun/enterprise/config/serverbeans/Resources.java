@@ -110,7 +110,7 @@ public interface Resources extends ConfigBeanProxy  {
     public class Duck {
 
         public static <T> Collection<T> getResources(Resources resources, Class<T> type){
-            Collection<T> filteredResources = new ArrayList<T>();
+            Collection<T> filteredResources = new ArrayList<>();
             for(Resource resource : resources.getResources()){
                 if (type.isInstance(resource)) {
                     filteredResources.add(type.cast(resource));

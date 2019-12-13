@@ -87,6 +87,7 @@ MonitoringConsole.Chart.getAPI = function(widget) {
     default:
     case 'line': return MonitoringConsole.Chart.Line;
     case 'bar': return MonitoringConsole.Chart.Bar;
+    case 'alert': return MonitoringConsole.Chart.Line;
   }
 };
 /*
@@ -916,18 +917,26 @@ MonitoringConsole.Model = (function() {
 	 */ 
 	let Update = (function() {
 
-		function retainLastMinute(data) {
-			if (!data)
+		/**
+		 * Shortens the shown time frame to one common to all series but at least to the last minute.
+		 */
+		function retainCommonTimeFrame(data) {
+			if (!data || data.length == 0)
 				return [];
 			let startOfLastMinute = Date.now() - 62000;
+			let startOfShortestSeries = data.reduce((high, e) => Math.max(e.points[0], high), 0);
+			let startCutoff = Math.min(startOfLastMinute, startOfShortestSeries);
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
-				if (src.length == 4 && src[2] >= startOfLastMinute) {
-					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				if (src.length == 4 && src[2] >= startCutoff) {
+					if (src[1] == src[3]) {
+						// extend a straight line between 2 points to cutoff
+						seriesData.points = [Math.max(seriesData.observedSince, Math.min(startOfShortestSeries, src[2] - 59000)), src[1], src[2], src[3]];						
+					}
 				} else {
 					let points = [];
 					for (let i = 0; i < src.length; i += 2) {
-						if (src[i] >= startOfLastMinute) {
+						if (src[i] >= startCutoff) {
 							points.push(src[i]);
 							points.push(src[i+1]);
 						}
@@ -999,7 +1008,8 @@ MonitoringConsole.Model = (function() {
 		function createOnSuccess(widgets, onDataUpdate) {
 			return function(response) {
 				Object.values(widgets).forEach(function(widget, index) {
-					let data = retainLastMinute(response.matches[index].data);
+					let widgetResponse = response.matches[index];
+					let data = retainCommonTimeFrame(widgetResponse.data);
 					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
@@ -1008,6 +1018,7 @@ MonitoringConsole.Model = (function() {
 					onDataUpdate({
 						widget: widget,
 						data: data,
+						alerts: widgetResponse.alerts,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -1037,9 +1048,11 @@ MonitoringConsole.Model = (function() {
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			payload.queries = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.values(widgets).map(function(widget) { 
 				return { 
-					series: series,
+					series: widget.series,
+					truncateAlerts: widget.type !== 'alert',
+					truncatePoints: widget.type === 'alert',
 					instances: undefined, // all
 				}; 
 			});
@@ -1520,10 +1533,19 @@ MonitoringConsole.View.Units = (function() {
       return 'a integer or decimal number, optionally followed by a unit: ' + Object.keys(factors).filter(unit => unit != '_').join(', ');
    }
 
+   function maxAlertLevel(a, b) {
+      const table = ['white', 'green', 'amber', 'red'];
+      return table[Math.max(0, Math.max(table.indexOf(a), table.indexOf(b)))];
+   }
+
    /**
     * Public API below:
     */
    return {
+      Alerts: {
+         maxLevel: maxAlertLevel,
+      },
+      
       formatTime: formatTime,
       formatNumber: formatNumber,
       formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),
@@ -1603,7 +1625,10 @@ MonitoringConsole.View.Colors = (function() {
          name: 'Payara',
          palette: [ '#F0981B', '#008CC4', '#8B79BC', '#87BC25', '#FF70DA' ],
          opacity: 20,
-         defaults:  { waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c' }
+         defaults:  { 
+            waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c',
+            white: '#ffffff', green: '#87BC25', amber: '#f0981b', red: '#dc143c',
+          }
       },
 
       a: {
@@ -1799,7 +1824,12 @@ MonitoringConsole.View.Colors = (function() {
 /**
  * Data/Model driven view components.
  *
- * Each of them gets passed a model which updates the view of the component to the model state.
+ * Each of them gets passed a model creates a DOM structure in form of a jQuery object 
+ * that should be inserted into the page DOM using jQuery.
+ *
+ * Besides general encapsulation the idea is to benefit of a function approch 
+ * that utilises pure functions to compute the page context from a fixed state input.
+ * This makes the code much easier to understand and maintain as it is free of overall page state.
  **/
 MonitoringConsole.View.Components = (function() {
 
@@ -1811,10 +1841,6 @@ MonitoringConsole.View.Components = (function() {
     * This is the side panel showing the details and settings of widgets
     */
    let Settings = (function() {
-
-      function emptyPanel() {
-         return $('#Settings').empty();
-      }
 
       function createHeaderRow(model) {
         let caption = model.label;
@@ -2030,12 +2056,12 @@ MonitoringConsole.View.Components = (function() {
          }
       }
 
-      function onUpdate(model) {
-         let panel = emptyPanel();
+      function createComponent(model) {
+         let panel = $('<div/>', { id: model.id });
          let syntheticId = 0;
          let collapsed = false;
-         for (let t = 0; t < model.length; t++) {
-            let group = model[t];
+         for (let t = 0; t < model.groups.length; t++) {
+            let group = model.groups[t];
             let table = createTable(group);
             collapsed = group.collapsed === true;
             panel.append(table);
@@ -2055,29 +2081,44 @@ MonitoringConsole.View.Components = (function() {
                   table.append(createRow(entry, createInput(entry)));
                } else {
                   if (Array.isArray(input)) {
-                     let multiInput = $('<div/>');
-                     for (let i = 0; i < input.length; i++) {
-                        let multiEntry = input[i];
-                        syntheticId++;
-                        if (multiEntry.id === undefined)
-                          multiEntry.id = 'setting_' + syntheticId;
-                        multiInput.append(createInput(multiEntry));
-                        if (multiEntry.label) {
-                          let config = { 'for': multiEntry.id };
-                          if (multiEntry.description)
-                            config.title = multiEntry.description;
-                          multiInput.append($('<label/>', config).html(multiEntry.label));
-                        }                        
-                     }
-                     input = multiInput;
+                    let [innerInput, innerSyntheticId] = createMultiInput(input, syntheticId, 'x-input');
+                    input = innerInput;
+                    syntheticId = innerSyntheticId;
                   }
                   table.append(createRow(entry, input));
                }
             }
          }
+         return panel;
       }
 
-      return { onUpdate: onUpdate };
+      function createMultiInput(inputs, syntheticId, css) {
+        let box = $('<div/>', {'class': css});
+        for (let i = 0; i < inputs.length; i++) {
+          let entry = inputs[i];
+          if (Array.isArray(entry)) {
+            let [innerBox, innerSyntheticId] = createMultiInput(entry, syntheticId);
+            box.append(innerBox);
+            syntheticId = innerSyntheticId;
+          } else {
+            syntheticId++;
+            if (entry.id === undefined)
+              entry.id = 'setting_' + syntheticId;
+            let input = createInput(entry);
+            if (entry.label) {
+              let config = { 'for': entry.id };
+              if (entry.description)
+                config.title = entry.description;
+              box.append($('<span/>').append(input).append($('<label/>', config).html(entry.label))).append("\n");
+            } else {
+              box.append(input);
+            }
+          }                    
+        }
+        return [box, syntheticId];
+      }
+
+      return { createComponent: createComponent };
    })();
 
    /**
@@ -2103,13 +2144,16 @@ MonitoringConsole.View.Components = (function() {
             label = 'DAS'; 
             attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
          }
+         let textAttrs = {};
+         if (assessments && assessments.color)
+           textAttrs.style = 'color: '+assessments.color + ';';
          return $('<li/>', attrs)
                .append($('<span/>').text(label))
-               .append($('<strong/>').text(strong))
+               .append($('<strong/>', textAttrs).text(strong))
                .append($('<span/>').text(normal));
       }
 
-      function onCreation(model) {
+      function createComponent(model) {
          let legend = $('<ol/>',  {'class': 'Legend'});
          for (let i = 0; i < model.length; i++) {
             legend.append(createItem(model[i]));
@@ -2117,7 +2161,7 @@ MonitoringConsole.View.Components = (function() {
          return legend;
       }
 
-      return { onCreation: onCreation };
+      return { createComponent: createComponent };
    })();
 
   /**
@@ -2125,7 +2169,7 @@ MonitoringConsole.View.Components = (function() {
    */
   let Indicator = (function() {
 
-    function onCreation(model) {
+    function createComponent(model) {
        if (!model.text) {
           return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
        }
@@ -2133,7 +2177,7 @@ MonitoringConsole.View.Components = (function() {
        return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
     }
 
-    return { onCreation: onCreation };
+    return { createComponent: createComponent };
   })();
 
   /**
@@ -2141,7 +2185,7 @@ MonitoringConsole.View.Components = (function() {
    */
   let Menu = (function() {
 
-    function onCreation(model) {
+    function createComponent(model) {
       let attrs = { 'class': 'Menu' };
       if (model.id)
         attrs.id = model.id;
@@ -2196,30 +2240,170 @@ MonitoringConsole.View.Components = (function() {
             .addClass('clickable');
     }
 
-    return { onCreation: onCreation };
+    return { createComponent: createComponent };
+  })();
+
+  /**
+   * An alert table is a widget that shows a table of alerts that have occured for the widget series.
+   */
+  let AlertTable = (function() {
+
+    function createComponent(model) {
+      let items = model.items === undefined ? [] : model.items.sort(sortMostUrgetFirst);
+      config = { 'class': 'AlertTable' };
+      if (model.id)
+        config.id = model.id;
+      if (items.length == 0)
+        config.style = 'display: none';
+      let table = $('<div/>', config);
+      let lastOngoing;
+      for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        let endFrame = item.frames[0];
+        let startFrame = item.frames[item.frames.length - 1];
+        let ongoing = endFrame.until === undefined;
+        let level = endFrame.level;
+        let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
+        let box = $('<div/>', { style: 'border-color:' + color + ';' });
+        box.append(createGeneralGroup(item));
+        box.append(createStatisticsGroup(item));
+        if (ongoing)
+          box.append(createConditionGroup(item));
+        let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
+        table.append(row.append(box));
+        lastOngoing = ongoing;
+      }
+      return table;
+    }
+
+    function createConditionGroup(item) {
+      let endFrame = item.frames[0];
+      let circumstance = item.watch[endFrame.level];
+      let desc = $('<span/>');
+      desc.append(formatCondition(item, circumstance.start));
+      if (circumstance.stop) {
+        desc.append($('<small/>').text(' unitil '));
+        desc.append(formatCondition(item, circumstance.stop)); 
+      }
+      let group = $('<div/>', { 'class': 'Group' });
+      appendProperty(group, 'Condition', desc);
+      return group;
+    }
+
+    function formatCondition(item, condition) {
+      if (condition === undefined)
+        return '';
+      let threshold = Units.converter(item.unit).format(condition.threshold);
+      let title = 'value is ' + condition.operator + ' ' + threshold;
+      let desc = $('<span/>'); 
+      desc.append(condition.operator + ' ' + threshold);
+      if (condition.forTimes > 0) {
+        desc.append($('<small/>', { text: ' for '})).append('x' + condition.forTimes);
+        title += ' for at least ' + condition.forTimes + ' times in a row';
+      }
+      if (condition.forPercent > 0) {
+        desc.append($('<small/>', { text: ' for '})).append(condition.forPercent + '%');
+        title += ' for at least ' + condition.forPercent + ' of the recent values';
+      }
+      if (condition.forMillis > 0) {
+        let time = Units.converter('ms').format(condition.forMillis);
+        desc.append($('<small/>', { text: ' for '})).append(time);
+        title += ' for at least ' + time;
+      }
+      desc.attr('title', title);
+      return desc;
+    }
+
+    function createStatisticsGroup(item) {
+        let endFrame = item.frames[0];
+        let startFrame = item.frames[item.frames.length - 1];
+        let duration = durationMs(startFrame, endFrame);
+        let amberStats = computeStatistics(item, 'amber');
+        let redStats = computeStatistics(item, 'red');
+        let group = $('<div/>', { 'class': 'Group' });
+        appendProperty(group, 'Since', Units.formatTime(startFrame.since));
+        appendProperty(group, 'For', formatDuration(duration));
+        if (redStats.count > 0)
+          appendProperty(group, 'Red', redStats.text);
+        if (amberStats.count > 0)
+          appendProperty(group, 'Amber', amberStats.text);
+      return group;
+    }
+
+    function createGeneralGroup(item) {
+      let group = $('<div/>', { 'class': 'Group' });
+      appendProperty(group, 'Alert', item.serial);
+      appendProperty(group, 'Watch', item.name);
+      if (item.series)
+        appendProperty(group, 'Series', item.series);
+      if (item.instance)
+        appendProperty(group, 'Instance', item.instance === 'server' ? 'DAS' : item.instance);
+      return group;
+    }
+
+    function computeStatistics(item, level) {
+      const reduceCount = (count, frame) => count + 1;
+      const reduceDuration = (duration, frame) => duration + durationMs(frame, frame);
+      let frames = item.frames;
+      let matches = frames.filter(frame => frame.level == level);
+      let count = matches.reduce(reduceCount, 0);
+      let duration = matches.reduce(reduceDuration, 0);
+      return { 
+        count: count,
+        duration: duration,
+        text: formatDuration(duration) + ' x' + count, 
+      };
+    }
+
+    function durationMs(frame0, frame1) {
+      return (frame1.until === undefined ? new Date() : frame1.until) - frame0.since;
+    }
+
+    function appendProperty(parent, label, value) {
+      parent.append($('<span/>')
+        .append($('<small/>', { text: label + ':' }))
+        .append($('<strong/>').append(value))
+        ).append('\n'); // so browser will line break;
+    }
+
+    function formatDuration(ms) {
+      return Units.converter('sec').format(Math.round(ms/1000));
+    }
+
+    /**
+     * Sorts alerts starting with ongoing most recent red and ending with ended most past amber.
+     */
+    function sortMostUrgetFirst(a, b) {
+      let desc = (a, b) => b.since - a.since; // sort most recent frame first 
+      a.frames = a.frames.sort(desc);
+      b.frames = b.frames.sort(desc);
+      let aFrame = a.frames[0]; // most recent frame is not at 0
+      let bFrame = b.frames[0];
+      let aOngoing = aFrame.until === undefined;
+      let bOngoing = bFrame.until === undefined;
+      if (aOngoing != bOngoing)
+        return aOngoing ? -1 : 1;
+      let aLevel = aFrame.level;
+      let bLevel = bFrame.level;
+      if (aLevel != bLevel)
+        return aLevel === 'red' ? -1 : 1;
+      return bFrame.since - aFrame.since; // strat with most recent item
+    }
+
+    return { createComponent: createComponent };
   })();
 
   /*
   * Public API below:
+  *
+  * All methods return a jquery element reflecting the given model to be inserted into the DOM using jQuery
   */
   return {
-      /**
-       * Call to update the settings side panel with the given model
-       */
-      onSettingsUpdate: (model) => Settings.onUpdate(model),
-      /**
-       * Returns a jquery legend element reflecting the given model to be inserted into the DOM
-       */
-      onLegendCreation: (model) => Legend.onCreation(model),
-      /**
-       * Returns a jquery indicator element reflecting the given model to be inserted into the DOM
-       */
-      onIndicatorCreation: (model) => Indicator.onCreation(model),
-      /**
-       * Returns a jquery menu element reflecting the given model to inserted into the DOM
-       */
-      onMenuCreation: (model) => Menu.onCreation(model),
-      //TODO add id to model and make it an update?
+      createSettings: (model) => Settings.createComponent(model),
+      createLegend: (model) => Legend.createComponent(model),
+      createIndicator: (model) => Indicator.createComponent(model),
+      createMenu: (model) => Menu.createComponent(model),
+      createAlertTable: (model) => AlertTable.createComponent(model),
   };
 
 })();
@@ -2379,13 +2563,17 @@ MonitoringConsole.Chart.Line = (function() {
   const Colors = MonitoringConsole.View.Colors;
   const ColorModel = MonitoringConsole.Model.Colors;
 
-  function timeLable(secondsAgo, index, lastIndex) {
+  function timeLable(secondsAgo, index, lastIndex, secondsInterval) {
     if (index == lastIndex && secondsAgo == 0)
       return 'now';
     if (index == 0 || index == lastIndex && secondsAgo > 0) {
-      if (Math.abs(secondsAgo - 60) == 1)
-        secondsAgo = 60; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
-      return secondsAgo +'s ago';
+      if (Math.abs(secondsAgo - 60) <= secondsInterval)
+        return '60s ago'; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
+      if (Math.abs((secondsAgo % 60) - 60) <= secondsInterval)
+        return Math.round(secondsAgo / 60) + 'mins ago';
+      if (secondsAgo <= 60)
+        return secondsAgo +'s ago';
+      return Math.floor(secondsAgo / 60) + 'mins ' + (secondsAgo % 60) + 's ago';
     }
     return undefined;
   }
@@ -2419,14 +2607,17 @@ MonitoringConsole.Chart.Line = (function() {
               let reference = new Date(values[lastIndex].value);
               let now = new Date();
               let isLive = now - reference < 5000; // is within the last 5 secs
-              let secondsAgo = values.length < 2 ? 0 : (((values[lastIndex].value - values[index].value)/1000));
+              if (values.length == 1)
+                return isLive ? 'now' : Units.formatTime(new Date(reference));
+              let secondsInterval = (values[1].value - values[0].value) / 1000;
+              let secondsAgo = (values[lastIndex].value - values[index].value) / 1000;
               if (isLive) {
-                return timeLable(secondsAgo, index, lastIndex);
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
               }
               let reference2 = new Date(values[lastIndex-1].value);
               let isRecent = now - reference < (5000 + (reference - reference2));
               if (isRecent) {
-                return timeLable(secondsAgo, index, lastIndex);
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
@@ -2517,7 +2708,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
-    let bgColor = seriesData.legend.backgroundColor;
+    let bgColor = seriesData.legend.background;
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
@@ -2668,7 +2859,7 @@ MonitoringConsole.Chart.Bar = (function() {
         minToMaxValues.push(max - min);
         maxToObservedMaxValues.push(seriesData.observedMax - max);
         lineColors.push(seriesData.legend.color);
-        bgColors.push(seriesData.legend.backgroundColor);
+        bgColors.push(seriesData.legend.background);
       }
       let datasets = [];
       let offset = {
@@ -2893,7 +3084,7 @@ MonitoringConsole.Chart.Trace = (function() {
       for (let [label, operationData] of Object.entries(operations)) {
          legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
       }
-      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-legend').empty().append(Components.createLegend(legend));
       $('#trace-chart-box').height(10 * spans.length + 30);
       chart.data = { 
          datasets: datasets,
@@ -3015,7 +3206,7 @@ MonitoringConsole.Chart.Trace = (function() {
          ]},
          { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
       ]};
-      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
+      $('#trace-menu').replaceWith(Components.createMenu(menu));
       onDataRefresh();
    }
 
@@ -3125,7 +3316,7 @@ MonitoringConsole.View = (function() {
         let nav = { id: 'Navigation', groups: [
             {label: activePage.name, items: items }
         ]};
-        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
+        $('#Navigation').replaceWith(Components.createMenu(nav));
     }
 
     function updateMenu() {
@@ -3159,7 +3350,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
             ]},
         ]};
-        $('#Menu').replaceWith(Components.onMenuCreation(menu));
+        $('#Menu').replaceWith(Components.createMenu(menu));
     }
 
     /**
@@ -3172,14 +3363,14 @@ MonitoringConsole.View = (function() {
                 panelConsole.addClass('state-show-settings');                
             }
             let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
-            let settings = [];
-            settings.push(createGlobalSettings(singleSelection));
-            settings.push(createColorSettings());
-            settings.push(createPageSettings());
+            let groups = [];
+            groups.push(createGlobalSettings(singleSelection));
+            groups.push(createColorSettings());
+            groups.push(createPageSettings());
             if (singleSelection) {
-                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                groups = groups.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(settings);
+            $('#Settings').replaceWith(Components.createSettings({id: 'Settings', groups: groups }));
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -3199,8 +3390,9 @@ MonitoringConsole.View = (function() {
             } else {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
-                parent.append(Components.onLegendCreation([]));                
-                parent.append(Components.onIndicatorCreation({}));
+                parent.append(Components.createAlertTable({}));
+                parent.append(Components.createLegend([]));                
+                parent.append(Components.createIndicator({}));
             }
         }
         if (widget.selected) {
@@ -3274,7 +3466,7 @@ MonitoringConsole.View = (function() {
             .append($('<h3/>', {title: 'Select '+series})
                 .html(title)
                 .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.onMenuCreation(menu));
+            .append(Components.createMenu(menu));
     }
 
     function createGlobalSettings(initiallyCollapsed) {
@@ -3292,14 +3484,18 @@ MonitoringConsole.View = (function() {
 
     function createColorSettings() {
         let colorModel = MonitoringConsole.Model.Colors;
+        function createChangeColorDefaultFn(name) {
+            return (color) => { colorModel.default(name, color); updateSettings(); };
+        }
+        function createColorDefaultSettingMapper(name) {
+            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: colorModel.default(name), onChange: createChangeColorDefaultFn(name) };
+        }        
         return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
             { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
             { label: 'Defaults', input: [
-                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
-                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
-                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
-            ]},
+                ['waterline', 'alarming', 'critical'].map(createColorDefaultSettingMapper),
+                ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
         ]};
     }
@@ -3312,7 +3508,7 @@ MonitoringConsole.View = (function() {
         let settings = [];
         settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
-            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
@@ -3401,7 +3597,7 @@ MonitoringConsole.View = (function() {
         let widgetsSelection = $('<select/>').attr('disabled', true);
         nsSelection.change(function() {
             widgetsSelection.empty();
-            widgetsSelection.append($('<option/>').val('-').text('(Please Select)'));
+            widgetsSelection.append($('<option/>').val('').text('(Please Select)'));
             MonitoringConsole.Model.listSeries(function(names) {
                 $.each(names, function() {
                     let key = this;
@@ -3468,12 +3664,13 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegendComponent(widget, data) {
+    function createLegendModel(widget, data, alerts) {
         if (!data)
             return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
-        if (Array.isArray(data) && data.length == 0) {
-            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
-        }
+        if (widget.type == 'alert')
+            return createLegendModelFromAlerts(widget, data, alerts);
+        if (Array.isArray(data) && data.length == 0)
+            return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
         let format = Units.converter(widget.unit).format;
         let palette = MonitoringConsole.Model.Colors.palette();
@@ -3494,18 +3691,41 @@ MonitoringConsole.View = (function() {
             if (widget.options.perSec)
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
-            let bgColor = Colors.hex2rgba(color, alpha);
+            let background = Colors.hex2rgba(color, alpha);
             let item = { 
                 label: label, 
                 value: value, 
                 color: color,
-                backgroundColor: bgColor,
+                background: background,
                 assessments: seriesData.assessments,
             };
             legend.push(item);
-            data[j].legend = item;
+            seriesData.legend = item;
         }
         return legend;
+    }
+
+    function createLegendModelFromAlerts(widget, data, alerts) {
+        if (!Array.isArray(alerts))
+            return []; //TODO use white, green, amber and red to describe the watch in case of single watch
+        const colorModel = MonitoringConsole.Model.Colors;
+        let palette = colorModel.palette();
+        let alpha = colorModel.opacity() / 100;
+        let instances = {};
+        for (let i = 0; i < alerts.length; i++) {
+            let alert = alerts[i];
+            instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
+        }
+        return Object.entries(instances).map(function([instance, level]) {
+            let color = Colors.lookup('instance', instance, palette);
+            return {
+                label: instance,
+                value: level == undefined ? 'White' : level.charAt(0).toUpperCase() + level.slice(1),
+                color: color,
+                background: Colors.hex2rgba(color, alpha),
+                assessments: { status: level, color: colorModel.default(level) },                
+            };
+        });
     }
 
     function getColorKey(widget, seriesData, index) {
@@ -3517,7 +3737,7 @@ MonitoringConsole.View = (function() {
         }
     } 
 
-    function createIndicatorComponent(widget, data) {
+    function createIndicatorModel(widget, data) {
         if (!data)
             return { status: 'error' };
         if (Array.isArray(data) && data.length == 0)
@@ -3532,6 +3752,41 @@ MonitoringConsole.View = (function() {
         return { status: status, text: statusInfo.hint };
     }
 
+    function createAlertTableModel(widget, alerts) {
+        let items = [];
+        if (Array.isArray(alerts)) {
+            const colorModel = MonitoringConsole.Model.Colors;
+            let palette = MonitoringConsole.Model.Colors.palette();
+            for (let i = 0; i < alerts.length; i++) {
+                let alert = alerts[i];
+                let include = widget.type === 'alert' || alert.level === 'red' || alert.level === 'amber';
+                if (include) {
+                    let frames = alert.frames.map(function(frame) {
+                        return {
+                            level: frame.level,
+                            since: frame.start,
+                            until: frame.end,
+                            color: colorModel.default(frame.level),
+                        };
+                    });
+                    let instanceColoring = widget.coloring === 'instance' || widget.coloring === undefined;
+                    items.push({
+                        serial: alert.serial,
+                        name: alert.initiator.name,
+                        unit: alert.initiator.unit,
+                        acknowledged: alert.acknowledged,
+                        series: alert.series == widget.series ? undefined : alert.series,
+                        instance: alert.instance,
+                        color: instanceColoring ? Colors.lookup('instance', alert.instance, palette) : undefined,
+                        frames: frames,
+                        watch: alert.initiator,
+                    });                    
+                }
+            }
+        }
+        return { id: widget.target + '_alerts', items: items };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -3540,16 +3795,19 @@ MonitoringConsole.View = (function() {
     function onDataUpdate(update) {
         let widget = update.widget;
         let data = update.data;
+        let alerts = update.alerts;
         updateDomOfWidget(undefined, widget);
-        let widgetNode = $('#widget-'+widget.target);
+        let widgetNode = $('#widget-' + widget.target);
         let legendNode = widgetNode.find('.Legend').first();
         let indicatorNode = widgetNode.find('.Indicator').first();
-        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
-        if (data) {
+        let alertsNode = widgetNode.find('.AlertTable').first();
+        let legend = createLegendModel(widget, data, alerts); // OBS this has side effect of setting .legend attribute in series data
+        if (data !== undefined && widget.type !== 'alert') {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        legendNode.replaceWith(Components.onLegendCreation(legend));
-        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
+        alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts)));
+        legendNode.replaceWith(Components.createLegend(legend));
+        indicatorNode.replaceWith(Components.createIndicator(createIndicatorModel(widget, data)));
     }
 
     /**

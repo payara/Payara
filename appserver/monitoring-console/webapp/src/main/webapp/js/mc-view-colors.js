@@ -57,7 +57,10 @@ MonitoringConsole.View.Colors = (function() {
          name: 'Payara',
          palette: [ '#F0981B', '#008CC4', '#8B79BC', '#87BC25', '#FF70DA' ],
          opacity: 20,
-         defaults:  { waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c' }
+         defaults:  { 
+            waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c',
+            white: '#ffffff', green: '#87BC25', amber: '#f0981b', red: '#dc143c',
+          }
       },
 
       a: {

@@ -22,7 +22,7 @@ import fish.payara.monitoring.model.SeriesDataset;
  * 
  * @author Jan Bernitt
  */
-public final class Alert implements Iterable<Alert.Transition> {
+public final class Alert implements Iterable<Alert.Frame> {
 
     public enum Level {
         /**
@@ -47,15 +47,15 @@ public final class Alert implements Iterable<Alert.Transition> {
         }
     }
 
-    public static final class Transition implements Iterable<SeriesDataset> {
-        public final Level to;
+    public static final class Frame implements Iterable<SeriesDataset> {
+        public final Level level;
         public final SeriesDataset cause;
         public final long start;
         private final List<SeriesDataset> captured;
         long end;
 
-        public Transition(Level to, SeriesDataset cause, List<SeriesDataset> captured) {
-            this.to = to;
+        public Frame(Level level, SeriesDataset cause, List<SeriesDataset> captured) {
+            this.level = level;
             this.cause = cause;
             this.captured = captured;
             this.start = System.currentTimeMillis();
@@ -83,7 +83,7 @@ public final class Alert implements Iterable<Alert.Transition> {
 
     public final int serial;
     public final Watch initiator;
-    private final List<Transition> transitions = new CopyOnWriteArrayList<>();
+    private final List<Frame> frames = new CopyOnWriteArrayList<>();
     /**
      * The current state of the alert.
      */
@@ -96,50 +96,31 @@ public final class Alert implements Iterable<Alert.Transition> {
     }
 
     @Override
-    public Iterator<Transition> iterator() {
-        return transitions.iterator();
+    public Iterator<Frame> iterator() {
+        return frames.iterator();
     }
 
     public Alert addTransition(Level to, SeriesDataset cause, List<SeriesDataset> captured) {
         assertRedOrAmberLevel(to);
         if (!isStopped()) {
-            if (!transitions.isEmpty()) {
-                Transition recent = recent();
+            if (!frames.isEmpty()) {
+                Frame recent = getEndFrame();
                 assertSameSeriesAndInstance(cause, recent.cause);
                 recent.end = System.currentTimeMillis();
-                acknowledged = acknowledged && to.isLessSevereThan(recent.to);
+                acknowledged = acknowledged && to.isLessSevereThan(recent.level);
             } else {
                 assertMatchesWachtedSeries(cause);
                 acknowledged = false;
             }
-            transitions.add(new Transition(to, cause, captured));
+            frames.add(new Frame(to, cause, captured));
             CHANGE_COUNT.incrementAndGet();
             level = to;
         }
         return this;
     }
 
-    private static void assertRedOrAmberLevel(Level to) {
-        if (to != Level.RED && to != Level.AMBER) {
-            throw new IllegalArgumentException("Alerts only transtion between RED and AMBER levels but got: " + to);
-        }
-    }
-
-    private void assertMatchesWachtedSeries(SeriesDataset cause) {
-        if (!initiator.watched.series.matches(cause.getSeries())) {
-            throw new IllegalArgumentException("Cause did not match with watched series: " + cause.getSeries());
-        }
-    }
-
-    private static void assertSameSeriesAndInstance(SeriesDataset a, SeriesDataset b) {
-        if (!b.getSeries().equalTo(a.getSeries()) || !b.getInstance().equals(a.getInstance())) {
-            throw new IllegalArgumentException(
-                    "All transitions for an alert must refer to same cause series and instance but got: " + a);
-        }
-    }
-
     public boolean isStarted() {
-        return !transitions.isEmpty();
+        return !frames.isEmpty();
     }
 
     public boolean isAcknowledged() {
@@ -154,13 +135,14 @@ public final class Alert implements Iterable<Alert.Transition> {
     }
 
     public boolean isStopped() {
-        return level == Level.WHITE && !transitions.isEmpty();
+        return level == Level.WHITE && !frames.isEmpty();
     }
 
-    public void stop() {
+    public void stop(Level to) {
         if (!isStopped()) {
-            level = Level.WHITE;
-            recent().end = System.currentTimeMillis();
+            assertGreenOrWhiteLevel(to);
+            this.level = to;
+            getEndFrame().end = System.currentTimeMillis();
             CHANGE_COUNT.incrementAndGet();
         }
     }
@@ -170,19 +152,23 @@ public final class Alert implements Iterable<Alert.Transition> {
     }
 
     public long getStartTime() {
-        return transitions.isEmpty() ? -1L : transitions.get(0).start;
+        return frames.isEmpty() ? -1L : frames.get(0).start;
     }
 
     public long getEndTime() {
-        return transitions.isEmpty() ? -1L : recent().end;
+        return frames.isEmpty() ? -1L : getEndFrame().end;
     }
 
     public Series getSeries() {
-        return recent().cause.getSeries();
+        return getEndFrame().cause.getSeries();
     }
 
-    private Transition recent() {
-        return transitions.get(transitions.size() - 1);
+    public String getInstance() {
+        return getEndFrame().cause.getInstance();
+    }
+
+    public Frame getEndFrame() {
+        return frames.get(frames.size() - 1);
     }
 
     @Override
@@ -218,11 +204,11 @@ public final class Alert implements Iterable<Alert.Transition> {
         }
         str.append(']');
         str.append(' ');
-        for (int i = 0; i < transitions.size(); i++) {
+        for (int i = 0; i < frames.size(); i++) {
             if (i > 0) {
                 str.append(" => ");
             }
-            str.append(transitions.get(i).to);
+            str.append(frames.get(i).level);
         }
         return str.toString();
     }
@@ -231,5 +217,30 @@ public final class Alert implements Iterable<Alert.Transition> {
 
     private static String formatTime(long epochMillis) {
         return TIME_FORMATTER.format(ofInstant(ofEpochMilli(epochMillis), systemDefault()));
+    }
+
+    private static void assertRedOrAmberLevel(Level to) {
+        if (to != Level.RED && to != Level.AMBER) {
+            throw new IllegalArgumentException("Alerts only transtion between RED and AMBER levels but got: " + to);
+        }
+    }
+
+    private void assertMatchesWachtedSeries(SeriesDataset cause) {
+        if (!initiator.watched.series.matches(cause.getSeries())) {
+            throw new IllegalArgumentException("Cause did not match with watched series: " + cause.getSeries());
+        }
+    }
+
+    private static void assertSameSeriesAndInstance(SeriesDataset a, SeriesDataset b) {
+        if (!b.getSeries().equalTo(a.getSeries()) || !b.getInstance().equals(a.getInstance())) {
+            throw new IllegalArgumentException(
+                    "All transitions for an alert must refer to same cause series and instance but got: " + a);
+        }
+    }
+
+    private static void assertGreenOrWhiteLevel(Level to) {
+        if (to != Level.GREEN && to != Level.WHITE) {
+            throw new IllegalArgumentException("Alerts only end on GREEN or WHITE levels but got: " + to);
+        }
     }
 }

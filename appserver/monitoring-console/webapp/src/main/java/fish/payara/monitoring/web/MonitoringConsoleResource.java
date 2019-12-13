@@ -59,6 +59,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.glassfish.internal.api.Globals;
 
+import fish.payara.monitoring.alert.Alert;
 import fish.payara.monitoring.alert.AlertService;
 import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Series;
@@ -117,14 +118,26 @@ public class MonitoringConsoleResource {
     public SeriesResponse getSeriesData(SeriesRequest request) {
         List<List<SeriesDataset>> data = new ArrayList<>(request.queries.length);
         List<Collection<Watch>> watches = new ArrayList<>(request.queries.length);
+        List<Collection<Alert>> alerts = new ArrayList<>(request.queries.length);
         MonitoringDataRepository dataStore = getDataStore();
         AlertService alertService = getAlertService();
         for (SeriesQuery query : request.queries) {
             Series key = seriesOrNull(query.series);
-            data.add(key == null ? emptyList() : dataStore.selectSeries(key, query.instances));
-            watches.add(key == null ? emptyList() : alertService.wachtesFor(key));
+            if (key == null) {
+                data.add(emptyList());
+                watches.add(emptyList());
+                alerts.add(emptyList());
+            } else {
+                watches.add(alertService.wachtesFor(key));
+                if (Series.ANY.equalTo(key) && query.truncatePoints) {
+                    data.add(emptyList()); // if all alerts are requested don't send any particular data
+                } else {
+                    data.add(dataStore.selectSeries(key, query.instances));
+                }
+                alerts.add(alertService.alertsFor(key));
+            }
         }
-        return new SeriesResponse(data, watches, alertService.getAlertStatistics());
+        return new SeriesResponse(request.queries, data, watches, alerts, alertService.getAlertStatistics());
     }
 
     @GET

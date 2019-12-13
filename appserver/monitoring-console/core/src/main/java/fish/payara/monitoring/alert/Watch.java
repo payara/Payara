@@ -166,7 +166,7 @@ public final class Watch {
         Alert alert = state.ongoing;
         if (to == WHITE || to == GREEN) {
             if (alert != null) {
-                alert.stop();
+                alert.stop(to);
             }
             state.ongoing = null;
             return null;

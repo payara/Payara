@@ -120,7 +120,7 @@ MonitoringConsole.Chart.Trace = (function() {
       for (let [label, operationData] of Object.entries(operations)) {
          legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
       }
-      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-legend').empty().append(Components.createLegend(legend));
       $('#trace-chart-box').height(10 * spans.length + 30);
       chart.data = { 
          datasets: datasets,
@@ -242,7 +242,7 @@ MonitoringConsole.Chart.Trace = (function() {
          ]},
          { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
       ]};
-      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
+      $('#trace-menu').replaceWith(Components.createMenu(menu));
       onDataRefresh();
    }
 

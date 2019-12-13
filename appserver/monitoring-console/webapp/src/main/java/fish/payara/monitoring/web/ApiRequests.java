@@ -40,6 +40,8 @@
 package fish.payara.monitoring.web;
 
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.web.ApiResponses.AlertFrame;
+import fish.payara.monitoring.web.ApiResponses.SeriesData;
 
 /**
  * Types used in the web API to map requests.
@@ -84,6 +86,14 @@ public final class ApiRequests {
          * What instances to include in the result, an empty or null set includes all available sets
          */
         public String[] instances;
+        /**
+         * When true alerts will only contains the most recent {@link AlertFrame}
+         */
+        public boolean truncateAlerts = true;
+        /**
+         * When true {@link SeriesData} will only contain the most recent point.
+         */
+        public boolean truncatePoints = false;
 
         public SeriesQuery() {
             // from JSON

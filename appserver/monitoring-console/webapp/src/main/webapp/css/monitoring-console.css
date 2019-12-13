@@ -271,6 +271,9 @@ button:hover {
   padding-left: 3px;
   white-space: nowrap;
 }
+#Settings .x-input span {
+  white-space: nowrap;
+}
 #Settings table div input[type=text] {
   width: 60px;
 }
@@ -346,15 +349,21 @@ table.tags th, table.tags td {
   font-weight: 300;
 }
 .Legend li.status-missing strong {
-    color: Violet;
+  color: #0096D6;
 }
 .Legend li.status-alarming strong {
-    color: gold;
-    animation: blinker 2s linear infinite;
+  color: gold;
+  animation: blinker 2s linear infinite;
 }
 .Legend li.status-critical strong {
-    color: crimson;
-    animation: blinker 1s linear infinite;
+  color: crimson;
+  animation: blinker 1s linear infinite;
+}
+.Legend li.status-red strong {
+  animation: blinker 1s linear infinite;
+}
+.Legend li.status-amber strong {
+  animation: blinker 2s linear infinite;
 }
 .Legend li.status-error strong {
     color: red;
@@ -470,4 +479,41 @@ table.tags th, table.tags td {
 }
 .Menu .clickable {
   cursor: pointer;
+}
+
+
+/* Alert Tables */
+.AlertTable {
+  position: absolute;
+  top: 40px;
+  left: 15px;
+  width: calc(100% - 38px);
+}
+.AlertTable .Item {
+  border-left: 5px solid transparent; /* colored via inline style */
+}
+.AlertTable .Item > div {
+  padding: 5px 10px;
+  margin: 0 0 2px 2px;
+  border: 1px solid transparent; /* colored via inline style */
+  border-left: 30px solid transparent; /* colored via inline style */
+}
+.AlertTable .Item h4 {
+  margin: 0;
+  padding: 0;
+}
+.AlertTable .Item strong {
+  display: inline-block;
+  padding: 0 1em 0 0.5em;
+  background-color: #002433;
+}
+.AlertTable .Item small {
+  color: #bbb;
+  background-color: #002433;
+}
+.AlertTable .Item span {
+  white-space: nowrap;
+}
+.AlertTable .Item .Group {
+  display: inline-block;
 }

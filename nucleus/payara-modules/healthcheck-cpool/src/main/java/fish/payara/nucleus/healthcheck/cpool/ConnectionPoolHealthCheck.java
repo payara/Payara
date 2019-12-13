@@ -39,12 +39,16 @@
  */
 package fish.payara.nucleus.healthcheck.cpool;
 
+import com.hazelcast.util.function.BiConsumer;
+import com.hazelcast.util.function.Consumer;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
 
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
@@ -61,19 +65,17 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
+ * @author Jan Bernitt (consumer based version)
  */
 @Service(name = "healthcheck-cpool")
 @RunLevel(10)
 public class ConnectionPoolHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker> {
+extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
+implements MonitoringDataSource {
 
     @Inject
     private Domain domain;
@@ -83,8 +85,6 @@ public class ConnectionPoolHealthCheck
 
     @Inject
     private PoolManager poolManager;
-
-    private final Map<String, PoolStatus> status = new ConcurrentHashMap<>();
 
     @PostConstruct
     void postConstruct() {
@@ -109,64 +109,72 @@ public class ConnectionPoolHealthCheck
 
     @Override
     protected HealthCheckResult doCheckInternal() {
-        status.clear();
         HealthCheckResult result = new HealthCheckResult();
-        Collection<JdbcResource> allJdbcResources = getAllJdbcResources();
-        for (JdbcResource resource : allJdbcResources) {
-            ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(resource);
-            JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
-            PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
-            if (getOptions().getPoolName() != null) {
-                if (getOptions().getPoolName().equals(poolInfo.getName())) {
-                    evaluatePoolUsage(result, poolInfo);
-                }
-            }
-            else {
-                evaluatePoolUsage(result, poolInfo);
-            }
-
-        }
+        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> {
+            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
+                    info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)));
+        }));
         return result;
     }
 
-    private void evaluatePoolUsage(HealthCheckResult result, PoolInfo poolInfo) {
-        PoolStatus poolStatus = poolManager.getPoolStatus(poolInfo);
-        if (poolStatus != null) {
-            status.put(poolInfo.getName(), poolStatus);
-            long usedConnection = poolStatus.getNumConnUsed();
-            long freeConnection = poolStatus.getNumConnFree();
-            long totalConnection = usedConnection + freeConnection;
-
-            if (totalConnection > 0) {
-                double usedPercentage = ((double)usedConnection / totalConnection) * 100;
-
-                result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
-                        poolInfo.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)));
-            }
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 8)
+    public void collect(MonitoringDataCollector collector) {
+        if (!getOptions().isEnabled()) {
+            return;
         }
+        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> {
+            collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue());
+        }));
     }
 
-    private Collection<JdbcResource> getAllJdbcResources() {
-        Collection<JdbcResource> allResources = new ArrayList<>();
-        Collection<JdbcResource> jdbcResources = domain.getResources().getResources(JdbcResource.class);
-        allResources.addAll(jdbcResources);
+    private Consumer<JdbcResource> createConsumer(BiConsumer<PoolInfo, Double> poolUsageConsumer) {
+        return resource -> {
+            ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(resource);
+            JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
+            PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
+            String name = getOptions().getPoolName();
+            if (name == null || name.equals(poolInfo.getName())) {
+                PoolStatus poolStatus = poolManager.getPoolStatus(poolInfo);
+                if (poolStatus != null) {
+                    long usedConnection = poolStatus.getNumConnUsed();
+                    long freeConnection = poolStatus.getNumConnFree();
+                    long totalConnection = usedConnection + freeConnection;
+
+                    if (totalConnection > 0) {
+                        double usedPercentage = 100d * usedConnection / totalConnection;
+                        poolUsageConsumer.accept(poolInfo, usedPercentage);
+                    }
+                }
+            }
+        };
+    }
+
+    private void consumeAllJdbcResources(Consumer<JdbcResource> consumer) {
+        consumeJdbcResources(domain.getResources(), consumer);
         for (Application app : applications.getApplications()) {
             if (ResourcesUtil.createInstance().isEnabled(app)) {
-                Resources appScopedResources = app.getResources();
-                if (appScopedResources != null && appScopedResources.getResources() != null) {
-                    allResources.addAll(appScopedResources.getResources(JdbcResource.class));
-                }
+                consumeJdbcResources(app.getResources(), consumer);
                 List<Module> modules = app.getModule();
                 if (modules != null) {
                     for (Module module : modules) {
-                        Resources msr = module.getResources();
-                        if (msr != null && msr.getResources() != null) {
-                            allResources.addAll(msr.getResources(JdbcResource.class));
-                        }
+                        consumeJdbcResources(module.getResources(), consumer);
                     }
                 }
             }
         }
-        return allResources;
+    }
+
+    private static void consumeJdbcResources(Resources resources, Consumer<JdbcResource> consumer) {
+        if (resources != null) {
+            List<Resource> list = resources.getResources();
+            if (list != null) {
+                for (Resource r : list) {
+                    if (JdbcResource.class.isInstance(r)) {
+                        consumer.accept((JdbcResource) r);
+                    }
+                }
+            }
+        }
     }
 }

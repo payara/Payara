@@ -67,11 +67,15 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     public void init() {
         isDas = serverEnv.isDas();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
-        addWatch(new Watch("Heap Usage", new Metric(new Series("ns:jvm HeapUsage"), Unit.PERCENT), 
+        addWatch(new Watch("Heap Memory Usage", new Metric(new Series("ns:health HeapUsage"), Unit.PERCENT), 
                 new Circumstance(Level.RED, new Condition(GE, 30, 5, 0, 0), new Condition(LT, 30, 5, 0, 0)), 
                 new Circumstance(Level.AMBER, new Condition(GE, 20, 5, 0, 0), new Condition(LT, 20, 5, 0, 0)), 
                 new Circumstance(Level.GREEN, new Condition(LT, 20, 1, 0, 0), Condition.NONE), 
-                new Metric(new Series("ns:jvm CpuUsage"), Unit.PERCENT)));
+                new Metric(new Series("ns:health CpuUsage"), Unit.PERCENT)));
+        addWatch(new Watch("CPU Usage", new Metric(new Series("ns:health CpuUsage"), Unit.PERCENT), 
+                new Circumstance(Level.RED, new Condition(GE, 5, 3, 0, 0), new Condition(LT, 5, 5, 0, 0)), 
+                new Circumstance(Level.AMBER, new Condition(GE, 3, 3, 0, 0), new Condition(LT, 3, 5, 0, 0)), 
+                new Circumstance(Level.GREEN, new Condition(LT, 3, 1, 0, 0), Condition.NONE)));
     }
 
     @Override
@@ -117,7 +121,11 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     public Collection<Alert> alertsFor(Series series) {
         if (!series.isPattern()) {
             // this is the usual path called while polling for data so this should not be too expensive
-            return unmodifiableCollection(alerts.get(series));
+            Deque<Alert> alertsForSeries = alerts.get(series);
+            return alertsForSeries == null ? emptyList() : unmodifiableCollection(alertsForSeries);
+        }
+        if (series.equalTo(Series.ANY)) {
+            return alerts();
         }
         Collection<Alert> matches = null;
         for (Entry<Series, Deque<Alert>> e : alerts.entrySet()) {
@@ -182,8 +190,12 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
             Map<Integer, Watch> watches = simpleWatches.get(series);
             return watches == null ? emptyList() : unmodifiableCollection(watches.values());
         }
-        Collection<Watch> watches = patternWatches.get(series).values();
-        for (Map<Integer, Watch> simple : simpleWatches.values() ) {
+        if (series.equalTo(Series.ANY)) {
+            return watches();
+        }
+        Map<Integer, Watch> seriesWatches = patternWatches.get(series);
+        Collection<Watch> watches = seriesWatches == null ? emptyList() : seriesWatches.values();
+        for (Map<Integer, Watch> simple : simpleWatches.values()) {
             for (Watch w : simple.values()) {
                 if (series.matches(w.watched.series)) {
                     if (!(watches instanceof ArrayList)) {

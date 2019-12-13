@@ -74,7 +74,7 @@ MonitoringConsole.Chart.Bar = (function() {
         minToMaxValues.push(max - min);
         maxToObservedMaxValues.push(seriesData.observedMax - max);
         lineColors.push(seriesData.legend.color);
-        bgColors.push(seriesData.legend.backgroundColor);
+        bgColors.push(seriesData.legend.background);
       }
       let datasets = [];
       let offset = {
