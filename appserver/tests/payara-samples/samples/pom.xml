@@ -9,10 +9,10 @@
         <version>5.201-SNAPSHOT</version>
     </parent>
 
-    <artifactId>samples-parent</artifactId>
+    <artifactId>payara-samples-profiled-tests</artifactId>
     <packaging>pom</packaging>
 
-    <name>Payara Samples - Payara</name>
+    <name>Payara Samples - Profiled Tests</name>
 
     <modules>
         <module>clustered-singleton</module>
@@ -31,111 +31,13 @@
         <module>realm-identity-stores</module>
     </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.api</groupId>
-            <artifactId>payara-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-servlet</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>xmlunit</groupId>
-            <artifactId>xmlunit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.skyscreamer</groupId>
-            <artifactId>jsonassert</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>rhino</groupId>
-            <artifactId>js</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.omnifaces</groupId>
-            <artifactId>omniutils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.arquillian</groupId>
-            <artifactId>payara-client-ee8</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.omnifaces</groupId>
-                <artifactId>jacc-provider</artifactId>
-                <version>0.3</version>
+                <groupId>fish.payara.samples</groupId>
+                <artifactId>test-utils</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -164,8 +66,7 @@
         <profile>
             <!--
             This profile will install a Payara server and start up the server per sample. Useful for CI servers.
-            The Payara version that's used can be set via the payara.container.version property.
-
+            The Payara version that's used can be set via the payara.version property.
             This is the default profile and does not have to be specified explicitly.
             -->
             <id>payara-server-managed</id>
@@ -232,7 +133,7 @@
                             <systemPropertyVariables>
                                 <glassfishRemote_gfHome>${session.executionRootDirectory}/target/${payara.directory.name}</glassfishRemote_gfHome>
                                 <javaEEServer>payara-remote</javaEEServer>
-                                <payara_domain>${payara_domain}</payara_domain>
+                                <payara.domain.name>${payara.domain.name}</payara.domain.name>
                                 <arquillian.launch>payara</arquillian.launch>
                             </systemPropertyVariables>
                         </configuration>
@@ -244,28 +145,19 @@
 
         <profile>
             <id>payara-micro-managed</id>
-
             <!--
             This profile will install a Payara Micro and start up the server per sample. Useful for CI servers.
             The Payara version that's used can be set via the payara.version property.
             -->
-
             <properties>
-                <skipJMS>true</skipJMS>
-                <skipJAXWS>true</skipJAXWS>
-                <skipClientCertificate>true</skipClientCertificate>
                 <micro.isActive>true</micro.isActive>
             </properties>
 
             <dependencies>
-                <!-- Java EE based client dependencies to contact a server via WebSocket
-                or REST -->
-
-                <!-- The Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>arquillian-payara-micro-managed</artifactId>
-                    <version>${payara.micro.container.version}</version>
+                    <version>${arquillian.payara.micro.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -312,26 +204,21 @@
 
         <profile>
             <id>payara-server-remote</id>
-
             <!--
             This profile requires you to start up a Payara server outside of the build.
 
             Each sample will then reuse this instance to run the tests.
             Useful for development to avoid the server start up cost per sample.
-
             -->
-
-            <!-- http remoting tests are only available remote, with asadmin set-ejb-invoker-configuration \-\-enabled=true -->
             <modules>
                 <module>ejb-http-remoting</module>
                 <module>ejb-invoker-secure-endpoint</module>
             </modules>
             <dependencies>
-                <!-- The actual Arquillian connector -->
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>arquillian-payara-server-remote</artifactId>
-                    <version>${payara.container.version}</version>
+                    <version>${arquillian.payara.remote.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -342,7 +229,7 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <javaEEServer>payara-remote</javaEEServer>
-                                <payara_domain>${payara_domain}</payara_domain>
+                                <payara.domain.name>${payara.domain.name}</payara.domain.name>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

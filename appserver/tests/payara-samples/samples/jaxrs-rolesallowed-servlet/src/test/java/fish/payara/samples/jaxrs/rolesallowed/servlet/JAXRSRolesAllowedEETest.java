@@ -2,10 +2,7 @@
 
 package fish.payara.samples.jaxrs.rolesallowed.servlet;
 
-import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertTrue;
+import fish.payara.samples.ServerOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +19,11 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import fish.payara.samples.ServerOperations;
+
+import static javax.ws.rs.client.ClientBuilder.newClient;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This sample tests that we can install a custom JACC provider

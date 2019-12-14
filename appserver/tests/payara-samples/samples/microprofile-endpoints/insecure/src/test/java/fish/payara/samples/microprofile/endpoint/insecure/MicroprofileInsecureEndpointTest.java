@@ -40,34 +40,38 @@
 package fish.payara.samples.microprofile.endpoint.insecure;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
-import java.net.URL;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
+
+import java.net.URL;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static java.util.Arrays.asList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.Matchers.containsString;
-import org.junit.AfterClass;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import org.junit.BeforeClass;
 
 /**
  * @author Gaurav Gupta
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 public class MicroprofileInsecureEndpointTest {
 
     @ArquillianResource

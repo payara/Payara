@@ -7,7 +7,7 @@
     
      <container qualifier="payara">
         <configuration>
-            <property name="domain">${payara_domain}</property>
+            <property name="domain">${payara.domain.name}</property>
         </configuration>
      </container>
      

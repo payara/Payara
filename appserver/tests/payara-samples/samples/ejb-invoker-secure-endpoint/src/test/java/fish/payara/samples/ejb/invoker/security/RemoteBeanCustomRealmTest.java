@@ -40,12 +40,14 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.samples.CliCommands;
-import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
-import static java.util.Arrays.asList;
+
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
+import static java.util.Arrays.asList;
 
 /**
  * Calls an EJB bean from a remote server via ejb-invoker endpoint secured with
@@ -67,7 +69,7 @@ public class RemoteBeanCustomRealmTest extends AbstractRemoteBeanSecurityTest {
                 "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
                 "--property", "jaas-context=fileRealm:file=" + REALM, REALM));
-        
+
         // undeploy the ejb-invoker app
         CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
                 "--enabled", "false"));
@@ -85,7 +87,7 @@ public class RemoteBeanCustomRealmTest extends AbstractRemoteBeanSecurityTest {
     public static void resetSecurity() {
         // delete the auth realm
         CliCommands.payaraGlassFish(asList("delete-auth-realm", REALM));
-                
+
         // undeploy the ejb-invoker app
         CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
                 "--enabled", "false"));

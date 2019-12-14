@@ -52,11 +52,7 @@
 
     <artifactId>server-app</artifactId>
     <packaging>war</packaging>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <name>Payara Samples - EJB http remoting - server application</name>
 
     <dependencies>
         <dependency>
@@ -64,20 +60,10 @@
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.2</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>

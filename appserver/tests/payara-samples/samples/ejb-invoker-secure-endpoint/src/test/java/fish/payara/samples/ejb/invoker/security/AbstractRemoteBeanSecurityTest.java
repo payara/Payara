@@ -40,6 +40,26 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.ejb.http.client.RemoteEJBContextFactory;
+import fish.payara.ejb.http.protocol.SerializationType;
+import fish.payara.samples.ServerOperations;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE_PASSOWRD;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_PROTOCOL_VERSION;
@@ -48,32 +68,15 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_T
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_AUTH_TYPE;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_CREDENTIALS;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_PRINCIPAL;
-import fish.payara.ejb.http.protocol.SerializationType;
-import fish.payara.samples.ServerOperations;
 import static fish.payara.samples.ServerOperations.getClientTrustStoreURL;
 import static fish.payara.samples.ServerOperations.getKeyStore;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Hashtable;
-import javax.naming.Context;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
-import static javax.ws.rs.core.SecurityContext.CLIENT_CERT_AUTH;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import static org.jboss.shrinkwrap.api.asset.EmptyAsset.INSTANCE;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import org.junit.Test;
 
 /**
  *

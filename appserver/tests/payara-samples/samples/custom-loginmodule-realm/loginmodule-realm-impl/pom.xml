@@ -18,14 +18,11 @@
         <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
-            <artifactId>dol</artifactId>
         </dependency>
     </dependencies>
 </project>

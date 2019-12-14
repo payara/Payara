@@ -22,29 +22,14 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
-        <maven.test.skip>false</maven.test.skip>
-        <skipTests>false</skipTests>
-
-        <skipEJB>${skipTests}</skipEJB>
-        <skipCDI>${skipTests}</skipCDI>
-        <skipJSF>${skipTests}</skipJSF>
-        <skipJACC>${skipTests}</skipJACC>
-
-        <!-- Micro implementation versions (these are downloaded and installed
-            in these versions by Maven for the CI profiles) -->
+        <arquillian.payara.micro.version>2.0</arquillian.payara.micro.version>
+        <arquillian.payara.remote.version>2.0</arquillian.payara.remote.version>
         <payara.version>${project.version}</payara.version>
-        <payara.container.version>2.0</payara.container.version>
-        <payara.micro.container.version>2.0</payara.micro.container.version>
-        <payara_domain>domain1</payara_domain>
+        <payara.domain.name>domain1</payara.domain.name>
 
         <micro.isActive>false</micro.isActive>
     </properties>
 
-
-    <!--
-        The vendors for which this project is providing samples for.
-        Each vendor is represented by one module. "test-utils" is a helper module.
-    -->
     <modules>
         <module>test-utils</module>
         <module>samples</module>
@@ -72,262 +57,137 @@
             <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-bom</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Java EE -->
+
             <dependency>
-                <groupId>jakarta.platform</groupId>
-                <artifactId>jakarta.jakartaee-api</artifactId>
-                <version>${jakartaee.api.version}</version>
-                <scope>provided</scope>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>1.5.0.Final</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
 
-            <!-- Payara Dependencies -->
             <dependency>
-                <groupId>fish.payara.api</groupId>
-                <artifactId>payara-api</artifactId>
+                <groupId>org.omnifaces</groupId>
+                <artifactId>jacc-provider</artifactId>
+                <version>0.3</version>
+            </dependency>
+            <!-- JSON Web Token implementation -->
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>7.1</version>
+            </dependency>
+            <!-- Used to automatically configure microprofile rest client in tests -->
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-config</artifactId>
+                <version>1.3.7</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.internal.admin</groupId>
+                <artifactId>config-api</artifactId>
                 <version>${payara.version}</version>
-                <scope>provided</scope>
+                <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>fish.payara.extras</groupId>
-                <artifactId>payara-micro</artifactId>
+                <groupId>fish.payara.server.internal.common</groupId>
+                <artifactId>internal-api</artifactId>
                 <version>${payara.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.common</groupId>
+                <artifactId>simple-glassfish-api</artifactId>
+                <version>${payara.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.extras</groupId>
                 <artifactId>payara-micro-boot</artifactId>
                 <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee8</artifactId>
-                <version>${payara.container.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee7</artifactId>
-                <version>${payara.container.version}</version>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
+                <artifactId>hazelcast-bootstrap</artifactId>
+                <version>${payara.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
+                <artifactId>healthcheck-core</artifactId>
+                <version>${payara.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.payara-modules</groupId>
+                <artifactId>healthcheck-stuck</artifactId>
+                <version>${payara.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.security</groupId>
+                <artifactId>security</artifactId>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
 
-            <!-- MicroProfile Dependencies -->
             <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>0.32.0</version>
-                <scope>provided</scope>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>2.35.0</version>
+                <scope>test</scope>
             </dependency>
-
-            <!-- Testing Dependencies -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.9.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.omnifaces</groupId>
+                <artifactId>omniutils</artifactId>
+                <version>0.11</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>org.valid4j</groupId>
                 <artifactId>http-matchers</artifactId>
                 <version>1.1</version>
                 <scope>test</scope>
             </dependency>
-
-            <!-- Arquillian BOM -->
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>1.4.1.Final</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
-            <!-- Internal Dependencies -->
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>1.4.197</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.security</groupId>
-                <artifactId>security</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.common</groupId>
-                <artifactId>internal-api</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.deployment</groupId>
-                <artifactId>dol</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.common</groupId>
-                <artifactId>simple-glassfish-api</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.payara-modules</groupId>
-                <artifactId>notification-core</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.payara-modules</groupId>
-                <artifactId>healthcheck-core</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.payara-modules</groupId>
-                <artifactId>healthcheck-stuck</artifactId>
-                <version>${payara.version}</version>
-            </dependency>
-
-            <!-- Miscellaneous Utility Dependencies-->
-            <dependency>
-                <groupId>org.omnifaces</groupId>
-                <artifactId>omniutils</artifactId>
-                <version>0.11</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jayway.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>1.7.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
-                <artifactId>htmlunit</artifactId>
-                <version>2.35.0</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.8</version>
-            </dependency>
-            <dependency>
-                <groupId>xmlunit</groupId>
-                <artifactId>xmlunit</artifactId>
-                <version>1.6</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.skyscreamer</groupId>
-                <artifactId>jsonassert</artifactId>
-                <version>1.5.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>rhino</groupId>
-                <artifactId>js</artifactId>
-                <version>1.7R2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>20180130</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.nimbusds</groupId>
-                <artifactId>nimbus-jose-jwt</artifactId>
-                <version>7.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.61</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <version>1.61</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
-
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
             </testResource>
         </testResources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${java.min.version}</source>
-                    <target>${java.min.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.21.0</version>
-                <configuration>
-                    <aggregate>true</aggregate>
-                    <linkXRef>true</linkXRef>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemPropertyVariables>
-                        <isUsingMicroProfile>${micro.isActive}</isUsingMicroProfile>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.2</version>
-                <configuration>
-                    <!-- run all tests in a single thread (less server start/stop,
-                        occupied ports etc.) -->
-                    <forkCount>1</forkCount>
-                    <reuseForks>true</reuseForks>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <attachClasses>true</attachClasses>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
+                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M1</version>
                 <configuration>
                     <rules>
                         <requireMavenVersion>
-                            <message>At least Maven in version
-                                ${maven.min.version} is
-                                required.</message>
+                            <message>At least Maven in version ${maven.min.version} is required.</message>
                             <version>${maven.min.version}</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                            <message>At least a JDK in version
-                                ${java.min.version} is
-                                required.</message>
+                            <message>At least a JDK in version ${java.min.version} is required.</message>
                             <version>${java.min.version}</version>
                         </requireJavaVersion>
                     </rules>
@@ -340,22 +200,55 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-            </plugin>
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${java.min.version}</source>
+                        <target>${java.min.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <isUsingMicroProfile>${micro.isActive}</isUsingMicroProfile>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.0.0-M3</version>
+                    <configuration>
+                        <!-- don't run tests in parallel -->
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.0.0-M2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.2.3</version>
+                    <configuration>
+                        <attachClasses>true</attachClasses>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
     <reporting>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <linkXRef>true</linkXRef>
@@ -363,5 +256,4 @@
             </plugin>
         </plugins>
     </reporting>
-
 </project>
