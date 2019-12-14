@@ -43,7 +43,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.samples.ejb-http-remoting</groupId>
         <artifactId>ejb-http-remoting</artifactId>
@@ -51,8 +51,10 @@
     </parent>
 
     <artifactId>client</artifactId>
+    <name>Payara Samples - EJB http remoting - client application</name>
 
     <properties>
+        <deployableName>server-app</deployableName>
         <payara.adminPort>4848</payara.adminPort>
         <payara.username>admin</payara.username>
         <payara.password></payara.password>
@@ -65,76 +67,40 @@
 
     <dependencies>
         <dependency>
+            <groupId>fish.payara.samples.ejb-http-remoting</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>ejb-http-client</artifactId>
-	        <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.mq</groupId>
+            <artifactId>imq</artifactId>
+            <version>5.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.9.1</version>
-            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.samples.ejb-http-remoting</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.mq</groupId>
-            <artifactId>imq</artifactId><!-- mq-client hasn't been released by EE4J-->
-            <version>5.1</version>
-        </dependency>
-
     </dependencies>
 
-    <!-- This will use cargo for testing to keep all the dependencies away from the test classpath -->
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.21.0</version>
-                <executions>
-                    <execution>
-                        <id>perform-it</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                        <configuration>
-                            <systemProperties>
-                                <property>
-                                    <name>servlet.port</name>
-                                    <value>${servlet.port}</value>
-                                </property>
-                            </systemProperties>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>verify-it</id>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <trimStackTrace>false</trimStackTrace>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-server-app</id>
+                        <id>copy-${deployableName}</id>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -145,7 +111,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>${project.groupId}</groupId>
-                                    <artifactId>server-app</artifactId>
+                                    <artifactId>${deployableName}</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                 </artifactItem>
@@ -154,82 +120,58 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-maven2-plugin</artifactId>
-                <configuration>
-                    <skip>${skipTests}</skip>
-                </configuration>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>deploy</id>
+                        <id>configure-domain-ejb-invoker</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>redeploy</goal>
+                            <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                            <commandlineArgs>set-ejb-invoker-configuration --enabled=true</commandlineArgs>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>undeploy</id>
+                        <id>deploy-${deployableName}</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                            <commandlineArgs>deploy ${project.build.directory}/dependency/${deployableName}.war</commandlineArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>undeploy-${deployableName}</id>
                         <phase>post-integration-test</phase>
                         <goals>
-                            <goal>undeploy</goal>
+                            <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                            <commandlineArgs>undeploy ${deployableName}</commandlineArgs>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <systemProperties>
+                        <property>
+                            <name>servlet.port</name>
+                            <value>${servlet.port}</value>
+                        </property>
+                    </systemProperties>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
         </plugins>
-
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.cargo</groupId>
-                    <artifactId>cargo-maven2-plugin</artifactId>
-                    <version>1.7.3</version>
-                    <configuration>
-                        <container>
-                            <containerId>glassfish5x</containerId>
-                            <type>remote</type>
-                        </container>
-                        <configuration>
-                            <type>runtime</type>
-                            <properties>
-                                <cargo.remote.username>${payara.username}</cargo.remote.username>
-                                <cargo.remote.password>${payara.password}</cargo.remote.password>
-                                <cargo.glassfish.admin.port>${payara.adminPort}</cargo.glassfish.admin.port>
-                                <cargo.hostname>${payara.hostname}</cargo.hostname>
-                                <cargo.servlet.port>${servlet.port}</cargo.servlet.port>
-                            </properties>
-                        </configuration>
-                        <deployables>
-                            <deployable>
-                                <properties>
-                                    <context>server-app</context>
-                                </properties>
-                                <location>${project.build.directory}/dependency/server-app.war</location>
-                                <type>war</type>
-                            </deployable>
-                        </deployables>
-                    </configuration>
-                    <!-- provides JSR88 client API to deploy on Payara -->
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.glassfish.main.deployment</groupId>
-                            <artifactId>deployment-client</artifactId>
-                            <version>5.0</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>

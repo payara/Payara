@@ -44,13 +44,30 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>classpath</artifactId>
+        <artifactId>samples-classpath-checked</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
 
     <artifactId>embedded-vs-jersey</artifactId>
+    <name>Payara Samples - Running Jersey Client with Payara Embedded</name>
+
+    <properties>
+        <payara.embedded.version>${payara.version}</payara.embedded.version>
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>payara-embedded-all</artifactId>
+            <!-- forced override required to test different versions -->
+            <version>[${payara.embedded.version}]</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

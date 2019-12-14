@@ -18,6 +18,7 @@
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-micro</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.extras</groupId>

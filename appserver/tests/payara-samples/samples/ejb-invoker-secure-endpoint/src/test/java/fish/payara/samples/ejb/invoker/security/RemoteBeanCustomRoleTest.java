@@ -40,12 +40,14 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.samples.CliCommands;
-import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
-import static java.util.Arrays.asList;
+
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
+import static java.util.Arrays.asList;
 
 /**
  * Calls an EJB bean from a remote server via secured ejb-invoker endpoint

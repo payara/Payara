@@ -63,8 +63,8 @@
             </roles>
         </developer>
     </developers>
-    
-    <dependencies>    
+
+    <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
@@ -73,6 +73,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <scope>compile</scope>
         </dependency>
-    </dependencies>    
+    </dependencies>
 </project>

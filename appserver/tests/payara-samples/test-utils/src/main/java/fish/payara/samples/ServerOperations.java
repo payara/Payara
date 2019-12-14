@@ -172,10 +172,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain");
+            String domain = System.getProperty("payara.domain.name");
             if (domain == null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path libsPath = gfHomePath.resolve("glassfish/lib");
@@ -232,10 +232,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain", "domain1");
+            String domain = System.getProperty("payara.domain.name", "domain1");
             if (domain != null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path cacertsPath = gfHomePath.resolve("glassfish/domains/" + domain + "/config/cacerts.jks");
@@ -378,7 +378,7 @@ public class ServerOperations {
             
             String restartDomain = domain;
             if (restartDomain == null) {
-                restartDomain = System.getProperty("payara_domain");
+                restartDomain = System.getProperty("payara.domain.name");
             }
             
             if (restartDomain == null) {
@@ -607,7 +607,7 @@ public class ServerOperations {
 
         // Add the client certificate that we just generated to the trust store of the server.
         // That way the server will trust our certificate.
-        // Set the actual domain used with -Dpayara_domain=[domain name]
+        // Set the actual domain used with -Dpayara.domain.name=[domain name]
         addCertificateToContainerTrustStore(clientCertificate);
 
         return clientKeyStorePath;

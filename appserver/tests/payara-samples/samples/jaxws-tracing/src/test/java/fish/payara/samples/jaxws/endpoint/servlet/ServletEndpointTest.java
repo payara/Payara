@@ -39,9 +39,9 @@
  */
 package fish.payara.samples.jaxws.endpoint.servlet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.SincePayara;
+import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,7 +51,6 @@ import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -60,10 +59,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fish.payara.samples.SincePayara;
-import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 @FixMethodOrder(NAME_ASCENDING)
 @SincePayara("5.193")
 public class ServletEndpointTest extends JAXWSEndpointTest {
@@ -82,7 +82,7 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
         jaxwsEndPointService = Service.create(
             // The WSDL file used to create this service is fetched from the application we deployed
             // above using the createDeployment() method.
-                
+
             new URL(url, "JAXWSEndPointImplementationService?wsdl"),
             new QName("http://servlet.endpoint.jaxws.samples.payara.fish/", "JAXWSEndPointImplementationService"));
     }
@@ -94,7 +94,7 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
                 .getPort(JAXWSEndPointInterface.class)
                 .sayHi("Payara!"));
     }
-    
+
     @Test
     // Runs on Server
     public void test2ServerCheck() throws MalformedURLException {
