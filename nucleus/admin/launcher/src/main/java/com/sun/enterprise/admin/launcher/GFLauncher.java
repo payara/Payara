@@ -364,30 +364,35 @@ public abstract class GFLauncher {
     private void parseDebug() {
         // look for an option of this form:
         // -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009
+        // or
+        // -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009
         // and extract the suspend and port values
         for (String opt : debugOptions) {
-            if (!opt.startsWith("-Xrunjdwp:"))
-                continue;
-            String[] attrs = opt.substring(10).split(",");
-            for (String attr : attrs) {
-                if (attr.startsWith("address=")) {
-                    try {
-                        debugPort = Integer.parseInt(attr.substring(8));
-                    }
-                    catch (NumberFormatException ex) {
-                        debugPort = -1;
-                    }
-                }
-                if (attr.startsWith("suspend=")) {
-                    try {
-                        debugSuspend = attr.substring(8).equalsIgnoreCase("y");
-                    }
-                    catch (Exception ex) {
-                        debugSuspend = false;
-                    }
-                }
+            if (opt.startsWith("-Xrunjdwp:") || opt.startsWith("-agentlib:jdwp")) {
+              debugPort = extractDebugPort(opt);
+              debugSuspend = extractDebugSuspend(opt);
             }
         }
+    }
+
+    static int extractDebugPort(String option) {
+        Pattern portRegex = Pattern.compile(".*address=(?<port>\\d*).*");
+        Matcher m = portRegex.matcher(option);
+        if (!m.matches()) {
+            return -1;
+        }
+        try {
+            String addressGroup = m.group("port");
+            return Integer.parseInt(addressGroup);
+        } catch (NumberFormatException nfex) {
+            return -1;
+        }
+    }
+
+    static boolean extractDebugSuspend(String option) {
+        Pattern suspendRegex = Pattern.compile(".*suspend=[yY](?:,.*|$)");
+        Matcher m = suspendRegex.matcher(option);
+        return m.matches();
     }
 
     private void setLogFilename(MiniXmlParser parser) {
