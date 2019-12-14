@@ -368,11 +368,15 @@ public abstract class GFLauncher {
         // -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009
         // and extract the suspend and port values
         for (String opt : debugOptions) {
-            if (opt.startsWith("-Xrunjdwp:") || opt.startsWith("-agentlib:jdwp")) {
+            if (isJdwpOption(opt)) {
               debugPort = extractDebugPort(opt);
               debugSuspend = extractDebugSuspend(opt);
             }
         }
+    }
+
+    static boolean isJdwpOption(String option) {
+        return option.startsWith("-Xrunjdwp:") || option.startsWith("-agentlib:jdwp");
     }
 
     static int extractDebugPort(String option) {
