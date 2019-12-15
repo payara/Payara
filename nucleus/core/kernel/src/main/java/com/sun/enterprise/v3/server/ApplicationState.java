@@ -181,7 +181,7 @@ public class ApplicationState {
             for (String sourcePath : commandParams.sourcesChanged) {
                 String className = getClassName(sourcePath);
                 if (className != null) {
-                    this.classesChanged.add(sourcePath);
+                    this.classesChanged.add(className);
                 }
             }
         }
