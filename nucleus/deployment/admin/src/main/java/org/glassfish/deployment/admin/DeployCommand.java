@@ -276,7 +276,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             if (hotDeploy && !descriptorChanged) {
                 hotSwapService.getApplicationState(path)
-                        .ifPresent(s -> s.copyPreviousState(initialContext, events));
+                        .ifPresent(s -> s.start(initialContext, events));
             } else {
                 hotSwapService.removeApplicationState(path);
             }
@@ -556,7 +556,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if (deplResult != null && !loadOnly) {
-                appState.ifPresent(s -> s.storeDescriptorMetaData(deploymentContext));
+                appState.ifPresent(s -> s.storeMetaData(deploymentContext));
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
@@ -688,7 +688,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
-            appState.ifPresent(ApplicationState::cleanPreviousClassloaders);
+            appState.ifPresent(ApplicationState::close);
         }
     }
 

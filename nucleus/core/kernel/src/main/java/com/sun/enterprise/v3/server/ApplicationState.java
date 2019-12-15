@@ -37,29 +37,26 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-
 package com.sun.enterprise.v3.server;
 
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.data.ModuleInfo;
@@ -75,7 +72,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 public class ApplicationState {
 
     private final File path;
-    private String name;
+    private final String name;
     private String target;
 
     private List<ClassLoader> previousClassLoaders;
@@ -85,10 +82,15 @@ public class ApplicationState {
     private ModuleInfo moduleInfo;
     private List<EngineInfo> engineInfos;
     private Set<String> sniffers;
-    private Map<String, Object> descriptorMetadata;
-    
+    private Map<String, Object> descriptorMetadata = Collections.emptyMap();
+    private Map<String, Object> modulesMetaData = Collections.emptyMap();
+    private Set<String> classesChanged = Collections.emptySet();
+    private boolean active;
+
     private static final String WEB_INF = "WEB-INF";
     private static final String META_INF = "META-INF";
+    private static final String CLASS_EXT = ".class";
+    private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
         this.name = name;
@@ -150,25 +152,40 @@ public class ApplicationState {
 
     public void setSniffers(Collection<? extends Sniffer> sniffers) {
         final Set<String> snifferTypes = sniffers.stream()
-                    .map(s -> Sniffer.class.cast(s))
-                    .map(Sniffer::getModuleType)
-                    .collect(toSet());
+                .map(s -> Sniffer.class.cast(s))
+                .map(Sniffer::getModuleType)
+                .collect(toSet());
         if (!snifferTypes.equals(this.sniffers)) {
             this.sniffers = snifferTypes;
             this.moduleInfo = null;
             this.engineInfos = null;
         }
     }
-    
-    public void copyPreviousState(ExtendedDeploymentContext newContext, Events events) {
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void start(ExtendedDeploymentContext newContext, Events events) {
+        this.active = true;
         newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
         newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
-        this.deploymentContext.getModuleMetadata().forEach(newContext::addModuleMetaData);
         this.getDescriptorMetadata()
                 .entrySet()
                 .forEach(e -> newContext.addTransientAppMetaData(e.getKey(), e.getValue()));
         this.deploymentContext = newContext;
         this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+        final DeployCommandParameters commandParams = newContext.getCommandParameters(DeployCommandParameters.class);
+        if (commandParams.sourcesChanged != null) {
+            this.classesChanged = new HashSet<>();
+            for (String sourcePath : commandParams.sourcesChanged) {
+                String className = getClassName(sourcePath);
+                if (className != null) {
+                    this.classesChanged.add(sourcePath);
+                }
+            }
+        }
+        // unload previous app
         events.send(
                 new EventListener.Event<ApplicationInfo>(
                         Deployment.APPLICATION_UNLOADED,
@@ -177,13 +194,68 @@ public class ApplicationState {
                 false
         );
     }
-    
-    public void storeDescriptorMetaData(ExtendedDeploymentContext deploymentContext) {
+
+    public boolean isClasschanged(Class clazz) {
+        return this.classesChanged.contains(clazz.getName());
+    }
+
+    public void storeMetaData(ExtendedDeploymentContext deploymentContext) {
+        this.modulesMetaData = deploymentContext.getModuleMetadata()
+                .stream()
+                .collect(toMap(metaData -> metaData.getClass().getName(), Function.identity()));
         this.descriptorMetadata = deploymentContext.getTransientAppMetadata()
                 .entrySet()
                 .stream()
-                .filter(e -> e.getKey().startsWith(WEB_INF) || e.getKey().startsWith(META_INF)) //descriptor metadata
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                .filter(e -> e.getKey().startsWith(WEB_INF) || e.getKey().startsWith(META_INF))
+                .collect(toMap(Entry::getKey, Entry::getValue));
+    }
+
+    public <T> T getModuleMetaData(Class<T> metadataType) {
+        Object moduleMetaData = modulesMetaData.get(metadataType.getName());
+        if (moduleMetaData != null) {
+            return metadataType.cast(moduleMetaData);
+        } else {
+            for (Object metadata : modulesMetaData.values()) {
+                try {
+                    return metadataType.cast(metadata);
+                } catch (ClassCastException e) {
+                }
+            }
+            return null;
+        }
+    }
+
+    public void close() {
+        this.active = false;
+        this.classesChanged.clear();
+
+        if (previousClassLoaders != null) {
+            for (ClassLoader cloader : previousClassLoaders) {
+                try {
+                    PreDestroy.class.cast(cloader).preDestroy();
+                } catch (Exception e) {
+                    // ignore, the class loader does not need to be 
+                    // explicitely stopped or already stopped
+                }
+            }
+            previousClassLoaders.clear();
+        }
+    }
+
+    private String getClassName(String sourcePath) {
+        String className = null;
+        if (sourcePath.endsWith(CLASS_EXT)) {
+            int startIndex = 0;
+            int endIndex = sourcePath.length() - CLASS_EXT.length();
+            if (sourcePath.startsWith(WEB_INF_CLASSES)) {
+                startIndex = WEB_INF_CLASSES.length() + 1;
+            }
+            className = sourcePath
+                    .substring(startIndex, endIndex)
+                    .replace('\\', '.')
+                    .replace('/', '.');
+        }
+        return className;
     }
 
     private List<ClassLoader> getClassLoaders(ApplicationInfo appInfo) {
@@ -196,20 +268,6 @@ public class ApplicationState {
             classLoaders.add(module.getModuleClassLoader());
         }
         return classLoaders;
-    }
-
-    public void cleanPreviousClassloaders() {
-        if (previousClassLoaders != null) {
-            for (ClassLoader cloader : previousClassLoaders) {
-                try {
-                    PreDestroy.class.cast(cloader).preDestroy();
-                } catch (Exception e) {
-                    // ignore, the class loader does not need to be 
-                    // explicitely stopped or already stopped
-                }
-            }
-            previousClassLoaders.clear();
-        }
     }
 
 }

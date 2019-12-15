@@ -136,13 +136,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -433,6 +434,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             final List<EngineInfo> sortedEngineInfos;
             if (appState.map(ApplicationState::getEngineInfos).isPresent()) {
                 sortedEngineInfos = appState.get().getEngineInfos();
+                loadDeployers(
+                        sortedEngineInfos.stream()
+                                .collect(toMap(EngineInfo::getDeployer, Function.identity())),
+                        context
+                );
             } else {
                 sortedEngineInfos = setupContainerInfos(handler, sniffers, context);
                 appState.ifPresent(s -> s.setEngineInfos(sortedEngineInfos));
@@ -821,75 +827,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         // all containers that have recognized parts of the application being deployed
         // have now been successfully started. Start the deployment process.
-
-        List<ApplicationMetaDataProvider> providers = new LinkedList<>();
-        providers.addAll(habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class));
-
         List<EngineInfo> sortedEngineInfos = new ArrayList<>();
 
-        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
-        Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                for (Class provided : provider.getMetaData().provides()) {
-                    typeByProvider.put(provided, provider);
-                }
-            }
-        }
-
-        // check if everything is provided.
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                 for (Class dependency : provider.getMetaData().requires()) {
-                     if (!typeByProvider.containsKey(dependency)) {
-                         // at this point, I only log problems, because it maybe that what I am deploying now
-                         // will not require this application metadata.
-                         logger.log(WARNING, KernelLoggerInfo.applicationMetaDataProvider,
-                                 new Object[] {provider, dependency});
-                     }
-                 }
-            }
-        }
-
-        Map<Class, Deployer> typeByDeployer = new HashMap<>();
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class provided : deployer.getMetaData().provides()) {
-                    typeByDeployer.put(provided, deployer);
-                }
-            }
-        }
-
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class dependency : deployer.getMetaData().requires()) {
-                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
-
-                        Service s = deployer.getClass().getAnnotation(Service.class);
-                        String serviceName;
-                        if (s!=null && s.name()!=null && s.name().length()>0) {
-                            serviceName = s.name();
-                        } else {
-                            serviceName = deployer.getClass().getSimpleName();
-                        }
-                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
-                        return null;
-                    }
-                }
-            }
-        }
-
         // ok everything is satisfied, just a matter of running things in order
-        List<Deployer> orderedDeployers = new ArrayList<>();
-        for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
-            Deployer deployer = entry.getKey();
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(FINE, "Keyed Deployer {0}", deployer.getClass());
-            }
-            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
-            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
-            span.close();
-        }
+        List<Deployer> orderedDeployers = loadDeployers(
+                containerInfosByDeployers,
+                context
+        );
 
         // now load metadata from deployers.
         for (Deployer deployer : orderedDeployers) {
@@ -994,6 +938,87 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             return engineInfo;
         }
+    }
+
+    private Map<Class, ApplicationMetaDataProvider> getTypeByProvider() {
+        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
+        final List<ApplicationMetaDataProvider> providers = habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class);
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class provided : provider.getMetaData().provides()) {
+                    typeByProvider.put(provided, provider);
+                }
+            }
+        }
+
+        // check if everything is provided.
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class dependency : provider.getMetaData().requires()) {
+                    if (!typeByProvider.containsKey(dependency)) {
+                        // at this point, I only log problems, because it maybe that what I am deploying now
+                        // will not require this application metadata.
+                        logger.log(WARNING, KernelLoggerInfo.applicationMetaDataProvider,
+                                new Object[]{provider, dependency});
+                    }
+                }
+            }
+        }
+        return typeByProvider;
+    }
+
+    private Map<Class, Deployer> getTypeByDeployer(Map<Deployer, EngineInfo> containerInfosByDeployers) {
+        Map<Class, Deployer> typeByDeployer = new HashMap<>();
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class provided : deployer.getMetaData().provides()) {
+                    typeByDeployer.put(provided, deployer);
+                }
+            }
+        }
+        return typeByDeployer;
+    }
+
+    private List<Deployer> loadDeployers(
+            Map<Deployer, EngineInfo> containerInfosByDeployers,
+            DeploymentContext context) throws IOException {
+
+        final ActionReport report = context.getActionReport();
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = getTypeByProvider();
+        final Map<Class, Deployer> typeByDeployer = getTypeByDeployer(containerInfosByDeployers);
+        final StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class dependency : deployer.getMetaData().requires()) {
+                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
+
+                        Service s = deployer.getClass().getAnnotation(Service.class);
+                        String serviceName;
+                        if (s != null && s.name() != null && s.name().length() > 0) {
+                            serviceName = s.name();
+                        } else {
+                            serviceName = deployer.getClass().getSimpleName();
+                        }
+                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
+                        return null;
+                    }
+                }
+            }
+        }
+
+        List<Deployer> orderedDeployers = new ArrayList<>();
+        for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
+            Deployer deployer = entry.getKey();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(FINE, "Keyed Deployer {0}", deployer.getClass());
+            }
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
+            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
+            span.close();
+        }
+        return orderedDeployers;
     }
 
     private void loadDeployer(List<Deployer> results, Deployer deployer, Map<Class, Deployer> typeByDeployer,  Map<Class, ApplicationMetaDataProvider> typeByProvider, DeploymentContext dc)

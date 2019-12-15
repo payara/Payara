@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.apf.impl;
 
+import com.sun.enterprise.v3.server.ApplicationState;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.HashMap;
@@ -69,6 +70,7 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.Scanner;
 import java.util.logging.Level;
+import org.glassfish.api.deployment.DeployCommandParameters;
 
 
 /**
@@ -130,14 +132,16 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     public ProcessingResult process(ProcessingContext ctx)
         throws AnnotationProcessorException
     {
+        ApplicationState state = ctx.getArchive().getExtraData(ApplicationState.class);
         
         Scanner<Object> scanner = ctx.getProcessingInput();
         ProcessingResultImpl result = new ProcessingResultImpl();
         errorCount=0;
         
         for (Class c : scanner.getElements()) {
-            
-            result.add(process(ctx, c));          
+            if (state == null || state.isClasschanged(c)) {
+                result.add(process(ctx, c));
+            }
         }
         return result;
     }
