@@ -96,7 +96,7 @@ public class StartServerHelper {
 
     public StartServerHelper(Logger logger0, boolean terse0,
             ServerDirs serverDirs0, GFLauncher launcher0,
-            String masterPassword0, boolean debug0) {
+            String masterPassword0) {
         logger = logger0;
         terse = terse0;
         launcher = launcher0;
