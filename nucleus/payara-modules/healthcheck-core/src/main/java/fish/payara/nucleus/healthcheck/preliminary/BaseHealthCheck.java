@@ -57,6 +57,7 @@ import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -294,4 +295,5 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
                     new Object[]{name, checkResult.getEntries().toString()});
         }
     }
+
 }

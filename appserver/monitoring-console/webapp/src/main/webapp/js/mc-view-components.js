@@ -478,8 +478,9 @@ MonitoringConsole.View.Components = (function() {
       let lastOngoing;
       for (let i = 0; i < items.length; i++) {
         let item = items[i];
+        item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
         let endFrame = item.frames[0];
-        let startFrame = item.frames[item.frames.length - 1];
+        let startFrame = item.frames[frames.length - 1];
         let ongoing = endFrame.until === undefined;
         let level = endFrame.level;
         let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
@@ -498,14 +499,11 @@ MonitoringConsole.View.Components = (function() {
     function createConditionGroup(item) {
       let endFrame = item.frames[0];
       let circumstance = item.watch[endFrame.level];
-      let desc = $('<span/>');
-      desc.append(formatCondition(item, circumstance.start));
-      if (circumstance.stop) {
-        desc.append($('<small/>').text(' unitil '));
-        desc.append(formatCondition(item, circumstance.stop)); 
-      }
       let group = $('<div/>', { 'class': 'Group' });
-      appendProperty(group, 'Condition', desc);
+      appendProperty(group, 'Start', formatCondition(item, circumstance.start));
+      if (circumstance.stop) {
+        appendProperty(group, 'Stop', formatCondition(item, circumstance.stop));
+      }
       return group;
     }
 
@@ -516,18 +514,15 @@ MonitoringConsole.View.Components = (function() {
       let title = 'value is ' + condition.operator + ' ' + threshold;
       let desc = $('<span/>'); 
       desc.append(condition.operator + ' ' + threshold);
+      let text = condition.onAverage ? ' on average for last ' : ' for last ';
       if (condition.forTimes > 0) {
-        desc.append($('<small/>', { text: ' for '})).append('x' + condition.forTimes);
-        title += ' for at least ' + condition.forTimes + ' times in a row';
-      }
-      if (condition.forPercent > 0) {
-        desc.append($('<small/>', { text: ' for '})).append(condition.forPercent + '%');
-        title += ' for at least ' + condition.forPercent + ' of the recent values';
+        desc.append($('<small/>', { text: text})).append(condition.forTimes + 'x');
+        title += text + condition.forTimes + ' values';
       }
       if (condition.forMillis > 0) {
         let time = Units.converter('ms').format(condition.forMillis);
-        desc.append($('<small/>', { text: ' for '})).append(time);
-        title += ' for at least ' + time;
+        desc.append($('<small/>', { text: text})).append(time);
+        title += text + time;          
       }
       desc.attr('title', title);
       return desc;
@@ -593,9 +588,8 @@ MonitoringConsole.View.Components = (function() {
      * Sorts alerts starting with ongoing most recent red and ending with ended most past amber.
      */
     function sortMostUrgetFirst(a, b) {
-      let desc = (a, b) => b.since - a.since; // sort most recent frame first 
-      a.frames = a.frames.sort(desc);
-      b.frames = b.frames.sort(desc);
+      a.frames = a.frames.sort(sortMostRecentFirst);
+      b.frames = b.frames.sort(sortMostRecentFirst);
       let aFrame = a.frames[0]; // most recent frame is not at 0
       let bFrame = b.frames[0];
       let aOngoing = aFrame.until === undefined;
@@ -606,7 +600,11 @@ MonitoringConsole.View.Components = (function() {
       let bLevel = bFrame.level;
       if (aLevel != bLevel)
         return aLevel === 'red' ? -1 : 1;
-      return bFrame.since - aFrame.since; // strat with most recent item
+      return bFrame.since - aFrame.since; // start with most recent item
+    }
+
+    function sortMostRecentFirst(a, b) {
+      return b.since - a.since; // sort most recent frame first 
     }
 
     return { createComponent: createComponent };

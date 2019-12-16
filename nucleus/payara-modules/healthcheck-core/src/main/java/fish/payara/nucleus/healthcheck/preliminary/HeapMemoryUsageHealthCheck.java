@@ -43,6 +43,8 @@ import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
@@ -61,7 +63,7 @@ import java.lang.management.MemoryUsage;
 @RunLevel(StartupRunLevel.VAL)
 public class HeapMemoryUsageHealthCheck
 extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> 
-implements MonitoringDataSource {
+implements MonitoringDataSource, MonitoringWatchSource {
 
     @PostConstruct
     void postConstruct() {
@@ -96,6 +98,11 @@ implements MonitoringDataSource {
 
     private static MemoryUsage getMemoryUsage() {
         return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health HeapUsage", "Heap Usage", 10, true);
     }
 
     @Override

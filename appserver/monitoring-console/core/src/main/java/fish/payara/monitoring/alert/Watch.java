@@ -1,15 +1,19 @@
 package fish.payara.monitoring.alert;
 
 import static fish.payara.monitoring.alert.Alert.Level.*;
+import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import fish.payara.monitoring.alert.Alert.Level;
+import fish.payara.monitoring.alert.Condition.Operator;
+import fish.payara.monitoring.collect.MonitoringWatchCollector.WatchBuilder;
 import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.SeriesDataset;
@@ -25,9 +29,7 @@ import fish.payara.monitoring.model.SeriesDataset;
  * 
  * @author Jan Bernitt
  */
-public final class Watch {
-
-    private static final AtomicInteger NEXT_SERIAL = new AtomicInteger();
+public final class Watch implements WatchBuilder {
 
     /**
      * A {@link Watch} is a state machine where the state of each {@link SeriesDataset} matching the
@@ -55,7 +57,6 @@ public final class Watch {
         }
     }
 
-    public final int serial;
     public final String name;
     public final Metric watched;
     public final Circumstance red;
@@ -63,9 +64,13 @@ public final class Watch {
     public final Circumstance green;
     private final Metric[] captured;
     private final Map<String, State> statesByInstanceSeries = new ConcurrentHashMap<>();
+    private final AtomicBoolean stopped = new AtomicBoolean(false);
+
+    public Watch(String name, Metric watched) {
+        this(name, watched, Circumstance.NONE, Circumstance.NONE, Circumstance.NONE);
+    }
 
     public Watch(String name, Metric watched, Circumstance red, Circumstance amber, Circumstance green, Metric... captured) {
-        this.serial = NEXT_SERIAL.incrementAndGet();
         this.name = name;
         this.watched = watched;
         this.red = red;
@@ -74,11 +79,21 @@ public final class Watch {
         this.captured = captured;
     }
 
-    private static String key(SeriesDataset data) {
-        return data.getSeries().toString() + '#' + data.getInstance();
+    public void stop() {
+        stopped.set(true);
+        for (State s : statesByInstanceSeries.values()) {
+            s.ongoing.stop(WHITE);
+        }
+    }
+
+    public boolean isStopped() {
+        return stopped.get();
     }
 
     public List<Alert> check(SeriesLookup lookup) {
+        if (isStopped()) {
+            return emptyList();
+        }
         List<Alert> raised = new ArrayList<>();
         for (SeriesDataset data : lookup.selectSeries(watched.series)) {
             Alert alert = check(lookup, data);
@@ -87,6 +102,10 @@ public final class Watch {
             }
         }
         return raised;
+    }
+
+    private static String key(SeriesDataset data) {
+        return data.getSeries().toString() + '#' + data.getInstance();
     }
 
     private Alert check(SeriesLookup lookup, SeriesDataset data) {
@@ -190,7 +209,7 @@ public final class Watch {
 
     @Override
     public int hashCode() {
-        return serial;
+        return name.hashCode();
     }
 
     @Override
@@ -199,13 +218,13 @@ public final class Watch {
     }
 
     public boolean equalTo(Watch other) {
-        return serial == other.serial;
+        return name.equals(other.name);
     }
 
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        str.append('(').append(serial).append(") ").append(name).append(" ~ ").append(watched).append('\n');
+        str.append(name).append(" ~ ").append(watched).append('\n');
         if (!red.isNone()) {
             str.append('\t').append(red).append('\n');
         }
@@ -218,10 +237,65 @@ public final class Watch {
         if (captured.length > 0) {
             str.append('\t').append(Arrays.toString(captured)).append('\n');
         }
+        str.append("State:\n");
         for (State s : statesByInstanceSeries.values()) {
-            str.append('\t').append(s).append('\n');
+            str.append("\t\t").append(s).append('\n');
         }
         return str.toString();
+    }
+
+    @Override
+    public Watch with(String level, long startThreshold, Number startForLast, boolean startOnAverage, Long stopTheshold,
+            Number stopForLast, boolean stopOnAverage) {
+        switch (level) {
+        case "red":
+            return isEqual(red, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
+                ? this
+                : new Watch(name, watched, //
+                    create(RED, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
+                    amber, green, captured);
+        case "amber":
+            return isEqual(amber, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
+                ? this
+                : new Watch(name, watched, red, //
+                    create(AMBER, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
+                    green, captured);
+
+        case "green":
+            return isEqual(green, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
+                ? this
+                : new Watch(name, watched, red, amber, //
+                    create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage),
+                    captured);
+        default:
+            throw new IllegalArgumentException("No such alert level: " + level);
+        }
+    }
+
+    private static boolean isEqual(Circumstance sample, long startThreshold, Number startForLast,
+            boolean startOnAverage, Long stopTheshold, Number stopForLast, boolean stopOnAverage) {
+        return isEqual(sample.start, startThreshold, startForLast, startOnAverage)
+                && isEqual(sample.stop, stopTheshold, stopForLast, stopOnAverage);
+    }
+
+    private static boolean isEqual(Condition sample, Long threshold, Number forLast, boolean onAverage) {
+        if (threshold == null) {
+            return sample.isNone();
+        }
+        return !sample.isNone()
+                && sample.threshold == threshold.longValue()
+                && Objects.equals(sample.forLast, forLast)
+                && sample.onAverage == onAverage;
+    }
+
+    private static Circumstance create(Level level, long startThreshold, Number startForLast,
+            boolean startOnAverage, Long stopTheshold, Number stopForLast, boolean stopOnAverage) {
+        Operator startComparison = level == GREEN ? Condition.Operator.GE : Condition.Operator.GT;
+        Condition start = new Condition(startComparison, startThreshold, startForLast, startOnAverage);
+        Condition stop = stopTheshold == null
+                ? Condition.NONE
+                : new Condition(Condition.Operator.LT, stopTheshold, stopForLast, stopOnAverage);
+        return new Circumstance(level, start, stop);
     }
 
 }

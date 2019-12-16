@@ -57,17 +57,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -75,7 +70,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
-import com.sun.enterprise.config.serverbeans.Config;
 
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
@@ -83,9 +77,7 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.model.EmptyDataset;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.util.logging.Level;
 
 /**
  * A simple in-memory store for a fixed size sliding window for each {@link Series}.
@@ -104,7 +96,7 @@ import java.util.logging.Level;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryMonitoringDataRepository extends ConfigListeningService implements MonitoringDataRepository {
+public class InMemoryMonitoringDataRepository extends AbstractMonitoringService implements MonitoringDataRepository {
 
     /**
      * The topic name used to share data of instances with the DAS.
@@ -112,20 +104,12 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
     private static final String MONITORING_DATA_TOPIC_NAME = "payara-monitoring-data";
     private final Set<String> sourcesFailingBefore = ConcurrentHashMap.newKeySet();
     @Inject
-    private ServiceLocator serviceLocator;
-    @Inject
-    private ServerEnvironment serverEnv;
-    @Inject
-    private PayaraExecutorService executor;
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private Config serverConfig;
-    @Inject
     private HazelcastCore hazelcastCore;
 
-    private boolean isDas;
     private String instanceName;
     private ITopic<SeriesDatasetsSnapshot> exchange;
 
+    private boolean isDas;
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
@@ -204,7 +188,7 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
 
     private void collectSourcesToMemory() {
         tick();
-        collectAll(new SinkDataCollector(this::addLocalPoint));
+        collectAll(new ConsumingMonitoringDataCollector(this::addLocalPoint));
         swapLocalBuffer();
     }
 
@@ -212,7 +196,7 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
         if (exchange != null) {
             tick();
             SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
-            collectAll(new SinkDataCollector(msg));
+            collectAll(new ConsumingMonitoringDataCollector(msg));
             estimatedNumberOfSeries = msg.numberOfSeries;
             exchange.publish(msg);
         }
@@ -250,7 +234,7 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
             estimatedTotalBytesMemory += set.estimatedBytesMemory();
         }
         int seriesCount = secondsWrite.size();
-        collector.in("mc")
+        collector.in("monitoring")
             .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
             .collectNonZero("SeriesCount", seriesCount)
             .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
@@ -357,7 +341,7 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
         return secondsRead.values();
     }
 
-    static final class SeriesDatasetsSnapshot implements Serializable, MonitoringDataSink {
+    static final class SeriesDatasetsSnapshot implements Serializable, MonitoringDataConsumer {
         final long time;
         int numberOfSeries;
         String[] series;
@@ -370,12 +354,12 @@ public class InMemoryMonitoringDataRepository extends ConfigListeningService imp
         }
 
         @Override
-        public void accept(CharSequence key, long value) {
-            if (numberOfSeries >= series.length) {
-                series = copyOf(series, Math.round(series.length * 1.3f));
-                values = copyOf(values, series.length);
+        public void accept(CharSequence series, long value) {
+            if (numberOfSeries >= this.series.length) {
+                this.series = copyOf(this.series, Math.round(this.series.length * 1.3f));
+                values = copyOf(values, this.series.length);
             }
-            series[numberOfSeries] = key.toString();
+            this.series[numberOfSeries] = series.toString();
             values[numberOfSeries++] = value;
         }
     }

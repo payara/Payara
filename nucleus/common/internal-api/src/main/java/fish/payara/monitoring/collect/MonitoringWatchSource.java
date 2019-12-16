@@ -37,20 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package fish.payara.monitoring.store;
-
-import java.util.Set;
+package fish.payara.monitoring.collect;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import fish.payara.monitoring.model.SeriesLookup;
-import fish.payara.monitoring.model.SeriesDataset;
-
+/**
+ * Implemented by each source of monitoring watches to provide the current watch configuration.
+ * 
+ * @author Jan Bernitt
+ */
 @Contract
-public interface MonitoringDataRepository extends SeriesLookup {
+@FunctionalInterface
+public interface MonitoringWatchSource {
 
-    Iterable<SeriesDataset> selectAllSeries();
-
-    Set<String> instances();
+    /**
+     * Collects watches of this source at current configuration.
+     *
+     * @param collector the {@link MonitoringWatchCollector} instance to use to collect current watch configuration.
+     */
+    void collect(MonitoringWatchCollector collector);
 }

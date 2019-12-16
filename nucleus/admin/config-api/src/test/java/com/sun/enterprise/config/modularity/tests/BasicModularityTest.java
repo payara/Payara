@@ -118,7 +118,7 @@ public class BasicModularityTest extends ConfigApiTest {
     @Test
     public void serializeConfigBean() {
         Config config = habitat.<Config>getService(Config.class, ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME);
-        ConfigBeanProxy prox = (ConfigBeanProxy) config.getExtensionByType(ConfigExtensionZero.class);
+        ConfigBeanProxy prox = config.getExtensionByType(ConfigExtensionZero.class);
         String content = configModularityUtils.serializeConfigBean(prox);
         assertEquals("Cannot serialize config beans properly", "<config-extension-zero dummy=\"dummy-value\"></config-extension-zero>", content);
 
@@ -175,7 +175,7 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void testLoadingEmbeddedFile() throws Exception {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = values = configModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "embedded");
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = configModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "embedded");
         assertEquals("Incorrect customization type loaded ", ConfigCustomizationToken.CustomizationType.PORT, values.get(0).getCustomizationTokens().get(0).getCustomizationType());
         assertEquals("Incorrect customization details value ", "1000", ((PortTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).getBaseOffset());
         assertEquals("validation expression is returned incorrectly ", "[a-zA-Z0-9]+", values.get(0).getCustomizationTokens().get(0).getValidationExpression());

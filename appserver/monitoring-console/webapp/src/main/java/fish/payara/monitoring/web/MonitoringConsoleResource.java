@@ -70,6 +70,7 @@ import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
 import fish.payara.monitoring.web.ApiResponses.AlertsResponse;
 import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
 import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
+import fish.payara.monitoring.web.ApiResponses.WatchesResponse;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
@@ -176,5 +177,11 @@ public class MonitoringConsoleResource {
     @Path("/alerts/data/{series}/")
     public AlertsResponse getAlertsData(@PathParam("series") String series) {
         return new AlertsResponse(getAlertService().alertsFor(seriesOrNull(series)));
+    }
+
+    @GET
+    @Path("/watches/data/")
+    public WatchesResponse getWatchesData() {
+        return new WatchesResponse(getAlertService().watches());
     }
 }

@@ -126,7 +126,6 @@ public final class ApiResponses {
 
     public static final class WatchData {
 
-        public final int serial;
         public final String name;
         public final String series;
         public final String unit;
@@ -135,7 +134,6 @@ public final class ApiResponses {
         public final CircumstanceData green;
 
         public WatchData(Watch watch) {
-            this.serial = watch.serial;
             this.name = watch.name;
             this.series = watch.watched.series.toString();
             this.unit = watch.watched.unit.toString();
@@ -169,15 +167,15 @@ public final class ApiResponses {
         public final String operator;
         public final long threshold;
         public final Integer forTimes;
-        public final Integer forPercent;
-        public final Integer forMillis;
+        public final Long forMillis;
+        public final boolean onAverage;
 
         public ConditionData(Condition condition) {
             this.operator = condition.comparison.toString();
             this.threshold = condition.threshold;
-            this.forTimes = condition.forTimes > 0 ? condition.forTimes : null;
-            this.forMillis = condition.forMillis > 0 ? condition.forMillis : null;
-            this.forPercent = condition.forPercent > 0 ? condition.forPercent : null;
+            this.forTimes = condition.isForLastTimes() ? condition.forLast.intValue() : null;
+            this.forMillis = condition.isForLastMillis() ? condition.forLast.longValue() : null;
+            this.onAverage = condition.onAverage;
         }
     }
 
@@ -315,6 +313,14 @@ public final class ApiResponses {
             for (SeriesDataset capture : frame) {
                 this.captured.add(new SeriesData(capture, true)); // for now the points data isn't used, change to false if needed
             }
+        }
+    }
+
+    public static final class WatchesResponse {
+        public final List<WatchData> watches;
+
+        public WatchesResponse(Collection<Watch> watches) {
+            this.watches = watches.stream().map(WatchData::new).collect(toList());
         }
     }
 }

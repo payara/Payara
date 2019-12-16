@@ -55,19 +55,19 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import fish.payara.monitoring.store.MonitoringDataSink;
-import fish.payara.monitoring.store.SinkDataCollector;
+import fish.payara.monitoring.store.MonitoringDataConsumer;
+import fish.payara.monitoring.store.ConsumingMonitoringDataCollector;
 
 /**
- * Component test testing the {@link SinkDataCollector} implementation semantics.
+ * Component test testing the {@link ConsumingMonitoringDataCollector} implementation semantics.
  * 
  * This means does the combination of {@link MonitoringDataCollector#tag(CharSequence, CharSequence)} and
  * {@link MonitoringDataCollector#collect(CharSequence, long)} calls used by a {@link MonitoringDataSource} leed to the
- * expected sequence of {@link MonitoringDataSink#accept(CharSequence, long)} calls.
+ * expected sequence of {@link MonitoringDataConsumer#accept(CharSequence, long)} calls.
  * 
  * @author Jan Bernitt
  */
-public class DataSinkCollectorTest implements MonitoringDataSource {
+public class ConsumingMonitoringDataCollectorTest implements MonitoringDataSource {
 
     /**
      * The test class itself is the source used to test
@@ -143,7 +143,7 @@ public class DataSinkCollectorTest implements MonitoringDataSource {
     @Before
     public void collectDataPoints() {
         dataPoints.clear();
-        MonitoringDataCollector collector = new SinkDataCollector((key, value) -> dataPoints.put(key.toString(), value));
+        MonitoringDataCollector collector = new ConsumingMonitoringDataCollector((series, value) -> dataPoints.put(series.toString(), value));
         collect(collector);
     }
 

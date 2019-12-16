@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Contract;
 public interface MonitoringDataSource {
 
     /**
-     * Collects all the data points of this at the current moment.
+     * Collects all the data points of this source at the current moment.
      * 
      * @param collector the {@link MonitoringDataCollector} instance to use to collect the data points of this source
      */

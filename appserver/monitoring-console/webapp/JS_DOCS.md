@@ -347,14 +347,14 @@ level        = 'red' | 'amber'
 since        = date | number
 until    	 = date | number
 color        = string
-watch        = { serial, red, amber, green }
+watch        = { red, amber, green }
 red          = CIRCUMSTANCE
 amber        = CIRCUMSTANCE
 green        = CIRCUMSTANCE
 CIRCUMSTANCE = { start, stop }
 start        = CONDITION
 stop         = CONDITION
-CONDITION    = { operator, threshold, forTimes, forPercent, forMillis }
+CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
 ```
 * `since` is the start date as timestamp or JS date
 * `ALERT_ITEM.color` refers to the series/instance color whereas `ALERT_FRAME.color` refers to the level color

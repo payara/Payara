@@ -40,19 +40,19 @@
 package fish.payara.monitoring.store;
 
 /**
- * A {@link MonitoringDataSink} observes all monitoring data values as a sequence of key-value pairs where all values
- * have been converted to longs.
+ * A {@link MonitoringDataConsumer} observes all monitoring data values as a sequence of key-value pairs where all
+ * values have been converted to longs.
  *
  * @author Jan Bernitt
  */
 @FunctionalInterface
-public interface MonitoringDataSink {
+public interface MonitoringDataConsumer {
 
     /**
-     * Publishes a key-value pair to this sink.
+     * Publishes a key-value pair to this consumer.
      *
-     * @param key the full metric name, e.g. <code>x=y a=b xCount</code>
+     * @param series the full metric name, e.g. <code>x:y a:b xCount</code>
      * @param value numeric value of the metric
      */
-    void accept(CharSequence key, long value);
+    void accept(CharSequence series, long value);
 }

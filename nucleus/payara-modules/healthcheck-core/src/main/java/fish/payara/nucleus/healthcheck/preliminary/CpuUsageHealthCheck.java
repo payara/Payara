@@ -42,6 +42,8 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
@@ -52,6 +54,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
@@ -65,7 +68,8 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @Service(name = "healthcheck-cpu")
 @RunLevel(StartupRunLevel.VAL)
 public class CpuUsageHealthCheck
-extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> implements MonitoringDataSource {
+extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker>
+implements MonitoringDataSource, MonitoringWatchSource {
 
     private final CpuUsage healthCheck = new CpuUsage();
     private final CpuUsage collect = new CpuUsage();
@@ -106,6 +110,11 @@ extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUs
         if (getOptions().isEnabled()) {
             collector.collect("CpuUsage", (int) collect.percentage());
         }
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health CpuUsage", "CPU Usage", 15, true);
     }
 
     private static final class CpuUsage {

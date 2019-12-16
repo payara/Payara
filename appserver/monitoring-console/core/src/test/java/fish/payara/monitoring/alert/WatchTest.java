@@ -15,10 +15,5 @@ public class WatchTest {
 
     @Test
     public void test() {
-        assertNotNull(new Watch("Heap Usage", new Metric(new Series("ns:jvm HeapUsage"), Unit.PERCENT), 
-                new Circumstance(Level.RED, new Condition(GE, 30, 5, 0, 0), new Condition(LT, 30, 5, 0, 0)), 
-                new Circumstance(Level.AMBER, new Condition(GE, 20, 5, 0, 0), new Condition(LT, 20, 5, 0, 0)), 
-                new Circumstance(Level.GREEN, new Condition(LT, 20, 1, 0, 0), Condition.NONE), 
-                new Metric(new Series("ns:jvm CpuUsage"), Unit.PERCENT)));
     }
 }

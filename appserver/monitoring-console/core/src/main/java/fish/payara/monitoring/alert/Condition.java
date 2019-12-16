@@ -1,10 +1,12 @@
 package fish.payara.monitoring.alert;
 
+import java.util.Objects;
+
 import fish.payara.monitoring.model.SeriesDataset;
 
 public final class Condition {
 
-    public static final Condition NONE = new Condition(Operator.EQ, 0L, 0, 0, 0);
+    public static final Condition NONE = new Condition(Operator.EQ, 0L);
 
     public enum Operator {
         LT("<"), LE("<="), EQ("="), GT(">"), GE(">=");
@@ -23,21 +25,34 @@ public final class Condition {
 
     public final Operator comparison;
     public final long threshold;
-    public final int forTimes;
-    public final int forPercent;
-    public final int forMillis;
+    public final Number forLast;
+    public final boolean onAverage;
 
-    public Condition(Operator comparison, long threshold, int forTimes, int forPercent,
-            int forMillis) {
+    public Condition(Operator comparison, long threshold) {
+        this(comparison, threshold, null, false);
+    }
+
+    public Condition(Operator comparison, long threshold, Number forLast, boolean onAverage) {
         this.comparison = comparison;
         this.threshold = threshold;
-        this.forTimes = forTimes;
-        this.forPercent = forPercent;
-        this.forMillis = forMillis;
+        this.forLast = forLast;
+        this.onAverage = onAverage;
     }
 
     public boolean isNone() {
         return this == NONE;
+    }
+
+    public boolean isForLastPresent() {
+        return forLast != null;
+    }
+
+    public boolean isForLastMillis() {
+        return forLast instanceof Long;
+    }
+
+    public boolean isForLastTimes() {
+        return forLast instanceof Integer;
     }
 
     public boolean isSatisfied(SeriesDataset data) {
@@ -45,62 +60,63 @@ public final class Condition {
             return true;
         }
         long value = data.lastValue();
-        if (!compare(value)) {
+        if ((!onAverage || data.isStable()) && !compare(value)) {
             return false;
         }
-        if (forMillis > 0) {
-            return isSatisfiedForMillis(data);
+        if (isForLastMillis()) {
+            return isSatisfiedForLastMillis(data);
         }
-        if (forPercent > 0) {
-            return isSatisfiedForPercent(data);
-        }
-        if (forTimes > 0) {
-            return isSatisfiedForTimes(data);
+        if (isForLastTimes()) {
+            return isSatisfiedForLastTimes(data);
         }
         return true;
     }
 
-    private boolean isSatisfiedForMillis(SeriesDataset data) {
+    private boolean isSatisfiedForLastMillis(SeriesDataset data) {
+        long forLastMillis = forLast.longValue();
+        if (forLastMillis <= 0) {
+            return isSatisfiedForLastTimes(data.points(), -1);
+        }
         if (data.isStable()) {
-            return data.getStableSince() <= data.lastTime() - forMillis ;
+            return data.getStableSince() <= data.lastTime() - forLastMillis ;
         }
-        long startTime = data.lastTime() - forMillis;
-        if (data.firstTime() > startTime) {
-            return false;
-        }
+        long startTime = data.lastTime() - forLastMillis;
         long[] points = data.points();
+        if (points[0] > startTime && forLastMillis < 30000L) {
+            return false; // not enough data
+        }
         int index = points.length - 2; // last time index
-        while (index >= 0 && points[index] >= startTime) {
-            if (!compare(points[index])) {
-                return false;
-            }
+        while (index >= 0 && points[index] > startTime) {
             index -= 2;
         }
-        return index >= 0;
+        return isSatisfiedForLastTimes(points, index <= 0 ? points.length / 2 : (points.length - index) / 2);
     }
 
-    private boolean isSatisfiedForPercent(SeriesDataset data) {
+    private boolean isSatisfiedForLastTimes(SeriesDataset data) {
+        int forLastTimes = forLast.intValue();
         if (data.isStable()) {
-            return true;
+            return data.getStableCount() >= forLastTimes;
         }
-        long[] points = data.points();
-        int satisfiedCount = 0;
-        int comparedCount = 0;
-        for (int i = 0; i < points.length; i+= 2) {
-            comparedCount++;
-            satisfiedCount += compare(points[i + 1]) ? 1 : 0;
-        }
-        return 100 * satisfiedCount / comparedCount > forPercent;
+        return isSatisfiedForLastTimes(data.points(), forLastTimes);
     }
 
-    private boolean isSatisfiedForTimes(SeriesDataset data) {
-        if (data.isStable()) {
-            return data.getStableCount() >= forTimes;
+    private boolean isSatisfiedForLastTimes(long[] points, int forLastTimes) {
+        int maxPoints = points.length / 2;
+        int n = forLastTimes <= 0 ? maxPoints : Math.min(maxPoints, forLastTimes);
+        if (forLastTimes > 0 && n < forLastTimes && n < 30) {
+            return false; // not enough data yet
         }
-        long[] points = data.points();
-        int index = points.length - 2; // last time index
-        for (int i = 0; i < forTimes; i++) {
-            if (!compare(points[index + 1])) {
+        int index = points.length - 1; // last value index
+        if (onAverage) {
+            long sum = 0;
+            for (int i = 0; i < n; i++) {
+                sum += points[index];
+                index -= 2;
+            }
+            return compare(sum / n);
+        }
+        for (int i = 0; i < n; i++) {
+            if (!compare(points[index])) {
                 return false;
             }
             index -= 2;
@@ -121,7 +137,7 @@ public final class Condition {
 
     @Override
     public int hashCode() {
-        return (int) (comparison.hashCode() ^ threshold ^ forMillis ^ forPercent ^ forTimes); // good enough to avoid most collisions
+        return (int) (comparison.hashCode() ^ threshold ^ (forLast == null ? 0 : forLast.intValue())); // good enough to avoid most collisions
     }
 
     @Override
@@ -131,7 +147,7 @@ public final class Condition {
 
     public boolean equalTo(Condition other) {
         return comparison == other.comparison && threshold == other.threshold
-                && forMillis == other.forMillis && forPercent == other.forPercent && forTimes == other.forTimes;
+                && Objects.equals(forLast, other.forLast) && onAverage == other.onAverage;
     }
 
     @Override
@@ -141,15 +157,13 @@ public final class Condition {
         }
         StringBuilder str = new StringBuilder();
         str.append("value ").append(comparison.symbol).append(' ').append(threshold);
-        if (forTimes > 0) {
-            str.append(" for ").append(forTimes).append(" times");
+        if (isForLastMillis()) {
+            str.append(" for ").append(forLast).append(" times");
         }
-        if (forPercent > 0) {
-            str.append(" for ").append(forPercent).append('%');
-        }
-        if (forMillis > 0) {
-            str.append(" for ").append(forMillis).append("ms");
+        if (isForLastTimes()) {
+            str.append(" for ").append(forLast).append("ms");
         }
         return str.toString();
     }
+
 }

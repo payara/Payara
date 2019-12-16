@@ -43,6 +43,8 @@ import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
@@ -69,7 +71,7 @@ import java.util.List;
 @RunLevel(StartupRunLevel.VAL)
 public class MachineMemoryUsageHealthCheck
 extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker>
-implements MonitoringDataSource {
+implements MonitoringDataSource, MonitoringWatchSource {
 
     private static final String MEMTOTAL = "MemTotal:";
     private static final String MEMFREE = "MemFree:";
@@ -124,11 +126,16 @@ implements MonitoringDataSource {
     }
 
     @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health PhysicalMemoryUsage", "Physical Memory Usage", 5, false);
+    }
+
+    @Override
     @MonitoringData(ns = "health", intervalSeconds = 12)
     public void collect(MonitoringDataCollector collector) {
         if (getOptions().isEnabled()) {
             try {
-                collector.collect("PhysicalMemoryUsed", (long) stats.usedPercentage());
+                collector.collect("PhysicalMemoryUsage", (long) stats.usedPercentage());
             } catch (Exception ex) {
                 throw ex instanceof RuntimeException ? (RuntimeException) ex : new RuntimeException(ex);
             }

@@ -49,6 +49,8 @@ import com.sun.enterprise.resource.pool.PoolStatus;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
@@ -74,8 +76,8 @@ import java.util.List;
 @Service(name = "healthcheck-cpool")
 @RunLevel(10)
 public class ConnectionPoolHealthCheck
-extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
-implements MonitoringDataSource {
+    extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
+    implements MonitoringDataSource, MonitoringWatchSource {
 
     @Inject
     private Domain domain;
@@ -115,6 +117,11 @@ implements MonitoringDataSource {
                     info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)));
         }));
         return result;
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health PoolUsage", "Connection Pool Usage", 5, false);
     }
 
     @Override

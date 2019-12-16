@@ -45,8 +45,8 @@ public final class Circumstance {
         return start.isSatisfied(data);
     }
 
-    public boolean stops(SeriesDataset sets) {
-        return stop.isNone() ? false : stop.isSatisfied(sets);
+    public boolean stops(SeriesDataset data) {
+        return stop.isNone() ? !start.isSatisfied(data) : stop.isSatisfied(data);
     }
 
     @Override

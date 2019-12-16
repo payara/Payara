@@ -1,7 +1,5 @@
 package fish.payara.monitoring.store;
 
-import static fish.payara.monitoring.alert.Condition.Operator.GE;
-import static fish.payara.monitoring.alert.Condition.Operator.LT;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableCollection;
@@ -10,72 +8,66 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Config;
-
 import fish.payara.monitoring.alert.Alert;
-import fish.payara.monitoring.alert.AlertService;
-import fish.payara.monitoring.alert.Circumstance;
-import fish.payara.monitoring.alert.Condition;
-import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.alert.Alert.Level;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
+import fish.payara.monitoring.alert.AlertService;
+import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.Unit;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class InMemoryAlarmService extends ConfigListeningService implements AlertService {
+class InMemoryAlarmService extends AbstractMonitoringService implements AlertService, MonitoringDataSource {
 
     private static final int MAX_ALERTS_PER_SERIES = 10;
+
     @Inject
-    private PayaraExecutorService executor;
-    @Inject
-    private ServerEnvironment serverEnv;
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private Config serverConfig;
-    @Inject
-    private MonitoringDataRepository monitoringDataRepository;
+    private MonitoringDataRepository monitoringData;
 
     private boolean isDas;
     private final JobHandle checker = new JobHandle("watch checker");
-    private final Map<Series, Map<Integer, Watch>> simpleWatches = new ConcurrentHashMap<>();
-    private final Map<Series, Map<Integer, Watch>> patternWatches = new ConcurrentHashMap<>();
+    private final Map<String, Watch> watchesByName = new ConcurrentHashMap<>();
+    private final Map<Series, Map<String, Watch>> simpleWatches = new ConcurrentHashMap<>();
+    private final Map<Series, Map<String, Watch>> patternWatches = new ConcurrentHashMap<>();
     private final Map<Series, Deque<Alert>> alerts = new ConcurrentHashMap<>();
     private final AtomicReference<AlertStatistics> statistics = new AtomicReference<>(new AlertStatistics());
+    private final AtomicLong evalLoopTime = new AtomicLong();
+
+    /**
+     * Watches that are added during collection
+     */
+    private final Map<String, Watch> collectedWatches = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
         isDas = serverEnv.isDas();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
-        addWatch(new Watch("Heap Memory Usage", new Metric(new Series("ns:health HeapUsage"), Unit.PERCENT), 
-                new Circumstance(Level.RED, new Condition(GE, 30, 5, 0, 0), new Condition(LT, 30, 5, 0, 0)), 
-                new Circumstance(Level.AMBER, new Condition(GE, 20, 5, 0, 0), new Condition(LT, 20, 5, 0, 0)), 
-                new Circumstance(Level.GREEN, new Condition(LT, 20, 1, 0, 0), Condition.NONE), 
-                new Metric(new Series("ns:health CpuUsage"), Unit.PERCENT)));
-        addWatch(new Watch("CPU Usage", new Metric(new Series("ns:health CpuUsage"), Unit.PERCENT), 
-                new Circumstance(Level.RED, new Condition(GE, 5, 3, 0, 0), new Condition(LT, 5, 5, 0, 0)), 
-                new Circumstance(Level.AMBER, new Condition(GE, 3, 3, 0, 0), new Condition(LT, 3, 5, 0, 0)), 
-                new Circumstance(Level.GREEN, new Condition(LT, 3, 1, 0, 0), Condition.NONE)));
     }
 
     @Override
@@ -87,6 +79,14 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
             checker.stop();
         } else {
             checker.start(executor, 2, SECONDS, this::checkWatches);
+        }
+    }
+
+    @Override
+    @MonitoringData(ns = "monitoring", intervalSeconds = 2)
+    public void collect(MonitoringDataCollector collector) {
+        if (isDas) {
+            collector.collect("WatchLoopDuration", evalLoopTime.get());
         }
     }
 
@@ -145,27 +145,35 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
 
     @Override
     public void addWatch(Watch watch) {
+        Watch existing = watchesByName.put(watch.name, watch);
+        if (existing != null) {
+            removeWatch(existing);
+        }
         Series series = watch.watched.series;
-        Map<Series, Map<Integer, Watch>> target = series.isPattern() ? patternWatches : simpleWatches;
-        target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.serial, watch);
+        Map<Series, Map<String, Watch>> target = series.isPattern() ? patternWatches : simpleWatches;
+        target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.name, watch);
     }
 
-    @Override
-    public void removeWatchBySerial(int serial) {
-        removeWatchBySerial(serial, patternWatches);
-        removeWatchBySerial(serial, simpleWatches);
+    private void removeWatch(Watch watch) {
+        watch.stop();
+        if (watchesByName.get(watch.name) == watch) {
+            watchesByName.remove(watch.name);
+        }
+        removeWatch(watch, simpleWatches);
+        removeWatch(watch, patternWatches);
     }
 
-    private static void removeWatchBySerial(int serial, Map<Series, Map<Integer, Watch>> map) {
-        Iterator<Entry<Series, Map<Integer, Watch>>> iter = map.entrySet().iterator();
+    private static void removeWatch(Watch watch, Map<Series, Map<String, Watch>> map) {
+        String name = watch.name;
+        Iterator<Entry<Series, Map<String, Watch>>> iter = map.entrySet().iterator();
         while (iter.hasNext()) {
-            Entry<Series, Map<Integer, Watch>> entry = iter.next();
-            Map<Integer, Watch> watches = entry.getValue();
-            Watch removed = watches.remove(serial);
-            if (watches.isEmpty()) {
-                iter.remove();
-            }
-            if (removed != null) {
+            Entry<Series, Map<String, Watch>> entry = iter.next();
+            Map<String, Watch> watches = entry.getValue();
+            if (watches.get(name) == watch) {
+                watches.remove(name);
+                if (watches.isEmpty()) {
+                    iter.remove();
+                }
                 return;
             }
         }
@@ -174,10 +182,10 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     @Override
     public Collection<Watch> watches() {
         List<Watch> all = new ArrayList<>();
-        for (Map<Integer, Watch> watches : simpleWatches.values()) {
+        for (Map<?, Watch> watches : simpleWatches.values()) {
             all.addAll(watches.values());
         }
-        for (Map<Integer, Watch> watches : patternWatches.values()) {
+        for (Map<?, Watch> watches : patternWatches.values()) {
             all.addAll(watches.values());
         }
         return all;
@@ -187,15 +195,15 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     public Collection<Watch> wachtesFor(Series series) {
         if (!series.isPattern()) {
             // this is the usual path called while polling for data so this should not be too expensive
-            Map<Integer, Watch> watches = simpleWatches.get(series);
+            Map<?, Watch> watches = simpleWatches.get(series);
             return watches == null ? emptyList() : unmodifiableCollection(watches.values());
         }
         if (series.equalTo(Series.ANY)) {
             return watches();
         }
-        Map<Integer, Watch> seriesWatches = patternWatches.get(series);
+        Map<?, Watch> seriesWatches = patternWatches.get(series);
         Collection<Watch> watches = seriesWatches == null ? emptyList() : seriesWatches.values();
-        for (Map<Integer, Watch> simple : simpleWatches.values()) {
+        for (Map<?, Watch> simple : simpleWatches.values()) {
             for (Watch w : simple.values()) {
                 if (series.matches(w.watched.series)) {
                     if (!(watches instanceof ArrayList)) {
@@ -209,6 +217,8 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
     }
 
     private void checkWatches() {
+        long start = System.currentTimeMillis();
+        collectWatches();
         try {
             checkWatches(simpleWatches.values());
             checkWatches(patternWatches.values());
@@ -216,11 +226,59 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
         } catch (Exception ex) {
             LOGGER.log(java.util.logging.Level.FINE, "Failed to check watches", ex);
         }
+        evalLoopTime.set(System.currentTimeMillis() - start);
+    }
+
+    private void collectWatches() {
+        List<MonitoringWatchSource> sources = serviceLocator.getAllServices(MonitoringWatchSource.class);
+        Map<String, Watch> collectedBefore = collectedWatches;
+        if (sources.isEmpty() && collectedBefore.isEmpty()) {
+            return; // nothing to do
+        }
+        Set<String> notYetCollectedWatches = new HashSet<>(collectedBefore.keySet());
+        MonitoringWatchCollector collector = new MonitoringWatchCollector() {
+            @Override
+            public WatchBuilder watch(CharSequence series, String name, String unit) {
+                return new WatchBuilder() {
+                    @Override
+                    public WatchBuilder with(String level, long startThreshold, Number startForLast,
+                            boolean startOnAverage, Long stopTheshold, Number stopForLast, boolean stopOnAverage) {
+                        notYetCollectedWatches.remove(name);
+                        Watch watch = collectedBefore.get(name);
+                        if (watch == null) {
+                            watch = new Watch(name, new Metric(new Series(series.toString()), Unit.fromShortName(unit)));
+                        }
+                        Watch updated = watch.with(level, startThreshold, startForLast, startOnAverage, stopTheshold,
+                                stopForLast, stopOnAverage);
+                        if (updated != watch) {
+                            addWatch(updated); // this stops and removes existing watch for that name
+                            collectedBefore.put(name, updated);
+                        }
+                        return this;
+                    }
+                };
+            }
+        };
+        for (MonitoringWatchSource source : sources) {
+            try {
+                source.collect(collector);
+            } catch (Exception ex) {
+                LOGGER.log(java.util.logging.Level.FINE,
+                        "Failed to collect watch source " + source.getClass().getSimpleName(), ex);
+            }
+        }
+        if (!notYetCollectedWatches.isEmpty()) {
+            for (String name : notYetCollectedWatches) {
+                removeWatch(collectedBefore.get(name));
+                collectedBefore.remove(name);
+            }
+        }
     }
 
     private AlertStatistics computeStatistics() {
         AlertStatistics stats = new AlertStatistics();
         stats.changeCount = Alert.getChangeCount();
+        stats.watches = watchesByName.size();
         if (alerts.isEmpty()) {
             return stats;
         }
@@ -244,20 +302,24 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
         return stats;
     }
 
-    private void checkWatches(Collection<Map<Integer, Watch>> watches) {
-        for (Map<Integer, Watch> group : watches) {
+    private void checkWatches(Collection<? extends Map<?, Watch>> watches) {
+        for (Map<?, Watch> group : watches) {
             for (Watch watch : group.values()) {
-                try {
-                    checkWatch(watch);
-                } catch (Exception ex) {
-                    LOGGER.log(java.util.logging.Level.FINE, "Failed to check watch : " + watch, ex);
+                if (watch.isStopped()) {
+                    removeWatch(watch);
+                } else {
+                    try {
+                        checkWatch(watch);
+                    } catch (Exception ex) {
+                        LOGGER.log(java.util.logging.Level.FINE, "Failed to check watch : " + watch, ex);
+                    }
                 }
             }
         }
     }
 
     private void checkWatch(Watch watch) {
-        for (Alert newlyRaised : watch.check(monitoringDataRepository)) {
+        for (Alert newlyRaised : watch.check(monitoringData)) {
             Deque<Alert> seriesAlerts = alerts.computeIfAbsent(newlyRaised.getSeries(),
                     key -> new ConcurrentLinkedDeque<>());
             seriesAlerts.add(newlyRaised);
@@ -282,4 +344,5 @@ public class InMemoryAlarmService extends ConfigListeningService implements Aler
         }
         return false;
     }
+
 }

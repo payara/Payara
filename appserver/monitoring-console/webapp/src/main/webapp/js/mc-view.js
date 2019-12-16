@@ -53,7 +53,7 @@ MonitoringConsole.View = (function() {
         trace: 'Request Tracing',
         map: 'Cluster Map Storage Statistics',
         topic: 'Cluster Topic IO Statistics',
-        mc: 'Monitoring Console Internals',
+        monitoring: 'Monitoring Console Internals',
         health: 'Health Checks',
         other: 'Other',
     };

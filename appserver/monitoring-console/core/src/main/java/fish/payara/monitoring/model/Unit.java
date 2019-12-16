@@ -15,7 +15,7 @@ public enum Unit {
                 return u;
             }
         }
-        return Unit.COUNT;
+        throw new IllegalArgumentException("Unknown unit short name: " + shortName);
     }
 
     private final String shortName;

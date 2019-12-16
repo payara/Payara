@@ -42,6 +42,8 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
@@ -72,7 +74,7 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck
         extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker>
-        implements MonitoringDataSource {
+        implements MonitoringDataSource, MonitoringWatchSource {
 
     private final GcUsage youngHealthCheck = new GcUsage();
     private final GcUsage oldHealthCheck = new GcUsage();
@@ -112,6 +114,11 @@ public class GarbageCollectorHealthCheck
         }
 
         return result;
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health TotalGcPercentage", "GC Percentage", 10, true);
     }
 
     @Override
