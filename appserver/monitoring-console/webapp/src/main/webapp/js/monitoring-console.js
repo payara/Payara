@@ -147,6 +147,13 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
+	const TEXT_CPU_USAGE = "Requires *CPU Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _CPU Usage_ tab and check *'enabled'*";
+	const TEXT_HEAP_USAGE = "Requires *Heap Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Heap Usage_ tab and check *'enabled'*";
+	const TEXT_GC_PERCENTAGE = "Requires *Garbage Collector HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Garbage Collector_ tab and check *'enabled'*";
+	const TEXT_MEM_USAGE = "Requires *Machine Memory HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Machine Memory Usage_ tab and check *'enabled'*";
+	const TEXT_POOL_USAGE = "Requires *Connection Pool HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Connection Pool_ tab and check *'enabled'*";
+	const TEXT_LIVELINESS = "Requires *MicroProfile HealthCheck Checker* to be enabled: Goto _Configurations_ => _HealthCheck_ => _MicroProfile HealthCheck Checker_ tab and check *'enabled'*";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
@@ -228,31 +235,31 @@ MonitoringConsole.Model = (function() {
 						{ series: 'ns:health CpuUsage', unit: 'percent',
           					grid: { column: 0, item: 0},
           					axis: { max: 100 },
-          				},
+          					status: { missing : { hint: TEXT_CPU_USAGE }}},
 						{ series: 'ns:health HeapUsage', unit: 'percent',
           					grid: { column: 0, item: 1},
           					axis: { max: 100 },
-          				},
+          					status: { missing : { hint: TEXT_HEAP_USAGE }}},
 						{ series: 'ns:health TotalGcPercentage', unit: 'percent',
           					grid: { column: 0, item: 2},
           					axis: { max: 30 },
-          				},
+          					status: { missing : { hint: TEXT_GC_PERCENTAGE }}},
 						{ series: 'ns:health PhysicalMemoryUsage', unit: 'percent',
           					grid: { column: 0, item: 4},
           					axis: { max: 100 },
-          				},
+          					status: { missing : { hint: TEXT_MEM_USAGE }}},
 						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series',
           					grid: { column: 1, item: 3},
           					axis: { max: 100 },          					
-          				},
+          					status: { missing : { hint: TEXT_POOL_USAGE }}},
 						{ series: 'ns:health LivelinessDownCount', unit: 'count',
           					grid: { column: 3, item: 3},
           					options: { noCurves: true },
-          				},
+          					status: { missing : { hint: TEXT_LIVELINESS }}},
           				{ series: 'ns:health LivelinessErrorCount', unit: 'count',
           					grid: { column: 2, item: 3},
           					options: { noCurves: true },
-          				},
+          					status: { missing : { hint: TEXT_LIVELINESS }}},
 						{ series: 'ns:health *', unit: 'percent', type: 'alert',
           					grid: { column: 1, item: 0, span: 3},
           				}, 
@@ -981,7 +988,8 @@ MonitoringConsole.Model = (function() {
 					seriesData.points = points;				
 				}
 			});
-			return data.filter(seriesData => seriesData.points.length >= 2);
+			return data.filter(seriesData => seriesData.points.length >= 2 
+				&& seriesData.points[seriesData.points.length - 2] > startOfLastMinute);
 		}
 
 		function adjustDecimals(data, factor, divisor) {
