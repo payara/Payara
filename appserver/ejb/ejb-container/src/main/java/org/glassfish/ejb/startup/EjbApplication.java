@@ -177,7 +177,7 @@ public class EjbApplication
     }
 
     /**
-     * Initial phase of continer initialization.  This creates the concrete container
+     * Initial phase of container initialization.  This creates the concrete container
      * instance for each EJB component, registers JNDI entries, etc.  However, no
      * EJB bean instances or invocations occur during this phase.  Those must be
      * delayed until start() is called.

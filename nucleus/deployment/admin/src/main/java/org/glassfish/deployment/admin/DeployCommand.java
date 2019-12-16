@@ -405,7 +405,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (hotDeploy && !appState.isPresent()) {
                 ApplicationState applicationState = new ApplicationState(name, path, initialContext);
                 applicationState.setTarget(target);
-                hotSwapService.addApplicationState(applicationState);
                 appState = Optional.of(applicationState);
             }
 
@@ -425,9 +424,12 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             ApplicationConfigInfo savedAppConfig
                     = new ApplicationConfigInfo(apps.getModule(Application.class, name));
             Properties undeployProps = null;
-            if (!hotDeploy || descriptorChanged) {
+            if (appState.map(ApplicationState::isInactive).orElse(true)) {
                 undeployProps = handleRedeploy(name, report, context);
             }
+            appState.filter(ApplicationState::isInactive)
+                    .ifPresent(hotSwapService::addApplicationState);
+
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
@@ -548,7 +550,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             savedAppConfig.store(appProps);
 
-            deploymentContext.addTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, hotDeploy);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_VIRTUAL_SERVERS, previousVirtualServers);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);

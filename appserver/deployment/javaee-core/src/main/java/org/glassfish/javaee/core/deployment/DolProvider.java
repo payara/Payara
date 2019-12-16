@@ -197,6 +197,15 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             if (application.isVirtual()) {
                 ModuleDescriptor md = application.getStandaloneBundleDescriptor().getModuleDescriptor();
                 md.setModuleName(name);
+
+                if (appState.filter(ApplicationState::isActive).isPresent()) {
+                    application.getStandaloneBundleDescriptor().setClassLoader(cl);
+                    dc.addModuleMetaData(application.getStandaloneBundleDescriptor());
+                    for (RootDeploymentDescriptor extension : application.getStandaloneBundleDescriptor().getExtensionsDescriptors()) {
+                        extension.setClassLoader(cl);
+                        dc.addModuleMetaData(extension);
+                    }
+                }
             }
 
             try {
@@ -248,8 +257,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 dc.addModuleMetaData(extension);
             }
         }
-        Boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
-        if (!Boolean.TRUE.equals(hotDeploy)) {
+        Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
+        if (!appState.isPresent()) {
             addModuleConfig(dc, application);
         }
         validateKeepStateOption(dc, params, application);

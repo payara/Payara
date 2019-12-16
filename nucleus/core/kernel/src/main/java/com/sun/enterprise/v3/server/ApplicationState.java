@@ -41,7 +41,6 @@ package com.sun.enterprise.v3.server;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,6 +84,7 @@ public class ApplicationState {
     private Map<String, Object> descriptorMetadata = Collections.emptyMap();
     private Map<String, Object> modulesMetaData = Collections.emptyMap();
     private Set<String> classesChanged = Collections.emptySet();
+
     private boolean active;
 
     private static final String WEB_INF = "WEB-INF";
@@ -150,6 +150,14 @@ public class ApplicationState {
         return sniffers;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public boolean isInactive() {
+        return !active;
+    }
+
     public void setSniffers(Collection<? extends Sniffer> sniffers) {
         final Set<String> snifferTypes = sniffers.stream()
                 .map(s -> Sniffer.class.cast(s))
@@ -162,12 +170,10 @@ public class ApplicationState {
         }
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
     public void start(ExtendedDeploymentContext newContext, Events events) {
+        validateInactiveState();
         this.active = true;
+
         newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
         newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
         this.getDescriptorMetadata()
@@ -196,6 +202,7 @@ public class ApplicationState {
     }
 
     public boolean isClasschanged(Class clazz) {
+        validateActiveState();
         return this.classesChanged.contains(clazz.getName());
     }
 
@@ -239,6 +246,18 @@ public class ApplicationState {
                 }
             }
             previousClassLoaders.clear();
+        }
+    }
+
+    private void validateActiveState() {
+        if (!active) {
+            throw new IllegalStateException(String.format("Application [%s] state must be active.", name));
+        }
+    }
+
+    private void validateInactiveState() {
+        if (active) {
+            throw new IllegalStateException(String.format("Application [%s] state must not be active.", name));
         }
     }
 

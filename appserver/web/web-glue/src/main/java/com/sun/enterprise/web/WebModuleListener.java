@@ -115,6 +115,7 @@ final class WebModuleListener
      * Process the START event for an associated WebModule
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the context we are associated with

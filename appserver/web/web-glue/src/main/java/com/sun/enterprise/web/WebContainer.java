@@ -180,7 +180,6 @@ import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -210,6 +209,8 @@ import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.v3.server.ApplicationState;
+import com.sun.enterprise.v3.server.HotSwapService;
 import com.sun.enterprise.v3.services.impl.ContainerMapper;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
@@ -217,7 +218,7 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
-import org.glassfish.deployment.common.DeploymentProperties;
+import java.util.Optional;
 
 /**
  * Web container service
@@ -260,7 +261,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private ComponentEnvManager componentEnvManager;
 
     @Inject
-    @Optional
+    @org.jvnet.hk2.annotations.Optional
     private DasConfig dasConfig;
 
     @Inject
@@ -282,7 +283,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private JavaEEIOUtils javaEEIOUtils;
 
     @Inject
-    @Optional
+    @org.jvnet.hk2.annotations.Optional
     private JCDIService cdiService;
 
     @Inject
@@ -298,6 +299,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Transactions transactions;
+
+    @Inject
+    private HotSwapService hotSwapService;
 
     @Inject
     private LoggingRuntime loggingRuntime;
@@ -1547,7 +1551,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @return
      */
     public List<Result<WebModule>> loadWebModule(WebModuleConfig webModuleConfig, String j2eeApplication, Properties deploymentProperties) {
-        List<Result<WebModule>> results = new ArrayList<Result<WebModule>>();
+        List<Result<WebModule>> results = new ArrayList<>();
         
         String virtualServerIds = webModuleConfig.getVirtualServers();
         List<String> virtualServers = parseStringList(virtualServerIds, " ,");
@@ -1699,7 +1703,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         Map<String, AdHocServletInfo> adHocSubtrees = null;
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
-            Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
+            Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
@@ -1724,7 +1728,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  */
                 webModule.setAvailable(true);
                 return webModule;
-            } else if(Boolean.TRUE.equals(hotDeploy)){
+            } else if (appState.get().isActive()) {
                 webModule.stop();
                 if (webModule.getWebModuleConfig() != webModuleConfig
                         || webModule.getWebBundleDescriptor() != webModuleConfig.getDescriptor()) {
