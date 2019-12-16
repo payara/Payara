@@ -2301,25 +2301,33 @@ MonitoringConsole.View.Components = (function() {
       if (items.length == 0)
         config.style = 'display: none';
       let table = $('<div/>', config);
-      let lastOngoing;
       for (let i = 0; i < items.length; i++) {
-        let item = items[i];
-        item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
-        let endFrame = item.frames[0];
-        let startFrame = item.frames[frames.length - 1];
-        let ongoing = endFrame.until === undefined;
-        let level = endFrame.level;
-        let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
-        let box = $('<div/>', { style: 'border-color:' + color + ';' });
-        box.append(createGeneralGroup(item));
-        box.append(createStatisticsGroup(item));
-        if (ongoing)
-          box.append(createConditionGroup(item));
-        let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
-        table.append(row.append(box));
-        lastOngoing = ongoing;
+        table.append(createAlertRow(items[i]));
       }
       return table;
+    }
+
+    function createAlertRow(item) {
+      item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
+      let endFrame = item.frames[0];
+      let startFrame = item.frames[frames.length - 1];
+      let ongoing = endFrame.until === undefined;
+      let level = endFrame.level;
+      let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
+      let box = $('<div/>', { style: 'border-color:' + color + ';' });
+      box.append($('<input/>', { type: 'checkbox', checked: item.acknowledged, disabled: item.acknowledged })
+        .change(() => acknowledge(item)));
+      box.append(createGeneralGroup(item));
+      box.append(createStatisticsGroup(item));
+      if (ongoing)
+        box.append(createConditionGroup(item));
+      let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
+      row.append(box);
+      return row;
+    }
+
+    function acknowledge(item) {
+      $.ajax({ type: 'POST', url: 'api/alerts/ack/' + item.serial + '/' });
     }
 
     function createConditionGroup(item) {

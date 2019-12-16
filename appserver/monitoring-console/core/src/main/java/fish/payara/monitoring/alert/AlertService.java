@@ -31,6 +31,11 @@ public interface AlertService {
 
     Collection<Alert> alertsMatching(Predicate<Alert> filter);
 
+    default Alert alertBySerial(int serial) {
+        Collection<Alert> matches = alertsMatching(alert -> alert.serial == serial);
+        return matches.isEmpty() ? null : matches.iterator().next();
+    }
+
     default Collection<Alert> alertsFor(Series series) {
         return alertsMatching(alert -> alert.getSeries().equalTo(series));
     }

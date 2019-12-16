@@ -498,6 +498,10 @@ table.tags th, table.tags td {
   border: 1px solid transparent; /* colored via inline style */
   border-left: 30px solid transparent; /* colored via inline style */
 }
+.AlertTable .Item > div > input[type=checkbox] {
+  position: absolute;
+  left: 10px;
+}
 .AlertTable .Item h4 {
   margin: 0;
   padding: 0;

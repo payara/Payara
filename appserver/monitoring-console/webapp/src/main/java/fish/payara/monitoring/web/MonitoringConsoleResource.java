@@ -179,6 +179,15 @@ public class MonitoringConsoleResource {
         return new AlertsResponse(getAlertService().alertsFor(seriesOrNull(series)));
     }
 
+    @POST
+    @Path("/alerts/ack/{serial}")
+    public void acknowledgeAlert(@PathParam("serial") int serial) {
+        Alert alert = getAlertService().alertBySerial(serial);
+        if (alert != null) {
+            alert.acknowledge();
+        }
+    }
+
     @GET
     @Path("/watches/data/")
     public WatchesResponse getWatchesData() {
