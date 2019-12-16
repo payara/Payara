@@ -121,7 +121,7 @@ public class ConnectionPoolHealthCheck
 
     @Override
     public void collect(MonitoringWatchCollector collector) {
-        collectUsage(collector, "ns:health PoolUsage", "Connection Pool Usage", 5, false);
+        collectUsage(collector, "ns:health @:* PoolUsage", "Connection Pool Usage", 5, false);
     }
 
     @Override
