@@ -44,9 +44,6 @@ import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.Math.max;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**

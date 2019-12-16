@@ -4,6 +4,7 @@ import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.FINE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -218,13 +219,17 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
 
     private void checkWatches() {
         long start = System.currentTimeMillis();
-        collectWatches();
+        try {
+            collectWatches();
+        } catch (Exception ex) {
+            LOGGER.log(FINE, "Fialed to collect watches", ex);
+        }
         try {
             checkWatches(simpleWatches.values());
             checkWatches(patternWatches.values());
             statistics.set(computeStatistics());
         } catch (Exception ex) {
-            LOGGER.log(java.util.logging.Level.FINE, "Failed to check watches", ex);
+            LOGGER.log(FINE, "Failed to check watches", ex);
         }
         evalLoopTime.set(System.currentTimeMillis() - start);
     }

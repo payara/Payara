@@ -82,7 +82,9 @@ public final class Watch implements WatchBuilder {
     public void stop() {
         stopped.set(true);
         for (State s : statesByInstanceSeries.values()) {
-            s.ongoing.stop(WHITE);
+            if (s.ongoing != null) {
+                s.ongoing.stop(WHITE);
+            }
         }
     }
 
