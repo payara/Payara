@@ -68,7 +68,12 @@ import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
-import org.apache.naming.resources.*;
+import org.apache.naming.resources.DirContextURLStreamHandler;
+import org.apache.naming.resources.JarFileResourcesProvider;
+import org.apache.naming.resources.ProxyDirContext;
+import org.apache.naming.resources.WebDirContext;
+import org.apache.naming.resources.Resource;
+import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.web.util.ExceptionUtils;
@@ -252,12 +257,7 @@ public class WebappClassLoader
     protected JarFile[] jarFiles = new JarFile[0];
 
     /**
-     * Used in synchronize blocks since we can't use jarFiles directly (mutable!)
-     */
-    private final Object jarFilesPropertyLock = new Object();
-
-    /**
-     * Lock to synchronize closing and opening of jar
+     * Lock to synchronize closing, opening and accessing of jar
      */
     protected final Object jarFilesLock = new Object();
 
@@ -838,7 +838,7 @@ public class WebappClassLoader
             logger.log(Level.FINER, "addJar({0})", jar);
         }
 
-        synchronized (jarFilesPropertyLock) {
+        synchronized (jarFilesLock) {
             // See IT 11417
             super.addURL(getURL(file));
 
@@ -1884,55 +1884,57 @@ public class WebappClassLoader
         ClassLoaderUtil.releaseLoader(this);
         // END SJSAS 6258619
 
-        started = false;
+        synchronized(jarFilesLock) {
+            started = false;
 
-        int length = files.length;
-        for (int i = 0; i < length; i++) {
-            files[i] = null;
-        }
-
-        length = jarFiles.length;
-        for (int i = 0; i < length; i++) {
-            try {
-                if (jarFiles[i] != null) {
-                    jarFiles[i].close();
-                }
-            } catch (IOException e) {
-                // Ignore
+            int length = files.length;
+            for (int i = 0; i < length; i++) {
+                files[i] = null;
             }
-            jarFiles[i] = null;
+
+            length = jarFiles.length;
+            for (int i = 0; i < length; i++) {
+                try {
+                    if (jarFiles[i] != null) {
+                        jarFiles[i].close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+                jarFiles[i] = null;
+            }
+
+            try {
+                close();
+            } catch (Exception e) {
+                // ignore
+            }
+
+            notFoundResources.clear();
+            resourceEntries.clear();
+            resources = null;
+            repositories = null;
+            repositoryURLs = null;
+            files = null;
+            jarFiles = null;
+            jarRealFiles = null;
+            jarPath = null;
+            jarNames.clear();
+            lastModifiedDates = null;
+            paths = null;
+            hasExternalRepositories = false;
+            parent = null;
+
+            permissionList.clear();
+            permissionsHolder = null;
+            loaderPC.clear();
+
+            if (loaderDir != null) {
+                deleteDir(loaderDir);
+            }
+
+            DirContextURLStreamHandler.unbind(this);
         }
-
-        try {
-            close();
-        } catch (Exception e) {
-            // ignore
-        }
-
-        notFoundResources.clear();
-        resourceEntries.clear();
-        resources = null;
-        repositories = null;
-        repositoryURLs = null;
-        files = null;
-        jarFiles = null;
-        jarRealFiles = null;
-        jarPath = null;
-        jarNames.clear();
-        lastModifiedDates = null;
-        paths = null;
-        hasExternalRepositories = false;
-        parent = null;
-
-        permissionList.clear();
-        permissionsHolder = null;
-        loaderPC.clear();
-
-        if (loaderDir != null) {
-            deleteDir(loaderDir);
-        }
-
-        DirContextURLStreamHandler.unbind(this);
     }
 
 
@@ -2729,7 +2731,7 @@ public class WebappClassLoader
         entry = findResourceInternalFromRepositories(name, path);
 
         if (entry == null) {
-            synchronized (jarFilesPropertyLock) {
+            synchronized (jarFilesLock) {
                 entry = findResourceInternalFromJars(name, path);
             }
         }
