@@ -121,7 +121,7 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p9</grizzly.version>
+        <grizzly.version>2.4.3.payara-p10</grizzly.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
         <jersey.version>2.29.1.payara-p1</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
