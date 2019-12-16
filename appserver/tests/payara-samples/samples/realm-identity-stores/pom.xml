@@ -61,7 +61,6 @@ made subject to such option by the copyright holder. -->
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
             <scope>test</scope>
-            <version>2.29.payara-p2</version>
         </dependency>
     </dependencies>
 </project>

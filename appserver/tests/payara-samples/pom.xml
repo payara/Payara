@@ -71,6 +71,7 @@
             <dependency>
                 <groupId>jakarta.platform</groupId>
                 <artifactId>jakarta.jakartaee-api</artifactId>
+                <version>${jakartaee.api.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -296,6 +297,7 @@
                     <dependency>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
+                        <version>${jakarta.annotation-api.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
