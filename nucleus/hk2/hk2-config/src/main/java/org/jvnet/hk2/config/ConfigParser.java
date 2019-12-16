@@ -42,6 +42,8 @@
 
 package org.jvnet.hk2.config;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
@@ -75,7 +77,7 @@ import org.jvnet.hk2.config.Dom.Child;
  */
 public class ConfigParser {
 
-    private static final Logger LOGGER = Logger.getAnonymousLogger();
+    private static final Logger LOGGER = Logger.getLogger(ConfigParser.class.getName());
 
     /**
      * This is where we put parsed inhabitants into.
@@ -107,6 +109,7 @@ public class ConfigParser {
     }
 
     public void parse(XMLStreamReader in, DomDocument document, Dom parent) throws XMLStreamException {
+        this.errors.clear();
         try {
             in.nextTag();
             document.root = handleElement(in, document, parent);
@@ -154,6 +157,9 @@ public class ConfigParser {
         }
     }
 
+    /**
+     * @return all the logged problems from the last object parsed.
+     */
     public List<String> getErrors() {
         return errors;
     }
@@ -182,22 +188,22 @@ public class ConfigParser {
             // Get the element name
             String localName = in.getLocalName();
 
-            handleError("Ignoring unrecognized element "+in.getLocalName() + " at " + in.getLocation(), Level.SEVERE);
+            log(SEVERE, "Ignoring unrecognized element %s at %s", in.getLocalName(), in.getLocation());
 
             // flush the sub element content from the parser
             int depth=1;
             while(depth>0) {
                 final int tag = in.nextTag();
                 if (tag==START_ELEMENT && in.getLocalName().equals(localName)) {
-                    handleError("Found child of same type " + localName + " ignoring too", Level.FINE);
+                    log(FINE, "Found child of same type %s ignoring too", localName);
                     depth++;
                 }
                 if (tag==END_ELEMENT && in.getLocalName().equals(localName)) {
-                    handleError("Closing element type " + localName, Level.FINE);
+                    log(FINE, "Closing element type %s", localName);
                     depth--;
                 }
                 if (tag == START_ELEMENT) {
-                    handleError("Jumping over " + in.getLocalName(), Level.FINE);
+                    log(FINE, "Jumping over %s", in.getLocalName());
                 }
             }
             return null;
@@ -205,12 +211,23 @@ public class ConfigParser {
         return handleElement(in,document,parent,model);
     }
 
-    private void handleError(String errorMessage, Level level) {
+    /**
+     * If the provided level is not provided, this method will do nothing.
+     * Otherwise, it will format the message and add it to {@link #getErrors()}. If
+     * {@link #logErrors} is true, this method will also log the message.
+     * 
+     * @param level          the level to log at
+     * @param baseLogMessage the message to be passed to {@see String#format(String,
+     *                       Object...)}
+     * @param parameters     the parameters to be filled into the base log message
+     */
+    private void log(Level level, String baseLogMessage, Object... parameters) {
         if (level != null && LOGGER.isLoggable(level)) {
+            String logMessage = String.format(baseLogMessage, parameters);
             if (logErrors) {
-                LOGGER.log(level, errorMessage);
+                LOGGER.log(level, logMessage);
             }
-            this.errors.add(errorMessage);
+            this.errors.add(logMessage);
         }
     }
 
