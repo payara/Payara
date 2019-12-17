@@ -80,22 +80,22 @@ public class DeployCommandParameters extends OpsParams {
         return force;
     }
 
-    @Param(name = ParameterNames.HOT_DEPLOY, alias = "hotDeploy", optional = true, defaultValue = "false")
+    @Param(name = ParameterNames.HOT_DEPLOY, alias = "hotDeploy", defaultValue = "false", optional = true)
     public Boolean hotDeploy = false;
     public Boolean isHotDeploy() {
         return hotDeploy;
     }
 
-    @Param(name = ParameterNames.SOURCES_CHANGED, separator=',', optional = true)
+    @Param(name = ParameterNames.SOURCES_CHANGED, alias = "sourcesChanged", separator = ',', optional = true)
     public String[] sourcesChanged;
     public String[] getSourcesChanged() {
         return sourcesChanged;
     }
 
-    @Param(name = ParameterNames.DESCRIPTOR_CHANGED, optional=true, defaultValue="false")
-    public Boolean descriptorChanged = false;
-    public Boolean isDescriptorChanged() {
-        return descriptorChanged;
+    @Param(name = ParameterNames.METADATA_CHANGED, alias = "metadataChanged", defaultValue = "false", optional = true)
+    public Boolean metadataChanged = false;
+    public Boolean isMetadataChanged() {
+        return metadataChanged;
     }
 
     @Param(optional=true, defaultValue="false")
@@ -304,8 +304,8 @@ public class DeployCommandParameters extends OpsParams {
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
         public static final String HOT_DEPLOY = "hotdeploy";
-        public static final String SOURCES_CHANGED = "sourcesChanged";
-        public static final String DESCRIPTOR_CHANGED = "descriptorChanged";
+        public static final String SOURCES_CHANGED = "sourceschanged";
+        public static final String METADATA_CHANGED = "metadatachanged";
     }
     
 }

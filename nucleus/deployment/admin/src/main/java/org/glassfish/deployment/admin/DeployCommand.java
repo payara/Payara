@@ -274,7 +274,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
-            if (hotDeploy && !descriptorChanged) {
+            if (hotDeploy && !metadataChanged) {
                 hotSwapService.getApplicationState(path)
                         .ifPresent(s -> s.start(initialContext, events));
             } else {
