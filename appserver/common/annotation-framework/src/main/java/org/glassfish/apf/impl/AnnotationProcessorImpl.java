@@ -139,7 +139,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         errorCount=0;
         
         for (Class c : scanner.getElements()) {
-            if (state == null || state.isClasschanged(c)) {
+            if (state == null || state.isClassChanged(c)) {
                 result.add(process(ctx, c));
             }
         }

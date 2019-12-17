@@ -201,7 +201,7 @@ public class ApplicationState {
         );
     }
 
-    public boolean isClasschanged(Class clazz) {
+    public boolean isClassChanged(Class clazz) {
         validateActiveState();
         return this.classesChanged.contains(clazz.getName());
     }
