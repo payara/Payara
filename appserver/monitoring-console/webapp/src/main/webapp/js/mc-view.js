@@ -292,10 +292,13 @@ MonitoringConsole.View = (function() {
                 { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
                 { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
             ]},
-            { label: 'Display', input: [
+            { label: 'Lines', input: [
                 { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
                 { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
+            ]},
+            { label: 'Background', input: [
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Gradient', type: 'checkbox', value: !options.noGradient, onChange: (widget, checked) => options.noGradient = !checked},
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
@@ -450,7 +453,8 @@ MonitoringConsole.View = (function() {
             if (widget.options.perSec)
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
-            let background = Colors.hex2rgba(color, alpha);
+            let background1 = Colors.hex2rgba(color, alpha);
+            let background = widget.options.noGradient === true ? background1 : [ background1, Colors.hex2rgba(color, 0) ];
             let status = seriesData.assessments.status;
             let highlight = status === undefined ? undefined : colorModel.default(status);
             let item = { 

@@ -83,6 +83,7 @@ options    = {
 	noCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
+	noGradient:boolean,
 	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }
@@ -281,7 +282,7 @@ LEGEND_ITEM     = { label, value, color, background, status, highlight }
 label           = string
 value           = string | number
 color           = string
-background      = string
+background      = string | [ string ]
 status          = Status
 highlight       = string
 
@@ -290,7 +291,7 @@ highlight       = string
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
 * `color` is the color of the line or bar used to indicate the item, 
-* `background` is the background color of the line or bar should it use a fill
+* `background` is the background color of the line or bar should it use a fill, if an array is used those are the start and end color of a linear gradient
 * `highlight` is the color used to highlight the status of the text
 
 

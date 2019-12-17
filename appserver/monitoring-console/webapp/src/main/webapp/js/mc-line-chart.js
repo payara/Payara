@@ -195,6 +195,13 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.background;
+    if (Array.isArray(bgColor) && bgColor.length == 2 && widget.options.noFill !== true) {
+      let ctx = document.getElementById(widget.target).getContext('2d');
+      let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, bgColor[0]);   
+      gradient.addColorStop(1, bgColor[1]);
+      bgColor = gradient;      
+    }
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
