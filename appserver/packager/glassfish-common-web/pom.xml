@@ -128,43 +128,8 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>security-ee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.sun.pkg</groupId>
             <artifactId>pkg-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>annotation-framework</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
-            <artifactId>deployment-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
-            <artifactId>deployment-javaee-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
@@ -172,34 +137,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>appserver-cli</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>${jna.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline-terminal-jna</artifactId>
             <version>${jline-terminal-jna}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>admin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.orb</groupId>
@@ -220,16 +160,6 @@
             <artifactId>ha-file-store</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- TODO: move to glassfish-nucleus after nucleus distro build moves
-        to its own workspace -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>appserver-base</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <!-- TODO: move to glassfish-cluster after nucleus distro build moves
-        to its own workspace or create dedicated cluster package-->
         <dependency>
             <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>load-balancer-admin</artifactId>
@@ -240,18 +170,6 @@
             <groupId>org.glassfish.external</groupId>
             <artifactId>schema2beans-repackaged</artifactId>
         </dependency>          
-        <dependency>
-            <groupId>fish.payara.server.internal.extras</groupId>
-            <artifactId>javaee-frag</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.extras</groupId>
-            <artifactId>appserv-rt-frag</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>glassfish-embedded-shell-frag</artifactId>
@@ -265,129 +183,9 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>backup</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.load-balancer</groupId>
             <artifactId>gf-load-balancer-connector</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jacc.provider.inmemory</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jacc.provider.file</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jaspic.provider.framework</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>libpam4j-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.resourcebase.resources</groupId>
-            <artifactId>nucleus-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.resources</groupId>
-            <artifactId>resources-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.resource</groupId>
-            <artifactId>jakarta.resource-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.management.j2ee</groupId>
-            <artifactId>jakarta.management.j2ee-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.security.auth.message</groupId>
-            <artifactId>jakarta.security.auth.message-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.security.jacc</groupId>
-            <artifactId>jakarta.security.jacc-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.transaction</groupId>
-            <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>jakarta.persistence</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.interceptor</groupId>
-            <artifactId>jakarta.interceptor-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-osgi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-extra-jdk-packages</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.istack</groupId>
-            <artifactId>istack-commons-runtime</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-api-osgi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
         </dependency>
     </dependencies>
 </project>
