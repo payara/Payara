@@ -279,19 +279,21 @@ Describes the model expected by the `Legend` component.
 
 ```
 LEGEND          = [LEGEND_ITEM]
-LEGEND_ITEM     = { label, value, color, background, assessments }
+LEGEND_ITEM     = { label, value, color, background, status, highlight }
 label           = string
 value           = string | number
 color           = string
 background      = string
-assessments     = ASSESSMENTS
+status          = Status
+highlight       = string
+
 ```
 * If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
 * `color` is the color of the line or bar used to indicate the item, 
 * `background` is the background color of the line or bar should it use a fill
-* `assessments` help to understand or classify the given value qualitatively 
+* `highlight` is the color used to highlight the status of the text
 
 
 ### Indicator API
@@ -332,7 +334,8 @@ Describes the model expected by the `AlertTable` component.
 This component gives a tabular overview of alerts that occured for the widget `series`.
 
 ```
-ALERT_TABLE  = { id, items }
+ALERT_TABLE  = { id, verbose, items }
+brief        = boolean
 items        = ALERT_ITEM
 ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch }
 serial       = number
@@ -356,6 +359,7 @@ start        = CONDITION
 stop         = CONDITION
 CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
 ```
+* `verbose` default is `true`, `false` to get a condensed output that skips some of the properties in the output
 * `since` is the start date as timestamp or JS date
 * `ALERT_ITEM.color` refers to the series/instance color whereas `ALERT_FRAME.color` refers to the level color
 * `items` and `frames` can be given in any order but might be changed to a particular order while processing the model

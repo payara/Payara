@@ -274,6 +274,24 @@ public final class Watch implements WatchBuilder {
         }
     }
 
+    @Override
+    public Watch red(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
+            Number stopFor, boolean stopOnAverage) {
+        return with("red", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+    }
+
+    @Override
+    public Watch amber(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
+            Number stopFor, boolean stopOnAverage) {
+        return with("amber", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+    }
+
+    @Override
+    public Watch green(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
+            Number stopFor, boolean stopOnAverage) {
+        return with("green", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+    }
+
     private static boolean isEqual(Circumstance sample, long startThreshold, Number startForLast,
             boolean startOnAverage, Long stopTheshold, Number stopForLast, boolean stopOnAverage) {
         return isEqual(sample.start, startThreshold, startForLast, startOnAverage)
@@ -285,18 +303,23 @@ public final class Watch implements WatchBuilder {
             return sample.isNone();
         }
         return !sample.isNone()
-                && sample.threshold == threshold.longValue()
+                && sample.threshold == Math.abs(threshold.longValue())
                 && Objects.equals(sample.forLast, forLast)
                 && sample.onAverage == onAverage;
     }
 
     private static Circumstance create(Level level, long startThreshold, Number startForLast,
             boolean startOnAverage, Long stopTheshold, Number stopForLast, boolean stopOnAverage) {
-        Operator startComparison = level == GREEN ? Condition.Operator.GE : Condition.Operator.GT;
-        Condition start = new Condition(startComparison, startThreshold, startForLast, startOnAverage);
+        Operator startComparison = startThreshold < 0 
+                ? level == GREEN ? Operator.LE : Operator.LT
+                : level == GREEN ? Operator.GE : Operator.GT;
+        Operator stopOperator = stopTheshold != null && stopTheshold < 0
+                ? Operator.GT
+                : Operator.LT;
+        Condition start = new Condition(startComparison, Math.abs(startThreshold), startForLast, startOnAverage);
         Condition stop = stopTheshold == null
                 ? Condition.NONE
-                : new Condition(Condition.Operator.LT, stopTheshold, stopForLast, stopOnAverage);
+                : new Condition(stopOperator, Math.abs(stopTheshold), stopForLast, stopOnAverage);
         return new Circumstance(level, start, stop);
     }
 

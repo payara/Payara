@@ -53,7 +53,7 @@ MonitoringConsole.Chart.Line = (function() {
     if (index == lastIndex && secondsAgo == 0)
       return 'now';
     if (index == 0 || index == lastIndex && secondsAgo > 0) {
-      if (Math.abs(secondsAgo - 60) <= secondsInterval)
+      if (Math.abs(secondsAgo - 60) <= secondsInterval * 2)
         return '60s ago'; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
       if (Math.abs((secondsAgo % 60) - 60) <= secondsInterval)
         return Math.round(secondsAgo / 60) + 'mins ago';

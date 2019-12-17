@@ -45,7 +45,6 @@ package fish.payara.healthcheck.mphealth;
 import com.sun.enterprise.config.serverbeans.Domain;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAVAILABLE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.net.URI;
@@ -175,10 +174,10 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
         if (!envrionment.isDas() || !getOptions().isEnabled()) {
             return;
         }
-        collector.watch("ns:health LivelinessDownCount", "Liveliness Down Check", "count")
-            .amber(0, null, false, null, null, false);
-        collector.watch("ns:health LivelinessErrorCount", "Liveliness Error Check", "count")
-            .red(0, null, false, null, null, false);
+        collector.watch("ns:health LivelinessUp", "Liveliness UP", "percent")
+            .red(-60, null, false, null, null, false)
+            .amber(-100, null, false, null, null, false)
+            .green(100, null, false, null, null, false);
     }
 
     /**
@@ -195,29 +194,20 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
         if (!envrionment.isDas() || !getOptions().isEnabled()) {
             return;
         }
-        if (priorCollectionTasks != null) {
+        Map<String, Future<Integer>> instances = priorCollectionTasks;
+        if (instances != null) {
             int upCount = 0;
-            int downCount = 0;
-            int errorCount = 0;
-            for (Entry<String, Future<Integer>> instance : priorCollectionTasks.entrySet()) {
+            for (Entry<String, Future<Integer>> instance : instances.entrySet()) {
                 try {
                     int statusCode = instance.getValue().get(10, MILLISECONDS);
                     if (statusCode == HTTP_OK) {
                         upCount++;
-                    } else if (statusCode == HTTP_UNAVAILABLE) {
-                        downCount++;
-                    } else {
-                        errorCount++;
                     }
                 } catch (Exception ex) {
-                    errorCount++;
-                    LOGGER.log(Level.WARNING, "Ping failed for instance " + instance.getKey(), ex);
+                    // not up
                 }
             }
-            collector
-            .collect("LivelinessUpCount", upCount)
-            .collect("LivelinessDownCount", downCount)
-            .collect("LivelinessErrorCount", errorCount);
+            collector.collect("LivelinessUp",100 * upCount / instances.size());
         }
         priorCollectionTasks = pingAllInstances(10000L);
     }
@@ -236,9 +226,6 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
 
             @Pattern(regexp = "[A-Za-z0-9_][A-Za-z0-9\\-_\\.;]*", message = "{server.invalid.name}", payload = Server.class)
             String instanceName = server.getName();
-            if ("server".equals(instanceName)) {
-                continue;
-            }
             tasks.put(instanceName, payaraExecutorService.submit(() -> {
                 // get the remote server's MP HealthCheck config
                 MetricsHealthCheckConfiguration metricsConfig = server.getConfig()
@@ -252,7 +239,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
 
         for (InstanceDescriptor instance : payaraMicro.getClusteredPayaras()) {
             String instanceName = instance.getInstanceName();
-            if (tasks.containsKey(instanceName) || "server".equals(instanceName)) {
+            if (tasks.containsKey(instanceName)) {
                 continue;
             }
             tasks.put(instanceName, payaraExecutorService.submit(() -> {

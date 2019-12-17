@@ -349,7 +349,6 @@ MonitoringConsole.View.Components = (function() {
          let label = model.label;
          let value = model.value;
          let color = model.color;
-         let assessments = model.assessments;
          let strong = value;
          let normal = '';
          if (typeof value === 'string' && value.indexOf(' ') > 0) {
@@ -357,15 +356,15 @@ MonitoringConsole.View.Components = (function() {
             normal = value.substring(value.indexOf(' '));
          }
          let attrs = { style: 'border-color: ' + color + ';' };
-         if (assessments && assessments.status)
-            attrs.class = 'status-' + assessments.status;
+         if (model.status)
+            attrs.class = 'status-' + model.status;
          if (label === 'server') { // special rule for DAS
             label = 'DAS'; 
             attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
          }
          let textAttrs = {};
-         if (assessments && assessments.color)
-           textAttrs.style = 'color: '+assessments.color + ';';
+         if (model.highlight)
+           textAttrs.style = 'color: '+ model.highlight + ';';
          return $('<li/>', attrs)
                .append($('<span/>').text(label))
                .append($('<strong/>', textAttrs).text(strong))
@@ -476,12 +475,12 @@ MonitoringConsole.View.Components = (function() {
         config.style = 'display: none';
       let table = $('<div/>', config);
       for (let i = 0; i < items.length; i++) {
-        table.append(createAlertRow(items[i]));
+        table.append(createAlertRow(items[i], model.verbose));
       }
       return table;
     }
 
-    function createAlertRow(item) {
+    function createAlertRow(item, verbose) {
       item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
       let endFrame = item.frames[0];
       let startFrame = item.frames[frames.length - 1];
@@ -491,9 +490,9 @@ MonitoringConsole.View.Components = (function() {
       let box = $('<div/>', { style: 'border-color:' + color + ';' });
       box.append($('<input/>', { type: 'checkbox', checked: item.acknowledged, disabled: item.acknowledged })
         .change(() => acknowledge(item)));
-      box.append(createGeneralGroup(item));
-      box.append(createStatisticsGroup(item));
-      if (ongoing)
+      box.append(createGeneralGroup(item, verbose));
+      box.append(createStatisticsGroup(item, verbose));
+      if (ongoing && verbose)
         box.append(createConditionGroup(item));
       let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
       row.append(box);
@@ -536,7 +535,7 @@ MonitoringConsole.View.Components = (function() {
       return desc;
     }
 
-    function createStatisticsGroup(item) {
+    function createStatisticsGroup(item, verbose) {
         let endFrame = item.frames[0];
         let startFrame = item.frames[item.frames.length - 1];
         let duration = durationMs(startFrame, endFrame);
@@ -545,20 +544,20 @@ MonitoringConsole.View.Components = (function() {
         let group = $('<div/>', { 'class': 'Group' });
         appendProperty(group, 'Since', Units.formatTime(startFrame.since));
         appendProperty(group, 'For', formatDuration(duration));
-        if (redStats.count > 0)
+        if (redStats.count > 0 && verbose)
           appendProperty(group, 'Red', redStats.text);
-        if (amberStats.count > 0)
+        if (amberStats.count > 0 && verbose)
           appendProperty(group, 'Amber', amberStats.text);
       return group;
     }
 
-    function createGeneralGroup(item) {
+    function createGeneralGroup(item, verbose) {
       let group = $('<div/>', { 'class': 'Group' });
       appendProperty(group, 'Alert', item.serial);
       appendProperty(group, 'Watch', item.name);
       if (item.series)
         appendProperty(group, 'Series', item.series);
-      if (item.instance)
+      if (item.instance && verbose)
         appendProperty(group, 'Instance', item.instance === 'server' ? 'DAS' : item.instance);
       return group;
     }

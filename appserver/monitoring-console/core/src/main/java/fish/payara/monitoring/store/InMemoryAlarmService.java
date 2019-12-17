@@ -329,9 +329,11 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
                     key -> new ConcurrentLinkedDeque<>());
             seriesAlerts.add(newlyRaised);
             if (seriesAlerts.size() > MAX_ALERTS_PER_SERIES) {
-                if (!removeFirst(seriesAlerts, Alert::isAcknowledged)) {
-                    if (!removeFirst(seriesAlerts, alert -> alert.getLevel() == Level.AMBER)) {
-                        seriesAlerts.removeFirst();
+                if (!removeFirst(seriesAlerts, alert -> alert.getLevel().isLessSevereThan(Level.AMBER))) {
+                    if (!removeFirst(seriesAlerts, Alert::isAcknowledged)) {
+                        if (!removeFirst(seriesAlerts, alert -> alert.getLevel() == Level.AMBER)) {
+                            seriesAlerts.removeFirst();
+                        }
                     }
                 }
             }

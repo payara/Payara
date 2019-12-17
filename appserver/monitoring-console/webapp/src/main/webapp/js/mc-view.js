@@ -431,8 +431,9 @@ MonitoringConsole.View = (function() {
             return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
         let format = Units.converter(widget.unit).format;
-        let palette = MonitoringConsole.Model.Colors.palette();
-        let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
+        const colorModel = MonitoringConsole.Model.Colors;
+        let palette = colorModel.palette();
+        let alpha = colorModel.opacity() / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -450,12 +451,15 @@ MonitoringConsole.View = (function() {
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
             let background = Colors.hex2rgba(color, alpha);
+            let status = seriesData.assessments.status;
+            let highlight = status === undefined ? undefined : colorModel.default(status);
             let item = { 
                 label: label, 
                 value: value, 
                 color: color,
                 background: background,
-                assessments: seriesData.assessments,
+                status: status,
+                highlight: highlight,
             };
             legend.push(item);
             seriesData.legend = item;
@@ -481,7 +485,8 @@ MonitoringConsole.View = (function() {
                 value: level == undefined ? 'White' : level.charAt(0).toUpperCase() + level.slice(1),
                 color: color,
                 background: Colors.hex2rgba(color, alpha),
-                assessments: { status: level, color: colorModel.default(level) },                
+                status: level, 
+                highlight: colorModel.default(level),                
             };
         });
     }
@@ -517,7 +522,8 @@ MonitoringConsole.View = (function() {
             let palette = MonitoringConsole.Model.Colors.palette();
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
-                let include = widget.type === 'alert' || alert.level === 'red' || alert.level === 'amber';
+                let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
+                //TODO use another compoent to show a show indication of acknowledged alerts 
                 if (include) {
                     let frames = alert.frames.map(function(frame) {
                         return {
@@ -542,7 +548,7 @@ MonitoringConsole.View = (function() {
                 }
             }
         }
-        return { id: widget.target + '_alerts', items: items };
+        return { id: widget.target + '_alerts', verbose: widget.type === 'alert', items: items };
     }
 
     /**

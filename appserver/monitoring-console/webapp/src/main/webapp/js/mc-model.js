@@ -136,7 +136,7 @@ MonitoringConsole.Model = (function() {
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
 					]
 				},
-				health: {
+				health_checks: {
 					name: 'Health Checks',
 					numberOfColumns: 4,
 					widgets: [
@@ -157,15 +157,12 @@ MonitoringConsole.Model = (function() {
           					axis: { max: 100 },
           					status: { missing : { hint: TEXT_MEM_USAGE }}},
 						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series',
-          					grid: { column: 1, item: 3},
+          					grid: { column: 2, item: 3},
           					axis: { max: 100 },          					
           					status: { missing : { hint: TEXT_POOL_USAGE }}},
-						{ series: 'ns:health LivelinessDownCount', unit: 'count',
-          					grid: { column: 3, item: 3},
-          					options: { noCurves: true },
-          					status: { missing : { hint: TEXT_LIVELINESS }}},
-          				{ series: 'ns:health LivelinessErrorCount', unit: 'count',
-          					grid: { column: 2, item: 3},
+						{ series: 'ns:health LivelinessUp', unit: 'percent',
+          					grid: { column: 1, item: 3},
+          					axis: { max: 100 },
           					options: { noCurves: true },
           					status: { missing : { hint: TEXT_LIVELINESS }}},
 						{ series: 'ns:health *', unit: 'percent', type: 'alert',
@@ -875,9 +872,15 @@ MonitoringConsole.Model = (function() {
 		function retainCommonTimeFrame(data) {
 			if (!data || data.length == 0)
 				return [];
-			let startOfLastMinute = Date.now() - 62000;
+			let now = Date.now();
+			let startOfLastMinute = now - 60000;
 			let startOfShortestSeries = data.reduce((high, e) => Math.max(e.points[0], high), 0);
-			let startCutoff = Math.min(startOfLastMinute, startOfShortestSeries);
+			let startCutoff = data.length == 1 ? startOfShortestSeries : Math.min(startOfLastMinute, startOfShortestSeries);
+			let endOfShortestSeries = data.reduce((low, e) =>  {
+				let endTime = e.points[e.points.length - 2];
+				return endTime > now - 4000 ? Math.min(endTime, low) : low;
+			}, now);
+			let endCutoff = endOfShortestSeries;
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
 				if (src.length == 4 && src[2] >= startCutoff) {
@@ -888,7 +891,7 @@ MonitoringConsole.Model = (function() {
 				} else {
 					let points = [];
 					for (let i = 0; i < src.length; i += 2) {
-						if (src[i] >= startCutoff) {
+						if (src[i] >= startCutoff && src[i] <= endCutoff) {
 							points.push(src[i]);
 							points.push(src[i+1]);
 						}
@@ -933,7 +936,7 @@ MonitoringConsole.Model = (function() {
 			});
 		}
 
-		function addAssessment(widget, data) {
+		function addAssessment(widget, data, alerts) {
 			data.forEach(function(seriesData) {
 				let status = 'normal';
 				let thresholds = widget.decorations.thresholds;
@@ -954,6 +957,14 @@ MonitoringConsole.Model = (function() {
 						status = 'critical';
 					}
 				}
+				if (Array.isArray(alerts) && alerts.length > 0) {
+					let instance = seriesData.instance;
+					if (alerts.filter(alert => alert.instance == instance && alert.level === 'red').length > 0) {
+						status = 'red';
+					} else if (alerts.filter(alert => alert.instance == instance && alert.level === 'amber').length > 0) {
+						status = 'amber';
+					}
+				}
 				seriesData.assessments = { status: status };
 			});
 		}
@@ -967,7 +978,7 @@ MonitoringConsole.Model = (function() {
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
 						perSecond(data);
-					addAssessment(widget, data);
+					addAssessment(widget, data, widgetResponse.alerts);
 					onDataUpdate({
 						widget: widget,
 						data: data,

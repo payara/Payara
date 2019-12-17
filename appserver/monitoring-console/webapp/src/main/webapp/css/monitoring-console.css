@@ -352,11 +352,9 @@ table.tags th, table.tags td {
   color: #0096D6;
 }
 .Legend li.status-alarming strong {
-  color: gold;
   animation: blinker 2s linear infinite;
 }
 .Legend li.status-critical strong {
-  color: crimson;
   animation: blinker 1s linear infinite;
 }
 .Legend li.status-red strong {

@@ -75,23 +75,26 @@ public interface MonitoringWatchCollector {
 
         /**
          * Start and stop thresholds are given in case a condition exist, otherwise use null.
+         * 
+         * Negative thresholds can be used to express a 'less than' comparison for start while any positive number
+         * expressed a 'greater than' comparison for start. Stop condition is always the other way around. Green level
+         * always also allows equal values to the threshold.
+         * 
          * If a for value is given without the corresponding threshold it is ignored.
          * 
          * For-Values use:
          * 
-         * - {@link Integer} values to refer to n times in a row
-         * - {@link Long} values to refer to n milliseconds
-         * - {@link Double} values to refer to percentage
-         * - {@code null} to not use any for condition, which is same as matching the start condition a single time 
-         *   by the most recent value
+         * - {@link Integer} values to refer to n times in a row - {@link Long} values to refer to n milliseconds -
+         * {@link Double} values to refer to percentage - {@code null} to not use any for condition, which is same as
+         * matching the start condition a single time by the most recent value
          *
-         * @param level "red", "amber", or "green"
+         * @param level          "red", "amber", or "green"
          * @param startThreshold the allowed upper limit, anything above causes an alert
-         * @param startForLast if given, start condition needs to be met for the specified continuance
-         * @param startOnAverage TODO
-         * @param stopTheshold if given, the lower, anything below stops the alert
-         * @param stopForLast if given, stop condition needs to be met for the specified continuance
-         * @param stopOnAverage TODO
+         * @param startForLast   if given, start condition needs to be met for the specified continuance
+         * @param startOnAverage true if start threshold should be compared to the average of the last points
+         * @param stopTheshold   if given, the lower, anything below stops the alert
+         * @param stopForLast    if given, stop condition needs to be met for the specified continuance
+         * @param stopOnAverage  true if stop threshold should be compared to the average of the last points
          * @return This builder for chaining
          */
         WatchBuilder with(String level, long startThreshold, Number startForLast, boolean startOnAverage,
