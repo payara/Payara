@@ -16,7 +16,7 @@
 package fish.payara.jbatch.persistence.rdbms;
 
 /**
- * Interface for the common query keys and table keys
+ * Interface for the common JDBC Constants
  * 
  * @author steve
  */
@@ -72,16 +72,15 @@ public interface JDBCQueryConstants {
 	public final static String UPDATE_STEP_STATUS = "UPDATE_STEP_STATUS";
 	public final static String GET_TAGNAME = "GET_TAGNAME";
 	public final static String GET_MOST_RECENT_EXECUTION_ID = "GET_MOST_RECENT_EXECUTION_ID";
-		
-    // Derby constants
-	public static final String DERBY_CREATE_TABLE_CHECKPOINTDATA = "DERBY_CREATE_TABLE_CHECKPOINTDATA";
-	public static final String DERBY_CREATE_TABLE_JOBINSTANCEDATA = "DERBY_CREATE_TABLE_JOBINSTANCEDATA";
-	public static final String DERBY_CREATE_TABLE_EXECUTIONINSTANCEDATA = "DERBY_CREATE_TABLE_EXECUTIONINSTANCEDATA";
-	public static final String DERBY_CREATE_TABLE_STEPINSTANCEDATA = "DERBY_CREATE_TABLE_STEPINSTANCEDATA";
-	public static final String DERBY_CREATE_TABLE_JOBSTATUS = "DERBY_CREATE_TABLE_JOBSTATUS";
-	public static final String DERBY_CREATE_TABLE_STEPSTATUS = "DERBY_CREATE_TABLE_STEPSTATUS";
-	
 
+        // H2 JDBC Constants
+        public static final String H2_CREATE_TABLE_CHECKPOINTDATA = "H2_CREATE_TABLE_CHECKPOINTDATA";
+	public static final String H2_CREATE_TABLE_JOBINSTANCEDATA = "H2_CREATE_TABLE_JOBINSTANCEDATA";
+	public static final String H2_CREATE_TABLE_EXECUTIONINSTANCEDATA = "H2_CREATE_TABLE_EXECUTIONINSTANCEDATA";
+	public static final String H2_CREATE_TABLE_STEPINSTANCEDATA = "H2_CREATE_TABLE_STEPINSTANCEDATA";
+	public static final String H2_CREATE_TABLE_JOBSTATUS = "H2_CREATE_TABLE_JOBSTATUS";
+	public static final String H2_CREATE_TABLE_STEPSTATUS = "H2_CREATE_TABLE_STEPSTATUS";
+        
 	public final String APPTAG = "apptag";
 
 }

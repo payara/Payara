@@ -304,11 +304,8 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                     DataSource ds = DataSource.class.cast(object);
                     conn = ds.getConnection();
                     String database = conn.getMetaData().getDatabaseProductName();
-                    if (database.contains("Derby")) {
+                    if (database.contains("H2")) {
                         lazyProxy = new JBatchJDBCPersistenceManager();
-                        lazyProxy.init(ibc1);
-                    } else if (database.contains("H2")) {
-                        lazyProxy = new H2PersistenceManager();
                         lazyProxy.init(ibc1);
                     } else if (database.contains("MySQL")) {
                         lazyProxy = new MySqlPersistenceManager();

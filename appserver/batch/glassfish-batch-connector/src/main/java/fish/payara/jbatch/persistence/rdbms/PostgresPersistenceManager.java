@@ -45,7 +45,6 @@ import com.ibm.jbatch.container.exception.PersistenceException;
 import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -60,13 +59,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
@@ -98,24 +97,6 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 		return result;
 	}
-
-     /**
-     * Set the schema to the default schema or the schema defined at batch
-     * configuration time
-     *
-     * @param connection
-     * @throws SQLException
-     */
-    @Override
-    protected void setSchemaOnConnection(Connection connection) throws SQLException {
-            logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
-            try (PreparedStatement preparedStatement = connection.prepareStatement("set search_path to " + schema)) {
-                preparedStatement.executeUpdate();
-            } finally {
-                logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
-            }
-    }
-
 
 	@Override
 	public void init(IBatchConfig batchConfig)

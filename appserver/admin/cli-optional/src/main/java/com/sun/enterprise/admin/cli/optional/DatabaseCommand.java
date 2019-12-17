@@ -42,15 +42,14 @@
 package com.sun.enterprise.admin.cli.optional;
 
 import com.sun.enterprise.admin.cli.*;
-import static com.sun.enterprise.admin.cli.optional.DBType.DERBY;
-import static com.sun.enterprise.admin.cli.optional.DBType.H2;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+
+import static com.sun.enterprise.util.SystemPropertyConstants.*;
 
 /**
  * This is an abstract class to be inherited by StartDatabaseCommand and
@@ -63,14 +62,10 @@ import org.glassfish.api.admin.*;
  */
 public abstract class DatabaseCommand extends CLICommand {
 
-    protected static final String DB_TYPE_DEFAULT = "h2";
-    protected static final String DB_HOST_DEFAULT = "0.0.0.0";
+    private static final String DB_HOST_DEFAULT = "0.0.0.0";
+    private static final String DB_PORT_DEFAULT = "9092";
     protected final static String DB_USER = "dbuser";
-    //protected final static String DB_PASSWORD   = "dbpassword";
-    protected final static String DB_PASSWORDFILE = "dbpasswordfile";
 
-    @Param(name = "dbtype", optional = true, defaultValue = DB_TYPE_DEFAULT)
-    protected String dbType;
 
     @Param(name = "dbhost", optional = true, defaultValue = DB_HOST_DEFAULT)
     protected String dbHost;
@@ -94,25 +89,17 @@ public abstract class DatabaseCommand extends CLICommand {
      */
     protected void prepareProcessExecutor() throws Exception {
         sInstallRoot = new File(getSystemProperty(INSTALL_ROOT_PROPERTY));
-        if (dbType == null) {
-            dbType = DB_TYPE_DEFAULT;
-        } else {
-            checkIfDBTypeIsValid(dbType);
-        }
+
         if (dbHost == null) {
             dbHost = DB_HOST_DEFAULT;
         }
         if (dbPort == null) {
-            if(dbType.equals(H2.getValue())){
-                dbPort = H2.getPort();
-            } else if(dbType.equals(DERBY.getValue())){
-                dbPort = DERBY.getPort();
-            }
+            dbPort = DB_PORT_DEFAULT;
         } else {
             checkIfPortIsValid(dbPort);
         }
         sJavaHome = new File(getSystemProperty(JAVA_ROOT_PROPERTY));
-        dbManager = DBManagerFactory.getDBManager(DBType.valueOf(dbType.toUpperCase()));
+        dbManager = new H2Manager();
         dbLocation = new File(getSystemProperty(dbManager.getRootProperty()));
         try {
             dbManager.checkIfDbInstalled(dbLocation);
@@ -135,19 +122,6 @@ public abstract class DatabaseCommand extends CLICommand {
         } catch (NumberFormatException e) {
             throw new CommandValidationException(
                     strings.get("InvalidPortNumber", port));
-        }
-    }
-    
-    /**
-     * Check if database type is valid.
-     */
-    private void checkIfDBTypeIsValid(final String dbType)
-            throws CommandValidationException {
-        try {
-            DBType.valueOf(dbType.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new CommandValidationException(
-                    strings.get("InvalidDBType", dbType));
         }
     }
 

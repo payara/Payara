@@ -45,7 +45,6 @@ import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.jbatch.persistence.rdbms.DB2PersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.H2PersistenceManager;
 import fish.payara.jbatch.persistence.rdbms.JBatchJDBCPersistenceManager;
 import fish.payara.jbatch.persistence.rdbms.MySqlPersistenceManager;
 import fish.payara.jbatch.persistence.rdbms.OraclePersistenceManager;
@@ -55,27 +54,27 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
+import javax.batch.operations.*;
+import javax.batch.runtime.JobExecution;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.validation.constraints.Min;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.*;
-import javax.batch.runtime.JobExecution;
-import java.util.*;
-import java.util.logging.Level;
-import javax.inject.Inject;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.validation.constraints.Min;
 import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
 import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
 import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;
-import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
 /**
  * Command to list batch jobs info
@@ -226,12 +225,9 @@ public class ListBatchJobs extends AbstractLongListCommand {
         String schema = batchRuntimeConfiguration.getSchemaName();
         try (Connection connection = dataSource.getConnection()) {
             String database = connection.getMetaData().getDatabaseProductName();
-            if (database.contains("Derby")) {
+            if (database.contains("H2")) {
                 JBatchJDBCPersistenceManager jBatchJDBCPersistenceManager = new JBatchJDBCPersistenceManager();
                 result = jBatchJDBCPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
-            } else if (database.contains("H2")) {
-                H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
-                result = h2PersistenceManager.checkIfTableExists(dataSource, tableName, schema);
             } else if (database.contains("MySQL")) {
                 MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
                 result = mySqlPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
@@ -259,12 +255,9 @@ public class ListBatchJobs extends AbstractLongListCommand {
           try (Connection connection = dataSource.getConnection()) {
             String database = connection.getMetaData().getDatabaseProductName();
             
-            if (database.contains("Derby")) {
+            if (database.contains("H2")) {
                 JBatchJDBCPersistenceManager jBatchJDBCPersistenceManager = new JBatchJDBCPersistenceManager();
                 jBatchJDBCPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
-            } else if (database.contains("H2")) {
-                H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
-                h2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("MySQL")) {
                 MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
                 mySqlPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);

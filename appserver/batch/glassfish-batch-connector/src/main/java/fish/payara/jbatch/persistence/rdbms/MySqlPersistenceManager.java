@@ -50,7 +50,6 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
@@ -240,16 +239,6 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
         result.put(Q_SET_SCHEMA, "USE " + schema);
 
         return result;
-    }
-
-    @Override
-    protected void setSchemaOnConnection(Connection connection) throws SQLException {
-        logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
-        try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
-            preparedStatement.executeUpdate();
-        } finally {
-            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
-        }
     }
 
     /**

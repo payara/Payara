@@ -44,7 +44,6 @@ package com.sun.enterprise.v3.server;
 import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -65,15 +64,17 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
+
 /**
  * This class is responsible for setting up Common Class Loader. As the
  * name suggests, Common Class Loader is common to all deployed applications.
  * Common Class Loader is responsible for loading classes from
  * following URLs (the order is strictly maintained):
- * lib/*.jar:domain_dir/lib/classes:domain_dir/lib/*.jar:DERBY_DRIVERS.
+ * lib/*.jar:domain_dir/lib/classes:domain_dir/lib/*.jar:H2_DRIVERS.
  * Please note that domain_dir/lib/classes comes before domain_dir/lib/*.jar,
  * just like WEB-INF/classes is searched first before WEB-INF/lib/*.jar.
- * DERBY_DRIVERS are added to this class loader, because GlassFish ships with Derby database by default
+ * H2_DRIVERS are added to this class loader, because Payara ships with H2 database by default
  * and it makes them available to users by default. Earlier, they used to be available to applications via
  * launcher classloader, but now they are available via this class loader (see issue 13612 for more details on this). 
  *
@@ -145,9 +146,6 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
             Collections.addAll(cpElements,
                     domainLib.listFiles(new JarFileFilter()));
         }
-        // See issue https://glassfish.dev.java.net/issues/show_bug.cgi?id=13612
-        // We no longer add derby jars to launcher class loader, we add them to common class loader instead.
-        cpElements.addAll(findDerbyClient());
         cpElements.addAll(findH2Client());
         List<URL> urls = new ArrayList<>();
         StringBuilder cp = new StringBuilder();
@@ -184,48 +182,6 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
     public String getCommonClassPath() {
         return commonClassPath;
-    }
-
-    private List<File> findDerbyClient() {
-        final String DERBY_HOME_PROP = "AS_DERBY_INSTALL";
-        StartupContext startupContext = env.getStartupContext();
-		Properties arguments = null;
-		
-		if (startupContext != null) {
-		  arguments = startupContext.getArguments();
-		}
-		
-		String derbyHome = null;
-		
-		if (arguments != null) {
-		   derbyHome = arguments.getProperty(DERBY_HOME_PROP,
-                System.getProperty(DERBY_HOME_PROP));
-		}
-		
-        File derbyLib = null;
-        if (derbyHome != null) {
-            derbyLib = new File(derbyHome, "lib");
-        }
-        if (derbyLib == null || !derbyLib.exists()) {
-            // maybe the jdk...
-            if (System.getProperty("java.version").compareTo("1.6") > 0) {
-                File jdkHome = new File(System.getProperty("java.home"));
-                derbyLib = new File(jdkHome, "../db/lib");
-            }
-        }
-        if (!derbyLib.exists()) {
-            logger.info(KernelLoggerInfo.cantFindDerby);
-            return Collections.emptyList();
-        }
-
-        return Arrays.asList(derbyLib.listFiles(new FilenameFilter(){
-            @Override
-            public boolean accept(File dir, String name) {
-                // Include only files having .jar extn and exclude all localisation jars, because they are
-                // already mentioned in the Class-Path header of the main jars
-                return (name.endsWith(".jar") && !name.startsWith("derbyLocale_"));
-            }
-        }));
     }
 
     private List<File> findH2Client() {

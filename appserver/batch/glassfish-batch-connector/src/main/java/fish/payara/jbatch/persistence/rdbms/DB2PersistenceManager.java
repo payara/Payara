@@ -42,20 +42,21 @@ package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
@@ -234,10 +235,32 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
                 return result;
         }
+        
+        /**
+         * Set the schema to the default schema or the schema defined at batch
+         * configuration time
+         *
+         * @param connection
+         * @throws SQLException
+         */
+        @Override
+        protected void setSchemaOnConnection(Connection connection) throws SQLException {
+            logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
 
-	/**
-	 * Method invoked to insert the DB2 create table strings into a hashmap
-	 **/
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
+                preparedStatement.setString(1, schema);
+                preparedStatement.executeUpdate();
+            } finally {
+                logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
+            }
+        }
+
+        protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+            queryStrings = super.getSharedQueryMap(batchConfig);
+            
+            queryStrings.put(Q_SET_SCHEMA, "SET SCHEMA ?");
+            return queryStrings;
+        }
 
 	private Map<String, String> setCreateDB2StringsMap(Map<String, String> tableNames) {
 		createDB2Strings = new HashMap<>();
