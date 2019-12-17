@@ -204,12 +204,10 @@ value    = number
 Assessments are evaluations made by the client to classify the data based on a widgets configuration.
 
 ```
-ASSESSMENTS = { status, color }
+ASSESSMENTS = { status }
 status      = Status
 Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing' | 'white' | 'green' | 'amber' | 'red'
-color       = string
 ```
-* `color` is an optional attribute holding a hex color value associated with the status
 
 
 

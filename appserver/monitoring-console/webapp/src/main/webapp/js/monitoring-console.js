@@ -2782,7 +2782,20 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
+	  return datasets;
+  }
+
+  function createDecorationDatasets(widget, data) {
+    let t0;
+    let t1;
+    for (let j = 0; j < data.length; j++) {
+      let px = data[j].points;
+      t0 = t0 === undefined ? px[0] : Math.min(t0, px[0]);
+      t1 = t1 === undefined ? px[px.length-2] : Math.max(t1, px[px.length-2]);
+    }
+    let points = [{ t:t0, y: 0}, {t: t1, y: 0}];
     let decorations = widget.decorations;
+    let datasets = [];
     if (decorations.waterline && decorations.waterline.value) {
       let color = decorations.waterline.color || ColorModel.default('waterline');
       datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
@@ -2795,7 +2808,7 @@ MonitoringConsole.Chart.Line = (function() {
       let color = decorations.thresholds.critical.color || ColorModel.default('critical');
       datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
-	  return datasets;
+    return datasets; 
   }
 
   /**
@@ -2831,6 +2844,7 @@ MonitoringConsole.Chart.Line = (function() {
     for (let j = 0; j < data.length; j++) {
       datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
     }
+    datasets = datasets.concat(createDecorationDatasets(widget, data));
     chart.data.datasets = datasets;
     chart.update(0);
   }
