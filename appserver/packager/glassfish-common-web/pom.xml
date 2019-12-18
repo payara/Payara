@@ -132,24 +132,29 @@
             <artifactId>pkg-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.deployment</groupId>
+            <artifactId>deployment-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>cli-optional</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>appserver-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jna.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline-terminal-jna</artifactId>
             <version>${jline-terminal-jna}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.orb</groupId>
-            <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.orb</groupId>
-            <artifactId>orb-enabler</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.ha</groupId>
@@ -158,6 +163,11 @@
         <dependency>
             <groupId>fish.payara.server.internal.ha</groupId>
             <artifactId>ha-file-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>backup</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
