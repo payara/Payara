@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -74,7 +74,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
         <config name="server-config">
             <payara-executor-service-configuration/>
             <cdi-service enable-concurrent-deployment="true" pre-loader-thread-pool-size="2"></cdi-service>
-            <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
+            <hazelcast-config-specific-configuration enabled="false"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
                 <log-notifier enabled="true"/>
                 <eventbus-notifier enabled="false"/>
