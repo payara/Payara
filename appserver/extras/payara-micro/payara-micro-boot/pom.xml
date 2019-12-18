@@ -61,6 +61,29 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <!-- Validate XML resources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
+                        <configuration>
+                            <validationSets>
+                                <validationSet>
+                                    <dir>src/main/resources/MICRO-INF/domain</dir>
+                                    <includes>
+                                        <include>default-web.xml</include>
+                                        <include>domain.xml</include>
+                                    </includes>
+                                </validationSet>
+                            </validationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
     <dependencies>
         <dependency>

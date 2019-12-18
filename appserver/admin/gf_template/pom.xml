@@ -130,6 +130,17 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Validate XML resources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

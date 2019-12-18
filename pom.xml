@@ -451,6 +451,21 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
                     <version>1.0.2</version>
+                    <executions>
+                        <execution>
+                            <id>validate-xml-files</id>
+                            <goals>
+                                <goal>validate</goal>
+                            </goals>
+                            <configuration>
+                                <validationSets>
+                                    <validationSet>
+                                        <dir>src/main/resources/config</dir>
+                                    </validationSet>
+                                </validationSets>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

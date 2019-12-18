@@ -130,31 +130,15 @@
                 </executions>
             </plugin>
 
+            <!-- Validate XML resources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>validate</goal>
-                        </goals>
-                        <phase>validate</phase>
+                        <id>validate-xml-files</id>
                     </execution>
                 </executions>
-                <configuration>
-                   <validationSets>
-                       <validationSet>
-                           <dir>src/main/resources/config</dir>
-                           <includes>
-                               <include>default-web.xml</include>
-                               <include>domain.xml</include>
-                               <include>glassfish-acc.xml</include>
-                               <include>wss-server-config-1.0.xml</include>
-                               <include>wss-server-config-2.0.xml</include>
-                           </includes>
-                       </validationSet>
-                   </validationSets>
-                </configuration>
             </plugin>
         </plugins>
     </build>
