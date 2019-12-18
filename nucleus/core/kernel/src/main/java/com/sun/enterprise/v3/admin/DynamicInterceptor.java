@@ -76,7 +76,6 @@ public class DynamicInterceptor implements MBeanServer {
     private volatile MBeanServer mDelegateMBeanServer;
     private static final HashMap<String, MBeanServerConnection> instanceConnections =
             new HashMap<String, MBeanServerConnection>();
-    ;
     private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DynamicInterceptor.class);
 
