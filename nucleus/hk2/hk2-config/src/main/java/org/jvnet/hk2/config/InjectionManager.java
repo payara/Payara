@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
@@ -147,12 +148,12 @@ public class InjectionManager {
       *      if injection failed for some reason.
       */
     protected void syncDoInject(Object component,
-                Class type,
+                Class<?> type,
                 InjectionResolver... targets) {
         assert component!=null;
 
         try {
-            Class currentClass = type;
+            Class<?> currentClass = type;
             while (currentClass!=null && Object.class != currentClass) {
                 // get the list of the instances variable
                 for (Field field : currentClass.getDeclaredFields()) {
@@ -164,7 +165,7 @@ public class InjectionManager {
                         if (inject == null)     continue;
 
                         Type genericType = field.getGenericType();
-                        Class fieldType = field.getType();
+                        Class<?> fieldType = field.getType();
 
                         try {
                             Object value = target.getValue(component, field, genericType, fieldType);
@@ -182,6 +183,19 @@ public class InjectionManager {
                             } else {
                                 if (!target.isOptional(field, inject)) {
                                     nonOptionalAnnotation = inject;
+                                } else {
+                                    if (fieldType.isArray()) {
+                                        AccessController.doPrivileged(new PrivilegedAction<Field>() {
+                                            @Override
+                                            public Field run() {
+                                                field.setAccessible(true);
+                                                return field;
+                                            }
+                                        });
+                                        field.set(component, Array.newInstance(fieldType.getComponentType(), 0));
+                                        injected = true;
+                                    }
+                                    
                                 }
                             }
                         } catch (MultiException e) {
