@@ -155,7 +155,7 @@ public abstract class JavaDockerImageManager<T extends FixedHostPortGenericConta
             + " && apt-get -y install"
 //            + " docker-ce containerd.io"
 //            + " docker-ce-cli"
-            + " openjdk-11-jdk-headless" //
+            + " " + cfg.getJdkPackageId() //
             + " && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*" //
             // support locales
             + " && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen"//
