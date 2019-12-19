@@ -105,7 +105,7 @@ class ProcessingContextImpl implements ProcessingContext {
     }
         
     /** 
-     * @return the previously set ClientContext casted to the requestd
+     * @return the previously set ClientContext casted to the requested
      * type if possible or throw an exception otherwise.
      */
     @Override

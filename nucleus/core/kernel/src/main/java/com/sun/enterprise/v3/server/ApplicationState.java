@@ -41,12 +41,15 @@ package com.sun.enterprise.v3.server;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
@@ -55,6 +58,8 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.EngineInfo;
@@ -79,11 +84,12 @@ public class ApplicationState {
     private ExtendedDeploymentContext deploymentContext;
     private ApplicationInfo applicationInfo;
     private ModuleInfo moduleInfo;
-    private List<EngineInfo> engineInfos;
+    private List<EngineInfo> engineInfos = Collections.emptyList();
     private Set<String> sniffers;
     private Map<String, Object> descriptorMetadata = Collections.emptyMap();
     private Map<String, Object> modulesMetaData = Collections.emptyMap();
     private Set<String> classesChanged = Collections.emptySet();
+    private final Map<String, AnnotationProcessorState> processingStates = new HashMap<>();
 
     private boolean active;
 
@@ -176,11 +182,18 @@ public class ApplicationState {
 
         newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
         newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
+
+        Set<Class> requiredMetaDataClasses = requiredMetaDataClasses();
+        this.modulesMetaData.values()
+                .stream()
+                .filter(md -> md instanceof Descriptor)
+                .filter(md -> !requiredMetaDataClasses.contains(md.getClass()))
+                .forEach(newContext::addModuleMetaData);
         this.getDescriptorMetadata()
                 .entrySet()
                 .forEach(e -> newContext.addTransientAppMetaData(e.getKey(), e.getValue()));
         this.deploymentContext = newContext;
-        this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+
         final DeployCommandParameters commandParams = newContext.getCommandParameters(DeployCommandParameters.class);
         if (commandParams.sourcesChanged != null) {
             this.classesChanged = new HashSet<>();
@@ -191,14 +204,51 @@ public class ApplicationState {
                 }
             }
         }
-        // unload previous app
-        events.send(
-                new EventListener.Event<ApplicationInfo>(
-                        Deployment.APPLICATION_UNLOADED,
-                        this.applicationInfo
-                ),
-                false
-        );
+
+        if (this.applicationInfo != null) {
+            this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+            // unload previous app
+            events.send(
+                    new EventListener.Event<ApplicationInfo>(
+                            Deployment.APPLICATION_UNLOADED,
+                            this.applicationInfo
+                    ),
+                    false
+            );
+        }
+    }
+
+    public void addProcessingContext(RootDeploymentDescriptor descriptor, Object processingContext) {
+        processingStates.put(descriptor.getClass().getName(), new AnnotationProcessorState(processingContext));
+    }
+
+    public <P> P getProcessingContext(RootDeploymentDescriptor descriptor, Class<P> _class) {
+        AnnotationProcessorState processorState = processingStates.get(descriptor.getClass().getName());
+        if (processorState != null) {
+            return processorState.getProcessingContext(_class);
+        }
+        return null;
+    }
+
+    public Optional<AnnotationProcessorState> getProcessingState(Object processingContext) {
+        for (Entry<String, AnnotationProcessorState> entry : processingStates.entrySet()) {
+            if (entry.getValue().getProcessingContext().equals(processingContext)) {
+                return Optional.of(entry.getValue());
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Set<Class> requiredMetaDataClasses() {
+        Set<Class> classes = new HashSet<>();
+        if (engineInfos != null) {
+            for (EngineInfo engineInfo : engineInfos) {
+                if (engineInfo.getDeployer() != null) {
+                    classes.addAll(Arrays.asList(engineInfo.getDeployer().getMetaData().requires()));
+                }
+            }
+        }
+        return classes;
     }
 
     public boolean isClassChanged(Class clazz) {

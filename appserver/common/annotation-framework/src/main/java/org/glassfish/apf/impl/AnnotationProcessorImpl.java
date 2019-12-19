@@ -41,6 +41,7 @@
 
 package org.glassfish.apf.impl;
 
+import com.sun.enterprise.v3.server.AnnotationProcessorState;
 import com.sun.enterprise.v3.server.ApplicationState;
 import java.util.EmptyStackException;
 import java.util.Map;
@@ -56,6 +57,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.glassfish.apf.ProcessingContext;
@@ -133,15 +135,33 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         throws AnnotationProcessorException
     {
         ApplicationState state = ctx.getArchive().getExtraData(ApplicationState.class);
+        Optional<AnnotationProcessorState> processorState = Optional.empty();
+        if(state != null) {
+            processorState = state.getProcessingState(ctx);
+        }
         
         Scanner<Object> scanner = ctx.getProcessingInput();
         ProcessingResultImpl result = new ProcessingResultImpl();
         errorCount=0;
         
         for (Class c : scanner.getElements()) {
-            if (state == null || state.isClassChanged(c)) {
-                result.add(process(ctx, c));
+            ProcessingResult classResult;
+            if (state == null) {
+                classResult = process(ctx, c);
+            } else if (state.isInactive() || state.isClassChanged(c)) {
+                classResult = process(ctx, c);
+                processorState.ifPresent(s -> s.addProcessingResult(c, classResult));
+            } else {
+                Optional<ProcessingResult> optResult = processorState
+                        .map(s -> s.getProcessingResult(c, ProcessingResult.class));
+                if (!optResult.isPresent()) {
+                    classResult = process(ctx, c);
+                    processorState.ifPresent(s -> s.addProcessingResult(c, classResult));
+                } else {
+                    classResult = optResult.get();
+                }
             }
+            result.add(classResult);
         }
         return result;
     }

@@ -116,8 +116,10 @@ public class WebServletHandler extends AbstractWebHandler {
                     webCompDesc = webCompDescs[0];
                 }
             }
-            descriptor.removeWebComponentDescriptor(webCompDesc);
-            webCompDesc = null;
+            if (webCompDesc != null) {
+                descriptor.removeWebComponentDescriptor(webCompDesc);
+                webCompDesc = null;
+            }
         }
         return webCompDesc;
     }

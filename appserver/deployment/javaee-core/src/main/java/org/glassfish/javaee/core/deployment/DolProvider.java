@@ -129,7 +129,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     Provider<ClassLoaderHierarchy> clhProvider;
 
     @Inject
-    HotSwapService hotSwapService;
+    private HotSwapService hotSwapService;
 
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
@@ -149,8 +149,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         sourceArchive.setExtraData(Parser.class, dc.getTransientAppMetaData(Parser.class.getName(), Parser.class));
 
         Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
-        appState.filter(ApplicationState::isActive)
-                .ifPresent(state -> sourceArchive.setExtraData(ApplicationState.class, state));
+        appState.ifPresent(state -> sourceArchive.setExtraData(ApplicationState.class, state));
 
         ClassLoader cl = dc.getClassLoader();
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);

@@ -54,6 +54,7 @@ import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
+import com.sun.enterprise.v3.server.ApplicationState;
 import org.glassfish.apf.*;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.DefaultErrorHandler;
@@ -394,21 +395,32 @@ public abstract class Archivist<T extends BundleDescriptor> {
         return readRestDeploymentDescriptors(descriptor, descriptorArchive, contentArchive, app);
     }
 
-    private T readRestDeploymentDescriptors (T descriptor, 
+    private T readRestDeploymentDescriptors (T descriptor,
         ReadableArchive descriptorArchive, ReadableArchive contentArchive, 
         Application app) throws IOException, SAXParseException {
-        Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
+
+        ApplicationState state = descriptorArchive.getExtraData(ApplicationState.class);
+        Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<>();
         if (extensionsArchivists!=null) {
             for (ExtensionsArchivist extension : extensionsArchivists) {
-                    Object o = extension.open(this, descriptorArchive, descriptor);
-                    if (o instanceof RootDeploymentDescriptor) {
-                        if (o != descriptor) {
-                            extension.addExtension(descriptor, (RootDeploymentDescriptor) o);
-                        }
-                        extensions.put(extension, (RootDeploymentDescriptor) o);
-                    } else {
-                        extensions.put(extension, null); // maybe annotation processing will yield results
+                Object extDescriptor = null;
+                if (state != null && state.isActive()
+                        && extension.getDefaultDescriptor() != null) {
+                    extDescriptor = state.getDeploymentContext().getModuleMetaData(
+                            extension.getDefaultDescriptor().getClass()
+                    );
+                }
+                if (extDescriptor == null) {
+                    extDescriptor = extension.open(this, descriptorArchive, descriptor);
+                }
+                if (extDescriptor instanceof RootDeploymentDescriptor) {
+                    if (extDescriptor != descriptor) {
+                        extension.addExtension(descriptor, (RootDeploymentDescriptor) extDescriptor);
                     }
+                    extensions.put(extension, (RootDeploymentDescriptor) extDescriptor);
+                } else {
+                    extensions.put(extension, null); // maybe annotation processing will yield results
+                }
             }
         }
 
@@ -612,7 +624,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             }
 
             AnnotationProcessor ap = annotationFactory.getAnnotationProcessor(isFullAttribute);
-            ProcessingContext ctx = ap.createContext();
+            ProcessingContext ctx = getProcessingContext(bundleDesc, archive, ap);
             ctx.setArchive(archive);
             if (annotationErrorHandler != null) {
                 ctx.setErrorHandler(annotationErrorHandler);
@@ -643,6 +655,25 @@ public abstract class Archivist<T extends BundleDescriptor> {
             }
         }
         return null;
+    }
+
+    private ProcessingContext getProcessingContext(
+            RootDeploymentDescriptor bundleDesc,
+            ReadableArchive archive,
+            AnnotationProcessor ap) {
+
+        ProcessingContext ctx = null;
+        ApplicationState state = archive.getExtraData(ApplicationState.class);
+        if (state != null) {
+            ctx = state.getProcessingContext(bundleDesc, ProcessingContext.class);
+        }
+        if (ctx == null) {
+            ctx = ap.createContext();
+            if (state != null) {
+                state.addProcessingContext(bundleDesc, ctx);
+            }
+        }
+        return ctx;
     }
 
     /**
