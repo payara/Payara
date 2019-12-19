@@ -79,19 +79,37 @@ public class ApplicationState {
     private final String name;
     private String target;
 
-    private List<ClassLoader> previousClassLoaders;
+    private Set<String> sniffers;
+    private List<EngineInfo> engineInfos = Collections.emptyList();
+    private ModuleInfo moduleInfo;
+    private ApplicationInfo applicationInfo;
 
     private ExtendedDeploymentContext deploymentContext;
-    private ApplicationInfo applicationInfo;
-    private ModuleInfo moduleInfo;
-    private List<EngineInfo> engineInfos = Collections.emptyList();
-    private Set<String> sniffers;
     private Map<String, Object> descriptorMetadata = Collections.emptyMap();
     private Map<String, Object> modulesMetaData = Collections.emptyMap();
+
+    /**
+     * {@code DeployCommandParameters.sourcesChanged} paths mapped to the
+     * qualified class names.
+     */
     private Set<String> classesChanged = Collections.emptySet();
+
+    /**
+     * Stores AnnotationProcessor states respective to bundle descriptor.
+     */
     private final Map<String, AnnotationProcessorState> processingStates = new HashMap<>();
 
+    /**
+     * The value is set to {@code false}, If previous application instance cache
+     * not found or full redeployment performed in case of application metadata
+     * changed (deployment descriptor, META-INF, or Java classes removed etc)
+     * via {@code DeployCommandParameters.metadataChanged} flag otherwise
+     * {@code true}.
+     *
+     */
     private boolean active;
+
+    private List<ClassLoader> previousClassLoaders;
 
     private static final String WEB_INF = "WEB-INF";
     private static final String META_INF = "META-INF";
@@ -164,6 +182,12 @@ public class ApplicationState {
         return !active;
     }
 
+    /**
+     * Sets the sniffers, If previous sniffers differs from current deployment
+     * sniffers then moduleInfo, and engineInfos cache staled.
+     *
+     * @param sniffers
+     */
     public void setSniffers(Collection<? extends Sniffer> sniffers) {
         final Set<String> snifferTypes = sniffers.stream()
                 .map(s -> Sniffer.class.cast(s))
@@ -176,6 +200,13 @@ public class ApplicationState {
         }
     }
 
+    /**
+     * Starts the Application state for new deployment by copying the cached
+     * metadata and properties to the new {@code DeploymentContext} instance.
+     *
+     * @param newContext
+     * @param events
+     */
     public void start(ExtendedDeploymentContext newContext, Events events) {
         validateInactiveState();
         this.active = true;
@@ -239,23 +270,23 @@ public class ApplicationState {
         return Optional.empty();
     }
 
-    private Set<Class> requiredMetaDataClasses() {
-        Set<Class> classes = new HashSet<>();
-        if (engineInfos != null) {
-            for (EngineInfo engineInfo : engineInfos) {
-                if (engineInfo.getDeployer() != null) {
-                    classes.addAll(Arrays.asList(engineInfo.getDeployer().getMetaData().requires()));
-                }
-            }
-        }
-        return classes;
-    }
-
+    /**
+     * Is the class modified in the IDE.
+     *
+     * @param clazz
+     * @return
+     */
     public boolean isClassChanged(Class clazz) {
         validateActiveState();
         return this.classesChanged.contains(clazz.getName());
     }
 
+    /**
+     * Store the transient info before clean up of
+     * {@code DeploymentContext#postDeployClean}
+     *
+     * @param deploymentContext
+     */
     public void storeMetaData(ExtendedDeploymentContext deploymentContext) {
         this.modulesMetaData = deploymentContext.getModuleMetadata()
                 .stream()
@@ -282,6 +313,9 @@ public class ApplicationState {
         }
     }
 
+    /**
+     * Mark the {@code ApplicationState} as inactive and do the final cleanup.
+     */
     public void close() {
         this.active = false;
         this.classesChanged.clear();
@@ -311,6 +345,13 @@ public class ApplicationState {
         }
     }
 
+    /**
+     * Converts the Class relative location to canonical e.g
+     * /WEB_INF/classes/a/b/c/HelloWorld.class to a.b.c.HelloWorld
+     *
+     * @param sourcePath
+     * @return
+     */
     private String getClassName(String sourcePath) {
         String className = null;
         if (sourcePath.endsWith(CLASS_EXT)) {
@@ -337,6 +378,18 @@ public class ApplicationState {
             classLoaders.add(module.getModuleClassLoader());
         }
         return classLoaders;
+    }
+
+    private Set<Class> requiredMetaDataClasses() {
+        Set<Class> classes = new HashSet<>();
+        if (engineInfos != null) {
+            for (EngineInfo engineInfo : engineInfos) {
+                if (engineInfo.getDeployer() != null) {
+                    classes.addAll(Arrays.asList(engineInfo.getDeployer().getMetaData().requires()));
+                }
+            }
+        }
+        return classes;
     }
 
 }
