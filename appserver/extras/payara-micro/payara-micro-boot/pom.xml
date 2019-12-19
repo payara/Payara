@@ -62,7 +62,6 @@
             </resource>
         </resources>
         <plugins>
-            <!-- Validate XML resources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
@@ -72,10 +71,9 @@
                         <configuration>
                             <validationSets>
                                 <validationSet>
-                                    <dir>src/main/resources/MICRO-INF/domain</dir>
+                                    <dir>${project.build.outputDirectory}/MICRO-INF/domain</dir>
                                     <includes>
-                                        <include>default-web.xml</include>
-                                        <include>domain.xml</include>
+                                        <include>*.xml</include>
                                     </includes>
                                 </validationSet>
                             </validationSets>
@@ -89,7 +87,6 @@
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
-            <version>${hk2.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

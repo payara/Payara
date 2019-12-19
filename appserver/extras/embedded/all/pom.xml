@@ -99,8 +99,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Validate XML resources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>

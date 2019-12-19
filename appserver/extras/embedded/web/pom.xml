@@ -99,8 +99,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Validate XML resources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
@@ -306,7 +304,7 @@
            <type>zip</type>
            <optional>true</optional>
         </dependency>
-       
+
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>notification-email</artifactId>
@@ -386,7 +384,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>

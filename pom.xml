@@ -457,10 +457,19 @@
                             <goals>
                                 <goal>validate</goal>
                             </goals>
+                            <!-- some modules change target structure in package phase -->
+                            <phase>verify</phase>
                             <configuration>
                                 <validationSets>
                                     <validationSet>
-                                        <dir>src/main/resources/config</dir>
+                                        <dir>${project.build.directory}</dir>
+                                        <includes>
+                                            <include>**/*.xml</include>
+                                        </includes>
+                                        <excludes>
+                                            <!-- these files contain templates with placeholders -->
+                                            <exclude>**/glassfish/lib/install/templates/resources/custom/**</exclude>
+                                        </excludes>
                                     </validationSet>
                                 </validationSets>
                             </configuration>
