@@ -54,7 +54,7 @@ import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
-import com.sun.enterprise.v3.server.ApplicationState;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import org.glassfish.apf.*;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.DefaultErrorHandler;
@@ -665,12 +665,12 @@ public abstract class Archivist<T extends BundleDescriptor> {
         ProcessingContext ctx = null;
         ApplicationState state = archive.getExtraData(ApplicationState.class);
         if (state != null) {
-            ctx = state.getProcessingContext(bundleDesc, ProcessingContext.class);
+            ctx = state.getProcessingContext(bundleDesc.getClass(), ProcessingContext.class);
         }
         if (ctx == null) {
             ctx = ap.createContext();
             if (state != null) {
-                state.addProcessingContext(bundleDesc, ctx);
+                state.addProcessingContext(bundleDesc.getClass(), ctx);
             }
         }
         return ctx;

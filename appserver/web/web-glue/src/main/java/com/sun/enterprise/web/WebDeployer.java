@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.server.HotSwapService;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -92,7 +92,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     RequestDispatcher dispatcher;
 
     @Inject
-    HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     /**
      * Constructor

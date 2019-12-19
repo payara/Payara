@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package com.sun.enterprise.v3.server;
+package fish.payara.nucleus.hotdeploy;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,8 +58,6 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.EngineInfo;
@@ -217,7 +215,6 @@ public class ApplicationState {
         Set<Class> requiredMetaDataClasses = requiredMetaDataClasses();
         this.modulesMetaData.values()
                 .stream()
-                .filter(md -> md instanceof Descriptor)
                 .filter(md -> !requiredMetaDataClasses.contains(md.getClass()))
                 .forEach(newContext::addModuleMetaData);
         this.getDescriptorMetadata()
@@ -249,12 +246,12 @@ public class ApplicationState {
         }
     }
 
-    public void addProcessingContext(RootDeploymentDescriptor descriptor, Object processingContext) {
-        processingStates.put(descriptor.getClass().getName(), new AnnotationProcessorState(processingContext));
+    public void addProcessingContext(Class descriptor, Object processingContext) {
+        processingStates.put(descriptor.getName(), new AnnotationProcessorState(processingContext));
     }
 
-    public <P> P getProcessingContext(RootDeploymentDescriptor descriptor, Class<P> _class) {
-        AnnotationProcessorState processorState = processingStates.get(descriptor.getClass().getName());
+    public <P> P getProcessingContext(Class descriptor, Class<P> _class) {
+        AnnotationProcessorState processorState = processingStates.get(descriptor.getName());
         if (processorState != null) {
             return processorState.getProcessingContext(_class);
         }

@@ -73,7 +73,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     private String specVersion;
 
     /**
-     * optional index string to disambiguate when serveral extensions are
+     * optional index string to disambiguate when several extensions are
      * part of the same module
      */
     private String index=null;
@@ -88,7 +88,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * Extensions for this module descriptor, keyed by type, indexed using the instance's index
      */
     protected Map<Class<? extends RootDeploymentDescriptor>, List<RootDeploymentDescriptor>> extensions =
-            new HashMap<Class<? extends RootDeploymentDescriptor>, List<RootDeploymentDescriptor>>();
+            new HashMap<>();
 
         /**
      * contains the information for this module (like it's module name)

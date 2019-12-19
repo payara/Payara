@@ -42,6 +42,8 @@
 
 package com.sun.enterprise.v3.server;
 
+import fish.payara.nucleus.hotdeploy.HotDeployService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -201,7 +203,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     PayaraExecutorService executorService;
 
     @Inject
-    HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -285,7 +287,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = commandParams.name();
         ApplicationInfo appInfo;
-        Optional<ApplicationState> appState = hotSwapService.getApplicationState(context);
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(context);
 
         final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
         ProgressTracker tracker = new ProgressTracker() {

@@ -209,8 +209,8 @@ import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.server.ApplicationState;
-import com.sun.enterprise.v3.server.HotSwapService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import com.sun.enterprise.v3.services.impl.ContainerMapper;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
@@ -301,7 +301,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private Transactions transactions;
 
     @Inject
-    private HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     @Inject
     private LoggingRuntime loggingRuntime;
@@ -1703,7 +1703,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         Map<String, AdHocServletInfo> adHocSubtrees = null;
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
-            Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
+            Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and

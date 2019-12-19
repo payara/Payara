@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package com.sun.enterprise.v3.server;
+package fish.payara.nucleus.hotdeploy;
 
 import java.io.File;
 import java.util.Map;
@@ -49,13 +49,13 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * The HotSwap service cache the application deployment state.
+ * The HotDeploy service cache the application deployment state.
  * 
  * @author Gaurav Gupta
  */
 @Singleton
-@Service(name = "hotswap-service")
-public class HotSwapService {
+@Service(name = "hotdeploy-service")
+public class HotDeployService {
 
     private final Map<File, ApplicationState> applicationStates = new WeakHashMap<>();
 
@@ -77,7 +77,8 @@ public class HotSwapService {
     
     public Optional<ApplicationState> getApplicationState(DeploymentContext context) {
         DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
-        return getApplicationState(commandParams.hotDeploy, context.getSourceDir());
+        boolean hotDeploy = commandParams != null? commandParams.hotDeploy : false;
+        return getApplicationState(hotDeploy, context.getSourceDir());
     }
 
     public ApplicationState removeApplicationState(File path) {

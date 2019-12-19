@@ -41,8 +41,8 @@
 
 package org.glassfish.apf.impl;
 
-import com.sun.enterprise.v3.server.AnnotationProcessorState;
-import com.sun.enterprise.v3.server.ApplicationState;
+import fish.payara.nucleus.hotdeploy.AnnotationProcessorState;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.HashMap;

@@ -48,7 +48,7 @@ import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
-import com.sun.enterprise.v3.server.ApplicationState;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import org.glassfish.apf.*;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;

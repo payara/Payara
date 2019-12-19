@@ -41,8 +41,8 @@
 
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.v3.server.HotSwapService;
-import com.sun.enterprise.v3.server.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -156,7 +156,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     VersioningService versioningService;
 
     @Inject
-    HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     private File safeCopyOfApp = null;
     private File safeCopyOfDeploymentPlan = null;
@@ -275,10 +275,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             initialContext.setArchiveHandler(archiveHandler);
 
             if (hotDeploy && !metadataChanged) {
-                hotSwapService.getApplicationState(path)
+                hotDeployService.getApplicationState(path)
                         .ifPresent(s -> s.start(initialContext, events));
             } else {
-                hotSwapService.removeApplicationState(path);
+                hotDeployService.removeApplicationState(path);
             }
 
             structuredTracing.register(initialContext);
@@ -401,7 +401,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         Optional<ApplicationState> appState = Optional.empty();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
 
-            appState = hotSwapService.getApplicationState(initialContext);
+            appState = hotDeployService.getApplicationState(initialContext);
             if (hotDeploy && !appState.isPresent()) {
                 ApplicationState applicationState = new ApplicationState(name, path, initialContext);
                 applicationState.setTarget(target);
@@ -428,7 +428,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 undeployProps = handleRedeploy(name, report, context);
             }
             appState.filter(ApplicationState::isInactive)
-                    .ifPresent(hotSwapService::addApplicationState);
+                    .ifPresent(hotDeployService::addApplicationState);
 
             if (enabled == null) {
                 enabled = Boolean.TRUE;
@@ -493,7 +493,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
-                            source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
+                            source(initialContext.getSource())
+                            .archiveHandler(archiveHandler)
+                            .build(initialContext);
 
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {

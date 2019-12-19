@@ -51,7 +51,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
-import com.sun.enterprise.v3.server.HotSwapService;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.api.ActionReport;
@@ -153,7 +153,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     Events events;
 
     @Inject
-    HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     private ActionReport report;
     private Logger logger;
@@ -335,7 +335,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 return;
             }
 
-            hotSwapService.removeApplicationState(sourceFile);
+            hotDeployService.removeApplicationState(sourceFile);
 
             // now start the normal undeploying
             this.name = appName;
@@ -343,7 +343,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             ExtendedDeploymentContext deploymentContext = null;
             try {
-                deploymentContext = deployment.getBuilder(logger, this, report).source(source).build();
+                deploymentContext = deployment.getBuilder(logger, this, report)
+                        .source(source)
+                        .build();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Cannot create context for undeployment ", e);
                 report.setMessage(localStrings.getLocalString("undeploy.contextcreation.failed","Cannot create context for undeployment : {0} ", e.getMessage()));

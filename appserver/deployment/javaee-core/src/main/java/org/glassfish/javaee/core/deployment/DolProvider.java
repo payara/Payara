@@ -54,8 +54,8 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.report.HTMLActionReporter;
-import com.sun.enterprise.v3.server.ApplicationState;
-import com.sun.enterprise.v3.server.HotSwapService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.ApplicationMetaDataProvider;
@@ -129,7 +129,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     Provider<ClassLoaderHierarchy> clhProvider;
 
     @Inject
-    private HotSwapService hotSwapService;
+    private HotDeployService hotDeployService;
 
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
@@ -148,7 +148,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         sourceArchive.setExtraData(Types.class, dc.getTransientAppMetaData(Types.class.getName(), Types.class));
         sourceArchive.setExtraData(Parser.class, dc.getTransientAppMetaData(Parser.class.getName(), Parser.class));
 
-        Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
         appState.ifPresent(state -> sourceArchive.setExtraData(ApplicationState.class, state));
 
         ClassLoader cl = dc.getClassLoader();
@@ -256,7 +256,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 dc.addModuleMetaData(extension);
             }
         }
-        Optional<ApplicationState> appState = hotSwapService.getApplicationState(dc);
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
         if (!appState.isPresent()) {
             addModuleConfig(dc, application);
         }
