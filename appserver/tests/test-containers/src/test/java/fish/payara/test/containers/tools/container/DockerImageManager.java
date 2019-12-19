@@ -139,8 +139,9 @@ public abstract class DockerImageManager {
         LOG.debug("deleteImageIfExists(imageName={})", imageName);
         final DockerClient dockerClient = DockerClientFactory.instance().client();
         if (dockerClient.listImagesCmd().exec().stream().anyMatch(img -> {
-            LOG.trace("Found image with tags: {}", (Object) img.getRepoTags());
-            return Arrays.asList(img.getRepoTags()).contains(imageName);
+            final String[] tags = img.getRepoTags();
+            LOG.trace("Found image with tags: {}", (Object) tags);
+            return tags == null ? false : Arrays.asList(tags).contains(imageName);
         })) {
             LOG.warn("Removing cached image '{}' ...", imageName);
             dockerClient.removeImageCmd(imageName).exec();
