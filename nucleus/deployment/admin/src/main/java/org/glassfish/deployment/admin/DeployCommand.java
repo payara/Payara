@@ -687,6 +687,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     }
 
                 }
+                appState.map(ApplicationState::getPath)
+                        .ifPresent(hotDeployService::removeApplicationState);
             }
             if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
