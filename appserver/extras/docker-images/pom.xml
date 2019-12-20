@@ -13,6 +13,7 @@
     <modules>
         <module>server-full</module>
         <module>server-node</module>
+        <module>tests</module>
     </modules>
 
     <properties>
