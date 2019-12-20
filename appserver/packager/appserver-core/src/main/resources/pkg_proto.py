@@ -3,7 +3,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019 Payara Foundation and/or affiliates
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -39,51 +39,25 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 import imp
 
 conf = imp.load_source("pkg_conf", "../pkg_conf.py")
 
 pkg = {
-    "name"          : "glassfish-web-profile",
+    "name"          : "appserver-core",
     "version"       : conf.glassfish_version,
     "attributes"    : {
-                        "pkg.summary" : "GlassFish Web Profile",
-                        "pkg.description" : "GlassFish Web Profile Metapackage.  "+conf.glassfish_description_long,
+                        "pkg.summary" : "Payara Appserver Common Modules",
+                        "pkg.description" : "Payara Appserver Common Modules. "+conf.glassfish_description_long,
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-	                "pkg:/javadb-common" : {"type" : "require" },
-			"pkg:/javadb-core" : {"type" : "require" },
-			"pkg:/javadb-client" : {"type" : "require" },
-			"pkg:/pkg-java" : {"type" : "require" },
-			"pkg:/felix" : {"type" : "require" },
-                        "pkg:/appserver-core" : {"type" : "require" },
-			"pkg:/glassfish-hk2" : {"type" : "require" },
-		 	"pkg:/glassfish-grizzly" : {"type" : "require" },
-			"pkg:/glassfish-nucleus" : {"type" : "require" },
-			"pkg:/glassfish-grizzly-full" : {"type" : "require" },
-			"pkg:/glassfish-common" : {"type" : "require" },
-			"pkg:/shoal" : {"type" : "require" },
-			"pkg:/glassfish-cluster" : {"type" : "require" },
-			"pkg:/glassfish-ha" : {"type" : "require" },
-			"pkg:/jersey@1.8" : {"type" : "require" },
-			"pkg:/glassfish-management" : {"type" : "require" },
-                        "pkg:/glassfish-common-web" : {"type" : "require" },
-			"pkg:/glassfish-jca" : {"type" : "require" },
-			"pkg:/glassfish-jpa" : {"type" : "require" },
-			"pkg:/glassfish-jta" : {"type" : "require" },
-			"pkg:/glassfish-corba-base" : {"type" : "require" },
-			"pkg:/glassfish-jts" : {"type" : "require" },
-			"pkg:/glassfish-ejb-lite" : {"type" : "require" },
-			"pkg:/glassfish-jsf" : {"type" : "require" },
-			"pkg:/glassfish-web" : {"type" : "require" },
-                        "pkg:/glassfish-osgi-http" : {"type" : "require" },
-			"pkg:/glassfish-jcdi" : {"type" : "require" },
-			"pkg:/glassfish-jdbc" : {"type" : "require" },
-			"pkg:/glassfish-gui" : {"type" : "require" },
-			"pkg:/glassfish-web-incorporation" : {"type" : "require" },
+                        "pkg:/glassfish-common" : {"type" : "require" },
+                      },
+    "dirtrees"      : [ "glassfish", "bin" ],
+    "files"         : { 
+                        "README.txt" : {},
                       },
     "licenses"      : {
                         "../../../../CDDL+GPL.txt" : {"license" : "CDDL and GPL v2 with classpath exception"},
