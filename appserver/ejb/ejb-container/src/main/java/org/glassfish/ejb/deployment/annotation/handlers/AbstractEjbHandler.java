@@ -63,6 +63,7 @@ import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -142,24 +143,28 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             throws AnnotationProcessorException;
 
     /**
-     * Process a particular annotation which type is the same as the
-     * one returned by @see getAnnotationType(). All information
-     * pertinent to the annotation and its context is encapsulated
-     * in the passed AnnotationInfo instance.
-     * This is a method in interface AnnotationHandler.
+     * Process a particular annotation which type is the same as the one
+     * returned by @see getAnnotationType().All information pertinent to the
+     * annotation and its context is encapsulated in the passed AnnotationInfo
+     * instance.This is a method in interface AnnotationHandler.
      *
      * @param ainfo the annotation information
+     * @return
+     * @throws org.glassfish.apf.AnnotationProcessorException
      */
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
             throws AnnotationProcessorException {
 
-
+        ApplicationState state = ainfo
+                .getProcessingContext()
+                .getArchive()
+                .getExtraData(ApplicationState.class);
 
         Class ejbClass = (Class) ainfo.getAnnotatedElement();
         Annotation annotation = ainfo.getAnnotation();
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("@ process ejb annotation " +
-                annotation + " in " + ejbClass);
+            logger.log(Level.FINER, "@ process ejb annotation {0} in {1}", new Object[]{annotation, ejbClass});
         }
         AnnotatedElementHandler aeHandler =
                 ainfo.getProcessingContext().getHandler();
@@ -184,7 +189,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         EjbBundleContext ctx = (EjbBundleContext)aeHandler;
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("My context is " + ctx);       
+            logger.log(Level.FINE, "My context is {0}", ctx);
         }
         
         String elementName = getAnnotatedName(annotation);
@@ -203,11 +208,16 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             //getEjbByName throws IllegalArgumentException when no ejb is found
         }
 
+        if(state != null && ejbDesc != null) {
+            currentBundle.removeEjb(ejbDesc);
+            ejbDesc = null;
+        }
+
         if (ejbDesc != null && !(ejbDesc instanceof DummyEjbDescriptor) ) {
             // element has already been defined in the standard DDs,
             // overriding rules applies
             if (logger.isLoggable(Level.FINE)) {            
-                logger.fine("Overriding rules apply for " + ejbClass.getName());
+                logger.log(Level.FINE, "Overriding rules apply for {0}", ejbClass.getName());
             }
 
             // don't allow ejb-jar.xml overwrite ejb type
@@ -242,8 +252,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
 
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Creating a new descriptor for "
-                    + ejbClass.getName());
+                logger.log(Level.FINE, "Creating a new descriptor for {0}", ejbClass.getName());
             }
 
             EjbDescriptor dummyEjbDesc = ejbDesc;
@@ -263,8 +272,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             currentBundle.addEjb(ejbDesc);
 
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("New " +
-                    getAnnotationType().getName() + " bean " + elementName);
+                logger.log(Level.FINE, "New {0} bean {1}", new Object[]{getAnnotationType().getName(), elementName});
             }
         }
 
