@@ -51,6 +51,7 @@ import java.net.URLClassLoader;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.logging.Level;
+import static java.util.stream.Collectors.toSet;
 import org.glassfish.apf.Scanner;
 
 /**
@@ -103,28 +104,33 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
     
     @Override
     public Set<Class> getElements() {
-        
-        
-        Set<Class> elements = new HashSet<Class>();
-        if (getClassLoader()==null) {
+        return getElements(
+                entries.stream()
+                .map(JarEntry::getName)
+                .collect(toSet())
+        );
+    }
+
+    @Override
+    public Set<Class> getElements(Set<String> fileNames) {
+
+        Set<Class> elements = new HashSet<>();
+        if (getClassLoader() == null) {
             AnnotationUtils.getLogger().severe("Class loader null");
             return elements;
-        }        
-        for (JarEntry je : entries) {
-            String fileName = je.getName();
+        }
+        for (String fileName : fileNames) {
             // convert to a class name...
             String className = fileName.replace(File.separatorChar, '.');
-            className = className.substring(0, className.length()-6);
-            try {                
+            className = className.substring(0, className.length() - 6);
+            try {
                 elements.add(classLoader.loadClass(className));
-                
-            } catch(ClassNotFoundException cnfe) {
+
+            } catch (ClassNotFoundException cnfe) {
                 AnnotationUtils.getLogger().log(Level.SEVERE, null, cnfe);
             }
         }
         return elements;
     }
-    
-
 
 }

@@ -278,6 +278,10 @@ public class ApplicationState {
         return this.classesChanged.contains(clazz.getName());
     }
 
+    public Set<String> getClassesChanged() {
+        return classesChanged;
+    }
+
     /**
      * Store the transient info before clean up of
      * {@code DeploymentContext#postDeployClean}

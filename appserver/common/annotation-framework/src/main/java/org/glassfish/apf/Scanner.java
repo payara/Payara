@@ -59,7 +59,7 @@ public interface Scanner<T> {
 
     /**
      * Scan the archive file and gather a list of classes 
-     * that should be processed for anntoations
+     * that should be processed for annotations
      * @param archiveFile the archive file for scanning
      * @param bundleDesc the bundle descriptor associated with this archive
      * @param classLoader the classloader used to scan the annotation
@@ -81,6 +81,14 @@ public interface Scanner<T> {
      */
     public Set<Class> getElements();
     
+    /**
+     * Return a class instance available from this location from class name.
+     *
+     * @param classNames the list of class name
+     * @return the set of classes for given names
+     */
+    public Set<Class> getElements(Set<String> classNames);
+
     /**
      * Sometimes, annotations processing requires more than a single class, 
      * especially when such classes end up being a Java Component (Java Beans, 

@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The AnnotationProcessorState stores the AnnotationProcessor's ProcessingContext
- * and corresponding ProcessingResult values.
+ * The AnnotationProcessorState stores the AnnotationProcessor's
+ * ProcessingContext and corresponding ProcessingResult values.
  *
  * @author GauravGupta
  */
@@ -53,7 +53,7 @@ public class AnnotationProcessorState {
 
     private final Object processingContext;
 
-    private final Map<String, Object> processingResults = new HashMap<>();
+    private Object processingResult;
 
     public AnnotationProcessorState(Object processingContext) {
         Objects.requireNonNull(processingContext);
@@ -68,15 +68,15 @@ public class AnnotationProcessorState {
         return _class.cast(processingContext);
     }
 
-    public void addProcessingResult(Class key, Object result) {
-        processingResults.put(key.getName(), result);
-    }
-
-    public <R> R getProcessingResult(Class key, Class<R> _class) {
-        Object result = processingResults.get(key.getName());
-        if (result != null) {
-            return _class.cast(result);
+    public <R> R getProcessingResult(Class<R> _class) {
+        if (processingResult != null) {
+            return _class.cast(processingResult);
         }
         return null;
     }
+
+    public void setProcessingResult(Object processingResult) {
+        this.processingResult = processingResult;
+    }
+
 }

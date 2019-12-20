@@ -58,17 +58,17 @@ import org.glassfish.apf.Scanner;
  *
  * @author Jerome Dochez
  */
-public class DirectoryScanner extends JavaEEScanner implements Scanner {
+public class DirectoryScanner extends JavaEEScanner implements Scanner<Object> {
     
-    File directory;
-    Set<String> entries = new HashSet<String>();
-    ClassLoader classLoader = null;
+    private File directory;
+    private Set<String> entries = new HashSet<>();
+    private ClassLoader classLoader = null;
 
     @Override
     public void process(File directory, Object bundleDesc, ClassLoader classLoader)
             throws IOException {
-        AnnotationUtils.getLogger().finer("dir is " + directory);
-        AnnotationUtils.getLogger().finer("classLoader is " + classLoader);
+        AnnotationUtils.getLogger().log(Level.FINER, "dir is {0}", directory);
+        AnnotationUtils.getLogger().log(Level.FINER, "classLoader is {0}", classLoader);
         this.directory = directory;
         this.classLoader = classLoader;
         init(directory);
@@ -128,25 +128,29 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
 
     @Override
     public Set<Class> getElements() {
-        
-        
-        Set<Class> elements = new HashSet<Class>();
-        if (getClassLoader()==null) {
+        return getElements(entries);
+    }
+
+    @Override
+    public Set<Class> getElements(Set<String> classNames) {
+
+        Set<Class> elements = new HashSet<>();
+        if (getClassLoader() == null) {
             AnnotationUtils.getLogger().severe("Class loader null");
             return elements;
-        }        
-        for (String fileName : entries) {
+        }
+        for (String fileName : classNames) {
             // convert to a class name...
             String className = fileName.replace(File.separatorChar, '.');
-            className = className.substring(0, className.length()-6);
+            className = className.substring(0, className.length() - 6);
             AnnotationUtils.getLogger().log(Level.FINE, "Getting {0}", className);
-            try {                
+            try {
                 elements.add(classLoader.loadClass(className));
-                
-            } catch(Throwable cnfe) {
+            } catch (Throwable cnfe) {
                 AnnotationUtils.getLogger().log(Level.SEVERE, "cannot load {0} reason : {1}", new Object[]{className, cnfe.getMessage()});
             }
         }
         return elements;
     }
+
 }
