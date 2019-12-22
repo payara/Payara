@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-package org.glassfish.web.loader;
+package org.glassfish.api.deployment;
 
 import java.net.URL;
 import java.security.cert.Certificate;

@@ -401,8 +401,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         Optional<ApplicationState> appState = Optional.empty();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
 
-            appState = hotDeployService.getApplicationState(initialContext);
-            if (hotDeploy && !appState.isPresent()) {
+            if (!hotDeploy) {
+                hotDeployService.removeApplicationState(initialContext.getSourceDir());
+            } else if (!(appState = hotDeployService.getApplicationState(initialContext.getSourceDir())).isPresent()) {
                 ApplicationState applicationState = new ApplicationState(name, path, initialContext);
                 applicationState.setTarget(target);
                 appState = Optional.of(applicationState);

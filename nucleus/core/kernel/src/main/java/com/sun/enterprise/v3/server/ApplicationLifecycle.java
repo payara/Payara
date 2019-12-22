@@ -425,7 +425,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoader");
 
-            context.createDeploymentClassLoader(clh, handler);
+            context.createDeploymentClassLoader(clh);
 
             events.send(new Event<>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
 
@@ -486,7 +486,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             events.send(new Event<>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
 
-            context.createApplicationClassLoader(clh, handler);
+            context.createApplicationClassLoader(clh);
 
             events.send(new Event<>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
 
@@ -549,6 +549,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.setPhase(DeploymentContextImpl.Phase.PREPARED);
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             appInfo.setAppClassLoader(context.getClassLoader());
+            appState.ifPresent(s -> s.setApplicationClassLoader(context.getClassLoader()));
             events.send(new Event<>(Deployment.APPLICATION_PREPARED, context), false);
 
             if (loadOnCurrentInstance(context)) {

@@ -37,63 +37,24 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.hotdeploy;
+package org.glassfish.api.deployment;
 
-import java.io.File;
-import java.util.Map;
-import java.util.Optional;
-import java.util.WeakHashMap;
-import javax.inject.Singleton;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.jvnet.hk2.annotations.Service;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
- * The HotDeploy service cache the application deployment state.
- * 
+ * Providers of class loaders for Payara applications can optionally implements
+ * this interface to indicate their <code>ClassLoader</code> implementations may
+ * optionally implement to update and copy the resource from other class
+ * loaders.
+ *
  * @author Gaurav Gupta
  */
-@Singleton
-@Service(name = "hotdeploy-service")
-public class HotDeployService {
 
-    private final Map<File, ApplicationState> applicationStates = new WeakHashMap<>();
+public interface ResourceClassLoader {
 
-    public boolean isApplicationStateExist(File path) {
-        return applicationStates.containsKey(path);
-    }
+    ConcurrentHashMap<String, ResourceEntry> getResourceEntries();
 
-    public Optional<ApplicationState> getApplicationState(File path) {
-        return Optional.ofNullable(applicationStates.get(path));
-    }
-
-    public Optional<ApplicationState> getApplicationState(boolean hotdeploy, File path) {
-        if (hotdeploy) {
-            return getApplicationState(path);
-        } else {
-            return Optional.empty();
-        }
-    }
-    
-    public Optional<ApplicationState> getApplicationState(DeploymentContext context) {
-        DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
-        boolean hotDeploy = commandParams != null? commandParams.hotDeploy : false;
-        return getApplicationState(hotDeploy, context.getSourceDir());
-    }
-
-    public synchronized ApplicationState removeApplicationState(File path) {
-        ApplicationState applicationState = applicationStates.remove(path);
-        if(applicationState != null) {
-            applicationState.preDestroy();
-        }
-        return applicationState;
-    }
-
-    public synchronized void addApplicationState(ApplicationState applicationState) {
-        if(applicationStates.containsKey(applicationState.getPath())){
-            throw new IllegalStateException("Application state already exist for " + applicationState.getName());
-        }
-        applicationStates.put(applicationState.getPath(), applicationState);
-    }
+    void addResourceEntry(String name, ResourceEntry entry);
 
 }

@@ -71,6 +71,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
@@ -172,16 +173,20 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return deplLogger;
     }
 
+    @Override
     public synchronized void preDestroy() {
-        try {
-            PreDestroy.class.cast(sharableTemp).preDestroy();
-        } catch (Exception e) {
-          // ignore, the classloader does not need to be destroyed
-        }
-        try {
-            PreDestroy.class.cast(cloader).preDestroy();
-        } catch (Exception e) {
-          // ignore, the classloader does not need to be destroyed
+        boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
+        if (!hotDeploy) {
+            try {
+                PreDestroy.class.cast(sharableTemp).preDestroy();
+            } catch (Exception e) {
+                // ignore, the classloader does not need to be destroyed
+            }
+            try {
+                PreDestroy.class.cast(cloader).preDestroy();
+            } catch (Exception e) {
+                // ignore, the classloader does not need to be destroyed
+            }
         }
     }
 
@@ -197,6 +202,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getFinalClassLoader() {
         return cloader;
     }
@@ -213,6 +219,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getClassLoader() { 
       /* TODO -- Replace this method with another that does not imply it is
        * an accessor and conveys that the result may change depending on the
@@ -222,6 +229,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
       return getClassLoader(true);
     }
 
+    @Override
     public synchronized void setClassLoader(ClassLoader cloader) {
         this.cloader = cloader;
     }
@@ -229,35 +237,46 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     // this classloader will be used for sniffer retrieval, metadata parsing 
     // and the prepare
-    public synchronized void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
+    @Override
+    public synchronized ClassLoader createDeploymentClassLoader(ClassLoaderHierarchy clh)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE);
-        this.sharableTemp = createClassLoader(clh, handler, null); 
+        boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
+        if (hotDeploy && this.cloader != null) {
+            this.sharableTemp = this.cloader;
+        } else {
+            this.sharableTemp = createClassLoader(clh, null);
+        }
+        return this.sharableTemp;
     }
 
     // this classloader will used to load and start the application
-    public void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
+    @Override
+    public ClassLoader createApplicationClassLoader(ClassLoaderHierarchy clh)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.FALSE);
         if (this.cloader == null) {
-            this.cloader = createClassLoader(clh, handler, parameters.name());
+            this.cloader = createClassLoader(clh, parameters.name());
         }
+        return this.cloader;
     }
 
-    private ClassLoader createClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler, String appName)
+    private ClassLoader createClassLoader(ClassLoaderHierarchy clh, String appName)
             throws URISyntaxException, MalformedURLException {
         // first we create the appLib class loader, this is non shared libraries class loader
+        long start = System.currentTimeMillis();
         ClassLoader applibCL = clh.getAppLibClassLoader(appName, getAppLibs());
 
         ClassLoader parentCL = clh.createApplicationParentCL(applibCL, this);
+        System.out.println("createClassLoader parentCL " + (System.currentTimeMillis() - start));
 
-        return handler.getClassLoader(parentCL, this);
+        return archiveHandler.getClassLoader(parentCL, this);
     }
 
     public synchronized ClassLoader getClassLoader(boolean sharable) {
         // if we are in prepare phase, we need to return our sharable temporary class loader
         // otherwise, we return the final one.
-        if (phase==Phase.PREPARE) {
+        if (phase == Phase.PREPARE) {
             if (sharable) {
                 return sharableTemp;
             } else {
@@ -267,13 +286,13 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         } else {
             // we are out of the prepare phase, destroy the shareableTemp and 
             // return the final classloader
-            if (sharableTemp!=null) { 
+            if (sharableTemp != null && sharableTemp != cloader) {
                 try {
                     PreDestroy.class.cast(sharableTemp).preDestroy();
                 } catch (Exception e) {
                     // ignore, the classloader does not need to be destroyed
                 }
-                sharableTemp=null;
+                sharableTemp = null;
             }
             return cloader;
         }
@@ -281,8 +300,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     /**
      * Returns a scratch directory that can be used to store things in.
-     * The scratch directory will be persisted accross server restart but
-     * not accross redeployment of the same application
+     * The scratch directory will be persisted across server restart but
+     * not across redeployment of the same application
      *
      * @param subDirName the sub directory name of the scratch dir
      * @return the scratch directory for this application based on
@@ -483,6 +502,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return libURIs;
     }
 
+    @Override
     public void clean() {
         if (parameters.origin == OpsParams.Origin.undeploy ||
             parameters.origin == OpsParams.Origin.deploy ) {
@@ -616,6 +636,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return an action report
      */
+    @Override
     public ActionReport getActionReport() {
         return actionReport;
     }

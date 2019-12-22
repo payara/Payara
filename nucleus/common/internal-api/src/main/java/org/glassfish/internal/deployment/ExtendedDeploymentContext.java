@@ -85,23 +85,27 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
     List<ClassFileTransformer> getTransformers();
 
     /**
-     * Create the deployment class loader. It will be used for sniffer 
-     * retrieval, metadata parsing and deployer prepare. 
+     * Create the deployment class loader.It will be used for sniffer retrieval,
+     * metadata parsing and deployer prepare.
      *
      * @param clh the hierarchy of class loader for the parent
-     * @param handler the archive handler for the source archive
+     * @return
+     * @throws java.net.URISyntaxException
+     * @throws java.net.MalformedURLException
      */
-    void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
+    ClassLoader createDeploymentClassLoader(ClassLoaderHierarchy clh)
             throws URISyntaxException, MalformedURLException;
 
     /**
-     * Create the final class loader. It will be used to load and start
+     * Create the final class loader.It will be used to load and start
      * application.
      *
      * @param clh the hierarchy of class loader for the parent
-     * @param handler the archive handler for the source archive
+     * @return
+     * @throws java.net.URISyntaxException
+     * @throws java.net.MalformedURLException
      */
-    void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
+    ClassLoader createApplicationClassLoader(ClassLoaderHierarchy clh)
             throws URISyntaxException, MalformedURLException;
 
     void clean();
@@ -134,8 +138,8 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
      */
     Map<String, ExtendedDeploymentContext> getModuleDeploymentContexts();
 
-   /**
-     * Sets the classloader
+    /**
+     * Sets the application classloader
      *
      * @param cloader
      */
@@ -199,7 +203,7 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
      * Sets the tenant to which this deployment context applies. Also initializes
      * the tenant directory.
      *
-     * @param tenantName the name of the tenant
+     * @param tenant the name of the tenant
      * @param appName the name of the application
      */
     void setTenant(String tenant, String appName);
