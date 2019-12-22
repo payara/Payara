@@ -557,8 +557,6 @@ public class DeploymentProperties extends Properties {
     // internal use - from autodeployer
     public static final String LOG_REPORTED_ERRORS = "logReportedErrors";
 
-    public static final String HOT_DEPLOY = "hotDeploy";
-
     public static final String KEEP_SESSIONS = "keepSessions";
 
     public static final String PRESERVE_APP_SCOPED_RESOURCES = "preserveAppScopedResources";
