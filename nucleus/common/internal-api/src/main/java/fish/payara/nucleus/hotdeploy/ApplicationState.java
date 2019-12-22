@@ -40,7 +40,6 @@
 package fish.payara.nucleus.hotdeploy;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -64,6 +64,8 @@ import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.api.deployment.ResourceEntry;
+import org.glassfish.api.deployment.ResourceClassLoader;
 
 /**
  * The Application deployment state includes application descriptor metadata,
@@ -83,6 +85,7 @@ public class ApplicationState {
     private ApplicationInfo applicationInfo;
 
     private ExtendedDeploymentContext deploymentContext;
+    private ClassLoader applicationClassLoader;
     private Map<String, Object> descriptorMetadata = Collections.emptyMap();
     private Map<String, Object> modulesMetaData = Collections.emptyMap();
 
@@ -107,7 +110,7 @@ public class ApplicationState {
      */
     private boolean active;
 
-    private List<ClassLoader> previousClassLoaders;
+    private Set<ClassLoader> previousClassLoaders;
 
     private static final String WEB_INF = "WEB-INF";
     private static final String META_INF = "META-INF";
@@ -209,6 +212,10 @@ public class ApplicationState {
         validateInactiveState();
         this.active = true;
 
+        if (this.applicationInfo != null) {
+            this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+        }
+
         newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
         newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
 
@@ -233,8 +240,21 @@ public class ApplicationState {
             }
         }
 
+        if (applicationClassLoader != null
+                && applicationClassLoader instanceof ResourceClassLoader) {
+            ClassLoader newClassLoader = newContext.getArchiveHandler()
+                            .getClassLoader(applicationClassLoader.getParent(), newContext);
+            ResourceClassLoader newResourceClassLoader = ResourceClassLoader.class.cast(newClassLoader);
+            ResourceClassLoader previousResourceClassLoader = ResourceClassLoader.class.cast(applicationClassLoader);
+            ConcurrentHashMap<String, ResourceEntry> previousResourceEntries = previousResourceClassLoader.getResourceEntries();
+            previousResourceEntries.entrySet()
+                    .stream()
+                    .filter(e -> !classesChanged.contains(e.getKey()))
+                    .forEach(e -> newResourceClassLoader.addResourceEntry(e.getKey(), e.getValue()));
+            newContext.setClassLoader(newClassLoader);
+        }
+
         if (this.applicationInfo != null) {
-            this.previousClassLoaders = getClassLoaders(this.applicationInfo);
             // unload previous app
             events.send(
                     new EventListener.Event<ApplicationInfo>(
@@ -244,6 +264,10 @@ public class ApplicationState {
                     false
             );
         }
+    }
+
+    public void setApplicationClassLoader(ClassLoader applicationClassLoader) {
+        this.applicationClassLoader = applicationClassLoader;
     }
 
     public void addProcessingContext(Class descriptor, Object processingContext) {
@@ -334,6 +358,15 @@ public class ApplicationState {
         }
     }
 
+    public void preDestroy() {
+        try {
+            PreDestroy.class.cast(applicationClassLoader).preDestroy();
+        } catch (Exception e) {
+            // ignore, the classloader does not need to be destroyed
+        }
+        this.applicationClassLoader = null;
+    }
+
     private void validateActiveState() {
         if (!active) {
             throw new IllegalStateException(String.format("Application [%s] state must be active.", name));
@@ -369,8 +402,8 @@ public class ApplicationState {
         return className;
     }
 
-    private List<ClassLoader> getClassLoaders(ApplicationInfo appInfo) {
-        List<ClassLoader> classLoaders = new ArrayList<>(appInfo.getClassLoaders());
+    private Set<ClassLoader> getClassLoaders(ApplicationInfo appInfo) {
+        Set<ClassLoader> classLoaders = new HashSet<>(appInfo.getClassLoaders());
         classLoaders.add(appInfo.getModuleClassLoader());
         classLoaders.add(appInfo.getAppClassLoader());
 
