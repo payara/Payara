@@ -333,7 +333,10 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
+            
+            // Dot not register session, as this will invalidate the currently active sessions (with all of its attributes)!
+            // httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
+
             httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
