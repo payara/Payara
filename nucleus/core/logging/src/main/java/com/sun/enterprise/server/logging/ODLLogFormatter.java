@@ -74,9 +74,9 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key
-    private Map<String, ResourceBundle> loggerResourceBundleTable;
+    private final Map<String, ResourceBundle> loggerResourceBundleTable;
 
-    private LogManager logManager;
+    private final LogManager logManager;
 
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
@@ -88,7 +88,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private FormatterDelegate _delegate = null;
 
-    private UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
+    private final UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -118,7 +118,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private boolean multiLineMode;
 
-    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
 
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
@@ -132,7 +132,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     public ODLLogFormatter() {
         super();
-        loggerResourceBundleTable = new HashMap<String,ResourceBundle>();
+        loggerResourceBundleTable = new HashMap<>();
         logManager = LogManager.getLogManager();
     }
 
@@ -455,23 +455,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     public void setRecordDateFormat(String recordDateFormat) {
         this.recordDateFormat = recordDateFormat;
-    }
-
-    public String getMessageWithoutMessageID(String message) {
-        String messageID = "";
-        if (message.contains(": ")) {
-            StringTokenizer st = new StringTokenizer(message, ":");
-            messageID = st.nextToken();
-            if (messageID.contains(" ")) {
-                // here message ID is not proper value so returning original message only
-                return message;
-            } else {
-                // removing message Id and returning message
-                message = st.nextToken();
-                return message.substring(1, message.length());
-            }
-        }
-        return message;
     }
 
     void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {

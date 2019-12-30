@@ -42,20 +42,27 @@
 
 package com.sun.enterprise.server.logging;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.ErrorManager;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
 import org.glassfish.api.VersionInfo;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Formatter;
-import java.util.logging.*;
 
 /**
  * UniformLogFormatter conforms to the logging format defined by the
@@ -87,9 +94,6 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
     private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
-    // loggerResourceBundleTable caches references to all the ResourceBundle
-    // and can be searched using the LoggerName as the key
-    private final HashMap loggerResourceBundleTable;
     private final LogManager logManager;
     // A Dummy Container Date Object is used to format the date
     private final Date date = new Date();
@@ -146,7 +150,6 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
     public UniformLogFormatter() {
         super();
-        loggerResourceBundleTable = new HashMap();
         logManager = LogManager.getLogManager();
     }
 
@@ -310,7 +313,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 recordBuffer.append("_ThreadName").append(NV_SEPARATOR);
                 String threadName;
                 if (record instanceof EnhancedLogRecord) {
-                  threadName = ((EnhancedLogRecord)record).getThreadName();
+                    threadName = ((EnhancedLogRecord)record).getThreadName();
                 } else {
                     threadName = Thread.currentThread().getName();
                 }
@@ -460,7 +463,8 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 logEvent.setMessage(logMessage);
                 recordBuffer.append(logMessage);
             }
-            recordBuffer.append(getRecordEndMarker() != null ? getRecordEndMarker() : RECORD_END_MARKER).append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+            recordBuffer.append(getRecordEndMarker() == null ? RECORD_END_MARKER : getRecordEndMarker());
+            recordBuffer.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
             informLogEventListeners(logEvent);
             return recordBuffer.toString();
 
@@ -475,19 +479,19 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
     }
 
     static String getMessageId(LogRecord lr) {
-        String msg = lr.getMessage();
-        if (msg != null && !msg.isEmpty()) {
-          ResourceBundle rb = lr.getResourceBundle();
-          if (rb != null) {
-            if (rb.containsKey(msg)) {
-              String msgBody = lr.getResourceBundle().getString(msg);
-              if (!msgBody.isEmpty()) {
-                return msg;
-              }
-            }
-          }
+        if (lr instanceof EnhancedLogRecord) {
+            return EnhancedLogRecord.class.cast(lr).getMessageKey();
         }
-        return null;
+        final String msg = lr.getMessage();
+        if (msg == null || msg.isEmpty()) {
+            return null;
+        }
+        final ResourceBundle rb = lr.getResourceBundle();
+        if (rb == null) {
+            return null;
+        }
+        final String msgBody = rb.getString(msg);
+        return msgBody.isEmpty() ? null : msgBody;
     }
 
     static Throwable getThrowable(LogRecord record) {
@@ -498,17 +502,11 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
         if (loggerName == null) {
             return null;
         }
-        ResourceBundle rb = (ResourceBundle) loggerResourceBundleTable.get(
-                loggerName);
-        /*
-                * Note that logManager.getLogger(loggerName) untrusted code may create loggers with
-                * any arbitrary names this method should not be relied on so added code for checking null.
-                */
-        if (rb == null && logManager.getLogger(loggerName) != null) {
-            rb = logManager.getLogger(loggerName).getResourceBundle();
-            loggerResourceBundleTable.put(loggerName, rb);
+        final Logger logger = logManager.getLogger(loggerName);
+        if (logger == null) {
+            return null;
         }
-        return rb;
+        return logger.getResourceBundle();
     }
 
     public String getRecordBeginMarker() {
