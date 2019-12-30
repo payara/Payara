@@ -148,6 +148,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     private StateController stateController;
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
+    
+    private static final String SESSION_LOCK_NAME = OpenIdAuthenticationMechanism.class.getName();
 
     /**
      * Creates an {@link OpenIdAuthenticationMechanism}.
@@ -189,35 +191,34 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        Principal userPrincipal = request.getUserPrincipal();
-
-        if (isNull(userPrincipal)) {
-            LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
-            // User is not authenticated
-            // Perform steps (1) to (6)
-            return this.authenticate(request, response, httpContext);
-
-        } else {
-            // User has been authenticated in request before
-
-            // Try-catch-block taken from AutoApplySessionInterceptor
-            // We cannot use @AutoApplySession, because validateRequest(...) must be called on every request
-            // to handle re-authentication (refreshing tokens)
-            // https://stackoverflow.com/questions/51678821/soteria-httpmessagecontext-setregistersession-not-working-as-expected/51819055
-            // https://github.com/javaee/security-soteria/blob/master/impl/src/main/java/org/glassfish/soteria/cdi/AutoApplySessionInterceptor.java
-            try {
-                httpContext.getHandler().handle(new Callback[]{
-                    new CallerPrincipalCallback(httpContext.getClientSubject(), request.getUserPrincipal())}
-                );
-            } catch (IOException | UnsupportedCallbackException ex) {
-                throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
-            }
-
-            if (configuration.isTokenAutoRefresh()) {
-                LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
-                return this.reAuthenticate(request, response, httpContext);
+        synchronized (this.getSessionLock(request)) {
+            if (isNull(request.getUserPrincipal())) {
+                LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
+                // User is not authenticated
+                // Perform steps (1) to (6)
+                return this.authenticate(request, response, httpContext);
             } else {
-                return SUCCESS;
+                // User has been authenticated in request before
+
+                // Try-catch-block taken from AutoApplySessionInterceptor
+                // We cannot use @AutoApplySession, because validateRequest(...) must be called on every request
+                // to handle re-authentication (refreshing tokens)
+                // https://stackoverflow.com/questions/51678821/soteria-httpmessagecontext-setregistersession-not-working-as-expected/51819055
+                // https://github.com/javaee/security-soteria/blob/master/impl/src/main/java/org/glassfish/soteria/cdi/AutoApplySessionInterceptor.java
+                try {
+                    httpContext.getHandler().handle(new Callback[]{
+                        new CallerPrincipalCallback(httpContext.getClientSubject(), request.getUserPrincipal())}
+                    );
+                } catch (IOException | UnsupportedCallbackException ex) {
+                    throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
+                }
+
+                if (configuration.isTokenAutoRefresh()) {
+                    LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
+                    return this.reAuthenticate(request, response, httpContext);
+                } else {
+                    return SUCCESS;
+                }
             }
         }
     }
@@ -362,6 +363,22 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         if (nonNull(expiresIn)) {
             context.setExpiresIn(Integer.parseInt(expiresIn));
         }
+    }
+    
+    private Object getSessionLock(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Object lock = session.getAttribute(SESSION_LOCK_NAME);
+        if (isNull(lock)) {
+            synchronized (OpenIdAuthenticationMechanism.class) {
+                lock = session.getAttribute(SESSION_LOCK_NAME);
+                if (isNull(lock)) {
+                    lock = new Object();
+                    session.setAttribute(SESSION_LOCK_NAME, lock);
+                }
+
+            }
+        }
+        return lock;
     }
 
 }
