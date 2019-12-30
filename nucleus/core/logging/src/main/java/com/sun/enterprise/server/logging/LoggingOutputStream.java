@@ -46,6 +46,7 @@ import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -63,7 +64,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     private final String lineSeparator;
     private final Level level;
-    private final BooleanLatch done = new BooleanLatch();
+    private final AtomicBoolean done = new AtomicBoolean();
     private final LogRecordBuffer logRecordBuffer;
 
     private Logger logger;
@@ -111,7 +112,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         pump = new Thread() {
             @Override
             public void run() {
-                while (!done.isSignalled()) {
+                while (!done.get()) {
                     try {
                         logAllPendingRecords();
                     } catch (Exception e) {
@@ -144,7 +145,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     @Override
     public void close() throws IOException {
-        done.tryReleaseShared(1);
+        done.set(true);
         while (true) {
             if (!logRecord(logRecordBuffer.poll())) {
                 // end if there was nothing more to log

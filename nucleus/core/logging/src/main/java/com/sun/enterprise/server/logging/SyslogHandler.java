@@ -41,29 +41,28 @@
 
 package com.sun.enterprise.server.logging;
 
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-
-import javax.inject.Singleton;
-
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 
-/**
- * Created by IntelliJ IDEA.
- * User: cmott
- * Date: Mar 11, 2009
- * Time: 1:41:30 PM
- * To change this template use File | Settings | File Templates.
- */
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
+
+
 @Service
 @Singleton
 @ContractsProvided({SyslogHandler.class, java.util.logging.Handler.class})
@@ -72,13 +71,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     @Inject
     ServerEnvironmentImpl env;
 
+    private final AtomicBoolean done = new AtomicBoolean();
     private Syslog sysLogger;
     private Thread pump= null;
-    private BooleanLatch done = new BooleanLatch();
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
-    private SimpleFormatter simpleFormatter = new SimpleFormatter();
+    private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(5000);
+    private final SimpleFormatter simpleFormatter = new SimpleFormatter();
 
 
+    @Override
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
@@ -91,16 +91,17 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
 
         //set up the connection
-        setupConnection();       
+        setupConnection();
         initializePump();
     }
 
     private void initializePump() {
         // start the Queue consummer thread.
         pump = new Thread() {
+            @Override
             public void run() {
                 try {
-                    while (!done.isSignalled()) {
+                    while (!done.get()) {
                         if (pump.isInterrupted()) {
                             break;
                         }
@@ -113,16 +114,17 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         };
         pump.start();
     }
-    
+
     private void setupConnection(){
         try {
             sysLogger = new Syslog("localhost");  //for now only write to this host
-        } catch (java.net.UnknownHostException e) {
+        } catch (UnknownHostException e) {
             LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_INIT_SYSLOG, e);
             return;
         }
     }
-    
+
+    @Override
     public void preDestroy() {
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
@@ -177,10 +179,12 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish( LogRecord record ) {
-        if (pump == null)
+        if (pump == null) {
             return;
-            
+        }
+
         try {
             pendingRecords.add(record);
         } catch(IllegalStateException e) {
@@ -193,12 +197,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
     }
 
+    @Override
     public void close() {
 
     }
 
+    @Override
     public void flush() {
-        
+
     }
 
     public void setSystemLogging(boolean systemLogging) {

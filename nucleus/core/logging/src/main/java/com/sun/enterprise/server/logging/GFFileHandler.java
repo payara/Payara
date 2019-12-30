@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
@@ -165,6 +166,7 @@ public class GFFileHandler extends StreamHandler
     private int limitForFileRotation = 0;
 
     private LogRecordBuffer logRecordBuffer;
+    private ConcurrentLinkedQueue<LogRecord> startupQueue;
 
     /**Rotation can be done in 3 ways: <ol>
      * <li> Based on the Size: Rotate when some Threshold number of bytes are
@@ -178,21 +180,21 @@ public class GFFileHandler extends StreamHandler
     private final Object rotationLock = new Object();
 
     private static final String LOG_ROTATE_DATE_FORMAT = "yyyy-MM-dd'T'HH-mm-ss";
-
     private static final String DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
-
     public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500*1000;
 
-    private final BooleanLatch done = new BooleanLatch();
-
     private boolean dayBasedFileRotation = false;
-
-    private final List<LogEventListener> logEventListeners = new ArrayList<>();
-
     private Thread pump;
 
+    private final AtomicBoolean shutdown = new AtomicBoolean();
+    private final List<LogEventListener> logEventListeners = new ArrayList<>();
     private final LogManager manager = LogManager.getLogManager();
     private final String className = getClass().getName();
+
+
+    public GFFileHandler() {
+        this.startupQueue = new ConcurrentLinkedQueue<>();
+    }
 
 
     @Override
@@ -328,7 +330,7 @@ public class GFFileHandler extends StreamHandler
             ex.printStackTrace();
         }
 
-        done.tryReleaseShared(1);
+        shutdown.set(true);
         if (pump != null) {
             pump.interrupt();
         }
@@ -591,8 +593,18 @@ public class GFFileHandler extends StreamHandler
         pump = new Thread() {
             @Override
             public void run() {
+                // we have to wait and buffer messages until logging is completely initialized.
+                while (LogManager.getLogManager() == null) {
+                    Thread.yield();
+                }
+                final ConcurrentLinkedQueue<LogRecord> toTransform = startupQueue;
+                startupQueue = null;
                 earlyLog(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
-                while (logToFile && !done.isSignalled()) {
+                for (final LogRecord logRecord : toTransform) {
+                    publishRecord(evaluateMessage(logRecord));
+                }
+                flush();
+                while (logToFile && !shutdown.get()) {
                     try {
                         publishBatchFromBuffer();
                     } catch (Exception e) {
@@ -837,8 +849,7 @@ public class GFFileHandler extends StreamHandler
                         // We do this to make sure that server.log
                         // contents are flushed out to start from a
                         // clean file again after the rename..
-                        FileOutputStream fo = new FileOutputStream(
-                                freshServerLogFile);
+                        FileOutputStream fo = new FileOutputStream(freshServerLogFile);
                         fo.close();
                     }
                     FileOutputStream oldFileFO = new FileOutputStream(oldFile);
@@ -906,8 +917,13 @@ public class GFFileHandler extends StreamHandler
                 }
             }
         }
-
         flush();
+    }
+
+
+    @Override
+    public void flush() {
+        super.flush();
         if (rotationRequested.get() || (limitForFileRotation > 0 && meter.written >= limitForFileRotation)) {
             // If we have written more than the limit set for the
             // file, or rotation requested from the Timer Task or LogMBean
@@ -925,7 +941,7 @@ public class GFFileHandler extends StreamHandler
      * @param record
      * @return true if the record was not null
      */
-    private boolean publishRecord(final LogRecord record) {
+    private boolean publishRecord(final EnhancedLogRecord record) {
         if (record == null) {
             return false;
         }
@@ -939,37 +955,43 @@ public class GFFileHandler extends StreamHandler
      * thread.
      */
     @Override
-    public void publish(LogRecord record) {
+    public void publish(final LogRecord record) {
 
-        // the queue has shutdown, we are not processing any more records
-        if (done.isSignalled()) {
+        // shutdown invoked, we are not processing any more records
+        if (shutdown.get()) {
             return;
         }
 
-        // JUL LogRecord does not capture thread-name. Create a wrapper to
-        // capture the name of the logging thread so that a formatter can
-        // output correct thread-name if done asynchronously. Note that
-        // this fix is limited to records published through this handler only.
-        // ***
-        // PAYARA-406 Check if the LogRecord passed in is already a EnhancedLogRecord,
-        // and just cast the passed record if it is
-        final EnhancedLogRecord recordWrapper;
-        if (record instanceof EnhancedLogRecord) {
-            recordWrapper = (EnhancedLogRecord) record;
-        } else {
-            recordWrapper = new EnhancedLogRecord(record);
+        // don't process records which passed logger's level,
+        // but would not pass the level of this handler.
+        if (!isLoggable(record)) {
+            return;
         }
 
+        // logging not initialized yet, so we put the record to the special buffer
+        // and for now we are done. Events are not supported in this state.
+        if (LogManager.getLogManager() == null) {
+            this.startupQueue.add(record);
+            return;
+        }
+
+        final EnhancedLogRecord recordWrapper = evaluateMessage(record);
         if (logToFile) {
             logRecordBuffer.add(recordWrapper);
         }
-
-        Formatter formatter = this.getFormatter();
-        if (!(formatter instanceof LogEventBroadcaster)) {
-            LogEvent logEvent = new LogEventImpl(record);
+        final Formatter formatter = this.getFormatter();
+        if (!LogEventBroadcaster.class.isInstance(formatter)) {
+            final LogEvent logEvent = new LogEventImpl(recordWrapper);
             informLogEventListeners(logEvent);
         }
+    }
 
+
+    protected EnhancedLogRecord evaluateMessage(final LogRecord record) {
+        if (record instanceof EnhancedLogRecord) {
+            return (EnhancedLogRecord) record;
+        }
+        return new EnhancedLogRecord(record);
     }
 
     protected File getLogFileName() {

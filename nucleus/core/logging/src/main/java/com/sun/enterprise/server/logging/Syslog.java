@@ -50,21 +50,19 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 
 /**
-* Send a message via syslog.
-*/
-/**
- * this code is taken from spy.jar and enhanced
- * User: cmott
+ * Send a message via syslog.
  */
+// This code is taken from spy.jar and enhanced
 public class Syslog {
-    public static final int EMERG=0;
-    public static final int ALERT=1;
-    public static final int CRIT=2;
-    public static final int ERR=3;
-    public static final int WARNING=4;
-    public static final int NOTICE=5;
-    public static final int INFO=6;
-    public static final int DEBUG=7;
+
+    public static final int EMERG = 0;
+    public static final int ALERT = 1;
+    public static final int CRIT = 2;
+    public static final int ERR = 3;
+    public static final int WARNING = 4;
+    public static final int NOTICE = 5;
+    public static final int INFO = 6;
+    public static final int DEBUG = 7;
 
     public static final int KERN = 0;
     public static final int USER = 8;
@@ -95,24 +93,23 @@ public class Syslog {
      * Log to a particular log host.
      */
     public Syslog(String loghost) throws UnknownHostException {
-      addr=InetAddress.getByName(loghost);
+        addr = InetAddress.getByName(loghost);
     }
+
 
     /**
      * Send a log message.
      */
     public void log(int facility, int level, String msg) {
-      int fl=facility | level;
-      String what="<" + fl + ">" + msg;
-      try (DatagramSocket datagramSocket = new DatagramSocket()) {
-        byte[] buf = what.getBytes();
-        int len = buf.length;
-        DatagramPacket dp = new DatagramPacket(buf,len,addr,SYSLOG_PORT);
-        datagramSocket.send(dp);
-      } catch(IOException e) {
-        LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
-      }
+        int fl = facility | level;
+        String what = "<" + fl + ">" + msg;
+        try (DatagramSocket datagramSocket = new DatagramSocket()) {
+            byte[] buf = what.getBytes();
+            int len = buf.length;
+            DatagramPacket dp = new DatagramPacket(buf, len, addr, SYSLOG_PORT);
+            datagramSocket.send(dp);
+        } catch (IOException e) {
+            LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
+        }
     }
-
-
 }
