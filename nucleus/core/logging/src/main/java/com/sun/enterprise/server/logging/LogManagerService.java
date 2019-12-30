@@ -695,7 +695,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             // only get the GFFileHandler
                                             if (handler.getClass().equals(GFFileHandler.class)) {
                                                 gfFileHandler = (GFFileHandler) handler;
-
                                                 gfFileHandler.setRotationOnDateChange(Boolean.parseBoolean(rotationOnDateChangeDetail));
                                                 break;
                                             }

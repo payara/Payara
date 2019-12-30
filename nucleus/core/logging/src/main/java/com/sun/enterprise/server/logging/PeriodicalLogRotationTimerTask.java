@@ -41,61 +41,35 @@
 
 package com.sun.enterprise.server.logging;
 
-import java.util.Timer;
-import java.util.concurrent.ScheduledFuture;
+/**
+ * A {@link LogRotationTimerTask} used for delayed scheduling of the log file rotation.
+ */
+public class PeriodicalLogRotationTimerTask extends LogRotationTimerTask {
 
-public class LogRotationTimer {
+    private final long delay;
 
-    private LogRotationTimerTask rotationTimerTask;
-    private ScheduledFuture<?> logRotationFuture;
 
-    private static LogRotationTimer instance = new LogRotationTimer();
-    private Timer rotationTimer;
-
-    private LogRotationTimer() {
-        rotationTimer = new Timer("log-rotation-timer");
+    /**
+     * Creates a task which should be executed periodically after the delay from the time of
+     * scheduling.
+     *
+     * @param action action to be executed
+     * @param delayInMillis
+     */
+    public PeriodicalLogRotationTimerTask(final LogFileRotationImplementation action, final long delayInMillis) {
+        super(action);
+        this.delay = delayInMillis;
     }
 
-    public static LogRotationTimer getInstance() {
-        return instance;
+
+    @Override
+    public long computeDelayInMillis() {
+        return delay;
     }
 
-    public void startTimer(LogRotationTimerTask timerTask) {
-        rotationTimerTask = timerTask;
-        rotationTimer.schedule(rotationTimerTask, timerTask.getRotationTimerValue());
-    }
 
-    public void stopTimer() {
-         rotationTimer.cancel();
+    @Override
+    public PeriodicalLogRotationTimerTask createNewTask() {
+        return new PeriodicalLogRotationTimerTask(this.action, computeDelayInMillis());
     }
-
-    public void restartTimer() {
-        // We will restart the timer only if the timerTask is set which
-        // means user has set a value for LogRotation based on Time
-        if (rotationTimerTask != null) {
-            rotationTimerTask.cancel();
-            rotationTimerTask = new LogRotationTimerTask(
-                // This is wierd, We need to have a fresh TimerTask object
-                // to reschedule the work.
-                rotationTimerTask.task,
-                rotationTimerTask.getRotationTimerValueInMinutes());
-            rotationTimer.schedule(rotationTimerTask, rotationTimerTask.getRotationTimerValue());
-        }
-    }
-
-    public void restartTimerForDayBasedRotation() {
-        // We will restart the timer only if the timerTask is set which
-        // means user has set a value for LogRotation based on Time
-        if (rotationTimerTask != null) {
-            rotationTimerTask.cancel();
-            rotationTimerTask = new LogRotationTimerTask(
-                // This is wierd, We need to have a fresh TimerTask object
-                // to reschedule the work.
-                rotationTimerTask.task,
-                60 * 24
-            );
-            rotationTimer.schedule(rotationTimerTask, 1000 * 60 * 60 * 24);
-        }
-    }
-
 }

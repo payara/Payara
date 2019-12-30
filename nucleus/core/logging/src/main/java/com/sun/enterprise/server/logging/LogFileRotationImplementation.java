@@ -40,41 +40,10 @@
 
 package com.sun.enterprise.server.logging;
 
-import java.util.TimerTask;
-
 /**
- * A {@link TimerTask} used for log file rotation, scheduled to be executed after the delay.
- *
- * @author David Matejcek
+ * Implementation of logging file rotation action
  */
-public abstract class LogRotationTimerTask extends TimerTask {
+interface LogFileRotationImplementation {
 
-    protected final LogFileRotationImplementation action;
-
-
-    /**
-     * @param action to be executed.
-     */
-    protected LogRotationTimerTask(final LogFileRotationImplementation action) {
-        this.action = action;
-    }
-
-
-    /**
-     * @return time in millis from now to the next execution of the action.
-     */
-    public abstract long computeDelayInMillis();
-
-
-    /**
-     * @return new task based on this, but still not scheduled yet.
-     */
-    public abstract LogRotationTimerTask createNewTask();
-
-
-    @Override
-    public void run() {
-        action.execute();
-    }
-
+    void execute();
 }

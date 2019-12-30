@@ -40,41 +40,30 @@
 
 package com.sun.enterprise.server.logging;
 
-import java.util.TimerTask;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 /**
- * A {@link TimerTask} used for log file rotation, scheduled to be executed after the delay.
- *
  * @author David Matejcek
  */
-public abstract class LogRotationTimerTask extends TimerTask {
-
-    protected final LogFileRotationImplementation action;
+public class DailyLogRotationTimerTaskTest {
 
 
-    /**
-     * @param action to be executed.
-     */
-    protected LogRotationTimerTask(final LogFileRotationImplementation action) {
-        this.action = action;
-    }
+    private static final String MESSAGE = "Hi, it works!";
 
-
-    /**
-     * @return time in millis from now to the next execution of the action.
-     */
-    public abstract long computeDelayInMillis();
-
-
-    /**
-     * @return new task based on this, but still not scheduled yet.
-     */
-    public abstract LogRotationTimerTask createNewTask();
-
-
-    @Override
-    public void run() {
-        action.execute();
+    @Test
+    public void test() {
+        final StringBuilder message = new StringBuilder();
+        final DailyLogRotationTimerTask task = new DailyLogRotationTimerTask(() -> message.append(MESSAGE));
+        assertTrue("delay must be positive", task.computeDelayInMillis() >= 0L);
+        assertEquals("task is not scheduled yet", 0L, task.scheduledExecutionTime());
+        task.run();
+        assertEquals("run() did not execute the action", MESSAGE, message.toString());
+        final DailyLogRotationTimerTask next = task.createNewTask();
+        assertNotSame("next != task", next, task);
     }
 
 }
