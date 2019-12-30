@@ -43,7 +43,6 @@ package com.sun.enterprise.server.logging;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
-import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
@@ -62,11 +61,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -109,6 +110,7 @@ import static java.security.AccessController.doPrivileged;
 public class GFFileHandler extends StreamHandler
     implements PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
+    private static final Logger LOG = LogFacade.LOGGING_LOGGER;
     private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(GFFileHandler.class);
     private static final String GF_FILE_HANDLER_ID = GFFileHandler.class.getCanonicalName() ;
 
@@ -244,7 +246,7 @@ public class GFFileHandler extends StreamHandler
         }
 
         initLogToFile();
-        earlyLog(Level.INFO, LogFacade.GF_VERSION_INFO, Version.getFullVersion());
+        log(Level.INFO, LogFacade.GF_VERSION_INFO, Version.getFullVersion());
         timeBasedRotation();
 
         String propertyValue = manager.getProperty(className + ".rotationLimitInBytes");
@@ -256,7 +258,7 @@ public class GFFileHandler extends StreamHandler
             try {
                 flushFrequency = Integer.parseInt(propertyValue);
             } catch (NumberFormatException e) {
-                earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "flushFrequency");
+                log(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "flushFrequency");
             }
         }
         if (flushFrequency <= 0) {
@@ -269,7 +271,7 @@ public class GFFileHandler extends StreamHandler
                 maxHistoryFiles = Integer.parseInt(propertyValue);
             }
         } catch (NumberFormatException e) {
-            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "maxHistoryFiles");
+            log(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "maxHistoryFiles");
         }
 
         if (maxHistoryFiles < 0) {
@@ -310,10 +312,7 @@ public class GFFileHandler extends StreamHandler
 
     @Override
     public void preDestroy() {
-        // stop the Queue consumer thread.
-        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
-            LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
-        }
+        LOG.fine("Logger handler killed");
 
         System.setOut(oStdOutBackup);
         System.setErr(oStdErrBackup);
@@ -384,7 +383,7 @@ public class GFFileHandler extends StreamHandler
             if (currentFormatter == null || !currentFormatter.getClass().getName().equals(formatterName)) {
                 Formatter formatter = findFormatterService(formatterName);
                 if (formatter == null) {
-                    earlyLog(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME, formatterName);
+                    log(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME, formatterName);
                     // Fall back to the GlassFish default
                     configureDefaultFormatter(excludeFields, multiLineMode);
                 } else {
@@ -393,7 +392,7 @@ public class GFFileHandler extends StreamHandler
             }
         }
 
-        earlyLog(Level.INFO, LogFacade.LOG_FORMATTER_INFO, getFormatter().getClass().getName());
+        log(Level.INFO, LogFacade.LOG_FORMATTER_INFO, getFormatter().getClass().getName());
     }
 
     private void timeBasedRotation() {
@@ -413,7 +412,7 @@ public class GFFileHandler extends StreamHandler
                 rotationTimeLimitValue = Long.parseLong(propertyValue);
             }
         } catch (NumberFormatException e) {
-            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationTimelimitInMinutes");
+            log(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationTimelimitInMinutes");
         }
         rotationOnTimeLimit();
     }
@@ -434,7 +433,7 @@ public class GFFileHandler extends StreamHandler
             nextDay = dateFormat.parse(nextDate);
         } catch (ParseException e) {
             nextDay = new Date();
-            earlyLog(Level.WARNING, LogFacade.DATE_PARSING_FAILED, nextDate);
+            log(Level.WARNING, LogFacade.DATE_PARSING_FAILED, nextDate);
         }
 
         long nextDaySystemTime = nextDay.getTime();
@@ -479,7 +478,7 @@ public class GFFileHandler extends StreamHandler
                 rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
             }
         } catch (NumberFormatException e) {
-            earlyLog(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationLimitInBytes");
+            log(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE, propertyValue, "rotationLimitInBytes");
         }
         // We set the LogRotation limit here. The rotation limit is the
         // Threshold for the number of bytes in the log file after which
@@ -597,9 +596,18 @@ public class GFFileHandler extends StreamHandler
                 while (LogManager.getLogManager() == null) {
                     Thread.yield();
                 }
+                // FIXME: Because configuration and initialization is not atomic, this thread can start too early and some messages
+                //        would be formatted by default formatter.
+                //        This is not a fix, rather hack than a fix of this problem. "JVM invocation command line" is still affected.
+                try {
+                    Thread.sleep(50L);
+                } catch (InterruptedException e) {
+                    // nothing
+                }
+                log(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
+                LOG.log(Level.CONFIG, "Processed {0} early records.", startupQueue.size());
                 final ConcurrentLinkedQueue<LogRecord> toTransform = startupQueue;
-                startupQueue = null;
-                earlyLog(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
+                startupQueue = new ConcurrentLinkedQueue<>();
                 for (final LogRecord logRecord : toTransform) {
                     publishRecord(evaluateMessage(logRecord));
                 }
@@ -962,16 +970,18 @@ public class GFFileHandler extends StreamHandler
             return;
         }
 
-        // don't process records which passed logger's level,
-        // but would not pass the level of this handler.
-        if (!isLoggable(record)) {
+        // logging not initialized yet, so we put the record to the special buffer
+        // and for now we are done.
+        // If the logging is not initialized yet, we cannot even resolve if the
+        // record is loggable. Events are not supported in this state too.
+        if (LogManager.getLogManager() == null) {
+            this.startupQueue.add(record);
             return;
         }
 
-        // logging not initialized yet, so we put the record to the special buffer
-        // and for now we are done. Events are not supported in this state.
-        if (LogManager.getLogManager() == null) {
-            this.startupQueue.add(record);
+        // don't process records which passed logger's level,
+        // but would not pass the level of this handler.
+        if (!isLoggable(record)) {
             return;
         }
 
@@ -984,14 +994,6 @@ public class GFFileHandler extends StreamHandler
             final LogEvent logEvent = new LogEventImpl(recordWrapper);
             informLogEventListeners(logEvent);
         }
-    }
-
-
-    protected EnhancedLogRecord evaluateMessage(final LogRecord record) {
-        if (record instanceof EnhancedLogRecord) {
-            return (EnhancedLogRecord) record;
-        }
-        return new EnhancedLogRecord(record);
     }
 
     protected File getLogFileName() {
@@ -1036,15 +1038,15 @@ public class GFFileHandler extends StreamHandler
     }
 
     private void logStandardStreams() {
-        final Logger _ologger = LogFacade.STDOUT_LOGGER;
-        // FIXME: capacity
-        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO, 5000);
+        final Logger stdoutLogger = LogFacade.STDOUT_LOGGER;
+        // FIXME: capacity not configurable
+        stdoutOutputStream = new LoggingOutputStream(stdoutLogger, Level.INFO, 5000);
         LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
 
-        final Logger _elogger = LogFacade.STDERR_LOGGER;
-        // FIXME: capacity
-        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE, 1000);
+        final Logger errorLogger = LogFacade.STDERR_LOGGER;
+        // FIXME: capacity not configurable
+        stderrOutputStream = new LoggingOutputStream(errorLogger, Level.SEVERE, 1000);
         LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
         System.setErr(perr);
     }
@@ -1148,21 +1150,15 @@ public class GFFileHandler extends StreamHandler
         }
     }
 
-    /**
-     * Used to make logging usable before it is configured. Uses {@link EarlyLogHandler} - it has
-     * internal queue with the capacity limited to 200 records. If the capacity is reached, further
-     * records are ignored - it is still better strategy than blocking initialization threads.
-     */
-    private void earlyLog(final Level level, final String messageKey, final Object... messageParameters) {
-        final EarlyLogHandler handler = new EarlyLogHandler();
-        handler.publish(createLogRecord(level, messageKey, messageParameters));
-    }
 
-    private LogRecord createLogRecord(final Level level, final String messageKey, final Object... messageParameters) {
+    /**
+     * Safe logging usable before it is configured.
+     */
+    private void log(final Level level, final String messageKey, final Object... messageParameters) {
         final LogRecord logRecord = createLogRecord(level, messageKey);
         logRecord.setParameters(messageParameters);
         logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        return logRecord;
+        publish(logRecord);
     }
 
     private LogRecord createLogRecord(final Level level, final String message) {
@@ -1170,5 +1166,77 @@ public class GFFileHandler extends StreamHandler
         logRecord.setThreadID((int) Thread.currentThread().getId());
         logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         return logRecord;
+    }
+
+    private EnhancedLogRecord evaluateMessage(final LogRecord record) {
+        if (record instanceof EnhancedLogRecord) {
+            return (EnhancedLogRecord) record;
+        }
+        final EnhancedLogRecord enhancedLogRecord = new EnhancedLogRecord(record);
+        final ResolvedLogMessage message = resolveMessage(record);
+        enhancedLogRecord.setMessageKey(message.key);
+        enhancedLogRecord.setMessage(message.message);
+        // values were used and they are not required any more.
+        enhancedLogRecord.setResourceBundle(null);
+        enhancedLogRecord.setParameters(null);
+        return enhancedLogRecord;
+    }
+
+    /**
+     * This is a mechanism extracted from the StreamHandler.
+     * If the message is loggable should be decided before creation of this instance to avoid
+     * resolving a message which would not be used. And it is in done - in
+     * {@link Logger#log(LogRecord)} and in {@link #publish(LogRecord)}
+     */
+    private ResolvedLogMessage resolveMessage(final LogRecord record) {
+        final ResourceBundle bundle = getResourceBundle(record.getResourceBundle(), record.getLoggerName());
+        final ResolvedLogMessage localizedTemplate = tryToLocalizeTemplate(record.getMessage(), bundle);
+        final Object[] parameters = record.getParameters();
+        if (parameters == null || parameters.length == 0) {
+            return localizedTemplate;
+        }
+        final String localizedMessage = toMessage(localizedTemplate.message, parameters);
+        return new ResolvedLogMessage(localizedTemplate.key, localizedMessage);
+    }
+
+    private String toMessage(final String template, final Object[] parameters) {
+        try {
+            return MessageFormat.format(template, parameters);
+        } catch (final Exception e) {
+            return template;
+        }
+    }
+
+
+    private ResolvedLogMessage tryToLocalizeTemplate(final String originalMessage, final ResourceBundle bundle) {
+        if (bundle == null) {
+            return new ResolvedLogMessage(null, originalMessage);
+        }
+        try {
+            final String localizedMessage = bundle.getString(originalMessage);
+            return new ResolvedLogMessage(originalMessage, localizedMessage);
+        } catch (final MissingResourceException e) {
+            return new ResolvedLogMessage(null, originalMessage);
+        }
+    }
+
+    private ResourceBundle getResourceBundle(final ResourceBundle bundle, final String loggerName) {
+        if (bundle != null) {
+            return bundle;
+        }
+        final Logger logger = this.manager.getLogger(loggerName);
+        return logger == null ? null : logger.getResourceBundle();
+    }
+
+
+    private static class ResolvedLogMessage {
+
+        final String key;
+        final String message;
+
+        ResolvedLogMessage(final String key, final String message) {
+            this.key = key;
+            this.message = message;
+        }
     }
 }

@@ -39,39 +39,35 @@
  */
 package com.sun.enterprise.server.logging;
 
-import java.text.MessageFormat;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 /**
  * This class provides additional attributes not supported by JUL LogRecord
  *
- * @author David Matejcek refactoring
+ * @author David Matejcek
  */
 public class EnhancedLogRecord extends LogRecord {
 
     private static final long serialVersionUID = -818792012235891720L;
 
-    private final String threadName;
     private final LogRecord record;
-    private final String messageKey;
+    private final String threadName;
+    private String messageKey;
 
 
     /**
      * Creates new record.
      *
      * @param level
-     * @param msg
+     * @param message
      */
-    public EnhancedLogRecord(final Level level, final String msg) {
-        super(level, msg);
+    public EnhancedLogRecord(final Level level, final String message) {
+        super(level, null);
         this.messageKey = null;
         this.threadName = Thread.currentThread().getName();
-        this.record = new LogRecord(level, msg);
+        this.record = new LogRecord(level, message);
         // this is to force invocation of record.inferCaller()
         this.record.getSourceClassName();
     }
@@ -87,21 +83,23 @@ public class EnhancedLogRecord extends LogRecord {
         this.threadName = Thread.currentThread().getName();
         this.record = record;
         // this is to force invocation of record.inferCaller()
-        this.record.getSourceClassName();
-        // values were used and they are not required any more.
-        final MessageElements messageElements = resolveMessage(record);
-        this.messageKey = messageElements.key;
-        this.record.setMessage(messageElements.message);
-        this.record.setResourceBundle(null);
-        this.record.setParameters(null);
+        record.getSourceClassName();
     }
 
 
     /**
-     * @return the message identifier (generally not unique)
+     * @return the message identifier (generally not unique, may be null)
      */
     public String getMessageKey() {
         return messageKey;
+    }
+
+
+    /**
+     * @param messageKey the message identifier (generally not unique, may be null)
+     */
+    public void setMessageKey(final String messageKey) {
+        this.messageKey = messageKey;
     }
 
 
@@ -136,6 +134,7 @@ public class EnhancedLogRecord extends LogRecord {
         this.record.setSequenceNumber(seq);
     }
 
+
     @Override
     public String getLoggerName() {
         return this.record.getLoggerName();
@@ -146,6 +145,7 @@ public class EnhancedLogRecord extends LogRecord {
     public void setLoggerName(final String name) {
         this.record.setLoggerName(name);
     }
+
 
     @Override
     public String getSourceClassName() {
@@ -258,69 +258,5 @@ public class EnhancedLogRecord extends LogRecord {
     @Override
     public String toString() {
         return getMessage();
-    }
-
-
-    /**
-     * This is a mechanism extracted from the StreamHandler.
-     * If the message is loggable should be decided before creation of this instance to avoid
-     * resolving a message which would not be used. And it is - in {@link Logger#log(LogRecord)}.
-     */
-    private static MessageElements resolveMessage(final LogRecord record) {
-        final MessageElements localizedTemplate = tryToLocalizeTemplate(record);
-        final Object[] parameters = record.getParameters();
-        if (parameters == null || parameters.length == 0) {
-            return localizedTemplate;
-        }
-        final String localizedMessage = toMessage(localizedTemplate.message, parameters);
-        return new MessageElements(localizedTemplate.key, localizedMessage);
-    }
-
-
-    private static String toMessage(final String template, final Object[] parameters) {
-        try {
-            return MessageFormat.format(template, parameters);
-        } catch (final Exception e) {
-            return template;
-        }
-    }
-
-
-// key, recrb, loggername
-    private static MessageElements tryToLocalizeTemplate(final LogRecord record) {
-        final ResourceBundle bundle = getResourceBundle(record);
-        final String originalMessage = record.getMessage();
-        if (bundle == null) {
-            return new MessageElements(null, originalMessage);
-        }
-        try {
-            final String localizedMessage = bundle.getString(originalMessage);
-            return new MessageElements(originalMessage, localizedMessage);
-        } catch (final MissingResourceException e) {
-            return new MessageElements(null, originalMessage);
-        }
-    }
-
-// loggername, recrb
-    private static ResourceBundle getResourceBundle(final LogRecord record) {
-        final ResourceBundle bundle = record.getResourceBundle();
-        if (bundle != null) {
-            return bundle;
-        }
-        final LogManager logManager = LogManager.getLogManager();
-        final Logger logger = logManager.getLogger(record.getLoggerName());
-        return logger == null ? null : logger.getResourceBundle();
-    }
-
-
-    private static class MessageElements {
-
-        final String key;
-        final String message;
-
-        MessageElements(final String key, final String message) {
-            this.key = key;
-            this.message = message;
-        }
     }
 }
