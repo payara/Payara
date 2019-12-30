@@ -1055,7 +1055,7 @@ public abstract class GFLauncher {
                 sb.append(NEWLINE);
                 sb.append(s);
             }
-            GFLauncherLogger.info(GFLauncherLogger.COMMAND_LINE, sb.toString());
+            GFLauncherLogger.info(GFLauncherLogger.COMMAND_LINE, sb);
         }
     }
 

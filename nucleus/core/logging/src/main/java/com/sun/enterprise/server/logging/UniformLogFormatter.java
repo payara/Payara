@@ -49,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
@@ -490,8 +491,12 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
         if (rb == null) {
             return null;
         }
-        final String msgBody = rb.getString(msg);
-        return msgBody.isEmpty() ? null : msgBody;
+        try {
+            final String msgBody = rb.getString(msg);
+            return msgBody.isEmpty() ? null : msgBody;
+        } catch (MissingResourceException e) {
+            return msg;
+        }
     }
 
     static Throwable getThrowable(LogRecord record) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,17 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
-package org.glassfish.api.logging;
+package com.sun.enterprise.server.logging;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: May 24, 2007
- * Time: 1:10:38 PM
- * To change this template use File | Settings | File Templates.
+ * Special {@link LogRotationTimerTask} used for scheduling of the log file rotation on the start
+ * of each day.
  */
-public interface Task<T> {
+public class DailyLogRotationTimerTask extends LogRotationTimerTask {
 
-    public T run();
+    /**
+     * Creates a task which should be executed at the start of each day.
+     *
+     * @param action action to be executed
+     */
+    public DailyLogRotationTimerTask(final LogFileRotationImplementation action) {
+        super(action);
+    }
+
+
+    /**
+     * @return time in millis from now to the next midnight in local time.
+     */
+    @Override
+    public long computeDelayInMillis() {
+        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay();
+        return now.until(nextMidnight, ChronoUnit.MILLIS);
+    }
+
+
+    @Override
+    public DailyLogRotationTimerTask createNewTask() {
+        return new DailyLogRotationTimerTask(this.action);
+    }
 }
