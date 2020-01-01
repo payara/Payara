@@ -356,6 +356,7 @@ public final class NotificationEmitterSupport extends NotificationBroadcasterSup
         public SenderThread()
         {
             setDaemon(true);
+            setName("JMX Notification Emitter");
             mQuit = false;
             mPendingNotifications = new LinkedBlockingQueue<QueueItem>();
         }
