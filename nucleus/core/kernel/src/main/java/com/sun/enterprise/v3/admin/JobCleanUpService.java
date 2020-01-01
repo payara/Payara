@@ -100,21 +100,20 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     public void postConstruct() {
         logger.log(Level.FINE,KernelLoggerInfo.initializingJobCleanup);
 
-
+        if (Version.getFullVersion().contains("Micro")) {
+            //if Micro we don't have any jobs to cleanup
+            return;
+        }
 
         scheduler = Executors.newScheduledThreadPool(10, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread result = new Thread(r);
                 result.setDaemon(true);
+                result.setName("Job Cleanup Service");
                 return result;
             }
         });
-        
-        if (Version.getFullVersion().contains("Micro")) {
-            //if Micro we don't have any jobs to cleanup
-            return;
-        }
 
         managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
