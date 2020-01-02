@@ -1075,6 +1075,7 @@ MonitoringConsole.Model = (function() {
 						widget: widget,
 						data: data,
 						alerts: widgetResponse.alerts,
+						watches: widgetResponse.watches,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -2702,10 +2703,39 @@ MonitoringConsole.Chart.Line = (function() {
           display: false,
       }
     };
+    let backgroundPlugin = {
+      beforeDraw: function (chart) {
+        let yAxis = chart.chart.scales["y-axis-0"];
+        let areas = chart.chart.data.areas;
+        if (!Array.isArray(areas) || areas.length === 0)
+          return;
+        let ctx = chart.chart.ctx;
+        let xAxis = chart.chart.scales["x-axis-0"];
+        function yOffset(y) {
+          let yMax = yAxis.ticksAsNumbers[0];
+          if (y === undefined)
+            y = yMax;
+          let yMin = yAxis.ticksAsNumbers[yAxis.ticksAsNumbers.length - 1];
+          let yVisible = y - yMin;
+          let yRange = yMax - yMin;
+          return yAxis.bottom - Math.max(0, (yAxis.height * yVisible / yRange));
+        }
+        for (let i = 0; i < areas.length; ++i) {
+          let area = areas[i];
+          if (area.min != area.max) {
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            ctx.fillStyle = area.color;
+            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, yAxisMax - yAxisMin);          
+          }
+        }
+      }
+    };
     return new Chart(widget.target, {
           type: 'line',
           data: { datasets: [], },
           options: options,
+          plugins: [ backgroundPlugin ],       
         });
   }
 
@@ -2748,7 +2778,7 @@ MonitoringConsole.Chart.Line = (function() {
     return line;
   }  
     
-  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor, fill = true) {
 		let pointRadius = widget.options.drawPoints ? 2 : 0;
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
@@ -2756,6 +2786,7 @@ MonitoringConsole.Chart.Line = (function() {
     return {
 			data: points,
 			label: label,
+      fill: fill,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
 			borderWidth: 2.5,
@@ -2767,7 +2798,7 @@ MonitoringConsole.Chart.Line = (function() {
    * Creates one or more lines for a single series dataset related to the widget.
    * A widget might display multiple series in the same graph generating one or more dataset for each of them.
    */
-  function createSeriesDatasets(widget, seriesData) {
+  function createSeriesDatasets(widget, seriesData, watches) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.background;
     if (Array.isArray(bgColor) && bgColor.length == 2 && widget.options.noFill !== true) {
@@ -2779,7 +2810,9 @@ MonitoringConsole.Chart.Line = (function() {
     }
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
-  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
+    let fill = widget.options.noFill !== true
+      && (widget.options.noDiverseFill === true || watches === undefined || watches.length == 0); 
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor, fill));
   	if (points.length > 0 && widget.options.drawAvgLine) {
 			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
@@ -2818,6 +2851,45 @@ MonitoringConsole.Chart.Line = (function() {
     return datasets; 
   }
 
+  function createBackgroundAreas(widget, watches) {    
+    let areas = [];
+    if (widget.options.noDiverseFill === true || watches === undefined || watches.length == 0)
+      return areas;
+    let watch = watches[0];
+    if (watch.red)
+      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
+    if (watch.amber)
+      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
+    if (watch.green)
+      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    return areas;
+  }
+
+  function createBackgroundArea(level, levels) {
+    const backgroundColor = (name) => Colors.hex2rgba(ColorModel.default(name), 0.25);
+    let color = backgroundColor(level.level);
+    let min = 0;
+    let max;
+    if (level.start.operator == '>' || level.start.operator == '>=') {
+      min = level.start.threshold;
+      for (let i = 0; i < levels.length; i++) {
+        let other = levels[i];
+        if (other !== undefined && other.start.threshold > min) {
+          max = max === undefined ? other.start.threshold : Math.min(max, other.start.threshold);
+        }
+      }
+    } else if (level.start.operator == '<' || level.start.operator == '<=') {
+      max = level.start.threshold;
+      for (let i = 0; i < levels.length; i++) {
+        let other = levels[i];
+        if (other !== undefined && other.start.threshold < max) {
+          min = Math.max(min, other.start.threshold);
+        }
+      }
+    }
+    return { color: color, min: min, max: max };
+  }
+
   /**
    * Should be called whenever the configuration of the widget changes in way that needs to be transfered to the chart options.
    * Basically translates the MC level configuration options to Chart.js options
@@ -2849,10 +2921,11 @@ MonitoringConsole.Chart.Line = (function() {
     let chart = update.chart();
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
-      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j], update.watches));
     }
     datasets = datasets.concat(createDecorationDatasets(widget, data));
     chart.data.datasets = datasets;
+    chart.data.areas = createBackgroundAreas(widget, update.watches);    
     chart.update(0);
   }
   
@@ -3623,6 +3696,8 @@ MonitoringConsole.View = (function() {
             { label: 'Background', input: [
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
                 { label: 'Gradient', type: 'checkbox', value: !options.noGradient, onChange: (widget, checked) => options.noGradient = !checked},
+                { label: 'Diverse', type: 'checkbox', value: !options.noDiverseFill, onChange: (widget, checked) => options.noDiverseFill = !checked,
+                    description: 'Uncheck to not show watch thresholds via background colors.'},                
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
@@ -3648,7 +3723,6 @@ MonitoringConsole.View = (function() {
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
-            //TODO add color for each threshold
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},

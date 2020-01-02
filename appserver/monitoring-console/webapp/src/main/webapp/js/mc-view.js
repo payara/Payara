@@ -299,6 +299,8 @@ MonitoringConsole.View = (function() {
             { label: 'Background', input: [
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
                 { label: 'Gradient', type: 'checkbox', value: !options.noGradient, onChange: (widget, checked) => options.noGradient = !checked},
+                { label: 'Diverse', type: 'checkbox', value: !options.noDiverseFill, onChange: (widget, checked) => options.noDiverseFill = !checked,
+                    description: 'Uncheck to not show watch thresholds via background colors.'},                
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
@@ -324,7 +326,6 @@ MonitoringConsole.View = (function() {
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
-            //TODO add color for each threshold
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
