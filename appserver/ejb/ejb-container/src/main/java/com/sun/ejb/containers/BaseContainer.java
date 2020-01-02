@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -730,8 +730,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                 this.optIntfClassName = EJBUtils.getGeneratedOptionalInterfaceName(ejbClass.getName());
                 optIntfClassLoader = new EjbOptionalIntfGenerator(loader);
-                optIntfClassLoader.generateOptionalLocalInterface(ejbClass, optIntfClassName);
-                ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(optIntfClassName);
+                ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(
+                        ejbClass.getName(),
+                        optIntfClassName,
+                        () -> optIntfClassLoader.generateOptionalLocalInterface(ejbClass, optIntfClassName)
+                );
             }
 
             if ( isStatelessSession || isSingleton ) {
@@ -3771,12 +3774,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         String beanSubClassName = ejbGeneratedOptionalLocalBusinessIntfClass.getName() + "__Bean__";
 
-        optIntfClassLoader.generateOptionalLocalInterfaceSubClass(
-                ejbClass, beanSubClassName, ejbGeneratedOptionalLocalBusinessIntfClass);
-
-        optIntfClassLoader.loadClass(ejbGeneratedOptionalLocalBusinessIntfClass.getName());
-
-        Class subClass = optIntfClassLoader.loadClass(beanSubClassName);
+        Class subClass = optIntfClassLoader.loadClass(
+                ejbClass.getName(),
+                beanSubClassName,
+                () -> optIntfClassLoader.generateOptionalLocalInterfaceSubClass(
+                        ejbClass, beanSubClassName, businessIntfClass
+                )
+        );
+        optIntfClassLoader.loadClass(businessIntfClass.getName());
         OptionalLocalInterfaceProvider provider =
                 (OptionalLocalInterfaceProvider) subClass.newInstance();
         provider.setOptionalLocalIntfProxy(proxy);

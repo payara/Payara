@@ -264,11 +264,9 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     private ClassLoader createClassLoader(ClassLoaderHierarchy clh, String appName)
             throws URISyntaxException, MalformedURLException {
         // first we create the appLib class loader, this is non shared libraries class loader
-        long start = System.currentTimeMillis();
         ClassLoader applibCL = clh.getAppLibClassLoader(appName, getAppLibs());
 
         ClassLoader parentCL = clh.createApplicationParentCL(applibCL, this);
-        System.out.println("createClassLoader parentCL " + (System.currentTimeMillis() - start));
 
         return archiveHandler.getClassLoader(parentCL, this);
     }

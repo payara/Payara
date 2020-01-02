@@ -90,7 +90,7 @@ public class EjbApplication
 
     private EjbBundleDescriptorImpl ejbBundle;
     private Collection<EjbDescriptor> ejbs;
-    private Collection<Container> containers = new ArrayList<Container>();
+    private Collection<Container> containers = new ArrayList<>();
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
@@ -125,6 +125,7 @@ public class EjbApplication
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
     
+    @Override
     public Collection<EjbDescriptor> getDescriptor() {
         return ejbs;
     }
@@ -144,12 +145,13 @@ public class EjbApplication
         }
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         started = true;
 
         if (! initializeInOrder) {
             Boolean alreadyMarked = dc.getTransientAppMetaData(EJB_APP_MARKED_AS_STARTED_STATUS, Boolean.class);
-            if (! alreadyMarked.booleanValue()) {
+            if (!alreadyMarked) {
                 List<EjbApplication> ejbAppList = dc.getTransientAppMetaData(CONTAINER_LIST_KEY, List.class);
                 for (EjbApplication app : ejbAppList) {
                     app.markAllContainersAsStarted();
@@ -199,7 +201,7 @@ public class EjbApplication
             dc.addTransientAppMetaData(EJB_APP_MARKED_AS_STARTED_STATUS, Boolean.FALSE);
             List<EjbApplication> ejbAppList = dc.getTransientAppMetaData(CONTAINER_LIST_KEY, List.class);
             if (ejbAppList == null) {
-                ejbAppList = new ArrayList<EjbApplication>();
+                ejbAppList = new ArrayList<>();
                 dc.addTransientAppMetaData(CONTAINER_LIST_KEY, ejbAppList);
             }
             ejbAppList.add(this);
@@ -250,6 +252,7 @@ public class EjbApplication
         containers.forEach(Container::initialize);
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         DeploymentContext depc = (DeploymentContext) stopContext;
         OpsParams params = depc.getCommandParameters(OpsParams.class);
@@ -326,6 +329,7 @@ public class EjbApplication
      *
      * @return true if suspending was successful, false otherwise.
      */
+    @Override
     public boolean suspend() {
         // Not (yet) supported
         return false;
@@ -336,6 +340,7 @@ public class EjbApplication
      *
      * @return true if resumption was successful, false otherwise.
      */
+    @Override
     public boolean resume() {
         // Not (yet) supported
         return false;

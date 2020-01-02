@@ -37,32 +37,16 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package org.glassfish.api.deployment;
-
-import java.security.ProtectionDomain;
-import java.util.concurrent.ConcurrentHashMap;
-
+package com.sun.ejb.containers;
 
 /**
- * Providers of class loaders for Payara applications can optionally implements
- * this interface to indicate their <code>ClassLoader</code> implementations may
- * optionally implement to update and copy the resource from other class
- * loaders.
+ * Represents a supplier of results with exception handling.
  *
  * @author Gaurav Gupta
  */
+@FunctionalInterface
+public interface ClassSupplier<T> {
 
-public interface ResourceClassLoader {
-
-    ConcurrentHashMap<String, ResourceEntry> getResourceEntries();
-
-    Class addResourceEntry(String name, ResourceEntry entry);
-
-    Class addGeneratedResourceEntry(
-            String mainClass,
-            String generatedClass,
-            byte[] generatedBinaryContent,
-            ProtectionDomain protectionDomain
-    );
+    public T get() throws Exception;
 
 }

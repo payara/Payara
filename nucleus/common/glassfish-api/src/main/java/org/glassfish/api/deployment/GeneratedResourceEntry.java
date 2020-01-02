@@ -40,29 +40,28 @@
 package org.glassfish.api.deployment;
 
 import java.security.ProtectionDomain;
-import java.util.concurrent.ConcurrentHashMap;
-
 
 /**
- * Providers of class loaders for Payara applications can optionally implements
- * this interface to indicate their <code>ClassLoader</code> implementations may
- * optionally implement to update and copy the resource from other class
- * loaders.
+ * The resource entry of generated class e.g Generated EJB interface or Weld
+ * proxy.
  *
  * @author Gaurav Gupta
  */
+public class GeneratedResourceEntry {
 
-public interface ResourceClassLoader {
+    /**
+     * Binary content of the generated resource.
+     */
+    public byte[] binaryContent = null;
 
-    ConcurrentHashMap<String, ResourceEntry> getResourceEntries();
+    /**
+     * Loaded class.
+     */
+    public volatile Class<?> loadedClass = null;
 
-    Class addResourceEntry(String name, ResourceEntry entry);
-
-    Class addGeneratedResourceEntry(
-            String mainClass,
-            String generatedClass,
-            byte[] generatedBinaryContent,
-            ProtectionDomain protectionDomain
-    );
+    /**
+     * The Protection Domain of class.
+     */
+    public ProtectionDomain protectionDomain = null;
 
 }

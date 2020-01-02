@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -109,6 +109,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.deployment.GeneratedResourceEntry;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
 
@@ -560,12 +561,53 @@ public class WebappClassLoader
     }
 
     @Override
-    public void addResourceEntry(String name, ResourceEntry entry) {
+    public Class addResourceEntry(String name, ResourceEntry entry) {
+        Class clazz = null;
         if (!this.resourceEntries.containsKey(name)) {
             definePackage(name, entry);
-            defineLoadedClass(name, entry);
+            clazz = defineLoadedClass(name, entry);
             this.resourceEntries.put(name, entry);
+            for (Map.Entry<String, GeneratedResourceEntry> e : entry.generatedResources.entrySet()) {
+                String generatedClassName = e.getKey();
+                GeneratedResourceEntry generatedEntry = e.getValue();
+                generatedEntry.loadedClass = defineClass(
+                        generatedClassName,
+                        generatedEntry.binaryContent, 0,
+                        generatedEntry.binaryContent.length,
+                        generatedEntry.protectionDomain
+                );
+            }
         }
+        return clazz;
+    }
+
+    @Override
+    public Class addGeneratedResourceEntry(
+            String mainClassName,
+            String generatedClassName,
+            byte[] generatedBinaryContent,
+            ProtectionDomain protectionDomain) {
+
+        Class generatedClass;
+
+        if (this.resourceEntries.containsKey(mainClassName)) {
+            generatedClass = defineClass(generatedClassName,
+                    generatedBinaryContent, 0,
+                    generatedBinaryContent.length,
+                    protectionDomain);
+            GeneratedResourceEntry generatedResourceEntry = new GeneratedResourceEntry();
+            generatedResourceEntry.binaryContent = generatedBinaryContent;
+            generatedResourceEntry.loadedClass = generatedClass;
+            generatedResourceEntry.protectionDomain = protectionDomain;
+            ResourceEntry entry = this.resourceEntries.get(mainClassName);
+            entry.generatedResources.put(generatedClassName, generatedResourceEntry);
+        } else {
+            generatedClass = defineClass(generatedClassName,
+                    generatedBinaryContent, 0,
+                    generatedBinaryContent.length,
+                    protectionDomain);
+        }
+        return generatedClass;
     }
 
     /**
