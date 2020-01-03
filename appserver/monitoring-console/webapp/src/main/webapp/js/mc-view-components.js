@@ -486,7 +486,7 @@ MonitoringConsole.View.Components = (function() {
       let startFrame = item.frames[frames.length - 1];
       let ongoing = endFrame.until === undefined;
       let level = endFrame.level;
-      let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
+      let color = ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
       let box = $('<div/>', { style: 'border-color:' + color + ';' });
       box.append($('<input/>', { type: 'checkbox', checked: item.acknowledged, disabled: item.acknowledged })
         .change(() => acknowledge(item)));

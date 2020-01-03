@@ -459,6 +459,18 @@ MonitoringConsole.View = (function() {
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
             let background = Colors.hex2rgba(color, alpha);
+            if (Array.isArray(alerts) && alerts.length > 0) {
+                let level;
+                for (let i = 0; i < alerts.length; i++) {
+                    let alert = alerts[i];
+                    if (alert.instance == seriesData.instance && alert.series == seriesData.series && !alert.stopped) {
+                        level = Units.Alerts.maxLevel(level, alert.level);
+                    }
+                }
+                if (level == 'red' || level == 'amber') {
+                    background = Colors.hex2rgba(Theme.color(level), Math.min(1, alpha * 2));
+                }
+            }
             let status = seriesData.assessments.status;
             let highlight = status === undefined ? undefined : Theme.color(status);
             let item = { 
@@ -530,7 +542,7 @@ MonitoringConsole.View = (function() {
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
                 let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
-                //TODO use another compoent to show a show indication of acknowledged alerts 
+                //TODO check some options if ack alerts should be included?
                 if (include) {
                     let frames = alert.frames.map(function(frame) {
                         return {

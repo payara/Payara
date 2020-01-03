@@ -1689,10 +1689,10 @@ MonitoringConsole.View.Colors = (function() {
    const SCHEMES = {
       Payara: {
          name: 'Payara',
-         palette: [ '#ff7809', '#3373d9', '#a352cb', '#5aa54b', '#de304d', '#f3cc0f' ],
+         palette: [ '#0080ff', '#008081', '#95c8d9', '#3fe0d0', '#589fd3', '#6694f6' ],
          opacity: 10,
          colors:  { 
-            waterline: '#5694f2', alarming: '#d77728', critical: '#d44a3a',
+            waterline: '#f3cc0f', alarming: '#d77728', critical: '#d44a3a',
             white: '#ffffff', green: '#299c46', amber: '#d77728', red: '#d44a3a',
          }
       },
@@ -1700,25 +1700,25 @@ MonitoringConsole.View.Colors = (function() {
       a: {
          name: '80s',
          opacity: 10,
-         palette: [ '#ff48c4', '#2bd1fc', '#f3ea5f', '#c04df9', '#ff3f3f'],
+         palette: [ '#c04df9', '#f3ea5f', '#08c1ef', '#d28f47', '#b86739'],
          colors:  { 
-            waterline: '#2bd1fc', alarming: '#f3ea5f', critical: '#ff3f3f',
+            waterline: '#2bd1fc', alarming: '#f7cb62', critical: '#ff3f3f',
             white: '#ffffff', green: '#b6f778', amber: '#f7cb62', red: '#ff3f3f',
          }
       },
 
       b: {
-         name: '80s Pastel',
+         name: 'Pastels',
          opacity: 10,
-         palette: [ '#bd6283', '#96c0bc', '#dbd259', '#d49e54', '#b95f51'],
+         palette: [ '#deccff', '#96c0bc', '#dbd259', '#bd6283', '#08c7f7' ],
          colors:  { 
-            waterline: '#96c0bc', alarming: '#dbd259', critical: '#b95f51',
-            white: '#ffffff', green: '#61b165', amber: '#d49e54', red: '#b95f51',
+            waterline: '#82e69f', alarming: '#dbd259', critical: '#b95f51',
+            white: '#ffffff', green: '#82e69f', amber: '#d49e54', red: '#b95f51',
          }
       },
 
       c: {
-         name: '80s Neon',
+         name: 'Neon',
          opacity: 10,
          palette: [ '#f700d8', '#eff109', '#0ed4f7', '#00b8aa', '#0000f7'],
          colors:  { 
@@ -1728,24 +1728,14 @@ MonitoringConsole.View.Colors = (function() {
       },
 
       d: {
-         name: 'VaporWave',
+         name: 'Vapor Wave',
          opacity: 10,
          palette: [ '#05ffa1', '#b8a9df', '#01cdfe', '#b967ff', '#fffb96'],
          colors:  { 
-            waterline: '#01cdfe', alarming: '#fffb96', critical: '#FB637A',
-            white: '#ffffff', green: '#a2dda9', amber: '#f7967f', red: '#e05267', 
+            waterline: '#01cdfe', alarming: '#f9c55e', critical: '#FB637A',
+            white: '#ffffff', green: '#a2dda9', amber: '#f9c55e', red: '#e05267', 
          }
       },
-
-      e: {
-         name: 'Solarized',
-         opacity: 10,
-         palette: [ '#b58900', '#cb4b16', '#dc322f', '#d32682', '#c671c4', '#268bd2', '#2aa198', '#859900'],
-         colors:  { 
-            waterline: '#268bd2', alarming: '#b58900', critical: '#dc322f',
-            white: '#ffffff', green: '#309900', amber: '#b58900', red: '#dc322f',
-         }
-      }
    };
 
    /**
@@ -2349,7 +2339,7 @@ MonitoringConsole.View.Components = (function() {
       let startFrame = item.frames[frames.length - 1];
       let ongoing = endFrame.until === undefined;
       let level = endFrame.level;
-      let color = !item.acknowledged && ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
+      let color = ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
       let box = $('<div/>', { style: 'border-color:' + color + ';' });
       box.append($('<input/>', { type: 'checkbox', checked: item.acknowledged, disabled: item.acknowledged })
         .change(() => acknowledge(item)));
@@ -2751,16 +2741,14 @@ MonitoringConsole.Chart.Line = (function() {
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let height = yAxisMax - yAxisMin;
-            let width = 10;
+            let width = 6;
             let left = xAxis.right + 1;
-            ctx.fillStyle = '#333333'; // neutral back for transparent color on top to not become bluish
-            ctx.fillRect(left, yAxisMin, width, height);
             let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
             if (i + 1 < areas.length && areas[i+1].max == area.min) {
-              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0.25, area.color);
               gradient.addColorStop(0, areas[i+1].color);
             } else if (i > 0 && areas[i-1].max == area.min) {
-              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0.25, area.color);
               gradient.addColorStop(0, areas[i-1].color);
             } else {
               gradient.addColorStop(0, area.color);  
@@ -3889,6 +3877,18 @@ MonitoringConsole.View = (function() {
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
             let background = Colors.hex2rgba(color, alpha);
+            if (Array.isArray(alerts) && alerts.length > 0) {
+                let level;
+                for (let i = 0; i < alerts.length; i++) {
+                    let alert = alerts[i];
+                    if (alert.instance == seriesData.instance && alert.series == seriesData.series && !alert.stopped) {
+                        level = Units.Alerts.maxLevel(level, alert.level);
+                    }
+                }
+                if (level == 'red' || level == 'amber') {
+                    background = Colors.hex2rgba(Theme.color(level), Math.min(1, alpha * 2));
+                }
+            }
             let status = seriesData.assessments.status;
             let highlight = status === undefined ? undefined : Theme.color(status);
             let item = { 
@@ -3960,7 +3960,7 @@ MonitoringConsole.View = (function() {
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
                 let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
-                //TODO use another compoent to show a show indication of acknowledged alerts 
+                //TODO check some options if ack alerts should be included?
                 if (include) {
                     let frames = alert.frames.map(function(frame) {
                         return {

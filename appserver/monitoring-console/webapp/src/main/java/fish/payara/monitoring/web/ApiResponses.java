@@ -274,6 +274,7 @@ public final class ApiResponses {
         public final String instance;
         public final WatchData initiator;
         public final boolean acknowledged;
+        public final boolean stopped;
         public final List<AlertFrame> frames;
 
         public AlertData(Alert alert) {
@@ -287,6 +288,7 @@ public final class ApiResponses {
             this.instance = alert.getInstance();
             this.initiator = new WatchData(alert.initiator);
             this.acknowledged = alert.isAcknowledged();
+            this.stopped = alert.isStopped();
             this.frames = new ArrayList<>();
             if (truncateAlerts) {
                 this.frames.add(new AlertFrame(alert.getEndFrame()));

@@ -150,16 +150,14 @@ MonitoringConsole.Chart.Line = (function() {
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let height = yAxisMax - yAxisMin;
-            let width = 10;
+            let width = 6;
             let left = xAxis.right + 1;
-            ctx.fillStyle = '#333333'; // neutral back for transparent color on top to not become bluish
-            ctx.fillRect(left, yAxisMin, width, height);
             let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
             if (i + 1 < areas.length && areas[i+1].max == area.min) {
-              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0.25, area.color);
               gradient.addColorStop(0, areas[i+1].color);
             } else if (i > 0 && areas[i-1].max == area.min) {
-              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0.25, area.color);
               gradient.addColorStop(0, areas[i-1].color);
             } else {
               gradient.addColorStop(0, area.color);  
