@@ -34,7 +34,7 @@ id              = string
 numberOfColumns = number
 rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display, home, refresh, rotation, colors }
+settings        = { display, home, refresh, rotation, theme }
 display         = boolean
 home            = string
 refresh         = { paused, interval }
@@ -42,10 +42,10 @@ rotation        = { enabled, interval }
 paused          = boolean
 enabled         = boolean
 interval        = number
-colors          = { palette, opacity, defaults }
+theme           = { palette, colors, options }
 palette         = [COLOR]
-opacity         = number
-defaults        = { *:COLOR }
+colors          = { *:COLOR }
+options         = { *:number }
 COLOR           = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
@@ -80,11 +80,10 @@ options    = {
 	drawAvgLine:boolean,
 	perSec:boolean,
 	decimalMetric:boolean,
-	noCurves:boolean,
+	drawCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
-	noGradient:boolean,
-	noDiverseFill:boolean,
+	noNuancedFill:boolean,
 	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }

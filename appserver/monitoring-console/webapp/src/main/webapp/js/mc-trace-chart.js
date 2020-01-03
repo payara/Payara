@@ -48,6 +48,7 @@ MonitoringConsole.Chart.Trace = (function() {
    const Components = MonitoringConsole.View.Components;
    const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
+   const Theme = MonitoringConsole.Model.Theme;
 
    var model = {};
    var chart;
@@ -67,8 +68,8 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
-      let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
-      let palette = MonitoringConsole.Model.Colors.palette();
+      let alpha = Theme.option('opacity') / 100;
+      let palette = Theme.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -206,7 +207,7 @@ MonitoringConsole.Chart.Trace = (function() {
       if (!span)
          return;
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
-      let settings = [
+      let groups = [
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
@@ -222,7 +223,7 @@ MonitoringConsole.Chart.Trace = (function() {
          }
          tags.entries.push({ label: key, input: autoLink(value)});
       }
-      Components.onSettingsUpdate(settings);
+      $('#Settings').replaceWith(Components.createSettings({id: 'Settings', groups: groups }));
    }
 
 

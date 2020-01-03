@@ -50,52 +50,67 @@
  **/
 MonitoringConsole.View.Colors = (function() {
 
-   const Colors = MonitoringConsole.Model.Colors;
+   const Theme = MonitoringConsole.Model.Theme;
 
    const SCHEMES = {
       Payara: {
          name: 'Payara',
-         palette: [ '#F0981B', '#008CC4', '#8B79BC', '#87BC25', '#FF70DA' ],
-         opacity: 20,
-         defaults:  { 
-            waterline: '#00ffff', alarming: '#FFD700', critical: '#dc143c',
-            white: '#ffffff', green: '#87BC25', amber: '#f0981b', red: '#dc143c',
-          }
+         palette: [ '#feb356', '#8ab7ff', '#cb95e5', '#99d88d', '#ff7289', '#ffed52' ],
+         opacity: 10,
+         colors:  { 
+            waterline: '#5694f2', alarming: '#fade2b', critical: '#f24865',
+            white: '#ffffff', green: '#77be69', amber: '#ff9830', red: '#f24865',
+         }
       },
 
       a: {
          name: '80s',
-         opacity: 30,
+         opacity: 10,
          palette: [ '#ff48c4', '#2bd1fc', '#f3ea5f', '#c04df9', '#ff3f3f'],
-         defaults:  { waterline: '#2bd1fc', alarming: '#f3ea5f', critical: '#ff3f3f' }
+         colors:  { 
+            waterline: '#2bd1fc', alarming: '#f3ea5f', critical: '#ff3f3f',
+            white: '#ffffff', green: '#b6f778', amber: '#f7cb62', red: '#ff3f3f',
+         }
       },
 
       b: {
          name: '80s Pastel',
-         opacity: 40,
+         opacity: 10,
          palette: [ '#bd6283', '#96c0bc', '#dbd259', '#d49e54', '#b95f51'],
-         defaults:  { waterline: '#96c0bc', alarming: '#dbd259', critical: '#b95f51' }
+         colors:  { 
+            waterline: '#96c0bc', alarming: '#dbd259', critical: '#b95f51',
+            white: '#ffffff', green: '#61b165', amber: '#d49e54', red: '#b95f51',
+         }
       },
 
       c: {
          name: '80s Neon',
-         opacity: 15,
+         opacity: 10,
          palette: [ '#cb268b', '#f64e0c', '#eff109', '#6cf700', '#00aff3'],
-         defaults:  { waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c' }
+         colors:  { 
+            waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c',
+            white: '#ffffff', green: '#6cf700', amber: '#f64e0c', red: '#dc143c',
+         }
       },
 
       d: {
          name: 'VaporWave',
-         opacity: 20,
+         opacity: 10,
          palette: [ '#05ffa1', '#b8a9df', '#01cdfe', '#b967ff', '#fffb96'],
-         defaults:  { waterline: '#01cdfe', alarming: '#fffb96', critical: '#FB637A' }
+         colors:  { 
+            waterline: '#01cdfe', alarming: '#fffb96', critical: '#FB637A',
+            white: '#ffffff', green: '#a2dda9', amber: '#f7967f', red: '#e05267', 
+         }
       },
 
       e: {
          name: 'Solarized',
-         opacity: 20,
+         opacity: 10,
          palette: [ '#b58900', '#cb4b16', '#dc322f', '#d32682', '#c671c4', '#268bd2', '#2aa198', '#859900'],
-         defaults:  { waterline: '#268bd2', alarming: '#b58900', critical: '#dc322f' }
+         colors:  { 
+            waterline: '#268bd2', alarming: '#b58900', critical: '#dc322f',
+            white: '#ffffff', green: '#309900', amber: '#b58900', red: '#dc322f',
+         }
       }
    };
 
@@ -185,16 +200,17 @@ MonitoringConsole.View.Colors = (function() {
    }
 
    function applyScheme(name, override = true) {
+      const createSetColorFn = (name, color) => (theme) => theme.colors[name] = color;
       let scheme = SCHEMES[name];
       if (scheme) {
-         if (override || Colors.palette() === undefined)
-            Colors.palette(scheme.palette);
-         if (override || Colors.opacity() === undefined)
-            Colors.opacity(scheme.opacity);
-         if (scheme.defaults) {
-            for (let [name, color] of Object.entries(scheme.defaults)) {
-               if (override || Colors.default(name) === undefined)
-                  Colors.default(name, color);
+         if (override || Theme.palette() === undefined)
+            Theme.configure(theme => theme.palette = scheme.palette);
+         if (override || Theme.option('opacity') === undefined)
+            Theme.configure(theme => theme.options.opacity = scheme.opacity);
+         if (scheme.colors) {
+            for (let [name, color] of Object.entries(scheme.colors)) {
+               if (override || Theme.color(name) === undefined)
+                  Theme.configure(createSetColorFn(name, color));
             }
          }            
       }

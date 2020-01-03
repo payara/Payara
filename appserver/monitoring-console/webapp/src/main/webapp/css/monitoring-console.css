@@ -177,9 +177,8 @@ button:hover {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  max-width: 75%;
-  display: inline-block;
   padding: 1px 5px;
+  text-align: center;
 }
 .widget-title-bar h3 span {
   font-size: 80%;
@@ -187,6 +186,7 @@ button:hover {
   font-style: normal;
   color: #bbb;
   margin-right: 1em;
+  float: left;
 }
 .widget-title-bar h3 strong {
   font-style: normal;
@@ -486,6 +486,7 @@ table.tags th, table.tags td {
   top: 40px;
   left: 15px;
   width: calc(100% - 38px);
+  background-color: rgba(0, 36, 51, .5);
 }
 .AlertTable .Item {
   border-left: 5px solid transparent; /* colored via inline style */

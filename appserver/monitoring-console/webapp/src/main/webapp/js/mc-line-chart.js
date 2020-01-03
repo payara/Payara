@@ -47,7 +47,7 @@ MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
   const Colors = MonitoringConsole.View.Colors;
-  const ColorModel = MonitoringConsole.Model.Colors;
+  const Theme = MonitoringConsole.Model.Theme;
 
   function timeLable(secondsAgo, index, lastIndex, secondsInterval) {
     if (index == lastIndex && secondsAgo == 0)
@@ -149,8 +149,11 @@ MonitoringConsole.Chart.Line = (function() {
           if (area.min != area.max) {
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
+            let height = yAxisMax - yAxisMin;
+            ctx.fillStyle = '#111111'; // neutral back for transparent color on top to not become bluish
+            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, height);
             ctx.fillStyle = area.color;
-            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, yAxisMax - yAxisMin);          
+            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, height);          
           }
         }
       }
@@ -207,13 +210,14 @@ MonitoringConsole.Chart.Line = (function() {
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
       label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+    let lineWidth = Theme.option('line-width', 3) / 2;
     return {
 			data: points,
 			label: label,
       fill: fill,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 2.5,
+			borderWidth: lineWidth,
       pointRadius: pointRadius,
 		};
   }
@@ -225,17 +229,10 @@ MonitoringConsole.Chart.Line = (function() {
   function createSeriesDatasets(widget, seriesData, watches) {
     let lineColor = seriesData.legend.color;
     let bgColor = seriesData.legend.background;
-    if (Array.isArray(bgColor) && bgColor.length == 2 && widget.options.noFill !== true) {
-      let ctx = document.getElementById(widget.target).getContext('2d');
-      let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, bgColor[0]);   
-      gradient.addColorStop(1, bgColor[1]);
-      bgColor = gradient;      
-    }
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
     let fill = widget.options.noFill !== true
-      && (widget.options.noDiverseFill === true || watches === undefined || watches.length == 0); 
+      && (widget.options.noNuancedFill === true || watches === undefined || watches.length == 0); 
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor, fill));
   	if (points.length > 0 && widget.options.drawAvgLine) {
 			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
@@ -261,15 +258,15 @@ MonitoringConsole.Chart.Line = (function() {
     let decorations = widget.decorations;
     let datasets = [];
     if (decorations.waterline && decorations.waterline.value) {
-      let color = decorations.waterline.color || ColorModel.default('waterline');
+      let color = decorations.waterline.color || Theme.color('waterline');
       datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
     }
     if (decorations.thresholds.alarming.display) {
-      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
+      let color = decorations.thresholds.alarming.color || Theme.color('alarming');
       datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
     }
     if (decorations.thresholds.critical.display) {
-      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
+      let color = decorations.thresholds.critical.color || Theme.color('critical');
       datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
     }
     return datasets; 
@@ -277,7 +274,7 @@ MonitoringConsole.Chart.Line = (function() {
 
   function createBackgroundAreas(widget, watches) {    
     let areas = [];
-    if (widget.options.noDiverseFill === true || watches === undefined || watches.length == 0)
+    if (widget.options.noNuancedFill === true || watches === undefined || watches.length == 0)
       return areas;
     let watch = watches[0];
     if (watch.red)
@@ -290,7 +287,7 @@ MonitoringConsole.Chart.Line = (function() {
   }
 
   function createBackgroundArea(level, levels) {
-    const backgroundColor = (name) => Colors.hex2rgba(ColorModel.default(name), 0.25);
+    const backgroundColor = (name) => Colors.hex2rgba(Theme.color(name), Theme.option('nuanced-opacity', 15) / 100);
     let color = backgroundColor(level.level);
     let min = 0;
     let max;
@@ -320,7 +317,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.elements.line.tension = widget.options.noCurves ? 0 : 0.4;
+    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
     let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;

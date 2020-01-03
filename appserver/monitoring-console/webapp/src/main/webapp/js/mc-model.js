@@ -140,33 +140,33 @@ MonitoringConsole.Model = (function() {
 					name: 'Health Checks',
 					numberOfColumns: 4,
 					widgets: [
-						{ series: 'ns:health CpuUsage', unit: 'percent',
+						{ series: 'ns:health CpuUsage', unit: 'percent', displayName: 'CPU',
           					grid: { column: 0, item: 0},
           					axis: { max: 100 },
           					status: { missing : { hint: TEXT_CPU_USAGE }}},
-						{ series: 'ns:health HeapUsage', unit: 'percent',
-          					grid: { column: 0, item: 1},
+						{ series: 'ns:health HeapUsage', unit: 'percent', displayName: 'Heap',
+          					grid: { column: 1, item: 1},
           					axis: { max: 100 },
           					status: { missing : { hint: TEXT_HEAP_USAGE }}},
-						{ series: 'ns:health TotalGcPercentage', unit: 'percent',
-          					grid: { column: 0, item: 2},
+						{ series: 'ns:health TotalGcPercentage', unit: 'percent', displayName: 'GC',
+          					grid: { column: 1, item: 0},
           					axis: { max: 30 },
           					status: { missing : { hint: TEXT_GC_PERCENTAGE }}},
-						{ series: 'ns:health PhysicalMemoryUsage', unit: 'percent',
-          					grid: { column: 0, item: 4},
+						{ series: 'ns:health PhysicalMemoryUsage', unit: 'percent', displayName: 'Memory',
+          					grid: { column: 0, item: 1},
           					axis: { max: 100 },
           					status: { missing : { hint: TEXT_MEM_USAGE }}},
-						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series',
-          					grid: { column: 2, item: 3},
+						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series', displayName: 'Connection Pools',
+          					grid: { column: 1, item: 2},
           					axis: { max: 100 },          					
           					status: { missing : { hint: TEXT_POOL_USAGE }}},
-						{ series: 'ns:health LivelinessUp', unit: 'percent',
-          					grid: { column: 1, item: 3},
+						{ series: 'ns:health LivelinessUp', unit: 'percent', displayName: 'MP Health',
+          					grid: { column: 0, item: 2},
           					axis: { max: 100 },
           					options: { noCurves: true },
           					status: { missing : { hint: TEXT_LIVELINESS }}},
-						{ series: 'ns:health *', unit: 'percent', type: 'alert',
-          					grid: { column: 1, item: 0, span: 3},
+						{ series: 'ns:health *', unit: 'percent', type: 'alert', displayName: 'Alerts',
+          					grid: { column: 2, item: 0, span: 2},
           				}, 
 					]
 				},
@@ -269,10 +269,12 @@ MonitoringConsole.Model = (function() {
 		function sanityCheckSettings(settings) {
 			if (settings === undefined)
 				settings = {};
-			if (settings.colors === undefined)
-				settings.colors = {};
-			if (settings.colors.defaults === undefined)
-				settings.colors.defaults = {};
+			if (settings.theme === undefined)
+				settings.theme = {};
+			if (settings.theme.colors === undefined)
+				settings.theme.colors = {};
+			if (settings.theme.options === undefined)
+				settings.theme.options = {};			
 			return settings;
 		}
 		
@@ -446,25 +448,22 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			colorPalette: function(colors) {
-				if (colors === undefined)
-					return settings.colors.palette;
-				settings.colors.palette = colors;
+			themeConfigure(fn) {
+				fn(settings.theme);
 				doStore();
 			},
 
-			colorOpacity: function(opacity) {
-				if (opacity === undefined)
-					return settings.colors.opacity;
-				settings.colors.opacity = opacity;
-				doStore();
+			themePalette: function(colors) {
+				return settings.theme.palette;
 			},
 
-			colorDefault: function(name, color) {
-				if (color === undefined)
-					return settings.colors.defaults[name];
-				settings.colors.defaults[name] = color;
-				doStore();
+			themeOption: function(name, defaultValue) {
+				let value = settings.theme.options[name];
+				return Number.isNaN(value) || value === undefined ? defaultValue : value;
+			},
+
+			themeColor: function(name) {
+				return settings.theme.colors[name];
 			},
 
 			currentPage: function() {
@@ -936,9 +935,19 @@ MonitoringConsole.Model = (function() {
 			});
 		}
 
-		function addAssessment(widget, data, alerts) {
+		function addAssessment(widget, data, alerts, watches) {
 			data.forEach(function(seriesData) {
+				let instance = seriesData.instance;
+				let series = seriesData.series;
 				let status = 'normal';
+				if (Array.isArray(watches) && watches.length == 1) {
+					let states = watches
+						.map(watch => watch.states[series]).filter(e => e != undefined)
+						.map(states => states[instance]).filter(e => e != undefined);
+					if (states.length == 1) {
+						status = states[0];
+					}					
+				}
 				let thresholds = widget.decorations.thresholds;
 				if (thresholds.reference && thresholds.reference !== 'off') {
 					let value = seriesData.points[seriesData.points.length-1];
@@ -957,8 +966,7 @@ MonitoringConsole.Model = (function() {
 						status = 'critical';
 					}
 				}
-				if (Array.isArray(alerts) && alerts.length > 0) {
-					let instance = seriesData.instance;
+				if (Array.isArray(alerts) && alerts.length > 0) {					
 					if (alerts.filter(alert => alert.instance == instance && alert.level === 'red').length > 0) {
 						status = 'red';
 					} else if (alerts.filter(alert => alert.instance == instance && alert.level === 'amber').length > 0) {
@@ -978,7 +986,7 @@ MonitoringConsole.Model = (function() {
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
 						perSecond(data);
-					addAssessment(widget, data, widgetResponse.alerts);
+					addAssessment(widget, data, widgetResponse.alerts, widgetResponse.watches);
 					onDataUpdate({
 						widget: widget,
 						data: data,
@@ -1125,10 +1133,11 @@ MonitoringConsole.Model = (function() {
 			},
 		},
 
-		Colors: {
-			palette: UI.colorPalette,
-			opacity: UI.colorOpacity,
-			default: UI.colorDefault,
+		Theme: {
+			palette: UI.themePalette,
+			option: UI.themeOption,
+			color: UI.themeColor,
+			configure: UI.themeConfigure,
 		},
 		
 		Settings: {

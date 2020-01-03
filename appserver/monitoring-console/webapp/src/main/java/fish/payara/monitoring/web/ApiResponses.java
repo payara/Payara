@@ -44,6 +44,7 @@ import static java.util.stream.Collectors.toList;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -132,6 +133,7 @@ public final class ApiResponses {
         public final CircumstanceData red;
         public final CircumstanceData amber;
         public final CircumstanceData green;
+        public final Map<String, Map<String, String>> states = new HashMap<>();
 
         public WatchData(Watch watch) {
             this.name = watch.name;
@@ -140,6 +142,10 @@ public final class ApiResponses {
             this.red = watch.red.isNone() ? null : new CircumstanceData(watch.red);
             this.amber = watch.amber.isNone() ? null : new CircumstanceData(watch.amber);
             this.green = watch.green.isNone() ? null : new CircumstanceData(watch.green);
+            for (Watch.State state : watch) {
+                states.computeIfAbsent(state.getSeries().toString(), key -> new HashMap<>())
+                    .put(state.getInstance(), state.getLevel().name().toLowerCase());
+            }
         }
     }
 

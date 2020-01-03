@@ -61,6 +61,7 @@ MonitoringConsole.View = (function() {
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
     const Colors = MonitoringConsole.View.Colors;
+    const Theme = MonitoringConsole.Model.Theme;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -221,10 +222,11 @@ MonitoringConsole.View = (function() {
         ]};
         let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
+            .append(Components.createMenu(menu))
             .append($('<h3/>', {title: 'Select '+series})
                 .html(title)
-                .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.createMenu(menu));
+                .click(() => onWidgetToolbarClick(widget)))            
+            ;
     }
 
     function createGlobalSettings(initiallyCollapsed) {
@@ -241,25 +243,32 @@ MonitoringConsole.View = (function() {
     }
 
     function createColorSettings() {
-        let colorModel = MonitoringConsole.Model.Colors;
         function createChangeColorDefaultFn(name) {
-            return (color) => { colorModel.default(name, color); updateSettings(); };
+            return (color) => { Theme.configure(theme => theme.colors[name] = color); updateSettings(); };
         }
+        function createChangeOptionFn(name) {
+            return (value) => { Theme.configure(theme => theme.options[name] = value); };
+        }    
         function createColorDefaultSettingMapper(name) {
-            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: colorModel.default(name), onChange: createChangeColorDefaultFn(name) };
-        }        
+            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
+        }
         return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
-            { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
+            { label: 'Data #', type: 'color', value: Theme.palette(), onChange: (colors) => Theme.palette(colors) },
             { label: 'Defaults', input: [
                 ['waterline', 'alarming', 'critical'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
-            { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
+            { label: 'Opacity', input: [
+                { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
+                { label: 'Nuanced', type: 'value', unit: 'percent', value: Theme.option('nuanced-opacity'), onChange: createChangeOptionFn('nuanced-opacity') },
+            ]},
+            { label: 'Thickness', input: [
+                {label: 'Lines', type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
+            ]},
         ]};
     }
 
     function createWidgetSettings(widget) {
-        let colorModel = MonitoringConsole.Model.Colors;
         let options = widget.options;
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
@@ -293,13 +302,12 @@ MonitoringConsole.View = (function() {
                 { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
             ]},
             { label: 'Lines', input: [
-                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked},
+                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
             ]},
             { label: 'Background', input: [
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Gradient', type: 'checkbox', value: !options.noGradient, onChange: (widget, checked) => options.noGradient = !checked},
-                { label: 'Diverse', type: 'checkbox', value: !options.noDiverseFill, onChange: (widget, checked) => options.noDiverseFill = !checked,
+                { label: 'Nuanced', type: 'checkbox', value: !options.noNuancedFill, onChange: (widget, checked) => options.noNuancedFill = !checked,
                     description: 'Uncheck to not show watch thresholds via background colors.'},                
             ]},
             { label: 'X-Axis', input: [
@@ -313,16 +321,16 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
                 { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
-                { type: 'color', value: widget.decorations.waterline.color, defaultValue: colorModel.default('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: Theme.color('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
             ]},
             { label: 'Alarming Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
-                { type: 'color', value: thresholds.alarming.color, defaultValue: colorModel.default('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: Theme.color('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
                 { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
-                { type: 'color', value: thresholds.critical.color, defaultValue: colorModel.default('critical'), onChange: (widget, value) => thresholds.critical.color = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: Theme.color('critical'), onChange: (widget, value) => thresholds.critical.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
             ]},                
             { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
@@ -435,9 +443,8 @@ MonitoringConsole.View = (function() {
             return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
         let format = Units.converter(widget.unit).format;
-        const colorModel = MonitoringConsole.Model.Colors;
-        let palette = colorModel.palette();
-        let alpha = colorModel.opacity() / 100;
+        let palette = Theme.palette();
+        let alpha = Theme.option('opacity') / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -454,10 +461,9 @@ MonitoringConsole.View = (function() {
             if (widget.options.perSec)
                 value += ' /s';
             let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
-            let background1 = Colors.hex2rgba(color, alpha);
-            let background = widget.options.noGradient === true ? background1 : [ background1, Colors.hex2rgba(color, 0) ];
+            let background = Colors.hex2rgba(color, alpha);
             let status = seriesData.assessments.status;
-            let highlight = status === undefined ? undefined : colorModel.default(status);
+            let highlight = status === undefined ? undefined : Theme.color(status);
             let item = { 
                 label: label, 
                 value: value, 
@@ -475,23 +481,23 @@ MonitoringConsole.View = (function() {
     function createLegendModelFromAlerts(widget, data, alerts) {
         if (!Array.isArray(alerts))
             return []; //TODO use white, green, amber and red to describe the watch in case of single watch
-        const colorModel = MonitoringConsole.Model.Colors;
-        let palette = colorModel.palette();
-        let alpha = colorModel.opacity() / 100;
+        let palette = Theme.palette();
+        let alpha = Theme.option('opacity') / 100;
         let instances = {};
         for (let i = 0; i < alerts.length; i++) {
             let alert = alerts[i];
             instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
         }
+        const texts = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
         return Object.entries(instances).map(function([instance, level]) {
             let color = Colors.lookup('instance', instance, palette);
             return {
                 label: instance,
-                value: level == undefined ? 'White' : level.charAt(0).toUpperCase() + level.slice(1),
+                value: texts[level == undefined ? 'white' : level],
                 color: color,
                 background: Colors.hex2rgba(color, alpha),
                 status: level, 
-                highlight: colorModel.default(level),                
+                highlight: Theme.color(level),                
             };
         });
     }
@@ -523,8 +529,7 @@ MonitoringConsole.View = (function() {
     function createAlertTableModel(widget, alerts) {
         let items = [];
         if (Array.isArray(alerts)) {
-            const colorModel = MonitoringConsole.Model.Colors;
-            let palette = MonitoringConsole.Model.Colors.palette();
+            let palette = Theme.palette();
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
                 let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
@@ -535,7 +540,7 @@ MonitoringConsole.View = (function() {
                             level: frame.level,
                             since: frame.start,
                             until: frame.end,
-                            color: colorModel.default(frame.level),
+                            color: Theme.color(frame.level),
                         };
                     });
                     let instanceColoring = widget.coloring === 'instance' || widget.coloring === undefined;

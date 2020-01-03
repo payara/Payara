@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import fish.payara.monitoring.alert.Condition.Operator;
 import fish.payara.monitoring.collect.MonitoringWatchCollector.WatchBuilder;
 import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
+import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesDataset;
 
 /**
@@ -29,14 +31,14 @@ import fish.payara.monitoring.model.SeriesDataset;
  * 
  * @author Jan Bernitt
  */
-public final class Watch implements WatchBuilder {
+public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
     /**
      * A {@link Watch} is a state machine where the state of each {@link SeriesDataset} matching the
      * {@link Watch#watched} {@link Metric} is tracked individually with {@link Level} and potentially the ongoing
      * {@link Alert}.
      */
-    private static final class State {
+    public static final class State {
 
         final SeriesDataset watchingSince;
         volatile Level level = Level.WHITE;
@@ -49,11 +51,23 @@ public final class Watch implements WatchBuilder {
         @Override
         public String toString() {
             StringBuilder str = new StringBuilder();
-            str.append(level).append(" ").append(watchingSince.getSeries()).append(" ").append(watchingSince.getInstance());
+            str.append(level).append(" ").append(getSeries()).append(" ").append(getInstance());
             if (ongoing != null) {
                 str.append(ongoing.toString());
             }
             return str.toString();
+        }
+
+        public String getInstance() {
+            return watchingSince.getInstance();
+        }
+
+        public Series getSeries() {
+            return watchingSince.getSeries();
+        }
+
+        public Level getLevel() {
+            return level;
         }
     }
 
@@ -77,6 +91,11 @@ public final class Watch implements WatchBuilder {
         this.amber = amber;
         this.green = green;
         this.captured = captured;
+    }
+
+    @Override
+    public Iterator<State> iterator() {
+        return statesByInstanceSeries.values().iterator();
     }
 
     public void stop() {

@@ -40,7 +40,7 @@
 
 /*jshint esversion: 8 */
 
-Chart.defaults.global.defaultFontColor = "#fff";
+Chart.defaults.global.defaultFontColor = "#ddd";
 Chart.defaults.global.tooltips.enabled = false;
 
 /**
