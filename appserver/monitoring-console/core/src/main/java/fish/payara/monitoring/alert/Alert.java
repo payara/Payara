@@ -135,7 +135,7 @@ public final class Alert implements Iterable<Alert.Frame> {
     }
 
     public boolean isStopped() {
-        return level == Level.WHITE && !frames.isEmpty();
+        return level.isLessSevereThan(Level.AMBER) && !frames.isEmpty();
     }
 
     public void stop(Level to) {

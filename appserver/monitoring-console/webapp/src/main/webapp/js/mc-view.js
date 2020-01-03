@@ -285,34 +285,39 @@ MonitoringConsole.View = (function() {
             { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
-                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
             { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
                 description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
-                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked,
+                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => widget.options.decimalMetric = checked,
                     description: 'Values that are collected as decimal are converted to a integer with 4 fix decimal places. By checking this option this conversion is reversed to get back the original decimal range.'},
             ]},
             { label: 'Extra Lines', input: [
-                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => widget.options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => widget.options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => widget.options.drawAvgLine = checked},            
             ]},
             { label: 'Lines', input: [
-                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked},
-                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => options.drawCurves = checked},
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => widget.options.drawPoints = checked},
+                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => widget.options.drawCurves = checked},
             ]},
             { label: 'Background', input: [
-                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => widget.options.noFill = !checked},
             ]},
             { label: 'X-Axis', input: [
-                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => widget.options.noTimeLabels = !checked},
             ]},            
             { label: 'Y-Axis', input: [
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
+            ]},
+            { label: 'Alerts', input: [
+                { label: 'Show', type: 'checkbox', value: !options.noAlerts, onChange: (widget, checked) => widget.options.noAlerts = !checked},
+                { label: 'Stopped', type: 'checkbox', value: !options.noStoppedAlerts, onChange: (widget, checked) => widget.options.noStoppedAlerts = !checked},
+                { label: 'Acknowledged', type: 'checkbox', value: !options.noAcknowledgedAlerts, onChange: (widget, checked) => widget.options.noAcknowledgedAlerts = !checked},
             ]},
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
@@ -321,16 +326,16 @@ MonitoringConsole.View = (function() {
                 { type: 'color', value: widget.decorations.waterline.color, defaultValue: Theme.color('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
             ]},
             { label: 'Alarming Threshold', input: [
-                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => widget.decorations.thresholds.alarming.value = value },
                 { type: 'color', value: thresholds.alarming.color, defaultValue: Theme.color('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
-                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
-                { type: 'color', value: thresholds.critical.color, defaultValue: Theme.color('critical'), onChange: (widget, value) => thresholds.critical.color = value },
-                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => widget.decorations.thresholds.critical.value = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: Theme.color('critical'), onChange: (widget, value) => widget.decorations.thresholds.critical.color = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => widget.decorations.thresholds.critical.display = checked },
             ]},                
-            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => widget.decorations.thresholds.reference = selected},
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
@@ -537,13 +542,14 @@ MonitoringConsole.View = (function() {
 
     function createAlertTableModel(widget, alerts) {
         let items = [];
-        if (Array.isArray(alerts)) {
+        if (Array.isArray(alerts) && widget.options.noAlerts !== true) {
             let palette = Theme.palette();
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
                 let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
-                //TODO check some options if ack alerts should be included?
-                if (include) {
+                let filter = alert.acknowledged && widget.options.noAcknowledgedAlerts === true
+                  || alert.stopped && widget.options.noStoppedAlerts === true;
+                if (include && !filter) {
                     let frames = alert.frames.map(function(frame) {
                         return {
                             level: frame.level,

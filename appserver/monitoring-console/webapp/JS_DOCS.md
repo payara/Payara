@@ -84,6 +84,9 @@ options    = {
 	drawPoints:boolean,
 	noFill:boolean,
 	noTimeLabels:boolean,
+	noAlerts:boolean,
+	noStoppedAlerts:boolean,
+	noAcknowledgedAlerts:boolean,
 }
 decorations= { waterline, thresholds }
 waterline  = { value:number color:string }
