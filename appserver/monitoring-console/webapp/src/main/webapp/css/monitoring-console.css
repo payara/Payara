@@ -332,6 +332,7 @@ table.tags th, table.tags td {
   bottom: 10px;
   left: 15px;
   padding: 0;
+  background-color: rgba(0, 36, 51, .75);  
 }
 .Legend li {
   display: inline-block;
@@ -486,7 +487,7 @@ table.tags th, table.tags td {
   top: 40px;
   left: 15px;
   width: calc(100% - 38px);
-  background-color: rgba(0, 36, 51, .5);
+  background-color: rgba(0, 36, 51, .75);
 }
 .AlertTable .Item {
   border-left: 5px solid transparent; /* colored via inline style */

@@ -55,11 +55,11 @@ MonitoringConsole.View.Colors = (function() {
    const SCHEMES = {
       Payara: {
          name: 'Payara',
-         palette: [ '#feb356', '#8ab7ff', '#cb95e5', '#99d88d', '#ff7289', '#ffed52' ],
+         palette: [ '#ff7809', '#3373d9', '#a352cb', '#5aa54b', '#de304d', '#f3cc0f' ],
          opacity: 10,
          colors:  { 
-            waterline: '#5694f2', alarming: '#fade2b', critical: '#f24865',
-            white: '#ffffff', green: '#77be69', amber: '#ff9830', red: '#f24865',
+            waterline: '#5694f2', alarming: '#d77728', critical: '#d44a3a',
+            white: '#ffffff', green: '#299c46', amber: '#d77728', red: '#d44a3a',
          }
       },
 
@@ -86,9 +86,9 @@ MonitoringConsole.View.Colors = (function() {
       c: {
          name: '80s Neon',
          opacity: 10,
-         palette: [ '#cb268b', '#f64e0c', '#eff109', '#6cf700', '#00aff3'],
+         palette: [ '#f700d8', '#eff109', '#0ed4f7', '#00b8aa', '#0000f7'],
          colors:  { 
-            waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c',
+            waterline: '#00aff3', alarming: '#f64e0c', critical: '#dc143c',
             white: '#ffffff', green: '#6cf700', amber: '#f64e0c', red: '#dc143c',
          }
       },

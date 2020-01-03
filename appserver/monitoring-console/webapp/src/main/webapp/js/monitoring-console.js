@@ -1689,11 +1689,11 @@ MonitoringConsole.View.Colors = (function() {
    const SCHEMES = {
       Payara: {
          name: 'Payara',
-         palette: [ '#feb356', '#8ab7ff', '#cb95e5', '#99d88d', '#ff7289', '#ffed52' ],
+         palette: [ '#ff7809', '#3373d9', '#a352cb', '#5aa54b', '#de304d', '#f3cc0f' ],
          opacity: 10,
          colors:  { 
-            waterline: '#5694f2', alarming: '#fade2b', critical: '#f24865',
-            white: '#ffffff', green: '#77be69', amber: '#ff9830', red: '#f24865',
+            waterline: '#5694f2', alarming: '#d77728', critical: '#d44a3a',
+            white: '#ffffff', green: '#299c46', amber: '#d77728', red: '#d44a3a',
          }
       },
 
@@ -1720,9 +1720,9 @@ MonitoringConsole.View.Colors = (function() {
       c: {
          name: '80s Neon',
          opacity: 10,
-         palette: [ '#cb268b', '#f64e0c', '#eff109', '#6cf700', '#00aff3'],
+         palette: [ '#f700d8', '#eff109', '#0ed4f7', '#00b8aa', '#0000f7'],
          colors:  { 
-            waterline: '#00aff3', alarming: '#eff109', critical: '#f64e0c',
+            waterline: '#00aff3', alarming: '#f64e0c', critical: '#dc143c',
             white: '#ffffff', green: '#6cf700', amber: '#f64e0c', red: '#dc143c',
          }
       },
@@ -2745,16 +2745,29 @@ MonitoringConsole.Chart.Line = (function() {
           let yRange = yMax - yMin;
           return yAxis.bottom - Math.max(0, (yAxis.height * yVisible / yRange));
         }
-        for (let i = 0; i < areas.length; ++i) {
+        for (let i = 0; i < areas.length; i++) {
           let area = areas[i];
           if (area.min != area.max) {
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let height = yAxisMax - yAxisMin;
-            ctx.fillStyle = '#111111'; // neutral back for transparent color on top to not become bluish
-            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, height);
-            ctx.fillStyle = area.color;
-            ctx.fillRect(xAxis.left, yAxisMin, xAxis.width, height);          
+            let width = 10;
+            let left = xAxis.right + 1;
+            ctx.fillStyle = '#333333'; // neutral back for transparent color on top to not become bluish
+            ctx.fillRect(left, yAxisMin, width, height);
+            let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
+            if (i + 1 < areas.length && areas[i+1].max == area.min) {
+              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0, areas[i+1].color);
+            } else if (i > 0 && areas[i-1].max == area.min) {
+              gradient.addColorStop(0.33, area.color);
+              gradient.addColorStop(0, areas[i-1].color);
+            } else {
+              gradient.addColorStop(0, area.color);  
+            }            
+            gradient.addColorStop(1, area.color);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(left, yAxisMin, width, height);          
           }
         }
       }
@@ -2806,7 +2819,7 @@ MonitoringConsole.Chart.Line = (function() {
     return line;
   }  
     
-  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor, fill = true) {
+  function createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor) {
 		let pointRadius = widget.options.drawPoints ? 2 : 0;
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
@@ -2815,7 +2828,7 @@ MonitoringConsole.Chart.Line = (function() {
     return {
 			data: points,
 			label: label,
-      fill: fill,
+      fill: widget.options.noFill !== true,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
 			borderWidth: lineWidth,
@@ -2832,9 +2845,7 @@ MonitoringConsole.Chart.Line = (function() {
     let bgColor = seriesData.legend.background;
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
-    let fill = widget.options.noFill !== true
-      && (widget.options.noNuancedFill === true || watches === undefined || watches.length == 0); 
-  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor, fill));
+  	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
   	if (points.length > 0 && widget.options.drawAvgLine) {
 			datasets.push(createAverageLineDataset(seriesData, points, lineColor));
 		}
@@ -2875,7 +2886,7 @@ MonitoringConsole.Chart.Line = (function() {
 
   function createBackgroundAreas(widget, watches) {    
     let areas = [];
-    if (widget.options.noNuancedFill === true || watches === undefined || watches.length == 0)
+    if (watches === undefined || watches.length == 0)
       return areas;
     let watch = watches[0];
     if (watch.red)
@@ -2888,8 +2899,7 @@ MonitoringConsole.Chart.Line = (function() {
   }
 
   function createBackgroundArea(level, levels) {
-    const backgroundColor = (name) => Colors.hex2rgba(Theme.color(name), Theme.option('nuanced-opacity', 15) / 100);
-    let color = backgroundColor(level.level);
+    let color = Theme.color(level.level);
     let min = 0;
     let max;
     if (level.start.operator == '>' || level.start.operator == '>=') {
@@ -3680,7 +3690,6 @@ MonitoringConsole.View = (function() {
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', input: [
                 { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
-                { label: 'Nuanced', type: 'value', unit: 'percent', value: Theme.option('nuanced-opacity'), onChange: createChangeOptionFn('nuanced-opacity') },
             ]},
             { label: 'Thickness', input: [
                 {label: 'Lines', type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
@@ -3727,8 +3736,6 @@ MonitoringConsole.View = (function() {
             ]},
             { label: 'Background', input: [
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Nuanced', type: 'checkbox', value: !options.noNuancedFill, onChange: (widget, checked) => options.noNuancedFill = !checked,
-                    description: 'Uncheck to not show watch thresholds via background colors.'},                
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},

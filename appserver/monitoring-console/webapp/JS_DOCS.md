@@ -83,7 +83,6 @@ options    = {
 	drawCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
-	noNuancedFill:boolean,
 	noTimeLabels:boolean,
 }
 decorations= { waterline, thresholds }

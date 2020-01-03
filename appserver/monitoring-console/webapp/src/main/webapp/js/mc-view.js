@@ -260,7 +260,6 @@ MonitoringConsole.View = (function() {
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', input: [
                 { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
-                { label: 'Nuanced', type: 'value', unit: 'percent', value: Theme.option('nuanced-opacity'), onChange: createChangeOptionFn('nuanced-opacity') },
             ]},
             { label: 'Thickness', input: [
                 {label: 'Lines', type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
@@ -307,8 +306,6 @@ MonitoringConsole.View = (function() {
             ]},
             { label: 'Background', input: [
                 { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Nuanced', type: 'checkbox', value: !options.noNuancedFill, onChange: (widget, checked) => options.noNuancedFill = !checked,
-                    description: 'Uncheck to not show watch thresholds via background colors.'},                
             ]},
             { label: 'X-Axis', input: [
                 { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
