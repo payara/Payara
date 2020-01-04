@@ -289,7 +289,7 @@ MonitoringConsole.View = (function() {
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
-            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index', 'instance-series': 'Instance and Series Name' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
                 description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
@@ -477,7 +477,10 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
-            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
+            let coloring = widget.coloring;
+            if (coloring == 'series')
+                coloring += ': ' + widget.series;
+            let color = Colors.lookup(coloring, getColorKey(widget, seriesData, j), palette);
             let background = Colors.hex2rgba(color, alpha);
             if (Array.isArray(alerts) && alerts.length > 0) {
                 let level;
@@ -537,6 +540,7 @@ MonitoringConsole.View = (function() {
         switch (widget.coloring) {
             case 'index': return 'line-' + index;
             case 'series': return seriesData.series;
+            case 'instance-series': return seriesData.instance + ' ' + seriesData.series;
             case 'instance': 
             default: return seriesData.instance;
         }
