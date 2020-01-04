@@ -2784,7 +2784,16 @@ MonitoringConsole.Chart.Line = (function() {
             }            
             gradient.addColorStop(1, area.color);
             ctx.fillStyle = gradient;
-            ctx.fillRect(left, yAxisMin, width, height);          
+            ctx.fillRect(left, yAxisMin, width, height);
+            // and the line
+            let yLine = area.type == 'upper' ? yAxisMin - 1 : yAxisMax + 1;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeStyle = area.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(xAxis.left, yLine);
+            ctx.lineTo(xAxis.right, yLine);
+            ctx.stroke();
           }
         }
       }
@@ -2919,6 +2928,7 @@ MonitoringConsole.Chart.Line = (function() {
     let color = Theme.color(level.level);
     let min = 0;
     let max;
+    let type = 'upper';
     if (level.start.operator == '>' || level.start.operator == '>=') {
       min = level.start.threshold;
       for (let i = 0; i < levels.length; i++) {
@@ -2929,6 +2939,7 @@ MonitoringConsole.Chart.Line = (function() {
       }
     } else if (level.start.operator == '<' || level.start.operator == '<=') {
       max = level.start.threshold;
+      type = 'lower';
       for (let i = 0; i < levels.length; i++) {
         let other = levels[i];
         if (other !== undefined && other.start.threshold < max) {
@@ -2936,7 +2947,7 @@ MonitoringConsole.Chart.Line = (function() {
         }
       }
     }
-    return { color: color, min: min, max: max };
+    return { color: color, min: min, max: max, type: type };
   }
 
   /**

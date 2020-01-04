@@ -341,7 +341,7 @@ MonitoringConsole.View = (function() {
         ]});
         let alerts = widget.decorations.alerts;
         settings.push({ id: 'settings-alerts', caption: 'Alerts', collapsed: true, entries: [
-            { label: 'Filter', input: [
+            { label: 'Show', input: [
                 [
                     { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
                     { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
@@ -354,7 +354,7 @@ MonitoringConsole.View = (function() {
                     { label: 'Acknowledged', type: 'checkbox', value: !alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = !checked},
                     { label: 'Unacknowledged', type: 'checkbox', value: !alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = !checked},
                 ],
-            ]},
+            ], description: 'Properties of alerts to show. Graphs hide stopped or acknowledged alerts automatically.' },
         ]});
         return settings;       
     }
