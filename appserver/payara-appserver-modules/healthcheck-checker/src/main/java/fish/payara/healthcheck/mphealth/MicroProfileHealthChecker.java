@@ -295,7 +295,9 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
         HttpURLConnection conn = (HttpURLConnection) remote.toURL().openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept", "application/json");
-        return conn.getResponseCode();
+        int statusCode = conn.getResponseCode();
+        conn.disconnect();
+        return statusCode;
     }
 
     private static HealthCheckResultEntry entryFromHttpStatusCode(int statusCode) {
