@@ -69,6 +69,11 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     public void init() {
         isDas = serverEnv.isDas();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
+        Watch watch = new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration")))
+                .red(800L, 3, true, 800L, 5, false)
+                .amber(600L, 3, true, 600L, 5, false)
+                .green(-400L, 1, false, null, null, false);
+        addWatch(watch);
     }
 
     @Override
@@ -88,6 +93,13 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     public void collect(MonitoringDataCollector collector) {
         if (isDas) {
             collector.collect("WatchLoopDuration", evalLoopTime.get());
+            AlertStatistics stats = statistics.get();
+            if (stats != null) {
+                collector.group("Red").collect("AlertCount", stats.unacknowledgedRedAlerts);
+                collector.group("RedAck").collect("AlertCount", stats.acknowledgedRedAlerts);
+                collector.group("Amber").collect("AlertCount", stats.unacknowledgedAmberAlerts);
+                collector.group("AmberAck").collect("AlertCount", stats.acknowledgedAmberAlerts);
+            }
         }
     }
 

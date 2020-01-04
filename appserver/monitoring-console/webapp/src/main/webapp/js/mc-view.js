@@ -259,11 +259,11 @@ MonitoringConsole.View = (function() {
             { label: 'Defaults', input: [
                 ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
-            { label: 'Opacity', input: [
-                { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
+            { label: 'Opacity', description: 'Fill transparency 0-100%', input: [
+                { type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
             ]},
-            { label: 'Thickness', input: [
-                {label: 'Lines', type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
+            { label: 'Thickness', description: 'Line thickness 1-8 (each step is equivalent to 0.5px)', input: [
+                { type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
             ]},
         ]};
     }

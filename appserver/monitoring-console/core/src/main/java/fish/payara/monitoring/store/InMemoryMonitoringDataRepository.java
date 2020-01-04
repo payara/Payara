@@ -211,14 +211,18 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         int collectedSources = 0;
         int failedSources = 0;
         final long second = collectedSecond / 1000;
+        MonitoringDataCollector monitoringCollector = collector.in("monitoring");
         for (MonitoringDataSource source : sources) {
             String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
             MonitoringData meta = getMetaAnnotation(source);
             if (meta == null || second % meta.intervalSeconds() == 0) {
                 try {
                     collectedSources++;
+                    long sourceStart = System.currentTimeMillis();
                     source.collect(meta == null ? collector : collector.in(meta.ns()));
                     sourcesFailingBefore.remove(sourceId);
+                    monitoringCollector.group(sourceId)
+                        .collect("CollectionDuration", System.currentTimeMillis() - sourceStart);
                 } catch (RuntimeException e) {
                     if (!sourcesFailingBefore.contains(sourceId)) {
                         // only long once unless being successful again
@@ -234,13 +238,13 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             estimatedTotalBytesMemory += set.estimatedBytesMemory();
         }
         int seriesCount = secondsWrite.size();
-        collector.in("monitoring")
+        monitoringCollector
             .collect("CollectionDuration", System.currentTimeMillis() - collectionStart)
             .collectNonZero("SeriesCount", seriesCount)
             .collectNonZero("TotalBytesMemory", estimatedTotalBytesMemory)
             .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
-            .collect("SourcesCount", collectedSources)
-            .collect("FailedCollectionCount", failedSources);
+            .collect("CollectedSourcesCount", collectedSources)
+            .collect("CollectedSourcesErrorCount", failedSources);
     }
 
     private static MonitoringData getMetaAnnotation(MonitoringDataSource source) {

@@ -7,6 +7,11 @@ import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.monitoring.model.Series;
 
+/**
+ * The {@link AlertService} manages and evaluates {@link Watch}s that cause {@link Alert}s.
+ *
+ * @author Jan Bernitt
+ */
 @Contract
 public interface AlertService {
 

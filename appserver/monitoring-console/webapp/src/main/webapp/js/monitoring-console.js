@@ -258,9 +258,31 @@ MonitoringConsole.Model = (function() {
           					options: { noCurves: true },
           					status: { missing : { hint: TEXT_LIVELINESS }}},
 						{ series: 'ns:health *', unit: 'percent', type: 'alert', displayName: 'Alerts',
-          					grid: { column: 2, item: 0, span: 2},
-          				}, 
+          					grid: { column: 2, item: 0, span: 2}}, 
 					]
+				},
+				monitoring: {
+					name: 'Monitoring',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:monitoring @:* CollectionDuration', unit: 'ms', displayName: 'Sources Time',
+							grid: { column: 0, item: 0, span: 2},
+							axis: { max: 200 },
+							coloring: 'series'},
+						{ series: 'ns:monitoring @:* AlertCount', displayName: 'Alerts',
+							grid: { column: 2, item: 2},
+							coloring: 'series'},
+						{ series: 'ns:monitoring CollectedSourcesCount', displayName: 'Sources',
+							grid: { column: 0, item: 2}},
+						{ series: 'ns:monitoring CollectedSourcesErrorCount', displayName: 'Sources with Errors', 
+							grid: { column: 1, item: 2}},
+						{ series: 'ns:monitoring CollectionDuration', unit: 'ms', displayName: 'Metrics Time',
+							grid: { column: 2, item: 0},
+							axis: { max: 1000},
+							options: { drawMaxLine: true }},
+						{ series: 'ns:monitoring WatchLoopDuration', unit: 'ms', displayName: 'Watches Time', 
+							grid: { column: 2, item: 1}},
+					],
 				},
 			},
 	};
@@ -3684,11 +3706,11 @@ MonitoringConsole.View = (function() {
             { label: 'Defaults', input: [
                 ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
-            { label: 'Opacity', input: [
-                { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
+            { label: 'Opacity', description: 'Fill transparency 0-100%', input: [
+                { type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
             ]},
-            { label: 'Thickness', input: [
-                {label: 'Lines', type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
+            { label: 'Thickness', description: 'Line thickness 1-8 (each step is equivalent to 0.5px)', input: [
+                { type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
             ]},
         ]};
     }
@@ -3768,16 +3790,16 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-alerts', caption: 'Alerts', collapsed: true, entries: [
             { label: 'Filter', input: [
                 [
+                    { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
+                    { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
+                ],            
+                [
                     { label: 'Ongoing', type: 'checkbox', value: !alerts.noOngoing, onChange: (widget, checked) => widget.decorations.alerts.noOngoing = !checked},
                     { label: 'Stopped', type: 'checkbox', value: !alerts.noStopped, onChange: (widget, checked) => widget.decorations.alerts.noStopped = !checked},
                 ],
                 [
                     { label: 'Acknowledged', type: 'checkbox', value: !alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = !checked},
                     { label: 'Unacknowledged', type: 'checkbox', value: !alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = !checked},
-                ],
-                [
-                    { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
-                    { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
                 ],
             ]},
         ]});
