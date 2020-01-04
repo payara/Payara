@@ -146,9 +146,9 @@ MonitoringConsole.Chart.Line = (function() {
         }
         for (let i = 0; i < areas.length; i++) {
           let area = areas[i];
+          let yAxisMin = yOffset(area.min);
+          let yAxisMax = yOffset(area.max);
           if (area.min != area.max) {
-            let yAxisMin = yOffset(area.min);
-            let yAxisMax = yOffset(area.max);
             let height = yAxisMax - yAxisMin;
             let width = 6;
             let left = xAxis.right + 1;
@@ -165,16 +165,16 @@ MonitoringConsole.Chart.Line = (function() {
             gradient.addColorStop(1, area.color);
             ctx.fillStyle = gradient;
             ctx.fillRect(left, yAxisMin, width, height);
-            // and the line
-            let yLine = area.type == 'upper' ? yAxisMin - 1 : yAxisMax + 1;
-            ctx.setLineDash([5, 3]);
-            ctx.strokeStyle = area.color;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(xAxis.left, yLine);
-            ctx.lineTo(xAxis.right, yLine);
-            ctx.stroke();
           }
+          // and the line
+          let yLine = area.type == 'lower' ? yAxisMax + 1 : yAxisMin - 1;
+          ctx.setLineDash([5, 3]);
+          ctx.strokeStyle = area.color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(xAxis.left, yLine);
+          ctx.lineTo(xAxis.right, yLine);
+          ctx.stroke();
         }
       }
     };
@@ -264,43 +264,43 @@ MonitoringConsole.Chart.Line = (function() {
 	  return datasets;
   }
 
-  function createDecorationDatasets(widget, data) {
-    let t0;
-    let t1;
-    for (let j = 0; j < data.length; j++) {
-      let px = data[j].points;
-      t0 = t0 === undefined ? px[0] : Math.min(t0, px[0]);
-      t1 = t1 === undefined ? px[px.length-2] : Math.max(t1, px[px.length-2]);
-    }
-    let points = [{ t:t0, y: 0}, {t: t1, y: 0}];
-    let decorations = widget.decorations;
-    let datasets = [];
-    if (decorations.waterline && decorations.waterline.value) {
-      let color = decorations.waterline.color || Theme.color('waterline');
-      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
-    }
-    if (decorations.thresholds.alarming.display) {
-      let color = decorations.thresholds.alarming.color || Theme.color('alarming');
-      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
-    }
-    if (decorations.thresholds.critical.display) {
-      let color = decorations.thresholds.critical.color || Theme.color('critical');
-      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
-    }
-    return datasets; 
-  }
-
   function createBackgroundAreas(widget, watches) {    
     let areas = [];
-    if (watches === undefined || watches.length == 0)
-      return areas;
-    let watch = watches[0];
-    if (watch.red)
-      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
-    if (watch.amber)
-      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
-    if (watch.green)
-      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    if (Array.isArray(watches) && watches.length > 0) {
+      let watch = watches[0];
+      if (watch.red)
+        areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
+      if (watch.amber)
+        areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
+      if (watch.green)
+        areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    }
+    let decorations = widget.decorations;
+    if (areas.length == 0) {
+      let critical = decorations.thresholds.critical.value;
+      let alarming = decorations.thresholds.alarming.value;
+      if (decorations.thresholds.critical.display && critical !== undefined) {
+        let color = decorations.thresholds.critical.color || Theme.color('critical');        
+        if (alarming > critical) {
+          areas.push({ color: color, min: 0, max: critical, type: 'lower' });
+        } else {
+          areas.push({ color: color, min: critical, type: 'upper' });
+        }
+      }
+      if (decorations.thresholds.alarming.display && alarming !== undefined) {
+        let color = decorations.thresholds.alarming.color || Theme.color('alarming');
+        if (alarming > critical) {
+          areas.push({ color: color, min: critical, max: alarming, type: 'lower' });
+        } else {
+          areas.push({ color: color, min: alarming, max: critical, type: 'upper' });
+        }
+      }
+    }    
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || Theme.color('waterline');
+      let value = decorations.waterline.value;
+      areas.push({ color: color, min: value, max: value });
+    }
     return areas;
   }
 
@@ -363,7 +363,6 @@ MonitoringConsole.Chart.Line = (function() {
     for (let j = 0; j < data.length; j++) {
       datasets = datasets.concat(createSeriesDatasets(widget, data[j], update.watches));
     }
-    datasets = datasets.concat(createDecorationDatasets(widget, data));
     chart.data.datasets = datasets;
     chart.data.areas = createBackgroundAreas(widget, update.watches);    
     chart.update(0);
