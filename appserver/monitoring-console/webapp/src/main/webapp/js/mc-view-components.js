@@ -211,13 +211,15 @@ MonitoringConsole.View.Components = (function() {
               val = undefined;
             onChange(val);
           });
+        let wrapper = $('<span/>', {'class': 'color-picker'}).append(input);
         if (model.defaultValue === undefined)
-          return input;
-        return $('<span/>').append(input).append($('<input/>', { 
+          return wrapper;
+        return $('<span/>').append(wrapper).append($('<input/>', { 
           type: 'button', 
           value: ' ',
           title: 'Reset to default color', 
           style: 'background-color: ' + model.defaultValue,
+          'class': 'color-reset',
         }).click(() => {
           onChange(undefined);
           input.val(model.defaultValue);
@@ -237,17 +239,17 @@ MonitoringConsole.View.Components = (function() {
         for (let i = 0; i < value.length; i++) {
           list.append(createMultiColorItemInput(colors, i, onChange));
         }
-        let add = $('<input/>', {type: 'button', value: '+'});
+        let add = $('<button/>', {text: '+', 'class': 'color-list'});
         add.click(() => {
           colors.push(Colors.random(colors));
           createMultiColorItemInput(colors, colors.length-1, onChange).insertBefore(add);
           onChange(colors);
         });
-        let remove = $('<input/>', {type: 'button', value: '-'});
+        let remove = $('<button/>', {text: '-', 'class': 'color-list'});
         remove.click(() => {
           if (colors.length > 1) {
             colors.length -= 1;
-            list.children('input[type=color]').last().remove();
+            list.children('.color-picker').last().remove();
             onChange(colors);
           }
         });

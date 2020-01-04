@@ -55,11 +55,14 @@ MonitoringConsole.View.Colors = (function() {
    const SCHEMES = {
       Payara: {
          name: 'Payara',
-         palette: [ '#0080ff', '#008081', '#95c8d9', '#3fe0d0', '#589fd3', '#6694f6' ],
+         palette: [ 
+            '#4363d8', '#42d4f4', '#469990', '#aaffc3', 
+            '#bfef45', '#ffe119', '#ffd8b1', '#9A6324', 
+            '#800000', '#911eb4', '#f032e6', '#fabebe', '#e6beff', '#fffac8' ],
          opacity: 10,
          colors:  { 
-            waterline: '#f3cc0f', alarming: '#d77728', critical: '#d44a3a',
-            white: '#ffffff', green: '#299c46', amber: '#d77728', red: '#d44a3a',
+            waterline: '#3cb44b', alarming: '#f58231', critical: '#e6194B',
+            white: '#ffffff', green: '#3cb44b', amber: '#f58231', red: '#e6194B',
          }
       },
 

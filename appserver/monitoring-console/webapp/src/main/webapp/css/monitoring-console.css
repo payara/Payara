@@ -55,14 +55,46 @@ select {
   padding: 2px 5px;
   border-radius: 2px;
   margin-bottom: 2px;
+  border: 1px solid #ccc;  
 }
 input[type=color] {
-  border-radius: 2px;
+  border: 0;
   padding: 0;
-  margin: 1px;
+  width: 200%;
+  height: 200%;
+  cursor: pointer;
+  transform: translate(-25%, -25%)
+}
+.color-picker {
   display: inline-block;
   vertical-align: middle;
-  width: 30px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #444;
+  margin: 1px 1px 0 0;  
+}
+input[type=button].color-reset {
+  border-radius: 10px;
+  border: 1px solid #444;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  cursor: pointer;
+}
+button.color-list {
+  border-radius: 12px;
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  cursor: pointer;
+  background-color: white;
+  font-weight: bold;
+  margin: 1px;
+  text-align: center;
+  padding: 0;
+  vertical-align: middle;  
 }
 input[type=button] {
   border-radius: 2px;
@@ -84,7 +116,7 @@ input[type=text]:invalid {
   background-color: #ffdddd;
 }
 input[type=number] {
-  width: 60px;
+  width: 50px;
 }
 input[type=checkbox] {
   vertical-align: middle;

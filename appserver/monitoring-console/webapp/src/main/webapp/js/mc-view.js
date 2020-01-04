@@ -252,11 +252,12 @@ MonitoringConsole.View = (function() {
         function createColorDefaultSettingMapper(name) {
             return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
         }
-        return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
+        let collapsed = $('#settings-colors').children('tr:visible').length <= 1;
+        return { id: 'settings-colors', caption: 'Colors', collapsed: collapsed, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
             { label: 'Data #', type: 'color', value: Theme.palette(), onChange: (colors) => Theme.palette(colors) },
             { label: 'Defaults', input: [
-                ['waterline', 'alarming', 'critical'].map(createColorDefaultSettingMapper),
+                ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', input: [
                 { label: 'Fill', type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
@@ -272,7 +273,8 @@ MonitoringConsole.View = (function() {
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
         let settings = [];
-        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
+        let collapsed = $('#settings-widget').children('tr:visible').length <= 1;
+        settings.push({ id: 'settings-widget', caption: 'Widget', collapsed: collapsed, entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
@@ -314,11 +316,6 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
-            { label: 'Alerts', input: [
-                { label: 'Show', type: 'checkbox', value: !options.noAlerts, onChange: (widget, checked) => widget.options.noAlerts = !checked},
-                { label: 'Stopped', type: 'checkbox', value: !options.noStoppedAlerts, onChange: (widget, checked) => widget.options.noStoppedAlerts = !checked},
-                { label: 'Acknowledged', type: 'checkbox', value: !options.noAcknowledgedAlerts, onChange: (widget, checked) => widget.options.noAcknowledgedAlerts = !checked},
-            ]},
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -341,6 +338,23 @@ MonitoringConsole.View = (function() {
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
+        ]});
+        let alerts = widget.decorations.alerts;
+        settings.push({ id: 'settings-alerts', caption: 'Alerts', collapsed: true, entries: [
+            { label: 'Filter', input: [
+                [
+                    { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
+                    { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
+                ],            
+                [
+                    { label: 'Ongoing', type: 'checkbox', value: !alerts.noOngoing, onChange: (widget, checked) => widget.decorations.alerts.noOngoing = !checked},
+                    { label: 'Stopped', type: 'checkbox', value: !alerts.noStopped, onChange: (widget, checked) => widget.decorations.alerts.noStopped = !checked},
+                ],
+                [
+                    { label: 'Acknowledged', type: 'checkbox', value: !alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = !checked},
+                    { label: 'Unacknowledged', type: 'checkbox', value: !alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = !checked},
+                ],
+            ]},
         ]});
         return settings;       
     }
@@ -391,7 +405,8 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();                        
             }
         };
-        return { id: 'settings-page', caption: 'Page', entries: [
+        let collapsed = $('#settings-page').children('tr:visible').length <= 1;
+        return { id: 'settings-page', caption: 'Page', collapsed: collapsed, entries: [
             { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
             { label: 'Page Rotation', input: [
                 { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
@@ -492,6 +507,8 @@ MonitoringConsole.View = (function() {
         return legend;
     }
 
+    const ALERT_STATUS_NAMES = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
+
     function createLegendModelFromAlerts(widget, data, alerts) {
         if (!Array.isArray(alerts))
             return []; //TODO use white, green, amber and red to describe the watch in case of single watch
@@ -502,12 +519,12 @@ MonitoringConsole.View = (function() {
             let alert = alerts[i];
             instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
         }
-        const texts = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
+        
         return Object.entries(instances).map(function([instance, level]) {
             let color = Colors.lookup('instance', instance, palette);
             return {
                 label: instance,
-                value: texts[level == undefined ? 'white' : level],
+                value: ALERT_STATUS_NAMES[level == undefined ? 'white' : level],
                 color: color,
                 background: Colors.hex2rgba(color, alpha),
                 status: level, 
@@ -542,14 +559,16 @@ MonitoringConsole.View = (function() {
 
     function createAlertTableModel(widget, alerts) {
         let items = [];
-        if (Array.isArray(alerts) && widget.options.noAlerts !== true) {
+        if (Array.isArray(alerts)) {
             let palette = Theme.palette();
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
-                let include = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
-                let filter = alert.acknowledged && widget.options.noAcknowledgedAlerts === true
-                  || alert.stopped && widget.options.noStoppedAlerts === true;
-                if (include && !filter) {
+                let autoInclude = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
+                let filters = widget.decorations.alerts;
+                let visible = (alert.acknowledged && filters.noAcknowledged !== true || !alert.acknowledged && filters.noUnacknowledged !== true)
+                           && (alert.stopped && filters.noStopped !== true || !alert.stopped && filters.noOngoing !== true)
+                           && (alert.level == 'red' && filters.noRed !== true || alert.level == 'amber' && filters.noAmber !== true);                  
+                if (autoInclude && visible) {
                     let frames = alert.frames.map(function(frame) {
                         return {
                             level: frame.level,

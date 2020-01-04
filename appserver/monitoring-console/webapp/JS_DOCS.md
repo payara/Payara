@@ -84,11 +84,8 @@ options    = {
 	drawPoints:boolean,
 	noFill:boolean,
 	noTimeLabels:boolean,
-	noAlerts:boolean,
-	noStoppedAlerts:boolean,
-	noAcknowledgedAlerts:boolean,
 }
-decorations= { waterline, thresholds }
+decorations= { waterline, thresholds, alerts }
 waterline  = { value:number color:string }
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
@@ -102,6 +99,14 @@ THRESHOLD  = {
 status     = { *:STAUS }
 STATUS     = { hint }
 hint       = string
+alerts     = { 
+	noOngoing:boolean,
+	noStopped:boolean,
+	noAcknowledged:boolean,
+	noUnacknowledged:boolean,
+	noAmber:boolean,
+	noRed:boolean,
+}
 ```
 * `target` is derived from `series` if not present
 * if `type` is not set `'line'` is assumed and set
