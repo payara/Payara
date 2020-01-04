@@ -47,15 +47,12 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.inject.Inject;
 import javax.validation.constraints.Pattern;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
@@ -204,7 +201,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
                         upCount++;
                     }
                 } catch (Exception ex) {
-                    // not up
+                    LOGGER.log(Level.FINE, "Failed to ping " + instance.getKey(), ex);
                 }
             }
             collector.collect("LivelinessUp",100 * upCount / instances.size());
@@ -294,12 +291,11 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
     /**
      * Sends request to remote healthcheck endpoint to get the status
      */
-    private static int pingHealthEndpoint(URI remote) {
-        Client jaxrsClient = ClientBuilder.newClient();
-        WebTarget target = jaxrsClient.target(remote);
-        try (Response metricsResponse = target.request().accept(MediaType.APPLICATION_JSON).get()) {
-            return metricsResponse.getStatus();
-        }
+    private static int pingHealthEndpoint(URI remote) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) remote.toURL().openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/json");
+        return conn.getResponseCode();
     }
 
     private static HealthCheckResultEntry entryFromHttpStatusCode(int statusCode) {
