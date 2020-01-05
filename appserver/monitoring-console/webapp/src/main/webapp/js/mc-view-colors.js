@@ -99,7 +99,7 @@ MonitoringConsole.View.Colors = (function() {
       d: {
          name: 'Vapor Wave',
          opacity: 10,
-         palette: [ '#05ffa1', '#b8a9df', '#01cdfe', '#b967ff', '#fffb96'],
+         palette: [ '#b8a9df', '#01cdfe', '#b967ff', '#fffb96', '#05ffa1'],
          colors:  { 
             waterline: '#01cdfe', alarming: '#f9c55e', critical: '#FB637A',
             white: '#ffffff', green: '#a2dda9', amber: '#f9c55e', red: '#e05267', 

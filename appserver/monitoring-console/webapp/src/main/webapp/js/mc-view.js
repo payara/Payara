@@ -211,12 +211,8 @@ MonitoringConsole.View = (function() {
         let menu = { groups: [
             { icon: '&#9881;', items: [
                 { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
-                { icon: '&ltri;&rtri;', label: 'Larger', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series)) },
-                { icon: '&rtri;&ltri;', label: 'Smaller', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series)) },
-                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
                 { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
-                { icon: '&triangle;', label: 'Move Up', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series)) },
-                { icon: '&dtri;', label: 'Move Down', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series)) },
+                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
                 { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
             ]},
         ]};
@@ -279,9 +275,12 @@ MonitoringConsole.View = (function() {
             { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+                { type: 'range', min: 1, max: 8, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
             ]},             
-            { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
+            { label: 'Size', input: [
+                { label: '&nbsp;x', type: 'range', min: 1, max: 4, value: widget.grid.colspan || 1, onChange: (widget, value) => widget.grid.colspan = value},
+                { type: 'range', min: 1, max: 4, value: widget.grid.rowspan || 1, onChange: (widget, value) => widget.grid.rowspan = value},
+            ]},
         ]});
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
             { label: 'Series', input: widget.series },
@@ -647,9 +646,9 @@ MonitoringConsole.View = (function() {
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
-                    let span = cell.span;
-                    let height = (span * rowHeight);
-                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+height+"px;"});
+                    let rowspan = cell.rowspan;
+                    let height = (rowspan * rowHeight);
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: cell.colspan, rowspan: rowspan, 'class': 'widget', style: 'height: '+height+"px;"});
                     updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {

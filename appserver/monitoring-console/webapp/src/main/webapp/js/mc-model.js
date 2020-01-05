@@ -69,29 +69,29 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 3,
 					widgets: [
 						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
-							grid: { item: 1, column: 0, span: 1}, 
+							grid: { item: 1, column: 0}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
 						{ series: 'ns:jvm CpuUsage', unit: 'percent',
-							grid: { item: 1, column: 1, span: 1}, 
+							grid: { item: 1, column: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
 						{ series: 'ns:jvm ThreadCount', unit: 'count',  
-							grid: { item: 0, column: 1, span: 1}},
+							grid: { item: 0, column: 1}},
 						{ series: 'ns:http ThreadPoolCurrentThreadUsage', unit: 'percent',
-							grid: { item: 1, column: 2, span: 1},
+							grid: { item: 1, column: 2},
 							status: { missing: { hint: TEXT_HTTP_HIGH }},
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'avg', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},														
 						{ series: 'ns:web RequestCount', unit: 'count',
-							grid: { item: 0, column: 2, span: 1}, 
+							grid: { item: 0, column: 2}, 
 							options: { perSec: true },
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 						{ series: 'ns:web ActiveSessions', unit: 'count',
-							grid: { item: 0, column: 0, span: 1},
+							grid: { item: 0, column: 0},
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
@@ -100,7 +100,7 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 1,
 					widgets: [
 						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
-							grid: { item: 0, column: 0, span: 1 }, 
+							grid: { item: 0, column: 0}, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
 							status: { missing: { hint: TEXT_REQUEST_TRACING }},
@@ -166,7 +166,7 @@ MonitoringConsole.Model = (function() {
           					options: { noCurves: true },
           					status: { missing : { hint: TEXT_LIVELINESS }}},
 						{ series: 'ns:health *', unit: 'percent', type: 'alert', displayName: 'Alerts',
-          					grid: { column: 2, item: 0, span: 2}}, 
+          					grid: { column: 2, item: 0, colspan: 2, rowspan: 3}}, 
 					]
 				},
 				monitoring: {
@@ -431,21 +431,28 @@ MonitoringConsole.Model = (function() {
 				let columnWidgets = widgetsByColumn[col];
 				for (let item = 0; item < columnWidgets.length; item++) {
 					let widget = columnWidgets[item];
-					let span = getSpan(widget, numberOfColumns, col);
-					let info = { span: span, widget: widget};
+					let colspan = getColSpan(widget, numberOfColumns, col);
+					let rowspan = getRowSpan(widget);
+					let info = { colspan: colspan, rowspan: rowspan, widget: widget};
 					let column0 = layout[col];
-					let row0 = getEmptyRowIndex(column0, span);
-					for (let spanX = 0; spanX < span; spanX++) {
+					let row0 = getEmptyRowIndex(column0, colspan);
+					for (let spanX = 0; spanX < colspan; spanX++) {
 						let column = layout[col + spanX];
 						if (spanX == 0) {
 							if (!widget.grid)
-								widget.grid = { column: col, span: span }; // init grid
-							widget.grid.item = row0; // update item position
+								widget.grid = { column: col, colspan: colspan, rowspan: rowspan }; // init grid
+							if (widget.grid.item === undefined)
+								widget.grid.item = row0;
+							if (widget.grid.colspan === undefined)
+								widget.grid.colspan = colspan;
+							if (widget.grid.rowspan === undefined)
+								widget.grid.rowspan = rowspan;
+							widget.grid.span = undefined;						
 						} else {
 							while (column.length < row0)
 								column.push(null); // null marks empty cells
 						}
-						for (let spanY = 0; spanY < span; spanY++) {
+						for (let spanY = 0; spanY < rowspan; spanY++) {
 							let cell = spanX === 0 && spanY === 0 ? info : undefined;
 							if (row0 + spanY > column.length) {
 								column.push(cell);	
@@ -466,19 +473,27 @@ MonitoringConsole.Model = (function() {
 			return layout;
       	}
 
-      	function getSpan(widget, numberOfColumns, currentColumn) {
+      	function getRowSpan(widget) {
+      		let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+      		if (widget.grid && widget.grid.rowspan)
+      			span =  widget.grid.rowspan;
+      		if (typeof span === 'string')
+      			span = parseInt(span);
+      		return span;
+      	}
+
+      	function getColSpan(widget, numberOfColumns, currentColumn) {
 			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+			if (widget.grid && widget.grid.colspan)
+				span = widget.grid.colspan;
 			if (typeof span === 'string') {
-			if (span === 'full') {
-			   span = numberOfColumns;
-			} else {
-			   span = parseInt(span);
+				if (span === 'full') {
+				   span = numberOfColumns;
+				} else {
+				   span = parseInt(span);
+				}
 			}
-			}
-			if (span > numberOfColumns - currentColumn) {
-			span = numberOfColumns - currentColumn;
-			}
-			return span;
+			return span > numberOfColumns - currentColumn ? numberOfColumns - currentColumn : span;
       	}
 
 		/**
@@ -1270,35 +1285,13 @@ MonitoringConsole.Model = (function() {
 
 				moveLeft: (series) => doConfigureWidget(series, function(widget) {
 	                if (!widget.grid.column || widget.grid.column > 0) {
-	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
 	                }
 	            }),
 
 	            moveRight: (series) => doConfigureWidget(series, function(widget) {
 	                if (!widget.grid.column || widget.grid.column < 4) {
-	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
-	                }
-	            }),
-
-				moveUp: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span);
-	            }),
-
-	            moveDown: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item += widget.grid.span;
-	            }),
-
-	            spanMore: (series) => doConfigureWidget(series, function(widget) {
-	                if (! widget.grid.span || widget.grid.span < 4) {
-	                    widget.grid.span = !widget.grid.span ? 2 : widget.grid.span + 1;
-	                }
-	            }),
-
-	            spanLess: (series) => doConfigureWidget(series, function(widget) {
-	            	if (widget.grid.span > 1) {
-	                    widget.grid.span -= 1;
 	                }
 	            }),
 
