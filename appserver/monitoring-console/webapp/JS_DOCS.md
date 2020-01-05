@@ -370,3 +370,18 @@ CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
 * `ALERT_ITEM.color` refers to the series/instance color whereas `ALERT_FRAME.color` refers to the level color
 * `items` and `frames` can be given in any order but might be changed to a particular order while processing the model
 * only one of `forTimes`, `forPercent`, `forMillis` should be set
+
+
+### Line Chart Background Areas 
+Describes the model used to enhance the background of line charts with colored areas on the Y-axis. The model is processed by a chart plugin to draw additional
+decorations onto the chart background.
+
+```
+BACKGROUND_AREA = [ AREA_ITEM ];
+AREA_ITEM       = { color, min, max, type }
+color           = string
+min             = number
+max             = number
+type            = 'lower' | 'upper'
+```
+* default for `type` is `upper`

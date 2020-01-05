@@ -192,6 +192,24 @@ MonitoringConsole.Model = (function() {
 							grid: { column: 2, item: 1}},
 					],
 				},
+				jvm: {
+					name: 'JVM',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:jvm TotalLoadedClassCount', displayName: 'Loaded Classes', 
+							grid: { column: 2, item: 0}},
+						{ series: 'ns:jvm UnLoadedClassCount', displayName: 'Unloaded Classes',
+							grid: { column: 2, item: 1}},
+						{ series: 'ns:jvm CommittedHeapSize', unit: 'bytes', displayName: 'Heap Size',
+							grid: { column: 1, item: 0}},
+						{ series: 'ns:jvm UsedHeapSize', unit: 'bytes', displayName: 'Used Heap', 
+							grid: { column: 0, item: 0}},
+						{ series: 'ns:jvm ThreadCount', displayName: 'Live Threads', 
+							grid: { column: 1, item: 1}},
+						{ series: 'ns:jvm DaemonThreadCount', displayName: 'Daemon Threads',
+							grid: { column: 0, item: 1}},
+					],
+				},
 			},
 	};
 
