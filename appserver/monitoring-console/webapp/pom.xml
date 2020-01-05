@@ -116,7 +116,7 @@
                     <merges>
                       <merge>
                         <override>true</override>
-                        <target>src/main/webapp/js/monitoring-console.js</target>
+                        <target>${project.build.directory}/${project.artifactId}/js/monitoring-console.js</target>
                         <sources>
                             <source>src/main/webapp/js/mc-main.js</source>
                             <source>src/main/webapp/js/mc-model.js</source>
