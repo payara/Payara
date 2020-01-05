@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,12 +71,14 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided({SyslogHandler.class, java.util.logging.Handler.class})
 public class SyslogHandler extends Handler implements PostConstruct, PreDestroy {
 
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd HH:mm:ss");
+
     @Inject
     ServerEnvironmentImpl env;
 
     private final AtomicBoolean done = new AtomicBoolean();
     private Syslog sysLogger;
-    private Thread pump= null;
+    private Thread pump = null;
     private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(5000);
     private final SimpleFormatter simpleFormatter = new SimpleFormatter();
 
@@ -137,44 +142,43 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
      */
     public void log() {
 
-            LogRecord record;
-
-            try {
-                record = pendingRecords.take();
-            } catch (InterruptedException e) {
-                return;
-            }
-        Level level= record.getLevel();
-            long millisec = record.getMillis();
-            int syslogLevel = Syslog.INFO;
-            String logLevel = "INFO";
-
-            if (level.equals(Level.SEVERE)) {
-                syslogLevel = Syslog.CRIT;
-                logLevel = "CRIT";
-        } else if (level.equals(Level.WARNING)){
-                syslogLevel = Syslog.WARNING;
-                logLevel = "WARNING";
-        } else if(level.intValue() <= Level.FINE.intValue())   {
-                syslogLevel = Syslog.DEBUG;
-                logLevel = "DEBUG";
-            }
-
-            //format the message
-            StringBuilder sb = new StringBuilder();
-            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss");
-            sb.append(formatter.format(millisec));
-            sb.append(" [ ");
-            sb.append(logLevel);
-            sb.append(" glassfish ] ");
-            String formattedMsg = simpleFormatter.formatMessage(record);
-            sb.append(formattedMsg);
-            //send message
-            if (sysLogger != null) {
-                sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
-            }
-
+        LogRecord record;
+        try {
+            record = pendingRecords.take();
+        } catch (InterruptedException e) {
+            return;
         }
+        if (sysLogger == null) {
+            return;
+        }
+        Level level = record.getLevel();
+        int syslogLevel = Syslog.INFO;
+        String logLevel = "INFO";
+
+        if (level.equals(Level.SEVERE)) {
+            syslogLevel = Syslog.CRIT;
+            logLevel = "CRIT";
+        } else if (level.equals(Level.WARNING)) {
+            syslogLevel = Syslog.WARNING;
+            logLevel = "WARNING";
+        } else if (level.intValue() <= Level.FINE.intValue()) {
+            syslogLevel = Syslog.DEBUG;
+            logLevel = "DEBUG";
+        }
+
+        // format the message
+        StringBuilder sb = new StringBuilder();
+        final OffsetDateTime time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()),
+            ZoneId.systemDefault());
+        sb.append(TIME_FORMATTER.format(time));
+        sb.append(" [ ");
+        sb.append(logLevel);
+        sb.append(" glassfish ] ");
+        String formattedMsg = simpleFormatter.formatMessage(record);
+        sb.append(formattedMsg);
+        // send message
+        sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
+    }
 
     /**
      * Publishes the logrecord storing it in our queue

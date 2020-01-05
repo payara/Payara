@@ -59,10 +59,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,6 +86,7 @@ import javax.inject.Inject;
 import javax.validation.ValidationException;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
+import org.glassfish.hk2.api.IndexedFilter;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
@@ -174,8 +175,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationLogCompressOnRotationDetail = "";
     String payaraNotificationLogFormatterDetail = "";
 
-    String payaraJsonUnderscorePrefix = "";
-
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
     private static final String HANDLER_SERVICES_PROPERTY = "handlerServices";
@@ -210,19 +209,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter";
 
     private static final String PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG = "Payara Notification Service isn't using a separate Log File";
-    /**
-     * @deprecated for backwards compatibility pre-5.182
-     */
-    @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
-    private final String RECORD_BEGIN_MARKER = "[#|";
-    private final String RECORD_END_MARKER = "|#]";
-    private final String RECORD_FIELD_SEPARATOR = "|";
-    private final String RECORD_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final String RECORD_BEGIN_MARKER = "[#|";
+    private static final String RECORD_END_MARKER = "|#]";
+    private static final String RECORD_FIELD_SEPARATOR = "|";
+    private static final String RECORD_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
     String recordBeginMarker;
     String recordEndMarker;
@@ -906,28 +900,27 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             UniformLogFormatter formatter = new UniformLogFormatter();
             String cname = "com.sun.enterprise.server.logging.GFFileHandler";
             recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
-            if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
+            if (recordBeginMarker == null || recordBeginMarker.isEmpty()) {
                 LOGGER.log(Level.FINE, "Record begin marker is not a proper value so using default.");
                 recordBeginMarker = RECORD_BEGIN_MARKER;
             }
 
             recordEndMarker = props.get(cname + ".logFormatEndMarker");
-            if (recordEndMarker == null || ("").equals(recordEndMarker)) {
+            if (recordEndMarker == null || recordEndMarker.isEmpty()) {
                 LOGGER.log(Level.FINE, "Record end marker is not a proper value so using default.");
                 recordEndMarker = RECORD_END_MARKER;
             }
 
             recordFieldSeparator = props.get(cname + ".logFormatFieldSeparator");
-            if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
+            if (recordFieldSeparator == null || recordFieldSeparator.isEmpty() || recordFieldSeparator.length() > 1) {
                 LOGGER.log(Level.FINE, "Log Format field separator is not a proper value so using default.");
                 recordFieldSeparator = RECORD_FIELD_SEPARATOR;
             }
 
             recordDateFormat = props.get(cname + ".logFormatDateFormat");
-            if (recordDateFormat != null && !("").equals(recordDateFormat)) {
-                SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
+            if (recordDateFormat != null && !recordDateFormat.isEmpty()) {
                 try {
-                    sdf.format(new Date());
+                    DateTimeFormatter.ofPattern(recordDateFormat).format(LocalDateTime.now());
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
                     recordDateFormat = RECORD_DATE_FORMAT;
@@ -1011,8 +1004,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
         payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
         payaraNotificationLogFormatterDetail = props.get(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY);
-
-        payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
 
     private Collection<Handler> getHandlerServices(Map<String, String> props) {
@@ -1051,13 +1042,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         return result;
     }
 
-    private Formatter getCustomFormatter(String formatterClassName,
-            GFFileHandler gfFileHandler)
-    {
+    private Formatter getCustomFormatter(String formatterClassName, GFFileHandler gfFileHandler) {
         try {
-            Class customFormatterClass =
-                    ClassLoader.getSystemClassLoader().loadClass(
-                            formatterClassName);
+            Class customFormatterClass = ClassLoader.getSystemClassLoader().loadClass(formatterClassName);
             return (Formatter) customFormatterClass.newInstance();
         } catch (Exception e) {
             return gfFileHandler.findFormatterService(formatterClassName);
@@ -1066,8 +1053,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     public void generateAttributeChangeEvent(String property, String propertyDetail, Map props) {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, property, propertyDetail, props.get(property));
-        UnprocessedChangeEvents ucel = new UnprocessedChangeEvents(new UnprocessedChangeEvent(pce, "server log file attribute " + property + " changed."));
-        List<UnprocessedChangeEvents> b = new ArrayList();
+        UnprocessedChangeEvents ucel = new UnprocessedChangeEvents(
+            new UnprocessedChangeEvent(pce, "server log file attribute " + property + " changed."));
+        List<UnprocessedChangeEvents> b = new ArrayList<>();
         b.add(ucel);
         ucl.unprocessedTransactedEvents(b);
     }
@@ -1086,9 +1074,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     @Override
     public void preDestroy() {
-        //destroy the handlers
-        for (ServiceHandle<?> i : habitat.getAllServiceHandles(BuilderHelper.createContractFilter(Handler.class.getName()))) {
-            i.destroy();
+        IndexedFilter filter = BuilderHelper.createContractFilter(Handler.class.getName());
+        for (ServiceHandle<?> i : habitat.getAllServiceHandles(filter)) {
+            i.close();
         }
         System.setOut(oStdOutBackup);
         System.setErr(oStdErrBackup);
