@@ -42,21 +42,28 @@
 
 package com.sun.enterprise.server.logging;
 
-
 import com.sun.appserv.server.util.Version;
-
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ResourceBundle;
+import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
+
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 /**
  * ODLLogFormatter conforms to the logging format defined by the
@@ -72,86 +79,48 @@ import java.util.logging.*;
 @PerLookup
 public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
-    // loggerResourceBundleTable caches references to all the ResourceBundle
-    // and can be searched using the LoggerName as the key
-    private final Map<String, ResourceBundle> loggerResourceBundleTable;
-
-    private final LogManager logManager;
-
-    private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
-
-    private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
-
-    private static String userID = "";
-
-    private static String ecID = "";
-
-    private FormatterDelegate _delegate = null;
-
-    private final UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
-
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    static {
-        String logSource = System.getProperty(
-                "com.sun.aas.logging.keyvalue.logsource");
-        if ((logSource != null) && (logSource.equals("true"))) {
-            LOG_SOURCE_IN_KEY_VALUE = true;
-        }
-
-        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
-        if ((recordCount != null) && (recordCount.equals("true"))) {
-            RECORD_NUMBER_IN_KEY_VALUE = true;
-        }
-
-        userID = System.getProperty("com.sun.aas.logging.userID");
-
-        ecID = System.getProperty("com.sun.aas.logging.ecID");
-    }
-
-    private long recordNumber = 0;
-
-    private String recordFieldSeparator;
-    private String recordDateFormat;
-
-    private LogEventBroadcaster logEventBroadcasterDelegate;
-
-    private boolean multiLineMode;
-
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-
+    private static final ZoneId TIME_ZONE = ZoneId.systemDefault();
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
-
     private static final char FIELD_SEPARATOR = ' ';
-
-    private static final String RFC_3339_DATE_FORMAT =
-            "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-
     private static final String INDENT = "  ";
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    private static final boolean LOG_SOURCE_IN_KEY_VALUE;
+    private static final boolean RECORD_NUMBER_IN_KEY_VALUE;
+    private static final String USER_ID;
+    private static final String EC_ID;
+
+    static {
+        String logSource = System.getProperty("com.sun.aas.logging.keyvalue.logsource");
+        LOG_SOURCE_IN_KEY_VALUE = "true".equals(logSource);
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
+        RECORD_NUMBER_IN_KEY_VALUE = "true".equals(recordCount);
+        USER_ID = System.getProperty("com.sun.aas.logging.userID", "");
+        EC_ID = System.getProperty("com.sun.aas.logging.ecID", "");
+    }
+
+    private final LogManager logManager;
+    private final UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private final FormatterDelegate _delegate;
+
+    private String recordFieldSeparator;
+    private DateTimeFormatter recordDateFormat;
+    private LogEventBroadcaster logEventBroadcasterDelegate;
+
+    private long recordNumber = 0;
+    private boolean multiLineMode;
 
     public ODLLogFormatter() {
-        super();
-        loggerResourceBundleTable = new HashMap<>();
-        logManager = LogManager.getLogManager();
+        this(null);
     }
 
     public ODLLogFormatter(FormatterDelegate delegate) {
-        this();
         _delegate = delegate;
+        logManager = LogManager.getLogManager();
+        recordDateFormat = ISO_OFFSET_DATE_TIME;
     }
-
-
-    public void setDelegate(FormatterDelegate delegate) {
-        _delegate = delegate;
-    }
-
-    /**
-     * _REVISIT_: Replace the String Array with an HashMap and do some
-     * benchmark to determine whether StringCat is faster or Hashlookup for
-     * the template is faster.
-     */
-
 
     @Override
     public String format(LogRecord record) {
@@ -163,15 +132,12 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         return odlLogFormat(record);
     }
 
-
     /**
      * GlassFish can override to specify their product version
      */
     protected String getProductId() {
-
-        String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() +
-                Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
-        return (version);
+        return Version.getAbbreviatedVersion() + Version.getVersionPrefix() //
+            + Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
     }
 
 
@@ -191,18 +157,10 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             }
             boolean multiLine = multiLineMode || isMultiLine(message);
 
-            // Starting formatting message
-            // Adding record begin marker
-            StringBuilder recordBuffer = new StringBuilder();
-
-            // A Dummy Container Date Object is used to format the date
-            Date date = new Date();
-
-            // Adding timestamp
-            SimpleDateFormat dateFormatter = new SimpleDateFormat(getRecordDateFormat() != null ? getRecordDateFormat() : RFC_3339_DATE_FORMAT);
-            date.setTime(record.getMillis());
+            final StringBuilder recordBuffer = new StringBuilder();
+            final OffsetDateTime time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()), TIME_ZONE);
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            String timestamp=dateFormatter.format(date);
+            final String timestamp = recordDateFormat.format(time);
             logEvent.setTimestamp(timestamp);
             recordBuffer.append(timestamp);
             recordBuffer.append(FIELD_END_MARKER);
@@ -220,7 +178,8 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             recordBuffer.append(FIELD_BEGIN_MARKER);
             if (color()) {
                 recordBuffer.append(getColor(logLevel));
-            }            String odlLevel = logLevel.getLocalizedName();
+            }
+            String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
             if (color()) {
@@ -273,24 +232,24 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
             // Adding user ID
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID) &&
-                    userID != null && !("").equals(userID.trim()))
+                    USER_ID != null && !("").equals(USER_ID.trim()))
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("userId: ");
-                logEvent.setUser(userID);
-                recordBuffer.append(userID);
+                logEvent.setUser(USER_ID);
+                recordBuffer.append(USER_ID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }
 
             // Adding ec ID
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID) &&
-                    ecID != null && !("").equals(ecID.trim()))
+                    EC_ID != null && !("").equals(EC_ID.trim()))
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("ecid: ");
-                logEvent.setECId(ecID);
-                recordBuffer.append(ecID);
+                logEvent.setECId(EC_ID);
+                recordBuffer.append(EC_ID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }
@@ -393,15 +352,12 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
             // If we find {0} or {1} etc., in the message, then it's most
             // likely finer level messages for Method Entry, Exit etc.,
-            logMessage = java.text.MessageFormat.format(
-                    logMessage, record.getParameters());
+            logMessage = MessageFormat.format(logMessage, record.getParameters());
         } else {
             ResourceBundle rb = getResourceBundle(record.getLoggerName());
             if (rb != null && rb.containsKey(logMessage)) {
                 try {
-                    logMessage = MessageFormat.format(
-                            rb.getString(logMessage),
-                            record.getParameters());
+                    logMessage = MessageFormat.format(rb.getString(logMessage), record.getParameters());
                 } catch (java.util.MissingResourceException e) {
                     // If we don't find an entry, then we are covered
                     // because the logMessage is initialized already
@@ -428,17 +384,10 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         if (loggerName == null) {
             return null;
         }
-        ResourceBundle rb = loggerResourceBundleTable.get(
-                loggerName);
-        /*
-                * Note that logManager.getLogger(loggerName) untrusted code may create loggers with
-                * any arbitrary names this method should not be relied on so added code for checking null.
-                */
-        if (rb == null && logManager.getLogger(loggerName) != null) {
-            rb = logManager.getLogger(loggerName).getResourceBundle();
-            loggerResourceBundleTable.put(loggerName, rb);
+        if (logManager.getLogger(loggerName) != null) {
+            return logManager.getLogger(loggerName).getResourceBundle();
         }
-        return rb;
+        return null;
     }
 
     public String getRecordFieldSeparator() {
@@ -450,11 +399,11 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     }
 
     public String getRecordDateFormat() {
-        return recordDateFormat;
+        return recordDateFormat.toString();
     }
 
-    public void setRecordDateFormat(String recordDateFormat) {
-        this.recordDateFormat = recordDateFormat;
+    public void setRecordDateFormat(String format) {
+        this.recordDateFormat = format == null ? ISO_OFFSET_DATE_TIME : DateTimeFormatter.ofPattern(format);
     }
 
     void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
@@ -468,9 +417,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         }
     }
 
-    /**
-     * @param multiLineMode the multiLineMode to set
-     */
     void setMultiLineMode(boolean value) {
         this.multiLineMode = value;
     }
@@ -478,5 +424,4 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     void setExcludeFields(String excludeFields) {
         excludeFieldsSupport.setExcludeFields(excludeFields);
     }
-
 }
