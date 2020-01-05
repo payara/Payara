@@ -55,7 +55,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -544,47 +543,6 @@ public class GFFileHandler extends StreamHandler
         formatterClass.setRecordFieldSeparator(recordFieldSeparator);
     }
 
-    private void initializePump() {
-        // Not using the PayaraExecutorService here as it prevents shutdown happening quickly
-        pump = new Thread() {
-            @Override
-            public void run() {
-                // we have to wait and buffer messages until logging is completely initialized.
-                while (LogManager.getLogManager() == null) {
-                    Thread.yield();
-                }
-                // FIXME: Because configuration and initialization is not atomic, this thread can start too early and some messages
-                //        would be formatted by default formatter.
-                //        This is not a fix, rather hack than a fix of this problem. "JVM invocation command line" is still affected.
-                try {
-                    Thread.sleep(50L);
-                } catch (InterruptedException e) {
-                    // nothing
-                }
-                log(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
-                LOG.log(Level.CONFIG, "Processed {0} early records.", startupQueue.size());
-                final ConcurrentLinkedQueue<LogRecord> toTransform = startupQueue;
-                startupQueue = new ConcurrentLinkedQueue<>();
-                for (final LogRecord logRecord : toTransform) {
-                    publishRecord(evaluateMessage(logRecord));
-                }
-                flush();
-                while (logToFile && !shutdown.get()) {
-                    try {
-                        publishBatchFromBuffer();
-                    } catch (Exception e) {
-                        // Continue the loop without exiting
-                        // Something is broken, but we cannot log it
-                    }
-                }
-            }
-        };
-        pump.setName("GFFileHandler log pump");
-        pump.setDaemon(true);
-        pump.setPriority(Thread.MAX_PRIORITY);
-        pump.start();
-    }
-
     private void drainAllPendingRecords() {
         if (!logToFile) {
             return;
@@ -649,57 +607,51 @@ public class GFFileHandler extends StreamHandler
         formatterClass.setLogEventBroadcaster(this);
     }
 
-    /** NOTE: This private class is copied from java.util.logging.FileHandler
-     * A metered stream is a subclass of OutputStream that
-     *   (a) forwards all its output to a target stream
-     *   (b) keeps track of how many bytes have been written
+    /**
+     * @author David Matejcek
+     *
      */
-    private static final class MeteredStream extends OutputStream {
+    private final class LoggingPump extends Thread {
 
-        private volatile boolean isOpen;
-
-        OutputStream out;
-        long written;
-
-        MeteredStream(OutputStream out, long written) {
-            this.out = out;
-            this.written = written;
-            isOpen = true;
+        LoggingPump(String threadName) {
+            super(threadName);
+            setDaemon(true);
+            setPriority(Thread.MAX_PRIORITY);
         }
 
         @Override
-        public void write(int b) throws IOException {
-            out.write(b);
-            written++;
-        }
-
-        @Override
-        public void write(byte[] buff) throws IOException {
-            out.write(buff);
-            written += buff.length;
-        }
-
-        @Override
-        public void write(byte[] buff, int off, int len) throws IOException {
-            out.write(buff, off, len);
-            written += len;
-        }
-
-        @Override
-        public void flush() throws IOException {
-            out.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (isOpen) {
-                isOpen = false;
-                flush();
-                out.close();
+        public void run() {
+            // we have to wait and buffer messages until logging is completely initialized.
+            while (LogManager.getLogManager() == null) {
+                Thread.yield();
             }
-
+            // FIXME: Because configuration and initialization is not atomic, this thread can start too early and some messages
+            //        would be formatted by default formatter.
+            //        This is not a fix, rather hack than a fix of this problem. "JVM invocation command line" is still affected.
+            try {
+                Thread.sleep(50L);
+            } catch (InterruptedException e) {
+                // nothing
+            }
+            log(Level.CONFIG, "Logging pump for {0} started.", logRecordBuffer);
+            LOG.log(Level.CONFIG, "Processed {0} early records.", startupQueue.size());
+            final ConcurrentLinkedQueue<LogRecord> toTransform = startupQueue;
+            startupQueue = new ConcurrentLinkedQueue<>();
+            for (final LogRecord logRecord : toTransform) {
+                publishRecord(evaluateMessage(logRecord));
+            }
+            flush();
+            while (logToFile && !shutdown.get()) {
+                try {
+                    publishBatchFromBuffer();
+                } catch (Exception e) {
+                    // Continue the loop without exiting
+                    // Something is broken, but we cannot log it
+                }
+            }
         }
     }
+
 
     /**
      * Creates the file and initialized MeteredStream and passes it on to
@@ -1007,7 +959,9 @@ public class GFFileHandler extends StreamHandler
         this.logToFile = true;
         if (this.logToFile) {
             this.logRecordBuffer = new LogRecordBuffer(bufferCapacity, bufferTimeout);
-            initializePump();
+            // Not using the PayaraExecutorService here as it prevents shutdown happening quickly
+            pump = new LoggingPump("GFFileHandler log pump");
+            pump.start();
         }
     }
 
