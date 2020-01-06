@@ -42,21 +42,13 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.server.logging.i18n.MessageResolver;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -73,43 +65,43 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
  * Name] [Thread ID] [User ID] [ECID] [Extra Attributes] [Message]]\n"
  *
  * @author Naman Mehta
+ * @author David Matejcek - refactoring
  */
 @Service()
 @ContractsProvided({ODLLogFormatter.class, Formatter.class})
 @PerLookup
 public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
-    private static final ZoneId TIME_ZONE = ZoneId.systemDefault();
+    private static final int REC_BUFFER_CAPACITY = 512;
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
     private static final char FIELD_SEPARATOR = ' ';
     private static final String INDENT = "  ";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    private static final MessageResolver MSG_RESOLVER = new MessageResolver();
+
     private static final boolean LOG_SOURCE_IN_KEY_VALUE;
     private static final boolean RECORD_NUMBER_IN_KEY_VALUE;
     private static final String USER_ID;
     private static final String EC_ID;
-
     static {
         String logSource = System.getProperty("com.sun.aas.logging.keyvalue.logsource");
         LOG_SOURCE_IN_KEY_VALUE = "true".equals(logSource);
         String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
         RECORD_NUMBER_IN_KEY_VALUE = "true".equals(recordCount);
-        USER_ID = System.getProperty("com.sun.aas.logging.userID", "");
-        EC_ID = System.getProperty("com.sun.aas.logging.ecID", "");
+        USER_ID = System.getProperty("com.sun.aas.logging.userID", "").trim();
+        EC_ID = System.getProperty("com.sun.aas.logging.ecID", "").trim();
     }
 
-    private final LogManager logManager;
-    private final UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-    private final FormatterDelegate _delegate;
+    private final UniformLogFormatter uniformLogFormatter;
+    private final ExcludeFieldsSupport excludeFieldsSupport;
+    private final FormatterDelegate delegate;
+    private final AtomicLong recordNumber;
 
     private String recordFieldSeparator;
     private DateTimeFormatter recordDateFormat;
     private LogEventBroadcaster logEventBroadcasterDelegate;
-
-    private long recordNumber = 0;
     private boolean multiLineMode;
 
     public ODLLogFormatter() {
@@ -117,172 +109,155 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     }
 
     public ODLLogFormatter(FormatterDelegate delegate) {
-        _delegate = delegate;
-        logManager = LogManager.getLogManager();
+        this.delegate = delegate;
         recordDateFormat = ISO_OFFSET_DATE_TIME;
+        recordNumber = new AtomicLong();
+        excludeFieldsSupport = new ExcludeFieldsSupport();
+        uniformLogFormatter = new UniformLogFormatter();
     }
 
     @Override
     public String format(LogRecord record) {
-        return odlLogFormat(record);
+        return formatLogRecord(record);
     }
 
     @Override
     public String formatMessage(LogRecord record) {
-        return odlLogFormat(record);
-    }
-
-    /**
-     * GlassFish can override to specify their product version
-     */
-    protected String getProductId() {
-        return Version.getAbbreviatedVersion() + Version.getVersionPrefix() //
-            + Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
+        return formatLogRecord(record);
     }
 
 
-    /**
-     * Note: This method is not synchronized, we are assuming that the
-     * synchronization will happen at the Log Handler.publish( ) method.
-     */
-    private String odlLogFormat(LogRecord record) {
+    private String formatLogRecord(LogRecord record) {
+        return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
+    }
+
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
 
         try {
-            LogEventImpl logEvent = new LogEventImpl();
+            final LogEventImpl logEvent = new LogEventImpl();
+            final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY);
 
-            // creating message from log record using resource bundle and appending parameters
-            String message = getLogMessage(record);
+            String message = getMessage(record.getMessage(), record.getThrownStackTrace());
             if (message == null || message.isEmpty()) {
                 return "";
             }
             boolean multiLine = multiLineMode || isMultiLine(message);
 
-            final StringBuilder recordBuffer = new StringBuilder();
-            final OffsetDateTime time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()), TIME_ZONE);
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            final String timestamp = recordDateFormat.format(time);
+            output.append(FIELD_BEGIN_MARKER);
+            final String timestamp = recordDateFormat.format(record.getTime());
             logEvent.setTimestamp(timestamp);
-            recordBuffer.append(timestamp);
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            output.append(timestamp);
+            output.append(FIELD_END_MARKER);
+            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
 
             // Adding organization ID
-            recordBuffer.append(FIELD_BEGIN_MARKER);
+            output.append(FIELD_BEGIN_MARKER);
             logEvent.setComponentId(uniformLogFormatter.getProductId());
-            recordBuffer.append(uniformLogFormatter.getProductId());
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            output.append(uniformLogFormatter.getProductId());
+            output.append(FIELD_END_MARKER);
+            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
 
             // Adding messageType
             Level logLevel = record.getLevel();
-            recordBuffer.append(FIELD_BEGIN_MARKER);
+            output.append(FIELD_BEGIN_MARKER);
             if (color()) {
-                recordBuffer.append(getColor(logLevel));
+                output.append(getColor(logLevel));
             }
             String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
-            recordBuffer.append(odlLevel);
+            output.append(odlLevel);
             if (color()) {
-                recordBuffer.append(getReset());
+                output.append(getReset());
             }
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            output.append(FIELD_END_MARKER);
+            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
 
             // Adding message ID
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            String msgId  = UniformLogFormatter.getMessageId(record);
-            recordBuffer.append((msgId == null) ? "" : msgId);
+            output.append(FIELD_BEGIN_MARKER);
+            String msgId  = record.getMessageKey();
+            output.append(msgId == null ? "" : msgId);
             logEvent.setMessageId(msgId);
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            output.append(FIELD_END_MARKER);
+            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
 
             // Adding logger Name / module Name
-            recordBuffer.append(FIELD_BEGIN_MARKER);
+            output.append(FIELD_BEGIN_MARKER);
             String loggerName = record.getLoggerName();
             loggerName = (loggerName == null) ? "" : loggerName;
             if (color()) {
-                recordBuffer.append(getLoggerColor());
+                output.append(getLoggerColor());
             }
-            recordBuffer.append(loggerName);
+            output.append(loggerName);
             if (color()) {
-                recordBuffer.append(getReset());
+                output.append(getReset());
             }
             logEvent.setLogger(loggerName);
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            output.append(FIELD_END_MARKER);
+            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
 
             // Adding thread ID
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("tid: _ThreadID=");
-                recordBuffer.append(record.getThreadID());
+                output.append(FIELD_BEGIN_MARKER);
+                output.append("tid: _ThreadID=");
+                output.append(record.getThreadID());
                 logEvent.setThreadId(record.getThreadID());
-                String threadName;
-                if (record instanceof EnhancedLogRecord) {
-                    threadName = ((EnhancedLogRecord)record).getThreadName();
-                } else {
-                    threadName = Thread.currentThread().getName();
-                }
-                recordBuffer.append(" _ThreadName=");
+                final String threadName = record.getThreadName();
+                output.append(" _ThreadName=");
                 logEvent.setThreadName(threadName);
-                recordBuffer.append(threadName);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(threadName);
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Adding user ID
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID) &&
-                    USER_ID != null && !("").equals(USER_ID.trim()))
-            {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("userId: ");
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID) && !USER_ID.isEmpty()) {
+                output.append(FIELD_BEGIN_MARKER);
+                output.append("userId: ");
                 logEvent.setUser(USER_ID);
-                recordBuffer.append(USER_ID);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(USER_ID);
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Adding ec ID
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID) &&
-                    EC_ID != null && !("").equals(EC_ID.trim()))
-            {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("ecid: ");
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID) && !EC_ID.isEmpty()) {
+                output.append(FIELD_BEGIN_MARKER);
+                output.append("ecid: ");
                 logEvent.setECId(EC_ID);
-                recordBuffer.append(EC_ID);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(EC_ID);
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Include the raw time stamp
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("timeMillis: ");
+                output.append(FIELD_BEGIN_MARKER);
+                output.append("timeMillis: ");
                 logEvent.setTimeMillis(record.getMillis());
-                recordBuffer.append(record.getMillis());
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(record.getMillis());
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Include the level value
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("levelValue: ");
+                output.append(FIELD_BEGIN_MARKER);
+                output.append("levelValue: ");
                 logEvent.setLevelValue(logLevel.intValue());
-                recordBuffer.append(logLevel.intValue());
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(logLevel.intValue());
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Adding extra Attributes - record number
             if (RECORD_NUMBER_IN_KEY_VALUE) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordNumber++;
-                recordBuffer.append("RECORDNUMBER: ");
-                logEvent.getSupplementalAttributes().put("RECORDNUMBER", recordNumber);
-                recordBuffer.append(recordNumber);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                output.append(FIELD_BEGIN_MARKER);
+                long recNumber = recordNumber.incrementAndGet();
+                output.append("RECORDNUMBER: ");
+                logEvent.getSupplementalAttributes().put("RECORDNUMBER", recNumber);
+                output.append(recNumber);
+                output.append(FIELD_END_MARKER);
+                append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
             }
 
             // Adding extra Attributes - class name and method name for FINE and higher level messages
@@ -291,103 +266,71 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
                     (level.intValue() <= Level.FINE.intValue())) {
                 String sourceClassName = record.getSourceClassName();
                 if (sourceClassName != null && !sourceClassName.isEmpty()) {
-                    recordBuffer.append(FIELD_BEGIN_MARKER);
-                    recordBuffer.append("CLASSNAME: ");
+                    output.append(FIELD_BEGIN_MARKER);
+                    output.append("CLASSNAME: ");
                     logEvent.getSupplementalAttributes().put("CLASSNAME", sourceClassName);
-                    recordBuffer.append(sourceClassName);
-                    recordBuffer.append(FIELD_END_MARKER);
-                    recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                    output.append(sourceClassName);
+                    output.append(FIELD_END_MARKER);
+                    append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
                 }
                 String sourceMethodName = record.getSourceMethodName();
                 if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
-                    recordBuffer.append(FIELD_BEGIN_MARKER);
-                    recordBuffer.append("METHODNAME: ");
+                    output.append(FIELD_BEGIN_MARKER);
+                    output.append("METHODNAME: ");
                     logEvent.getSupplementalAttributes().put("METHODNAME", sourceMethodName);
-                    recordBuffer.append(sourceMethodName);
-                    recordBuffer.append(FIELD_END_MARKER);
-                    recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                    output.append(sourceMethodName);
+                    output.append(FIELD_END_MARKER);
+                    append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
                 }
             }
 
-            if (_delegate != null) {
-                _delegate.format(recordBuffer, level);
+            if (delegate != null) {
+                delegate.format(output, level);
             }
 
             if (multiLine) {
-                recordBuffer.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
-                recordBuffer.append(LINE_SEPARATOR);
-                recordBuffer.append(INDENT);
+                output.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
+                output.append(LINE_SEPARATOR);
+                output.append(INDENT);
             }
-            recordBuffer.append(message);
+            output.append(message);
             logEvent.setMessage(message);
             if (multiLine) {
-                recordBuffer.append(FIELD_END_MARKER).append(FIELD_END_MARKER);
+                output.append(FIELD_END_MARKER).append(FIELD_END_MARKER);
             }
-            recordBuffer.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+            output.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
             informLogEventListeners(logEvent);
-            return recordBuffer.toString();
+            return output.toString();
         } catch (Exception ex) {
-            new ErrorManager().error(
-                    "Error in formatting Logrecord", ex,
-                    ErrorManager.FORMAT_FAILURE);
+            new ErrorManager().error("Error in formatting Logrecord", ex, ErrorManager.FORMAT_FAILURE);
             // We've already notified the exception, the following
             // return is to keep javac happy
             return "";
         }
     }
 
+    private StringBuilder append(final StringBuilder output, final Object value, final Object defaultValue) {
+        if (value == null) {
+            return output.append(defaultValue);
+        }
+        return output.append(value);
+    }
+
     private boolean isMultiLine(String message) {
         if (message == null || message.isEmpty()) {
             return false;
         }
-        String[] lines = message.split(LINE_SEPARATOR);
-        return (lines.length > 1);
+        return message.contains(LINE_SEPARATOR);
     }
 
-    private String getLogMessage(LogRecord record) throws IOException {
-        String logMessage = record.getMessage();
-        if (logMessage == null) {
-            logMessage = "";
+    private String getMessage(final String message, final String stackTrace) {
+        if (message == null || message.isEmpty()) {
+            return stackTrace == null ? "" : stackTrace;
         }
-        if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
-            // If we find {0} or {1} etc., in the message, then it's most
-            // likely finer level messages for Method Entry, Exit etc.,
-            logMessage = MessageFormat.format(logMessage, record.getParameters());
-        } else {
-            ResourceBundle rb = getResourceBundle(record.getLoggerName());
-            if (rb != null && rb.containsKey(logMessage)) {
-                try {
-                    logMessage = MessageFormat.format(rb.getString(logMessage), record.getParameters());
-                } catch (java.util.MissingResourceException e) {
-                    // If we don't find an entry, then we are covered
-                    // because the logMessage is initialized already
-                }
-            }
+        if (stackTrace == null) {
+            return message;
         }
-        Throwable throwable = UniformLogFormatter.getThrowable(record);
-        if (throwable != null) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append(logMessage);
-            buffer.append(LINE_SEPARATOR);
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            throwable.printStackTrace(pw);
-            pw.close();
-            buffer.append(sw.toString());
-            logMessage = buffer.toString();
-            sw.close();
-        }
-        return logMessage;
-    }
-
-    private synchronized ResourceBundle getResourceBundle(String loggerName) {
-        if (loggerName == null) {
-            return null;
-        }
-        if (logManager.getLogger(loggerName) != null) {
-            return logManager.getLogger(loggerName).getResourceBundle();
-        }
-        return null;
+        return message + LINE_SEPARATOR + stackTrace;
     }
 
     public String getRecordFieldSeparator() {

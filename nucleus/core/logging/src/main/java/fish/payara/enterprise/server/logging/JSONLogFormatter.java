@@ -45,20 +45,19 @@ import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;
 import com.sun.enterprise.server.logging.LogEventBroadcaster;
 import com.sun.enterprise.server.logging.LogEventImpl;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.MessageFormat;
+import com.sun.enterprise.server.logging.i18n.MessageResolver;
+
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+
 import org.glassfish.api.VersionInfo;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -87,7 +86,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
-    private final LogManager logManager;
+    private final MessageResolver messageResolver;
 
     private FormatterDelegate _delegate = null;
 
@@ -136,8 +135,9 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     public JSONLogFormatter() {
         super();
-        logManager = LogManager.getLogManager();
+        messageResolver = new MessageResolver();
 
+        LogManager logManager = LogManager.getLogManager();
         String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
         if (Boolean.parseBoolean(underscorePrefix)) {
             TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
@@ -170,12 +170,12 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     @Override
     public String format(LogRecord record) {
-        return jsonLogFormat(record);
+        return formatLogRecord(record);
     }
 
     @Override
     public String formatMessage(LogRecord record) {
-        return jsonLogFormat(record);
+        return formatLogRecord(record);
     }
 
     /**
@@ -205,7 +205,11 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
      * @param record The record to format.
      * @return The JSON formatted record.
      */
-    private String jsonLogFormat(LogRecord record) {
+    private String formatLogRecord(LogRecord record) {
+        return formatEnhancedLogRecord(messageResolver.resolve(record));
+    }
+
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         try {
             LogEventImpl logEvent = new LogEventImpl();
             JsonObjectBuilder eventObject = Json.createObjectBuilder();
@@ -237,15 +241,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 logEvent.setThreadId(threadId);
                 eventObject.add(THREAD_ID_KEY, String.valueOf(threadId));
 
-                // Thread Name
-                String threadName;
-
-                if (record instanceof EnhancedLogRecord) {
-                    threadName = ((EnhancedLogRecord)record).getThreadName();
-                } else {
-                    threadName = Thread.currentThread().getName();
-                }
-
+                String threadName = record.getThreadName();
                 logEvent.setThreadName(threadName);
                 eventObject.add(THREAD_NAME_KEY, threadName);
             }
@@ -277,7 +273,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 eventObject.add(LEVEL_VALUE_KEY, String.valueOf(levelValue));
             }
 
-            String messageId = getMessageId(record);
+            String messageId = record.getMessageKey();
             if (messageId != null && !messageId.isEmpty()) {
                 logEvent.setMessageId(messageId);
                 eventObject.add(MESSAGE_ID_KEY, messageId);
@@ -335,58 +331,34 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 }
             }
 
-            String logMessage = record.getMessage();
+            final String logMessage = record.getMessage();
 
-            if (logMessage == null || logMessage.trim().isEmpty()) {
-                Throwable throwable = record.getThrown();
-                if (null != throwable) {
-                    try (StringWriter stringWriter = new StringWriter();
-                         PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JsonObjectBuilder traceObject = Json.createObjectBuilder();
-                        throwable.printStackTrace(printWriter);
+            if (logMessage == null || logMessage.isEmpty()) {
+                final Throwable throwable = record.getThrown();
+                if (throwable != null) {
+                    JsonObjectBuilder traceObject = Json.createObjectBuilder();
+                    if (throwable.getMessage() != null) {
+                        traceObject.add(EXCEPTION_KEY, throwable.getMessage());
                         if (throwable.getMessage() != null) {
                             traceObject.add(EXCEPTION_KEY, throwable.getMessage());
                         }
-                        logMessage = stringWriter.toString();
-                        traceObject.add(STACK_TRACE_KEY, logMessage);
-                        logEvent.setMessage(logMessage);
-                        eventObject.add(THROWABLE_KEY, traceObject.build());
                     }
+                    final String stackTrace = record.getThrownStackTrace();
+                    traceObject.add(STACK_TRACE_KEY, stackTrace);
+                    logEvent.setMessage(stackTrace);
+                    eventObject.add(THROWABLE_KEY, traceObject.build());
                 }
             } else {
-                if (logMessage.contains("{0") && logMessage.contains("}") && record.getParameters() != null) {
-                    logMessage = MessageFormat.format(logMessage, record.getParameters());
-                } else {
-                    ResourceBundle bundle = getResourceBundle(record.getLoggerName());
-                    if (null != bundle) {
-                        try {
-                            logMessage = MessageFormat.format(bundle.getString(logMessage), record.getParameters());
-                        } catch (MissingResourceException ex) {
-                            // Leave logMessage as it is because it already has
-                            // an exception message
-                        }
-                    }
-                }
-
-                StringBuilder logMessageBuilder = new StringBuilder();
-                logMessageBuilder.append(logMessage);
-
-                Throwable throwable = getThrowable(record);
-                if (throwable != null) {
-                    try (StringWriter stringWriter = new StringWriter();
-                         PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JsonObjectBuilder traceObject =Json.createObjectBuilder();
-                        throwable.printStackTrace(printWriter);
-                        logMessage = stringWriter.toString();
-                        traceObject.add(EXCEPTION_KEY, logMessageBuilder.toString());
-                        traceObject.add(STACK_TRACE_KEY, logMessage);
-                        logEvent.setMessage(logMessage);
-                        eventObject.add(THROWABLE_KEY, traceObject.build());
-                    }
-                } else {
-                    logMessage = logMessageBuilder.toString();
+                final String stackTrace = record.getThrownStackTrace();
+                if (stackTrace == null) {
                     logEvent.setMessage(logMessage);
                     eventObject.add(LOG_MESSAGE_KEY, logMessage);
+                } else {
+                    JsonObjectBuilder traceObject =Json.createObjectBuilder();
+                    traceObject.add(EXCEPTION_KEY, logMessage);
+                    traceObject.add(STACK_TRACE_KEY, stackTrace);
+                    logEvent.setMessage(stackTrace);
+                    eventObject.add(THROWABLE_KEY, traceObject.build());
                 }
             }
 
@@ -394,51 +366,9 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             return eventObject.build().toString() + LINE_SEPARATOR;
 
         } catch (Exception ex) {
-            new ErrorManager().error(
-                    "Error in formatting Logrecord", ex,
-                    ErrorManager.FORMAT_FAILURE);
+            new ErrorManager().error("Error in formatting Logrecord", ex, ErrorManager.FORMAT_FAILURE);
             return "";
         }
-    }
-
-    /**
-     * @param record
-     * @return
-     */
-    static String getMessageId(LogRecord record) {
-        String message = record.getMessage();
-        if (null != message && !message.isEmpty()) {
-            ResourceBundle bundle = record.getResourceBundle();
-            if (null != bundle && bundle.containsKey(message)) {
-                if (!bundle.getString(message).isEmpty()) {
-                    return message;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @param record
-     * @return
-     */
-    static Throwable getThrowable(LogRecord record) {
-        return record.getThrown();
-    }
-
-    /**
-     * @param loggerName Name of logger to get the ResourceBundle of.
-     * @return The ResourceBundle for the logger name given.
-     */
-    private synchronized ResourceBundle getResourceBundle(String loggerName) {
-        if (loggerName == null) {
-            return null;
-        }
-        Logger logger = logManager.getLogger(loggerName);
-        if (logger != null) {
-            return logger.getResourceBundle();
-        }
-        return null;
     }
 
     /**

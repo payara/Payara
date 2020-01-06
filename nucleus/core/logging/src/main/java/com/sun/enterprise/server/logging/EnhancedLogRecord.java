@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,14 @@
  */
 package com.sun.enterprise.server.logging;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ResourceBundle;
+import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -51,6 +58,7 @@ import java.util.logging.LogRecord;
 public class EnhancedLogRecord extends LogRecord {
 
     private static final long serialVersionUID = -818792012235891720L;
+    private static final ZoneId TIME_ZONE = ZoneId.systemDefault();
 
     private final LogRecord record;
     private final String threadName;
@@ -64,17 +72,12 @@ public class EnhancedLogRecord extends LogRecord {
      * @param message
      */
     public EnhancedLogRecord(final Level level, final String message) {
-        super(level, null);
-        this.messageKey = null;
-        this.threadName = Thread.currentThread().getName();
-        this.record = new LogRecord(level, message);
-        // this is to force invocation of record.inferCaller()
-        this.record.getSourceClassName();
+        this(new LogRecord(level, message));
     }
 
 
     /**
-     * Coypies the log record.
+     * Wraps the log record.
      *
      * @param record
      */
@@ -252,6 +255,31 @@ public class EnhancedLogRecord extends LogRecord {
     @Override
     public void setResourceBundleName(final String name) {
         this.record.setResourceBundleName(name);
+    }
+
+
+    /**
+     * @return {@link #getMillis()} converted to {@link OffsetDateTime} in local time zone.
+     */
+    public OffsetDateTime getTime() {
+        return OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()), TIME_ZONE);
+    }
+
+
+    /**
+     * @return printed stacktrace of {@link #getThrown()} or null
+     */
+    public String getThrownStackTrace() {
+        if (getThrown() == null) {
+            return null;
+        }
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            getThrown().printStackTrace(pw);
+            return sw.toString();
+        } catch (IOException e) {
+            new ErrorManager().error("Cannot print stacktrace!", e, ErrorManager.FORMAT_FAILURE);
+            return null;
+        }
     }
 
 

@@ -37,16 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.v3.logging;
 
-import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.admin.monitor.callflow.ThreadLocalData;
-
-import static com.sun.enterprise.server.logging.UniformLogFormatter.*;
+import com.sun.enterprise.server.logging.FormatterDelegate;
 
 import java.util.logging.Level;
+
+import static com.sun.enterprise.server.logging.UniformLogFormatter.NVPAIR_SEPARATOR;
+import static com.sun.enterprise.server.logging.UniformLogFormatter.NV_SEPARATOR;
 
 /**
  * Created by IntelliJ IDEA.
@@ -64,6 +66,7 @@ public class AgentFormatterDelegate implements FormatterDelegate {
         this.agent = agent;
     }
 
+    @Override
     public void format(StringBuilder buf, Level level) {
 
 
@@ -123,5 +126,5 @@ public class AgentFormatterDelegate implements FormatterDelegate {
                         append(tld.getSecurityId()).append(NVPAIR_SEPARATOR);
             }
         }
-    }    
+    }
 }
