@@ -89,11 +89,11 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
      * metadata parsing and deployer prepare.
      *
      * @param clh the hierarchy of class loader for the parent
-     * @return
+     * @param handler the archive handler for the source archive
      * @throws java.net.URISyntaxException
      * @throws java.net.MalformedURLException
      */
-    ClassLoader createDeploymentClassLoader(ClassLoaderHierarchy clh)
+    void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException;
 
     /**
@@ -101,11 +101,11 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
      * application.
      *
      * @param clh the hierarchy of class loader for the parent
-     * @return
+     * @param handler the archive handler for the source archive
      * @throws java.net.URISyntaxException
      * @throws java.net.MalformedURLException
      */
-    ClassLoader createApplicationClassLoader(ClassLoaderHierarchy clh)
+    void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException;
 
     void clean();

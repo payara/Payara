@@ -349,7 +349,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
             context.setPhase(DeploymentContextImpl.Phase.PREPARE);
             ClassLoaderHierarchy clh = clhProvider.get();
-            context.createDeploymentClassLoader(clh);
+            context.createDeploymentClassLoader(clh, archiveHandler);
             cl = context.getClassLoader();
             deployment.getDeployableTypes(context);
             deployment.getSniffers(archiveHandler, null, context);

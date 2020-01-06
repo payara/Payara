@@ -238,37 +238,35 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     // this classloader will be used for sniffer retrieval, metadata parsing 
     // and the prepare
     @Override
-    public synchronized ClassLoader createDeploymentClassLoader(ClassLoaderHierarchy clh)
+    public synchronized void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE);
         boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
         if (hotDeploy && this.cloader != null) {
             this.sharableTemp = this.cloader;
         } else {
-            this.sharableTemp = createClassLoader(clh, null);
+            this.sharableTemp = createClassLoader(clh, handler, null);
         }
-        return this.sharableTemp;
     }
 
     // this classloader will used to load and start the application
     @Override
-    public ClassLoader createApplicationClassLoader(ClassLoaderHierarchy clh)
+    public void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.FALSE);
         if (this.cloader == null) {
-            this.cloader = createClassLoader(clh, parameters.name());
+            this.cloader = createClassLoader(clh, handler, parameters.name());
         }
-        return this.cloader;
     }
 
-    private ClassLoader createClassLoader(ClassLoaderHierarchy clh, String appName)
+    private ClassLoader createClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler, String appName)
             throws URISyntaxException, MalformedURLException {
         // first we create the appLib class loader, this is non shared libraries class loader
         ClassLoader applibCL = clh.getAppLibClassLoader(appName, getAppLibs());
 
         ClassLoader parentCL = clh.createApplicationParentCL(applibCL, this);
 
-        return archiveHandler.getClassLoader(parentCL, this);
+        return handler.getClassLoader(parentCL, this);
     }
 
     public synchronized ClassLoader getClassLoader(boolean sharable) {

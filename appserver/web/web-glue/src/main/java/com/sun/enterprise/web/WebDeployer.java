@@ -162,7 +162,6 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             wmInfo.setVirtualServers(params.virtualservers);
             wmInfo.setLocation(dc.getSourceDir());
             wmInfo.setObjectType(dc.getAppProps().getProperty(ServerTags.OBJECT_TYPE));
-            wmInfo.setAppClassLoader(dc.getClassLoader());
             wmInfo.setDeploymentContext(dc);
         } catch (Exception ex) {
             String msg = rb.getString(LogFacade.UNABLE_TO_LOAD_CONFIG);

@@ -425,7 +425,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoader");
 
-            context.createDeploymentClassLoader(clh);
+            context.createDeploymentClassLoader(clh, handler);
 
             events.send(new Event<>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
 
@@ -486,7 +486,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             events.send(new Event<>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
 
-            context.createApplicationClassLoader(clh);
+            context.createApplicationClassLoader(clh, handler);
 
             events.send(new Event<>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
 
@@ -525,14 +525,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (appState.map(ApplicationState::getApplicationInfo).isPresent()) {
                 appInfo = appState.get().getApplicationInfo();
                 appInfo.reset(context.getSource());
-            } else {
-                appInfo = new ApplicationInfo(events, context.getSource(), appName);
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
+                }
+            } else if ((appInfo = context.getModuleMetaData(ApplicationInfo.class)) == null) {
+                ApplicationInfo applicationInfo = new ApplicationInfo(events, context.getSource(), appName);
+                appInfo = applicationInfo;
                 appInfo.addModule(moduleInfo);
-                appState.ifPresent(s -> s.setApplicationInfo(appInfo));
-            }
-            for (Object metadata : context.getModuleMetadata()) {
-                moduleInfo.addMetaData(metadata);
-                appInfo.addMetaData(metadata);
+                appState.ifPresent(s -> s.setApplicationInfo(applicationInfo));
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
+                }
+            } else {
+                for (EngineRef ref : moduleInfo.getEngineRefs()) {
+                    appInfo.add(ref);
+                }
             }
 
             // remove the temp application info from the registry
