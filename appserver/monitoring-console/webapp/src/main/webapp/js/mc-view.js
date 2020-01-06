@@ -568,9 +568,12 @@ MonitoringConsole.View = (function() {
                 let alert = alerts[i];
                 let autoInclude = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
                 let filters = widget.decorations.alerts;
+                let lastAlertLevel = alert.frames[alert.frames.length - 1].level;
+                if (lastAlertLevel == 'green' || lastAlertLevel == 'white')
+                    lastAlertLevel = alert.frames[alert.frames.length - 2].level;
                 let visible = (alert.acknowledged && filters.noAcknowledged !== true || !alert.acknowledged && filters.noUnacknowledged !== true)
                            && (alert.stopped && filters.noStopped !== true || !alert.stopped && filters.noOngoing !== true)
-                           && (alert.level == 'red' && filters.noRed !== true || alert.level == 'amber' && filters.noAmber !== true);                  
+                           && (lastAlertLevel == 'red' && filters.noRed !== true || lastAlertLevel == 'amber' && filters.noAmber !== true);                  
                 if (autoInclude && visible) {
                     let frames = alert.frames.map(function(frame) {
                         return {
