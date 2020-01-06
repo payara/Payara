@@ -39,7 +39,9 @@
  */
 package fish.payara.monitoring.alert;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -60,6 +62,25 @@ public class ConditionTest {
     private static final long ONE_SECOND = 1000L;
 
     @Test
+    public void noneIsAlwaysSatisfied() {
+        assertSatisfied(Condition.NONE, 0);
+        assertSatisfied(Condition.NONE, -1);
+        assertSatisfied(Condition.NONE, 1);
+        assertSatisfied(Condition.NONE, 100);
+        assertSatisfied(Condition.NONE, 100, 200, 300);
+        assertSatisfied(Condition.NONE, 1, 2, 3);
+        assertSatisfied(Condition.NONE, 0, 0, 0, 0, 0);
+    }
+
+    @Test
+    public void emptySetNeverSatisfied() {
+        SeriesDataset empty = new EmptyDataset("instance", new Series("Series"), 3);
+        for (Operator op : Operator.values()) {
+            assertFalse(new Condition(op, 5).isSatisfied(empty));
+        }
+    }
+
+    @Test
     public void lessThanThreshold() {
         Condition lt5 = new Condition(Operator.LT, 5);
         assertSatisfied(lt5, 1);
@@ -70,6 +91,7 @@ public class ConditionTest {
         assertSatisfied(lt5, 5, 4);
         assertSatisfied(lt5, -1);
         assertSatisfied(lt5, 0, 0, 0, 0, 0);
+        assertFalse(lt5.isForLastPresent());
     }
 
     @Test
@@ -84,6 +106,7 @@ public class ConditionTest {
         assertSatisfied(ltOrEq5, 6, 5);
         assertSatisfied(ltOrEq5, -1);
         assertSatisfied(ltOrEq5, 0, 0, 0, 0, 0);
+        assertFalse(ltOrEq5.isForLastPresent());
     }
 
     @Test
@@ -96,6 +119,7 @@ public class ConditionTest {
         assertNotSatisfied(eq5, -1);
         assertNotSatisfied(eq5, 0, 0, 0, 0, 0);
         assertSatisfied(eq5, 5, 5, 5, 5, 5);
+        assertFalse(eq5.isForLastPresent());
     }
 
     @Test
@@ -109,6 +133,7 @@ public class ConditionTest {
         assertSatisfied(gt5, 6);
         assertNotSatisfied(gt5, -1);
         assertNotSatisfied(gt5, 0, 0, 0, 0, 0);
+        assertFalse(gt5.isForLastPresent());
     }
 
     @Test
@@ -125,6 +150,7 @@ public class ConditionTest {
         assertNotSatisfied(ge5, 0, 0, 0, 0, 0);
         assertSatisfied(ge5, 5, 5, 5, 5, 5);
         assertNotSatisfied(ge5, 4, 4, 4, 4, 4);
+        assertFalse(ge5.isForLastPresent());
     }
 
     @Test
@@ -139,6 +165,7 @@ public class ConditionTest {
         assertNotSatisfied(gt5for3x, 0, 0, 0, 0, 0);
         assertNotSatisfied(gt5for3x, 5, 5, 5, 5, 5);
         assertSatisfied(gt5for3x, 6, 6, 6, 6, 6);
+        assertTrue(gt5for3x.isForLastPresent());
     }
 
     @Test
@@ -154,6 +181,7 @@ public class ConditionTest {
         assertNotSatisfied(avgGt5for3x, 0, 0, 0, 0, 0);
         assertNotSatisfied(avgGt5for3x, 5, 5, 5, 5, 5);
         assertSatisfied(avgGt5for3x, 6, 6, 6, 6, 6);
+        assertTrue(avgGt5for3x.isForLastPresent());
     }
 
     @Test
@@ -170,6 +198,7 @@ public class ConditionTest {
         assertNotSatisfied(gt5for3sec, 0, 0, 0, 0, 0);
         assertNotSatisfied(gt5for3sec, 5, 5, 5, 5, 5);
         assertSatisfied(gt5for3sec, 6, 6, 6, 6, 6);
+        assertTrue(gt5for3sec.isForLastPresent());
     }
 
     @Test
@@ -188,14 +217,28 @@ public class ConditionTest {
         assertNotSatisfied(avgOf3secGt5, 0, 0, 0, 0, 0);
         assertNotSatisfied(avgOf3secGt5, 5, 5, 5, 5, 5);
         assertSatisfied(avgOf3secGt5, 6, 6, 6, 6, 6);
+        assertTrue(avgOf3secGt5.isForLastPresent());
     }
 
     private static void assertSatisfied(Condition c, long... points) {
         assertTrue(c.isSatisfied(createSet(ONE_SECOND, points)));
+        assertBasicProperties(c);
     }
 
     private static void assertNotSatisfied(Condition c, long... points) {
         assertFalse(c.isSatisfied(createSet(ONE_SECOND, points)));
+        assertBasicProperties(c);
+    }
+
+    public static void assertBasicProperties(Condition c) {
+        assertEquals(c, c);
+        assertNotEquals(null, c);
+        Condition other = new Condition(Operator.EQ, 111);
+        assertNotEquals(other, c);
+        assertEquals(c.hashCode(), c.hashCode());
+        assertNotEquals(other.hashCode(), c.hashCode());
+        assertEquals(c.toString(), c.toString());
+        assertNotEquals(other.toString(), c.toString());
     }
 
     private static SeriesDataset createSet(long timeBetweenPoints, long... points) {

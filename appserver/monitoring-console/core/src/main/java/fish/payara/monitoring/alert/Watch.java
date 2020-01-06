@@ -120,7 +120,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     public Watch(String name, Metric watched) {
-        this(name, watched, Circumstance.NONE, Circumstance.NONE, Circumstance.NONE);
+        this(name, watched, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
     }
 
     public Watch(String name, Metric watched, Circumstance red, Circumstance amber, Circumstance green, Metric... captured) {
@@ -137,11 +137,16 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         return statesByInstanceSeries.values().iterator();
     }
 
+    public State state(SeriesDataset data) {
+        return statesByInstanceSeries.computeIfAbsent(key(data), key -> new State(data));
+    }
+
     public void stop() {
-        stopped.set(true);
-        for (State s : statesByInstanceSeries.values()) {
-            if (s.ongoing != null) {
-                s.ongoing.stop(WHITE);
+        if (stopped.compareAndSet(false, true)) {
+            for (State s : statesByInstanceSeries.values()) {
+                if (s.ongoing != null) {
+                    s.ongoing.stop(WHITE);
+                }
             }
         }
     }
@@ -169,7 +174,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     }
 
     private Alert check(SeriesLookup lookup, SeriesDataset data) {
-        State state = statesByInstanceSeries.computeIfAbsent(key(data), key -> new State(data));
+        State state = state(data);
         switch (state.level) {
         default:
         case WHITE: return checkWhite(lookup, data, state);
@@ -285,13 +290,13 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append(name).append(" ~ ").append(watched).append('\n');
-        if (!red.isNone()) {
+        if (!red.isUnspecified()) {
             str.append('\t').append(red).append('\n');
         }
-        if (!amber.isNone()) {
+        if (!amber.isUnspecified()) {
             str.append('\t').append(amber).append('\n');
         }
-        if (!green.isNone()) {
+        if (!green.isUnspecified()) {
             str.append('\t').append(green).append('\n');
         }
         if (captured.length > 0) {

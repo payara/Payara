@@ -46,7 +46,10 @@ import fish.payara.monitoring.model.SeriesDataset;
 
 public final class Circumstance {
 
-    public static final Circumstance NONE = new Circumstance(Level.WHITE, Condition.NONE, Condition.NONE);
+    /**
+     * A "null" value object to use for a {@link Circumstance} that does not exist.
+     */
+    public static final Circumstance UNSPECIFIED = new Circumstance(Level.WHITE, Condition.NONE, Condition.NONE);
 
     public final Level level;
     public final Condition start;
@@ -54,24 +57,39 @@ public final class Circumstance {
     public final Condition suppress;
     public final Metric suppressing;
 
+    public Circumstance(Level level, Condition start) {
+        this(level, start, Condition.NONE);
+    }
+
     public Circumstance(Level level, Condition start, Condition stop) {
         this(level, start, stop, null, Condition.NONE);
     }
 
-    public Circumstance(Level level, Condition start, Condition stop, Metric suppressing, Condition suppress) {
+    private Circumstance(Level level, Condition start, Condition stop, Metric suppressing, Condition suppress) {
         this.level = level;
         this.start = start;
         this.stop = stop;
         this.suppressing = suppressing;
         this.suppress = suppress;
+        ensureOnlyNonExistentHasWhiteLevel();
     }
 
-    public boolean isNone() {
+    private  void ensureOnlyNonExistentHasWhiteLevel() {
+        if  (level == Level.WHITE && (!start.isNone() || !stop.isNone() || !suppress.isNone())) {
+            throw new IllegalArgumentException("Only NON_EXISTENT can have WHITE level");
+        }
+    }
+
+    public Circumstance suppressedWhen(Metric suppressing, Condition suppress) {
+        return new Circumstance(level, start, stop, suppressing, suppress);
+    }
+
+    public boolean isUnspecified() {
         return level == Level.WHITE;
     }
 
     public boolean starts(SeriesDataset data, SeriesLookup lookup) {
-        if (isNone()) {
+        if (isUnspecified()) {
             return false;
         }
         if (!suppress.isNone()) {
@@ -115,7 +133,7 @@ public final class Circumstance {
             str.append(" until ").append(stop.toString());
         }
         if (!suppress.isNone()) {
-            str.append(" unless ").append(suppressing).append(' ').append(suppress.toString());
+            str.append(" unless ").append(suppressing.series).append(' ').append(suppress.toString());
         }
         return str.toString();
     }

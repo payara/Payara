@@ -43,6 +43,17 @@ import java.util.Objects;
 
 import fish.payara.monitoring.model.SeriesDataset;
 
+/**
+ * Describes when a {@link SeriesDataset} {@link #isSatisfied(SeriesDataset)}.
+ * 
+ * In the simplest form this is a plain comparison with a constant {@link #threshold} value.
+ * 
+ * More advanced {@link Condition}s check if the condition is satisfied for last number of values in the dataset or for
+ * a past number of milliseconds. Such checks either check each included value of the dataset against the threshold
+ * (ALL) or compare their average against the threshold in a single check for any number of included values.
+ * 
+ * @author Jan Berntitt
+ */
 public final class Condition {
 
     public static final Condition NONE = new Condition(Operator.EQ, 0L);
@@ -78,12 +89,24 @@ public final class Condition {
         this.onAverage = onAverage;
     }
 
+    public Condition forLastMillis(long millis) {
+        return new Condition(comparison, threshold, millis, false);
+    }
+
+    public Condition forLastTimes(int times) {
+        return new Condition(comparison, threshold, times, false);
+    }
+
+    public Condition onAverage() {
+        return new Condition(comparison, threshold, forLast, true);
+    }
+
     public boolean isNone() {
         return this == NONE;
     }
 
     public boolean isForLastPresent() {
-        return forLast != null;
+        return isForLastMillis() || isForLastTimes();
     }
 
     public boolean isForLastMillis() {
@@ -97,6 +120,9 @@ public final class Condition {
     public boolean isSatisfied(SeriesDataset data) {
         if (isNone()) {
             return true;
+        }
+        if (data.getObservedValues() == 0) {
+            return false;
         }
         long value = data.lastValue();
         if ((!onAverage || data.isStable()) && !compare(value)) {
@@ -195,12 +221,15 @@ public final class Condition {
             return "";
         }
         StringBuilder str = new StringBuilder();
-        str.append("value ").append(comparison.symbol).append(' ').append(threshold);
-        if (isForLastMillis()) {
-            str.append(" for ").append(forLast).append(" times");
+        str.append("value ").append(comparison.toString()).append(' ').append(threshold);
+        if (onAverage && isForLastPresent()) {
+            str.append(" on average");
         }
         if (isForLastTimes()) {
-            str.append(" for ").append(forLast).append("ms");
+            str.append(" for last ").append(forLast).append("x");
+        }
+        if (isForLastMillis()) {
+            str.append(" for last ").append(forLast).append("ms");
         }
         return str.toString();
     }

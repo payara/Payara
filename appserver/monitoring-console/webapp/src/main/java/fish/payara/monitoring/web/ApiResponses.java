@@ -139,9 +139,9 @@ public final class ApiResponses {
             this.name = watch.name;
             this.series = watch.watched.series.toString();
             this.unit = watch.watched.unit.toString();
-            this.red = watch.red.isNone() ? null : new CircumstanceData(watch.red);
-            this.amber = watch.amber.isNone() ? null : new CircumstanceData(watch.amber);
-            this.green = watch.green.isNone() ? null : new CircumstanceData(watch.green);
+            this.red = watch.red.isUnspecified() ? null : new CircumstanceData(watch.red);
+            this.amber = watch.amber.isUnspecified() ? null : new CircumstanceData(watch.amber);
+            this.green = watch.green.isUnspecified() ? null : new CircumstanceData(watch.green);
             for (Watch.State state : watch) {
                 states.computeIfAbsent(state.getSeries().toString(), key -> new HashMap<>())
                     .put(state.getInstance(), state.getLevel().name().toLowerCase());
