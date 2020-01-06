@@ -50,6 +50,7 @@ import fish.payara.test.containers.tst.jdbc.war.JdbcDsName;
 import io.github.zforgo.arquillian.junit5.ArquillianExtension;
 
 import java.io.File;
+
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -63,6 +64,7 @@ import org.jboss.arquillian.persistence.UsingDataSet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -97,28 +99,8 @@ public class JdbcPoolITest extends DockerITest {
 //    @ArquillianResource
 //    private InitialContext context;
 
-    @Deployment(testable = false)
-    public static WebArchive getArchiveToDeploy() throws Exception {
-        LOG.info("getArchiveToDeploy()");
 
-        initEnvironment();
-
-        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
-            .addPackage(DataSourceDefinitionBean.class.getPackage()) //
-//            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-// TODO: otestovat jako priklad s @Datasourcedefinition anotaci v jinem testu
-//            .addAsLibraries(Maven.resolver().loadPomFromFile("pom.xml") //
-//                .resolve("mysql:mysql-connector-java").withoutTransitivity().asFile())
-//            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
-//            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
-//            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
-        ;
-
-        LOG.info(war.toString(true));
-        return war;
-    }
-
-//    @BeforeAll
+    @BeforeAll
     public static void initEnvironment() throws Exception {
         LOG.info("initEnvironment()");
         final DockerEnvironment environment = DockerEnvironment.getInstance();
@@ -140,7 +122,7 @@ public class JdbcPoolITest extends DockerITest {
             final String poolName = poolNameBase + counter++;
             payara.asAdmin("create-jdbc-connection-pool", "--ping", "--restype", "javax.sql.DataSource", //
                 "--datasourceclassname", "com.mysql.cj.jdbc.MysqlDataSource", //
-                "--steadypoolsize", "5", "--maxpoolsize", "20", //
+                "--steadypoolsize", "0", "--maxpoolsize", "20", //
                 "--validationmethod", "auto-commit", //
                 "--isconnectvalidatereq", "true", "--failconnection", "true", //
                 "--property", "user=" + mysqlCfg.getDbUser() + ":password=" + mysqlCfg.getDbPassword() //
@@ -160,6 +142,24 @@ public class JdbcPoolITest extends DockerITest {
 //    runSqlScript("dbSchema.sql");
     }
 
+    @Deployment(testable = false)
+    public static WebArchive getArchiveToDeploy() throws Exception {
+        LOG.info("getArchiveToDeploy()");
+
+        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
+            .addPackage(DataSourceDefinitionBean.class.getPackage()) //
+//            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+// TODO: otestovat jako priklad s @Datasourcedefinition anotaci v jinem testu
+//            .addAsLibraries(Maven.resolver().loadPomFromFile("pom.xml") //
+//                .resolve("mysql:mysql-connector-java").withoutTransitivity().asFile())
+//            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
+//            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
+//            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
+        ;
+
+        LOG.info(war.toString(true));
+        return war;
+    }
 
     @Test
     public void testSomething() throws Exception {
