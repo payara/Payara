@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation]
 package com.sun.enterprise.server.logging;
 
 
@@ -50,5 +51,12 @@ import java.util.logging.Level;
  */
 public interface FormatterDelegate {
 
-    public void format(StringBuilder buf, Level level);
+    /**
+     * Appends the logRecordOutput with own data. Can use also the level parameter to customize
+     * verbosity.
+     *
+     * @param logRecordOutput - output to be appended by this formatter delegate
+     * @param level - log record's level
+     */
+    void format(StringBuilder logRecordOutput, Level level);
 }

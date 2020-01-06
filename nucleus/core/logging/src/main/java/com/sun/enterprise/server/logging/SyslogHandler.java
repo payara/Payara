@@ -76,7 +76,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     @Inject
     ServerEnvironmentImpl env;
 
-    private final AtomicBoolean done = new AtomicBoolean();
+    private final AtomicBoolean shutdown = new AtomicBoolean();
     private Syslog sysLogger;
     private Thread pump = null;
     private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(5000);
@@ -85,17 +85,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     @Override
     public void postConstruct() {
-
-        LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
-
+        LogManager manager = LogManager.getLogManager();
         String systemLogging = TranslatedConfigView.expandValue(manager.getProperty(cname + ".useSystemLogging"));
         // Added below 2 lines of code to avoid NPE as per the bug http://java.net/jira/browse/GLASSFISH-16162
-        if(systemLogging==null || systemLogging.equals("false")) {
+        if (systemLogging == null || systemLogging.equals("false")) {
             return;
         }
 
-        //set up the connection
         setupConnection();
         initializePump();
     }
@@ -106,14 +103,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             @Override
             public void run() {
                 try {
-                    while (!done.get()) {
+                    while (!shutdown.get()) {
                         if (pump.isInterrupted()) {
                             break;
                         }
                         log();
                     }
                 } catch (RuntimeException e) {
-
+                    // ignore, nothing should break logging cycle
                 }
             }
         };
@@ -131,16 +128,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     @Override
     public void preDestroy() {
-        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
-            LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
-        }
+        LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
     }
 
     /**
      * Retrieves the LogRecord from our Queue and store them in the file
      *
      */
-    public void log() {
+    private void log() {
 
         LogRecord record;
         try {

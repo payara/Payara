@@ -43,6 +43,7 @@ package com.sun.enterprise.server.logging;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
+import com.sun.enterprise.server.logging.i18n.MessageResolver;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
@@ -57,12 +58,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.security.PrivilegedAction;
-import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -107,6 +106,7 @@ public class GFFileHandler extends StreamHandler
 
     private static final Logger LOG = LogFacade.LOGGING_LOGGER;
     private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(GFFileHandler.class);
+    private static final MessageResolver MSG_RESOLVER = new MessageResolver();
     private static final String GF_FILE_HANDLER_ID = GFFileHandler.class.getCanonicalName() ;
 
     private static final int DEFAULT_BUFFER_CAPACITY = 10000;
@@ -638,7 +638,7 @@ public class GFFileHandler extends StreamHandler
             final ConcurrentLinkedQueue<LogRecord> toTransform = startupQueue;
             startupQueue = new ConcurrentLinkedQueue<>();
             for (final LogRecord logRecord : toTransform) {
-                publishRecord(evaluateMessage(logRecord));
+                publishRecord(MSG_RESOLVER.resolve(logRecord));
             }
             flush();
             while (logToFile && !shutdown.get()) {
@@ -878,7 +878,7 @@ public class GFFileHandler extends StreamHandler
             return;
         }
 
-        final EnhancedLogRecord recordWrapper = evaluateMessage(record);
+        final EnhancedLogRecord recordWrapper = MSG_RESOLVER.resolve(record);
         if (logToFile) {
             logRecordBuffer.add(recordWrapper);
         }
@@ -1060,77 +1060,5 @@ public class GFFileHandler extends StreamHandler
         logRecord.setThreadID((int) Thread.currentThread().getId());
         logRecord.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         return logRecord;
-    }
-
-    private EnhancedLogRecord evaluateMessage(final LogRecord record) {
-        if (record instanceof EnhancedLogRecord) {
-            return (EnhancedLogRecord) record;
-        }
-        final EnhancedLogRecord enhancedLogRecord = new EnhancedLogRecord(record);
-        final ResolvedLogMessage message = resolveMessage(record);
-        enhancedLogRecord.setMessageKey(message.key);
-        enhancedLogRecord.setMessage(message.message);
-        // values were used and they are not required any more.
-        enhancedLogRecord.setResourceBundle(null);
-        enhancedLogRecord.setParameters(null);
-        return enhancedLogRecord;
-    }
-
-    /**
-     * This is a mechanism extracted from the StreamHandler.
-     * If the message is loggable should be decided before creation of this instance to avoid
-     * resolving a message which would not be used. And it is in done - in
-     * {@link Logger#log(LogRecord)} and in {@link #publish(LogRecord)}
-     */
-    private ResolvedLogMessage resolveMessage(final LogRecord record) {
-        final ResourceBundle bundle = getResourceBundle(record.getResourceBundle(), record.getLoggerName());
-        final ResolvedLogMessage localizedTemplate = tryToLocalizeTemplate(record.getMessage(), bundle);
-        final Object[] parameters = record.getParameters();
-        if (parameters == null || parameters.length == 0) {
-            return localizedTemplate;
-        }
-        final String localizedMessage = toMessage(localizedTemplate.message, parameters);
-        return new ResolvedLogMessage(localizedTemplate.key, localizedMessage);
-    }
-
-    private String toMessage(final String template, final Object[] parameters) {
-        try {
-            return MessageFormat.format(template, parameters);
-        } catch (final Exception e) {
-            return template;
-        }
-    }
-
-
-    private ResolvedLogMessage tryToLocalizeTemplate(final String originalMessage, final ResourceBundle bundle) {
-        if (bundle == null) {
-            return new ResolvedLogMessage(null, originalMessage);
-        }
-        try {
-            final String localizedMessage = bundle.getString(originalMessage);
-            return new ResolvedLogMessage(originalMessage, localizedMessage);
-        } catch (final MissingResourceException e) {
-            return new ResolvedLogMessage(null, originalMessage);
-        }
-    }
-
-    private ResourceBundle getResourceBundle(final ResourceBundle bundle, final String loggerName) {
-        if (bundle != null) {
-            return bundle;
-        }
-        final Logger logger = this.manager.getLogger(loggerName);
-        return logger == null ? null : logger.getResourceBundle();
-    }
-
-
-    private static class ResolvedLogMessage {
-
-        final String key;
-        final String message;
-
-        ResolvedLogMessage(final String key, final String message) {
-            this.key = key;
-            this.message = message;
-        }
     }
 }
