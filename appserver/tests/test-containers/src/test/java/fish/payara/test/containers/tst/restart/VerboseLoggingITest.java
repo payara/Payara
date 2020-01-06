@@ -45,12 +45,17 @@ import fish.payara.test.containers.tools.env.DockerEnvironment;
 import fish.payara.test.containers.tools.junit.DockerITestExtension;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.time.Duration;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 /**
@@ -62,26 +67,36 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 public class VerboseLoggingITest {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(120L);
+
     private static DockerEnvironment environment;
     private static File backupLoggingProperties;
+    private static Logger logger;
+    private static Level originalLevel;
 
 
+    /**
+     * Prevents slowing down the test by external output - ie. KDE's Konsole is very slow.
+     */
     @BeforeAll
     public static void init() {
         environment = DockerEnvironment.getInstance();
+        logger = Logger.getLogger("D-PAYARA");
+        originalLevel = logger.getLevel();
+        logger.setLevel(Level.OFF);
     }
 
 
     @AfterAll
-    public static void resetDomain() throws Exception {
-        final PayaraServerContainer das = environment.getPayaraContainer();
-
+    public static void reset() throws Exception {
         final PayaraServerContainerConfiguration cfg = environment.getConfiguration().getPayaraServerConfiguration();
         // brutal force needed, because all other ways may hang
         environment.getPayaraContainer().execInContainer("killall", "-v", "-SIGKILL", "java");
+        final PayaraServerContainer das = environment.getPayaraContainer();
+        assertNotNull(das, "Payara Container is null");
         das.execInContainer("cp", "-v", backupLoggingProperties.getAbsolutePath(),
             cfg.getPayaraLoggingPropertiesInDocker().getAbsolutePath());
         environment.getPayaraContainer().asLocalAdmin("start-domain");
+        logger.setLevel(originalLevel);
     }
 
 
@@ -100,5 +115,33 @@ public class VerboseLoggingITest {
         assertTimeoutPreemptively(TIMEOUT, () -> das.asLocalAdmin("start-domain"));
         // if the domain started, then it should be able to stop too
         assertTimeoutPreemptively(TIMEOUT, () -> das.asLocalAdmin("stop-domain"));
+        // file system buffering - we are watching from different OS, so we don't have control over this.
+        waitWhileServerLogChages(getServerLog(cfg));
+    }
+
+
+    private static File getServerLog(final PayaraServerContainerConfiguration cfg) {
+        return cfg.getPayaraDomainDirectory().toPath().resolve(Paths.get("logs", "server.log")).toFile();
+    }
+
+
+    private static void waitWhileServerLogChages(final File serverLog) throws InterruptedException {
+        long lastChange = getLastModified(serverLog);
+        while (true) {
+            Thread.sleep(2000L);
+            final long actualChange = getLastModified(serverLog);
+            if (lastChange == actualChange) {
+                return;
+            }
+            lastChange = actualChange;
+        }
+    }
+
+
+    private static long getLastModified(final File serverLog) {
+        if (serverLog.canRead()) {
+            return serverLog.lastModified();
+        }
+        return System.currentTimeMillis();
     }
 }
