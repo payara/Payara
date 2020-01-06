@@ -67,10 +67,12 @@ unit       = UNIT
 UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 coloring   = 'instance' | 'series' | 'index' | 'instance-series'
 scaleFactor= number
-grid       = { item, column, span }
+grid       = { item, column, span, colspan, rowspan }
 item       = number
 column     = number
-span       = span
+span       = number
+colspan    = number
+rowspan    = number
 axis       = { min, max }
 min        = number
 max        = number
@@ -112,6 +114,7 @@ alerts     = {
 * if `type` is not set `'line'` is assumed and set
 * if `options`, `grid`, `decorations` or `THRESHOLD` fields aren't defined they are initialised to `{}`
 * `status` is a map from assessment status (key) to a `STATUS` object to add information on the particular status used to help the user to make sense of the current status. For possible keys are those of `Status`
+* `span` can be given instead of `colspan` and `rowspan` when they have the same value
 
 
 #### Decorations
@@ -141,8 +144,9 @@ The grid model is created on the fly based on the view model, used by the view t
 ```
 GRID    = [COLUMN]
 COLUMN  = [CELL]
-CELL    = undefined | null | { span, widget }
-span    = number
+CELL    = undefined | null | { colspan, rowspan, widget }
+colspan = number
+rowspan = number
 widget  = WIDGET
 ```
 * all columns have the same amount of `CELL` items
