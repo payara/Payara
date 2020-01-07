@@ -225,7 +225,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
             final LogEventImpl logEvent = new LogEventImpl();
             final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY);
 
-            append(output, getRecordFieldSeparator(), FIELD_SEPARATOR);
+            append(output, getRecordBeginMarker(), RECORD_BEGIN_MARKER);
             String timestamp = recordDateFormat.format(record.getTime());
             logEvent.setTimestamp(timestamp);
             output.append(timestamp);
@@ -330,7 +330,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
             final String logMessage = getMessage(record.getMessage(), record.getThrownStackTrace());
             logEvent.setMessage(logMessage);
             output.append(logMessage);
-            output.append(getRecordEndMarker() == null ? RECORD_END_MARKER : getRecordEndMarker());
+            append(output, getRecordEndMarker(), RECORD_END_MARKER);
             output.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
             informLogEventListeners(logEvent);
             return output.toString();
