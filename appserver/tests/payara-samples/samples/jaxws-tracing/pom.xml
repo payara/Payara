@@ -3,7 +3,7 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>samples-parent</artifactId>
+        <artifactId>payara-samples-profiled-tests</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
 
@@ -13,15 +13,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.microprofile</groupId>
-            <artifactId>microprofile</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>test-utils</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.opentracing</groupId>
+            <artifactId>microprofile-opentracing-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

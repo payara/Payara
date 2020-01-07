@@ -50,41 +50,45 @@
     </parent>
 
     <groupId>fish.payara.server.internal.tests</groupId>
-    <artifactId>tests</artifactId>
+    <artifactId>payara-tests</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Tests related modules</name>
 
     <profiles>
         <profile>
+            <!-- deprecated, remove after replacing with quicklook -->
             <id>ci</id>
             <modules>
                 <module>quicklook</module>
             </modules>
         </profile>
+        <profile>
+            <id>quicklook</id>
+            <modules>
+                <module>quicklook</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>payara-samples</id>
+            <modules>
+                <module>payara-samples</module>
+            </modules>
+        </profile>
     </profiles>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
                     <configuration>
                         <skip>true</skip>
                     </configuration>

@@ -172,10 +172,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain");
+            String domain = System.getProperty("payara.domain.name");
             if (domain == null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path libsPath = gfHomePath.resolve("glassfish/lib");
@@ -232,10 +232,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain", "domain1");
+            String domain = System.getProperty("payara.domain.name", "domain1");
             if (domain != null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path cacertsPath = gfHomePath.resolve("glassfish/domains/" + domain + "/config/cacerts.jks");
@@ -378,7 +378,7 @@ public class ServerOperations {
             
             String restartDomain = domain;
             if (restartDomain == null) {
-                restartDomain = System.getProperty("payara_domain");
+                restartDomain = System.getProperty("payara.domain.name");
             }
             
             if (restartDomain == null) {
@@ -487,6 +487,34 @@ public class ServerOperations {
         // WildFly ./bin/add-user.sh -a -u u1 -p p1 -g g1
     }
 
+    public static void setupContainerFileIdentityStore(String fileRealmName) {
+
+        String javaEEServer = System.getProperty("javaEEServer");
+
+        if ("glassfish-remote".equals(javaEEServer) || "payara-remote".equals(javaEEServer)) {
+
+            System.out.println("Setting up container File identity store for " + javaEEServer);
+
+            List<String> cmd = new ArrayList<>();
+
+            cmd.add("create-auth-realm");
+            cmd.add("--classname");
+            cmd.add("com.sun.enterprise.security.auth.realm.file.FileRealm");
+            cmd.add("--property");
+            cmd.add("jaas-context=fileRealm:file=" + fileRealmName);
+            cmd.add(fileRealmName);
+
+            CliCommands.payaraGlassFish(cmd);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+
+    }
+
     public static X509Certificate createSelfSignedCertificate(KeyPair keys) {
         try {
             Provider provider = new BouncyCastleProvider();
@@ -579,7 +607,7 @@ public class ServerOperations {
 
         // Add the client certificate that we just generated to the trust store of the server.
         // That way the server will trust our certificate.
-        // Set the actual domain used with -Dpayara_domain=[domain name]
+        // Set the actual domain used with -Dpayara.domain.name=[domain name]
         addCertificateToContainerTrustStore(clientCertificate);
 
         return clientKeyStorePath;

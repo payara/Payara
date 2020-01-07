@@ -39,12 +39,15 @@
  */
 package fish.payara.samples.loginmodule.realm.custom;
 
-import static fish.payara.samples.ServerOperations.addMavenJarsToContainerLibFolder;
-import static org.junit.Assert.assertTrue;
+import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
+import com.gargoylesoftware.htmlunit.TextPage;
+import com.gargoylesoftware.htmlunit.WebClient;
+
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,15 +62,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebClient;
-
-import fish.payara.samples.CliCommands;
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
-import static fish.payara.samples.ServerOperations.*;
+import static fish.payara.samples.ServerOperations.addMavenJarsToContainerLibFolder;
+import static fish.payara.samples.ServerOperations.getPayaraDomainFromServer;
+import static fish.payara.samples.ServerOperations.restartContainer;
+import static org.junit.Assert.assertTrue;
 
 @NotMicroCompatible
 @RunWith(PayaraArquillianTestRunner.class)
@@ -123,9 +121,9 @@ public class CustomLoginModuleRealmTest {
 
     @Test
     @RunAsClient
-    public void testAuthenticationWithCorrectUser() throws FailingHttpStatusCodeException, MalformedURLException, IOException {
+    public void testAuthenticationWithCorrectUser() throws Exception {
 
-        System.out.println("\n\nRequesting: " + (base + "testServlet"));
+        System.out.println("\n\nRequesting: " + base + "testServlet");
 
         DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
         credentialsProvider.addCredentials("realmUser", "realmPassword");

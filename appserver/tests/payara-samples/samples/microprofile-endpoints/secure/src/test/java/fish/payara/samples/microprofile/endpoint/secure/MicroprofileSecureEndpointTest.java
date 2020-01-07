@@ -39,43 +39,47 @@
  */
 package fish.payara.samples.microprofile.endpoint.secure;
 
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import java.net.URL;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static java.util.Arrays.asList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Gaurav Gupta
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 public class MicroprofileSecureEndpointTest {
 
     @ArquillianResource
     private URL base;
-    
+
     private static String clientKeyStorePath;
 
     private WebClient webClient;

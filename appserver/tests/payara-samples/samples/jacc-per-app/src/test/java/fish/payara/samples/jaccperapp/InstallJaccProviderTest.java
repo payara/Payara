@@ -2,10 +2,8 @@
 
 package fish.payara.samples.jaccperapp;
 
-import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertTrue;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,15 +12,18 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fish.payara.arquillian.ws.rs.WebApplicationException;
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
+import static javax.ws.rs.client.ClientBuilder.newClient;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This sample tests that we can install a custom JACC provider
@@ -39,6 +40,14 @@ public class InstallJaccProviderTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
+        String pomPath = System.getProperty("pomPath");
+        System.out.println(pomPath);
+        assertNotNull("System property pomPath", pomPath);
+        MavenResolvedArtifact jaccLibrary = Maven.resolver()
+             .loadPomFromFile(pomPath)
+             .resolve("org.omnifaces:jacc-provider")
+             .withTransitivity()
+             .asSingleResolvedArtifact();
         WebArchive archive =
             create(WebArchive.class)
                 .addClasses(
@@ -47,12 +56,7 @@ public class InstallJaccProviderTest {
                     ProtectedServlet.class,
                     TestAuthenticationMechanism.class,
                     TestIdentityStore.class
-                ).addAsLibraries(
-                    Maven.resolver()
-                         .loadPomFromFile("pom.xml")
-                         .resolve("org.omnifaces:jacc-provider")
-                         .withTransitivity()
-                         .as(JavaArchive.class))
+                ).addAsLibraries(jaccLibrary.asFile())
                 ;
 
         System.out.println("************************************************************");
@@ -100,25 +104,18 @@ public class InstallJaccProviderTest {
     @RunAsClient
     public void testNotAuthenticated() throws IOException {
 
-        try {
-            String response =
-                    newClient()
-                         .target(
-                             URI.create(new URL(base, "protected/servlet").toExternalForm()))
-                         .request(TEXT_PLAIN)
-                         .get(String.class);
+        String response =
+                newClient()
+                     .target(
+                         URI.create(new URL(base, "protected/servlet").toExternalForm()))
+                     .request(TEXT_PLAIN)
+                     .get(String.class);
 
-            System.out.println("-------------------------------------------------------------------------");
-            System.out.println("Response: \n\n" + response);
-            System.out.println("-------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------");
+        System.out.println("Response: \n\n" + response);
+        System.out.println("-------------------------------------------------------------------------");
 
-            assertTrue(
-                !response.contains("web user has role \"a\": true")
-            );
-        } catch (WebApplicationException e) {
-            // Ignore, no access
-        }
-
+        assertFalse(response.contains("web user has role \"a\": true"));
     }
 
 }

@@ -1,7 +1,7 @@
-/**
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,6 +101,9 @@ public class MBeanAttributeReadHandler extends ReadHandler {
         try {
             Object attribute = delegate
                     .getMBeanAttribute(mbeanname, attributename);
+            if (attribute == null) {
+                return JsonValue.NULL;
+            }
             TypeProcessor<?> processor = ProcessorFactory.getTypeProcessor(attribute);
             
             return processor.processObject(attribute);

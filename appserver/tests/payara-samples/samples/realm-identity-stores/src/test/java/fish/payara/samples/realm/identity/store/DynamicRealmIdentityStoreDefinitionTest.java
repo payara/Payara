@@ -40,34 +40,37 @@
 package fish.payara.samples.realm.identity.store;
 
 import fish.payara.samples.ServerOperations;
-import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
 import fish.payara.samples.realm.identity.store.common.AuthoritiesConstants;
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_PASSWORD;
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_USER;
 import fish.payara.samples.realm.identity.store.common.Person;
 import fish.payara.samples.realm.identity.store.common.PersonController;
 import fish.payara.samples.realm.identity.store.common.PersonControllerClient;
-import static fish.payara.samples.realm.identity.store.common.PersonControllerClientHelper.getBasicPersonControllerClient;
-import java.io.File;
+
 import java.net.URL;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ArchivePaths;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_PASSWORD;
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_USER;
+import static fish.payara.samples.realm.identity.store.common.PersonControllerClientHelper.getBasicPersonControllerClient;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
 
 /**

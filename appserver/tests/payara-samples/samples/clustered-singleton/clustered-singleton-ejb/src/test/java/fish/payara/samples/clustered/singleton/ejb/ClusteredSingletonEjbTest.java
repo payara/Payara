@@ -1,3 +1,5 @@
+package fish.payara.samples.clustered.singleton.ejb;
+
 /*
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.

@@ -39,9 +39,9 @@
  */
 package fish.payara.samples.realm.identity.store.common;
 
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -50,6 +50,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
 
 /**
  * REST controller for managing Person.

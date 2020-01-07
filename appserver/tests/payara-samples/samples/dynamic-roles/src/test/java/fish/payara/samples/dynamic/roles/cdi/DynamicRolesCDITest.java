@@ -39,38 +39,41 @@
  */
 package fish.payara.samples.dynamic.roles.cdi;
 
+import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.dynamic.roles.PersonControllerClient;
-import static fish.payara.samples.dynamic.roles.PersonControllerClientHelper.getPersonControllerClient;
 import fish.payara.samples.dynamic.roles.common.AuthoritiesConstants;
-import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFAULT_PASSWORD;
-import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFAULT_USER;
-import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INSTANCE;
-import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INVALID_ACCEESS_TYPE_INSTANCE;
+
 import java.io.File;
 import java.net.URL;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static fish.payara.samples.dynamic.roles.PersonControllerClientHelper.getPersonControllerClient;
+import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFAULT_PASSWORD;
+import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFAULT_USER;
+import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INSTANCE;
+import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INVALID_ACCEESS_TYPE_INSTANCE;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
 
 /**
- *
  * @author Gaurav Gupta
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 public class DynamicRolesCDITest {
 
     private static final String WEBAPP_SOURCE = "src/main/webapp";

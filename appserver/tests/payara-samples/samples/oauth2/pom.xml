@@ -39,15 +39,42 @@
  holder.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>samples-parent</artifactId>
+        <artifactId>payara-samples-profiled-tests</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>oauth2</artifactId>
     <name>Payara Samples - Payara - OAuth2</name>
     <packaging>war</packaging>
-    
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>test-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
