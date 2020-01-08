@@ -51,8 +51,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
+
+import static org.testng.AssertJUnit.*;
 /**
  *
  * @author jasonlee
@@ -86,7 +87,7 @@ public class ApplicationTest extends RestTestBase {
 
             Map<String, String> params = new HashMap<String, String>();
             params.put("name", "CloudBeesDS");
-            params.put("poolName", "DerbyPool");
+            params.put("poolName", "H2Pool");
 
             Response response = post (BASE_JDBC_RESOURCE_URL, params);
             assertTrue(isSuccess(response));

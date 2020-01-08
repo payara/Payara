@@ -55,28 +55,18 @@
     <lifecycle-module name="WSTCPConnectorLCModule" object-type="system-all" class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar"></lifecycle-module>
   </applications>
   <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin"></jdbc-resource>
-    <jdbc-resource pool-name="__CallFlowPool" jndi-name="jdbc/__CallFlowPool" object-type="system-all"></jdbc-resource>
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__derby"></jdbc-resource>
-    <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default"></jdbc-resource>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__CallFlowPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/sun-callflow"></property>
-      <property name="connectionAttributes" value=";create=true"></property>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__TimerPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer"></property>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="DerbyPool">
-      <property name="PortNumber" value="1527"></property>
-      <property name="Password" value="APP"></property>
-      <property name="User" value="APP"></property>
-      <property name="serverName" value="localhost"></property>
-      <property name="DatabaseName" value="sun-appserv-samples"></property>
-      <property name="connectionAttributes" value=";create=true"></property>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
-       <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
-    </jdbc-connection-pool>
+      <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin"></jdbc-resource>
+      <jdbc-resource pool-name="__CallFlowPool" jndi-name="jdbc/__CallFlowPool" object-type="system-all"></jdbc-resource>
+      <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default"></jdbc-resource>
+      <jdbc-connection-pool datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.XADataSource" name="__CallFlowPool">
+          <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/sun-callflow;AUTO_SERVER=TRUE" />
+      </jdbc-connection-pool>
+      <jdbc-connection-pool name="__TimerPool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.XADataSource">
+          <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/ejbtimer;AUTO_SERVER=TRUE" />
+      </jdbc-connection-pool>
+      <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
+          <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
+      </jdbc-connection-pool>
   </resources>
   <servers>
     <server name="server" config-ref="server-config">
@@ -88,7 +78,6 @@
       <resource-ref ref="jdbc/__TimerPool"></resource-ref>
       <resource-ref ref="jdbc/__CallFlowPool"></resource-ref>
       <resource-ref ref="jdbc/__default"></resource-ref>
-      <resource-ref ref="jdbc/__derby"></resource-ref>
     </server>
   </servers>
   <configs>
@@ -186,8 +175,8 @@
         <jvm-options>-Xmx512m</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
-        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext${path.separator}${com.sun.aas.derbyRoot}/lib</jvm-options>
-        <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
+        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext${path.separator}${fish.payara.aas.h2Root}/bin</jvm-options>
+        <jvm-options>-Djdbc.drivers=org.h2.Driver</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.port=55555</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>

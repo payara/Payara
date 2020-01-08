@@ -197,7 +197,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
         if (arguments != null) {
             h2Home = arguments.getProperty(H2_HOME_PROP, System.getProperty(H2_HOME_PROP));
-        }	
+        }
+        System.out.println("H2 home ====== " + h2Home);
         File h2Lib = null;
         if (h2Home != null) {
             h2Lib = new File(h2Home, "bin");

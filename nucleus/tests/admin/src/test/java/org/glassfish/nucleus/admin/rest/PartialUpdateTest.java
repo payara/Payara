@@ -42,8 +42,9 @@ package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
+
+import static org.testng.AssertJUnit.*;
 
 /**
  *
@@ -53,7 +54,7 @@ public class PartialUpdateTest extends RestTestBase {
     @Test(enabled=false)
     // TODO: rework this to use something nucleus-friendly
     public void testPartialUpdate() {
-        final String endpoint = JdbcTest.BASE_JDBC_CONNECTION_POOL_URL + "/DerbyPool";
+        final String endpoint = JdbcTest.BASE_JDBC_CONNECTION_POOL_URL + "/H2Pool";
         final String newDesc = generateRandomString();
         Map<String, String> origAttrs = getEntityValues(get(endpoint));
         Map<String, String> newAttrs = new HashMap<String, String>() {{

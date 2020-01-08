@@ -42,13 +42,13 @@
 package com.sun.enterprise.admin.launcher;
 
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.File;
-import java.util.*;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
+import java.util.*;
 
 /**
  * The launcher for use in embedded Payara
@@ -80,11 +80,7 @@ class GFEmbeddedLauncher extends GFLauncher {
             "GFE_DEBUG_PORT - optional debugging port.  It will start suspended.\n" +
             "\n*********  SPECIFIC MESSAGE ********\n";
 
-    private static final String[] DERBY_FILES =
-    {
-        "derby.jar",
-        "derbyclient.jar",
-    };
+    private static final String H2_FILE = "h2.jar";
     
     public GFEmbeddedLauncher(GFLauncherInfo info) {
         super(info);
@@ -352,32 +348,31 @@ class GFEmbeddedLauncher extends GFLauncher {
 
     private void setupJavaDB() throws GFLauncherException {
         // It normally will be in either:
-        //  * install-dir/javadb/lib
-        //  * install-dir/../javadb/lib
+        //  * install-dir/h2db/bin
+        //  * install-dir/../h2db/bin/
 
-        String relPath = "javadb/lib";
-        File derbyLib = new File(installDir, relPath);
+        String relPath = "h2db/bin/";
+        File h2Bin = new File(installDir, relPath);
 
-        if(!derbyLib.isDirectory()) {
-            derbyLib = new File(installDir.getParentFile(), relPath);
+        if(!h2Bin.isDirectory()) {
+            h2Bin = new File(installDir.getParentFile(), relPath);
         }
 
-        if(!derbyLib.isDirectory()) {
+        if(!h2Bin.isDirectory()) {
             throw new GFLauncherException("Could not find the JavaDB lib directory.");
         }
         // we have a valid directory.  Let's verify the right jars are there!
 
         StringBuilder javaDbClassPathBuilder = new StringBuilder();
-        for(String fname : DERBY_FILES) {
-            File f = new File(derbyLib, fname);
+            File h2File = new File(h2Bin, H2_FILE);
 
             javaDbClassPathBuilder.append(File.pathSeparator);
-            javaDbClassPathBuilder.append(f.getPath());
+            javaDbClassPathBuilder.append(h2File.getPath());
 
-            if(!f.exists()) {
-                throw new GFLauncherException("Could not find the JavaDB jar: " + f);
+            if(!h2File.exists()) {
+                throw new GFLauncherException("Could not find the JavaDB jar: " + h2File);
             }
-        }
+
         javaDbClassPath = javaDbClassPathBuilder.toString();
     }
     

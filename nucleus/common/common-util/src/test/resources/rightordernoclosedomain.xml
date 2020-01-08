@@ -61,26 +61,18 @@
   <lifecycle-module class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" enabled="true" is-failure-fatal="false" object-type="system-all" name="WSTCPConnectorLCModule"/>
  </applications>
  <resources>
-    <jdbc-resource jndi-name="jdbc/__TimerPool" pool-name="__TimerPool" object-type="system-admin" enabled="true"/>
-    <jdbc-resource jndi-name="jdbc/__CallFlowPool" pool-name="__CallFlowPool" object-type="system-all" enabled="true"/>
-    <jdbc-resource jndi-name="jdbc/__default" pool-name="DerbyPool" object-type="user" enabled="true"/>
- 
-  <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__CallFlowPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/sun-callflow"/>
-      <property name="connectionAttributes" value=";create=true"/>
-    </jdbc-connection-pool>
- 
-    <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__TimerPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer"/>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.ClientDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="false" max-pool-size="32" max-wait-time-in-millis="60000" name="DerbyPool" pool-resize-quantity="2" res-type="javax.sql.DataSource" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
-     <property name="PortNumber" value="1527"/>
-     <property name="Password" value="APP"/>
-     <property name="User" value="APP"/>
-     <property name="serverName" value="localhost"/>
-     <property name="DatabaseName" value="sun-appserv-samples"/>
-     <property name="connectionAttributes" value=";create=true"/>
-   </jdbc-connection-pool>
+     <jdbc-resource jndi-name="jdbc/__TimerPool" pool-name="__TimerPool" object-type="system-admin" enabled="true"/>
+     <jdbc-resource jndi-name="jdbc/__CallFlowPool" pool-name="__CallFlowPool" object-type="system-all" enabled="true"/>
+     <jdbc-resource jndi-name="jdbc/__default" pool-name="H2Pool" object-type="user" enabled="true"/>
+     <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.h2.jdbcx.JdbcDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__CallFlowPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+         <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/sun-callflow;AUTO_SERVER=TRUE" />
+     </jdbc-connection-pool>
+     <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.h2.jdbcx.JdbcDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__TimerPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+         <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/ejbtimer;AUTO_SERVER=TRUE" />
+     </jdbc-connection-pool>
+     <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.h2.jdbcx.JdbcDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="false" max-pool-size="32" max-wait-time-in-millis="60000" name="H2Pool" pool-resize-quantity="2" res-type="javax.sql.DataSource" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+         <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
+     </jdbc-connection-pool>
  </resources>
   <servers>
   <server name="server" config-ref="server-config" lb-weight="100"> 

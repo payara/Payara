@@ -341,11 +341,6 @@ public class KernelLoggerInfo {
     public static final String invalidClassPathEntry = LOGMSG_PREFIX + "-00045";
     
     @LogMessageInfo(
-            message = "Cannot find javadb client jar file, derby jdbc driver will not be available by default.",
-            level = "INFO")
-    public static final String cantFindDerby = LOGMSG_PREFIX + "-00046";
-    
-    @LogMessageInfo(
             message = "CommonClassLoaderServiceImpl is unable to process {0} because of an exception: {1}",
             level = "INFO")
     public static final String exceptionProcessingJAR = LOGMSG_PREFIX + "-00047";

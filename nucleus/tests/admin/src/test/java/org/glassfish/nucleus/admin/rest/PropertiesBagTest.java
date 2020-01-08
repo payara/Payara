@@ -47,12 +47,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+
 import static org.testng.AssertJUnit.*;
+
 import org.testng.annotations.Test;
 
 /**
@@ -65,7 +66,7 @@ public class PropertiesBagTest extends RestTestBase {
     protected static final String URL_DOMAIN_PROPERTIES = "/domain/property";
     protected static final String URL_JAVA_CONFIG_PROPERTIES = "/domain/configs/config/default-config/java-config/property";
     protected static final String URL_SERVER_PROPERTIES = "/domain/servers/server/server/property";
-    protected static final String URL_DERBYPOOL_PROPERTIES = "/domain/resources/jdbc-connection-pool/DerbyPool/property";
+    protected static final String URL_H2POOL_PROPERTIES = "/domain/resources/jdbc-connection-pool/H2Pool/property";
     private static final String REQUEST_FORMAT = MediaType.APPLICATION_JSON;
 
     @Test
@@ -97,8 +98,8 @@ public class PropertiesBagTest extends RestTestBase {
         properties.add(createProperty(empty,""));
         properties.add(createProperty(foo,"foovalue"));
         properties.add(createProperty(bar,"barvalue"));
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
-        List<Map<String, String>> newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        createProperties(URL_H2POOL_PROPERTIES, properties);
+        List<Map<String, String>> newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
 
         assertFalse(isPropertyFound(newProperties, empty));
         assertTrue(isPropertyFound(newProperties, foo));
@@ -106,8 +107,8 @@ public class PropertiesBagTest extends RestTestBase {
 
         properties.clear();
         properties.add(createProperty(abc,"abcvalue"));
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
-        newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        createProperties(URL_H2POOL_PROPERTIES, properties);
+        newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
 
         assertTrue(isPropertyFound(newProperties, abc));
         assertFalse(isPropertyFound(newProperties, empty));
@@ -126,9 +127,9 @@ public class PropertiesBagTest extends RestTestBase {
         properties.add(createProperty("DatabaseName","sun-appserv-samples"));
         properties.add(createProperty("connectionAttributes",";create=false"));
         properties.add(createProperty("foo","bar","test"));
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
+        createProperties(URL_H2POOL_PROPERTIES, properties);
 
-        List<Map<String, String>> newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        List<Map<String, String>> newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
         for (Map<String, String> property : newProperties) {
             if (property.get("name").equals("connectionAttributes")) {
                 assertEquals(";create=false", property.get("value"));
@@ -141,9 +142,9 @@ public class PropertiesBagTest extends RestTestBase {
         // Test updating the description and value
         properties.clear();
         properties.add(createProperty("foo","bar 2","test 2"));
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
+        createProperties(URL_H2POOL_PROPERTIES, properties);
 
-        newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
         assertNotSame(1, newProperties);
         for (Map<String, String> property : newProperties) {
             if (property.get("name").equals("foo")) {
@@ -161,9 +162,9 @@ public class PropertiesBagTest extends RestTestBase {
         properties.add(createProperty("DatabaseName","sun-appserv-samples"));
         properties.add(createProperty("connectionAttributes",";create=true"));
 
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
+        createProperties(URL_H2POOL_PROPERTIES, properties);
 
-        newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
         for (Map<String, String> property : newProperties) {
             if (property.get("name").equals("connectionAttributes")) {
                 assertEquals(";create=true", property.get("value"));
@@ -182,8 +183,8 @@ public class PropertiesBagTest extends RestTestBase {
         final String description = "This is the description";
         final String value = generateRandomString();
         properties.add(createProperty(prop, value, description));
-        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
-        List<Map<String, String>> newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        createProperties(URL_H2POOL_PROPERTIES, properties);
+        List<Map<String, String>> newProperties = getProperties(get(URL_H2POOL_PROPERTIES));
         Map<String, String> newProp = getProperty(newProperties, prop);
         assertTrue(newProp != null);
         assertTrue(value.equals(newProp.get("value")));

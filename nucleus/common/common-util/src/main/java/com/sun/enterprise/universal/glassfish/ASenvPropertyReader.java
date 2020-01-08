@@ -42,11 +42,11 @@
 package com.sun.enterprise.universal.glassfish;
 
 import com.sun.enterprise.universal.io.SmartFile;
-import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import com.sun.enterprise.util.net.NetUtils;
-
 import java.io.*;
 import java.util.*;
+
+import static com.sun.enterprise.util.SystemPropertyConstants.*;
 
 /**
  * Class ASenvPropertyReader
@@ -369,7 +369,6 @@ public class ASenvPropertyReader {
 
     private static Map<String, String> envToPropMap = new HashMap<String, String>();
     {
-        envToPropMap.put("AS_DERBY_INSTALL", DERBY_ROOT_PROPERTY);
         envToPropMap.put("AS_H2_INSTALL", H2_ROOT_PROPERTY);
         envToPropMap.put("AS_IMQ_LIB", IMQ_LIB_PROPERTY);
         envToPropMap.put("AS_IMQ_BIN", IMQ_BIN_PROPERTY);

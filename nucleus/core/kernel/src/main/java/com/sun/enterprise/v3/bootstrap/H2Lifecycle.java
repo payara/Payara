@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.v3.bootstrap;
 
-import com.sun.enterprise.module.LifecyclePolicy;
 import com.sun.enterprise.module.HK2Module;
+import com.sun.enterprise.module.LifecyclePolicy;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.common_impl.LogHelper;
 import java.util.logging.Level;
@@ -51,10 +51,10 @@ import java.util.logging.Level;
  *
  * @author dochez
  */
-public class DerbyLifecycle implements LifecyclePolicy {
+public class H2Lifecycle implements LifecyclePolicy {
     
     /** Creates a new instance of DerbyLifecycle */
-    public DerbyLifecycle() {
+    public H2Lifecycle() {
     }
     
     /**
@@ -71,15 +71,15 @@ public class DerbyLifecycle implements LifecyclePolicy {
                 public void run() {
                     try {
                         try {                     
-                            Class driverClass = myModule.getClassLoader().loadClass("org.apache.derby.jdbc.EmbeddedDriver");
+                            Class driverClass = myModule.getClassLoader().loadClass("org.h2.Driver");
                             myModule.setSticky(true);
                             driverClass.newInstance();
                         } catch(ClassNotFoundException e) {
-                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot load Derby Driver ",e);
+                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot load H2 Driver ",e);
                         } catch(java.lang.InstantiationException e) {
-                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot instantiate Derby Driver", e);
+                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot instantiate H2 Driver", e);
                         } catch(IllegalAccessException e) {
-                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot instantiate Derby Driver", e);
+                            LogHelper.getDefaultLogger().log(Level.SEVERE, "Cannot instantiate H2 Driver", e);
                         }                   
                     }   
                     catch (RuntimeException e) {

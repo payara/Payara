@@ -42,13 +42,6 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -56,6 +49,12 @@ import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 public class PEFileLayout
 {
@@ -794,15 +793,15 @@ public class PEFileLayout
     public File getTimerDbn() {
 	return new File(getTimerDatabaseDir(), TIMERDB_DBN);
     }
-    public static final String DERBY_SQL_FILE = "ejbtimer_derby.sql";
+    public static final String H2_SQL_FILE = "ejbtimer_h2.sql";
     public static final String EJB_TIMER_TABLE_NAME = "EJB__TIMER__TBL"; //comes from sql file
-    public File getDerbyEjbTimerSqlFile() {
-	return new File(getInstallDatabasesDir(), DERBY_SQL_FILE);
+    public File getH2EjbTimerSqlFile() {
+	return new File(getInstallDatabasesDir(), H2_SQL_FILE);
     }
-    public static final String DERBY_DATABASE_DIRECTORY = "ejbtimer";
-    public File getDerbyEjbTimerDatabaseDirectory() {
-        return new File(getTimerDatabaseDir(), DERBY_DATABASE_DIRECTORY);
-        //this directory must not exist before creating the derby database
+    public static final String H2_DATABASE_DIRECTORY = "ejbtimer";
+    public File getH2EjbTimerDatabaseDirectory() {
+        return new File(getTimerDatabaseDir(), H2_DATABASE_DIRECTORY);
+        //this directory must not exist before creating the H2 database
     }
 
     protected static boolean isWindows()
