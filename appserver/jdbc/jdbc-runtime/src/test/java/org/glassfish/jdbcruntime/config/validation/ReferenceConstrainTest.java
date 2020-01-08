@@ -49,7 +49,6 @@ import javax.validation.ConstraintViolationException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.Before;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
@@ -110,7 +109,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         ConfigBean poolConfig = (ConfigBean) ConfigBean.unwrap(jdbc);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
         Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("pool-name", "DerbyPool");
+        configChanges.put("pool-name", "H2Pool");
         changes.put(poolConfig, configChanges);
         try {
             ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
@@ -128,7 +127,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         JdbcResource jdbc = null;
         while (iterator.hasNext()) {
             JdbcResource res = iterator.next();
-            if ("DerbyPool".equals(res.getPoolName())) {
+            if ("H2Pool".equals(res.getPoolName())) {
                 jdbc = res;
                 break;
             }

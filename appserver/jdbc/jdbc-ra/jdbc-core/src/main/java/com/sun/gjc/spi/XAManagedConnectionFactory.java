@@ -40,12 +40,14 @@
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.gjc.spi;
 
-import static com.sun.gjc.util.SecurityUtils.getPasswordCredential;
-
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.gjc.common.DataSourceObjectBuilder;
+import com.sun.gjc.common.DataSourceSpec;
+import com.sun.gjc.spi.base.AbstractDataSource;
+import com.sun.logging.LogDomains;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
@@ -53,11 +55,7 @@ import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ResourceAllocationException;
 import javax.resource.spi.security.PasswordCredential;
 
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.gjc.common.DataSourceObjectBuilder;
-import com.sun.gjc.common.DataSourceSpec;
-import com.sun.gjc.spi.base.AbstractDataSource;
-import com.sun.logging.LogDomains;
+import static com.sun.gjc.util.SecurityUtils.getPasswordCredential;
 
 /**
  * XA <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -209,7 +207,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *
      * @param className <code>String</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "org.apache.derby.jdbc.ClientXADataSource")
+    @ConfigProperty(type = String.class, defaultValue = "org.h2.jdbcx.JdbcDataSource")
     @Override
     public void setClassName(String className) {
         spec.setDetail(DataSourceSpec.CLASSNAME, className);

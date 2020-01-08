@@ -42,27 +42,26 @@
 
 package org.glassfish.jdbc.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.admin.report.PropsFileActionReporter;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
-
-
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.tests.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.tests.utils.Utils;
-import org.glassfish.tests.utils.ConfigApiTest;
 import org.jvnet.hk2.config.DomDocument;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -101,7 +100,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         CreateJdbcResource createCommand = habitat.getService(CreateJdbcResource.class);
         assertTrue(createCommand!=null);
         
-        parameters.add("connectionpoolid", "DerbyPool");
+        parameters.add("connectionpoolid", "H2Pool");
         parameters.add("DEFAULT", "jdbc/foo");
         
         context = new AdminCommandContextImpl(

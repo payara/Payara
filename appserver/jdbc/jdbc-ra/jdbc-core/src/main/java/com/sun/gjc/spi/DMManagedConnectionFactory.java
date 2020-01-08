@@ -45,10 +45,6 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.common.DataSourceSpec;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.security.PasswordCredential;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Hashtable;
@@ -58,8 +54,11 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.ResourceException;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.security.PasswordCredential;
 
 /**
  * Driver Manager <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -335,7 +334,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *
      * @param className <code>String</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "org.apache.derby.jdbc.ClientDriver")
+    @ConfigProperty(type = String.class, defaultValue = "org.h2.Driver")
     @Override
     public void setClassName(String className) {
         spec.setDetail(DataSourceSpec.CLASSNAME, className);

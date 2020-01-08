@@ -68,7 +68,7 @@
         res-type="javax.sql.DataSource">
         <property name="user" value="DB_USER"/>
         <property name="password" value="DB_PASSWORD"/>
-        <property name="url" value="jdbc:h2:tcp://localhost:1527/~/test"/>
+        <property name="url" value="jdbc:h2:tcp://localhost:9092/~/test"/>
     </jdbc-connection-pool>
 
     <jdbc-resource 

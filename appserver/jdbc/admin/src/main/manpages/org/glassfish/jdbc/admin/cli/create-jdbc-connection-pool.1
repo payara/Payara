@@ -518,14 +518,11 @@ OPERANDS
 EXAMPLES
        Example 1, Creating a JDBC Connection Pool
            This example creates a JDBC connection pool named
-           sample_derby_pool.
-
+           sample_h2_pool.
                asadmin> create-jdbc-connection-pool
-               --datasourceclassname org.apache.derby.jdbc.ClientDataSource
+               --datasourceclassname org.h2.jdbcx.JdbcDataSource
                --restype javax.sql.XADataSource
-               --property portNumber=1527:password=APP:user=APP:serverName=
-               localhost:databaseName=sun-appserv-samples:connectionAttributes=\;
-               create\\=true sample_derby_pool
+               --property URL=jdbc\\:h2\\:$\{com.sun.aas.instanceRoot\}/lib/databases/embedded_default\;AUTO_SERVER\\=TRUE sample_h2_pool
                Command create-jdbc-connection-pool executed successfully
            The escape character backslash (\) is used in the --property option
            to distinguish the semicolon (;). Two backslashes (\\) are used to
@@ -543,4 +540,4 @@ SEE ALSO
 
        asadmin(1M)
 
-Java EE 8               09 Aug 2017         create-jdbc-connection-pool(1)
+Java EE 8               18 Dec 2019         create-jdbc-connection-pool(1)

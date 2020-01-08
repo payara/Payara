@@ -41,7 +41,7 @@
 
 -->
 
-  <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource"
+  <jdbc-connection-pool datasource-classname="org.h2.jdbcx.JdbcDataSource"
                         res-type="javax.sql.XADataSource" 
                         name="test"
                         max-pool-size="abc"

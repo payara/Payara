@@ -42,31 +42,30 @@
 
 package org.glassfish.jdbc.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.admin.report.PropsFileActionReporter;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
-
 import java.beans.PropertyVetoException;
-
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.tests.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.tests.utils.Utils;
-import org.glassfish.tests.utils.ConfigApiTest;
-import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -107,7 +106,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         assertTrue(command!=null);
         
         // Set the options and operand to pass to the command
-        parameters.set("connectionpoolid", "DerbyPool");
+        parameters.set("connectionpoolid", "H2Pool");
         parameters.set("enabled", "true");
         parameters.set("description", "my resource");
         parameters.set("DEFAULT", "jdbc/foo");
@@ -153,7 +152,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
     
     /**
      * Test of execute method, of class CreateJdbcResource.
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool --enabled=true
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool --enabled=true
      *        --description "my resource" jdbc/foo
      */
     @Test
@@ -173,7 +172,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
             if (resource instanceof JdbcResource) {
                 JdbcResource jr = (JdbcResource)resource;
                 if (jr.getJndiName().equals("jdbc/foo")) {
-                    assertEquals("DerbyPool", jr.getPoolName());
+                    assertEquals("H2Pool", jr.getPoolName());
                     assertEquals("true", jr.getEnabled());
                     assertEquals("my resource", jr.getDescription());
                     isCreated = true;
@@ -205,13 +204,13 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
     
     /**
      * Test of execute method, of class CreateJdbcResource.
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool jdbc/alldefaults
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool jdbc/alldefaults
      */
     @Test
     public void testExecuteSuccessDefaultValues() {
         // Only pass the required option and operand
         parameters = new ParameterMap();
-        parameters.set("connectionpoolid", "DerbyPool");
+        parameters.set("connectionpoolid", "H2Pool");
         parameters.set("DEFAULT", "jdbc/alldefaults");
         
 
@@ -227,7 +226,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
             if (resource instanceof JdbcResource) {
                 JdbcResource jr = (JdbcResource)resource;
                 if (jr.getJndiName().equals("jdbc/alldefaults")) {
-                    assertEquals("DerbyPool", jr.getPoolName());
+                    assertEquals("H2Pool", jr.getPoolName());
                     assertEquals("true", jr.getEnabled());
                     assertNull(jr.getDescription());
                     isCreated = true;
@@ -243,9 +242,9 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
 
     /**
      * Test of execute method, of class CreateJdbcResource.
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool --enabled=true 
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool --enabled=true 
      *         --description "my resource" dupRes
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool --enabled=true 
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool --enabled=true 
      *         --description "my resource" dupRes
      */
     @Test
@@ -336,7 +335,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
     
     /**
      * Test of execute method, of class CreateJdbcResource when enabled set to junk
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool --enabled=junk 
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool --enabled=junk 
      *         --description "my resource" jdbc/junk
      */
     @Ignore
@@ -357,7 +356,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
     
     /**
      * Test of execute method, of class CreateJdbcResource when enabled has no value
-     * asadmin create-jdbc-resource --connectionpoolid DerbyPool --enabled 
+     * asadmin create-jdbc-resource --connectionpoolid H2Pool --enabled 
      *         --description "my resource" jdbc/sun
      */
     @Test
@@ -378,7 +377,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
             if (resource instanceof JdbcResource) {
                 JdbcResource jr = (JdbcResource)resource;
                 if (jr.getJndiName().equals("jdbc/sun")) {
-                    assertEquals("DerbyPool", jr.getPoolName());
+                    assertEquals("H2Pool", jr.getPoolName());
                     assertEquals("true", jr.getEnabled());
                     assertEquals("my resource", jr.getDescription());
                     isCreated = true;

@@ -24,5 +24,5 @@ STEPS TO CREATE JDBC CONNECTION POOL AND RESOURCE :
 3)  edit the appropriate jdbc-driver template to fill username, password, hostname, databasename, portnumber etc.,
 3a) [Optional] select appropriate resource-type & datasource-classname. Templates are provided with the list of 
     datasource-classnames for respective resource-types of the jdbc-vendor, if available.
-4)  asadmin add-resources jdbc-driver-template.xml (eg: AS_INSTALL_DIR/lib/install/templates/resources/jdbc/javadb_type4_datasource.xml)
+4)  asadmin add-resources jdbc-driver-template.xml (eg: AS_INSTALL_DIR/lib/install/templates/resources/jdbc/h2_dd_datasource.xml)
 5)  asadmin ping-connection-pool connection-pool-name
