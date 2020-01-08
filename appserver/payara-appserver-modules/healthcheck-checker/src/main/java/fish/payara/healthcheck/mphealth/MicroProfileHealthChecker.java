@@ -168,7 +168,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
 
     @Override
     public void collect(MonitoringWatchCollector collector) {
-        if (!envrionment.isDas() || !getOptions().isEnabled()) {
+        if (!envrionment.isDas() || options == null || !options.isEnabled()) {
             return;
         }
         collector.watch("ns:health LivelinessUp", "Liveliness UP", "percent")
@@ -188,7 +188,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
     @Override
     @MonitoringData(ns = "health", intervalSeconds = 12)
     public void collect(MonitoringDataCollector collector) {
-        if (!envrionment.isDas() || !getOptions().isEnabled()) {
+        if (!envrionment.isDas() || options == null || !options.isEnabled()) {
             return;
         }
         Map<String, Future<Integer>> instances = priorCollectionTasks;
