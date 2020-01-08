@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,40 +39,34 @@
  */
 package fish.payara.jdbc;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 
-import com.sun.gjc.util.SQLTraceLogger;
-import com.sun.logging.LogDomains;
-
 /**
- * Logs a message when it detects that a SQL query is slow.
- *
- * @author steve (initial)
- * @author Jan Bernitt (extracted)
+ * An adapter between the {@link SQLTraceListener} abstraction that is registered with implementation class as key and a
+ * managed instance of the {@link ClusteredSlowSqlStore}.
+ * 
+ * @author Jan Bernitt
  */
-public class SlowSQLLogger extends SlowSQLTraceListener {
+public class SlowSQLClusteredStoreAdapter extends SlowSQLTraceListener {
 
-    private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
+    private final AtomicReference<ClusteredSlowSqlStore> store = new AtomicReference<>();
 
-    public SlowSQLLogger(JdbcConnectionPool connectionPool) {
+    public SlowSQLClusteredStoreAdapter(JdbcConnectionPool connectionPool) {
         super(connectionPool);
     }
 
     @Override
     void onSlowExecutionTime(long thresholdTime, SQLTraceRecord record, String sql) {
-        StringBuilder messageBuilder = new StringBuilder("SQL Query Exceeded Threshold Time: ");
-        messageBuilder
-            .append(thresholdTime)
-            .append("(ms): Time Taken: ")
-            .append(record.getExecutionTime())
-            .append("(ms)\n")
-            .append("Query was ")
-            .append(sql);
-        logger.log(Level.WARNING, messageBuilder.toString(), new Exception("Stack Trace shows code path to SQL"));
+        ClusteredSlowSqlStore clusteredStore = store.updateAndGet(instance -> instance != null ? instance
+                : Globals.getDefaultHabitat().getService(ClusteredSlowSqlStore.class));
+        if (clusteredStore != null) {
+            clusteredStore.onSlowExecutionTime(thresholdTime, record, sql);
+        }
     }
 
 }
