@@ -56,15 +56,12 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
@@ -355,9 +352,7 @@ public class JdbcTempHandler {
     static private final String XADATA_SOURCE = "javax.sql.XADataSource";
     static private final String CCDATA_SOURCE = "javax.sql.ConnectionPoolDataSource";
     static private final String DRIVER = "java.sql.Driver";
-    static private final String JAVADB = "JavaDB";
     static private final String ORACLE = "Oracle";
-    static private final String DERBY = "Derby";
     static private final String SYBASE = "Sybase";
     static private final String DB2 = "DB2";
     static private final String POINTBASE = "PointBase";
@@ -379,9 +374,7 @@ public class JdbcTempHandler {
         resTypeList.add(DRIVER);
 
 //        dbVendorList.add("");
-//        dbVendorList.add(JAVADB);
 //        dbVendorList.add(ORACLE);
-//        dbVendorList.add(DERBY);
 //        dbVendorList.add(SYBASE);
 //        dbVendorList.add(DB2);
 //        dbVendorList.add(POINTBASE);

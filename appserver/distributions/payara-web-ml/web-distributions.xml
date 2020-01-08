@@ -57,9 +57,7 @@
         <install.package name="glassfish-jmx"/>
         <install.package name="glassfish-jcdi"/>
         <install.package name="glassfish-gui"/>
-        <install.package name="javadb-common"/>
-        <install.package name="javadb-core"/>
-        <install.package name="javadb-client"/>
+        <install.package name="h2db"/>
         <install.package name="glassfish-web-incorporation"/>
         <install.package name="glassfish-web-profile"/>
     </target>

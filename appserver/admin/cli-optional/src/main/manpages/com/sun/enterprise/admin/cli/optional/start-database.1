@@ -1,7 +1,7 @@
 start-database(1)         asadmin Utility Subcommands        start-database(1)
 
 NAME
-       start-database - starts the Java DB
+       start-database - starts the Java database
 
 SYNOPSIS
            start-database [--help] [--jvmoptions jvm-options]
@@ -9,20 +9,20 @@ SYNOPSIS
            [--dbhome db-file-path]
 
 DESCRIPTION
-       The start-database subcommand starts the Java DB server that is
-       available for use with GlassFish Server. Java DB is based upon Apache
-       Derby. Use this subcommand only for working with applications deployed
+       The start-database subcommand starts the Java database server that is
+       available for use with Payara Server. Java database is based upon H2. 
+       Use this subcommand only for working with applications deployed
        to the server.
 
-       When you start Java DB server by using the start-database subcommand,
+       When you start Java database server by using the start-database subcommand,
        the database server is started in Network Server mode. Clients
-       connecting to it must use the Java DB ClientDriver. For details on
-       connecting to the database, refer to the Apache Derby documentation.
+       connecting to it must use the the JDBC driver class: org.h2.Driver. For 
+       details on connecting to the database, refer to the H2 documentation.
 
        When the database server starts, or a client connects to it
        successfully, the following files are created:
 
-       *   The derby.log file that contains the database server process log
+       *   The h2.log file that contains the database server process log
            along with its standard output and standard error information
 
        *   The database files that contain your schema (for example, database
@@ -35,7 +35,7 @@ DESCRIPTION
        these files as follows:
 
        *   If the current working directory contains a file that is named
-           derby.log, the start-database subcommand creates the files in the
+           h2.log, the start-database subcommand creates the files in the
            current working directory.
 
        *   Otherwise, the start-database subcommand creates the files in the
@@ -65,23 +65,23 @@ OPTIONS
                example, -Xmx512m.
 
        --dbhost
-           The host name or IP address of the Java DB server process. The
+           The host name or IP address of the H2 server process. The
            default is the IP address 0.0.0.0, which denotes all network
            interfaces on the host where you run the start-database subcommand.
 
        --dbport
-           The port number where the Java DB server listens for client
+           The port number where the H2 server listens for client
            connections. This port must be available for the listen socket,
-           otherwise the database server will not start. The default is 1527.
+           otherwise the database server will not start. The default is 9092.
 
        --dbhome
            The absolute path to the directory where the database files and the
-           derby.log file are created. If the --dbhome option is not
+           h2.log file are created. If the --dbhome option is not
            specified, the start-database subcommand determines where to create
            these files as follows:
 
            *   If the current working directory contains a file that is named
-               derby.log, the start-database subcommand creates the files in
+               h2.log, the start-database subcommand creates the files in
                the current working directory.
 
            *   Otherwise, the start-database subcommand creates the files in
@@ -91,29 +91,29 @@ OPTIONS
            the --dbhome option.
 
 EXAMPLES
-       Example 1, Starting Java DB
-           This example starts Java DB on the host host1 and port 5001.
+       Example 1, Starting H2 database
+           This example starts H2 on the host host1 and port 5001.
 
                asadmin> start-database --dbhost host1 --dbport 5001 --terse=true
                Starting database in the background.  Log redirected to
-               /opt/SUNWappserver/databases/derby.log.
+               /opt/SUNWappserver/databases/h2.log.
 
-       Example 2, Starting Java DB With Options for the Java Application
+       Example 2, Starting H2 With Options for the Java Application
        Launcher
-           This example starts Java DB with the options for setting the
+           This example starts H2 with the options for setting the
            minimum heap memory size to 128 megabytes and the maximum heap
            memory size to 512 megabytes.
 
                asadmin> start-database --jvmoptions="-Xms128m -Xmx512m" --terse=true
                Starting database in the background.
-               Log redirected to /export/glassfish3/glassfish/databases/derby.log.
+               Log redirected to /export/glassfish3/glassfish/databases/h2.log.
 
 EXIT STATUS
        The exit status applies to errors in executing the asadmin utility. For
-       information on database errors, see the derby.log file. This file is
+       information on database errors, see the h2.log file. This file is
        located in the directory you specify by using the --dbhome option when
        you run the start-database subcommand. If you did not specify --dbhome,
-       the value of DERBY_INSTALL defaults to as-install/javadb.
+       the value of H2_INSTALL defaults to as-install/h2db.
 
        0
            subcommand executed successfully
@@ -129,13 +129,4 @@ SEE ALSO
        "Administering Database Connectivity" in Oracle GlassFish Server
        Administration Guide
 
-       For more information about the Java application launcher, see the
-       reference page for the operating system that you are using:
-
-       *   Oracle Solaris and Linux: java - the Java application launcher
-           (http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/java.html)
-
-       *   Windows: java - the Java application launcher
-           (http://docs.oracle.com/javase/6/docs/technotes/tools/windows/java.html)
-
-Java EE 8                         21 Aug 2017                 start-database(1)
+Java EE 8                         17 Dec 2019                 start-database(1)

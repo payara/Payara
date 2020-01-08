@@ -54,9 +54,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-	    		"pkg:/javadb-common@10" : {"type" : "incorporate" },
-			"pkg:/javadb-core@10" : {"type" : "incorporate" },
-			"pkg:/javadb-client@10" : {"type" : "incorporate" },
+	    		"pkg:/h2db@" + conf.h2db_version : {"type" : "incorporate" },
 			"pkg:/pkg-java@1" : {"type" : "incorporate" },
 			"pkg:/felix@" + conf.felix_version : {"type" : "incorporate" },
 			"pkg:/glassfish-hk2@" + conf.glassfish_version : {"type" : "incorporate" },

@@ -47,6 +47,23 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
+import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
+import com.sun.jdo.api.persistence.mapping.ejb.MappingFile;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.CmpFieldMapping;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.CmrFieldMapping;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.ColumnPair;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.EntityMapping;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMapping;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
+import com.sun.jdo.api.persistence.model.Model;
+import com.sun.jdo.api.persistence.model.ModelException;
+import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
+import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;
+import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
+import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
+import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,28 +82,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
-import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
-import com.sun.jdo.api.persistence.mapping.ejb.MappingFile;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.CmpFieldMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.CmrFieldMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.ColumnPair;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.EntityMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
-import com.sun.jdo.api.persistence.model.Model;
-import com.sun.jdo.api.persistence.model.ModelException;
-import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
-import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;
-import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
-import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-import org.glassfish.common.util.StringHelper;
-import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.common.util.StringHelper;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.persistence.common.DatabaseConstants;
 import org.glassfish.persistence.common.I18NHelper;
@@ -650,7 +649,7 @@ public class MappingGenerator extends
                 // In JavaToDB case we can deploy to the default jdbc-resource.
                 cmpResource = new ResourceReferenceDescriptor();
                 cmpResource.setJndiName("jdbc/__default");
-                cmpResource.setDatabaseVendorName(DBVendorTypeHelper.DERBY);
+                cmpResource.setDatabaseVendorName(DBVendorTypeHelper.H2);
                 cmpResource.setCreateTablesAtDeploy(true);
                 cmpResource.setDropTablesAtUndeploy(true);
                 bundle.setCMPResourceReference(cmpResource);

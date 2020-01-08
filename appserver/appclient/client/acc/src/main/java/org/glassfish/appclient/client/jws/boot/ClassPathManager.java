@@ -60,7 +60,7 @@ import java.net.URLClassLoader;
 public abstract class ClassPathManager {
     
     public static final String PERSISTENCE_JAR_CLASSES = 
-            "org.apache.derby.client.ClientDataSourceFactory," /* derbyclient.jar */ +
+            "org.h2.jdbcx.JdbcDataSource," +
             "persistence.antlr.ActionElement," /* toplink-essentials */ +
             "org.netbeans.modules.dbschema.ColumnElement," /* dbschema */
             ;

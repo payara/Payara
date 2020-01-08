@@ -60,9 +60,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toSet;
 import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
@@ -88,6 +86,9 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toSet;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -205,7 +206,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     private static boolean isValidApp(ApplicationInfo appInfo) {
         return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null
                 && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
-                && !appInfo.getSource().getURI().getPath().contains("javadb/lib")
+                && !appInfo.getSource().getURI().getPath().contains("h2db/bin")
                 && !appInfo.getSource().getURI().getPath().contains("mq/lib");
     }
 

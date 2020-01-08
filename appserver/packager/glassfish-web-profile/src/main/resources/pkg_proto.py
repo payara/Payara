@@ -54,9 +54,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-	                "pkg:/javadb-common" : {"type" : "require" },
-			"pkg:/javadb-core" : {"type" : "require" },
-			"pkg:/javadb-client" : {"type" : "require" },
+                        "pkg:/h2db" : {"type" : "require" },
 			"pkg:/pkg-java" : {"type" : "require" },
 			"pkg:/felix" : {"type" : "require" },
 			"pkg:/glassfish-hk2" : {"type" : "require" },

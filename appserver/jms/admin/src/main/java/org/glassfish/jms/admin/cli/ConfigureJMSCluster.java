@@ -40,36 +40,27 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.config.JmsAvailability;
 import com.sun.enterprise.connectors.jms.config.JmsService;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.*;
-
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.RuntimeType;
-import com.sun.enterprise.config.serverbeans.Cluster;
-
+import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.Map;
-import java.beans.PropertyVetoException;
-
+import java.util.Properties;
 import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 
 /**
@@ -91,7 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class ConfigureJMSCluster implements AdminCommand {
-    final private static String SUPPORTED_DB_VENDORS = "oracle|postgresql|mysql|derby|db2";
+    final private static String SUPPORTED_DB_VENDORS = "oracle|postgresql|mysql|h2|db2|sqlserver";
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigureJMSCluster.class);
     final private static String MASTER_BROKER = "masterbroker";
     final private static String SHARED_DB = "shareddb";

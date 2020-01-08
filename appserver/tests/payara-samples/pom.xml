@@ -146,7 +146,7 @@
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
-                <version>1.4.197</version>
+                <version>${h2db.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.main.security</groupId>

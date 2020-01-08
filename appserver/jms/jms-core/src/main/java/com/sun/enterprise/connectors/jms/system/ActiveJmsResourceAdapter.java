@@ -108,7 +108,6 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.logging.LogDomains;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -131,7 +130,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
 
@@ -877,7 +875,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String propertyPrefix = fullprefix + "property.";
 
         if(dbJdbcUrl != null) {
-		if ("derby".equals(dbVendor))
+		if ("h2".equals(dbVendor))
 			dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
 		else
 			dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);

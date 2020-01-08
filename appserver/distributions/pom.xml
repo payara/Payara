@@ -271,45 +271,9 @@
                     <type>zip</type>
                 </dependency>
                 <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-common</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-core</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-client</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-demo</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-doc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-javadoc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.l10n</groupId>
-                    <artifactId>l10n-distribution</artifactId>
-                    <version>${l10n.version}</version>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2db.version}</version>
                     <type>zip</type>
                 </dependency>
             </dependencies>

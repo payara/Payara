@@ -40,6 +40,7 @@
 
 package org.glassfish.persistence.common.database;
 
+import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -52,9 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.glassfish.persistence.common.I18NHelper;
-import com.sun.logging.LogDomains;
 
 /**
  * @author Mitesh Meswani
@@ -75,7 +74,7 @@ public class DBVendorTypeHelper {
     public final static int MYSQL_ENUM       = 6;
     public final static int INFORMIX_ENUM    = 7;
     public final static int INGRES_ENUM      = 8;
-    public final static int DERBY_ENUM       = 9;
+    public final static int H2_ENUM       = 9;
     public final static int SYMFOWARE_ENUM   = 10;
 
     //Please increment following when a new known database is added.
@@ -87,7 +86,7 @@ public class DBVendorTypeHelper {
      */
     private final static String enumToStringMapping[] =
         {"SQL92", "ORACLE", "POINTBASE", "MSSQL", "SYBASE", "DB2", "MYSQL", 
-         "INFORMIX", "INGRES", "DERBY", "SYMFOWARE"}; // NOI18N
+         "INFORMIX", "INGRES", "H2", "SYMFOWARE"}; // NOI18N
 
     public final static String DEFAULT_DB  = enumToStringMapping[DEFAULT_DB_ENUM];
     public final static String ORACLE      = enumToStringMapping[ORACLE_ENUM];
@@ -98,7 +97,7 @@ public class DBVendorTypeHelper {
     public final static String MYSQL       = enumToStringMapping[MYSQL_ENUM];
     public final static String INFORMIX    = enumToStringMapping[INFORMIX_ENUM];
     public final static String INGRES      = enumToStringMapping[INGRES_ENUM];
-    public final static String DERBY       = enumToStringMapping[DERBY_ENUM];
+    public final static String H2       = enumToStringMapping[H2_ENUM];
     public final static String SYMFOWARE   = enumToStringMapping[SYMFOWARE_ENUM];
 
     private final static String PROPERTY_PATH = "org/glassfish/persistence/common/"; // NOI18N

@@ -117,13 +117,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- javadb package -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>javadb</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
         <!-- h2db package -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>

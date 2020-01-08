@@ -72,7 +72,7 @@ public class JdbcTest extends BaseSeleniumTestClass {
 
         setFieldValue("propertyForm:propertyContentPage:propertySheet:generalPropertySheet:jndiProp:name", poolName);
         selectDropdownOption("propertyForm:propertyContentPage:propertySheet:generalPropertySheet:resTypeProp:resType", "javax.sql.DataSource");
-        selectDropdownOption("propertyForm:propertyContentPage:propertySheet:generalPropertySheet:dbProp:db", "Derby");
+        selectDropdownOption("propertyForm:propertyContentPage:propertySheet:generalPropertySheet:dbProp:db", "H2");
         clickAndWait("propertyForm:propertyContentPage:topButtons:nextButton", TRIGGER_NEW_JDBC_CONNECTION_POOL_STEP_2);
 
         setFieldValue("form2:sheet:generalSheet:descProp:desc", description);
