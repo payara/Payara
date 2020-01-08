@@ -127,12 +127,11 @@ public class ConnectionPoolHealthCheck
     @Override
     @MonitoringData(ns = "health", intervalSeconds = 8)
     public void collect(MonitoringDataCollector collector) {
-        if (!getOptions().isEnabled()) {
-            return;
+        if (options != null && options.isEnabled()) {
+            consumeAllJdbcResources(createConsumer((info, usedPercentage) -> {
+                collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue());
+            }));
         }
-        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> {
-            collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue());
-        }));
     }
 
     private Consumer<JdbcResource> createConsumer(BiConsumer<PoolInfo, Double> poolUsageConsumer) {

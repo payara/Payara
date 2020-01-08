@@ -133,7 +133,7 @@ implements MonitoringDataSource, MonitoringWatchSource {
     @Override
     @MonitoringData(ns = "health", intervalSeconds = 12)
     public void collect(MonitoringDataCollector collector) {
-        if (getOptions().isEnabled()) {
+        if (options != null && options.isEnabled()) {
             try {
                 collector.collect("PhysicalMemoryUsage", (long) stats.usedPercentage());
             } catch (Exception ex) {

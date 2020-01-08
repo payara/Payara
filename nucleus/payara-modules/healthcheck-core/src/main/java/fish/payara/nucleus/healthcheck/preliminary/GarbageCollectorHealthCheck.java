@@ -124,7 +124,7 @@ public class GarbageCollectorHealthCheck
     @Override
     @MonitoringData(ns = "health", intervalSeconds = 4)
     public void collect(MonitoringDataCollector collector) {
-        if (!getOptions().isEnabled()) {
+        if (options != null && options.isEnabled()) {
             return;
         }
         for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {

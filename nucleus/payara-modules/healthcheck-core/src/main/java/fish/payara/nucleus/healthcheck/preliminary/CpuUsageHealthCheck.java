@@ -107,7 +107,7 @@ implements MonitoringDataSource, MonitoringWatchSource {
     @Override
     @MonitoringData(ns = "health", intervalSeconds = 4)
     public void collect(MonitoringDataCollector collector) {
-        if (getOptions().isEnabled()) {
+        if (options != null && options.isEnabled()) {
             collector.collect("CpuUsage", (int) collect.percentage());
         }
     }
