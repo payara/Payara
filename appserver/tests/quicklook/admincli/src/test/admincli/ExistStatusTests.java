@@ -52,11 +52,10 @@ public class ExistStatusTests {
 
     @Test
     public void createJDBCPool() throws Exception {
-        // System.out.println(ASADMIN);
+        //System.out.println(ASADMIN);
         cmd = ASADMIN + " create-jdbc-connection-pool --port 4848 "
-                + "--datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property "
-                + "DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:Password=APP:User=APP QLJdbcPool";
-
+                + "--datasourceclassname=org.h2.jdbcx.JdbcDataSource --property "
+                + "URL=\"jdbc\\:h2\\:tcp\\://localhost\\:9092/~/test|sa\" QLJdbcPool";
         execReturn = RtExec.execute("createJDBCPool", cmd);
         
         Assert.assertEquals(execReturn, true, "Create jdbc connection pool failed ...");
@@ -64,8 +63,8 @@ public class ExistStatusTests {
 
     @Test(dependsOnMethods = { "createJDBCPool" })
     public void pingJDBCPool() throws Exception {
-        // Extra ping of DerbyPool to create sun-appserv-samples DB.
-        cmd = ASADMIN + " ping-connection-pool --port 4848 DerbyPool";
+        // Extra ping of H2Pool to create sun-appserv-samples DB.
+        cmd = ASADMIN + " ping-connection-pool --port 4848 H2Pool";
         RtExec.execute("pingJDBCPool", cmd);
         
         cmd1 = ASADMIN + " ping-connection-pool --port 4848 QLJdbcPool";

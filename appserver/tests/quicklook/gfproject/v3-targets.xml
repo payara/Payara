@@ -47,8 +47,6 @@
     <property name="db.root" value="${glassfish.home}/javadb"/>
     <property name="db.classpath" value="${db.root}/lib"/>
     <property name="dist.dir" value="${ws.root}/dist/${testsuite.name}"/>
-    <!--<property name="db.classpath" value="${db.root}/lib/derby.jar:${db.root}/lib/derbyclient.jar:${db.root}/lib/derbynet.jar"/>-->
-
 
 <target name="setOSConditions">
   <condition property="isUnix">
@@ -97,7 +95,7 @@
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message">
-	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:connectionAttributes=\;create\=true:Password=APP:User=APP QLJdbcPool"/>
+	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\\:h2\\:mem\\:test\;DB_CLOSE_DELAY\=-1 QLJdbcPool"/>
     </exec>
     <echo message="${message}"/>
 </target>

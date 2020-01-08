@@ -45,7 +45,7 @@
 	<property environment="env"/>
 
 	<property file="build.properties"/>
-	<property file="${basedir}/gfproject/derby.properties"/>
+	<property file="${basedir}/gfproject/h2.properties"/>
 	<import file="${basedir}/gfproject/db-targets.xml"/>
 	<import file="${basedir}/gfproject/utils.xml"/>
 
@@ -86,7 +86,7 @@
 		<record name="${basedir}/allrun.output" action="start"/>
 		<property name="env.security_manager" value="OFF"/>
 		<antcall target="verify-xml"/>
-		<antcall target="start-derby"/>
+		<antcall target="start-h2"/>
 		<antcall target="start-server-felix"/>
 		<antcall target="build-deploy"/>
 		<antcall target="runtest">
@@ -128,7 +128,7 @@
 	<target name="start_server_with_security_manager_enabled">
 		<property name="env.security_manager" value="ON"/>
 		<antcall target="verify-xml"/>
-		<antcall target="start-derby"/>
+		<antcall target="start-h2"/>
 		<antcall target="start-server-felix"/>
 		<antcall target="enable-security-manager"/>
 		<antcall target="stop-server"/>
@@ -139,7 +139,7 @@
 		<property name="env.security_manager" value="ON"/>
 		<antcall target="disable-security-manager"/>
 		<antcall target="stop-server"/>
-		<antcall target="stop-derby"/>
+		<antcall target="stop-h2"/>
 	</target>
 
 
@@ -204,7 +204,7 @@
 		<record name="${basedir}/allrun.output" action="start" />
 		<property name="env.security_manager" value="OFF" />
 		<antcall target="verify-xml" />
-		<antcall target="start-derby" />
+		<antcall target="start-h2" />
 		<antcall target="start-server-felix" />
 		<antcall target="build-deploy" />
 		<antcall target="build-deploy-gd" />
@@ -228,7 +228,7 @@
 		<antcall target="add-quicklook-policy-grants" />
 		<property name="env.security_manager" value="ON"/>
 		<antcall target="verify-xml"/>
-		<antcall target="start-derby"/>
+		<antcall target="start-h2"/>
 		<antcall target="start-server-felix"/>
 		<antcall target="enable-security-manager"/>
 		<antcall target="stop-server"/>
@@ -256,7 +256,7 @@
 	<target name="dev_debug" depends="clean">
 		<record name="${basedir}/allrun.output" action="start"/>
 		<antcall target="verify-xml"/>
-		<antcall target="start-derby"/>
+		<antcall target="start-h2"/>
 		<antcall target="build-deploy"/>
 		<antcall target="runtest">
 			<param name="testng.xml" value="testng/testng_debug.xml"/>

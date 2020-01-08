@@ -57,7 +57,7 @@ import test.admin.util.GeneralUtils;
 public class JdbcConnectionPoolTests extends BaseAsadminTest {
 
     private File path;
-    private static final String JAVADB_POOL = "javadb_pool"; //same as in resources.xml
+    private static final String H2DB_POOL = "h2db_pool"; //same as in resources.xml
     private static final String ADD_RES     = "add-resources";
     
     @Parameters({"resources.xml.relative.path"})
@@ -79,7 +79,7 @@ public class JdbcConnectionPoolTests extends BaseAsadminTest {
     public void pingPool() {
         String CMD = "ping-connection-pool";
         Map<String, String> options = Collections.EMPTY_MAP;
-        String operand = JAVADB_POOL;
+        String operand = H2DB_POOL;
         String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
         Manifest man = super.invokeURLAndGetManifest(up);
         GeneralUtils.handleManifestFailure(man);
@@ -92,8 +92,8 @@ public class JdbcConnectionPoolTests extends BaseAsadminTest {
         GeneralUtils.handleManifestFailure(man);
         // we are past failure, now test the contents
         String children = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN);
-        if (!children.contains(JAVADB_POOL)) {
-            throw new RuntimeException("deleted http listener: " + JAVADB_POOL + " exists in the list: " + children);
+        if (!children.contains(H2DB_POOL)) {
+            throw new RuntimeException("deleted http listener: " + H2DB_POOL + " exists in the list: " + children);
         }        
     }
     
@@ -101,7 +101,7 @@ public class JdbcConnectionPoolTests extends BaseAsadminTest {
     public void deletePool() {
         String CMD = "delete-jdbc-connection-pool";
         Map<String, String> options = Collections.EMPTY_MAP;
-        String operand = JAVADB_POOL;
+        String operand = H2DB_POOL;
         String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
 //        Reporter.log("url: " + up);
         Manifest man = super.invokeURLAndGetManifest(up);
@@ -114,8 +114,8 @@ public class JdbcConnectionPoolTests extends BaseAsadminTest {
         GeneralUtils.handleManifestFailure(man);
         // we are past failure, now test the contents
         String children = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN);
-        if (children.contains(JAVADB_POOL)) {
-            throw new RuntimeException("deleted http listener: " + JAVADB_POOL + " exists in the list: " + children);
+        if (children.contains(H2DB_POOL)) {
+            throw new RuntimeException("deleted http listener: " + H2DB_POOL + " exists in the list: " + children);
         }         
     }
 

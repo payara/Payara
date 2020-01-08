@@ -44,14 +44,11 @@
 
 <resources>
     <jdbc-connection-pool
-        name="javadb_pool"
-        datasource-classname="org.apache.derby.jdbc.ClientDataSource"
+        name="h2db_pool"
+        datasource-classname="org.h2.jdbcx.JdbcDataSource"
         res-type="javax.sql.DataSource">
-        <property name="user" value="APP"/>
-        <property name="password" value="APP"/>
-        <property name="databaseName" value="Test"/>
-        <property name="serverName" value="localhost"/>
-        <property name="portNumber" value="1527"/>
-        <property name="connectionAttributes" value=";create=true"/>
+        <property name="user" value="sa"/>
+        <property name="password" value=""/>
+        <property name="url" value="jdbc:h2:tcp://localhost:9092/~/test"/>
     </jdbc-connection-pool>
 </resources>

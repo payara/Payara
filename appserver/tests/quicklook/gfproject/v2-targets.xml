@@ -144,7 +144,7 @@
 
 
 <target name="create-jdbc-connpool">
-    <property name="jdbc.conpool.name" value="sample-derby-pool"/>
+    <property name="jdbc.conpool.name" value="sample-h2-pool"/>
 <echo message="created jdbc connection pool ${jdbc.conpool.name}" 
     level="verbose"/>
     <exec executable="cmd" osfamily="Windows">
@@ -179,10 +179,4 @@
     </exec>
     <echo message="cmd executed for ${appserver.instance.name}"/>
 </target>
-
-
-
-
-
-
 </project>

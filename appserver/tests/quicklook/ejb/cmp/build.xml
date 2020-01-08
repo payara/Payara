@@ -48,12 +48,12 @@
     <description>Builds, tests, and runs the project CMP Roster Application</description>
     <import file="${ws.root}/gfproject/build-impl.xml"/>   
     <import file="${ws.root}/gfproject/${deploy.platform}-targets.xml"/>
-    <property file="${ws.root}/gfproject/derby.properties"/>
+    <property file="${ws.root}/gfproject/h2.properties"/>
     <import file="${ws.root}/gfproject/db-targets.xml"/>
 
     <target name="create-table">
         <antcall target="sql-common">
-           <param name="sql.file" value="sql/RosterApp_derby.sql"/>
+           <param name="sql.file" value="sql/RosterApp_h2.sql"/>
         </antcall>
     </target>
     

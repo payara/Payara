@@ -158,7 +158,7 @@ bundle:</P>
 		<LI><P STYLE="margin-bottom: 0in"><I>{V3 Installation
 		Dir}/bin/asadmin start-domain</I></P>
 		<LI><P STYLE="margin-bottom: 0in"><I>{V3 Installation
-		Dir}/bin/asadmin start-database --dbtype derby</I> 
+		Dir}/bin/asadmin start-database</I> 
 		</P>
 		<LI><P STYLE="margin-bottom: 0in"><I>cd ejb/slsbnicmt</I> 
 		</P>
@@ -247,10 +247,10 @@ src/test/HelloJSPTestNG.java, change the classname, testurl&nbsp; and
 rename to src/test/HelloUniverseTestNG.java<BR><BR>Now all editing is
 complete, lets try to build/deploy/run from leaf level (hellouniverse
 level)<BR><BR>Assume we are using web.zip for glassfish. Make sure
-javadb and server are started&nbsp; (please use ant 1.6.5)<BR><I>% cd
+H2 database and server are started&nbsp; (please use ant 1.6.5)<BR><I>% cd
 v3/test/quicklook</I><BR><I>% ant -Dglassfish.home={V3 Installation
-Dir} startDerby</I><BR><I>% ant -Dglassfish.home={V3 Installation
-Dir} start-server</I><BR><BR>Once the server and derby are started,
+Dir} startH2</I><BR><I>% ant -Dglassfish.home={V3 Installation
+Dir} start-server</I><BR><BR>Once the server and H2 are started,
 go to <BR><I>% cd web/hellouniverse</I><BR><I>% ant&nbsp;
 -Dglassfish.home={V3 Installation Dir} build </I><BR><BR>Make sure no
 errorss on consol<BR><I>% ant&nbsp; -Dglassfish.home={V3 Installation

@@ -43,49 +43,41 @@
 <!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 <project name="db-targets" default="all" basedir=".">
 
-<target name="start-derby" depends="setOSConditions" if="v3">
-    <antcall target="start-derby-unix"/>
-    <antcall target="start-derby-windows"/>
+<target name="start-h2" depends="setOSConditions" if="v3">
+    <antcall target="start-h2-unix"/>
+    <antcall target="start-h2-windows"/>
 </target>
 
-<target name="start-derby-windows" if="isWindows">
+<target name="start-h2-windows" if="isWindows">
     <exec executable="cmd" spawn="true">
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-database"/>
-        <arg value="--dbtype"/>
-        <arg value="derby"/>
     </exec>
 </target>
 
-<target name="start-derby-unix" if="isUnix">
+<target name="start-h2-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin" spawn="true">
         <arg value="start-database"/>
-        <arg value="--dbtype"/>
-        <arg value="derby"/>
     </exec>
 </target>
 
-<target name="stop-derby" depends="setOSConditions" if="v3">
-    <antcall target="stop-derby-unix"/>
-    <antcall target="stop-derby-windows"/>
+<target name="stop-h2" depends="setOSConditions" if="v3">
+    <antcall target="stop-h2-unix"/>
+    <antcall target="stop-h2-windows"/>
 </target>
 
-<target name="stop-derby-windows" if="isWindows">
+<target name="stop-h2-windows" if="isWindows">
     <exec executable="cmd" spawn="true">
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="stop-database"/>
-        <arg value="--dbtype"/>
-        <arg value="derby"/>
     </exec>
 </target>
 
-<target name="stop-derby-unix" if="isUnix">
+<target name="stop-h2-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin">
         <arg value="stop-database"/>
-        <arg value="--dbtype"/>
-        <arg value="derby"/>
     </exec>
 </target>
 
@@ -149,24 +141,24 @@
         tofile="${glassfish.home}/domains/${domain.name}/config/server.policy"/>
 </target>
 
-<target name="startDerby" depends="initprop">
-    <echo message="Starting Derby DB servers in the Network Mode"/>    
+<target name="startH2" depends="initprop">
+    <echo message="Starting H2 DB servers in the Network Mode"/>    
     
-    <java classname="org.apache.derby.drda.NetworkServerControl"
+    <java classname="org.h2.tools.Server"
           classpathref="db.class.path" fork="true" spawn="true">
-        <sysproperty key="derby.system.home" value="${derby.home}"/>
-        <arg line="-h localhost -p ${db.port} start"/>
+        <sysproperty key="h2.system.home" value="${h2.home}"/>
+        <arg line="-tcpPort ${db.port} -tcpAllowOthers"/>
     </java> 
     <echo message="Finished starting datbase"/>
 </target>
 
-<target name="stopDerby" depends="initprop">
-    <echo message="Stopping Derby DB servers in the Network Mode"/>
+<target name="stopH2" depends="initprop">
+    <echo message="Stopping H2 DB servers in the Network Mode"/>
     
-    <java classname="org.apache.derby.drda.NetworkServerControl"
+    <java classname="org.h2.tools.Server"
           classpathref="db.class.path" fork="true">
-        <sysproperty key="derby.system.home" value="${derby.home}"/>
-        <arg line="shutdown -h localhost -p ${db.port}"/>
+        <sysproperty key="h2.system.home" value="${h2.home}"/>
+        <arg line="-tcpShutdown tcp://localhost:${db.port}"/>
     </java> 
     <echo message="Finished stopping datbase"/>
 </target>
@@ -178,7 +170,7 @@
     driver="${db.driver}"
     url="${db.url}"
     userid="${db.user}"
-    password="${db.pwd}"
+    password=""
     src="${sql.file}"
     onerror="continue"
     print="yes"
@@ -199,7 +191,7 @@
          encoding="utf-8"
          url="${db.url}"
          userid="${db.user}"
-         password="${db.password}"
+         password=""
          classpathref="db.class.path"
          delimiter="${db.delimiter}"
          print="true"
@@ -217,14 +209,14 @@
 <target name="delete-db"  
         description="Deletes the database tables." depends="initprop">
     <echo>driver=${db.driver}</echo>
-    <echo>url=${db.url}</echo>
-    <echo>user=${db.user}</echo>
+    <echo>url=${db.url}</echo>  
+    <echo>user=${db.user}</echo>     
     <echo>password=${db.password}</echo>       
     <sql driver="${db.driver}"
          encoding="utf-8"
          url="${db.url}"
          userid="${db.user}"
-         password="${db.password}"
+         password=""
          classpathref="db.class.path"
          delimiter="${db.delimiter}"
          autocommit="true"
@@ -234,8 +226,8 @@
 </target>
 
 <target name="initprop" >
-    <echo message="JavaDB Database Location : ${derby.home}" />
-    <property name="ips.derby" value="${glassfish.home}/../javadb"/>
-    <property name="db.class.path" value="${derby.home}/lib/derbyclient.jar:${ips.derby}/lib/derbyclient.jar"/>
+    <echo message="H2 Database Location : ${h2.home}" />
+    <property name="ips.h2" value="${glassfish.home}/../h2db"/>
+    <property name="db.class.path" value="${h2.home}/bin/h2.jar:${ips.h2}/bin/h2.jar"/>
 </target>
 </project>
