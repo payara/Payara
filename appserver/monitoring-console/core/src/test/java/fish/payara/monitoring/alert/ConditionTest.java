@@ -220,6 +220,18 @@ public class ConditionTest {
         assertTrue(avgOf3secGt5.isForLastPresent());
     }
 
+    @Test
+    public void trueForAnyInLastTimes() {
+        Condition anyGt5 = new Condition(Operator.GT, 5, 0, false);
+        assertNotSatisfied(anyGt5, 5);
+        assertSatisfied(anyGt5, 6);
+        assertSatisfied(anyGt5, 6, 5);
+        assertSatisfied(anyGt5, 5, 6);
+        assertSatisfied(anyGt5, 5, 6, 5);
+        assertSatisfied(anyGt5, 5, 6, 5, 4);
+        assertNotSatisfied(anyGt5, 5, 5, 5, 4);
+    }
+
     private static void assertSatisfied(Condition c, long... points) {
         assertTrue(c.isSatisfied(createSet(ONE_SECOND, points)));
         assertBasicProperties(c);

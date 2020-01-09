@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,40 +39,97 @@
  */
 package fish.payara.jdbc;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.glassfish.api.jdbc.SQLTraceRecord;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.logging.LogDomains;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.api.jdbc.SQLTraceListener;
+import org.glassfish.api.jdbc.SQLTraceRecord;
 
 /**
  * Logs a message when it detects that a SQL query is slow.
- *
- * @author steve (initial)
- * @author Jan Bernitt (extracted)
+ * @author steve
  */
-public class SlowSQLLogger extends SlowSQLTraceListener {
-
+public class SlowSQLLogger implements SQLTraceListener {
+    
     private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
+    private static ThreadLocal<SQLQuery> currentQuery = new ThreadLocal<>();
+    private static final long DEFAULT_THERSHOLD = 10000; // 10 second default threshold
+    private long threshold;
 
-    public SlowSQLLogger(JdbcConnectionPool connectionPool) {
-        super(connectionPool);
+    public SlowSQLLogger(long threshold, TimeUnit unit) {
+        this.threshold = unit.toMillis(threshold);
     }
 
+    public SlowSQLLogger() {
+        this.threshold = DEFAULT_THERSHOLD;
+    }
+
+    public long getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(long threshold) {
+        this.threshold = threshold;
+    }
+    
     @Override
-    void onSlowExecutionTime(long thresholdTime, SQLTraceRecord record, String sql) {
-        StringBuilder messageBuilder = new StringBuilder("SQL Query Exceeded Threshold Time: ");
-        messageBuilder
-            .append(thresholdTime)
-            .append("(ms): Time Taken: ")
-            .append(record.getExecutionTime())
-            .append("(ms)\n")
-            .append("Query was ")
-            .append(sql);
-        logger.log(Level.WARNING, messageBuilder.toString(), new Exception("Stack Trace shows code path to SQL"));
-    }
+    public void sqlTrace(SQLTraceRecord record) {
+        if (record != null) {    
+            switch (record.getMethodName()) {
 
+                // these calls capture a query string
+                case "nativeSQL":
+                case "prepareCall":
+                case "prepareStatement":
+                case "addBatch":
+                {
+                    // acquire the SQL
+                    SQLQuery query = currentQuery.get();
+                    if (query == null) {
+                        query = new SQLQuery();
+                        currentQuery.set(query);
+                    }  
+                    if (record.getParams() != null && record.getParams().length > 0)
+                        query.addSQL((String)record.getParams()[0]);
+                    break;
+                }
+                case "execute":
+                case "executeQuery":
+                case "executeUpdate":
+                {
+                    // acquire the SQL
+                    SQLQuery query = currentQuery.get();
+                    if (query == null) {
+                        query = new SQLQuery();
+                        currentQuery.set(query);
+                    }                      // these can all run the SQL and contain SQL
+                    long executionTime = record.getExecutionTime();
+                    // see if we have more SQL
+                    if (record.getParams() != null && record.getParams().length > 0) {
+                        // gather the SQL
+                        query.addSQL((String) record.getParams()[0]);
+                    }
+                    
+                    // check the execution time
+                    
+                    if (executionTime > threshold) {
+                        StringBuilder messageBuilder = new StringBuilder("SQL Query Exceeded Threshold Time: ");
+                        messageBuilder.append(threshold)
+                                .append("(ms): Time Taken: ")
+                                .append(executionTime)
+                                .append("(ms)\n")
+                                .append("Query was ")
+                                .append(query.getSQL());
+                        logger.log(Level.WARNING,messageBuilder.toString(),new Exception("Stack Trace shows code path to SQL"));
+                    }
+                    // clean the thread local
+                    currentQuery.set(null);
+                    break;
+                }
+            }
+        }
+    }
+    
 }

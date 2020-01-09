@@ -125,25 +125,22 @@ public final class Condition {
             return false;
         }
         long value = data.lastValue();
-        if ((!onAverage || data.isStable()) && !compare(value)) {
-            return false;
-        }
         if (isForLastMillis()) {
             return isSatisfiedForLastMillis(data);
         }
         if (isForLastTimes()) {
             return isSatisfiedForLastTimes(data);
         }
-        return true;
+        return compare(value);
     }
 
     private boolean isSatisfiedForLastMillis(SeriesDataset data) {
         long forLastMillis = forLast.longValue();
         if (forLastMillis <= 0) {
-            return isSatisfiedForLastTimes(data.points(), -1);
+            return isSatisfiedForLastTimes(data.points(), 0);
         }
         if (data.isStable()) {
-            return data.getStableSince() <= data.lastTime() - forLastMillis ;
+            return data.getStableSince() <= data.lastTime() - Math.abs(forLastMillis) && compare(data.lastValue());
         }
         long startTime = data.lastTime() - forLastMillis;
         long[] points = data.points();
@@ -160,26 +157,49 @@ public final class Condition {
     private boolean isSatisfiedForLastTimes(SeriesDataset data) {
         int forLastTimes = forLast.intValue();
         if (data.isStable()) {
-            return data.getStableCount() >= forLastTimes;
+            return data.getStableCount() >= Math.abs(forLastTimes) && compare(data.lastValue());
         }
         return isSatisfiedForLastTimes(data.points(), forLastTimes);
     }
 
     private boolean isSatisfiedForLastTimes(long[] points, int forLastTimes) {
         int maxPoints = points.length / 2;
-        int n = forLastTimes <= 0 ? maxPoints : Math.min(maxPoints, forLastTimes);
+        int n = forLastTimes == 0 ? maxPoints : Math.min(maxPoints, Math.abs(forLastTimes));
         if (forLastTimes > 0 && n < forLastTimes && n < 30) {
             return false; // not enough data yet
         }
-        int index = points.length - 1; // last value index
         if (onAverage) {
-            long sum = 0;
-            for (int i = 0; i < n; i++) {
-                sum += points[index];
-                index -= 2;
-            }
-            return compare(sum / n);
+            return avgSatisfiedInLastN(points, n);
         }
+        if (forLastTimes <= 0) {
+            return anySatisfiedInLastN(points, n);
+        }
+        return allSatisfiedInLastN(points, n);
+    }
+
+    private boolean avgSatisfiedInLastN(long[] points, int n) {
+        int index = points.length - 1; // last value index
+        long sum = 0;
+        for (int i = 0; i < n; i++) {
+            sum += points[index];
+            index -= 2;
+        }
+        return compare(sum / n);
+    }
+
+    private boolean anySatisfiedInLastN(long[] points, int n) {
+        int index = points.length - 1; // last value index
+        for (int i = 0; i < n; i++) {
+            if (compare(points[index])) {
+                return true;
+            }
+            index -= 2;
+        }
+        return false;
+    }
+
+    private boolean allSatisfiedInLastN(long[] points, int n) {
+        int index = points.length - 1; // last value index
         for (int i = 0; i < n; i++) {
             if (!compare(points[index])) {
                 return false;

@@ -39,33 +39,71 @@
  */
 package fish.payara.jdbc;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
+import org.glassfish.api.jdbc.SQLTraceStore;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
 
 /**
  * An adapter between the {@link SQLTraceListener} abstraction that is registered with implementation class as key and a
- * managed instance of the {@link ClusteredSlowSqlStore}.
+ * managed instance of the {@link SQLTraceStore}.
  * 
  * @author Jan Bernitt
  */
-public class SlowSQLClusteredStoreAdapter extends SlowSQLTraceListener {
+public class SQLTraceStoreAdapter implements SQLTraceListener {
 
-    private final AtomicReference<ClusteredSlowSqlStore> store = new AtomicReference<>();
+    private static ThreadLocal<SQLQuery> currentQuery = new ThreadLocal<>();
 
-    public SlowSQLClusteredStoreAdapter(JdbcConnectionPool connectionPool) {
-        super(connectionPool);
+    private final SQLTraceStore store;
+
+    public SQLTraceStoreAdapter() {
+        this.store = Globals.getDefaultHabitat().getService(SQLTraceStore.class);
     }
 
     @Override
-    void onSlowExecutionTime(long thresholdTime, SQLTraceRecord record, String sql) {
-        ClusteredSlowSqlStore clusteredStore = store.updateAndGet(instance -> instance != null ? instance
-                : Globals.getDefaultHabitat().getService(ClusteredSlowSqlStore.class));
-        if (clusteredStore != null) {
-            clusteredStore.onSlowExecutionTime(thresholdTime, record, sql);
+    public void sqlTrace(SQLTraceRecord record) {
+        if (record != null) {    
+            switch (record.getMethodName()) {
+
+            // these calls capture a query string
+            case "nativeSQL":
+            case "prepareCall":
+            case "prepareStatement":
+            case "addBatch":
+            {
+                // acquire the SQL
+                SQLQuery query = currentQuery.get();
+                if (query == null) {
+                    query = new SQLQuery();
+                    currentQuery.set(query);
+                }  
+                if (record.getParams() != null && record.getParams().length > 0)
+                    query.addSQL((String)record.getParams()[0]);
+                break;
+            }
+            case "execute":
+            case "executeQuery":
+            case "executeUpdate":
+            {
+                // acquire the SQL
+                SQLQuery query = currentQuery.get();
+                if (query == null) {
+                    query = new SQLQuery();
+                    currentQuery.set(query);
+                }                      // these can all run the SQL and contain SQL
+                // see if we have more SQL
+                if (record.getParams() != null && record.getParams().length > 0) {
+                    // gather the SQL
+                    query.addSQL((String) record.getParams()[0]);
+                }
+                if (store != null) {
+                    store.trace(record, query.getSQL());
+                }
+                // clean the thread local
+                currentQuery.set(null);
+                break;
+            }
+            }
         }
     }
 

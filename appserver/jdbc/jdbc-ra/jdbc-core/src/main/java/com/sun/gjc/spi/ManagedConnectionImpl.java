@@ -55,7 +55,7 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
-import fish.payara.jdbc.SlowSQLClusteredStoreAdapter;
+import fish.payara.jdbc.SQLTraceStoreAdapter;
 import fish.payara.jdbc.SlowSQLLogger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
@@ -69,6 +69,7 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.NotSupportedException;
@@ -532,10 +533,10 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
 
             if (!isSlowQueryLoggingEnabled()) {
                 sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
-                sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLClusteredStoreAdapter.class);
+                sqlTraceDelegator.deregisterSQLTraceListener(SQLTraceStoreAdapter.class);
             } else {
-                sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger(connectionPool));
-                sqlTraceDelegator.registerSQLTraceListener(new SlowSQLClusteredStoreAdapter(connectionPool));
+                sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger(getSlowQueryThresholdInMillis(), TimeUnit.MILLISECONDS));
+                sqlTraceDelegator.registerSQLTraceListener(new SQLTraceStoreAdapter());
             }
             /**
              * If there are no longer any listeners registered, set the
@@ -1367,8 +1368,17 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     }
 
     private boolean isSlowQueryLoggingEnabled() {
-        return connectionPool != null 
-                && !connectionPool.getSlowQueryThresholdInSeconds().isEmpty()
-                && parseDouble(connectionPool.getSlowQueryThresholdInSeconds()) > 0d;
+        return getSlowQueryThresholdInMillis() > 0;
+    }
+
+    private long getSlowQueryThresholdInMillis() {
+        if (connectionPool == null) {
+            return -1;
+        }
+        String thresholdInSeconds = connectionPool.getSlowQueryThresholdInSeconds();
+        if (thresholdInSeconds == null || thresholdInSeconds.isEmpty()) {
+            return -1;
+        }
+        return Math.round(parseDouble(thresholdInSeconds) * 1000);
     }
 }

@@ -84,9 +84,12 @@ public interface MonitoringWatchCollector {
          * 
          * For-Values use:
          * 
-         * - {@link Integer} values to refer to n times in a row - {@link Long} values to refer to n milliseconds -
-         * {@link Double} values to refer to percentage - {@code null} to not use any for condition, which is same as
-         * matching the start condition a single time by the most recent value
+         * - {@link Integer} positive values to refer to n times in a row,
+         *   zero includes all available values, 
+         *   negative values refer to any 1 value in last abs(n) values.
+         * - {@link Long} values to refer to n milliseconds
+         * - {@code null} to not use any for condition, which is same as matching the start condition a single time by 
+         *   the most recent value
          *
          * @param level          "red", "amber", or "green"
          * @param startThreshold the allowed upper limit, anything above causes an alert
