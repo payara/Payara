@@ -136,7 +136,8 @@ public class MessageResolver {
 
 
     private ResourceBundle getResourceBundle(final ResourceBundle bundle, final String loggerName) {
-        if (bundle != null) {
+        // anonymous logger does not have any rb, and even causes NPE in JUL's LogManager
+        if (bundle != null || loggerName == null) {
             return bundle;
         }
         final Logger logger = this.manager.getLogger(loggerName);
