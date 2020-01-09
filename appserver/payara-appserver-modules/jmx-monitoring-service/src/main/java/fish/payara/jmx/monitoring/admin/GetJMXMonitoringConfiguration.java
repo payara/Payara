@@ -147,9 +147,8 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         map.put("logfrequency", monitoringConfig.getLogFrequency());
         map.put("logfrequencyunit", monitoringConfig.getLogFrequencyUnit());
 
-        Properties jmxMonitoringProps = new Properties();
-        jmxMonitoringProps.put("jmxmonitoringConfiguration", map);
-        actionReport.setExtraProperties(jmxMonitoringProps);
+        Properties extraProps = new Properties();
+        extraProps.put("jmxmonitoringConfiguration", map);
         
         List<Map<String, String>> monitoredAttributes = new ArrayList<>();
 
@@ -164,10 +163,9 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
             attributeColumnFormatter.addRow(values);
         }
 
-         Properties monitoredAttributeProps = new Properties();
         //Cannot change key in line below - required for admingui propertyDescTable.inc
-        monitoredAttributeProps.put("monitored-beans", monitoredAttributes);
-        actionReport.setExtraProperties(monitoredAttributeProps);
+        extraProps.put("monitored-beans", monitoredAttributes);
+        actionReport.setExtraProperties(extraProps);
 
         if (!monitoringConfig.getNotifierList().isEmpty()) {
             List<Class<Notifier>> notifierClassList = monitoringConfig.getNotifierList().stream().map((input) -> {
