@@ -336,8 +336,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             
             // Dot not register session, as this will invalidate the currently active sessions (with all of its attributes)!
             // httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
-
-            httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
+            
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
             // Token Request is invalid (refresh token invalid or expired)
