@@ -97,6 +97,7 @@ public class OSGiFrameworkLauncher {
                 }
             };
             thread.setDaemon(true);
+            thread.setName("OSGI Framework Init");
             thread.start();
             thread.join();
         } else {

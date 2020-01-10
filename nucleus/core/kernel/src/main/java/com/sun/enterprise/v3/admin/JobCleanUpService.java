@@ -80,10 +80,10 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     @Inject
     Domain domain;
-    
+
     @Inject
     private ProcessEnvironment processEnv;
-    
+
     private ManagedJobConfig managedJobConfig;
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
@@ -98,23 +98,22 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     @Override
     public void postConstruct() {
+        if (Version.getFullVersion().contains("Micro")) {
+            //if Micro we don't have any jobs to cleanup
+            return;
+        }
+
         logger.log(Level.FINE,KernelLoggerInfo.initializingJobCleanup);
-
-
 
         scheduler = Executors.newScheduledThreadPool(10, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread result = new Thread(r);
                 result.setDaemon(true);
+                result.setName("Job Cleanup Service");
                 return result;
             }
         });
-        
-        if (Version.getFullVersion().contains("Micro")) {
-            //if Micro we don't have any jobs to cleanup
-            return;
-        }
 
         managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
