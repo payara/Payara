@@ -39,24 +39,61 @@
  */
 package fish.payara.monitoring.model;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
- * Most basic lookup abstraction for a source of {@link SeriesDataset}s.
- *
+ * An {@link SeriesAnnotation} is meta data linked to a {@link SeriesDataset} by having the same {@link Series} and
+ * {@link #instance} and pointing to a {@link #time} that is in the range of {@link SeriesDataset}.
+ * 
+ * The meta data attached is a list of key-value pairs.
+ * 
  * @author Jan Bernitt
  * @since 5.201
  */
-@FunctionalInterface
-public interface SeriesLookup {
+public final class SeriesAnnotation implements Serializable {
 
-    /**
-     * Lists all {@link SeriesDataset}s that match given {@link Series} with a {@link SeriesDataset#getInstance()} name
-     * that is included in the given set of instance names.
-     *
-     * @param series    the {@link Series} to list
-     * @param instances set if instances to include, an empty set includes all instances
-     * @return current data of matching {@link SeriesDataset}s.
-     */
-    List<SeriesDataset> selectSeries(Series series, String... instances);
+    public final long time;
+    public final Series series;
+    public final String instance;
+    public final long value;
+    public final String[] attrs;
+
+    public SeriesAnnotation(long time, Series series, String instance, long value, String[] attrs) {
+        this.time = time;
+        this.series = series;
+        this.instance = instance;
+        this.value = value;
+        this.attrs = attrs;
+        if (attrs.length % 2 == 1) {
+            throw new IllegalArgumentException(
+                    "Annotation attributes always must be given in pairs but got: " + Arrays.toString(attrs));
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return series.hashCode() ^ instance.hashCode() ^ (int) time;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SeriesAnnotation && equalTo((SeriesAnnotation) obj);
+    }
+
+    public boolean equalTo(SeriesAnnotation other) {
+        return time == other.time && series.equalTo(other.series) && instance.equals(other.instance);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append(instance).append(' ').append(series.toString()).append('=').append(value).append(' ').append(time);
+        str.append(":[");
+        for (int i = 0; i < attrs.length; i+=2) {
+            str.append("\n\t").append(attrs[i]).append('=').append(attrs[i+1]);
+        }
+        str.append("\n]");
+        return str.toString();
+    }
 }

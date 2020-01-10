@@ -50,6 +50,7 @@ import fish.payara.monitoring.model.Series;
  * The {@link AlertService} manages and evaluates {@link Watch}s that cause {@link Alert}s.
  *
  * @author Jan Bernitt
+ * @since 5.201
  */
 @Contract
 public interface AlertService {

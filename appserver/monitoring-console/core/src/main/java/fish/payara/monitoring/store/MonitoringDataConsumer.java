@@ -44,6 +44,7 @@ package fish.payara.monitoring.store;
  * values have been converted to longs.
  *
  * @author Jan Bernitt
+ * @since 5.194
  */
 @FunctionalInterface
 public interface MonitoringDataConsumer {

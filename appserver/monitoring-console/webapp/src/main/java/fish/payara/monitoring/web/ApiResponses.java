@@ -55,6 +55,7 @@ import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.alert.AlertService.AlertStatistics;
 import fish.payara.monitoring.alert.Circumstance;
 import fish.payara.monitoring.alert.Condition;
+import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
 import fish.payara.notification.requesttracing.RequestTrace;
@@ -69,6 +70,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
  * @see ApiRequests
  * 
  * @author Jan Bernitt
+ * @since 5.201
  */
 public final class ApiResponses {
 
@@ -82,12 +84,13 @@ public final class ApiResponses {
         public final Alerts alerts;
         public final List<SeriesMatch> matches;
 
-        public SeriesResponse(SeriesQuery[] queries, List<List<SeriesDataset>> data, List<Collection<Watch>> watches,
-                List<Collection<Alert>> alerts, AlertStatistics alertStatistics) {
+        public SeriesResponse(SeriesQuery[] queries, //
+                List<List<SeriesDataset>> data, List<List<SeriesAnnotation>> annotations, //
+                List<Collection<Watch>> watches, List<Collection<Alert>> alerts, AlertStatistics alertStatistics) {
             this.alerts = new Alerts(alertStatistics);
             this.matches = new ArrayList<>();
             for (int i = 0; i < data.size(); i++) {
-                matches.add(new SeriesMatch(queries[i], data.get(i), watches.get(i), alerts.get(i)));
+                matches.add(new SeriesMatch(queries[i], data.get(i), annotations.get(i), watches.get(i), alerts.get(i)));
             }
         }
     }
@@ -115,13 +118,36 @@ public final class ApiResponses {
     public static final class SeriesMatch {
 
         public final List<SeriesData> data;
+        public final List<AnnotationData> annotations;
         public final List<WatchData> watches;
         public final List<AlertData> alerts;
 
-        public SeriesMatch(SeriesQuery query, List<SeriesDataset> data, Collection<Watch> watches, Collection<Alert> alerts) {
+        public SeriesMatch(SeriesQuery query, List<SeriesDataset> data, List<SeriesAnnotation> annotations, //
+                Collection<Watch> watches, Collection<Alert> alerts) {
             this.alerts = alerts.stream().map(alert -> new AlertData(alert, query.truncateAlerts)).collect(toList());
             this.watches = watches.stream().map(WatchData::new).collect(toList());
             this.data = data.stream().map(set -> new SeriesData(set, query.truncatePoints)).collect(toList());
+            this.annotations = annotations.stream().map(AnnotationData::new).collect(toList());
+        }
+    }
+
+    public static final class AnnotationData {
+
+        public final long time;
+        public final String series;
+        public final String instance;
+        public final long value;
+        public final Map<String, String> attrs;
+
+        AnnotationData(SeriesAnnotation annotation) {
+            this.time = annotation.time;
+            this.series = annotation.series.toString();
+            this.instance = annotation.instance;
+            this.value = annotation.value;
+            this.attrs = new HashMap<>();
+            for (int i = 0; i < annotation.attrs.length; i+=2) {
+                attrs.put(annotation.attrs[i], annotation.attrs[i + 1]);
+            }
         }
     }
 

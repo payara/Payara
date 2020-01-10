@@ -42,7 +42,6 @@ package fish.payara.jdbc;
 import static java.lang.Double.parseDouble;
 import static java.lang.Math.round;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -51,7 +50,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.Min;
 
 import org.glassfish.api.jdbc.SQLTraceRecord;
 import org.glassfish.api.jdbc.SQLTraceStore;
@@ -67,8 +65,6 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
-import fish.payara.notification.requesttracing.RequestTrace;
-import fish.payara.nucleus.store.ClusteredStore;
 
 @Service
 @Singleton
@@ -122,6 +118,7 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
     @MonitoringData(ns = "sql")
     public void collect(MonitoringDataCollector collector) {
         for (Entry<String, Queue<SQLTraceEntry>> poolEntry : uncollectedTracesByPoolName.entrySet()) {
+            MonitoringDataCollector poolCollector = collector.group(poolEntry.getKey());
             int count = 0;
             long maxExecutionTime = 0L;
             long sumExecutionTime = 0L;
@@ -132,9 +129,16 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
                 long executionTime = entry.trace.getExecutionTime();
                 maxExecutionTime = Math.max(maxExecutionTime, executionTime);
                 sumExecutionTime += executionTime;
+                if (executionTime > entry.thresholdMillis) {
+                    poolCollector.annotate( //
+                            "MaxExecutionTime", executionTime, //
+                            "Threshold", "" + entry.thresholdMillis, //
+                            "Timestamp", "" + entry.trace.getTimeStamp(), //
+                            "SQL", entry.sql);
+                }
                 entry = entries.poll();
             }
-            collector.group(poolEntry.getKey())
+            poolCollector
                 .collect("MaxExecutionTime", maxExecutionTime)
                 .collect("AvgExecutionTime", count == 0L ? 0L : sumExecutionTime / count)
             ;

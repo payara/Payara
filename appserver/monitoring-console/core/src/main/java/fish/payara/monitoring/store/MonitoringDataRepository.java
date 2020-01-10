@@ -40,17 +40,44 @@
 
 package fish.payara.monitoring.store;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.monitoring.model.SeriesLookup;
+import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
 
+/**
+ * Is the main abstraction for the repository containing {@link SeriesDataset} data.
+ * 
+ * @author Jan Bernitt
+ * @since 5.194
+ */
 @Contract
 public interface MonitoringDataRepository extends SeriesLookup {
 
+    /**
+     * @return A set of all series current local instance data contained in this repository
+     */
     Iterable<SeriesDataset> selectAllSeries();
 
+    /**
+     * @return A list of all instances known by this repository
+     */
     Set<String> instances();
+
+    /**
+     * Lists all {@link SeriesAnnotation} that match the given {@link Series} and with an
+     * {@link SeriesAnnotation#instance} name that is included in the given set of instance names.
+     *
+     * @since 5.201
+     *
+     * @param series    the {@link Series} to select, not null (use {@link Series#ANY} as wild-card)
+     * @param instances the set of instances to select, empty set to select all (any) instance
+     * @return A collection of all matching annotations
+     */
+    List<SeriesAnnotation> selectAnnotations(Series series, String... instances);
 }
