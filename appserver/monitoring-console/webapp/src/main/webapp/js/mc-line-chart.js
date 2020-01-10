@@ -147,9 +147,10 @@ MonitoringConsole.Chart.Line = (function() {
         let offsetRight = 0;
         let barWidth = areas.length < 3 ? 5 : 3;
         for (let i = 0; i < areas.length; i++) {
+          let group = areas[i];
           let offsetBar = false;
-          for (let j = 0; j < areas[i].length; j++) {
-            let area = areas[i][j];
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let barLeft = xAxis.right + 1 + offsetRight;
@@ -157,12 +158,12 @@ MonitoringConsole.Chart.Line = (function() {
               offsetBar = true;
               let barHeight = yAxisMax - yAxisMin;
               let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
-              if (i + 1 < areas.length && areas[i+1].max == area.min) {
+              if (j + 1 < group.length && group[j+1].max == area.min) {
                 gradient.addColorStop(0.25, area.color);
-                gradient.addColorStop(0, areas[i+1].color);
-              } else if (i > 0 && areas[i-1].max == area.min) {
+                gradient.addColorStop(0, group[j+1].color);
+              } else if (j > 0 && group[j-1].max == area.min) {
                 gradient.addColorStop(0.25, area.color);
-                gradient.addColorStop(0, areas[i-1].color);
+                gradient.addColorStop(0, group[j-1].color);
               } else {
                 gradient.addColorStop(0, area.color);  
               }            
@@ -171,7 +172,7 @@ MonitoringConsole.Chart.Line = (function() {
               ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);
             }
             // and the line
-            let yLine = area.type == 'lower' ? yAxisMax + 1 : yAxisMin - 1;
+            let yLine = area.type == 'lower' ? yAxisMax : yAxisMin;
             ctx.setLineDash([5, 3]);
             ctx.strokeStyle = area.color;
             ctx.lineWidth = 1;
