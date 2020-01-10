@@ -154,21 +154,11 @@ MonitoringConsole.Chart.Line = (function() {
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let barLeft = xAxis.right + 1 + offsetRight;
+            // solid fill
             if (area.min != area.max) {
               offsetBar = true;
               let barHeight = yAxisMax - yAxisMin;
-              let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
-              if (j + 1 < group.length && group[j+1].max == area.min) {
-                gradient.addColorStop(0.25, area.color);
-                gradient.addColorStop(0, group[j+1].color);
-              } else if (j > 0 && group[j-1].max == area.min) {
-                gradient.addColorStop(0.25, area.color);
-                gradient.addColorStop(0, group[j-1].color);
-              } else {
-                gradient.addColorStop(0, area.color);  
-              }            
-              gradient.addColorStop(1, area.color);
-              ctx.fillStyle = gradient;
+              ctx.fillStyle = area.color;
               ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);
             }
             // and the line
@@ -180,6 +170,30 @@ MonitoringConsole.Chart.Line = (function() {
             ctx.moveTo(xAxis.left, yLine);
             ctx.lineTo(barLeft, yLine);
             ctx.stroke();
+          }
+          // gradients between colors
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            let barLeft = xAxis.right + 1 + offsetRight;
+            if (area.min != area.max) {
+              let barHeight = yAxisMax - yAxisMin;
+              let colors = [];
+              if (j + 1 < group.length && group[j+1].max == area.min) {
+                colors = [area.color, group[j+1].color];
+              } else if (j > 0 && group[j-1].max == area.min) {
+                colors = [area.color, group[j-1].color];
+              }
+              if (colors.length == 2) {
+                let yTop = area.type == 'lower' ? yAxisMin - 6 : yAxisMin;
+                let gradient = ctx.createLinearGradient(0, yTop, 0, yTop+6);
+                gradient.addColorStop(0, colors[0]);
+                gradient.addColorStop(1, colors[1]);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(barLeft, yTop, barWidth, 6);                
+              }
+            }            
           }
           if (offsetBar)
             offsetRight += barWidth + 1;
