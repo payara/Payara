@@ -103,19 +103,20 @@ public class JtaTimeoutLoggingITest extends DockerITest {
             "Rolling back timed out transaction" //
         }).collect(Collectors.toSet());
 
+    private static final String LOG_END = "[\\|\\#\\]]*";
+    private static final Pattern P_TIMEOUT = Pattern.compile( //
+        "STDOUT:\\s+Transaction with id=[0-9]+ timed out after 200[0-9] ms." + LOG_END);
+    private static final Pattern P_SYS_EXCEPTION_P = Pattern
+        .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB SlowJpaPartitioner," //
+            + " method: public void " + SlowJpaPartitioner.class.getName()
+            + ".executePreparedPartition\\(\\)" + LOG_END);
+    private static final Pattern P_EXCEPTION_TX = Pattern.compile( //
+        "STDOUT:\\s+javax.ejb.EJBTransactionRolledbackException: Client's transaction aborted");
+
     private static EventCollectorAppender domainLog;
 
     @ArquillianResource
     private static URL base;
-
-    private static final Pattern P_TIMEOUT = Pattern.compile( //
-        "STDOUT:\\s+Transaction with id=[0-9]+ timed out after 200[0-9] ms.\\|\\#\\]");
-    private static final Pattern P_SYS_EXCEPTION_P = Pattern
-        .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB SlowJpaPartitioner," //
-            + " method: public void " + SlowJpaPartitioner.class.getName()
-            + ".executePreparedPartition\\(\\)\\|\\#\\]");
-    private static final Pattern P_EXCEPTION_TX = Pattern.compile( //
-        "STDOUT:\\s+javax.ejb.EJBTransactionRolledbackException: Client's transaction aborted");
 
 
     @BeforeAll
@@ -193,7 +194,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
         final Pattern sysExceptionJ = Pattern
             .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB "
                 + ASYNCJOB_CLASS.getSimpleName() + ", method: public void " + ASYNCJOB_CLASS.getName()
-                + ".timeoutingAsyncWithFailingNextStep\\(\\)\\|\\#\\]");
+                + ".timeoutingAsyncWithFailingNextStep\\(\\)" + LOG_END);
         final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
         assertAll( //
             () -> assertThat("log entry 0", domainLog.pop().getMessage().toString(), matchesPattern(P_TIMEOUT)), //
@@ -213,7 +214,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
         final Pattern sysExceptionJ = Pattern
             .compile("STDOUT:\\s+A system exception occurred during an invocation on EJB "
                 + ASYNCJOB_CLASS.getSimpleName() + ", method: public void " + ASYNCJOB_CLASS.getName()
-                + ".timeoutingAsyncWithFailingNextStepCatchingExceptionAndRedo\\(\\)\\|\\#\\]");
+                + ".timeoutingAsyncWithFailingNextStepCatchingExceptionAndRedo\\(\\)" + LOG_END);
         final Matcher<String> rollbackMatchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
         assertAll( //
             () -> assertThat("log entry 0", domainLog.pop().getMessage().toString(), matchesPattern(P_TIMEOUT)), //
@@ -246,7 +247,7 @@ public class JtaTimeoutLoggingITest extends DockerITest {
             " org.eclipse.persistence.internal.jpa.transaction.JTATransactionWrapper\\$1\\@[0-9a-f]+", //
             " org.eclipse.persistence.transaction.JTASynchronizationListener\\@[0-9a-f]+", //
             " com.sun.enterprise.resource.pool.PoolManagerImpl\\$SynchronizationListener\\@[0-9a-f]+", //
-            "\\]\\] for \\[AsynchronousTimeoutingJob\\]\\|\\#\\]"}).map(s -> ".*" + s + ".*").map(Pattern::compile)
+            "\\]\\] for \\[AsynchronousTimeoutingJob\\]" + LOG_END}).map(s -> ".*" + s + ".*").map(Pattern::compile)
             .map(Matchers::matchesPattern).collect(Collectors.toSet());
     }
 }
