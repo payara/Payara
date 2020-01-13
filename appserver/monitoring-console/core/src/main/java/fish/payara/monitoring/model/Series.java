@@ -152,8 +152,11 @@ public final class Series implements Comparable<Series>, Serializable {
             return other.tags.length == 0;
         }
         int n = tags.length - 1;
-        return (isWildCardName(tags[n]) || other.tags.length == tags.length && tags[n].equals(other.tags[n])) 
-                && (isWildCardValue(values[n]) || values.length == other.values.length && values[n] == other.values[n]);
+        if (isWildCardName(tags[n])) {
+            return other.tags.length <= n || isWildCardValue(values[n]) || values[n].equals(other.values[n]);
+        }
+        return tags.length == other.tags.length && tags[n].equals(other.tags[n])
+                && (isWildCardValue(values[n]) || values[n].equals(other.values[n]));
     }
 
     @Override

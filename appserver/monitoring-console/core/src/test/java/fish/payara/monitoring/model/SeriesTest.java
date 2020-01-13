@@ -71,27 +71,44 @@ public class SeriesTest {
 
     @Test
     public void wildCardMatchesAnyTagOrMetricName() {
-        assertTrue(new Series("*").matches(new Series("AnyName")));
-        assertFalse(new Series("*").matches(new Series("ns:bar Foo")));
-        assertFalse(new Series("*").matches(new Series("ns:bar @:Bar Foo")));
-        assertTrue(new Series("ns:* Foo").matches(new Series("ns:bar Foo")));
-        assertTrue(new Series("ns:x @:* Foo").matches(new Series("ns:x @:bar Foo")));
-        assertFalse(new Series("@:* Foo").matches(new Series("ns:bar Foo")));
-        assertFalse(new Series("ns:* Foo").matches(new Series("ns:x @:bar Foo")));
-        assertFalse(new Series("ns:x @:* Foo").matches(new Series("ns:x Foo")));
+        assertMatchesPattern("*", "AnyName");
+        assertNotMatchesPattern("*", "ns:bar Foo");
+        assertNotMatchesPattern("*", "ns:bar @:Bar Foo");
+        assertMatchesPattern("ns:* Foo", "ns:bar Foo");
+        assertMatchesPattern("ns:x @:* Foo", "ns:x @:bar Foo");
+        assertNotMatchesPattern("ns:x @:* Foo", "ns:y @:bar Foo");
+        assertNotMatchesPattern("ns:x @:* Foo", "ns:x y:bar Foo");
+        assertNotMatchesPattern("ns:x @:* Foo", "ns:x @:bar x:y Foo");
+        assertNotMatchesPattern("ns:x @:* Foo", "ns:x Foo");
+        assertNotMatchesPattern("@:* Foo", "ns:bar Foo");
+        assertNotMatchesPattern("ns:* Foo", "ns:x @:bar Foo");
 
-        assertTrue(new Series("?:bar Foo").matches(new Series("ns:bar Foo")));
-        assertTrue(new Series("?:* Foo").matches(new Series("ns:bar Foo")));
-        assertTrue(new Series("?:* Foo").matches(new Series("foo:bar Foo")));
-        assertTrue(new Series("?:* Foo").matches(new Series("ns:x foo:bar Foo")));
-        assertTrue(new Series("?:* Foo").matches(new Series("Foo")));
-        assertTrue(new Series("?:* *").matches(new Series("Foo")));
-        assertTrue(new Series("ns:bar ?:* Foo").matches(new Series("ns:bar Foo")));
-        assertTrue(new Series("ns:bar ?:* Foo").matches(new Series("ns:bar x:y Foo")));
-        assertFalse(new Series("?:bar Foo").matches(new Series("Foo")));
-        assertFalse(new Series("?:bar Foo").matches(new Series("ns:x Foo")));
-        assertFalse(new Series("?:* Foo").matches(new Series("ns:bar Bar")));
-        assertFalse(new Series("ns:bar ?:* Foo").matches(new Series("ns:x foo:bar Foo")));
+        assertMatchesPattern("?:bar Foo", "Foo");
+        assertMatchesPattern("?:bar Foo", "ns:bar Foo");
+        assertMatchesPattern("?:* Foo", "ns:bar Foo");
+        assertMatchesPattern("?:* Foo", "foo:bar Foo");
+        assertMatchesPattern("?:* Foo", "ns:x foo:bar Foo");
+        assertMatchesPattern("?:* Foo", "Foo");
+        assertMatchesPattern("?:* *", "Foo");
+        assertMatchesPattern("ns:bar ?:* Foo", "ns:bar Foo");
+        assertMatchesPattern("ns:bar ?:* Foo", "ns:bar x:y Foo");
+        assertMatchesPattern("ns:bar ?:x Foo", "ns:bar Foo");
+        assertMatchesPattern("ns:bar ?:y Foo", "ns:bar x:y Foo");
+        assertNotMatchesPattern("?:bar Foo", "ns:x Foo");
+        assertNotMatchesPattern("?:* Foo", "ns:bar Bar");
+        assertNotMatchesPattern("ns:bar ?:* Foo", "ns:x foo:bar Foo");
+    }
+
+    private static void assertMatchesPattern(String pattern, String series) {
+        Series p = new Series(pattern);
+        assertTrue(p.isPattern());
+        assertTrue(p.matches(new Series(series)));
+    }
+
+    private static void assertNotMatchesPattern(String pattern, String series) {
+        Series p = new Series(pattern);
+        assertTrue(p.isPattern());
+        assertFalse(p.matches(new Series(series)));
     }
 
     @Test

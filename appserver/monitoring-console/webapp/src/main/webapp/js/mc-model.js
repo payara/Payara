@@ -165,7 +165,7 @@ MonitoringConsole.Model = (function() {
           					axis: { max: 100 },
           					options: { noCurves: true },
           					status: { missing : { hint: TEXT_LIVELINESS }}},
-						{ series: 'ns:health *', unit: 'percent', type: 'alert', displayName: 'Alerts',
+						{ series: 'ns:health ?:* *', unit: 'percent', type: 'alert', displayName: 'Alerts',
           					grid: { column: 2, item: 0, colspan: 2, rowspan: 3}}, 
 					]
 				},
