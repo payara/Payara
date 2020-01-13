@@ -72,11 +72,26 @@ public class SeriesTest {
     @Test
     public void wildCardMatchesAnyTagOrMetricName() {
         assertTrue(new Series("*").matches(new Series("AnyName")));
+        assertFalse(new Series("*").matches(new Series("ns:bar Foo")));
+        assertFalse(new Series("*").matches(new Series("ns:bar @:Bar Foo")));
         assertTrue(new Series("ns:* Foo").matches(new Series("ns:bar Foo")));
         assertTrue(new Series("ns:x @:* Foo").matches(new Series("ns:x @:bar Foo")));
         assertFalse(new Series("@:* Foo").matches(new Series("ns:bar Foo")));
         assertFalse(new Series("ns:* Foo").matches(new Series("ns:x @:bar Foo")));
         assertFalse(new Series("ns:x @:* Foo").matches(new Series("ns:x Foo")));
+
+        assertTrue(new Series("?:bar Foo").matches(new Series("ns:bar Foo")));
+        assertTrue(new Series("?:* Foo").matches(new Series("ns:bar Foo")));
+        assertTrue(new Series("?:* Foo").matches(new Series("foo:bar Foo")));
+        assertTrue(new Series("?:* Foo").matches(new Series("ns:x foo:bar Foo")));
+        assertTrue(new Series("?:* Foo").matches(new Series("Foo")));
+        assertTrue(new Series("?:* *").matches(new Series("Foo")));
+        assertTrue(new Series("ns:bar ?:* Foo").matches(new Series("ns:bar Foo")));
+        assertTrue(new Series("ns:bar ?:* Foo").matches(new Series("ns:bar x:y Foo")));
+        assertFalse(new Series("?:bar Foo").matches(new Series("Foo")));
+        assertFalse(new Series("?:bar Foo").matches(new Series("ns:x Foo")));
+        assertFalse(new Series("?:* Foo").matches(new Series("ns:bar Bar")));
+        assertFalse(new Series("ns:bar ?:* Foo").matches(new Series("ns:x foo:bar Foo")));
     }
 
     @Test
@@ -94,6 +109,11 @@ public class SeriesTest {
     @Test
     public void wildCardIsSpecialCharacter() {
         assertTrue(Series.isSpecialTagCharacter('*'));
+    }
+
+    @Test
+    public void questionMarkIsSpecialCharacter() {
+        assertTrue(Series.isSpecialTagCharacter('?'));
     }
 
     @Test
