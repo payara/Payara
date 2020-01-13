@@ -57,8 +57,6 @@ import fish.payara.security.openid.domain.OpenIdContextImpl;
 import fish.payara.security.openid.domain.RefreshTokenImpl;
 import java.io.IOException;
 import java.io.StringReader;
-import java.security.Principal;
-import java.util.Date;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -86,6 +84,7 @@ import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static org.glassfish.common.util.StringHelper.isEmpty;
