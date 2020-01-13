@@ -40,10 +40,10 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
@@ -53,7 +53,7 @@
     <artifactId>payara</artifactId>
     <name>Payara Distribution</name>
     <packaging>glassfish-distribution</packaging>
-    
+
     <description>This pom describes how to assemble the Payara Distribution</description>
 
     <properties>
@@ -71,7 +71,6 @@
                     </execution>
                 </executions>
             </plugin>
-            
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -90,9 +89,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>ips</id>

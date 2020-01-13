@@ -43,17 +43,17 @@
 <!-- Portions Copyright [2016-2019] [Payara Foundation and/or affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>fish.payara.distributions</groupId>
     <artifactId>distributions</artifactId>
     <packaging>pom</packaging>
-    
+
     <name>Glassfish distributions</name>
 
     <developers>
@@ -85,6 +85,7 @@
         <production-domain.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/production-domain.jar</production-domain.template.jar>
         <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>
         <create-domain.production.args>--user admin create-domain --template=${production-domain.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost production</create-domain.production.args>
+        <validation.xml.root>${project.build.directory}/stage</validation.xml.root>
     </properties>
 
     <build>
@@ -106,7 +107,7 @@
                         <silent>true</silent>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -120,7 +121,7 @@
                         <useProjectArtifact>false</useProjectArtifact>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -165,7 +166,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -184,12 +185,12 @@
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                     <artifactId>maven-antrun-extended-plugin</artifactId>
                     <executions>
-                        <execution> 
+                        <execution>
                             <id>create-ips-distribution</id>
                             <phase>package</phase>
                             <configuration>
@@ -206,9 +207,9 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
     <profiles>
-        
+
         <!-- Default build profile -->
         <profile>
             <id>DefaultBuild</id>
@@ -222,7 +223,7 @@
                 <module>payara-web-ml</module>
             </modules>
         </profile>
-        
+
         <!-- Profile to just build main Payara Distribution -->
         <profile>
             <id>QuickBuild</id>
@@ -235,7 +236,7 @@
                 <module>payara</module>
             </modules>
         </profile>
-    
+
         <profile>
             <id>ips</id>
             <build>
@@ -261,7 +262,7 @@
                     </plugin>
                 </plugins>
             </build>
-            
+
             <dependencies>
                 <dependency>
                     <groupId>org.glassfish.mq</groupId>
@@ -314,6 +315,6 @@
                 </dependency>
             </dependencies>
         </profile>
-        
-    </profiles>  
+
+    </profiles>
 </project>
