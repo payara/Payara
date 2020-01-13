@@ -553,15 +553,17 @@ table.tags th, table.tags td {
 }
 .AlertTable .Item pre {
   white-space: pre-wrap;
-  margin: -2px -5px;
-  padding: 2px 5px;
+  color: #DAE0E2;
+  background-color: #434445;
+  margin: 0.25em 0;
 }
 .AlertTable .Item .Group {
   display: inline-block;
 }
 .AlertTable .Item .Group.Annotation {
   display: block;
-  border: 1px solid transparent;
-  padding: 2px 5px;
-  margin: 3px 0 0 0;
+  border: 0 solid transparent;
+  border-width: 0 0 0 5px;
+  padding: 0 5px;
+  margin: 5px 0 0 0;
 }

@@ -428,17 +428,28 @@ This component show the annotation for the widget series as a table of sorted en
 The main information are the annotation attributes that are custom to each annotation origin.
 
 ```
-ANNOTATION_TABLE = { id, items }
+ANNOTATION_TABLE = { id, formatters, items }
 items            = [ ANNOTATION_ITEM ]
-ANNOTATION_ITEM  = { series, instance, time, value, attrs }
+ANNOTATION_ITEM  = { series, instance, unit, time, value, attrs, color, border }
 series           = string
 instance         = string
+unit             = UNIT
 time             = number
 value            = number
+color            = string
+border           = string
 attrs            = { *:string }
+formatters       = [ ATTR_FORMATTER ]
+ATTR_FORMATTER   = { applies, format, type }
+applies          = fn (ANNOTATION_ITEM, string, string) => boolean
+format           = fn (ANNOTATION_ITEM, string) => string
+type             = undefined | 'pre'
 ```
+* `series` and `instance` may be omitted (leaves out the info)
 * `attrs` is a key-value map with `string` keys and values
-
+* `type` and `background` can be omitted (assumes `'em'` and no background colour)
+* `color` is the legend linked colour of the item 
+* `border` is the colour of the item box border
 
 
 ## Data Driven Chart Plugins

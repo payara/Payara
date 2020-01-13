@@ -95,6 +95,9 @@ MonitoringConsole.View.Units = (function() {
       TB: 1024 * 1024 * 1024 * 1024, tb: 1024 * 1024 * 1024 * 1024,
    };
 
+   /**
+    * Factors used for usual (unit less) count values
+    */
    const COUNT_FACTORS = {
       K: 1000,
       M: 1000 * 1000
