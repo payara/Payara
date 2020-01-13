@@ -129,11 +129,11 @@ public final class Circumstance {
         if (!start.isNone()) {
             str.append(start.toString());
         }
-        if (!stop.isNone()) {
-            str.append(" until ").append(stop.toString());
-        }
         if (!suppress.isNone()) {
             str.append(" unless ").append(suppressing.series).append(' ').append(suppress.toString());
+        }
+        if (!stop.isNone()) {
+            str.append(" until ").append(stop.toString());
         }
         return str.toString();
     }

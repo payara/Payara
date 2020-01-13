@@ -1049,6 +1049,7 @@ MonitoringConsole.Model = (function() {
 						data: data,
 						alerts: widgetResponse.alerts,
 						watches: widgetResponse.watches,
+						annotations: widgetResponse.annotations,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});

@@ -307,7 +307,7 @@ button:hover {
   white-space: nowrap;
 }
 #Settings table div input[type=text] {
-  width: 60px;
+  width: 50px;
 }
 #console #Settings {
 	display: none;

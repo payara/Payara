@@ -519,21 +519,34 @@ MonitoringConsole.View.Components = (function() {
     function formatCondition(item, condition) {
       if (condition === undefined)
         return '';
+      let any = condition.forTimes === 0 || condition.forMillis === 0;
+      let anyN = condition.forTimes < 0 || condition.forMillis < 0;
       let threshold = Units.converter(item.unit).format(condition.threshold);
-      let title = 'value is ' + condition.operator + ' ' + threshold;
-      let desc = $('<span/>'); 
-      desc.append(condition.operator + ' ' + threshold);
-      let text = condition.onAverage ? ' on average for last ' : ' for last ';
-      if (condition.forTimes > 0) {
-        desc.append($('<small/>', { text: text})).append(condition.forTimes + 'x');
-        title += text + condition.forTimes + ' values';
+      let text = ''; 
+      let forText = '';
+      let forValue;
+      if (any || anyN) {
+        text += 'any 1 ';
       }
-      if (condition.forMillis > 0) {
-        let time = Units.converter('ms').format(condition.forMillis);
-        desc.append($('<small/>', { text: text})).append(time);
-        title += text + time;          
+      text += 'value ' + condition.operator + threshold;
+      if (condition.forTimes > 0 || condition.forMillis > 0) {
+        if (condition.onAverage) {
+          forText += ' for average of last ';
+        } else if (anyN) {
+          forText += ' in last ';
+        } else {
+          forText += ' for last ';
+        }
       }
-      desc.attr('title', title);
+      if (condition.forTimes !== 0) {
+        forValue = Math.abs(condition.forTimes) + 'x';
+      }
+      if (condition.forMillis !== undefined) {
+        forValue = Units.converter('ms').format(Math.abs(condition.forMillis));
+      }
+      let desc = $('<span/>').append(text);
+      if (forText != '')
+        desc.append($('<small/>', { text: forText})).append(forValue);
       return desc;
     }
 

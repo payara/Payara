@@ -127,7 +127,7 @@ MonitoringConsole.Chart.Line = (function() {
           display: false,
       }
     };
-    let backgroundPlugin = {
+    let thresholdsPlugin = {
       beforeDraw: function (chart) {
         let yAxis = chart.chart.scales["y-axis-0"];
         let areas = chart.chart.data.areas;
@@ -201,11 +201,11 @@ MonitoringConsole.Chart.Line = (function() {
       }
     };
     return new Chart(widget.target, {
-          type: 'line',
-          data: { datasets: [], },
-          options: options,
-          plugins: [ backgroundPlugin ],       
-        });
+      type: 'line',
+      data: { datasets: [], },
+      options: options,
+      plugins: [ thresholdsPlugin ],       
+    });
   }
 
   /**

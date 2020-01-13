@@ -39,6 +39,9 @@
  */
 package fish.payara.monitoring.alert;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+
 import java.util.Objects;
 
 import fish.payara.monitoring.model.SeriesDataset;
@@ -86,7 +89,7 @@ public final class Condition {
         this.comparison = comparison;
         this.threshold = threshold;
         this.forLast = forLast;
-        this.onAverage = onAverage;
+        this.onAverage = onAverage && forLast != null && forLast.longValue() > 0L;
     }
 
     public Condition forLastMillis(long millis) {
@@ -135,36 +138,38 @@ public final class Condition {
     }
 
     private boolean isSatisfiedForLastMillis(SeriesDataset data) {
-        long forLastMillis = forLast.longValue();
-        if (forLastMillis <= 0) {
+        long forLastMillis = abs(forLast.longValue());
+        if (forLastMillis == 0) {
             return isSatisfiedForLastTimes(data.points(), 0);
         }
-        if (data.isStable()) {
-            return data.getStableSince() <= data.lastTime() - Math.abs(forLastMillis) && compare(data.lastValue());
+        boolean all = forLast.longValue() > 0;
+        if (data.isStable() && all) {
+            return data.getStableSince() <= data.lastTime() - forLastMillis && compare(data.lastValue());
         }
         long startTime = data.lastTime() - forLastMillis;
         long[] points = data.points();
-        if (points[0] > startTime && forLastMillis < 30000L) {
+        if (points[0] > startTime && forLastMillis < 30000L && all) {
             return false; // not enough data
         }
         int index = points.length - 2; // last time index
         while (index >= 0 && points[index] > startTime) {
             index -= 2;
         }
-        return isSatisfiedForLastTimes(points, index <= 0 ? points.length / 2 : (points.length - index) / 2);
+        int forLastTimes = index <= 0 ? points.length / 2 : (points.length - index) / 2;
+        return isSatisfiedForLastTimes(points, (all ? 1 : -1) * forLastTimes);
     }
 
     private boolean isSatisfiedForLastTimes(SeriesDataset data) {
         int forLastTimes = forLast.intValue();
-        if (data.isStable()) {
-            return data.getStableCount() >= Math.abs(forLastTimes) && compare(data.lastValue());
+        if (data.isStable() && forLastTimes > 0) {
+            return data.getStableCount() >= abs(forLastTimes) && compare(data.lastValue());
         }
         return isSatisfiedForLastTimes(data.points(), forLastTimes);
     }
 
     private boolean isSatisfiedForLastTimes(long[] points, int forLastTimes) {
         int maxPoints = points.length / 2;
-        int n = forLastTimes == 0 ? maxPoints : Math.min(maxPoints, Math.abs(forLastTimes));
+        int n = forLastTimes == 0 ? maxPoints : min(maxPoints, abs(forLastTimes));
         if (forLastTimes > 0 && n < forLastTimes && n < 30) {
             return false; // not enough data yet
         }
@@ -241,15 +246,26 @@ public final class Condition {
             return "";
         }
         StringBuilder str = new StringBuilder();
-        str.append("value ").append(comparison.toString()).append(' ').append(threshold);
-        if (onAverage && isForLastPresent()) {
-            str.append(" on average");
+        boolean any = isForLastPresent() && forLast.intValue() == 0;
+        boolean anyN = isForLastPresent() && forLast.intValue() < 0;
+        if (any || anyN) {
+            str.append("any 1 ");
         }
-        if (isForLastTimes()) {
-            str.append(" for last ").append(forLast).append("x");
+        str.append("value ").append(comparison.toString()).append(' ').append(threshold);
+        if (isForLastPresent() && !any) {
+            if (onAverage) {
+                str.append(" for average of last ");
+            } else if (anyN) {
+                str.append(" in last ");
+            }else {
+                str.append(" for last ");
+            }
+        }
+        if (isForLastTimes() && !any) {
+            str.append(abs(forLast.intValue())).append('x');
         }
         if (isForLastMillis()) {
-            str.append(" for last ").append(forLast).append("ms");
+            str.append(abs(forLast.longValue())).append("ms");
         }
         return str.toString();
     }

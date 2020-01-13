@@ -136,9 +136,9 @@ public class CircumstanceTest implements SeriesLookup {
                 new Circumstance(AMBER, new Condition(GT, 5).forLastTimes(3)).toString());
         assertEquals("AMBER: value > 5 for last 3000ms", //
                 new Circumstance(AMBER, new Condition(GT, 5).forLastMillis(3000)).toString());
-        assertEquals("AMBER: value > 5 on average for last 3x", //
+        assertEquals("AMBER: value > 5 for average of last 3x", //
                 new Circumstance(AMBER, new Condition(GT, 5).forLastTimes(3).onAverage()).toString());
-        assertEquals("AMBER: value > 5 on average for last 3000ms", //
+        assertEquals("AMBER: value > 5 for average of last 3000ms", //
                 new Circumstance(AMBER, new Condition(GT, 5).forLastMillis(3000).onAverage()).toString());
         assertEquals("RED: value > 5 until value < 5", //
                 new Circumstance(RED, new Condition(GT, 5), new Condition(LT, 5)).toString());

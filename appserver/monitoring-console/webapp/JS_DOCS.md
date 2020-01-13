@@ -8,7 +8,7 @@ Short explanation on the data structure notation used in this document:
 * `Type = Date`: having the stated JS class or enumeration (starts with upper case letter)
 * `TYPE = { x, y, ... }`: ... an object with fields `x`, `y`, ...
 * `TYPE = { x:type, y:TYPE, ... }`: ... an object with fields `x`, `y` given their types explicitly - these can either be primitive (lower case) or defined (upper case)
-* `TYPE = { *:type }`: an object which can have any attribte but these do have the given type (again primitive or defined)
+* `TYPE = { *:type }`: an object which can have any attribute but these do have the given type (again primitive or defined)
 * `TYPE = [ Y ]`: ... an array with elements of type `Y`
 * `TYPE = A | B`: ... either of type `A` or type `B` where both can be any of the other possible notations
 * `TYPE = fn (A, B) => X`: a function accepting type `A` and `B` producing `X` 
@@ -21,9 +21,9 @@ Code can be found in `md-model.js`.
 
 ### Multipage Model
 The UI model describes the content and state of the user configurable pages.
-It can be exported to a JSON file and importad from JSON files.
+It can be exported to a JSON file and imported from JSON files.
 The UI model is stored in local browser storage after change to preserve all
-state changes in case of relead.
+state changes in case of reload.
 
 ```
 UI              = { pages, settings }
@@ -49,8 +49,8 @@ options         = { *:number }
 COLOR           = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
-* `widgets` can be ommitted for an empty page
-* `numberOfColumns` can be ommitted
+* `widgets` can be omitted for an empty page
+* `numberOfColumns` can be omitted
 * `widgets` is allowed to be an array - if so it is made into an object using each widget's `series` for the attribute name
 * `home` is the `PAGE.id` of the currently shown page
 * names for `defaults` colors used so far are: `'alarming'`, `'critical'` and `'waterline'`
@@ -123,7 +123,7 @@ make sense of the numbers shown.
 
 A `waterline` marks a baseline or limit value that should be marked in the graph with a extra line.
 
-The `alarming` and `critical` can be used to to devide the graph into 3 classified areas.
+The `alarming` and `critical` can be used to to divide the graph into 3 classified areas.
 
 When `alarming` is less then `critical`
 * _normal_ is `alarming` and below
@@ -161,10 +161,18 @@ widget  = WIDGET
 An update object is assembled when widget chart data is received from the backend and send to the view to update accordingly.
 
 ```
-UPDATE               = { widget, data, chart }
+UPDATE               = { widget, chart, data, alerts, watches }
 widget               = WIDGET
-data                 = { *:[SERIES] }
 chart                = fn () => Chart
+data                 = DATA
+alerts               = [ALERT]
+watches              = [WATCH]
+```
+* `Chart` is a chart object created by Chart.js
+
+Series Data (as received from server):
+```
+DATA                 = { *:[SERIES] }
 SERIES               = { series, instance, points, observedMax, observedMin, observedSum, observedValues, observedValueChanges, observedSince, stableCount, stableSince, legend, assessments }
 series               = string
 instance             = string
@@ -180,10 +188,45 @@ stableSince          = number
 legend               = LEGEND_ITEM
 assessments          = ASSESSMENTS
 ```
-* `Chart` is a chart object created by Chart.js
 * Note that `series` is the actual ID of a stored series that can differ from `widget.series` in case the widget uses a pattern that matches one or more stored series
 * `points` are given in a 1-dimensional array with alternating x and y values (x being the timestamp in ms since 1970)
 * `SERIES.legend` and `SERIES.assessments` are set by the client 
+
+Alert Data (as received from server):
+```
+ALERT                = { serial, level, series, instance, initiator, acknowledged, stopped, frames}
+serial               = number
+level                = string
+series               = string
+instance             = string
+initiator            = WATCH
+acknowledged         = boolean
+stopped              = boolean
+frames               = [FRAME]
+FRAME                = { level, cause, captured, start, end }
+cause                = DATA
+captured             = [DATA]
+start                = number
+end                  = number
+```
+
+Watch Data (as received from server):
+```
+WATCH                = { name, series, unit, red, amber, green }
+name                 = string
+series               = string
+unit                 = string
+red                  = CIRCUMSTANCE
+amber                = CIRCUMSTANCE
+green                = CIRCUMSTANCE
+CIRCUMSTANCE         = { level, start, stop, suppress, surpressingSeries, surpressingUnit }
+level                = string,
+start                = CONDITION
+stop                 = CONDITION
+suppress              = CONDITION 
+surpressingSeries    = string
+surpressingUnit      = string
+```
 
 
 ## Chart Data
@@ -267,7 +310,7 @@ Mandatory members of `ENTRY` depend on `type` member. Variants are:
 'text'     : { label, value, onChange }
 'color'    : { label, value, defaultValue, onChange }
 ```
-* `onChange` may be ommitted for _text_ inputs which makes the field _readonly_.
+* `onChange` may be omitted for _text_ inputs which makes the field _readonly_.
 * Settings of type `'value'` are inputs for a number that depends on the `unit` 
 used by the widget range. E.g. a duration in ms or ns, a size in bytes, a percentage or a plain number. The actual input component created will therefore depend on the `unit` provided.
 If no unit is provided or the unit is undefined a plain number is assumed.
@@ -277,7 +320,7 @@ An `ENTRY` with no `type` is a _header_ in case `input` is not defined and a gen
 ```
 <generic> : { label, input }
 ```
-In other words the `type` is an indicator for non generic entries. The provided types exist to avoid duplication and consistency for reoccuring input elements. Since `input` could also be just a _string_ generic entries can be used for simple key-value entries.
+In other words the `type` is an indicator for non generic entries. The provided types exist to avoid duplication and consistency for reoccurring input elements. Since `input` could also be just a _string_ generic entries can be used for simple key-value entries.
 
 When a generic input is an array of `ENTRY` the entries the `label` is optional.
 When provided the `label` is used before the input component.
@@ -299,8 +342,8 @@ highlight       = string
 
 ```
 * If `value` is a _string_ only the first word is displayed large.
-This is as steight forward as it looks. All members are required. 
-The model creates a new jquery object that must be inserted into the DOM by the caller.
+This is as straight forward as it looks. All members are required. 
+The model creates a new jQuery object that must be inserted into the DOM by the caller.
 * `color` is the color of the line or bar used to indicate the item, 
 * `background` is the background color of the line or bar should it use a fill, if an array is used those are the start and end color of a linear gradient
 * `highlight` is the color used to highlight the status of the text
@@ -341,12 +384,12 @@ onClick      = fn () => ()
 
 ### Alert Table API
 Describes the model expected by the `AlertTable` component.
-This component gives a tabular overview of alerts that occured for the widget `series`.
+This component gives a tabular overview of alerts that occurred for the widget `series`.
 
 ```
 ALERT_TABLE  = { id, verbose, items }
 brief        = boolean
-items        = ALERT_ITEM
+items        = [ ALERT_ITEM ]
 ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch }
 serial       = number
 name         = string
@@ -376,6 +419,30 @@ CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
 * only one of `forTimes`, `forPercent`, `forMillis` should be set
 
 
+### Annotation Table API
+Describes the model expected by the `AnnotationTable` component.
+This component show the annotation for the widget series as a table of sorted entries.
+The main information are the annotation attributes that are custom to each annotation origin.
+
+```
+ANNOTATION_TABLE = { id, items }
+items            = [ ANNOTATION_ITEM ]
+ANNOTATION_ITEM  = { series, instance, time, value, attrs }
+series           = string
+instance         = string
+time             = number
+value            = number
+attrs            = { *:string }
+```
+* `attrs` is a key-value map with `string` keys and values
+
+
+
+## Data Driven Chart Plugins
+Code can be found in `md-line-chart.js`.
+
+These are additions to the drawing of charts where the drawn content is controlled by a data model computed from the widget `UPDATE`.
+
 ### Line Chart Background Areas 
 Describes the model used to enhance the background of line charts with colored areas on the Y-axis. The model is processed by a chart plugin to draw additional
 decorations onto the chart background.
@@ -389,3 +456,5 @@ max             = number
 type            = 'lower' | 'upper'
 ```
 * default for `type` is `upper`
+
+

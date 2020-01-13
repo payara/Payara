@@ -71,8 +71,8 @@ MonitoringConsole.View.Colors = (function() {
          opacity: 10,
          palette: [ '#c04df9', '#f3ea5f', '#08c1ef', '#d28f47', '#b86739'],
          colors:  { 
-            waterline: '#2bd1fc', alarming: '#f7cb62', critical: '#ff3f3f',
-            white: '#ffffff', green: '#b6f778', amber: '#f7cb62', red: '#ff3f3f',
+            waterline: '#2bd1fc', alarming: '#e8a634', critical: '#ff3f3f',
+            white: '#ffffff', green: '#b6f778', amber: '#e8a634', red: '#ff3f3f',
          }
       },
 
@@ -101,8 +101,8 @@ MonitoringConsole.View.Colors = (function() {
          opacity: 10,
          palette: [ '#b8a9df', '#01cdfe', '#b967ff', '#fffb96', '#05ffa1'],
          colors:  { 
-            waterline: '#01cdfe', alarming: '#f9c55e', critical: '#FB637A',
-            white: '#ffffff', green: '#a2dda9', amber: '#f9c55e', red: '#e05267', 
+            waterline: '#01cdfe', alarming: '#edae50', critical: '#FB637A',
+            white: '#ffffff', green: '#a2dda9', amber: '#edae50', red: '#e05267', 
          }
       },
    };
