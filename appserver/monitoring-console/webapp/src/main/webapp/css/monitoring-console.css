@@ -551,6 +551,17 @@ table.tags th, table.tags td {
 .AlertTable .Item span {
   white-space: nowrap;
 }
+.AlertTable .Item pre {
+  white-space: pre-wrap;
+  margin: -2px -5px;
+  padding: 2px 5px;
+}
 .AlertTable .Item .Group {
   display: inline-block;
+}
+.AlertTable .Item .Group.Annotation {
+  display: block;
+  border: 1px solid transparent;
+  padding: 2px 5px;
+  margin: 3px 0 0 0;
 }

@@ -189,7 +189,8 @@ MonitoringConsole.Model = (function() {
 							axis: { max: 1000},
 							options: { drawMaxLine: true }},
 						{ series: 'ns:monitoring WatchLoopDuration', unit: 'ms', displayName: 'Watches Time', 
-							grid: { column: 2, item: 1}},
+							grid: { column: 2, item: 1},
+							options: { drawMaxLine: true }},
 					],
 				},
 				jvm: {

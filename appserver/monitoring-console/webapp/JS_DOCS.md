@@ -108,6 +108,7 @@ alerts     = {
 	noUnacknowledged:boolean,
 	noAmber:boolean,
 	noRed:boolean,
+	noAnnotations:boolean
 }
 ```
 * `target` is derived from `series` if not present
@@ -390,7 +391,7 @@ This component gives a tabular overview of alerts that occurred for the widget `
 ALERT_TABLE  = { id, verbose, items }
 brief        = boolean
 items        = [ ALERT_ITEM ]
-ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch }
+ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch, annotations }
 serial       = number
 name         = string
 series       = string
@@ -411,6 +412,8 @@ CIRCUMSTANCE = { start, stop }
 start        = CONDITION
 stop         = CONDITION
 CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
+annotations  = { time, value, attrs }
+attrs        = { *:string }
 ```
 * `verbose` default is `true`, `false` to get a condensed output that skips some of the properties in the output
 * `since` is the start date as timestamp or JS date

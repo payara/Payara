@@ -301,6 +301,8 @@ public final class ApiResponses {
         public final WatchData initiator;
         public final boolean acknowledged;
         public final boolean stopped;
+        public final long since;
+        public final Long until;
         public final List<AlertFrame> frames;
 
         public AlertData(Alert alert) {
@@ -315,6 +317,8 @@ public final class ApiResponses {
             this.initiator = new WatchData(alert.initiator);
             this.acknowledged = alert.isAcknowledged();
             this.stopped = alert.isStopped();
+            this.since = alert.getStartTime();
+            this.until = alert.isStopped() ? alert.getEndTime() : null;
             this.frames = new ArrayList<>();
             if (truncateAlerts) {
                 this.frames.add(new AlertFrame(alert.getEndFrame()));

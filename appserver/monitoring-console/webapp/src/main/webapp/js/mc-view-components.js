@@ -485,7 +485,7 @@ MonitoringConsole.View.Components = (function() {
     function createAlertRow(item, verbose) {
       item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
       let endFrame = item.frames[0];
-      let startFrame = item.frames[frames.length - 1];
+      let startFrame = item.frames[Math.max(0, frames.length - 1)];
       let ongoing = endFrame.until === undefined;
       let level = endFrame.level;
       let color = ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
@@ -496,6 +496,15 @@ MonitoringConsole.View.Components = (function() {
       box.append(createStatisticsGroup(item, verbose));
       if (ongoing && verbose)
         box.append(createConditionGroup(item));
+      if (Array.isArray(item.annotations) && item.annotations.length > 0) {
+        let t0 = Math.round(startFrame.since / 1000);
+        let t1 = Math.round((endFrame.until || new Date().getTime()) / 1000);
+        let border = Colors.hex2rgba(endFrame.color, 0.45);
+        let background = Colors.hex2rgba(endFrame.color, 0.3);
+        for (let i = 0; i < item.annotations.length; i++) {
+          box.append(createAnnotationGroup(item, item.annotations[i], t0, t1, border, background));
+        }
+      }
       let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
       row.append(box);
       return row;
@@ -503,6 +512,25 @@ MonitoringConsole.View.Components = (function() {
 
     function acknowledge(item) {
       $.ajax({ type: 'POST', url: 'api/alerts/ack/' + item.serial + '/' });
+    }
+
+    function createAnnotationGroup(item, annotation, t0, t1, color, background) {
+      let group = $('<div/>', { 'class': 'Group Annotation', style: 'border-color:' + color + ';' });
+      appendProperty(group, 'Time', Units.formatTime(annotation.time));
+      appendProperty(group, 'Value', Units.converter(item.unit).format(annotation.value));
+      for (let [key, value] of Object.entries(annotation.attrs)) {
+        let valueAsTime = Math.round(value / 1000);
+        if (valueAsTime >= t0 && valueAsTime < t1) {
+          appendProperty(group, key, Units.formatTime(value));
+        } else if ('Threshold' == key && !Number.isNaN(parseInt(value))) {
+          appendProperty(group, key, Units.converter(item.unit).format(Number(value)));
+        } else if (value.split(" ").length > 5) {
+          appendProperty(group, key, value, 'pre', background);
+        } else {
+          appendProperty(group, key, value);
+        }
+      }
+      return group;
     }
 
     function createConditionGroup(item) {
@@ -595,10 +623,13 @@ MonitoringConsole.View.Components = (function() {
       return (frame1.until === undefined ? new Date() : frame1.until) - frame0.since;
     }
 
-    function appendProperty(parent, label, value) {
+    function appendProperty(parent, label, value, tag = "strong", background = undefined) {
+      let attrs = {};
+      if (background)
+        attrs.style = 'background-color: ' + background + ';';
       parent.append($('<span/>')
-        .append($('<small/>', { text: label + ':' }))
-        .append($('<strong/>').append(value))
+        .append($('<small>', { text: label + ':' }))
+        .append($('<' + tag + '/>', attrs).append(value))
         ).append('\n'); // so browser will line break;
     }
 

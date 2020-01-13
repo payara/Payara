@@ -288,8 +288,6 @@ MonitoringConsole.View = (function() {
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
-            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index', 'instance-series': 'Instance and Series Name' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
@@ -315,6 +313,8 @@ MonitoringConsole.View = (function() {
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index', 'instance-series': 'Instance and Series Name' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+                description: 'What value is used to select the index from the color palette' },            
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -340,20 +340,23 @@ MonitoringConsole.View = (function() {
         ]});
         let alerts = widget.decorations.alerts;
         settings.push({ id: 'settings-alerts', caption: 'Alerts', collapsed: true, entries: [
-            { label: 'Show', input: [
+            { label: 'Filter', input: [
                 [
-                    { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
-                    { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
+                    { label: 'Ambers', type: 'checkbox', value: alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = checked},
+                    { label: 'Reds', type: 'checkbox', value: alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = checked},
                 ],            
                 [
-                    { label: 'Ongoing', type: 'checkbox', value: !alerts.noOngoing, onChange: (widget, checked) => widget.decorations.alerts.noOngoing = !checked},
-                    { label: 'Stopped', type: 'checkbox', value: !alerts.noStopped, onChange: (widget, checked) => widget.decorations.alerts.noStopped = !checked},
+                    { label: 'Ongoing', type: 'checkbox', value: alerts.noOngoing, onChange: (widget, checked) => widget.decorations.alerts.noOngoing = checked},
+                    { label: 'Stopped', type: 'checkbox', value: alerts.noStopped, onChange: (widget, checked) => widget.decorations.alerts.noStopped = checked},
                 ],
                 [
-                    { label: 'Acknowledged', type: 'checkbox', value: !alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = !checked},
-                    { label: 'Unacknowledged', type: 'checkbox', value: !alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = !checked},
+                    { label: 'Acknowledged', type: 'checkbox', value: alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = checked},
+                    { label: 'Unacknowledged', type: 'checkbox', value: alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = checked},
                 ],
             ], description: 'Properties of alerts to show. Graphs hide stopped or acknowledged alerts automatically.' },
+            { label: 'Information', input: [
+                {label: 'Annotations', type: 'checkbox', value: !alerts.noAnnotations, onChange: (widget, checked) => widget.decorations.alerts.noAnnotations = !checked}
+            ]}
         ]});
         return settings;       
     }
@@ -560,7 +563,14 @@ MonitoringConsole.View = (function() {
         return { status: status, text: statusInfo.hint };
     }
 
-    function createAlertTableModel(widget, alerts) {
+    function createAlertTableModel(widget, alerts, annotations) {
+        function createAlertAnnotationsFilter(alert) {
+          return (annotation) => widget.decorations.alerts.noAnnotations !== true
+                && annotation.series == alert.series 
+                && annotation.instance == alert.instance
+                && Math.round(annotation.time / 1000) >= Math.round(alert.since / 1000) // only same second needed
+                && annotation.time <= (alert.until || new Date().getTime());  
+        }
         let items = [];
         if (Array.isArray(alerts)) {
             let palette = Theme.palette();
@@ -594,7 +604,8 @@ MonitoringConsole.View = (function() {
                         color: instanceColoring ? Colors.lookup('instance', alert.instance, palette) : undefined,
                         frames: frames,
                         watch: alert.initiator,
-                    });                    
+                        annotations: annotations.filter(createAlertAnnotationsFilter(alert)),
+                    });
                 }
             }
         }
@@ -610,6 +621,7 @@ MonitoringConsole.View = (function() {
         let widget = update.widget;
         let data = update.data;
         let alerts = update.alerts;
+        let annotations = update.annotations;
         updateDomOfWidget(undefined, widget);
         let widgetNode = $('#widget-' + widget.target);
         let legendNode = widgetNode.find('.Legend').first();
@@ -619,7 +631,7 @@ MonitoringConsole.View = (function() {
         if (data !== undefined && widget.type !== 'alert') {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts)));
+        alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts, annotations)));
         legendNode.replaceWith(Components.createLegend(legend));
         indicatorNode.replaceWith(Components.createIndicator(createIndicatorModel(widget, data)));
     }
