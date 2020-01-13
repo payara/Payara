@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -93,7 +94,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
-    @Param(optional = true, alias = "monitoringEnabled")
+    @Param(optional = true, alias = "enabled")
     private Boolean monitoringServiceEnabled;
 
     @Param(optional = true, alias = "mbeanEnabled")
@@ -114,23 +115,23 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(optional = true, acceptableValues = "NANOSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS")
     private String jmxLogFrequencyUnit;
 
-    @Param(name = "addattribute", optional = true, alias = "addproperty")
-    private String attributesToAdd;
+    @Param(name = "addattribute", optional = true, multiple = true, alias = "addproperty")
+    private List<String> attributesToAdd;
 
-    @Param(name = "delattribute", optional = true, alias = "delproperty")
-    private String attributesToRemove;
+    @Param(name = "delattribute", optional = true, multiple = true, alias = "delproperty")
+    private List<String> attributesToRemove;
 
     @Param(optional = true)
     private Boolean restMonitoringEnabled;
 
     @Param(optional = true)
-    private String applicationName;
+    private String restMonitoringApplicationName;
 
     @Param(optional = true)
-    private String contextRoot;
+    private String restMonitoringContextRoot;
 
     @Param(optional = true)
-    private Boolean securityEnabled;
+    private Boolean restMonitoringSecurityEnabled;
 
     @Param(optional = true, defaultValue = "false")
     private Boolean dynamic;
@@ -186,10 +187,14 @@ public class SetMonitoringConfiguration implements AdminCommand {
             commandParameters.add("logfrequencyunit", jmxLogFrequencyUnit);
         }
         if (attributesToAdd != null) {
-            commandParameters.add("addattribute", attributesToAdd);
+            for (String attributeToAdd : attributesToAdd) {
+                commandParameters.add("addattribute", attributeToAdd);
+            }
         }
         if (attributesToRemove != null) {
-            commandParameters.add("delattribute", attributesToRemove);
+            for (String attributeToRemove : attributesToRemove) {
+                commandParameters.add("delattribute", attributeToRemove);
+            }
         }
         if (dynamic) {
             commandParameters.add("dynamic", dynamic.toString());
@@ -226,14 +231,14 @@ public class SetMonitoringConfiguration implements AdminCommand {
         if (restMonitoringEnabled != null) {
             commandParameters.add("enabled", restMonitoringEnabled.toString());
         }
-        if (contextRoot != null) {
-            commandParameters.add("contextroot", contextRoot);
+        if (restMonitoringContextRoot != null) {
+            commandParameters.add("contextroot", restMonitoringContextRoot);
         }
-        if (applicationName != null) {
-            commandParameters.add("applicationname", applicationName);
+        if (restMonitoringApplicationName != null) {
+            commandParameters.add("applicationname", restMonitoringApplicationName);
         }
-        if (securityEnabled != null) {
-            commandParameters.add("securityenabled", securityEnabled.toString());
+        if (restMonitoringSecurityEnabled != null) {
+            commandParameters.add("securityenabled", restMonitoringSecurityEnabled.toString());
         }
 
         commandParameters.add("target", target);
