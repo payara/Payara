@@ -739,5 +739,84 @@ public class ServerOperations {
             throw new RuntimeException(ex);
         }
     }
+
+    public static void enableDataGridEncryption() {
+        String javaEEServer = System.getProperty("javaEEServer");
+        if ("payara-remote".equals(javaEEServer)) {
+            System.out.println("Enabling Data Grid Encryption");
+            List<String> cmd = new ArrayList<>();
+            cmd.add("set-hazelcast-configuration");
+            cmd.add("--encryptdatagrid");
+            cmd.add("true");
+            CliCommands.payaraGlassFish(cmd);
+
+            System.out.println("Stopping Server");
+            String domain = System.getProperty("payara.domain.name", "domain1");
+            if (domain != null) {
+                domain = getPayaraDomainFromServer();
+                if (domain != null && !domain.equals("null")) {
+                    logger.info("Using domain \"" + domain + "\" obtained from server. " +
+                            "If this is not correct use -Dpayara.domain.name to override.");
+                } else {
+                    // Default to domain1
+                    domain = "domain1";
+                }
+            }
+            cmd = new ArrayList<>();
+            cmd.add("stop-domain");
+            cmd.add(domain);
+            CliCommands.payaraGlassFish(cmd);
+
+            System.out.println("Generating Encryption Key");
+            cmd = new ArrayList<>();
+            cmd.add("-W");
+            cmd.add(Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt");
+            cmd.add("generate-encryption-key");
+            CliCommands.payaraGlassFish(cmd);
+
+            System.out.println("Restarting Server");
+            cmd = new ArrayList<>();
+            cmd.add("start-domain");
+            cmd.add(domain);
+            CliCommands.payaraGlassFish(cmd);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+    }
+
+    public static void disableDataGridEncryption() {
+        String javaEEServer = System.getProperty("javaEEServer");
+        if ("payara-remote".equals(javaEEServer)) {
+            System.out.println("Disabling Data Grid Encryption");
+            List<String> cmd = new ArrayList<>();
+            cmd.add("set-hazelcast-configuration");
+            cmd.add("--encryptdatagrid");
+            cmd.add("false");
+            CliCommands.payaraGlassFish(cmd);
+
+            String domain = System.getProperty("payara.domain.name", "domain1");
+            if (domain != null) {
+                domain = getPayaraDomainFromServer();
+                if (domain != null && !domain.equals("null")) {
+                    logger.info("Using domain \"" + domain + "\" obtained from server. " +
+                            "If this is not correct use -Dpayara.domain.name to override.");
+                } else {
+                    // Default to domain1
+                    domain = "domain1";
+                }
+            }
+            restartContainer(domain);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+    }
 }
 
