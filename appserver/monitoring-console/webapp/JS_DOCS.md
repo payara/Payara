@@ -58,7 +58,7 @@ COLOR           = string
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring, fields }
 series     = string
 target     = string
 displayName= string
@@ -66,6 +66,7 @@ type       = 'line' | 'bar' | 'alert'
 unit       = UNIT
 UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 coloring   = 'instance' | 'series' | 'index' | 'instance-series'
+fields     = string
 scaleFactor= number
 grid       = { item, column, span, colspan, rowspan }
 item       = number
@@ -87,7 +88,7 @@ options    = {
 	noFill:boolean,
 	noTimeLabels:boolean,
 }
-decorations= { waterline, thresholds, alerts }
+decorations= { waterline, thresholds, alerts, annotations }
 waterline  = { value:number color:string }
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
@@ -110,6 +111,7 @@ alerts     = {
 	noRed:boolean,
 	noAnnotations:boolean
 }
+annotations = { }
 ```
 * `target` is derived from `series` if not present
 * if `type` is not set `'line'` is assumed and set
@@ -412,8 +414,10 @@ CIRCUMSTANCE = { start, stop }
 start        = CONDITION
 stop         = CONDITION
 CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
-annotations  = { time, value, attrs }
+annotations  = [ ANNOTATION ]
+ANNOTATION   = { time, value, attrs, fields }
 attrs        = { *:string }
+fields       = [ string ]
 ```
 * `verbose` default is `true`, `false` to get a condensed output that skips some of the properties in the output
 * `since` is the start date as timestamp or JS date
@@ -428,17 +432,17 @@ This component show the annotation for the widget series as a table of sorted en
 The main information are the annotation attributes that are custom to each annotation origin.
 
 ```
-ANNOTATION_TABLE = { id, formatters, items }
+ANNOTATION_TABLE = { id, items }
 items            = [ ANNOTATION_ITEM ]
-ANNOTATION_ITEM  = { series, instance, unit, time, value, attrs, color, border }
+ANNOTATION_ITEM  = { color, series, instance, unit, time, value, attrs, fields, formatters }
+color            = string
 series           = string
 instance         = string
 unit             = UNIT
 time             = number
 value            = number
-color            = string
-border           = string
 attrs            = { *:string }
+fields           = [ string ]
 formatters       = [ ATTR_FORMATTER ]
 ATTR_FORMATTER   = { applies, format, type }
 applies          = fn (ANNOTATION_ITEM, string, string) => boolean
@@ -448,8 +452,8 @@ type             = undefined | 'pre'
 * `series` and `instance` may be omitted (leaves out the info)
 * `attrs` is a key-value map with `string` keys and values
 * `type` and `background` can be omitted (assumes `'em'` and no background colour)
-* `color` is the legend linked colour of the item 
-* `border` is the colour of the item box border
+* `color` is the colour of the annotation item border indicator
+* `fields` is a list of attribute keys that works as filter as well as giving the order; can be undefined or empty to use all attributes in their given order.
 
 
 ## Data Driven Chart Plugins
@@ -458,7 +462,7 @@ Code can be found in `md-line-chart.js`.
 These are additions to the drawing of charts where the drawn content is controlled by a data model computed from the widget `UPDATE`.
 
 ### Line Chart Background Areas 
-Describes the model used to enhance the background of line charts with colored areas on the Y-axis. The model is processed by a chart plugin to draw additional
+Describes the model used to enhance the background of line charts with coloured areas on the Y-axis. The model is processed by a chart plugin to draw additional
 decorations onto the chart background.
 
 ```

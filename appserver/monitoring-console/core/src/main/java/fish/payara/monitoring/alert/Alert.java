@@ -97,7 +97,7 @@ public final class Alert implements Iterable<Alert.Frame> {
             this.level = level;
             this.cause = cause;
             this.captured = captured;
-            this.start = System.currentTimeMillis();
+            this.start = cause.lastTime();
         }
 
         @Override
@@ -177,11 +177,11 @@ public final class Alert implements Iterable<Alert.Frame> {
         return level.isLessSevereThan(Level.AMBER) && !frames.isEmpty();
     }
 
-    public void stop(Level to) {
+    public void stop(Level to, long now) {
         if (!isStopped()) {
             assertGreenOrWhiteLevel(to);
             this.level = to;
-            getEndFrame().end = System.currentTimeMillis();
+            getEndFrame().end = now;
             CHANGE_COUNT.incrementAndGet();
         }
     }

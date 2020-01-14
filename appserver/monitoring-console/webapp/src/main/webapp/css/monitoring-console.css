@@ -557,6 +557,9 @@ table.tags th, table.tags td {
   background-color: #434445;
   margin: 0.25em 0;
 }
+.AlertTable .Item a {
+  cursor: pointer;
+}
 .AlertTable .Item .Group {
   display: inline-block;
 }

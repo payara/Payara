@@ -314,7 +314,9 @@ MonitoringConsole.View = (function() {
                 { label: 'Max', type: 'value', unit: unit, value: widget.axis.max, onChange: (widget, value) => widget.axis.max = value},
             ]},
             { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index', 'instance-series': 'Instance and Series Name' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
-                description: 'What value is used to select the index from the color palette' },            
+                description: 'What value is used to select the index from the color palette' },
+            { label: 'Fields', type: 'text', value: (widget.fields || []).join(' '), onChange: (widget, value) => widget.fields = value == undefined || value == '' ? undefined : value.split(/[ ,]+/),
+                description: 'Selection and order of annotation fields to display, empty for auto selection and default order' },
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -574,6 +576,7 @@ MonitoringConsole.View = (function() {
         let items = [];
         if (Array.isArray(alerts)) {
             let palette = Theme.palette();
+            let fields = widget.fields;
             for (let i = 0; i < alerts.length; i++) {
                 let alert = alerts[i];
                 let autoInclude = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
@@ -604,7 +607,14 @@ MonitoringConsole.View = (function() {
                         color: instanceColoring ? Colors.lookup('instance', alert.instance, palette) : undefined,
                         frames: frames,
                         watch: alert.initiator,
-                        annotations: annotations.filter(createAlertAnnotationsFilter(alert)),
+                        annotations: annotations.filter(createAlertAnnotationsFilter(alert)).map(function(annotation) {
+                            return {
+                                time: annotation.time,
+                                value: annotation.value,
+                                attrs: annotation.attrs,
+                                fields: fields,
+                            };
+                        }),
                     });
                 }
             }

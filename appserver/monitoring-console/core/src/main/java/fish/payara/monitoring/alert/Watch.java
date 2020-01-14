@@ -145,7 +145,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         if (stopped.compareAndSet(false, true)) {
             for (State s : statesByInstanceSeries.values()) {
                 if (s.ongoing != null) {
-                    s.ongoing.stop(WHITE);
+                    s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
                 }
             }
         }
@@ -250,7 +250,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         Alert alert = state.ongoing;
         if (to == WHITE || to == GREEN) {
             if (alert != null) {
-                alert.stop(to);
+                alert.stop(to, data.lastTime());
             }
             state.ongoing = null;
             return null;

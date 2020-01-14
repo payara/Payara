@@ -499,7 +499,7 @@ MonitoringConsole.View.Components = (function() {
       if (ongoing && verbose)
         box.append(createConditionGroup(item));
       if (Array.isArray(item.annotations) && item.annotations.length > 0)
-        createAnnotationGroups(item).forEach(group => box.append(group));
+        box.append(createAnnotationGroup(item));
       let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
       row.append(box);
       return row;
@@ -509,20 +509,28 @@ MonitoringConsole.View.Components = (function() {
       $.ajax({ type: 'POST', url: 'api/alerts/ack/' + item.serial + '/' });
     }
 
-    function createAnnotationGroups(item) {
-      let groups = [];
+    function createAnnotationGroup(item) {
+      let id = 'Alert-' + item.serial + '-Annotations';
+      let element = $('#' + id); 
+      let display = element.length == 0 || element.is(":visible") ? 'block' : 'none';
+      let groups = $('<div/>', { id: id, style: 'display: ' + display + ';' });
       let baseColor = item.frames[0].color;
       for (let i = 0; i < item.annotations.length; i++) {
         let annotation = item.annotations[i];
-        groups.push(AnnotationTable.createEntry({
+        groups.append(AnnotationTable.createEntry({
           unit: item.unit,
           time: annotation.time,
           value: annotation.value,
           attrs: annotation.attrs,
-          border: Colors.hex2rgba(baseColor, 0.45),
+          color: Colors.hex2rgba(baseColor, 0.45),
+          fields: annotation.fields,
         }));
       }
-      return groups;
+      let label = display == 'none' ? '[ + ]' : '[ - ]';
+      let group = $('<div/>');
+      appendProperty(group, 'Annotations', $('<a/>').text(label).click(() => groups.toggle()));
+      group.append(groups);
+      return group;
     }
 
     function createConditionGroup(item) {
@@ -693,18 +701,30 @@ MonitoringConsole.View.Components = (function() {
 
     }
 
-    function createEntry(item, formatters) {
-      let group = $('<div/>', { 'class': 'Group Annotation', style: 'border-color:' + item.border + ';' });
+    function createEntry(item) {
+      let group = $('<div/>', { 'class': 'Group Annotation', style: 'border-color:' + item.color + ';' });
+      let attrs = {}; // new object is both sorted by default order and accessible by key
       if (item.series)
-        appendProperty(group, 'Series', item.series);
+        attrs.Series = { value: item.series };        
       if (item.instance)
-        appendProperty(group, 'Instance', item.series);
-      appendProperty(group, 'Time', Units.formatTime(item.time));
-      appendProperty(group, 'Value', Units.converter(item.unit).format(item.value));
+        attrs.Instance = { value: item.instance };
+      attrs.When = { value: Units.formatTime(item.time) };
+      attrs.Value = { value: Units.converter(item.unit).format(item.value) };
       for (let [key, value] of Object.entries(item.attrs)) {
-        let formatter = selectFormatter(item, key, value, formatters);
-        appendProperty(group, key, formatter.format(item, value), formatter.type);
+        let formatter = selectFormatter(item, key, value, item.formatters);
+        attrs[key] = { value: formatter.format(item, value), type: formatter.type };        
       }
+      if (item.fields) {
+        for (let field of item.fields) {
+          let entry = attrs[field];
+          if (entry)
+            appendProperty(group, field, entry.value, entry.type);
+        }
+      } else {
+        for (let [key, entry] of Object.entries(attrs)) {
+          appendProperty(group, key, entry.value, entry.type);
+        }
+      }      
       return group;
     }
 

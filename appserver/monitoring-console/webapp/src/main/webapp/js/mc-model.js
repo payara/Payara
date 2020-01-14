@@ -291,7 +291,9 @@ MonitoringConsole.Model = (function() {
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
 			if (typeof widget.decorations.alerts !== 'object')
-				widget.decorations.alerts = {};			
+				widget.decorations.alerts = {};
+			if (typeof widget.decorations.annotations !== 'object')
+				widget.decorations.annotations = {};							
 			if (typeof widget.decorations.thresholds.alarming !== 'object')
 				widget.decorations.thresholds.alarming = {};			
 			if (typeof widget.decorations.thresholds.critical !== 'object')

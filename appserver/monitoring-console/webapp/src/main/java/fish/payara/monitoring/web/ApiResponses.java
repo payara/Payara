@@ -45,6 +45,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -144,7 +145,7 @@ public final class ApiResponses {
             this.series = annotation.series.toString();
             this.instance = annotation.instance;
             this.value = annotation.value;
-            this.attrs = new HashMap<>();
+            this.attrs = new LinkedHashMap<>(); // keep order
             for (int i = 0; i < annotation.attrs.length; i+=2) {
                 attrs.put(annotation.attrs[i], annotation.attrs[i + 1]);
             }
