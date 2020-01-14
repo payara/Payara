@@ -603,7 +603,7 @@ table.tags th, table.tags td {
 .AnnotationTable .Annotation pre {
   white-space: pre-wrap;
   color: #DAE0E2;
-  background-color: #434445;
+  background-color: rgba(67,68,69, 0.75);
   margin: 0.25em 0;
   text-align: left;
   font-size: 13px;
@@ -628,4 +628,7 @@ table.AnnotationTable {
 .AnnotationTable td:first-child {
   border-left-width: 0;
   text-align: left;
+}
+.AnnotationTable tr:hover {
+  background-color: #0096D6;
 }
