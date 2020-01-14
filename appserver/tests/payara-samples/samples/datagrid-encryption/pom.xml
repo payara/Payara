@@ -16,7 +16,6 @@
 
     <modules>
         <module>sfsb-passivation</module>
-        <module>websession</module>
     </modules>
 
     <dependencies>

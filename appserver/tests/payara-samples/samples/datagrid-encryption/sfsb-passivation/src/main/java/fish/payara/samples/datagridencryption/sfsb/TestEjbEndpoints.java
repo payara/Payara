@@ -48,6 +48,9 @@ import javax.ws.rs.Path;
 import java.io.Serializable;
 import java.util.Random;
 
+/**
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @ApplicationScoped
 @Path("/TestEjb")
 public class TestEjbEndpoints implements Serializable {
