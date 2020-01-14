@@ -570,3 +570,39 @@ table.tags th, table.tags td {
   padding: 0 5px;
   margin: 5px 0 0 0;
 }
+
+
+/* Alert Tables */
+.AnnotationTable {
+  position: absolute;
+  top: 40px;
+  left: 15px;
+  width: calc(100% - 38px);
+  background-color: rgba(0, 36, 51, .75);
+}
+.AnnotationTable .Annotation {
+  display: block;
+  border: 0 solid transparent;
+  border-width: 0 0 0 5px;
+  padding: 0 5px;
+  margin: 5px 0 0 0;
+}
+.AnnotationTable .Annotation strong {
+  display: inline-block;
+  margin: 0 0.9em 0 0.4em;
+  padding: 1px;
+  background-color: rgba(0,36,51,0.75);
+}
+.AnnotationTable .Annotation small {
+  color: #bbb;
+  background-color: rgba(0,36,51,0.75);
+}
+.AnnotationTable .Annotation span {
+  white-space: nowrap;
+}
+.AnnotationTable .Annotation pre {
+  white-space: pre-wrap;
+  color: #DAE0E2;
+  background-color: #434445;
+  margin: 0.25em 0;
+}

@@ -62,11 +62,11 @@ WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, dec
 series     = string
 target     = string
 displayName= string
-type       = 'line' | 'bar' | 'alert'
+type       = 'line' | 'bar' | 'alert' | 'annotation'
 unit       = UNIT
 UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 coloring   = 'instance' | 'series' | 'index' | 'instance-series'
-fields     = string
+fields     = [ string ]
 scaleFactor= number
 grid       = { item, column, span, colspan, rowspan }
 item       = number
@@ -336,7 +336,7 @@ Describes the model expected by the `Legend` component.
 ```
 LEGEND          = [LEGEND_ITEM]
 LEGEND_ITEM     = { label, value, color, background, status, highlight }
-label           = string
+label           = string | [ string ]
 value           = string | number
 color           = string
 background      = string | [ string ]

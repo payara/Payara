@@ -152,6 +152,7 @@ MonitoringConsole.View = (function() {
                 parent.append(Components.createAlertTable({}));
                 parent.append(Components.createLegend([]));                
                 parent.append(Components.createIndicator({}));
+                parent.append(Components.createAnnotationTable({}));
             }
         }
         if (widget.selected) {
@@ -270,9 +271,10 @@ MonitoringConsole.View = (function() {
         let thresholds = widget.decorations.thresholds;
         let settings = [];
         let collapsed = $('#settings-widget').children('tr:visible').length <= 1;
+        let typeOptions = { line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts (Table)', annotation: 'Annotations (Table)'};
         settings.push({ id: 'settings-widget', caption: 'Widget', collapsed: collapsed, entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
-            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Type', type: 'dropdown', options: typeOptions, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
                 { type: 'range', min: 1, max: 8, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
@@ -470,7 +472,8 @@ MonitoringConsole.View = (function() {
             let seriesData = data[j];
             let label = seriesData.instance;
             if (widget.series.indexOf('*') > 0) {
-                label = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');
+                let tag = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');                
+                label = widget.coloring == 'series' ? tag : [label, tag];
             }
             let points = seriesData.points;
             let avgOffN = widget.options.perSec ? Math.min(points.length / 2, 4) : 1;
@@ -622,6 +625,27 @@ MonitoringConsole.View = (function() {
         return { id: widget.target + '_alerts', verbose: widget.type === 'alert', items: items };
     }
 
+    function createAnnotationTableModel(widget, annotations) {
+        if (widget.type !== 'annotation')
+            return {};
+        let items = [];
+        if (Array.isArray(annotations)) {
+            let palette = Theme.palette();
+            for (let annotation of annotations) {
+                items.push({
+                    color: Colors.lookup('instance', annotation.instance, palette),
+                    series: annotation.series,
+                    unit: widget.unit,
+                    time: annotation.time,
+                    value: annotation.value,
+                    attrs: annotation.attrs,
+                    fields: widget.fields,
+                });
+            }
+        }
+        return { id: widget.target + '_annotations', items: items };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -637,13 +661,15 @@ MonitoringConsole.View = (function() {
         let legendNode = widgetNode.find('.Legend').first();
         let indicatorNode = widgetNode.find('.Indicator').first();
         let alertsNode = widgetNode.find('.AlertTable').first();
+        let annotationsNode = widgetNode.find('.AnnotationTable').first();
         let legend = createLegendModel(widget, data, alerts); // OBS this has side effect of setting .legend attribute in series data
-        if (data !== undefined && widget.type !== 'alert') {
+        if (data !== undefined && (widget.type === 'line' || widget.type === 'bar')) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
         alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts, annotations)));
         legendNode.replaceWith(Components.createLegend(legend));
         indicatorNode.replaceWith(Components.createIndicator(createIndicatorModel(widget, data)));
+        annotationsNode.replaceWith(Components.createAnnotationTable(createAnnotationTableModel(widget, annotations)));
     }
 
     /**

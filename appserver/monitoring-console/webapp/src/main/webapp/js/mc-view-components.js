@@ -342,47 +342,54 @@ MonitoringConsole.View.Components = (function() {
       return { createComponent: createComponent };
    })();
 
-   /**
-   * Legend is a generic component showing a number of current values annotated with label and color.
-   */ 
-   let Legend = (function() {
+  /**
+  * Legend is a generic component showing a number of current values annotated with label and color.
+  */ 
+  let Legend = (function() {
 
-      function createItem(model) {
-         let label = model.label;
-         let value = model.value;
-         let color = model.color;
-         let strong = value;
-         let normal = '';
-         if (typeof value === 'string' && value.indexOf(' ') > 0) {
-            strong = value.substring(0, value.indexOf(' '));
-            normal = value.substring(value.indexOf(' '));
-         }
-         let attrs = { style: 'border-color: ' + color + ';' };
-         if (model.status)
-            attrs.class = 'status-' + model.status;
-         if (label === 'server') { // special rule for DAS
-            label = 'DAS'; 
-            attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
-         }
-         let textAttrs = {};
-         if (model.highlight)
-           textAttrs.style = 'color: '+ model.highlight + ';';
-         return $('<li/>', attrs)
-               .append($('<span/>').text(label))
-               .append($('<strong/>', textAttrs).text(strong))
-               .append($('<span/>').text(normal));
+    function createItem(item) {
+      let label = item.label;
+      let value = item.value;
+      let color = item.color;
+      let strong = value;
+      let normal = '';
+      if (typeof value === 'string' && value.indexOf(' ') > 0) {
+        strong = value.substring(0, value.indexOf(' '));
+        normal = value.substring(value.indexOf(' '));
       }
-
-      function createComponent(model) {
-         let legend = $('<ol/>',  {'class': 'Legend'});
-         for (let i = 0; i < model.length; i++) {
-            legend.append(createItem(model[i]));
-         }
-         return legend;
+      let attrs = { style: 'border-color: ' + color + ';' };
+      if (item.status)
+        attrs.class = 'status-' + item.status;
+      let label0 = Array.isArray(label) ? label[0] : label;
+      if (label0 === 'server') { // special rule for DAS
+        label0 = 'DAS'; 
+        attrs.title = "Data for the Domain Administration Server (DAS); plain instance name is 'server'";
       }
+      let textAttrs = {};
+      if (item.highlight)
+       textAttrs.style = 'color: '+ item.highlight + ';';
+      let mainLabel = $('<span/>').text(label0);
+      if (Array.isArray(label) && label.length > 1) {
+        for (let i = 1; i < label.length; i++) {
+          mainLabel.append(' - ' + label[i]);
+        }
+      }
+      return $('<li/>', attrs)
+        .append(mainLabel)
+        .append($('<strong/>', textAttrs).text(strong))
+        .append($('<span/>').text(normal));
+    }
 
-      return { createComponent: createComponent };
-   })();
+    function createComponent(model) {
+      let legend = $('<ol/>',  {'class': 'Legend'});
+      for (let item of model) {
+        legend.append(createItem(item));
+      }
+      return legend;
+    }
+
+    return { createComponent: createComponent };
+  })();
 
   /**
    * Component drawn for each widget legend item to indicate data status.
@@ -498,7 +505,7 @@ MonitoringConsole.View.Components = (function() {
       box.append(createStatisticsGroup(item, verbose));
       if (ongoing && verbose)
         box.append(createConditionGroup(item));
-      if (Array.isArray(item.annotations) && item.annotations.length > 0)
+      if (verbose && Array.isArray(item.annotations) && item.annotations.length > 0)
         box.append(createAnnotationGroup(item));
       let row = $('<div/>', { id: 'Alert-' + item.serial, class: 'Item ' + level, style: 'border-color:'+item.color+';' });
       row.append(box);
@@ -698,7 +705,17 @@ MonitoringConsole.View.Components = (function() {
     ];
 
     function createComponent(model) {
-
+      let items = model.items || [];
+      config = { 'class': 'AnnotationTable' };
+      if (model.id)
+        config.id = model.id;
+      if (items.length == 0)
+        config.style = 'display: none';
+      let table = $('<div/>', config);
+      for (let item of items) {
+        table.append(createEntry(item));
+      }
+      return table;
     }
 
     function createEntry(item) {
