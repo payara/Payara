@@ -39,6 +39,8 @@
  */
 package org.glassfish.web.loader;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -46,79 +48,83 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.naming.resources.FileDirContext;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class WebappClassLoaderTest {
 
-    private static CyclicBarrier lock;
-    private static ExecutorService executor;
-    private static File junitJarFile;
+    private static final int EXECUTION_COUNT = 100;
 
-    @BeforeClass
-    public static void setup() throws URISyntaxException {
+    private CountDownLatch latch;
+
+    private ExecutorService executor;
+    private File junitJarFile;
+
+    @Before
+    public void setup() throws URISyntaxException {
         // Run 3 methods at the same time, and make the pool large enough to increase
         // the chance of a race condition
-        lock = new CyclicBarrier(3);
         executor = Executors.newFixedThreadPool(60);
+
+        // Require a minimum number of executions before completing
+        latch = new CountDownLatch(EXECUTION_COUNT);
 
         // Fetch any JAR to use for classloading
         junitJarFile = new File(Test.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
-    @AfterClass
-    public static void shutdown() {
+    @After
+    public void shutdown() throws InterruptedException {
         if (executor != null) {
             executor.shutdownNow();
+            assertTrue("Executor could not shutdown. This could mean there is a deadlock.",
+                    executor.awaitTermination(10, TimeUnit.SECONDS));
         }
     }
 
     @Test
     public void check_findResourceInternalFromJars_thread_safety() throws Exception {
-        final ClassLoader classLoader = this.getClass().getClassLoader();
-        final WebappClassLoader webappClassLoader = new WebappClassLoader(classLoader, null);
+        final WebappClassLoader webappClassLoader = new WebappClassLoader(getClass().getClassLoader(), null);
         webappClassLoader.start();
         webappClassLoader.setResources(new FileDirContext());
 
-        CompletableFuture<Exception> result = new CompletableFuture<>();
+        CompletableFuture<Void> result = new CompletableFuture<>();
 
-        // Create the tasks, and have them each run at the same time
-        // using the cyclic barrier
-        Runnable lookupTask = waitAndDo(lock, result, () -> lookup(classLoader, webappClassLoader));
-        Runnable addTask = waitAndDo(lock, result, () -> add(classLoader, webappClassLoader));
-        Runnable closeTask = waitAndDo(lock, result, () -> webappClassLoader.closeJARs(true));
+        // Create the tasks to run
+        Runnable lookupTask = waitAndDo(result, () -> lookup(webappClassLoader));
+        Runnable addTask = waitAndDo(result, () -> add(webappClassLoader));
+        Runnable closeTask = waitAndDo(result, () -> webappClassLoader.closeJARs(true));
 
         try {
             // Run the methods at the same time
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < EXECUTION_COUNT; i++) {
                 executor.execute(addTask);
                 executor.execute(lookupTask);
                 executor.execute(closeTask);
             }
-            // Check to see if any completed exceptionally
-            Exception ex = result.get(200, TimeUnit.MILLISECONDS);
-            if (ex != null) {
-                throw ex;
-            }
-        } catch (TimeoutException ex) {
-            // Success!
+
+            // Wait for tasks to execute
+            assertTrue("The tasks didn't finish in the allowed time.",
+                    latch.await(20, TimeUnit.SECONDS));
+
+            // Check to see if any tasks completed exceptionally
+            result.getNow(null);
         } finally {
             webappClassLoader.close();
         }
     }
 
-    private void add(ClassLoader realClassLoader, WebappClassLoader webappClassLoader) throws IOException {
-        List<JarFile> jarFiles = findJarFiles(realClassLoader);
+    private void add(WebappClassLoader webappClassLoader) throws IOException {
+        List<JarFile> jarFiles = findJarFiles();
 
         for (JarFile j : jarFiles) {
             try {
@@ -129,8 +135,8 @@ public class WebappClassLoaderTest {
         }
     }
 
-    private void lookup(ClassLoader realClassLoader, WebappClassLoader webappClassLoader) throws Exception {
-        for (JarFile jarFile : findJarFiles(realClassLoader)) {
+    private void lookup(WebappClassLoader webappClassLoader) throws Exception {
+        for (JarFile jarFile : findJarFiles()) {
             for (JarEntry entry : Collections.list(jarFile.entries())) {
                 webappClassLoader.findResource(entry.getName());
                 // System.out.println("Looked up " + resourceEntry);
@@ -139,7 +145,7 @@ public class WebappClassLoaderTest {
         }
     }
 
-    private List<JarFile> findJarFiles(ClassLoader realClassLoader) throws IOException {
+    private List<JarFile> findJarFiles() throws IOException {
         List<JarFile> jarFiles = new LinkedList<>();
         for (int i = 0; i < 10; i++) {
             jarFiles.add(new JarFile(junitJarFile));
@@ -151,19 +157,18 @@ public class WebappClassLoaderTest {
      * Generate a task that will wait on the passed cyclic barrier before running
      * the passed task. Record the result in the passed future
      * 
-     * @param lock   the lock to wait on before execution
      * @param result where to store any encountered exceptions
      * @param task   the task to run
      * @return a new task
      */
-    private static Runnable waitAndDo(final CyclicBarrier lock, final CompletableFuture<Exception> result,
-            final ExceptionalRunnable task) {
+    private Runnable waitAndDo(final CompletableFuture<Void> result, final ExceptionalRunnable task) {
         return () -> {
             try {
-                lock.await();
                 task.run();
             } catch (Exception ex) {
-                result.complete(ex);
+                result.completeExceptionally(ex);
+            } finally {
+                latch.countDown();
             }
         };
     }
@@ -172,7 +177,7 @@ public class WebappClassLoaderTest {
      * A runnable interface that allows exceptions
      */
     @FunctionalInterface
-    private static interface ExceptionalRunnable {
+    private interface ExceptionalRunnable {
         void run() throws Exception;
     }
 }
