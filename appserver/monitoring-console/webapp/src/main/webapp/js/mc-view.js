@@ -577,6 +577,8 @@ MonitoringConsole.View = (function() {
     }
 
     function createAlertTableModel(widget, alerts, annotations) {
+        if (widget.type === 'annotation')
+            return {};
         function createAlertAnnotationsFilter(alert) {
           return (annotation) => widget.decorations.alerts.noAnnotations !== true
                 && annotation.series == alert.series 

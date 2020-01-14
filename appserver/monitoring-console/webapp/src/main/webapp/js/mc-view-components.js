@@ -678,8 +678,8 @@ MonitoringConsole.View.Components = (function() {
       return x >= min && x <= max;
     }
 
-    let TextValueFormatter = {
-      applies: (item, attrKey, attrValue) => attrValue.split(" ").length > 5,
+    let SQLValueFormatter = {
+      applies: (item, attrKey, attrValue) => attrValue.indexOf(' ') > 0 && attrValue.trim().endsWith(';'),
       format:  (item, attrValue) => attrValue,
       type: 'pre',
     };
@@ -711,7 +711,7 @@ MonitoringConsole.View.Components = (function() {
       TimeValueFormatter,
       UnitValueFormatter('Threshold'),
       SeriesValueFormatter,
-      TextValueFormatter,
+      SQLValueFormatter,
       PlainValueFormatter,
     ];
 
