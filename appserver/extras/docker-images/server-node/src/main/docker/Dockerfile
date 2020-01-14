@@ -1,44 +1,44 @@
 FROM "${docker.basicJdkImage}"
 
-ENV WORK_DIR=/opt/payara
-ENV PAYARA_HOME=${WORK_DIR}/payara5 \
-    PAYARA_PASSWORD_FILE_DIR=${WORK_DIR}/passwords \
+ENV HOME_DIR=/opt/payara\
+    PAYARA_DIR=${HOME_DIR}/payara5 \
+    SCRIPT_DIR=/opt/payara\
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="" \
     PAYARA_CONFIG_NAME="" \
     PAYARA_INSTANCE_NAME="" \
-    DOCKER_CONTAINER_IP=""
-
-ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
+    DOCKER_CONTAINER_IP="" \
+    PAYARA_PASSWORD_FILE_DIR=${HOME_DIR}/passwords \
+    PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
-    && mkdir ${WORK_DIR} \
-    && mkdir ${PAYARA_HOME} \
+    && mkdir ${HOME_DIR} \
+    && mkdir ${PAYARA_DIR} \
     && mkdir ${PAYARA_PASSWORD_FILE_DIR} \
     && groupadd -g 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${WORK_DIR} payara -g payara \
+    && useradd -u 1000 -M -s /bin/bash -d ${HOME_DIR} payara -g payara \
     && echo payara:payara | chpasswd \
-    && chown -R payara:payara ${WORK_DIR} \
+    && chown -R payara:payara ${HOME_DIR} \
     && true
 
 USER payara
-WORKDIR ${WORK_DIR}
+WORKDIR ${HOME_DIR}
 
 # Install Payara Server and remove unused domains
 ARG PAYARA_UNPACKED
 ARG ADDITIONAL_SCRIPTS
 
-COPY --chown=payara:payara ${PAYARA_UNPACKED} ${PAYARA_HOME}
+COPY --chown=payara:payara ${PAYARA_UNPACKED} ${PAYARA_DIR}
 RUN true \
-    && rm -rf ${PAYARA_HOME}/glassfish/domains/domain1/ \
-    && rm -rf ${PAYARA_HOME}/glassfish/domains/production \
+    && rm -rf ${PAYARA_DIR}/glassfish/domains/domain1/ \
+    && rm -rf ${PAYARA_DIR}/glassfish/domains/production \
     && true
 
 # Install scripts
-COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${WORK_DIR}
-RUN chmod +x ${WORK_DIR}/*.sh
+COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${HOME_DIR}
+RUN chmod +x ${HOME_DIR}/*.sh
 
 # Start the instance
-ENTRYPOINT ["/opt/payara/entrypoint.sh"]
+ENTRYPOINT ["${SCRIPT_DIR}/entrypoint.sh"]

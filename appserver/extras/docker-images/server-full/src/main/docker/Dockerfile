@@ -58,10 +58,9 @@ USER payara
 WORKDIR ${HOME_DIR}
 
 # Download and unzip the Payara distribution
-COPY --chown=payara:payara ${PAYARA_UNPACKED} ${HOME_DIR}
+COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
 
 RUN true \
-    && mv ${HOME_DIR}/payara*/ ${PAYARA_DIR} \
     # Configure the password file for configuring Payara
     && echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/tmpfile \
     && echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE} \
