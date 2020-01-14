@@ -211,6 +211,34 @@ MonitoringConsole.Model = (function() {
 							grid: { column: 0, item: 1}},
 					],
 				},
+				sql: {
+					name: 'SQL',
+					numberOfColumns: 3,
+					widgets: [
+						{ id: '1 ns:sql @:* MaxExecutionTime', 
+							unit: 'ms',
+							type: 'annotation',
+							series: 'ns:sql @:* MaxExecutionTime',
+							displayName: 'Slow SQL Queries',
+							grid: { column: 0, item: 1, colspan: 2, rowspan: 2},
+							mode: 'table',
+							sort: 'value',
+							fields: ['Value', 'Threshold', 'Timestamp', 'SQL']},
+						{ id: '2 ns:sql @:* MaxExecutionTime',
+							unit: 'ms',
+							series: 'ns:sql @:* MaxExecutionTime',
+							displayName: 'SQL Execution Time',
+							grid: { column: 2, item: 1 },
+							coloring: 'series' },						
+						{ id: '3 ns:sql @:* MaxExecutionTime',
+							unit: 'ms',
+							type: 'alert',
+							series: 'ns:sql @:* MaxExecutionTime',
+							displayName: 'Slow SQL Alerts',
+							grid: { column: 2, item: 2 },
+							decorations: { alerts: { noAnnotations: true, }}},
+					],
+				}
 			},
 	};
 
@@ -255,15 +283,12 @@ MonitoringConsole.Model = (function() {
 			if (page.rotate === undefined)
 				page.rotate = true;
 			// make widgets from array to object if needed
-			if (Array.isArray(page.widgets)) {
-				let widgets = {};
-				for (let i = 0; i < page.widgets.length; i++) {
-					let widget = page.widgets[i];
-					widgets[widget.series] = widget;
-				}
-				page.widgets = widgets;
-			}
-			Object.values(page.widgets).forEach(sanityCheckWidget);
+			let widgetsArray = Array.isArray(page.widgets) ? page.widgets : Object.values(page.widgets);
+			widgetsArray.forEach(sanityCheckWidget);
+			let widgets = {};
+			for (let widget of widgetsArray)
+				widgets[widget.id] = widget;
+			page.widgets = widgets;
 			return page;
 		}
 		
@@ -271,8 +296,9 @@ MonitoringConsole.Model = (function() {
 		 * Makes sure a widget (configiguration for a chart) within a page has all required attributes
 		 */
 		function sanityCheckWidget(widget) {
-			if (!widget.target)
-				widget.target = 'chart-' + widget.series.replace(/[^-a-zA-Z0-9_]/g, '_');
+			if (!widget.id)
+				widget.id = '1 ' + widget.series;
+			widget.target = 'chart-' + widget.id.replace(/[^-a-zA-Z0-9_]/g, '_');
 			if (!widget.type)
 				widget.type = 'line';
 			if (!widget.unit)
@@ -406,7 +432,6 @@ MonitoringConsole.Model = (function() {
 			if (columns)
 				page.numberOfColumns = columns;
 			let numberOfColumns = page.numberOfColumns || 1;
-			let widgets = page.widgets;
 			// init temporary and result data structure
 			let widgetsByColumn = new Array(numberOfColumns);
 			var layout = new Array(numberOfColumns);
@@ -415,7 +440,7 @@ MonitoringConsole.Model = (function() {
 				layout[col] = [];
 			}
 			// organise widgets in columns
-			Object.values(widgets).forEach(function(widget) {
+			Object.values(page.widgets).forEach(function(widget) {
 				let column = widget.grid && widget.grid.column ? widget.grid.column : 0;
 				widgetsByColumn[Math.min(Math.max(column, 0), widgetsByColumn.length - 1)].push(widget);
 			});
@@ -607,9 +632,10 @@ MonitoringConsole.Model = (function() {
 
 			resetPage: function() {
 				let presets = UI_PRESETS;
-				if (presets && presets.pages && presets.pages[settings.home]) {
-					let preset = presets.pages[settings.home];
-					pages[settings.home] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
+				let currentPageId = settings.home;
+				if (presets && presets.pages && presets.pages[currentPageId]) {
+					let preset = presets.pages[currentPageId];
+					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
 					doStore();
 					return true;
 				}
@@ -639,10 +665,10 @@ MonitoringConsole.Model = (function() {
 				doStore();
 			},
 			
-			removeWidget: function(series) {
+			removeWidget: function(widgetId) {
 				let widgets = pages[settings.home].widgets;
-				if (series && widgets) {
-					delete widgets[series];
+				if (widgetId && widgets) {
+					delete widgets[widgetId];
 				}
 			},
 			
@@ -653,8 +679,11 @@ MonitoringConsole.Model = (function() {
 				let layout = doLayout();
 				let page = pages[settings.home];
 				let widgets = page.widgets;
-				let widget = { series: series };
-				widgets[series] = sanityCheckWidget(widget);
+				let id = (Object.values(widgets)
+					.filter(widget => widget.series == series)
+					.reduce((acc, widget) => Math.max(acc, widget.id.substr(0, widget.id.indexOf(' '))), 0) + 1) + ' ' + series;
+				let widget = { id: id, series: series };
+				widgets[id] = sanityCheckWidget(widget);
 				widget.selected = true;
 				// automatically fill most empty column
 				let usedCells = new Array(layout.length);
@@ -668,25 +697,27 @@ MonitoringConsole.Model = (function() {
 				}
 				let indexOfLeastUsedCells = usedCells.reduce((iMin, x, i, arr) => x < arr[iMin] ? i : iMin, 0);
 				widget.grid.column = indexOfLeastUsedCells;
-				widget.grid.item = 100;
+				widget.grid.item = Object.values(widgets)
+					.filter(widget => widget.grid.column == indexOfLeastUsedCells)
+					.reduce((acc, widget) => widget.grid.item ? Math.max(acc, widget.grid.item) : acc, 0) + 1;
 				doStore();
 			},
 			
-			configureWidget: function(widgetUpdate, series) {
-				let selected = series
-					? [pages[settings.home].widgets[series]]
+			configureWidget: function(widgetUpdate, widgetId) {
+				let selected = widgetId
+					? [pages[settings.home].widgets[widgetId]]
 					: Object.values(pages[settings.home].widgets).filter(widget => widget.selected);
 				selected.forEach(widget => widgetUpdate(widget));
 				doStore();
 			},
 			
-			select: function(series, exclusive) {
+			select: function(widgetId, exclusive) {
 				let page = pages[settings.home];
-				let widget = page.widgets[series];
+				let widget = page.widgets[widgetId];
 				widget.selected = widget.selected !== true;
 				if (exclusive) {
 					Object.values(page.widgets).forEach(function(widget) {
-						if (widget.series != series) {
+						if (widget.id != widgetId) {
 							widget.selected = false;
 						}
 					});
@@ -703,7 +734,7 @@ MonitoringConsole.Model = (function() {
 			selected: function() {
 				return Object.values(pages[settings.home].widgets)
 					.filter(widget => widget.selected)
-					.map(widget => widget.series);
+					.map(widget => widget.id);
 			},
 			
 			arrange: function(columns) {
@@ -779,10 +810,10 @@ MonitoringConsole.Model = (function() {
 		 */
 		var charts = {};
 		
-		function doDestroy(series) {
-			let chart = charts[series];
+		function doDestroy(widgetId) {
+			let chart = charts[widgetId];
 			if (chart) {
-				delete charts[series];
+				delete charts[widgetId];
 				chart.destroy();
 			}
 		}
@@ -792,12 +823,12 @@ MonitoringConsole.Model = (function() {
 			 * Returns a new Chart.js chart object initialised for the given MC level configuration to the charts object
 			 */
 			getOrCreate: function(widget) {
-				let series = widget.series;
-				let chart = charts[series];
+				let widgetId = widget.id;
+				let chart = charts[widgetId];
 				if (chart)
 					return chart;
 				chart = MonitoringConsole.Chart.getAPI(widget).onCreation(widget);			
-				charts[series] = chart;
+				charts[widgetId] = chart;
 				return chart;
 			},
 			
@@ -805,12 +836,12 @@ MonitoringConsole.Model = (function() {
 				Object.keys(charts).forEach(doDestroy);
 			},
 			
-			destroy: function(series) {
-				doDestroy(series);
+			destroy: function(widgetId) {
+				doDestroy(widgetId);
 			},
 			
 			update: function(widget) {
-				let chart = charts[widget.series];
+				let chart = charts[widget.id];
 				if (chart) {
 					MonitoringConsole.Chart.getAPI(widget).onConfigUpdate(widget, chart);
 					chart.update();
@@ -1117,8 +1148,8 @@ MonitoringConsole.Model = (function() {
 		return UI.arrange();
 	}
 
-	function doConfigureWidget(series, widgetUpdate) {
-		UI.configureWidget(createWidgetUpdate(widgetUpdate), series);
+	function doConfigureWidget(widgetId, widgetUpdate) {
+		UI.configureWidget(createWidgetUpdate(widgetUpdate), widgetId);
 		return UI.arrange();
 	}
 
@@ -1129,7 +1160,7 @@ MonitoringConsole.Model = (function() {
 			if (widget.type === type) {
 				Charts.update(widget);
 			} else {
-				Charts.destroy(widget.series);
+				Charts.destroy(widget.id);
 			}
 		};
 	}
@@ -1279,21 +1310,21 @@ MonitoringConsole.Model = (function() {
 					return UI.arrange();
 				},
 				
-				remove: function(series) {
-					Charts.destroy(series);
-					UI.removeWidget(series);
+				remove: function(widgetId) {
+					Charts.destroy(widgetId);
+					UI.removeWidget(widgetId);
 					return UI.arrange();
 				},
 				
 				configure: doConfigureWidget,
 
-				moveLeft: (series) => doConfigureWidget(series, function(widget) {
+				moveLeft: (widgetId) => doConfigureWidget(widgetId, function(widget) {
 	                if (!widget.grid.column || widget.grid.column > 0) {
 	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
 	                }
 	            }),
 
-	            moveRight: (series) => doConfigureWidget(series, function(widget) {
+	            moveRight: (widgetId) => doConfigureWidget(widgetId, function(widget) {
 	                if (!widget.grid.column || widget.grid.column < 4) {
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
 	                }

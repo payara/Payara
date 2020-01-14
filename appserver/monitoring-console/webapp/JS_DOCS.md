@@ -58,7 +58,8 @@ COLOR           = string
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring, fields, mode, sort }
+WIDGET     = { id, series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring, fields, mode, sort }
+id         = string
 series     = string
 target     = string
 displayName= string

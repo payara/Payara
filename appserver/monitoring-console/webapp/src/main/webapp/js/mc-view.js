@@ -55,6 +55,7 @@ MonitoringConsole.View = (function() {
         topic: 'Cluster Topic IO Statistics',
         monitoring: 'Monitoring Console Internals',
         health: 'Health Checks',
+        sql: 'SQL Tracing',
         other: 'Other',
     };
 
@@ -209,24 +210,24 @@ MonitoringConsole.View = (function() {
 
     function createWidgetToolbar(widget) {
         const Widgets = MonitoringConsole.Model.Page.Widgets;
-        let series = widget.series;
+        let widgetId = widget.id;
         let items = [
-            { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
-            { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(Widgets.moveLeft(series)) },
-            { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(Widgets.moveRight(series)) },                
+            { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(widgetId)},
+            { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(Widgets.moveLeft(widgetId)) },
+            { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(Widgets.moveRight(widgetId)) },                
         ];
         if (widget.type === 'annotation') {
-            items.push({ icon: '&#9202', label: 'Sort By Wall Time', onClick: () => Widgets.configure(series, (widget) => widget.sort = 'time') });
-            items.push({ icon: '&#128292;', label: 'Sort By Value', onClick: () => Widgets.configure(series, (widget) => widget.sort = 'value') });
+            items.push({ icon: '&#9202', label: 'Sort By Wall Time', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'time') });
+            items.push({ icon: '&#128292;', label: 'Sort By Value', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'value') });
         }
-        items.push({ icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) });
+        items.push({ icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(widgetId) });
         let menu = { groups: [
             { icon: '&#9881;', items: items },
         ]};
         let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
             .append(Components.createMenu(menu))
-            .append($('<h3/>', {title: 'Select '+series})
+            .append($('<h3/>', {title: widget.series})
                 .html(title)
                 .click(() => onWidgetToolbarClick(widget)))            
             ;
@@ -439,14 +440,14 @@ MonitoringConsole.View = (function() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[ Event Handlers ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function onWidgetToolbarClick(widget) {
-        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.series, true);
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widget.id, true);
         updateDomOfWidget(undefined, widget);
         updateSettings();
     }
 
-    function onWidgetDelete(series) {
+    function onWidgetDelete(widgetId) {
         if (window.confirm('Do you really want to remove the chart from the page?')) {
-            onPageChange(MonitoringConsole.Model.Page.Widgets.remove(series));
+            onPageChange(MonitoringConsole.Model.Page.Widgets.remove(widgetId));
         }
     }
 
@@ -645,6 +646,7 @@ MonitoringConsole.View = (function() {
                 items.push({
                     color: Colors.lookup('instance', annotation.instance, palette),
                     series: annotation.series,
+                    instance: annotation.instance,
                     unit: widget.unit,
                     time: annotation.time,
                     value: annotation.value,
@@ -733,9 +735,9 @@ MonitoringConsole.View = (function() {
         updateMenu();
     }
 
-    function onOpenWidgetSettings(series) {
+    function onOpenWidgetSettings(widgetId) {
         MonitoringConsole.Model.Page.Widgets.Selection.clear();
-        MonitoringConsole.Model.Page.Widgets.Selection.toggle(series);
+        MonitoringConsole.Model.Page.Widgets.Selection.toggle(widgetId);
         MonitoringConsole.Model.Settings.open();
         updateSettings();
     }
@@ -766,6 +768,6 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();
             }
         },
-        onOpenWidgetSettings: (series) => onOpenWidgetSettings(series),
+        onOpenWidgetSettings: (widgetId) => onOpenWidgetSettings(widgetId),
     };
 })();
