@@ -23,6 +23,7 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-tracing</module>
+        <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>oauth2</module>
         <module>openid</module>

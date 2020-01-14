@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -49,6 +49,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import javax.ws.rs.Consumes;
@@ -64,22 +65,22 @@ import javax.ws.rs.ext.Provider;
  */
 @Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_OCTET_STREAM})
 @Provider
-public class FormReader implements MessageBodyReader<HashMap<String, String>> {
+public class FormReader implements MessageBodyReader<Map<String, String>> {
     
     private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.toString();
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return type.equals(HashMap.class);
+        return Map.class.isAssignableFrom(type);
     }
 
     @Override
-    public HashMap<String, String> readFrom(Class<HashMap<String, String>> type, Type genericType,
+    public Map<String, String> readFrom(Class<Map<String, String>> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers, 
             InputStream in) throws IOException {        
         String formData = readAsString(in);
 
-        HashMap<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<String, String>();
         StringTokenizer tokenizer = new StringTokenizer(formData, "&");
         String token;
         while (tokenizer.hasMoreTokens()) {

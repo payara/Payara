@@ -1,8 +1,16 @@
 package fish.payara.samples;
 
-import com.gargoylesoftware.htmlunit.WebClient;
+import static java.math.BigInteger.ONE;
 import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.logging.Level.FINEST;
+import static org.omnifaces.utils.Lang.isEmpty;
+import static org.omnifaces.utils.security.Certificates.createTempJKSKeyStore;
+import static org.omnifaces.utils.security.Certificates.createTempJKSTrustStore;
+import static org.omnifaces.utils.security.Certificates.generateRandomRSAKeys;
+import static org.omnifaces.utils.security.Certificates.getCertificateChainFromServer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,19 +18,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.impl.Jdk14Logger;
-import static java.math.BigInteger.ONE;
-import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.DAYS;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -32,10 +31,17 @@ import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
-import static java.util.logging.Level.FINEST;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.impl.Jdk14Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -43,12 +49,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import static org.omnifaces.utils.Lang.isEmpty;
 import org.omnifaces.utils.security.Certificates;
-import static org.omnifaces.utils.security.Certificates.createTempJKSKeyStore;
-import static org.omnifaces.utils.security.Certificates.createTempJKSTrustStore;
-import static org.omnifaces.utils.security.Certificates.generateRandomRSAKeys;
-import static org.omnifaces.utils.security.Certificates.getCertificateChainFromServer;
 
 /**
  * Various high level Java EE 7 samples specific operations to execute against
@@ -270,36 +271,79 @@ public class ServerOperations {
         }
         
     }
+
+    /**
+     * Switch the provided URL to use the admin port if the running server supports
+     * it.
+     * <p>
+     * TODO: add support for embedded. Not necessary while this suite doesn't have
+     * an embedded profile
+     * <p>
+     * TODO: add support for servers with secure admin enabled
+     * 
+     * @param url the url to transform
+     * @return the transformed URL, or null if the running server isn't using an
+     *         admin listener.
+     */
+    public static URL toAdminPort(URL url) {
+        try {
+            return switchPort(url, 4848, "http");
+        } catch (MalformedURLException e) {
+            System.out.println("Failure creating admin URL");
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failure creating admin URL", e);
+            return null;
+        }
+    }
     
+    /**
+     * Switch the provided URL to use the secure port if the running server supports
+     * it.
+     * 
+     * @param url the url to transform
+     * @return the transformed URL, or null if the running server isn't using a
+     *         secure listener.
+     */
     public static URL toContainerHttps(URL url) {
         if ("https".equals(url.getProtocol())) {
             return url;
         }
         
+        try {
+            return switchPort(url, 8181, "https");
+        } catch (MalformedURLException e) {
+            System.out.println("Failure creating HTTPS URL");
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failure creating HTTPS URL", e);
+            return null;
+        }
+    }
+
+    /**
+     * If the Payara Server being tested supports the provided port, switch the
+     * given URL to use that port.
+     * 
+     * @param url      the URL to transform
+     * @param port     the target port
+     * @param protocol the target protocol to use
+     * @return a new URL using the target port, or null if that port isn't supported
+     * @throws MalformedURLException if the target URL is invalid
+     */
+    private static URL switchPort(URL url, int port, String protocol) throws MalformedURLException {
         String javaEEServer = System.getProperty("javaEEServer");
-        
-        // String protocol, String host, int port, String file
         
         if ("glassfish-remote".equals(javaEEServer) || "payara-remote".equals(javaEEServer)) {
             
-            try {
-                URL httpsUrl = new URL(
-                    "https",
-                    url.getHost(),
-                    8181,
-                    url.getFile()
-                );
-                
-                System.out.println("Changing base URL from " + url + " into " + httpsUrl);
-                
-                return httpsUrl;
-                
-            } catch (MalformedURLException e) {
-                System.out.println("Failure creating HTTPS URL");
-                e.printStackTrace();
-                logger.log(Level.SEVERE, "Failure creating HTTPS URL", e);
-            }
+            URL result = new URL(
+                protocol,
+                url.getHost(),
+                port,
+                url.getFile()
+            );
             
+            System.out.println("Changing base URL from " + url + " into " + result);
+            
+            return result;
         } else {
             if (javaEEServer == null) {
                 System.out.println("javaEEServer not specified");
