@@ -232,13 +232,13 @@ button:hover {
   border-collapse: separate;
   padding-top: 5px;
 }
-#chart-grid td {
+#chart-grid > tr > td {
     background-color: #002433;
     padding: 10px;
     vertical-align: top;
     position: relative;
 }
-#chart-grid td.chart-selected h3 {
+#chart-grid > tr > td.chart-selected h3 {
     background-color: #0096D6;
 }
 .stable {
@@ -580,7 +580,7 @@ table.tags th, table.tags td {
   width: calc(100% - 38px);
   background-color: rgba(0, 36, 51, .75);
 }
-.AnnotationTable .Annotation {
+.AnnotationTable .Group.Annotation {
   display: block;
   border: 0 solid transparent;
   border-width: 0 0 0 5px;
@@ -605,4 +605,27 @@ table.tags th, table.tags td {
   color: #DAE0E2;
   background-color: #434445;
   margin: 0.25em 0;
+  text-align: left;
+  font-size: 13px;
+}
+.AnnotationTable .Annotation code {
+  text-align: left;
+  font-size: 13px;
+}
+table.AnnotationTable {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.AnnotationTable th {
+  border-bottom: 1px solid #0096D6;
+}
+.AnnotationTable td {
+  border-left: 1px solid #0096D6;
+  padding: 1px 0.5em;
+  text-align: right;
+  font-size: 16px;
+}
+.AnnotationTable td:first-child {
+  border-left-width: 0;
+  text-align: left;
 }

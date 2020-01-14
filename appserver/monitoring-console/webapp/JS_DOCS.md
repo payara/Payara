@@ -58,7 +58,7 @@ COLOR           = string
 ### Widget Model
 
 ```
-WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring, fields }
+WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, decorations, status, displayName, coloring, fields, mode, sort }
 series     = string
 target     = string
 displayName= string
@@ -67,6 +67,8 @@ unit       = UNIT
 UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
 coloring   = 'instance' | 'series' | 'index' | 'instance-series'
 fields     = [ string ]
+mode       = 'list' | 'table'
+sort       = 'time' | 'value'
 scaleFactor= number
 grid       = { item, column, span, colspan, rowspan }
 item       = number
@@ -432,7 +434,10 @@ This component show the annotation for the widget series as a table of sorted en
 The main information are the annotation attributes that are custom to each annotation origin.
 
 ```
-ANNOTATION_TABLE = { id, items }
+ANNOTATION_TABLE = { id, mode, sort, items }
+id               = string
+mode             = 'list' | 'table'
+sort             = 'value' | 'time'
 items            = [ ANNOTATION_ITEM ]
 ANNOTATION_ITEM  = { color, series, instance, unit, time, value, attrs, fields, formatters }
 color            = string

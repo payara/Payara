@@ -208,14 +208,20 @@ MonitoringConsole.View = (function() {
     }
 
     function createWidgetToolbar(widget) {
+        const Widgets = MonitoringConsole.Model.Page.Widgets;
         let series = widget.series;
+        let items = [
+            { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
+            { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(Widgets.moveLeft(series)) },
+            { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(Widgets.moveRight(series)) },                
+        ];
+        if (widget.type === 'annotation') {
+            items.push({ icon: '&#9202', label: 'Sort By Wall Time', onClick: () => Widgets.configure(series, (widget) => widget.sort = 'time') });
+            items.push({ icon: '&#128292;', label: 'Sort By Value', onClick: () => Widgets.configure(series, (widget) => widget.sort = 'value') });
+        }
+        items.push({ icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) });
         let menu = { groups: [
-            { icon: '&#9881;', items: [
-                { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
-                { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
-                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
-                { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
-            ]},
+            { icon: '&#9881;', items: items },
         ]};
         let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
@@ -271,10 +277,12 @@ MonitoringConsole.View = (function() {
         let thresholds = widget.decorations.thresholds;
         let settings = [];
         let collapsed = $('#settings-widget').children('tr:visible').length <= 1;
-        let typeOptions = { line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts (Table)', annotation: 'Annotations (Table)'};
+        let typeOptions = { line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts', annotation: 'Annotations' };
+        let modeOptions = widget.type == 'annotation' ? { table: 'Table', list: 'List' } : { list: '(Default)' };
         settings.push({ id: 'settings-widget', caption: 'Widget', collapsed: collapsed, entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
             { label: 'Type', type: 'dropdown', options: typeOptions, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Mode', type: 'dropdown', options: modeOptions, value: widget.mode, onChange: (widget, selected) => widget.mode = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
                 { type: 'range', min: 1, max: 8, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
@@ -643,7 +651,7 @@ MonitoringConsole.View = (function() {
                 });
             }
         }
-        return { id: widget.target + '_annotations', items: items };
+        return { id: widget.target + '_annotations', mode: widget.mode, sort: widget.sort, items: items };
     }
 
     /**

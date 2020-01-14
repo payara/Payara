@@ -661,27 +661,33 @@ MonitoringConsole.View.Components = (function() {
   })();
 
 
-
+  /**
+   * The annotation table is shown for widgets of type 'annotation'.
+   * Alert lists with annotations visible also use the list entry to add annotations to alert entries.
+   * 
+   * The interesting part with annotations is that the attributes can be any set of string key-value pairs.
+   * Still, the values should be formatted meaningfully. Therefore formatters can be set which analyse each
+   * key-value-pair to determine how to display them.
+   *
+   * The annotation table can either display a list style similar to alert table or an actual table with
+   * rows and columns. An that case all items are expected to have the same fields value.
+   */
   let AnnotationTable = (function() {
 
     function inRange(x, min, max) {
       return x >= min && x <= max;
     }
 
-    let TextValueFormatter = (function() {
-      return {
-        applies: (item, attrKey, attrValue) => attrValue.split(" ").length > 5,
-        format:  (item, attrValue) => attrValue,
-        type: 'pre',
-      };
-    })();
+    let TextValueFormatter = {
+      applies: (item, attrKey, attrValue) => attrValue.split(" ").length > 5,
+      format:  (item, attrValue) => attrValue,
+      type: 'pre',
+    };
 
-    let TimeValueFormatter = (function() {
-      return {
-        applies: (item, attrKey, attrValue) => inRange(new Date().getTime() - Number(attrValue), 0, 86400000), // 1 day in millis
-        format:  (item, attrValue) => Units.formatTime(attrValue),  
-      };
-    })();
+    let TimeValueFormatter = {
+      applies: (item, attrKey, attrValue) => inRange(new Date().getTime() - Number(attrValue), 0, 86400000), // 1 day in millis
+      format:  (item, attrValue) => Units.formatTime(attrValue),  
+    };
 
     let UnitValueFormatter = (function(names) {
       return {
@@ -690,16 +696,21 @@ MonitoringConsole.View.Components = (function() {
       };
     });
 
-    let PlainValueFormatter = (function() {
-      return {
-        applies: (item, attrKey, attrValue) => true,
-        format: (item, attrValue) => attrValue,
-      };
-    })();
+    let SeriesValueFormatter = {
+      applies: (item, attrKey, attrValue) => attrKey == 'Series' || attrValue.startsWith('ns:'),
+      format: (item, attrValue) => attrValue,
+      type: 'code',
+    };
+
+    let PlainValueFormatter = {
+      applies: (item, attrKey, attrValue) => true,
+      format: (item, attrValue) => attrValue,
+    };
 
     let DEFAULT_FORMATTERS = [
       TimeValueFormatter,
       UnitValueFormatter('Threshold'),
+      SeriesValueFormatter,
       TextValueFormatter,
       PlainValueFormatter,
     ];
@@ -711,18 +722,57 @@ MonitoringConsole.View.Components = (function() {
         config.id = model.id;
       if (items.length == 0)
         config.style = 'display: none';
-      let table = $('<div/>', config);
+      let isTable = model.mode === 'table';
+      let tag = isTable ? '<table/>' : '<div/>';
+      let table = $(tag, config);
+      if (model.sort === undefined && isTable || model.sort == 'value')
+        items = items.sort((a, b) => b.value - a.value);
+      if (model.sort == 'time')
+        items = items.sort((a, b) => b.time - a.time);
       for (let item of items) {
-        table.append(createEntry(item));
+        if (isTable) {
+          if (table.children().length == 0) {
+            let tr = $('<tr/>');
+            for (let key of Object.keys(createAttributesModel(item)))
+              tr.append($('<th/>').text(key));
+            table.append(tr);
+          }
+          table.append(createTableEntry(item));  
+        } else {
+          table.append(createListEntry(item));  
+        }
       }
       return table;
     }
 
-    function createEntry(item) {
+    function createListEntry(item) {      
+      let attrs = createAttributesModel(item);
       let group = $('<div/>', { 'class': 'Group Annotation', style: 'border-color:' + item.color + ';' });
+      for (let [key, entry] of Object.entries(attrs)) {
+        appendProperty(group, key, entry.value, entry.type);
+      }      
+      return group;
+    }
+
+    function createTableEntry(item) {
+      let attrs = createAttributesModel(item);
+      let row = $('<tr/>', { 'class': 'Annotation' });
+      for (let [key, entry] of Object.entries(attrs)) {
+        let td = $('<td/>');
+        if (entry.type) {
+          td.append($('<' + entry.type + '/>').append(entry.value));
+        } else {
+          td.text(entry.value);
+        }
+        row.append(td);
+      }
+      return row;
+    }
+
+    function createAttributesModel(item) {
       let attrs = {}; // new object is both sorted by default order and accessible by key
       if (item.series)
-        attrs.Series = { value: item.series };        
+        attrs.Series = { value: item.series, type: 'code' };        
       if (item.instance)
         attrs.Instance = { value: item.instance };
       attrs.When = { value: Units.formatTime(item.time) };
@@ -731,26 +781,23 @@ MonitoringConsole.View.Components = (function() {
         let formatter = selectFormatter(item, key, value, item.formatters);
         attrs[key] = { value: formatter.format(item, value), type: formatter.type };        
       }
-      if (item.fields) {
-        for (let field of item.fields) {
-          let entry = attrs[field];
-          if (entry)
-            appendProperty(group, field, entry.value, entry.type);
-        }
-      } else {
-        for (let [key, entry] of Object.entries(attrs)) {
-          appendProperty(group, key, entry.value, entry.type);
-        }
-      }      
-      return group;
+      if (!item.fields)
+        return attrs;
+      let model = {};
+      for (let field of item.fields) {
+        let entry = attrs[field];
+        if (entry)
+          model[field] = entry;
+      }
+      return model;
     }
 
     function selectFormatter(item, attrKey, attrValue, formatters) {
       if (formatters === undefined)
         return selectFormatter(item, attrKey, attrValue, DEFAULT_FORMATTERS);
-      for (let i = 0; i < formatters.length; i++) 
-        if (formatters[i].applies(item, attrKey, attrValue))
-          return formatters[i];
+      for (let formatter of formatters) 
+        if (formatter.applies(item, attrKey, attrValue))
+          return formatter;
       if (formatters !== DEFAULT_FORMATTERS)
         return selectFormatter(item, attrKey, attrValue, DEFAULT_FORMATTERS);
       return PlainValueFormatter;
@@ -758,7 +805,7 @@ MonitoringConsole.View.Components = (function() {
 
     return { 
       createComponent: createComponent,
-      createEntry: createEntry, 
+      createEntry: createListEntry, 
     };
   })();
 
