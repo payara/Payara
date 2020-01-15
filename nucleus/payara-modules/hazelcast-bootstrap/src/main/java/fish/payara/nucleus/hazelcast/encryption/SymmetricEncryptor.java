@@ -138,7 +138,7 @@ public class SymmetricEncryptor {
         } catch (BadPaddingException exception) {
             // BadPaddingException -> Wrong key
             throw new HazelcastException("BadPaddingException caught decoding data, " +
-                    "this can be caused by an incorrect key: ", exception);
+                    "this can be caused by an incorrect or changed key: ", exception);
         } catch (IllegalBlockSizeException | NoSuchAlgorithmException | InvalidAlgorithmParameterException
                 | InvalidKeyException | NoSuchPaddingException exception) {
             throw new HazelcastException(exception);
@@ -185,8 +185,8 @@ public class SymmetricEncryptor {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(ivBytes));
             return new SecretKeySpec(cipher.doFinal(encryptedTextBytes), "AES");
         } catch (BadPaddingException bpe) {
-            throw new HazelcastException("BadPaddingException caught decrypting data from Datagrid " +
-                    "- likely caused by an incorrect master password", bpe);
+            throw new HazelcastException("BadPaddingException caught decrypting data grid key" +
+                    "- likely caused by an incorrect or changed master password", bpe);
         } catch (IllegalBlockSizeException | NoSuchAlgorithmException | InvalidAlgorithmParameterException
                 | InvalidKeyException | InvalidKeySpecException | NoSuchPaddingException exception) {
             throw new HazelcastException(exception);
@@ -199,7 +199,7 @@ public class SymmetricEncryptor {
             out.writeObject(object);
             bytes = bos.toByteArray();
         } catch (IOException ioe) {
-            // Blah
+            // See "if (bytes == null)"
         }
         if (bytes == null) {
             throw new HazelcastException("Error converting Object to Byte Array");
@@ -208,7 +208,7 @@ public class SymmetricEncryptor {
     }
 
     public static Object byteArrayToObject(byte[] bytes) {
-        Object object = null;
+        Object object;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
             object = IOUtil.newObjectInputStream(Thread.currentThread().getContextClassLoader(), null, bis).readObject();
         } catch (IOException | ClassNotFoundException exception) {

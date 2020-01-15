@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -47,8 +47,15 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 /**
  * The change-master-password command for the DAS.
@@ -120,10 +127,28 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
             manager.changeMasterPassword(domainConfig);
 
+            try {
+                if (dataGridEncryptionEnabled()) {
+                    logger.warning("Data grid encryption is enabled - " +
+                            "you will need to regenerate the encryption key");
+                }
+            } catch (IOException | SAXException | ParserConfigurationException | NullPointerException exception) {
+                logger.warning("Could not determine if data grid encryption is enabled - " +
+                        "you will need to regenerate the encryption key if it is");
+            }
+
             return 0;
         } catch(Exception e) {
             throw new CommandException(e.getMessage(),e);
         }
+    }
+
+    private boolean dataGridEncryptionEnabled() throws IOException, SAXException, ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(getDomainXml());
+        return Boolean.valueOf(document.getElementsByTagName("hazelcast-runtime-configuration")
+                .item(0).getAttributes().getNamedItem("datagrid-encryption-enabled").getNodeValue());
     }
 }
 
