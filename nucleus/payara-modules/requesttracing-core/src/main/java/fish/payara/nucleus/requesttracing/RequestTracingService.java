@@ -603,7 +603,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         while (trace != null) {
             String group = collectTrace(collector, trace, thresholdInMillis);
             if (group != null) {
-                activeCollectionGroups.compute(group, (key, value) -> 30);
+                activeCollectionGroups.compute(group, (key, value) -> 35);
             }
             trace = uncollectedTraces.poll();
         }
