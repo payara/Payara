@@ -328,6 +328,7 @@ MonitoringConsole.View = (function() {
                 description: 'What value is used to select the index from the color palette' },
             { label: 'Fields', type: 'text', value: (widget.fields || []).join(' '), onChange: (widget, value) => widget.fields = value == undefined || value == '' ? undefined : value.split(/[ ,]+/),
                 description: 'Selection and order of annotation fields to display, empty for auto selection and default order' },
+            {label: 'Annotations', type: 'checkbox', value: !options.noAnnotations, onChange: (widget, checked) => widget.options.noAnnotations = !checked}                
         ]});
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
@@ -367,9 +368,6 @@ MonitoringConsole.View = (function() {
                     { label: 'Unacknowledged', type: 'checkbox', value: alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = checked},
                 ],
             ], description: 'Properties of alerts to show. Graphs hide stopped or acknowledged alerts automatically.' },
-            { label: 'Information', input: [
-                {label: 'Annotations', type: 'checkbox', value: !alerts.noAnnotations, onChange: (widget, checked) => widget.decorations.alerts.noAnnotations = !checked}
-            ]}
         ]});
         return settings;       
     }
@@ -466,11 +464,13 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegendModel(widget, data, alerts) {
+    function createLegendModel(widget, data, alerts, annotations) {
         if (!data)
             return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
         if (widget.type == 'alert')
-            return createLegendModelFromAlerts(widget, data, alerts);
+            return createLegendModelFromAlerts(widget, alerts);
+        if (widget.type == 'annotation')
+            return createLegendModelFromAnnotations(widget, annotations);
         if (Array.isArray(data) && data.length == 0)
             return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
@@ -528,14 +528,13 @@ MonitoringConsole.View = (function() {
 
     const ALERT_STATUS_NAMES = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
 
-    function createLegendModelFromAlerts(widget, data, alerts) {
+    function createLegendModelFromAlerts(widget, alerts) {
         if (!Array.isArray(alerts))
             return []; //TODO use white, green, amber and red to describe the watch in case of single watch
         let palette = Theme.palette();
         let alpha = Theme.option('opacity') / 100;
         let instances = {};
-        for (let i = 0; i < alerts.length; i++) {
-            let alert = alerts[i];
+        for (let alert of alerts) {
             instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
         }
         
@@ -548,6 +547,23 @@ MonitoringConsole.View = (function() {
                 background: Colors.hex2rgba(color, alpha),
                 status: level, 
                 highlight: Theme.color(level),                
+            };
+        });
+    }
+
+    function createLegendModelFromAnnotations(widget, annotations) {
+        if (!Array.isArray(annotations))
+            return [];
+        let palette = Theme.palette();
+        let instances = {};
+        for (let annotation of annotations) {
+            instances[annotation.instance] = instances[annotation.instance] === undefined ? 1 : instances[annotation.instance] + 1;
+        }
+        return Object.entries(instances).map(function([instance, count]) {
+            return {
+                label: instance,
+                value: count + 'x',
+                color: Colors.lookup('instance', instance, palette),                
             };
         });
     }
@@ -581,7 +597,7 @@ MonitoringConsole.View = (function() {
         if (widget.type === 'annotation')
             return {};
         function createAlertAnnotationsFilter(alert) {
-          return (annotation) => widget.decorations.alerts.noAnnotations !== true
+          return (annotation) => widget.options.noAnnotations !== true
                 && annotation.series == alert.series 
                 && annotation.instance == alert.instance
                 && Math.round(annotation.time / 1000) >= Math.round(alert.since / 1000) // only same second needed
@@ -674,7 +690,7 @@ MonitoringConsole.View = (function() {
         let indicatorNode = widgetNode.find('.Indicator').first();
         let alertsNode = widgetNode.find('.AlertTable').first();
         let annotationsNode = widgetNode.find('.AnnotationTable').first();
-        let legend = createLegendModel(widget, data, alerts); // OBS this has side effect of setting .legend attribute in series data
+        let legend = createLegendModel(widget, data, alerts, annotations); // OBS this has side effect of setting .legend attribute in series data
         if (data !== undefined && (widget.type === 'line' || widget.type === 'bar')) {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }

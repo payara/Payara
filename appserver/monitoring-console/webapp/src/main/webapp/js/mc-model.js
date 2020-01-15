@@ -236,7 +236,7 @@ MonitoringConsole.Model = (function() {
 							series: 'ns:sql @:* MaxExecutionTime',
 							displayName: 'Slow SQL Alerts',
 							grid: { column: 2, item: 2 },
-							decorations: { alerts: { noAnnotations: true, }}},
+							options: { noAnnotations: true }},
 					],
 				}
 			},
@@ -1114,10 +1114,33 @@ MonitoringConsole.Model = (function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
 			payload.queries = Object.values(widgets).map(function(widget) { 
+				let truncate = [];
+				let exclude = [];
+				let alerts = widget.decorations.alerts;
+				let noAlerts = alerts.noOngoing === true && alerts.noStopped === true
+					|| alerts.noAcknowledged === true && alerts.noUnacknowledged === true
+					|| alerts.noAmber === true && alerts.noRed === true;
+				if (noAlerts)
+					exclude.push('ALERTS');
+				if (widget.options.noAnnotations)
+					exclude.push('ANNOTATIONS');
+				switch (widget.type) {
+					case 'alert':
+						exclude.push('POINTS');
+						exclude.push('WATCHES');
+						break;
+					case 'annotation':
+						exclude.push('ALERTS');
+						exclude.push('POINTS');
+						exclude.push('WATCHES');
+						break;
+					default:
+						truncate.push('ALERTS');
+				}				
 				return { 
 					series: widget.series,
-					truncateAlerts: widget.type !== 'alert',
-					truncatePoints: widget.type === 'alert',
+					truncate: truncate,
+					exclude: exclude,
 					instances: undefined, // all
 				}; 
 			});

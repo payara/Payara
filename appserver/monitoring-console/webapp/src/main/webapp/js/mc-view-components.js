@@ -757,8 +757,10 @@ MonitoringConsole.View.Components = (function() {
     function createTableEntry(item) {
       let attrs = createAttributesModel(item);
       let row = $('<tr/>', { 'class': 'Annotation' });
+      let style = { 'style': 'border-left-color: ' + item.color + ';' };
       for (let [key, entry] of Object.entries(attrs)) {
-        let td = $('<td/>');
+        let td = $('<td/>', style);
+        style = {}; // clear after 1. column
         if (entry.type) {
           td.append($('<' + entry.type + '/>').append(entry.value));
         } else {

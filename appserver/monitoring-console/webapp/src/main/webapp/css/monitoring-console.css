@@ -604,7 +604,8 @@ table.tags th, table.tags td {
   white-space: pre-wrap;
   color: #DAE0E2;
   background-color: rgba(67,68,69, 0.75);
-  margin: 0.25em 0;
+  margin: 0;
+  padding: 0.2em 0.5em;
   text-align: left;
   font-size: 13px;
 }
@@ -613,20 +614,21 @@ table.tags th, table.tags td {
   font-size: 13px;
 }
 table.AnnotationTable {
-  border-collapse: collapse;
-  border-spacing: 0;
+  border-collapse: separate;
+  border-spacing: 0 3px;
 }
 .AnnotationTable th {
   border-bottom: 1px solid #0096D6;
 }
 .AnnotationTable td {
   border-left: 1px solid #0096D6;
-  padding: 1px 0.5em;
+  padding: 0 0.5em;
   text-align: right;
   font-size: 15px;
+  line-height: 1em;
 }
 .AnnotationTable td:first-child {
-  border-left-width: 0;
+  border-left: 5px solid transparent;
   text-align: left;
 }
 .AnnotationTable tr:hover {

@@ -39,6 +39,8 @@
  */
 package fish.payara.monitoring.web;
 
+import static fish.payara.monitoring.web.ApiRequests.DataType.ALERTS;
+import static fish.payara.monitoring.web.ApiRequests.DataType.POINTS;
 import static java.util.stream.Collectors.toList;
 
 import java.math.BigInteger;
@@ -125,9 +127,9 @@ public final class ApiResponses {
 
         public SeriesMatch(SeriesQuery query, List<SeriesDataset> data, List<SeriesAnnotation> annotations, //
                 Collection<Watch> watches, Collection<Alert> alerts) {
-            this.alerts = alerts.stream().map(alert -> new AlertData(alert, query.truncateAlerts)).collect(toList());
+            this.alerts = alerts.stream().map(alert -> new AlertData(alert, query.truncates(ALERTS))).collect(toList());
             this.watches = watches.stream().map(WatchData::new).collect(toList());
-            this.data = data.stream().map(set -> new SeriesData(set, query.truncatePoints)).collect(toList());
+            this.data = data.stream().map(set -> new SeriesData(set, query.truncates(POINTS))).collect(toList());
             this.annotations = annotations.stream().map(AnnotationData::new).collect(toList());
         }
     }
