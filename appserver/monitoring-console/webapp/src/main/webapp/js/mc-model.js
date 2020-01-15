@@ -114,7 +114,8 @@ MonitoringConsole.Model = (function() {
 							coloring: 'instance-series'},
 						{ id: '3 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'annotation', unit: 'ms',
 							displayName: 'Trace Data',
-							grid: { item: 1, column: 2, colspan: 2, rowspan: 3 }},
+							grid: { item: 1, column: 2, colspan: 2, rowspan: 3 },
+							coloring: 'instance-series'},
 					]
 				},
 				http: {

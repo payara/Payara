@@ -496,7 +496,7 @@ MonitoringConsole.View = (function() {
             let coloring = widget.coloring;
             if (coloring == 'series')
                 coloring += ': ' + widget.series;
-            let color = Colors.lookup(coloring, getColorKey(widget, seriesData, j), palette);
+            let color = Colors.lookup(coloring, getColorKey(widget, seriesData.series, seriesData.instance, j), palette);
             let background = Colors.hex2rgba(color, alpha);
             if (Array.isArray(alerts) && alerts.length > 0) {
                 let level;
@@ -552,29 +552,42 @@ MonitoringConsole.View = (function() {
     }
 
     function createLegendModelFromAnnotations(widget, annotations) {
-        if (!Array.isArray(annotations))
+        let coloring = widget.coloring;
+        if (!Array.isArray(annotations) || coloring === 'index')
             return [];
         let palette = Theme.palette();
-        let instances = {};
+        let entries = {};
+        let index = 1;
         for (let annotation of annotations) {
-            instances[annotation.instance] = instances[annotation.instance] === undefined ? 1 : instances[annotation.instance] + 1;
+            let series = annotation.series;
+            let instance = annotation.instance;
+            let label = coloring === 'series' ? [series] : coloring === 'instance' ? [instance] : [instance, series];
+            let key = label.join('-');
+            let entry = entries[key];
+            if (entry === undefined) {
+                let colorKey = getColorKey(widget, series, instance, index);
+                entries[key] = { label: label, count: 1, color: Colors.lookup(coloring, colorKey, palette) };
+            } else {
+                entry.count += 1;
+            }
+            index++;
         }
-        return Object.entries(instances).map(function([instance, count]) {
+        return Object.values(entries).map(function(entry) {
             return {
-                label: instance,
-                value: count + 'x',
-                color: Colors.lookup('instance', instance, palette),                
+                label: entry.label,
+                value: entry.count + 'x',
+                color: entry.color,                
             };
         });
     }
 
-    function getColorKey(widget, seriesData, index) {
+    function getColorKey(widget, series, instance, index) {
         switch (widget.coloring) {
             case 'index': return 'line-' + index;
-            case 'series': return seriesData.series;
-            case 'instance-series': return seriesData.instance + ' ' + seriesData.series;
+            case 'series': return series;
+            case 'instance-series': return instance + ' ' + series;
             case 'instance': 
-            default: return seriesData.instance;
+            default: return instance;
         }
     } 
 
@@ -658,9 +671,11 @@ MonitoringConsole.View = (function() {
         let items = [];
         if (Array.isArray(annotations)) {
             let palette = Theme.palette();
+            let index = 1;
             for (let annotation of annotations) {
+                let colorKey = getColorKey(widget, annotation.series, annotation.instance, index);
                 items.push({
-                    color: Colors.lookup('instance', annotation.instance, palette),
+                    color: Colors.lookup(widget.coloring, colorKey, palette),
                     series: annotation.series,
                     instance: annotation.instance,
                     unit: widget.unit,
@@ -669,6 +684,7 @@ MonitoringConsole.View = (function() {
                     attrs: annotation.attrs,
                     fields: widget.fields,
                 });
+                index++;
             }
         }
         return { id: widget.target + '_annotations', mode: widget.mode, sort: widget.sort, items: items };
