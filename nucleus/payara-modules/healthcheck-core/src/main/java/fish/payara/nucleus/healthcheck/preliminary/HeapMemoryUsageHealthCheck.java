@@ -102,7 +102,7 @@ implements MonitoringDataSource, MonitoringWatchSource {
 
     @Override
     public void collect(MonitoringWatchCollector collector) {
-        collectUsage(collector, "ns:health HeapUsage", "Heap Usage", 10, true);
+        collectUsage(collector, "ns:health HeapUsage", "Heap Usage", 15, true);
     }
 
     @Override

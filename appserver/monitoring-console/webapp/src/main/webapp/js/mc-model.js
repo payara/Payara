@@ -97,15 +97,24 @@ MonitoringConsole.Model = (function() {
 				},
 				request_tracing: {
 					name: 'Request Tracing',
-					numberOfColumns: 1,
+					numberOfColumns: 4,
 					widgets: [
-						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
-							grid: { item: 0, column: 0}, 
+						{ id: '1 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
+							displayName: 'Trace Duration Range',
+							grid: { item: 0, column: 0, colspan: 4, rowspan: 1 },
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
 							status: { missing: { hint: TEXT_REQUEST_TRACING }},
-							coloring: 'series',
-						}
+							coloring: 'instance-series',
+							decorations: { alerts: { noAmber: true, noRed: true }}},
+						{ id: '2 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'line', unit: 'ms', 
+							displayName: 'Trace Duration Above Threshold',
+							grid: { item: 1, column: 0, colspan: 2, rowspan: 3 },
+							options: { noFill: true },
+							coloring: 'instance-series'},
+						{ id: '3 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'annotation', unit: 'ms',
+							displayName: 'Trace Data',
+							grid: { item: 1, column: 2, colspan: 2, rowspan: 3 }},
 					]
 				},
 				http: {

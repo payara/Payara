@@ -151,9 +151,9 @@ MonitoringConsole.View = (function() {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
                 parent.append(Components.createAlertTable({}));
+                parent.append(Components.createAnnotationTable({}));
                 parent.append(Components.createLegend([]));                
                 parent.append(Components.createIndicator({}));
-                parent.append(Components.createAnnotationTable({}));
             }
         }
         if (widget.selected) {
