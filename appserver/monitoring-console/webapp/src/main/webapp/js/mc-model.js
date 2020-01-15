@@ -247,6 +247,20 @@ MonitoringConsole.Model = (function() {
 							grid: { column: 2, item: 2 },
 							options: { noAnnotations: true }},
 					],
+				},
+				alerts: {
+					name: 'Alerts',
+					numberOfColumns: 1,
+					widgets: [
+						{id: '1 ?:* *', series: '?:* *', type: 'alert', displayName: 'Ongoing Alerts',
+							grid: {column: 0, item: 1},
+							decorations: { alerts: { noStopped: true }},
+							options: { noAnnotations: true}},
+						{id: '2 ?:* *', series: '?:* *', type: 'alert', displayName: 'Past Unacknowledged Alerts',
+							grid: {column: 0, item: 2},
+							decorations: { alerts: { noOngoing: true, noAcknowledged: true}},
+							options: { noAnnotations: true}},
+					],
 				}
 			},
 	};

@@ -181,20 +181,22 @@ button:hover {
   padding-bottom: 60px;
 }
 #grid-console {
-    position: relative;
-    border-spacing: 0;
-    border-collapse: collapse;
+  position: relative;
+  border-spacing: 0;
+  border-collapse: collapse;
 }
 .console-area {
 	padding: 5px 10px;
 	vertical-align: top;
 }
 #chart-container {
-    padding: 0 5px;
+  padding: 0 5px;
 }
 .widget-chart-box {
-    position: absolute;
-    top: 40px;
+  position: absolute;
+  top: 40px;
+  width: calc(100% - 20px); 
+  height: calc(100% - 100px);
 }
 .widget-title-bar {
   position: absolute;
@@ -520,6 +522,9 @@ table.tags th, table.tags td {
   left: 15px;
   width: calc(100% - 38px);
   background-color: rgba(0, 36, 51, .75);
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;  
 }
 .AlertTable .Item {
   border-left: 5px solid transparent; /* colored via inline style */
@@ -579,6 +584,9 @@ table.tags th, table.tags td {
   left: 15px;
   width: calc(100% - 38px);
   background-color: rgba(0, 36, 51, .75);
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .AnnotationTable .Group.Annotation {
   display: block;

@@ -168,7 +168,7 @@ MonitoringConsole.View = (function() {
      * This fuction creates this box including the canvas element the chart is drawn upon.
      */
     function createWidgetTargetContainer(widget) {
-        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box", style: 'width: calc(100% - 20px); height: calc(100% - 100px);' })
+        return $('<div/>', { id: widget.target + '-box', "class": "widget-chart-box" })
             .append($('<canvas/>',{ id: widget.target }));
     }
 
@@ -480,7 +480,7 @@ MonitoringConsole.View = (function() {
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
-            if (widget.series.indexOf('*') > 0) {
+            if (widget.series.indexOf('*') > 0 && widget.series.indexOf('?') < 0) {
                 let tag = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');                
                 label = widget.coloring == 'series' ? tag : [label, tag];
             }
