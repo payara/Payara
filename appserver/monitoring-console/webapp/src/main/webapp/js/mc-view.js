@@ -552,7 +552,7 @@ MonitoringConsole.View = (function() {
     }
 
     function createLegendModelFromAnnotations(widget, annotations) {
-        let coloring = widget.coloring;
+        let coloring = widget.coloring || 'instance';
         if (!Array.isArray(annotations) || coloring === 'index')
             return [];
         let palette = Theme.palette();
