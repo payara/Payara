@@ -970,9 +970,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
             }
         } // End -- for each active timer
 
-        if (!timerIdsToRemove.isEmpty()) {
-            removeTimers(timerIdsToRemove);
-        }
+        removeTimers(timerIdsToRemove);
 
         for (Iterator entries = timersToRestore.entrySet().iterator();
                 entries.hasNext();) {
@@ -1142,9 +1140,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
             }
         } // End -- for each active timer
 
-        if (timerIdsToRemove.size() > 0) {
-            removeTimers(timerIdsToRemove);
-        }
+        removeTimers(timerIdsToRemove);
 
         for (Iterator entries = timersToRestore.entrySet().iterator();
                 entries.hasNext();) {
