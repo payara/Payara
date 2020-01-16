@@ -970,7 +970,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
             }
         } // End -- for each active timer
 
-        if (timerIdsToRemove.size() > 0) {
+        if (!timerIdsToRemove.isEmpty()) {
             removeTimers(timerIdsToRemove);
         }
 
