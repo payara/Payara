@@ -42,6 +42,7 @@ package fish.payara.nucleus.hazelcast.encryption;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.nio.IOUtil;
 import com.sun.enterprise.security.ssl.impl.MasterPasswordImpl;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
 
@@ -91,7 +92,14 @@ public class SymmetricEncryptor {
     private static SecretKey secretKey;
 
     static {
-        secretKey = readAndDecryptSecretKey();
+        try {
+            secretKey = readAndDecryptSecretKey();
+        } catch (Exception exception) {
+            // Shutting down Payara from the thread we're running in can only be done in fairly brutal ways
+            Logger.getLogger(SymmetricEncryptor.class.getName()).log(Level.SEVERE,
+                    "Error starting Hazelcast due to exception reading encryption key", exception);
+            Globals.get(HazelcastCore.class).getInstance().shutdown();
+        }
     }
 
     public static String encode(byte[] value) {
@@ -185,7 +193,7 @@ public class SymmetricEncryptor {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(ivBytes));
             return new SecretKeySpec(cipher.doFinal(encryptedTextBytes), "AES");
         } catch (BadPaddingException bpe) {
-            throw new HazelcastException("BadPaddingException caught decrypting data grid key" +
+            throw new HazelcastException("BadPaddingException caught decrypting data grid key " +
                     "- likely caused by an incorrect or changed master password", bpe);
         } catch (IllegalBlockSizeException | NoSuchAlgorithmException | InvalidAlgorithmParameterException
                 | InvalidKeyException | InvalidKeySpecException | NoSuchPaddingException exception) {
