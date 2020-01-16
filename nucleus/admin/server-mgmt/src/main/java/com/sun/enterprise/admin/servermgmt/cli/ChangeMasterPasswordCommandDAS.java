@@ -50,6 +50,7 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -147,8 +148,12 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(getDomainXml());
-        return Boolean.valueOf(document.getElementsByTagName("hazelcast-runtime-configuration")
-                .item(0).getAttributes().getNamedItem("datagrid-encryption-enabled").getNodeValue());
+        Node node = document.getElementsByTagName("hazelcast-runtime-configuration")
+                .item(0).getAttributes().getNamedItem("datagrid-encryption-enabled");
+        if (node == null) {
+            return false;
+        }
+        return Boolean.valueOf(node.getNodeValue());
     }
 }
 
