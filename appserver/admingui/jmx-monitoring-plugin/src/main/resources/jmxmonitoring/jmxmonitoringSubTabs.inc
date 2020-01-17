@@ -1,7 +1,8 @@
-/*
+<!--
+
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -36,40 +37,20 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
- */
-package fish.payara.jmx.monitoring.admin;
+-->
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-
-/**
- * @deprecated Since 5.183. Use set-jmx-monitoring-configuration command
- * instead.
- *
- * @author savage
- */
-@Service(name = "get-monitoring-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("get.monitoring.configuration")
-@ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "get-monitoring-configuration",
-            description = "List Payara Monitoring Service Configuration")
-})
-@Deprecated
-public class GetMonitoringConfiguration extends GetJMXMonitoringConfiguration{
-
-}
+<sun:tabSet id="jmxConfigSubtabs" immediate="$boolean{true}" selected="#{sessionScope.jmxConfigSubtabs}" text="JMX" toolTip="JMX Logging Tabs">
+    <sun:tab id="jmxConfigGeneralSubTab" immediate="$boolean{true}" 
+             text="$resource{i18njmx.jmxmonitoring.configuration.generalSubtab}" 
+             toolTip="$resource{i18njmx.jmxmonitoring.configuration.generalSubtab} Tab" >
+        <!command
+          setSessionAttribute(key="jmxConfigSubtabs" value="jmxConfigGeneralSubTab");
+          gf.redirect(page="#{request.contextPath}/jmxmonitoring/jmxmonitoring.jsf?configName=#{pageSession.configName}");
+        />
+    </sun:tab>
+</sun:tabSet>
+<event>
+    <!afterCreate
+        includeIntegrations(type="fish.payara.admingui:jmxConfigSubtabs");
+    />
+</event>

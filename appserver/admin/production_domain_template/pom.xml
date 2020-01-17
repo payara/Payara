@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>admin</artifactId>
@@ -101,12 +101,12 @@
                             <inputFiles>
                                 <inputFile>${project.build.directory}/dependency/config/logging.properties</inputFile>
                                 <inputFile>../../logging/logging.properties</inputFile>
-                            </inputFiles>  
+                            </inputFiles>
                         </configuration>
                     </execution>
-                </executions>						 
+                </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -124,7 +124,17 @@
                             <attach>false</attach>
                             <appendAssemblyId>false</appendAssemblyId>
                             <useProjectArtifact>false</useProjectArtifact>
-                        </configuration>                        
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
                     </execution>
                 </executions>
             </plugin>

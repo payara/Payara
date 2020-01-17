@@ -1,7 +1,7 @@
 /*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.appserver.monitoring.rest.service.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.appserver.monitoring.rest.service.configuration.RestMonitoringConfiguration;
 import java.util.HashMap;
@@ -80,7 +81,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetRestMonitoringConfiguration implements AdminCommand {
     
-    private final String OUTPUT_HEADERS[] = {"Enabled", "Rest Monitoring Application Name", "Context Root", "Security Enabled"};
+    private final String OUTPUT_HEADERS[] = {"Rest Monitoring Enabled", "Rest Monitoring Application Name", "Context Root", "Security Enabled"};
 
     @Inject
     private Target targetUtil;
@@ -90,11 +91,13 @@ public class GetRestMonitoringConfiguration implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
+        ActionReport actionReport = context.getActionReport();
+        ActionReport restMonitoringReport = actionReport.addSubActionsReport();
+
         Config config = targetUtil.getConfig(target);
-               
         if (config == null) {
-            context.getActionReport().setMessage("No such config name: " + targetUtil);
-            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            actionReport.setMessage("No such config name: " + targetUtil);
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
@@ -109,19 +112,19 @@ public class GetRestMonitoringConfiguration implements AdminCommand {
             restMonitoringConfiguration.getSecurityEnabled()
         };        
         columnFormatter.addRow(outputValues);
-        
-        ActionReport actionReport = context.getActionReport();
-        actionReport.appendMessage(columnFormatter.toString());
-        
+
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", restMonitoringConfiguration.getEnabled());
         extraPropertiesMap.put("applicationname", restMonitoringConfiguration.getApplicationName());
         extraPropertiesMap.put("contextroot", restMonitoringConfiguration.getContextRoot());
         extraPropertiesMap.put("securityenabled", restMonitoringConfiguration.getSecurityEnabled());
-        
+
         Properties extraProperties = new Properties();
         extraProperties.put("restMonitoringConfiguration", extraPropertiesMap);
         actionReport.setExtraProperties(extraProperties);
+        restMonitoringReport.setMessage(columnFormatter.toString());
+        restMonitoringReport.appendMessage(StringUtils.EOL);
+        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
 }

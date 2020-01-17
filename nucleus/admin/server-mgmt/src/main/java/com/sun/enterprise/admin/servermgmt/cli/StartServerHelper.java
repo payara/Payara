@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or Affiliates
+// Portions Copyright [2017-2020] Payara Foundation and/or Affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -88,7 +88,6 @@ public class StartServerHelper {
     private final ServerDirs serverDirs;
     private final String masterPassword;
     private final String serverOrDomainName;
-    private final boolean debug;
     private final int debugPort;
     private final boolean isDebugSuspend;
     // only set when actively trouble-shooting or investigating...
@@ -97,7 +96,7 @@ public class StartServerHelper {
 
     public StartServerHelper(Logger logger0, boolean terse0,
             ServerDirs serverDirs0, GFLauncher launcher0,
-            String masterPassword0, boolean debug0) {
+            String masterPassword0) {
         logger = logger0;
         terse = terse0;
         launcher = launcher0;
@@ -113,7 +112,6 @@ public class StartServerHelper {
         serverDirs = serverDirs0;
         pidFile = serverDirs.getPidFile();
         masterPassword = masterPassword0;
-        debug = debug0;
         // it will be < 0 if both --debug is false and debug-enabled=false in jvm-config
         debugPort = launcher.getDebugPort();
         isDebugSuspend = launcher.isDebugSuspend();

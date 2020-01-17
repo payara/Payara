@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.jmx.monitoring.admin;
+package fish.payara.samples.rest.management;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import static org.junit.Assert.assertEquals;
+
+import com.gargoylesoftware.htmlunit.HttpMethod;
+
+import org.junit.Test;
+
+import fish.payara.samples.NotMicroCompatible;
 
 /**
- * @deprecated Since 5.183. 
- * Use set-jmx-monitoring-configuration command instead.
- *
- * @author savage
+ * Test the REST management interface for it's basic HTTP responses
  */
-@Service(name = "set-monitoring-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("set.monitoring.configuration")
-@ExecuteOn(RuntimeType.DAS)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "set-monitoring-configuration",
-            description = "Sets the Monitoring Service Configuration to that specified")
-})
-@Deprecated
-public class SetMonitoringConfiguration extends SetJMXMonitoringConfiguration {
-    
+@NotMicroCompatible
+public class HttpResponsesTest extends RestManagementTest {
+
+    /**
+     * Tests that when deleting a non-existent resource a 404 is returned instead of
+     * a 415. See CUSTCOM-13 for details.
+     */
+    @Test
+    public void when_DELETE_non_existent_resource_expect_404() {
+        int status = request(HttpMethod.DELETE, "servers/server/server/application-ref/non-existent-application-ref").getStatus();
+        assertEquals("A non-existent resource should return a 404.", 404, status);
+    }
+
 }

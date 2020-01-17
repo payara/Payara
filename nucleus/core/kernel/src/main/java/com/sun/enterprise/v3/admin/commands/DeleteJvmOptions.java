@@ -162,7 +162,8 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
         SingleConfigCode<JvmOptionBag> scc = (JvmOptionBag bag1) -> {
             List<String> jvmopts = new ArrayList<>(bag1.getJvmRawOptions());
             int orig = jvmopts.size();
-            boolean removed = jvmopts.removeIf(option -> toRemove.contains(new JvmOption(option).option));
+            // using new JvmOption(option).toString() (instead op option directly) to make sure the correct formatting is applied.
+            boolean removed = jvmopts.removeIf(option -> toRemove.contains(new JvmOption(option).toString()));
             bag1.setJvmOptions(jvmopts);
             int now = jvmopts.size();
             if (removed) {

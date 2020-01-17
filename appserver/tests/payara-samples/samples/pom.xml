@@ -23,6 +23,7 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-tracing</module>
+        <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>oauth2</module>
         <module>openid</module>
@@ -92,6 +93,7 @@
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>arquillian-payara-server-managed</artifactId>
                     <scope>test</scope>
+                    <optional>true</optional>
                 </dependency>
             </dependencies>
 
@@ -159,6 +161,7 @@
                     <artifactId>arquillian-payara-micro-managed</artifactId>
                     <version>${arquillian.payara.micro.version}</version>
                     <scope>test</scope>
+                    <optional>true</optional>
                 </dependency>
             </dependencies>
 
@@ -220,6 +223,7 @@
                     <artifactId>arquillian-payara-server-remote</artifactId>
                     <version>${arquillian.payara.remote.version}</version>
                     <scope>test</scope>
+                    <optional>true</optional>
                 </dependency>
             </dependencies>
             <build>

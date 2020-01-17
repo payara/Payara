@@ -26,8 +26,11 @@ public final class PayaraTestShrinkWrap {
     }
 
     private static <T extends Archive<T> & ClassContainer<T>> T getArchive(Class<T> archiveType) {
-        return ShrinkWrap.create(archiveType).addClass(PayaraArquillianTestRunner.class)
-                .addClass(PayaraTestRunnerDelegate.class).addClass(SincePayara.class).addClass(NotMicroCompatible.class)
+        return ShrinkWrap.create(archiveType)
+                .addClass(PayaraArquillianTestRunner.class)
+                .addClass(PayaraTestRunnerDelegate.class)
+                .addClass(SincePayara.class)
+                .addClass(NotMicroCompatible.class)
                 .addClass(PayaraVersion.class);
     }
 }
