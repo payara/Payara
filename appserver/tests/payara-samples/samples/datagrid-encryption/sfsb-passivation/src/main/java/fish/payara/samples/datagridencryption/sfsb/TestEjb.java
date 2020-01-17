@@ -39,7 +39,6 @@
  */
 package fish.payara.samples.datagridencryption.sfsb;
 
-import java.util.List;
 import javax.ejb.Local;
 
 /**
@@ -52,6 +51,6 @@ public interface TestEjb {
 
     void removeItem(String item);
 
-    List<String> getItems();
+    String getItems();
 
 }

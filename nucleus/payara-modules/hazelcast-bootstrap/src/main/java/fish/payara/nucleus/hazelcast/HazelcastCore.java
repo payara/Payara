@@ -118,7 +118,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     private String memberName;
     private String memberGroup;
 
-    private boolean datagridEncryptionChanged = false;
+    private boolean oldDatagridEncryptionValue;
 
     @Inject
     Events events;
@@ -180,7 +180,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberGroup = nodeConfig.getMemberGroup();
         }
 
-
+        oldDatagridEncryptionValue = Boolean.parseBoolean(configuration.getDatagridEncryptionEnabled());
     }
 
     /**
@@ -564,7 +564,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
         for (PropertyChangeEvent pce : pces) {
             if (pce.getPropertyName().equalsIgnoreCase("datagrid-encryption-enabled")) {
-                datagridEncryptionChanged = true;
                 unprocessedChanges.add(new UnprocessedChangeEvent(pce, "Hazelcast encryption settings changed"));
             }
         }
@@ -578,9 +577,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public boolean isDatagridEncryptionEnabled() {
         // If the datagrid encryption settings have changed, we want to return the opposite of the current setting
         // to prevent the server changing encryption behaviour without a restart
-        if (datagridEncryptionChanged) {
-            return !configuration.getDatagridEncryptionEnabled().equalsIgnoreCase("true");
+        boolean datagridEncryptionEnabled = configuration.getDatagridEncryptionEnabled().equalsIgnoreCase("true");
+        if (oldDatagridEncryptionValue != datagridEncryptionEnabled) {
+            return oldDatagridEncryptionValue;
         }
-        return  configuration.getDatagridEncryptionEnabled().equalsIgnoreCase("true");
+        return datagridEncryptionEnabled;
     }
 }

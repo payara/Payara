@@ -63,13 +63,8 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * The change-master-password command for a node. It takes in a nodeDir and node
@@ -141,7 +136,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
                 LOGGER.warning("Data grid encryption is enabled - " +
                         "you will need to regenerate the encryption key");
             }
-        } catch (IOException | SAXException | ParserConfigurationException | NullPointerException exception) {
+        } catch (IOException | XMLStreamException exception) {
             LOGGER.warning("Could not determine if data grid encryption is enabled - " +
                     "you will need to regenerate the encryption key if it is");
         }
@@ -258,18 +253,6 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         } catch (MiniXmlParserException ex) {
             throw new CommandException(STRINGS.get("NoAdminPortEx", ex), ex);
         }
-    }
-
-    private boolean dataGridEncryptionEnabled() throws IOException, SAXException, ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(getDomainXml());
-        Node node = document.getElementsByTagName("hazelcast-runtime-configuration")
-                .item(0).getAttributes().getNamedItem("datagrid-encryption-enabled");
-        if (node == null) {
-            return false;
-        }
-        return Boolean.valueOf(node.getNodeValue());
     }
 
 }

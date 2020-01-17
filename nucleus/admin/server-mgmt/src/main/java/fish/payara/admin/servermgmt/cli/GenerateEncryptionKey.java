@@ -53,7 +53,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -67,7 +66,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.util.Base64;
 import java.util.Random;
 
 @Service(name = "generate-encryption-key")
@@ -163,12 +161,12 @@ public class GenerateEncryptionKey extends LocalDomainCommand {
 
             byte[] encryptedTextBytes = cipher.doFinal(keyBytes);
 
-            // Prepend salt and VI
+            // Prepend salt and IV
             byte[] buffer = new byte[saltBytes.length + ivBytes.length + encryptedTextBytes.length];
             System.arraycopy(saltBytes, 0, buffer, 0, saltBytes.length);
             System.arraycopy(ivBytes, 0, buffer, saltBytes.length, ivBytes.length);
             System.arraycopy(encryptedTextBytes, 0, buffer, saltBytes.length + ivBytes.length, encryptedTextBytes.length);
-            return Base64.getEncoder().encode(buffer);
+            return buffer;
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException
                 | NoSuchPaddingException | InvalidParameterSpecException | IllegalBlockSizeException exception) {
             throw new CommandException(exception.getMessage(), exception);

@@ -69,7 +69,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.util.Base64;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,7 +79,7 @@ import java.util.logging.Logger;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  * @author Rudy De Busscher <rudy.de.busscher@payara.fish>
  */
-public class SymmetricEncryptor {
+public class HazelcastSymmetricEncryptor {
 
     private static final String DATAGRID_KEY_FILE = "datagrid-key";
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
@@ -96,13 +95,13 @@ public class SymmetricEncryptor {
             secretKey = readAndDecryptSecretKey();
         } catch (Exception exception) {
             // Shutting down Payara from the thread we're running in can only be done in fairly brutal ways
-            Logger.getLogger(SymmetricEncryptor.class.getName()).log(Level.SEVERE,
+            Logger.getLogger(HazelcastSymmetricEncryptor.class.getName()).log(Level.SEVERE,
                     "Error starting Hazelcast due to exception reading encryption key", exception);
             Globals.get(HazelcastCore.class).getInstance().shutdown();
         }
     }
 
-    public static String encode(byte[] value) {
+    public static byte[] encode(byte[] value) {
         // Generate IV.
         byte[] saltBytes = new byte[20];
         random.nextBytes(saltBytes);
@@ -121,24 +120,24 @@ public class SymmetricEncryptor {
             System.arraycopy(ivBytes, 0, buffer, saltBytes.length, ivBytes.length);
             System.arraycopy(encryptedTextBytes, 0, buffer, saltBytes.length + ivBytes.length,
                     encryptedTextBytes.length);
-            return Base64.getEncoder().encodeToString(buffer);
+            return buffer;
         } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException
                 | InvalidParameterSpecException | BadPaddingException exception) {
             throw new HazelcastException(exception);
         }
     }
 
-    public static byte[] decode(String encryptedText) {
+    public static byte[] decode(byte[] encryptedTextBytes) {
         byte[] decryptedTextBytes;
         try {
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
             // Strip off the salt and IV
-            ByteBuffer buffer = ByteBuffer.wrap(Base64.getDecoder().decode((encryptedText)));
+            ByteBuffer buffer = ByteBuffer.wrap(encryptedTextBytes);
             byte[] saltBytes = new byte[20];
             buffer.get(saltBytes, 0, saltBytes.length);
             byte[] ivBytes = new byte[cipher.getBlockSize()];
             buffer.get(ivBytes, 0, ivBytes.length);
-            byte[] encryptedTextBytes = new byte[buffer.capacity() - saltBytes.length - ivBytes.length];
+            encryptedTextBytes = new byte[buffer.capacity() - saltBytes.length - ivBytes.length];
 
             buffer.get(encryptedTextBytes);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(ivBytes));
@@ -164,7 +163,7 @@ public class SymmetricEncryptor {
             encryptedBytes = Files.readAllBytes(
                     new File(serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE).toPath());
         } catch (IOException ioe) {
-            Logger.getLogger(SymmetricEncryptor.class.getName()).log(Level.SEVERE,
+            Logger.getLogger(HazelcastSymmetricEncryptor.class.getName()).log(Level.SEVERE,
                     "Error reading datagrid key, please check if it's accessible at expected location: "
                             + serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE);
             throw new HazelcastException("Error reading encrypted key", ioe);
@@ -178,7 +177,7 @@ public class SymmetricEncryptor {
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
 
             // Strip off the salt and IV
-            ByteBuffer buffer = ByteBuffer.wrap(Base64.getDecoder().decode(encryptedBytes));
+            ByteBuffer buffer = ByteBuffer.wrap(encryptedBytes);
             byte[] saltBytes = new byte[20];
             buffer.get(saltBytes, 0, saltBytes.length);
             byte[] ivBytes = new byte[cipher.getBlockSize()];
@@ -221,9 +220,6 @@ public class SymmetricEncryptor {
             object = IOUtil.newObjectInputStream(Thread.currentThread().getContextClassLoader(), null, bis).readObject();
         } catch (IOException | ClassNotFoundException exception) {
             throw new HazelcastException("Error converting Byte Array to Object", exception);
-        }
-        if (object == null) {
-            throw new HazelcastException("Object appears to be null, something probably went wrong converting Byte Array to Object");
         }
         return object;
     }

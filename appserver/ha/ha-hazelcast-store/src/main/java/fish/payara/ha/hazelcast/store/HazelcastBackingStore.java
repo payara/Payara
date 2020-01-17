@@ -78,8 +78,8 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
             return (V) clusteredStore.get(storeName, k);
         } catch (ClassCastException cce) {
             Logger.getLogger(HazelcastBackingStore.class.getName()).log(Level.WARNING,
-                    "ClassCastException when reading value from store, returning null", cce);
-            return null;
+                    "ClassCastException when reading value from store", cce);
+            throw new BackingStoreException(cce.getMessage());
         }
     }
 
@@ -111,7 +111,7 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
             throw new BackingStoreException("Clustered Store not available, cannot use sessions yet", new IllegalStateException("Initializing"));
         }
         if (!clusteredStore.isEnabled()) {
-            throw new BackingStoreException("Hazelcast is NOT Enabled please enable Hazelcast");
+            throw new BackingStoreException("Hazelcast is not enabled, please enable Hazelcast");
         }
         instanceName = clusteredStore.getInstanceId();
     }

@@ -70,6 +70,13 @@ import com.sun.enterprise.util.io.ServerDirs;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.XMLEvent;
+
 /**
  * A class that's supposed to capture all the behavior common to operation
  * on a "local" server.
@@ -612,4 +619,25 @@ public abstract class LocalServerCommand extends CLICommand {
         return CLIConstants.WAIT_FOR_DAS_TIME_MS + now();
     }
 
+    protected boolean dataGridEncryptionEnabled() throws IOException, XMLStreamException {
+        // We can't access config beans from this invocation due to it being CLI vs. ASAdmin command - it's not
+        // executing against a running server. This means we need to read directly from the domain.xml.
+        XMLEventReader xmlReader = XMLInputFactory.newInstance().createXMLEventReader(new FileInputStream(getDomainXml()));
+        while (xmlReader.hasNext()) {
+            XMLEvent event = xmlReader.nextEvent();
+
+            if (event.isStartElement()
+                    && event.asStartElement().getName().getLocalPart().equals("hazelcast-runtime-configuration")) {
+                Attribute attribute = event.asStartElement().getAttributeByName(new QName("datagrid-encryption-enabled"));
+                if (attribute == null) {
+                    return false;
+                }
+                return Boolean.valueOf(attribute.getValue());
+            }
+        }
+
+        logger.warning("Could not determine if data grid encryption is enabled - " +
+                "you will need to regenerate the encryption key if it is");
+        return false;
+    }
 }

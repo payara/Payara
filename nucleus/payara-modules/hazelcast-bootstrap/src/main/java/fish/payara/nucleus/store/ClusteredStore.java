@@ -42,29 +42,27 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.monitor.LocalMapStats;
-
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import fish.payara.nucleus.hazelcast.encryption.PayaraHazelcastEncryptedValueHolder;
-import fish.payara.nucleus.hazelcast.encryption.SymmetricEncryptor;
+import fish.payara.nucleus.hazelcast.encryption.HazelcastSymmetricEncryptor;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Very Simple Store interface to Hazelcast
@@ -132,8 +130,8 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
         boolean result = false;
         if (isEnabled()) {
             if (value != null && hzCore.isDatagridEncryptionEnabled()) {
-                value = new PayaraHazelcastEncryptedValueHolder(SymmetricEncryptor.encode(
-                        SymmetricEncryptor.objectToByteArray(value)));
+                value = new PayaraHazelcastEncryptedValueHolder(HazelcastSymmetricEncryptor.encode(
+                        HazelcastSymmetricEncryptor.objectToByteArray(value)));
             }
             hzCore.getInstance().getMap(storeName).set(key, value);
             result = true;
@@ -192,11 +190,10 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
             if (map != null) {
                 result = (Serializable) map.get(key);
 
-                if (result != null && hzCore.isDatagridEncryptionEnabled()
-                        && result instanceof PayaraHazelcastEncryptedValueHolder) {
-                    result = (Serializable) SymmetricEncryptor.byteArrayToObject(
-                            SymmetricEncryptor.decode(
-                                    ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectString()));
+                if (result instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                    result = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                            HazelcastSymmetricEncryptor.decode(
+                                    ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectBytes()));
                 }
             }
         }
@@ -228,11 +225,10 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
                 for (Serializable key : keys) {
                     Serializable value = (Serializable) map.get(key);
 
-                    if (value != null && hzCore.isDatagridEncryptionEnabled()
-                            && value instanceof PayaraHazelcastEncryptedValueHolder) {
-                        value = (Serializable) SymmetricEncryptor.byteArrayToObject(
-                                SymmetricEncryptor.decode(
-                                        ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectString()));
+                    if (value instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                        value = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                                HazelcastSymmetricEncryptor.decode(
+                                        ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectBytes()));
                     }
 
                     result.put(key, value);

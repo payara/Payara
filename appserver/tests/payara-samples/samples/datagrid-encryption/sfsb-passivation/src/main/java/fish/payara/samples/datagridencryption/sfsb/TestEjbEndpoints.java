@@ -68,12 +68,7 @@ public class TestEjbEndpoints implements Serializable {
         testEjb.addItem("bear");
         testEjb.removeItem("bear");
 
-        String items = "";
-        for (String item : testEjb.getItems()) {
-            items += item + ",";
-        }
-        items = items.substring(0, items.length() - 1);
-        return items;
+        return testEjb.getItems();
     }
 
     @GET
@@ -84,12 +79,7 @@ public class TestEjbEndpoints implements Serializable {
         testEjb2.addItem("care");
         testEjb2.removeItem("bear");
 
-        String items = "";
-        for (String item : testEjb2.getItems()) {
-            items += item + ",";
-        }
-        items = items.substring(0, items.length() - 1);
-        return items;
+        return testEjb2.getItems();
     }
 
     @GET

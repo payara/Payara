@@ -75,31 +75,28 @@ public class TestEjbImpl implements TestEjb, Serializable {
     }
 
     @Override
-    public List<String> getItems() {
-        return items;
+    public String getItems() {
+        String allItems = "";
+        if (!items.isEmpty()) {
+            for (String item : items) {
+                allItems += item + ",";
+            }
+            allItems = allItems.substring(0, allItems.length() - 1);
+        }
+        return allItems;
     }
 
     @PrePassivate
     private void prePassivate() {
         System.out.println("##### Passivating... #####");
-        String allItems = "";
-        for (String item : getItems()) {
-            allItems += item + ",";
-        }
-        allItems = allItems.substring(0, allItems.length() - 1);
-        System.out.println(allItems);
+        System.out.println(getItems());
         System.out.println("##### Finished Passivating... #####");
     }
 
     @PostActivate
     private void postActivate() {
         System.out.println("##### Reactivating... #####");
-        String allItems = "";
-        for (String item : getItems()) {
-            allItems += item + ",";
-        }
-        allItems = allItems.substring(0, allItems.length() - 1);
-        System.out.println(allItems);
+        System.out.println(getItems());
         System.out.println("##### Finished Reactivating... #####");
     }
 }

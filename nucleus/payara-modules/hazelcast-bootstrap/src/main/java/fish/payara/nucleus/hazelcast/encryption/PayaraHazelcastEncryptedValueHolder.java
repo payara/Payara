@@ -46,13 +46,13 @@ import java.io.Serializable;
  */
 public class PayaraHazelcastEncryptedValueHolder implements Serializable {
 
-    private String encryptedObjectString;
+    private byte[] encryptedObjectBytes;
 
-    public PayaraHazelcastEncryptedValueHolder(String encryptedObjectString) {
-        this.encryptedObjectString = encryptedObjectString;
+    public PayaraHazelcastEncryptedValueHolder(byte[] encryptedObjectBytes) {
+        this.encryptedObjectBytes = encryptedObjectBytes;
     }
 
-    public String getEncryptedObjectString() {
-        return encryptedObjectString;
+    public byte[] getEncryptedObjectBytes() {
+        return encryptedObjectBytes;
     }
 }

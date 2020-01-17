@@ -744,11 +744,7 @@ public class ServerOperations {
         String javaEEServer = System.getProperty("javaEEServer");
         if ("payara-remote".equals(javaEEServer)) {
             System.out.println("Enabling Data Grid Encryption");
-            List<String> cmd = new ArrayList<>();
-            cmd.add("set-hazelcast-configuration");
-            cmd.add("--encryptdatagrid");
-            cmd.add("true");
-            CliCommands.payaraGlassFish(cmd);
+            CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true");
 
             System.out.println("Stopping Server");
             String domain = System.getProperty("payara.domain.name", "domain1");
@@ -762,23 +758,15 @@ public class ServerOperations {
                     domain = "domain1";
                 }
             }
-            cmd = new ArrayList<>();
-            cmd.add("stop-domain");
-            cmd.add(domain);
-            CliCommands.payaraGlassFish(cmd);
+            CliCommands.payaraGlassFish("stop-domain", domain);
 
             System.out.println("Generating Encryption Key");
-            cmd = new ArrayList<>();
-            cmd.add("-W");
-            cmd.add(Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt");
-            cmd.add("generate-encryption-key");
-            CliCommands.payaraGlassFish(cmd);
+            CliCommands.payaraGlassFish("-W",
+                    Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt",
+                    "generate-encryption-key");
 
             System.out.println("Restarting Server");
-            cmd = new ArrayList<>();
-            cmd.add("start-domain");
-            cmd.add(domain);
-            CliCommands.payaraGlassFish(cmd);
+            CliCommands.payaraGlassFish("start-domain", domain);
         } else {
             if (javaEEServer == null) {
                 System.out.println("javaEEServer not specified");
@@ -792,11 +780,7 @@ public class ServerOperations {
         String javaEEServer = System.getProperty("javaEEServer");
         if ("payara-remote".equals(javaEEServer)) {
             System.out.println("Disabling Data Grid Encryption");
-            List<String> cmd = new ArrayList<>();
-            cmd.add("set-hazelcast-configuration");
-            cmd.add("--encryptdatagrid");
-            cmd.add("false");
-            CliCommands.payaraGlassFish(cmd);
+            CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false");
 
             String domain = System.getProperty("payara.domain.name", "domain1");
             if (domain != null) {

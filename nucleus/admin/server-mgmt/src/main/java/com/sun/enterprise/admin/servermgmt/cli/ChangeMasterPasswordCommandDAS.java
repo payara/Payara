@@ -52,10 +52,20 @@ import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.XMLEvent;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -133,7 +143,7 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
                     logger.warning("Data grid encryption is enabled - " +
                             "you will need to regenerate the encryption key");
                 }
-            } catch (IOException | SAXException | ParserConfigurationException | NullPointerException exception) {
+            } catch (IOException | XMLStreamException exception) {
                 logger.warning("Could not determine if data grid encryption is enabled - " +
                         "you will need to regenerate the encryption key if it is");
             }
@@ -144,17 +154,7 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
         }
     }
 
-    private boolean dataGridEncryptionEnabled() throws IOException, SAXException, ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(getDomainXml());
-        Node node = document.getElementsByTagName("hazelcast-runtime-configuration")
-                .item(0).getAttributes().getNamedItem("datagrid-encryption-enabled");
-        if (node == null) {
-            return false;
-        }
-        return Boolean.valueOf(node.getNodeValue());
-    }
+
 }
 
 
