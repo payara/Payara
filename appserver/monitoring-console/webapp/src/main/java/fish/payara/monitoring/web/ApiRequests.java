@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,46 +39,69 @@
  */
 package fish.payara.monitoring.web;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.web.ApiResponses.AlertFrame;
+import fish.payara.monitoring.web.ApiResponses.SeriesData;
 
-import fish.payara.monitoring.model.SeriesDataset;
+/**
+ * Types used in the web API to map requests.
+ * 
+ * @see ApiResponses
+ * 
+ * @author Jan Bernitt
+ */
+public final class ApiRequests {
+    /**
+     * A container for a full request consisting of one or more {@link SeriesQuery}s.
+     */
+    public static final class SeriesRequest {
 
-public final class SeriesResponse {
+        public SeriesQuery[] queries;
 
-    public static List<SeriesResponse> from(Collection<SeriesDataset> sets) {
-        List<SeriesResponse> stats = new ArrayList<>(sets.size());
-        for (SeriesDataset set : sets) {
-            stats.add(new SeriesResponse(set));
+        public SeriesRequest() {
+            // from JSON
         }
-        return stats;
+
+        SeriesRequest(String series) {
+            this(new SeriesQuery(series));
+        }
+
+        SeriesRequest(SeriesQuery...queries) {
+            this.queries = queries;
+        }
+
     }
 
-    public final String series;
-    public final String instance;
-    public final long[] points;
-    public final long observedMax;
-    public final long observedMin;
-    public final BigInteger observedSum;
-    public final int observedValues;
-    public final int observedValueChanges;
-    public final long observedSince;
-    public final int stableCount;
-    public final long stableSince;
+    /**
+     * A query for a particular {@link Series} or set of {@link Series} by giving its {@link #series} name or pattern
+     * and the {@link #instances} to include in the result data.
+     */
+    public static final class SeriesQuery {
 
-    public SeriesResponse(SeriesDataset set) {
-        this.instance = set.getInstance();
-        this.series = set.getSeries().toString();
-        this.points = set.points();
-        this.observedMax = set.getObservedMax();
-        this.observedMin = set.getObservedMin();
-        this.observedSum = set.getObservedSum();
-        this.observedValues = set.getObservedValues();
-        this.observedValueChanges = set.getObservedValueChanges();
-        this.observedSince = set.getObservedSince();
-        this.stableCount = set.getStableCount();
-        this.stableSince = set.getStableSince();
+        /**
+         * The name or pattern of the series (* can be used as wild-card for tag values)
+         */
+        public String series;
+        /**
+         * What instances to include in the result, an empty or null set includes all available sets
+         */
+        public String[] instances;
+        /**
+         * When true alerts will only contains the most recent {@link AlertFrame}
+         */
+        public boolean truncateAlerts = true;
+        /**
+         * When true {@link SeriesData} will only contain the most recent point.
+         */
+        public boolean truncatePoints = false;
+
+        public SeriesQuery() {
+            // from JSON
+        }
+
+        SeriesQuery(String series, String... instances) {
+            this.series = series;
+            this.instances = instances;
+        }
     }
 }

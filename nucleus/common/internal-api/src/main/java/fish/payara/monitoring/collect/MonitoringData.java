@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.web;
+package fish.payara.monitoring.collect;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import fish.payara.notification.requesttracing.RequestTrace;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-public class RequestTraceResponse {
+/**
+ * Annotation to add meta data to {@link MonitoringDataSource#collect(MonitoringDataCollector)} method to customise the
+ * collection.
+ * 
+ * @author Jan Bernitt
+ */
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface MonitoringData {
 
-    public final UUID id;
-    public final long startTime;
-    public final long endTime;
-    public final long elapsedTime; 
-    public final List<RequestTraceSpan> spans = new ArrayList<>();
+    /**
+     * This is equivalent to {@link MonitoringDataCollector#in(CharSequence)} with the same argument applied to the
+     * {@link MonitoringDataCollector} before passed to the collected {@link MonitoringDataSource}.
+     * 
+     * This name-space is also used when controlling the set of enabled/disabled sources via configuration.
+     * {@link MonitoringDataSource}s without an annotation are always collected no matter what name-space they might use
+     * in the implementation.
+     * 
+     * @return The default name-space for the annotated {@link MonitoringDataSource}.
+     */
+    String ns();
 
-    public RequestTraceResponse(RequestTrace trace) {
-        this.id = trace.getTraceId();
-        this.startTime = trace.getStartTime().toEpochMilli();
-        this.endTime = trace.getEndTime().toEpochMilli();
-        this.elapsedTime = trace.getElapsedTime();
-        for (fish.payara.notification.requesttracing.RequestTraceSpan span : trace.getTraceSpans()) {
-            this.spans.add(new RequestTraceSpan(span));
-        }
-    }
+    /**
+     * @return The time in seconds between data points for the annotated {@link MonitoringDataSource}
+     */
+    int intervalSeconds() default 1;
+
+    /**
+     * This is the initial setting for the annotated {@link MonitoringDataSource} that can be changed similar to other
+     * server configurations.
+     * 
+     * @return True in case the annotated {@link MonitoringDataSource} should not be collected by default
+     */
+    boolean optional() default false;
 }

@@ -34,7 +34,7 @@ id              = string
 numberOfColumns = number
 rotate          = boolean
 widgets         = [WIDGET] | { *: WIDGET }
-settings        = { display, home, refresh, rotation, colors }
+settings        = { display, home, refresh, rotation, theme }
 display         = boolean
 home            = string
 refresh         = { paused, interval }
@@ -42,10 +42,10 @@ rotation        = { enabled, interval }
 paused          = boolean
 enabled         = boolean
 interval        = number
-colors          = { palette, opacity, defaults }
+theme           = { palette, colors, options }
 palette         = [COLOR]
-opacity         = number
-defaults        = { *:COLOR }
+colors          = { *:COLOR }
+options         = { *:number }
 COLOR           = string
 ```
 * `id` is derived from `name` and used as attribute name in `pages` object
@@ -62,14 +62,17 @@ WIDGET     = { series, type, unit, scaleFactor, target, grid, axis, options, dec
 series     = string
 target     = string
 displayName= string
-type       = 'line' | 'bar'
-unit       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
-coloring   = 'instance' | 'series' | 'index'
+type       = 'line' | 'bar' | 'alert'
+unit       = UNIT
+UNIT       = 'count' | 'ms' | 'ns' | 'bytes' | 'percent'
+coloring   = 'instance' | 'series' | 'index' | 'instance-series'
 scaleFactor= number
-grid       = { item, column, span }
+grid       = { item, column, span, colspan, rowspan }
 item       = number
 column     = number
-span       = span
+span       = number
+colspan    = number
+rowspan    = number
 axis       = { min, max }
 min        = number
 max        = number
@@ -79,12 +82,12 @@ options    = {
 	drawAvgLine:boolean,
 	perSec:boolean,
 	decimalMetric:boolean,
-	noCurves:boolean,
+	drawCurves:boolean,
 	drawPoints:boolean,
 	noFill:boolean,
 	noTimeLabels:boolean,
 }
-decorations= { waterline, thresholds }
+decorations= { waterline, thresholds, alerts }
 waterline  = { value:number color:string }
 thresholds = { reference, alarming, critical }
 reference  = 'off' | 'now' | 'min' | 'max' | 'avg'
@@ -98,11 +101,20 @@ THRESHOLD  = {
 status     = { *:STAUS }
 STATUS     = { hint }
 hint       = string
+alerts     = { 
+	noOngoing:boolean,
+	noStopped:boolean,
+	noAcknowledged:boolean,
+	noUnacknowledged:boolean,
+	noAmber:boolean,
+	noRed:boolean,
+}
 ```
 * `target` is derived from `series` if not present
 * if `type` is not set `'line'` is assumed and set
 * if `options`, `grid`, `decorations` or `THRESHOLD` fields aren't defined they are initialised to `{}`
 * `status` is a map from assessment status (key) to a `STATUS` object to add information on the particular status used to help the user to make sense of the current status. For possible keys are those of `Status`
+* `span` can be given instead of `colspan` and `rowspan` when they have the same value
 
 
 #### Decorations
@@ -132,8 +144,9 @@ The grid model is created on the fly based on the view model, used by the view t
 ```
 GRID    = [COLUMN]
 COLUMN  = [CELL]
-CELL    = undefined | null | { span, widget }
-span    = number
+CELL    = undefined | null | { colspan, rowspan, widget }
+colspan = number
+rowspan = number
 widget  = WIDGET
 ```
 * all columns have the same amount of `CELL` items
@@ -205,7 +218,7 @@ Assessments are evaluations made by the client to classify the data based on a w
 ```
 ASSESSMENTS = { status }
 status      = Status
-Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing'
+Status      = 'normal' | 'alarming' | 'critical' | 'error' | 'missing' | 'white' | 'green' | 'amber' | 'red'
 ```
 
 
@@ -219,7 +232,8 @@ The general idea of model driven UI components is that a model - usually a JS ob
 Describes the model expected by the `Settings` component.
 
 ```
-SETTINGS    = [GROUP]
+SETTINGS    = { id, groups }
+groups      = [GROUP]
 GROUP       = { id, caption, entries, collapsed }
 id 		    = string
 caption     = string
@@ -275,19 +289,21 @@ Describes the model expected by the `Legend` component.
 
 ```
 LEGEND          = [LEGEND_ITEM]
-LEGEND_ITEM     = { label, value, color, backgroundColor, assessments }
+LEGEND_ITEM     = { label, value, color, background, status, highlight }
 label           = string
 value           = string | number
 color           = string
-backgroundColor = string
-assessments     = ASSESSMENTS
+background      = string | [ string ]
+status          = Status
+highlight       = string
+
 ```
 * If `value` is a _string_ only the first word is displayed large.
 This is as steight forward as it looks. All members are required. 
 The model creates a new jquery object that must be inserted into the DOM by the caller.
 * `color` is the color of the line or bar used to indicate the item, 
-* `backgroundColor` is the background color of the line or bar should it use a fill
-* `assessments` help to understand or classify the given value qualitatively 
+* `background` is the background color of the line or bar should it use a fill, if an array is used those are the start and end color of a linear gradient
+* `highlight` is the color used to highlight the status of the text
 
 
 ### Indicator API
@@ -301,7 +317,7 @@ text      = string
 ```
 
 
-### MENU API
+### Menu API
 Describes the model expected by the `MENU` component that is used for any of the text + icon menus or toolbars.
 
 ```
@@ -321,3 +337,55 @@ onClick      = fn () => ()
 * `id` is optional
 * `description` is optional
 * if item in `MENU` array has `items` it is a `BUTTON_GROUP` otherwise it is a `BUTTON`
+
+
+### Alert Table API
+Describes the model expected by the `AlertTable` component.
+This component gives a tabular overview of alerts that occured for the widget `series`.
+
+```
+ALERT_TABLE  = { id, verbose, items }
+brief        = boolean
+items        = ALERT_ITEM
+ALERT_ITEM   = { serial, name, series, instance, unit, color, acknowledged, frames, watch }
+serial       = number
+name         = string
+series       = string
+instance     = instance
+unit         = UNIT
+acknowledged = boolean
+frames       = [ALERT_FRAME]
+ALERT_FRAME  = { level, since, until, color }
+level        = 'red' | 'amber'
+since        = date | number
+until    	 = date | number
+color        = string
+watch        = { red, amber, green }
+red          = CIRCUMSTANCE
+amber        = CIRCUMSTANCE
+green        = CIRCUMSTANCE
+CIRCUMSTANCE = { start, stop }
+start        = CONDITION
+stop         = CONDITION
+CONDITION    = { operator, threshold, forTimes, forMillis, onAverage }
+```
+* `verbose` default is `true`, `false` to get a condensed output that skips some of the properties in the output
+* `since` is the start date as timestamp or JS date
+* `ALERT_ITEM.color` refers to the series/instance color whereas `ALERT_FRAME.color` refers to the level color
+* `items` and `frames` can be given in any order but might be changed to a particular order while processing the model
+* only one of `forTimes`, `forPercent`, `forMillis` should be set
+
+
+### Line Chart Background Areas 
+Describes the model used to enhance the background of line charts with colored areas on the Y-axis. The model is processed by a chart plugin to draw additional
+decorations onto the chart background.
+
+```
+BACKGROUND_AREA = [ AREA_ITEM ];
+AREA_ITEM       = { color, min, max, type }
+color           = string
+min             = number
+max             = number
+type            = 'lower' | 'upper'
+```
+* default for `type` is `upper`

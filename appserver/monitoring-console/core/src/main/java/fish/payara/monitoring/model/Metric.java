@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.web;
+package fish.payara.monitoring.model;
 
-import fish.payara.monitoring.model.Series;
+public final class Metric {
 
-/**
- * A query for a particular {@link Series} or set of {@link Series} by giving its {@link #series} name or pattern
- * and the {@link #instances} to include in the result data.
- */
-public class SeriesQuery {
+    public final Series series;
+    public final Unit unit;
 
-    /**
-     * The name or pattern of the series (* can be used as wild-card for tag values)
-     */
-    public String series;
-    /**
-     * What instances to include in the result, an empty or null set includes all available sets
-     */
-    public String[] instances;
+    public Metric(Series series) {
+        this(series, Unit.COUNT);
+    }
+
+    public Metric(Series series, Unit unit) {
+        this.series = series;
+        this.unit = unit;
+    }
+
+    public Metric withUnit(Unit unit) {
+        return new Metric(series, unit);
+    }
+
+    @Override
+    public int hashCode() {
+        return series.hashCode() ^ unit.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Metric && equalTo((Metric) obj);
+    }
+
+    public boolean equalTo(Metric other) {
+        return series.equalTo(other.series) && unit == other.unit;
+    }
+
+    @Override
+    public String toString() {
+        return series + " unit:" + unit.toString();
+    }
 }

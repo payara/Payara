@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,28 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.web;
+package fish.payara.monitoring.store;
 
-import java.util.Map;
-import java.util.UUID;
+import static java.lang.Boolean.parseBoolean;
+import static org.jvnet.hk2.config.Dom.unwrap;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+import java.beans.PropertyChangeEvent;
+import java.util.logging.Logger;
 
-public class RequestTraceSpan {
+import javax.inject.Inject;
+import javax.inject.Named;
 
-    public final UUID id;
-    public final String operation;
-    public final long startTime;
-    public final long endTime;
-    public final long duration;
-    public final Map<String, String> tags;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-    public RequestTraceSpan(fish.payara.notification.requesttracing.RequestTraceSpan span) {
-       this.id = span.getId();
-       this.operation = RequestTracingService.stripPackageName(span.getEventName());
-       this.startTime = span.getTimeOccured();
-       this.endTime = span.getTraceEndTime().toEpochMilli();
-       this.duration = span.getSpanDuration();
-       this.tags = span.getSpanTags();
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
+
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+
+public abstract class AbstractMonitoringService implements ConfigListener {
+
+    protected static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
+
+    @Inject
+    protected PayaraExecutorService executor;
+    @Inject
+    protected ServerEnvironment serverEnv;
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    protected Config serverConfig;
+    @Inject
+    protected ServiceLocator serviceLocator;
+
+    @Override
+    public final UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        for (PropertyChangeEvent e : events) {
+            if (e.getSource() instanceof ConfigBeanProxy) {
+                Class<?> source = unwrap((ConfigBeanProxy)e.getSource()).getImplementationClass();
+                if (source == MonitoringService.class) {
+                    String property = e.getPropertyName();
+                    if ("monitoring-enabled".equals(property)) {
+                        changedConfig(parseBoolean(e.getNewValue().toString()));
+                    }
+                }
+            }
+        }
+        return null;
     }
+
+    abstract void changedConfig(boolean enabled);
+
 }

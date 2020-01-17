@@ -1,7 +1,7 @@
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,13 @@ MonitoringConsole.Model = (function() {
 	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
 	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
+	const TEXT_CPU_USAGE = "Requires *CPU Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _CPU Usage_ tab and check *'enabled'*";
+	const TEXT_HEAP_USAGE = "Requires *Heap Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Heap Usage_ tab and check *'enabled'*";
+	const TEXT_GC_PERCENTAGE = "Requires *Garbage Collector HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Garbage Collector_ tab and check *'enabled'*";
+	const TEXT_MEM_USAGE = "Requires *Machine Memory HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Machine Memory Usage_ tab and check *'enabled'*";
+	const TEXT_POOL_USAGE = "Requires *Connection Pool HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Connection Pool_ tab and check *'enabled'*";
+	const TEXT_LIVELINESS = "Requires *MicroProfile HealthCheck Checker* to be enabled: Goto _Configurations_ => _HealthCheck_ => _MicroProfile HealthCheck Checker_ tab and check *'enabled'*";
+
 	const UI_PRESETS = {
 			pages: {
 				core: {
@@ -62,29 +69,29 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 3,
 					widgets: [
 						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
-							grid: { item: 1, column: 0, span: 1}, 
+							grid: { item: 1, column: 0}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
 						{ series: 'ns:jvm CpuUsage', unit: 'percent',
-							grid: { item: 1, column: 1, span: 1}, 
+							grid: { item: 1, column: 1}, 
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
 						{ series: 'ns:jvm ThreadCount', unit: 'count',  
-							grid: { item: 0, column: 1, span: 1}},
+							grid: { item: 0, column: 1}},
 						{ series: 'ns:http ThreadPoolCurrentThreadUsage', unit: 'percent',
-							grid: { item: 1, column: 2, span: 1},
+							grid: { item: 1, column: 2},
 							status: { missing: { hint: TEXT_HTTP_HIGH }},
 							axis: { min: 0, max: 100 },
 							decorations: {
 								thresholds: { reference: 'avg', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},														
 						{ series: 'ns:web RequestCount', unit: 'count',
-							grid: { item: 0, column: 2, span: 1}, 
+							grid: { item: 0, column: 2}, 
 							options: { perSec: true },
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 						{ series: 'ns:web ActiveSessions', unit: 'count',
-							grid: { item: 0, column: 0, span: 1},
+							grid: { item: 0, column: 0},
 							status: { missing: { hint: TEXT_WEB_HIGH }}},
 					]
 				},
@@ -93,7 +100,7 @@ MonitoringConsole.Model = (function() {
 					numberOfColumns: 1,
 					widgets: [
 						{ series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
-							grid: { item: 0, column: 0, span: 1 }, 
+							grid: { item: 0, column: 0}, 
 							axis: { min: 0, max: 5000 },
 							options: { drawMinLine: true },
 							status: { missing: { hint: TEXT_REQUEST_TRACING }},
@@ -128,7 +135,81 @@ MonitoringConsole.Model = (function() {
 							options: { perSec: true },
 							status: { missing : { hint: TEXT_HTTP_HIGH }}},
 					]
-				}
+				},
+				health_checks: {
+					name: 'Health Checks',
+					numberOfColumns: 4,
+					widgets: [
+						{ series: 'ns:health CpuUsage', unit: 'percent', displayName: 'CPU',
+          					grid: { column: 0, item: 0},
+          					axis: { max: 100 },
+          					status: { missing : { hint: TEXT_CPU_USAGE }}},
+						{ series: 'ns:health HeapUsage', unit: 'percent', displayName: 'Heap',
+          					grid: { column: 1, item: 1},
+          					axis: { max: 100 },
+          					status: { missing : { hint: TEXT_HEAP_USAGE }}},
+						{ series: 'ns:health TotalGcPercentage', unit: 'percent', displayName: 'GC',
+          					grid: { column: 1, item: 0},
+          					axis: { max: 30 },
+          					status: { missing : { hint: TEXT_GC_PERCENTAGE }}},
+						{ series: 'ns:health PhysicalMemoryUsage', unit: 'percent', displayName: 'Memory',
+          					grid: { column: 0, item: 1},
+          					axis: { max: 100 },
+          					status: { missing : { hint: TEXT_MEM_USAGE }}},
+						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series', displayName: 'Connection Pools',
+          					grid: { column: 1, item: 2},
+          					axis: { max: 100 },          					
+          					status: { missing : { hint: TEXT_POOL_USAGE }}},
+						{ series: 'ns:health LivelinessUp', unit: 'percent', displayName: 'MP Health',
+          					grid: { column: 0, item: 2},
+          					axis: { max: 100 },
+          					options: { noCurves: true },
+          					status: { missing : { hint: TEXT_LIVELINESS }}},
+						{ series: 'ns:health *', unit: 'percent', type: 'alert', displayName: 'Alerts',
+          					grid: { column: 2, item: 0, colspan: 2, rowspan: 3}}, 
+					]
+				},
+				monitoring: {
+					name: 'Monitoring',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:monitoring @:* CollectionDuration', unit: 'ms', displayName: 'Sources Time',
+							grid: { column: 0, item: 0, span: 2},
+							axis: { max: 200 },
+							coloring: 'series'},
+						{ series: 'ns:monitoring @:* AlertCount', displayName: 'Alerts',
+							grid: { column: 2, item: 2},
+							coloring: 'series'},
+						{ series: 'ns:monitoring CollectedSourcesCount', displayName: 'Sources',
+							grid: { column: 0, item: 2}},
+						{ series: 'ns:monitoring CollectedSourcesErrorCount', displayName: 'Sources with Errors', 
+							grid: { column: 1, item: 2}},
+						{ series: 'ns:monitoring CollectionDuration', unit: 'ms', displayName: 'Metrics Time',
+							grid: { column: 2, item: 0},
+							axis: { max: 1000},
+							options: { drawMaxLine: true }},
+						{ series: 'ns:monitoring WatchLoopDuration', unit: 'ms', displayName: 'Watches Time', 
+							grid: { column: 2, item: 1}},
+					],
+				},
+				jvm: {
+					name: 'JVM',
+					numberOfColumns: 3,
+					widgets: [
+						{ series: 'ns:jvm TotalLoadedClassCount', displayName: 'Loaded Classes', 
+							grid: { column: 2, item: 0}},
+						{ series: 'ns:jvm UnLoadedClassCount', displayName: 'Unloaded Classes',
+							grid: { column: 2, item: 1}},
+						{ series: 'ns:jvm CommittedHeapSize', unit: 'bytes', displayName: 'Heap Size',
+							grid: { column: 1, item: 0}},
+						{ series: 'ns:jvm UsedHeapSize', unit: 'bytes', displayName: 'Used Heap', 
+							grid: { column: 0, item: 0}},
+						{ series: 'ns:jvm ThreadCount', displayName: 'Live Threads', 
+							grid: { column: 1, item: 1}},
+						{ series: 'ns:jvm DaemonThreadCount', displayName: 'Daemon Threads',
+							grid: { column: 0, item: 1}},
+					],
+				},
 			},
 	};
 
@@ -208,6 +289,8 @@ MonitoringConsole.Model = (function() {
 			}
 			if (typeof widget.decorations.thresholds !== 'object')
 				widget.decorations.thresholds = {};
+			if (typeof widget.decorations.alerts !== 'object')
+				widget.decorations.alerts = {};			
 			if (typeof widget.decorations.thresholds.alarming !== 'object')
 				widget.decorations.thresholds.alarming = {};			
 			if (typeof widget.decorations.thresholds.critical !== 'object')
@@ -228,10 +311,12 @@ MonitoringConsole.Model = (function() {
 		function sanityCheckSettings(settings) {
 			if (settings === undefined)
 				settings = {};
-			if (settings.colors === undefined)
-				settings.colors = {};
-			if (settings.colors.defaults === undefined)
-				settings.colors.defaults = {};
+			if (settings.theme === undefined)
+				settings.theme = {};
+			if (settings.theme.colors === undefined)
+				settings.theme.colors = {};
+			if (settings.theme.options === undefined)
+				settings.theme.options = {};			
 			return settings;
 		}
 		
@@ -346,21 +431,28 @@ MonitoringConsole.Model = (function() {
 				let columnWidgets = widgetsByColumn[col];
 				for (let item = 0; item < columnWidgets.length; item++) {
 					let widget = columnWidgets[item];
-					let span = getSpan(widget, numberOfColumns, col);
-					let info = { span: span, widget: widget};
+					let colspan = getColSpan(widget, numberOfColumns, col);
+					let rowspan = getRowSpan(widget);
+					let info = { colspan: colspan, rowspan: rowspan, widget: widget};
 					let column0 = layout[col];
-					let row0 = getEmptyRowIndex(column0, span);
-					for (let spanX = 0; spanX < span; spanX++) {
+					let row0 = getEmptyRowIndex(column0, colspan);
+					for (let spanX = 0; spanX < colspan; spanX++) {
 						let column = layout[col + spanX];
 						if (spanX == 0) {
 							if (!widget.grid)
-								widget.grid = { column: col, span: span }; // init grid
-							widget.grid.item = row0; // update item position
+								widget.grid = { column: col, colspan: colspan, rowspan: rowspan }; // init grid
+							if (widget.grid.item === undefined)
+								widget.grid.item = row0;
+							if (widget.grid.colspan === undefined)
+								widget.grid.colspan = colspan;
+							if (widget.grid.rowspan === undefined)
+								widget.grid.rowspan = rowspan;
+							widget.grid.span = undefined;						
 						} else {
 							while (column.length < row0)
 								column.push(null); // null marks empty cells
 						}
-						for (let spanY = 0; spanY < span; spanY++) {
+						for (let spanY = 0; spanY < rowspan; spanY++) {
 							let cell = spanX === 0 && spanY === 0 ? info : undefined;
 							if (row0 + spanY > column.length) {
 								column.push(cell);	
@@ -381,19 +473,27 @@ MonitoringConsole.Model = (function() {
 			return layout;
       	}
 
-      	function getSpan(widget, numberOfColumns, currentColumn) {
+      	function getRowSpan(widget) {
+      		let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+      		if (widget.grid && widget.grid.rowspan)
+      			span =  widget.grid.rowspan;
+      		if (typeof span === 'string')
+      			span = parseInt(span);
+      		return span;
+      	}
+
+      	function getColSpan(widget, numberOfColumns, currentColumn) {
 			let span = widget.grid && widget.grid.span ? widget.grid.span : 1;
+			if (widget.grid && widget.grid.colspan)
+				span = widget.grid.colspan;
 			if (typeof span === 'string') {
-			if (span === 'full') {
-			   span = numberOfColumns;
-			} else {
-			   span = parseInt(span);
+				if (span === 'full') {
+				   span = numberOfColumns;
+				} else {
+				   span = parseInt(span);
+				}
 			}
-			}
-			if (span > numberOfColumns - currentColumn) {
-			span = numberOfColumns - currentColumn;
-			}
-			return span;
+			return span > numberOfColumns - currentColumn ? numberOfColumns - currentColumn : span;
       	}
 
 		/**
@@ -405,25 +505,22 @@ MonitoringConsole.Model = (function() {
       	}
 		
 		return {
-			colorPalette: function(colors) {
-				if (colors === undefined)
-					return settings.colors.palette;
-				settings.colors.palette = colors;
+			themeConfigure(fn) {
+				fn(settings.theme);
 				doStore();
 			},
 
-			colorOpacity: function(opacity) {
-				if (opacity === undefined)
-					return settings.colors.opacity;
-				settings.colors.opacity = opacity;
-				doStore();
+			themePalette: function(colors) {
+				return settings.theme.palette;
 			},
 
-			colorDefault: function(name, color) {
-				if (color === undefined)
-					return settings.colors.defaults[name];
-				settings.colors.defaults[name] = color;
-				doStore();
+			themeOption: function(name, defaultValue) {
+				let value = settings.theme.options[name];
+				return Number.isNaN(value) || value === undefined ? defaultValue : value;
+			},
+
+			themeColor: function(name) {
+				return settings.theme.colors[name];
 			},
 
 			currentPage: function() {
@@ -825,18 +922,32 @@ MonitoringConsole.Model = (function() {
 	 */ 
 	let Update = (function() {
 
-		function retainLastMinute(data) {
-			if (!data)
+		/**
+		 * Shortens the shown time frame to one common to all series but at least to the last minute.
+		 */
+		function retainCommonTimeFrame(data) {
+			if (!data || data.length == 0)
 				return [];
-			let startOfLastMinute = Date.now() - 62000;
+			let now = Date.now();
+			let startOfLastMinute = now - 60000;
+			let startOfShortestSeries = data.reduce((high, e) => Math.max(e.points[0], high), 0);
+			let startCutoff = data.length == 1 ? startOfShortestSeries : Math.min(startOfLastMinute, startOfShortestSeries);
+			let endOfShortestSeries = data.reduce((low, e) =>  {
+				let endTime = e.points[e.points.length - 2];
+				return endTime > now - 4000 ? Math.min(endTime, low) : low;
+			}, now);
+			let endCutoff = endOfShortestSeries;
 			data.forEach(function(seriesData) {
 				let src = seriesData.points;
-				if (src.length == 4 && src[2] >= startOfLastMinute) {
-					seriesData.points = [src[2] - 59000, src[1], src[2], src[3]];
+				if (src.length == 4 && src[2] >= startCutoff) {
+					if (src[1] == src[3]) {
+						// extend a straight line between 2 points to cutoff
+						seriesData.points = [Math.max(seriesData.observedSince, Math.min(startOfShortestSeries, src[2] - 59000)), src[1], src[2], src[3]];						
+					}
 				} else {
 					let points = [];
 					for (let i = 0; i < src.length; i += 2) {
-						if (src[i] >= startOfLastMinute) {
+						if (src[i] >= startCutoff && src[i] <= endCutoff) {
 							points.push(src[i]);
 							points.push(src[i+1]);
 						}
@@ -844,7 +955,8 @@ MonitoringConsole.Model = (function() {
 					seriesData.points = points;				
 				}
 			});
-			return data.filter(seriesData => seriesData.points.length >= 2);
+			return data.filter(seriesData => seriesData.points.length >= 2 
+				&& seriesData.points[seriesData.points.length - 2] > startOfLastMinute);
 		}
 
 		function adjustDecimals(data, factor, divisor) {
@@ -880,9 +992,19 @@ MonitoringConsole.Model = (function() {
 			});
 		}
 
-		function addAssessment(widget, data) {
+		function addAssessment(widget, data, alerts, watches) {
 			data.forEach(function(seriesData) {
+				let instance = seriesData.instance;
+				let series = seriesData.series;
 				let status = 'normal';
+				if (Array.isArray(watches) && watches.length == 1) {
+					let states = watches
+						.map(watch => watch.states[series]).filter(e => e != undefined)
+						.map(states => states[instance]).filter(e => e != undefined);
+					if (states.length == 1) {
+						status = states[0];
+					}					
+				}
 				let thresholds = widget.decorations.thresholds;
 				if (thresholds.reference && thresholds.reference !== 'off') {
 					let value = seriesData.points[seriesData.points.length-1];
@@ -901,22 +1023,32 @@ MonitoringConsole.Model = (function() {
 						status = 'critical';
 					}
 				}
+				if (Array.isArray(alerts) && alerts.length > 0) {					
+					if (alerts.filter(alert => alert.instance == instance && alert.level === 'red').length > 0) {
+						status = 'red';
+					} else if (alerts.filter(alert => alert.instance == instance && alert.level === 'amber').length > 0) {
+						status = 'amber';
+					}
+				}
 				seriesData.assessments = { status: status };
 			});
 		}
 
 		function createOnSuccess(widgets, onDataUpdate) {
 			return function(response) {
-				Object.values(widgets).forEach(function(widget) {
-					let data = retainLastMinute(response[widget.series]);
+				Object.values(widgets).forEach(function(widget, index) {
+					let widgetResponse = response.matches[index];
+					let data = retainCommonTimeFrame(widgetResponse.data);
 					if (widget.options.decimalMetric || widget.scaleFactor !== undefined && widget.scaleFactor !== 1)
 						adjustDecimals(data, widget.scaleFactor ? widget.scaleFactor : 1,  widget.options.decimalMetric ? 10000 : 1);
 					if (widget.options.perSec)
 						perSecond(data);
-					addAssessment(widget, data);
+					addAssessment(widget, data, widgetResponse.alerts, widgetResponse.watches);
 					onDataUpdate({
 						widget: widget,
 						data: data,
+						alerts: widgetResponse.alerts,
+						watches: widgetResponse.watches,
 						chart: () => Charts.getOrCreate(widget),
 					});
 				});
@@ -946,9 +1078,11 @@ MonitoringConsole.Model = (function() {
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
 			let payload = {};
-			payload.queries = Object.keys(widgets).map(function(series) { 
+			payload.queries = Object.values(widgets).map(function(widget) { 
 				return { 
-					series: series,
+					series: widget.series,
+					truncateAlerts: widget.type !== 'alert',
+					truncatePoints: widget.type === 'alert',
 					instances: undefined, // all
 				}; 
 			});
@@ -1056,10 +1190,11 @@ MonitoringConsole.Model = (function() {
 			},
 		},
 
-		Colors: {
-			palette: UI.colorPalette,
-			opacity: UI.colorOpacity,
-			default: UI.colorDefault,
+		Theme: {
+			palette: UI.themePalette,
+			option: UI.themeOption,
+			color: UI.themeColor,
+			configure: UI.themeConfigure,
 		},
 		
 		Settings: {
@@ -1150,35 +1285,13 @@ MonitoringConsole.Model = (function() {
 
 				moveLeft: (series) => doConfigureWidget(series, function(widget) {
 	                if (!widget.grid.column || widget.grid.column > 0) {
-	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column - 1 : 1;
 	                }
 	            }),
 
 	            moveRight: (series) => doConfigureWidget(series, function(widget) {
 	                if (!widget.grid.column || widget.grid.column < 4) {
-	                    widget.grid.item = undefined;
 	                    widget.grid.column = widget.grid.column ? widget.grid.column + 1 : 1;
-	                }
-	            }),
-
-				moveUp: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item = Math.max(0, widget.grid.item - widget.grid.span);
-	            }),
-
-	            moveDown: (series) => doConfigureWidget(series, function(widget) {
-                    widget.grid.item += widget.grid.span;
-	            }),
-
-	            spanMore: (series) => doConfigureWidget(series, function(widget) {
-	                if (! widget.grid.span || widget.grid.span < 4) {
-	                    widget.grid.span = !widget.grid.span ? 2 : widget.grid.span + 1;
-	                }
-	            }),
-
-	            spanLess: (series) => doConfigureWidget(series, function(widget) {
-	            	if (widget.grid.span > 1) {
-	                    widget.grid.span -= 1;
 	                }
 	            }),
 

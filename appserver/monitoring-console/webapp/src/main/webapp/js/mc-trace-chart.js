@@ -1,7 +1,7 @@
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,7 @@ MonitoringConsole.Chart.Trace = (function() {
    const Components = MonitoringConsole.View.Components;
    const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
+   const Theme = MonitoringConsole.Model.Theme;
 
    var model = {};
    var chart;
@@ -67,8 +68,8 @@ MonitoringConsole.Chart.Trace = (function() {
       let colorCounter = 0;
       let colors = [];
       let bgColors = [];
-      let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
-      let palette = MonitoringConsole.Model.Colors.palette();
+      let alpha = Theme.option('opacity') / 100;
+      let palette = Theme.palette();
       data.sort(model.sortBy);
       for (let i = 0; i < data.length; i++) {
          let trace = data[i]; 
@@ -120,7 +121,7 @@ MonitoringConsole.Chart.Trace = (function() {
       for (let [label, operationData] of Object.entries(operations)) {
          legend.push({label: label, value: (operationData.duration / operationData.count).toFixed(2) + 'ms (avg)', color: operationData.color});
       }
-      $('#trace-legend').empty().append(Components.onLegendCreation(legend));
+      $('#trace-legend').empty().append(Components.createLegend(legend));
       $('#trace-chart-box').height(10 * spans.length + 30);
       chart.data = { 
          datasets: datasets,
@@ -206,7 +207,7 @@ MonitoringConsole.Chart.Trace = (function() {
       if (!span)
          return;
       let tags = { id: 'settings-tags', caption: 'Tags' , entries: []};
-      let settings = [
+      let groups = [
          { id: 'settings-span', caption: 'Span' , entries: [
             { label: 'ID', input: span.id},
             { label: 'Operation', input: span.operation},
@@ -222,7 +223,7 @@ MonitoringConsole.Chart.Trace = (function() {
          }
          tags.entries.push({ label: key, input: autoLink(value)});
       }
-      Components.onSettingsUpdate(settings);
+      $('#Settings').replaceWith(Components.createSettings({id: 'Settings', groups: groups }));
    }
 
 
@@ -242,7 +243,7 @@ MonitoringConsole.Chart.Trace = (function() {
          ]},
          { icon: '&times;', description: 'Back to main view', onClick: onClosePopup },
       ]};
-      $('#trace-menu').replaceWith(Components.onMenuCreation(menu));
+      $('#trace-menu').replaceWith(Components.createMenu(menu));
       onDataRefresh();
    }
 

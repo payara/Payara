@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.store;
+package fish.payara.monitoring.model;
+
+import java.util.List;
 
 /**
- * A {@link MonitoringDataSink} observes all monitoring data values as a sequence of key-value pairs where all values
- * have been converted to longs.
+ * Most basic lookup abstraction for a source of {@link SeriesDataset}s.
  *
  * @author Jan Bernitt
  */
 @FunctionalInterface
-public interface MonitoringDataSink {
+public interface SeriesLookup {
 
     /**
-     * Publishes a key-value pair to this sink.
+     * Lists all {@link SeriesDataset}s that match given {@link Series} with a {@link SeriesDataset#getInstance()} name
+     * that is included in the given set of instance names.
      *
-     * @param key the full metric name, e.g. <code>x=y a=b xCount</code>
-     * @param value numeric value of the metric
+     * @param series    the {@link Series} to list
+     * @param instances set if instances to include, an empty set includes all instances
+     * @return current data of matching {@link SeriesDataset}s.
      */
-    void accept(CharSequence key, long value);
+    List<SeriesDataset> selectSeries(Series series, String... instances);
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,11 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
@@ -49,7 +54,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
 /**
@@ -58,7 +62,8 @@ import java.lang.management.MemoryUsage;
 @Service(name = "healthcheck-heap")
 @RunLevel(StartupRunLevel.VAL)
 public class HeapMemoryUsageHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
+extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> 
+implements MonitoringDataSource, MonitoringWatchSource {
 
     @PostConstruct
     void postConstruct() {
@@ -78,8 +83,7 @@ public class HeapMemoryUsageHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
-        MemoryUsage heap = memBean.getHeapMemoryUsage();
+        MemoryUsage heap = getMemoryUsage();
 
         String heapValueText = String.format("heap: init: %s, used: %s, committed: %s, max.: %s",
                 prettyPrintBytes(heap.getInit()),
@@ -92,8 +96,25 @@ public class HeapMemoryUsageHealthCheck
         return result;
     }
 
+    private static MemoryUsage getMemoryUsage() {
+        return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health HeapUsage", "Heap Usage", 10, true);
+    }
+
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 4)
+    public void collect(MonitoringDataCollector collector) {
+        if (options != null && options.isEnabled()) {
+            collector.collect("HeapUsage", calculatePercentage(getMemoryUsage()));
+        }
+    }
+
     private static long calculatePercentage(MemoryUsage usage) {
-        return usage.getMax() == 0L ? 0L : (long)Math.floor(((double)usage.getUsed() / (double)usage.getMax()) * 100d);
+        return usage.getMax() == 0L ? 0L : Math.round(((double)usage.getUsed() / (double)usage.getMax()) * 100d);
     }
 }
 

@@ -1,7 +1,7 @@
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -53,13 +53,15 @@ MonitoringConsole.View = (function() {
         trace: 'Request Tracing',
         map: 'Cluster Map Storage Statistics',
         topic: 'Cluster Topic IO Statistics',
-        mc: 'Monitoring Console Internals',
+        monitoring: 'Monitoring Console Internals',
+        health: 'Health Checks',
         other: 'Other',
     };
 
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
     const Colors = MonitoringConsole.View.Colors;
+    const Theme = MonitoringConsole.Model.Theme;
 
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
@@ -73,7 +75,7 @@ MonitoringConsole.View = (function() {
         let nav = { id: 'Navigation', groups: [
             {label: activePage.name, items: items }
         ]};
-        $('#Navigation').replaceWith(Components.onMenuCreation(nav));
+        $('#Navigation').replaceWith(Components.createMenu(nav));
     }
 
     function updateMenu() {
@@ -107,7 +109,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
             ]},
         ]};
-        $('#Menu').replaceWith(Components.onMenuCreation(menu));
+        $('#Menu').replaceWith(Components.createMenu(menu));
     }
 
     /**
@@ -120,14 +122,14 @@ MonitoringConsole.View = (function() {
                 panelConsole.addClass('state-show-settings');                
             }
             let singleSelection = MonitoringConsole.Model.Page.Widgets.Selection.isSingle();
-            let settings = [];
-            settings.push(createGlobalSettings(singleSelection));
-            settings.push(createColorSettings());
-            settings.push(createPageSettings());
+            let groups = [];
+            groups.push(createGlobalSettings(singleSelection));
+            groups.push(createColorSettings());
+            groups.push(createPageSettings());
             if (singleSelection) {
-                settings = settings.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
+                groups = groups.concat(createWidgetSettings(MonitoringConsole.Model.Page.Widgets.Selection.first()));
             }
-            Components.onSettingsUpdate(settings);
+            $('#Settings').replaceWith(Components.createSettings({id: 'Settings', groups: groups }));
         } else {
             panelConsole.removeClass('state-show-settings');
         }
@@ -147,8 +149,9 @@ MonitoringConsole.View = (function() {
             } else {
                 parent.append(createWidgetToolbar(widget));
                 parent.append(createWidgetTargetContainer(widget));
-                parent.append(Components.onLegendCreation([]));                
-                parent.append(Components.onIndicatorCreation({}));
+                parent.append(Components.createAlertTable({}));
+                parent.append(Components.createLegend([]));                
+                parent.append(Components.createIndicator({}));
             }
         }
         if (widget.selected) {
@@ -208,21 +211,18 @@ MonitoringConsole.View = (function() {
         let menu = { groups: [
             { icon: '&#9881;', items: [
                 { icon: '&times;', label: 'Remove', onClick: () => onWidgetDelete(series)},
-                { icon: '&ltri;&rtri;', label: 'Larger', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanMore(series)) },
-                { icon: '&rtri;&ltri;', label: 'Samller', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.spanLess(series)) },
-                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
                 { icon: '&ltri;', label: 'Move Left', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveLeft(series)) },
-                { icon: '&triangle;', label: 'Move Up', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveUp(series)) },
-                { icon: '&dtri;', label: 'Move Down', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveDown(series)) },
+                { icon: '&rtri;', label: 'Move Right', onClick: () => onPageUpdate(MonitoringConsole.Model.Page.Widgets.moveRight(series)) },
                 { icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(series) },
             ]},
         ]};
         let title = widget.displayName ? widget.displayName : formatSeriesName(widget.series);
         return $('<div/>', {"class": "widget-title-bar"})
+            .append(Components.createMenu(menu))
             .append($('<h3/>', {title: 'Select '+series})
                 .html(title)
-                .click(() => onWidgetToolbarClick(widget)))
-            .append(Components.onMenuCreation(menu));
+                .click(() => onWidgetToolbarClick(widget)))            
+            ;
     }
 
     function createGlobalSettings(initiallyCollapsed) {
@@ -239,60 +239,77 @@ MonitoringConsole.View = (function() {
     }
 
     function createColorSettings() {
-        let colorModel = MonitoringConsole.Model.Colors;
-        return { id: 'settings-colors', caption: 'Colors', collapsed: $('#settings-colors').children('tr:visible').length == 1, entries: [
+        function createChangeColorDefaultFn(name) {
+            return (color) => { Theme.configure(theme => theme.colors[name] = color); updateSettings(); };
+        }
+        function createChangeOptionFn(name) {
+            return (value) => { Theme.configure(theme => theme.options[name] = value); };
+        }    
+        function createColorDefaultSettingMapper(name) {
+            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
+        }
+        let collapsed = $('#settings-colors').children('tr:visible').length <= 1;
+        return { id: 'settings-colors', caption: 'Colors', collapsed: collapsed, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
-            { label: 'Data #', type: 'color', value: colorModel.palette(), onChange: (colors) => colorModel.palette(colors) },
+            { label: 'Data #', type: 'color', value: Theme.palette(), onChange: (colors) => Theme.palette(colors) },
             { label: 'Defaults', input: [
-                {label: 'Waterline', type: 'color', value: colorModel.default('waterline'), onChange: (color) => { colorModel.default('waterline', color); updateSettings(); } },
-                {label: 'Alarming', type: 'color', value: colorModel.default('alarming'), onChange: (color) => { colorModel.default('alarming', color); updateSettings(); } },
-                {label: 'Critical', type: 'color', value: colorModel.default('critical'), onChange: (color) => { colorModel.default('critical', color); updateSettings(); } },
+                ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
+                ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
+            { label: 'Opacity', description: 'Fill transparency 0-100%', input: [
+                { type: 'value', unit: 'percent', value: Theme.option('opacity'), onChange: createChangeOptionFn('opacity') },
             ]},
-            { label: 'Opacity', type: 'value', unit: 'percent', value: colorModel.opacity(), onChange: (opacity) => colorModel.opacity(opacity) },
+            { label: 'Thickness', description: 'Line thickness 1-8 (each step is equivalent to 0.5px)', input: [
+                { type: 'range', min: 1, max: 8, value: Theme.option('line-width'), onChange: createChangeOptionFn('line-width') },
+            ]},
         ]};
     }
 
     function createWidgetSettings(widget) {
-        let colorModel = MonitoringConsole.Model.Colors;
         let options = widget.options;
         let unit = widget.unit;
         let thresholds = widget.decorations.thresholds;
         let settings = [];
-        settings.push({ id: 'settings-widget', caption: 'Widget', entries: [
+        let collapsed = $('#settings-widget').children('tr:visible').length <= 1;
+        settings.push({ id: 'settings-widget', caption: 'Widget', collapsed: collapsed, entries: [
             { label: 'Display Name', type: 'text', value: widget.displayName, onChange: (widget, value) => widget.displayName = value},
-            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
+            { label: 'Type', type: 'dropdown', options: {line: 'Time Curve', bar: 'Range Indicator', alert: 'Alerts Table'}, value: widget.type, onChange: (widget, selected) => widget.type = selected},
             { label: 'Column / Item', input: [
                 { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.column || 0), onChange: (widget, value) => widget.grid.column = value - 1},
-                { type: 'range', min: 1, max: 4, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
+                { type: 'range', min: 1, max: 8, value: 1 + (widget.grid.item || 0), onChange: (widget, value) => widget.grid.item = value - 1},
             ]},             
-            { label: 'Span', type: 'range', min: 1, max: 4, value: widget.grid.span || 1, onChange: (widget, value) => widget.grid.span = value},
+            { label: 'Size', input: [
+                { label: '&nbsp;x', type: 'range', min: 1, max: 4, value: widget.grid.colspan || 1, onChange: (widget, value) => widget.grid.colspan = value},
+                { type: 'range', min: 1, max: 4, value: widget.grid.rowspan || 1, onChange: (widget, value) => widget.grid.rowspan = value},
+            ]},
         ]});
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
             { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
                 { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
-                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => options.perSec = checked},
+                { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
-            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
+            { label: 'Coloring', type: 'dropdown', options: { instance: 'Instance Name', series: 'Series Name', index: 'Result Set Index', 'instance-series': 'Instance and Series Name' }, value: widget.coloring, onChange: (widget, value) => widget.coloring = value,
                 description: 'What value is used to select the index from the color palette' },            
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
                 { type: 'range', min: 1, value: widget.scaleFactor, onChange: (widget, value) => widget.scaleFactor = value, 
                     description: 'A factor multiplied with each value to upscale original values in a graph, e.g. to move a range 0-1 to 0-100%'},
-                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => options.decimalMetric = checked,
+                { label: 'decimal value', type: 'checkbox', value: options.decimalMetric, onChange: (widget, checked) => widget.options.decimalMetric = checked,
                     description: 'Values that are collected as decimal are converted to a integer with 4 fix decimal places. By checking this option this conversion is reversed to get back the original decimal range.'},
             ]},
             { label: 'Extra Lines', input: [
-                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => options.drawMinLine = checked},
-                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => options.drawMaxLine = checked},
-                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => options.drawAvgLine = checked},            
+                { label: 'Min', type: 'checkbox', value: options.drawMinLine, onChange: (widget, checked) => widget.options.drawMinLine = checked},
+                { label: 'Max', type: 'checkbox', value: options.drawMaxLine, onChange: (widget, checked) => widget.options.drawMaxLine = checked},
+                { label: 'Avg', type: 'checkbox', value: options.drawAvgLine, onChange: (widget, checked) => widget.options.drawAvgLine = checked},            
             ]},
-            { label: 'Display', input: [
-                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => options.drawPoints = checked },
-                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => options.noFill = !checked},
-                { label: 'Curvy', type: 'checkbox', value: !options.noCurves, onChange: (widget, checked) => options.noCurves = !checked},
+            { label: 'Lines', input: [
+                { label: 'Points', type: 'checkbox', value: options.drawPoints, onChange: (widget, checked) => widget.options.drawPoints = checked},
+                { label: 'Curvy', type: 'checkbox', value: options.drawCurves, onChange: (widget, checked) => widget.options.drawCurves = checked},
+            ]},
+            { label: 'Background', input: [
+                { label: 'Fill', type: 'checkbox', value: !options.noFill, onChange: (widget, checked) => widget.options.noFill = !checked},
             ]},
             { label: 'X-Axis', input: [
-                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => options.noTimeLabels = !checked},
+                { label: 'Labels', type: 'checkbox', value: !options.noTimeLabels, onChange: (widget, checked) => widget.options.noTimeLabels = !checked},
             ]},            
             { label: 'Y-Axis', input: [
                 { label: 'Min', type: 'value', unit: unit, value: widget.axis.min, onChange: (widget, value) => widget.axis.min = value},
@@ -302,25 +319,41 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-decorations', caption: 'Decorations', entries: [
             { label: 'Waterline', input: [
                 { type: 'value', unit: unit, value: widget.decorations.waterline.value, onChange: (widget, value) => widget.decorations.waterline.value = value },
-                { type: 'color', value: widget.decorations.waterline.color, defaultValue: colorModel.default('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
+                { type: 'color', value: widget.decorations.waterline.color, defaultValue: Theme.color('waterline'), onChange: (widget, value) => widget.decorations.waterline.color = value },
             ]},
             { label: 'Alarming Threshold', input: [
-                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => thresholds.alarming.value = value },
-                { type: 'color', value: thresholds.alarming.color, defaultValue: colorModel.default('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
+                { type: 'value', unit: unit, value: thresholds.alarming.value, onChange: (widget, value) => widget.decorations.thresholds.alarming.value = value },
+                { type: 'color', value: thresholds.alarming.color, defaultValue: Theme.color('alarming'), onChange: (widget, value) => thresholds.alarming.color = value },
                 { label: 'Line', type: 'checkbox', value: thresholds.alarming.display, onChange: (widget, checked) => thresholds.alarming.display = checked },
             ]},
             { label: 'Critical Threshold', input: [
-                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => thresholds.critical.value = value },
-                { type: 'color', value: thresholds.critical.color, defaultValue: colorModel.default('critical'), onChange: (widget, value) => thresholds.critical.color = value },
-                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => thresholds.critical.display = checked },
+                { type: 'value', unit: unit, value: thresholds.critical.value, onChange: (widget, value) => widget.decorations.thresholds.critical.value = value },
+                { type: 'color', value: thresholds.critical.color, defaultValue: Theme.color('critical'), onChange: (widget, value) => widget.decorations.thresholds.critical.color = value },
+                { label: 'Line', type: 'checkbox', value: thresholds.critical.display, onChange: (widget, checked) => widget.decorations.thresholds.critical.display = checked },
             ]},                
-            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => thresholds.reference = selected},
-            //TODO add color for each threshold
+            { label: 'Threshold Reference', type: 'dropdown', options: { off: 'Off', now: 'Most Recent Value', min: 'Minimum Value', max: 'Maximum Value', avg: 'Average Value'}, value: thresholds.reference, onChange: (widget, selected) => widget.decorations.thresholds.reference = selected},
         ]});
         settings.push({ id: 'settings-status', caption: 'Status', collapsed: true, description: 'Set a text for an assessment status', entries: [
             { label: '"No Data"', type: 'text', value: widget.status.missing.hint, onChange: (widget, text) => widget.status.missing.hint = text},
             { label: '"Alaraming"', type: 'text', value: widget.status.alarming.hint, onChange: (widget, text) => widget.status.alarming.hint = text},
             { label: '"Critical"', type: 'text', value: widget.status.critical.hint, onChange: (widget, text) => widget.status.critical.hint = text},
+        ]});
+        let alerts = widget.decorations.alerts;
+        settings.push({ id: 'settings-alerts', caption: 'Alerts', collapsed: true, entries: [
+            { label: 'Show', input: [
+                [
+                    { label: 'Ambers', type: 'checkbox', value: !alerts.noAmber, onChange: (widget, checked) => widget.decorations.alerts.noAmber = !checked},
+                    { label: 'Reds', type: 'checkbox', value: !alerts.noRed, onChange: (widget, checked) => widget.decorations.alerts.noRed = !checked},
+                ],            
+                [
+                    { label: 'Ongoing', type: 'checkbox', value: !alerts.noOngoing, onChange: (widget, checked) => widget.decorations.alerts.noOngoing = !checked},
+                    { label: 'Stopped', type: 'checkbox', value: !alerts.noStopped, onChange: (widget, checked) => widget.decorations.alerts.noStopped = !checked},
+                ],
+                [
+                    { label: 'Acknowledged', type: 'checkbox', value: !alerts.noAcknowledged, onChange: (widget, checked) => widget.decorations.alerts.noAcknowledged = !checked},
+                    { label: 'Unacknowledged', type: 'checkbox', value: !alerts.noUnacknowledged, onChange: (widget, checked) => widget.decorations.alerts.noUnacknowledged = !checked},
+                ],
+            ], description: 'Properties of alerts to show. Graphs hide stopped or acknowledged alerts automatically.' },
         ]});
         return settings;       
     }
@@ -349,6 +382,7 @@ MonitoringConsole.View = (function() {
         let widgetsSelection = $('<select/>').attr('disabled', true);
         nsSelection.change(function() {
             widgetsSelection.empty();
+            widgetsSelection.append($('<option/>').val('').text('(Please Select)'));
             MonitoringConsole.Model.listSeries(function(names) {
                 $.each(names, function() {
                     let key = this;
@@ -370,7 +404,8 @@ MonitoringConsole.View = (function() {
                 updatePageNavigation();                        
             }
         };
-        return { id: 'settings-page', caption: 'Page', entries: [
+        let collapsed = $('#settings-page').children('tr:visible').length <= 1;
+        return { id: 'settings-page', caption: 'Page', collapsed: collapsed, entries: [
             { label: 'Name', type: 'text', value: MonitoringConsole.Model.Page.name(), onChange: pageNameOnChange },
             { label: 'Page Rotation', input: [
                 { label: 'Include in Rotation', type: 'checkbox', value: MonitoringConsole.Model.Page.rotate(), onChange: (checked) => MonitoringConsole.Model.Page.rotate(checked) },
@@ -415,16 +450,17 @@ MonitoringConsole.View = (function() {
         }
     }
 
-    function createLegendComponent(widget, data) {
+    function createLegendModel(widget, data, alerts) {
         if (!data)
             return [{ label: 'Connection Lost', value: '?', color: 'red', assessments: { status: 'error' } }];
-        if (Array.isArray(data) && data.length == 0) {
-            return [{ label: 'No Data', value: '?', color: 'Violet', assessments: {status: 'missing' }}];
-        }
+        if (widget.type == 'alert')
+            return createLegendModelFromAlerts(widget, data, alerts);
+        if (Array.isArray(data) && data.length == 0)
+            return [{ label: 'No Data', value: '?', color: '#0096D6', assessments: {status: 'missing' }}];
         let legend = [];
         let format = Units.converter(widget.unit).format;
-        let palette = MonitoringConsole.Model.Colors.palette();
-        let alpha = MonitoringConsole.Model.Colors.opacity() / 100;
+        let palette = Theme.palette();
+        let alpha = Theme.option('opacity') / 100;
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
@@ -440,31 +476,76 @@ MonitoringConsole.View = (function() {
             let value = format(avg, widget.unit === 'bytes' || widget.unit === 'ns');
             if (widget.options.perSec)
                 value += ' /s';
-            let color = Colors.lookup(widget.coloring, getColorKey(widget, seriesData, j), palette);
-            let bgColor = Colors.hex2rgba(color, alpha);
+            let coloring = widget.coloring;
+            if (coloring == 'series')
+                coloring += ': ' + widget.series;
+            let color = Colors.lookup(coloring, getColorKey(widget, seriesData, j), palette);
+            let background = Colors.hex2rgba(color, alpha);
+            if (Array.isArray(alerts) && alerts.length > 0) {
+                let level;
+                for (let i = 0; i < alerts.length; i++) {
+                    let alert = alerts[i];
+                    if (alert.instance == seriesData.instance && alert.series == seriesData.series && !alert.stopped) {
+                        level = Units.Alerts.maxLevel(level, alert.level);
+                    }
+                }
+                if (level == 'red' || level == 'amber') {
+                    background = Colors.hex2rgba(Theme.color(level), Math.min(1, alpha * 2));
+                }
+            }
+            let status = seriesData.assessments.status;
+            let highlight = status === undefined ? undefined : Theme.color(status);
             let item = { 
                 label: label, 
                 value: value, 
                 color: color,
-                backgroundColor: bgColor,
-                assessments: seriesData.assessments,
+                background: background,
+                status: status,
+                highlight: highlight,
             };
             legend.push(item);
-            data[j].legend = item;
+            seriesData.legend = item;
         }
         return legend;
+    }
+
+    const ALERT_STATUS_NAMES = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
+
+    function createLegendModelFromAlerts(widget, data, alerts) {
+        if (!Array.isArray(alerts))
+            return []; //TODO use white, green, amber and red to describe the watch in case of single watch
+        let palette = Theme.palette();
+        let alpha = Theme.option('opacity') / 100;
+        let instances = {};
+        for (let i = 0; i < alerts.length; i++) {
+            let alert = alerts[i];
+            instances[alert.instance] = Units.Alerts.maxLevel(alert.level, instances[alert.instance]);
+        }
+        
+        return Object.entries(instances).map(function([instance, level]) {
+            let color = Colors.lookup('instance', instance, palette);
+            return {
+                label: instance,
+                value: ALERT_STATUS_NAMES[level == undefined ? 'white' : level],
+                color: color,
+                background: Colors.hex2rgba(color, alpha),
+                status: level, 
+                highlight: Theme.color(level),                
+            };
+        });
     }
 
     function getColorKey(widget, seriesData, index) {
         switch (widget.coloring) {
             case 'index': return 'line-' + index;
             case 'series': return seriesData.series;
+            case 'instance-series': return seriesData.instance + ' ' + seriesData.series;
             case 'instance': 
             default: return seriesData.instance;
         }
     } 
 
-    function createIndicatorComponent(widget, data) {
+    function createIndicatorModel(widget, data) {
         if (!data)
             return { status: 'error' };
         if (Array.isArray(data) && data.length == 0)
@@ -479,6 +560,47 @@ MonitoringConsole.View = (function() {
         return { status: status, text: statusInfo.hint };
     }
 
+    function createAlertTableModel(widget, alerts) {
+        let items = [];
+        if (Array.isArray(alerts)) {
+            let palette = Theme.palette();
+            for (let i = 0; i < alerts.length; i++) {
+                let alert = alerts[i];
+                let autoInclude = widget.type === 'alert' || ((alert.level === 'red' || alert.level === 'amber') && !alert.acknowledged);
+                let filters = widget.decorations.alerts;
+                let lastAlertLevel = alert.frames[alert.frames.length - 1].level;
+                if (lastAlertLevel == 'green' || lastAlertLevel == 'white')
+                    lastAlertLevel = alert.frames[alert.frames.length - 2].level;
+                let visible = (alert.acknowledged && filters.noAcknowledged !== true || !alert.acknowledged && filters.noUnacknowledged !== true)
+                           && (alert.stopped && filters.noStopped !== true || !alert.stopped && filters.noOngoing !== true)
+                           && (lastAlertLevel == 'red' && filters.noRed !== true || lastAlertLevel == 'amber' && filters.noAmber !== true);                  
+                if (autoInclude && visible) {
+                    let frames = alert.frames.map(function(frame) {
+                        return {
+                            level: frame.level,
+                            since: frame.start,
+                            until: frame.end,
+                            color: Theme.color(frame.level),
+                        };
+                    });
+                    let instanceColoring = widget.coloring === 'instance' || widget.coloring === undefined;
+                    items.push({
+                        serial: alert.serial,
+                        name: alert.initiator.name,
+                        unit: alert.initiator.unit,
+                        acknowledged: alert.acknowledged,
+                        series: alert.series == widget.series ? undefined : alert.series,
+                        instance: alert.instance,
+                        color: instanceColoring ? Colors.lookup('instance', alert.instance, palette) : undefined,
+                        frames: frames,
+                        watch: alert.initiator,
+                    });                    
+                }
+            }
+        }
+        return { id: widget.target + '_alerts', verbose: widget.type === 'alert', items: items };
+    }
+
     /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
@@ -487,16 +609,19 @@ MonitoringConsole.View = (function() {
     function onDataUpdate(update) {
         let widget = update.widget;
         let data = update.data;
+        let alerts = update.alerts;
         updateDomOfWidget(undefined, widget);
-        let widgetNode = $('#widget-'+widget.target);
+        let widgetNode = $('#widget-' + widget.target);
         let legendNode = widgetNode.find('.Legend').first();
         let indicatorNode = widgetNode.find('.Indicator').first();
-        let legend = createLegendComponent(widget, data); // OBS this has side effect of setting .legend attribute in series data
-        if (data) {
+        let alertsNode = widgetNode.find('.AlertTable').first();
+        let legend = createLegendModel(widget, data, alerts); // OBS this has side effect of setting .legend attribute in series data
+        if (data !== undefined && widget.type !== 'alert') {
             MonitoringConsole.Chart.getAPI(widget).onDataUpdate(update);
         }
-        legendNode.replaceWith(Components.onLegendCreation(legend));
-        indicatorNode.replaceWith(Components.onIndicatorCreation(createIndicatorComponent(widget, data)));
+        alertsNode.replaceWith(Components.createAlertTable(createAlertTableModel(widget, alerts)));
+        legendNode.replaceWith(Components.createLegend(legend));
+        indicatorNode.replaceWith(Components.createIndicator(createIndicatorModel(widget, data)));
     }
 
     /**
@@ -524,9 +649,9 @@ MonitoringConsole.View = (function() {
             for (let col = 0; col < numberOfColumns; col++) {
                 let cell = layout[col][row];
                 if (cell) {
-                    let span = cell.span;
-                    let height = (span * rowHeight);
-                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: span, rowspan: span, 'class': 'widget', style: 'height: '+height+"px;"});
+                    let rowspan = cell.rowspan;
+                    let height = (rowspan * rowHeight);
+                    let td = $("<td/>", { id: 'widget-'+cell.widget.target, colspan: cell.colspan, rowspan: rowspan, 'class': 'widget', style: 'height: '+height+"px;"});
                     updateDomOfWidget(td, cell.widget);
                     tr.append(td);
                 } else if (cell === null) {

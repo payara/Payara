@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,31 +46,28 @@ import static fish.payara.monitoring.model.Series.isSpecialTagCharacter;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 
 /**
- * A {@link MonitoringDataCollector} that is used as an adapter to {@link MonitoringDataSink} abstraction.
+ * A {@link MonitoringDataCollector} that is used as an adapter to {@link MonitoringDataConsumer} abstraction.
  *
  * @author Jan Bernitt
  */
-public class SinkDataCollector implements MonitoringDataCollector {
+public class ConsumingMonitoringDataCollector implements MonitoringDataCollector {
 
-    private final MonitoringDataSink sink;
+    private final MonitoringDataConsumer consumer;
     private final StringBuilder tags;
 
-    public SinkDataCollector(MonitoringDataSink sink) {
-        this(sink, new StringBuilder());
+    public ConsumingMonitoringDataCollector(MonitoringDataConsumer consumer) {
+        this(consumer, new StringBuilder());
     }
 
-    public SinkDataCollector(MonitoringDataSink sink, StringBuilder fullKey) {
-        this.sink = sink;
-        this.tags = fullKey;
+    private ConsumingMonitoringDataCollector(MonitoringDataConsumer consumer, StringBuilder tags) {
+        this.consumer = consumer;
+        this.tags = tags;
     }
 
     @Override
     public MonitoringDataCollector collect(CharSequence key, long value) {
         int length = tags.length();
-        if (tags.length() > 0) {
-            tags.append(TAG_SEPARATOR);
-        }
-        tags.append(key);
+        appendMetricName(tags, key);
         accept(value);
         tags.setLength(length);
         return this;
@@ -90,7 +87,14 @@ public class SinkDataCollector implements MonitoringDataCollector {
         }
         tagged.append(name).append(TAG_ASSIGN);
         appendTagValue(value, tagged);
-        return new SinkDataCollector(sink, tagged);
+        return new ConsumingMonitoringDataCollector(consumer, tagged);
+    }
+
+    private static void appendMetricName(StringBuilder tags, CharSequence key) {
+        if (tags.length() > 0) {
+            tags.append(TAG_SEPARATOR);
+        }
+        tags.append(key);
     }
 
     /**
@@ -117,6 +121,6 @@ public class SinkDataCollector implements MonitoringDataCollector {
     }
 
     private void accept(long value) {
-        sink.accept(tags, value);
+        consumer.accept(tags, value);
     }
 }

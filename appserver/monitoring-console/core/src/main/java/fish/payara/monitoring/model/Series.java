@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,12 +51,15 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
+    
     private static final char QUERY_WILDCARD = '*';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
 
     private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
+
+    public static final Series ANY = new Series("" + QUERY_WILDCARD);
 
     private final String metric;
     private final String[] tags;
@@ -155,6 +158,10 @@ public final class Series implements Comparable<Series>, Serializable {
         return metric.hashCode() ^ Arrays.hashCode(values);
     }
 
+    public boolean equalTo(Series other) {
+        return metric.equals(other.metric) && Arrays.equals(tags, other.tags) && Arrays.equals(values, other.values);
+    }
+
     @Override
     public int compareTo(Series other) {
         int res = metric.compareTo(other.metric);
@@ -208,4 +215,5 @@ public final class Series implements Comparable<Series>, Serializable {
         }
         return false;
     }
+
 }

@@ -37,20 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.monitoring.store;
 
-import java.util.Set;
+/**
+ * A {@link MonitoringDataConsumer} observes all monitoring data values as a sequence of key-value pairs where all
+ * values have been converted to longs.
+ *
+ * @author Jan Bernitt
+ */
+@FunctionalInterface
+public interface MonitoringDataConsumer {
 
-import org.jvnet.hk2.annotations.Contract;
-
-import fish.payara.monitoring.model.SeriesLookup;
-import fish.payara.monitoring.model.SeriesDataset;
-
-@Contract
-public interface MonitoringDataRepository extends SeriesLookup {
-
-    Iterable<SeriesDataset> selectAllSeries();
-
-    Set<String> instances();
+    /**
+     * Publishes a key-value pair to this consumer.
+     *
+     * @param series the full metric name, e.g. <code>x:y a:b xCount</code>
+     * @param value numeric value of the metric
+     */
+    void accept(CharSequence series, long value);
 }

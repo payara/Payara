@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,12 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.web;
+package fish.payara.monitoring.model;
 
 /**
- * A container for a full request consisting of one or more {@link SeriesQuery}s.
+ * A {@link Unit} describes the type of values of a {@link SeriesDataset}.
+ * 
+ * @author Jan Bernitt
  */
-public class SeriesRequest {
+public enum Unit {
 
-    public SeriesQuery[] queries;
+    COUNT("count"),
+    PERCENT("percent"),
+    BYTES("bytes"),
+    SECONDS("sec"),
+    MILLIS("ms"),
+    NANOS("ns");
+
+    public static Unit fromShortName(String shortName) {
+        for (Unit u : values()) {
+            if (u.shortName.equals(shortName)) {
+                return u;
+            }
+        }
+        throw new IllegalArgumentException("Unknown unit short name: " + shortName);
+    }
+
+    private final String shortName;
+
+    Unit(String shortName) {
+        this.shortName = shortName;
+    }
+
+    @Override
+    public String toString() {
+        return shortName;
+    }
 }

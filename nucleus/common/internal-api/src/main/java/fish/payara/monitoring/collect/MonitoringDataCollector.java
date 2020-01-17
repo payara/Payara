@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,7 @@ public interface MonitoringDataCollector {
     /**
      * Collect a single metric data point (within the current context of tags of this collector).
      * 
-     * @param key the plain (context free) name of the metric (e.g. "size")
+     * @param key the plain (context free) name of the metric (e.g. "Size")
      * @param value the current value of the metric
      * @return this collector for chaining (with unchanged tags)
      */
@@ -66,12 +66,12 @@ public interface MonitoringDataCollector {
     /**
      * Creates a collector with an extended context.
      * 
-     * For example if this collector has the context "foo=bar" and this method is called with name "x" and value "y" the
-     * resulting context is "foo=bar x=y".
+     * For example if this collector has the context "foo:bar" and this method is called with name "x" and value "y" the
+     * resulting context is "foo:bar x:y".
      * 
      * When the context of this collector already contains the tag name the context restarts from that tag regardless if
-     * the value is different or identical to the previous one. For example if this collector has the context "foo=bar
-     * x=y" and tag is called with name "foo" and value "baz" the new context is "foo=baz" (not "foo=bar x=y foo=baz").
+     * the value is different or identical to the previous one. For example if this collector has the context "foo:bar
+     * x:y" and tag is called with name "foo" and value "baz" the new context is "foo:baz" (not "foo:bar x:y foo:baz").
      * 
      * @param name  name of the type of context
      * @param value identifier within the context type, if <code>null</code> or empty the tag is ignored
@@ -79,7 +79,6 @@ public interface MonitoringDataCollector {
      *         pair.
      */
     MonitoringDataCollector tag(CharSequence name, CharSequence value);
-
 
     /*
      * Helper methods for convenience and consistent tagging.

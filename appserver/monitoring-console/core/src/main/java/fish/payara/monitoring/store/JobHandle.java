@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,20 +37,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.monitoring.store;
 
-import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Contract;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
-import fish.payara.monitoring.model.SeriesLookup;
-import fish.payara.monitoring.model.SeriesDataset;
+/**
+ * A {@link JobHandle} is a utility class for safely starting and stopping scheduled tasks.
+ *
+ * @author Jan Bernitt
+ */
+public final class JobHandle {
 
-@Contract
-public interface MonitoringDataRepository extends SeriesLookup {
+    protected static final Logger LOGGER = Logger.getLogger(JobHandle.class.getName());
 
-    Iterable<SeriesDataset> selectAllSeries();
+    private final AtomicReference<ScheduledFuture<?>> job = new AtomicReference<>();
+    private final String description;
 
-    Set<String> instances();
+    public JobHandle(String description) {
+        this.description = description;
+    }
+
+    public void start(PayaraExecutorService executor, int time, TimeUnit unit, Runnable work) {
+        if (job.get() == null) {
+            ScheduledFuture<?> task = executor.scheduleAtFixedRate(work, 0L, time, unit);
+            if (!job.compareAndSet(null, task)) {
+                cancelTask(task, description);
+            }
+        }
+    }
+
+    public void stop() {
+        cancelTask(job.getAndUpdate(job -> null), description);
+    }
+
+    private static void cancelTask(ScheduledFuture<?> task, String description) {
+        if (task != null) {
+            LOGGER.info("Stopping " + description +".");
+            try {
+                task.cancel(false);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to cancel " + description + ".", e);
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return JobHandle.class.getSimpleName() + " for " + description;
+    }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -110,7 +111,7 @@ public interface Resources extends ConfigBeanProxy  {
     public class Duck {
 
         public static <T> Collection<T> getResources(Resources resources, Class<T> type){
-            Collection<T> filteredResources = new ArrayList<T>();
+            Collection<T> filteredResources = new ArrayList<>();
             for(Resource resource : resources.getResources()){
                 if (type.isInstance(resource)) {
                     filteredResources.add(type.cast(resource));
