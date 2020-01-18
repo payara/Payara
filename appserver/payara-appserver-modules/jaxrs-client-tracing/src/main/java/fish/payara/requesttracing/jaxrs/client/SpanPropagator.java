@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -40,54 +40,39 @@
 
 package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import io.opentracing.Tracer;
 
 public class SpanPropagator {
     private static final SpanPropagator INSTANCE = new SpanPropagator();
-    private static ThreadLocal<SpanContext> propagatedContext = new ThreadLocal<>();
-
-    private final OpenTracingService openTracing;
-    private final InvocationManager invocationManager;
+    private static final ThreadLocal<SpanContext> PROPAGATED_CONTEXT = new ThreadLocal<>();
 
     SpanPropagator() {
-        // Get the ServiceLocator and OpenTracing services
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        if (serviceLocator != null) {
-            openTracing = serviceLocator.getService(OpenTracingService.class);
-            invocationManager = serviceLocator.getService(InvocationManager.class);
-        } else {
-            openTracing = null;
-            invocationManager = null;
-        }
     }
 
-    private SpanContext _activeContext() {
-        if (openTracing != null) {
-            Span activeSpan = openTracing.getTracer(
-                    openTracing.getApplicationName(invocationManager))
-                    .activeSpan();
-            return activeSpan != null ? activeSpan.context() : null;
+    private SpanContext internalActiveContext() {
+        final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+        final Tracer tracer = payaraTracingServices.getActiveTracer();
+        if (tracer == null) {
+            return null;
         }
-        return null;
+        final Span activeSpan = tracer.activeSpan();
+        return activeSpan == null ? null : activeSpan.context();
     }
 
     public static SpanContext activeContext() {
-        return INSTANCE._activeContext();
+        return INSTANCE.internalActiveContext();
     }
 
     public static SpanContext propagateContext(SpanContext context) {
-        SpanContext previous = propagatedContext.get();
-        propagatedContext.set(context);
+        final SpanContext previous = PROPAGATED_CONTEXT.get();
+        PROPAGATED_CONTEXT.set(context);
         return previous;
     }
 
     public static SpanContext propagatedContext() {
-        return propagatedContext.get();
+        return PROPAGATED_CONTEXT.get();
     }
 
     public static void clearPropagatedContext() {

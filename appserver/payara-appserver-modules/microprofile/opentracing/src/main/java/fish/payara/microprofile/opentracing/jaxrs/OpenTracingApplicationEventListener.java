@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.opentracing.jaxrs;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 
 import java.util.logging.Logger;
 
@@ -50,9 +51,6 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -83,19 +81,10 @@ public class OpenTracingApplicationEventListener implements ApplicationEventList
     @PostConstruct
     public void postConstruct() {
         LOG.finest("postConstruct()");
-        final ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        if (serviceLocator == null) {
-            LOG.config("Default base service locator is null, JAX-RS server tracing is disabled.");
-            return;
-        }
-        final InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
-        this.requestTracing = serviceLocator.getService(RequestTracingService.class);
-        this.openTracing = serviceLocator.getService(OpenTracingService.class);
-        if (invocationManager == null || this.openTracing == null) {
-            this.applicationName = null;
-        } else {
-            this.applicationName = this.openTracing.getApplicationName(invocationManager);
-        }
+        final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+        this.requestTracing = payaraTracingServices.getRequestTracingService();
+        this.openTracing = payaraTracingServices.getOpenTracingService();
+        this.applicationName = payaraTracingServices.getApplicationName();
     }
 
 
