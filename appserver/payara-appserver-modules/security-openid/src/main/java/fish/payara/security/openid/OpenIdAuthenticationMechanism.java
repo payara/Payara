@@ -298,28 +298,30 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        synchronized (this.getSessionLock(request)) {
-            if (this.context.getAccessToken().isExpired()) {
-                // Access Token expired
-                LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+        if (this.context.getAccessToken().isExpired()) {
+            synchronized (this.getSessionLock(request)) {
+                if (this.context.getAccessToken().isExpired()) {
+                    // Access Token expired
+                    LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
 
-                AuthenticationStatus refreshStatus = this.context.getRefreshToken()
-                        .map(rt -> this.refreshTokens(httpContext, rt))
-                        .orElse(AuthenticationStatus.SEND_FAILURE);
+                    AuthenticationStatus refreshStatus = this.context.getRefreshToken()
+                            .map(rt -> this.refreshTokens(httpContext, rt))
+                            .orElse(AuthenticationStatus.SEND_FAILURE);
 
-                if (refreshStatus != AuthenticationStatus.SUCCESS) {
-                    LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
-                    try {
-                        request.logout();
-                    } catch (ServletException ex) {
-                        LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                    if (refreshStatus != AuthenticationStatus.SUCCESS) {
+                        LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
+                        try {
+                            request.logout();
+                        } catch (ServletException ex) {
+                            LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                        }
+                        // Redirect user to OpenID connect provider for re-authentication
+                        return authenticationController.authenticateUser(configuration, httpContext);
                     }
-                    // Redirect user to OpenID connect provider for re-authentication
-                    return authenticationController.authenticateUser(configuration, httpContext);
                 }
-            }
 
-            return SUCCESS;
+                return SUCCESS;
+            }
         }
 
     }
