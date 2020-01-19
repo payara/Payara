@@ -270,7 +270,7 @@ public class CommonHandlers {
 
         String readableString = "";
 
-        long msecLeftover = milliseconds;
+        long msecLeftover = milliseconds != null ? milliseconds : 0L;
 
         long numWeeks = msecLeftover / MSEC_PER_WEEK;
         msecLeftover -= numWeeks * MSEC_PER_WEEK;
