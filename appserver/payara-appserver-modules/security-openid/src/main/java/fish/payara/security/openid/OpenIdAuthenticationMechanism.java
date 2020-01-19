@@ -147,7 +147,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     private StateController stateController;
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
-    
+
     private static final String SESSION_LOCK_NAME = OpenIdAuthenticationMechanism.class.getName();
 
     /**
@@ -183,41 +183,39 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         this.configuration = configurationController.buildConfig(definition);
         return this;
     }
-    
+
     @Override
     public AuthenticationStatus validateRequest(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        synchronized (this.getSessionLock(request)) {
-            if (isNull(request.getUserPrincipal())) {
-                LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
-                // User is not authenticated
-                // Perform steps (1) to (6)
-                return this.authenticate(request, response, httpContext);
+        if (isNull(request.getUserPrincipal())) {
+            LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
+            // User is not authenticated
+            // Perform steps (1) to (6)
+            return this.authenticate(request, response, httpContext);
+        } else {
+            // User has been authenticated in request before
+
+            // Try-catch-block taken from AutoApplySessionInterceptor
+            // We cannot use @AutoApplySession, because validateRequest(...) must be called on every request
+            // to handle re-authentication (refreshing tokens)
+            // https://stackoverflow.com/questions/51678821/soteria-httpmessagecontext-setregistersession-not-working-as-expected/51819055
+            // https://github.com/javaee/security-soteria/blob/master/impl/src/main/java/org/glassfish/soteria/cdi/AutoApplySessionInterceptor.java
+            try {
+                httpContext.getHandler().handle(new Callback[]{
+                    new CallerPrincipalCallback(httpContext.getClientSubject(), request.getUserPrincipal())}
+                );
+            } catch (IOException | UnsupportedCallbackException ex) {
+                throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
+            }
+
+            if (configuration.isTokenAutoRefresh()) {
+                LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
+                return this.reAuthenticate(request, response, httpContext);
             } else {
-                // User has been authenticated in request before
-
-                // Try-catch-block taken from AutoApplySessionInterceptor
-                // We cannot use @AutoApplySession, because validateRequest(...) must be called on every request
-                // to handle re-authentication (refreshing tokens)
-                // https://stackoverflow.com/questions/51678821/soteria-httpmessagecontext-setregistersession-not-working-as-expected/51819055
-                // https://github.com/javaee/security-soteria/blob/master/impl/src/main/java/org/glassfish/soteria/cdi/AutoApplySessionInterceptor.java
-                try {
-                    httpContext.getHandler().handle(new Callback[]{
-                        new CallerPrincipalCallback(httpContext.getClientSubject(), request.getUserPrincipal())}
-                    );
-                } catch (IOException | UnsupportedCallbackException ex) {
-                    throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
-                }
-
-                if (configuration.isTokenAutoRefresh()) {
-                    LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
-                    return this.reAuthenticate(request, response, httpContext);
-                } else {
-                    return SUCCESS;
-                }
+                return SUCCESS;
             }
         }
     }
@@ -226,7 +224,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
-        
+
         if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
             // (1) The End-User is not already authenticated
             return authenticationController.authenticateUser(configuration, httpContext);
@@ -258,7 +256,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * Authorization Code Flow must be validated and exchanged for an ID Token,
      * an Access Token and optionally a Refresh Token directly.
      *
-     * @param httpContext the {@link HttpMessageContext} to validate authorization code from
+     * @param httpContext the {@link HttpMessageContext} to validate
+     * authorization code from
      * @return the authentication status.
      */
     private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
@@ -281,7 +280,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            
+
             // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
             httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
             return httpContext.notifyContainerAboutLogin(validationResult);
@@ -293,33 +292,35 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
     }
-    
+
     private AuthenticationStatus reAuthenticate(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        if (this.context.getAccessToken().isExpired()) {
-            // Access Token expired
-            LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+        synchronized (this.getSessionLock(request)) {
+            if (this.context.getAccessToken().isExpired()) {
+                // Access Token expired
+                LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
 
-            AuthenticationStatus refreshStatus = this.context.getRefreshToken()
-                    .map(rt -> this.refreshTokens(httpContext, rt))
-                    .orElse(AuthenticationStatus.SEND_FAILURE);
+                AuthenticationStatus refreshStatus = this.context.getRefreshToken()
+                        .map(rt -> this.refreshTokens(httpContext, rt))
+                        .orElse(AuthenticationStatus.SEND_FAILURE);
 
-            if (refreshStatus != AuthenticationStatus.SUCCESS) {
-                LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
-                try {
-                    request.logout();
-                } catch (ServletException ex) {
-                    LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                if (refreshStatus != AuthenticationStatus.SUCCESS) {
+                    LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
+                    try {
+                        request.logout();
+                    } catch (ServletException ex) {
+                        LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                    }
+                    // Redirect user to OpenID connect provider for re-authentication
+                    return authenticationController.authenticateUser(configuration, httpContext);
                 }
-                // Redirect user to OpenID connect provider for re-authentication
-                return authenticationController.authenticateUser(configuration, httpContext);
             }
-        }
 
-        return SUCCESS;
+            return SUCCESS;
+        }
 
     }
 
@@ -332,10 +333,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            
+
             // Do not register session, as this will invalidate the currently active session (destroys session beans and removes attributes set in session)!
             // httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
-            
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
             // Token Request is invalid (refresh token invalid or expired)
@@ -365,7 +365,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             context.setExpiresIn(Integer.parseInt(expiresIn));
         }
     }
-    
+
     private Object getSessionLock(HttpServletRequest request) {
         HttpSession session = request.getSession();
         Object lock = session.getAttribute(SESSION_LOCK_NAME);
