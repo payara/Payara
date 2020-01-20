@@ -320,10 +320,10 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
                     }
                 }
 
-                return SUCCESS;
             }
         }
 
+        return SUCCESS;
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
