@@ -632,7 +632,7 @@ public abstract class LocalServerCommand extends CLICommand {
                 if (attribute == null) {
                     return false;
                 }
-                return Boolean.valueOf(attribute.getValue());
+                return Boolean.parseBoolean(attribute.getValue());
             }
         }
 

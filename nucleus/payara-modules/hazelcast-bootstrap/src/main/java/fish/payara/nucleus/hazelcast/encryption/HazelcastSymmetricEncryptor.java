@@ -169,10 +169,6 @@ public class HazelcastSymmetricEncryptor {
             throw new HazelcastException("Error reading encrypted key", ioe);
         }
 
-        if (encryptedBytes == null) {
-            throw new HazelcastException("Encrypted key appears to be null");
-        }
-
         try {
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
 

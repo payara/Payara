@@ -65,7 +65,7 @@ public class HazelcastBackingStoreFactory implements BackingStoreFactory {
 
     @Override
     public <K extends Serializable, V extends Serializable> BackingStore<K, V> createBackingStore(BackingStoreConfiguration<K, V> bsc) throws BackingStoreException {
-        return new HazelcastBackingStore<K, V>(this, bsc.getStoreName(), clusteredStore);
+        return new HazelcastBackingStore<>(this, bsc.getStoreName(), clusteredStore);
     }
 
     @Override
