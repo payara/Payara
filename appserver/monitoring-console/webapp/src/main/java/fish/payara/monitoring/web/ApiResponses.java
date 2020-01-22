@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import fish.payara.monitoring.alert.Watch;
@@ -143,13 +144,13 @@ public final class ApiResponses {
         public final Map<String, String> attrs;
 
         AnnotationData(SeriesAnnotation annotation) {
-            this.time = annotation.time;
-            this.series = annotation.series.toString();
-            this.instance = annotation.instance;
-            this.value = annotation.value;
+            this.time = annotation.getTime();
+            this.series = annotation.getSeries().toString();
+            this.instance = annotation.getInstance();
+            this.value = annotation.getValue();
             this.attrs = new LinkedHashMap<>(); // keep order
-            for (int i = 0; i < annotation.attrs.length; i+=2) {
-                attrs.put(annotation.attrs[i], annotation.attrs[i + 1]);
+            for (Entry<String, String> attr : annotation) {
+                attrs.put(attr.getKey(), attr.getValue());
             }
         }
     }

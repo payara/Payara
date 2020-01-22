@@ -40,7 +40,10 @@
 package fish.payara.monitoring.model;
 
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 /**
  * An {@link SeriesAnnotation} is meta data linked to a {@link SeriesDataset} by having the same {@link Series} and
@@ -51,13 +54,13 @@ import java.util.Arrays;
  * @author Jan Bernitt
  * @since 5.201
  */
-public final class SeriesAnnotation implements Serializable {
+public final class SeriesAnnotation implements Serializable, Iterable<Entry<String, String>> {
 
-    public final long time;
-    public final Series series;
-    public final String instance;
-    public final long value;
-    public final String[] attrs;
+    private final long time;
+    private final Series series;
+    private final String instance;
+    private final long value;
+    private final String[] attrs;
 
     public SeriesAnnotation(long time, Series series, String instance, long value, String[] attrs) {
         this.time = time;
@@ -69,6 +72,43 @@ public final class SeriesAnnotation implements Serializable {
             throw new IllegalArgumentException(
                     "Annotation attributes always must be given in pairs but got: " + Arrays.toString(attrs));
         }
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public long getValue() {
+        return value;
+    }
+
+    public Series getSeries() {
+        return series;
+    }
+
+    public String getInstance() {
+        return instance;
+    }
+
+    public int getAttriuteCount() {
+        return attrs.length / 2;
+    }
+
+    @Override
+    public Iterator<Entry<String, String>> iterator() {
+        final String[] elems = attrs;
+        return new Iterator<Entry<String,String>>() {
+            int i = 0;
+            @Override
+            public boolean hasNext() {
+                return i < elems.length;
+            }
+
+            @Override
+            public Entry<String, String> next() {
+                return new AbstractMap.SimpleImmutableEntry<>(elems[i++], elems[i++]);
+            }
+        };
     }
 
     @Override

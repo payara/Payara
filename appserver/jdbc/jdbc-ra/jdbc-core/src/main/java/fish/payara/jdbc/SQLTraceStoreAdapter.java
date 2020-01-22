@@ -44,9 +44,15 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
 import org.glassfish.api.jdbc.SQLTraceStore;
 import org.glassfish.internal.api.Globals;
 
+import com.sun.gjc.util.SQLTraceLogger;
+
 /**
  * An adapter between the {@link SQLTraceListener} abstraction that is registered with implementation class as key and a
  * managed instance of the {@link SQLTraceStore}.
+ * 
+ * Even though this class is very similar to {@link SQLTraceLogger} the classes cannot share code as each has to have
+ * its own {@link ThreadLocal}. Would they inherit from the same base class the invocations from both classes would get
+ * mixed up in the same {@link ThreadLocal}.
  * 
  * @author Jan Bernitt
  */
@@ -81,6 +87,8 @@ public class SQLTraceStoreAdapter implements SQLTraceListener {
                     query.addSQL((String)record.getParams()[0]);
                 break;
             }
+
+            // these can all run the SQL and contain SQL
             case "execute":
             case "executeQuery":
             case "executeUpdate":
@@ -90,7 +98,7 @@ public class SQLTraceStoreAdapter implements SQLTraceListener {
                 if (query == null) {
                     query = new SQLQuery();
                     currentQuery.set(query);
-                }                      // these can all run the SQL and contain SQL
+                }
                 // see if we have more SQL
                 if (record.getParams() != null && record.getParams().length > 0) {
                     // gather the SQL
