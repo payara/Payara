@@ -93,6 +93,8 @@ public class HazelcastSymmetricEncryptor {
     static {
         try {
             secretKey = readAndDecryptSecretKey();
+            Logger.getLogger(HazelcastSymmetricEncryptor.class.getName()).log(Level.FINE,
+                    "Data grid encryption key successfully read and decrypted");
         } catch (Exception exception) {
             // Shutting down Payara from the thread we're running in can only be done in fairly brutal ways
             Logger.getLogger(HazelcastSymmetricEncryptor.class.getName()).log(Level.SEVERE,
