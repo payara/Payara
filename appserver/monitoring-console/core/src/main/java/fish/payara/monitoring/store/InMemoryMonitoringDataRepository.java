@@ -297,7 +297,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
     private void addAnnotation(SeriesAnnotation annotation) {
-        Queue<SeriesAnnotation> annotations = annotationsBySeries.computeIfAbsent(annotation.series, //
+        Queue<SeriesAnnotation> annotations = annotationsBySeries.computeIfAbsent(annotation.getSeries(), //
                 key -> new ConcurrentLinkedQueue<>());
         annotations.add(annotation);
         if (annotations.size() > 20) {
@@ -329,7 +329,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             for (Entry<Series, Queue<SeriesAnnotation>> entry : annotationsBySeries.entrySet()) {
                 if (series.matches(entry.getKey())) {
                     for (SeriesAnnotation a : entry.getValue()) {
-                        if (filter.contains(a.instance)) {
+                        if (filter.contains(a.getInstance())) {
                             matches.add(a);
                         }
                     }
@@ -345,7 +345,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             return new ArrayList<>(annotations);
         }
         Set<String> filter = new HashSet<>(asList(instances));
-        return annotations.stream().filter(a -> filter.contains(a.instance)).collect(toList());
+        return annotations.stream().filter(a -> filter.contains(a.getInstance())).collect(toList());
     }
 
     @Override

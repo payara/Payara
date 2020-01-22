@@ -455,8 +455,8 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 }
             }
             // collect any trace exceeding the threshold
-            if (uncollectedTraces.size() > 50) {
-                uncollectedTraces.poll();
+            if (uncollectedTraces.size() >= 50) {
+                uncollectedTraces.poll(); // avoid queue creating a memory leak by accumulating entries in case no consumer polls them
             }
             RequestTrace requestTrace = requestEventStore.getTrace();
             uncollectedTraces.add(requestTrace);

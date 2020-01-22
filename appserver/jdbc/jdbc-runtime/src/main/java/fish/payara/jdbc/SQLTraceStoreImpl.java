@@ -95,8 +95,12 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
             return;
         }
         long threshold = thresholdInMillis(connectionPool);
-        uncollectedTracesByPoolName.computeIfAbsent(record.getPoolName(), key -> new ConcurrentLinkedQueue<>())
-            .add(new SQLTraceEntry(threshold, record, sql));
+        Queue<SQLTraceEntry> queue = uncollectedTracesByPoolName.computeIfAbsent(record.getPoolName(), 
+                key -> new ConcurrentLinkedQueue<>());
+        if (queue.size() >= 50) {
+            queue.poll(); // avoid queue creating a memory leak by accumulating entries in case no consumer polls them
+        }
+        queue.add(new SQLTraceEntry(threshold, record, sql));
     }
 
     @Override
@@ -117,6 +121,7 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
     @Override
     @MonitoringData(ns = "sql")
     public void collect(MonitoringDataCollector collector) {
+        long now = System.currentTimeMillis();
         for (Entry<String, Queue<SQLTraceEntry>> poolEntry : uncollectedTracesByPoolName.entrySet()) {
             MonitoringDataCollector poolCollector = collector.group(poolEntry.getKey());
             int count = 0;
@@ -125,16 +130,18 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
             Queue<SQLTraceEntry> entries = poolEntry.getValue();
             SQLTraceEntry entry = entries.poll();
             while (entry != null) {
-                count++;
-                long executionTime = entry.trace.getExecutionTime();
-                maxExecutionTime = Math.max(maxExecutionTime, executionTime);
-                sumExecutionTime += executionTime;
-                if (executionTime > entry.thresholdMillis) {
-                    poolCollector.annotate( //
-                            "MaxExecutionTime", executionTime, //
-                            "Threshold", "" + entry.thresholdMillis, //
-                            "Timestamp", "" + entry.trace.getTimeStamp(), //
-                            "SQL", entry.sql);
+                if (now - entry.trace.getTimeStamp() < 5000) { // only add trace in case it was from last 5 seconds
+                    count++;
+                    long executionTime = entry.trace.getExecutionTime();
+                    maxExecutionTime = Math.max(maxExecutionTime, executionTime);
+                    sumExecutionTime += executionTime;
+                    if (executionTime > entry.thresholdMillis) {
+                        poolCollector.annotate( //
+                                "MaxExecutionTime", executionTime, //
+                                "Threshold", "" + entry.thresholdMillis, //
+                                "Timestamp", "" + entry.trace.getTimeStamp(), //
+                                "SQL", entry.sql);
+                    }
                 }
                 entry = entries.poll();
             }
