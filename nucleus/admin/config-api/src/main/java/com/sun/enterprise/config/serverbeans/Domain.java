@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -930,12 +930,36 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             return targets;
         }
 
+        /**
+         * @param me      the current domain
+         * @param appName the name of the application
+         * @return all of the targets that have application-refs for an application. If
+         *         an instance is included by being in a deployment group or cluster it
+         *         won't appear in this list.
+         */
         public static List<String> getAllReferencedTargetsForApplication(
             Domain me, String appName) {
             List<String> referencedTargets = new ArrayList<String>();
             for (String target : me.getAllTargets()) {
                 if (me.getApplicationRefInTarget(appName, target) != null) {
                     referencedTargets.add(target);
+                }
+            }
+
+            // Remove any server targets if they are included by virtue of being in a
+            // deployment group
+            for (String reference : new ArrayList<>(referencedTargets)) {
+                DeploymentGroup dg = me.getDeploymentGroupNamed(reference);
+                if (dg != null) {
+                    for (Server instance : dg.getInstances()) {
+                        referencedTargets.remove(instance.getName());
+                    }
+                }
+                Cluster cluster = me.getClusterNamed(reference);
+                if (cluster != null) {
+                    for (Server instance : cluster.getInstances()) {
+                        referencedTargets.remove(instance.getName());
+                    }
                 }
             }
             return referencedTargets;
