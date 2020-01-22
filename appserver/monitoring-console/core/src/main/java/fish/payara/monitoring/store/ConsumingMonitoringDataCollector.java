@@ -52,23 +52,36 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
  */
 public class ConsumingMonitoringDataCollector implements MonitoringDataCollector {
 
-    private final MonitoringDataConsumer consumer;
+    private final MonitoringDataConsumer dataConsumer;
+    private final MonitoringAnnotationConsumer annotationConsumer;
     private final StringBuilder tags;
 
-    public ConsumingMonitoringDataCollector(MonitoringDataConsumer consumer) {
-        this(consumer, new StringBuilder());
+    public ConsumingMonitoringDataCollector(MonitoringDataConsumer dataConsumer, 
+            MonitoringAnnotationConsumer annotationConsumer) {
+        this(dataConsumer, annotationConsumer, new StringBuilder());
     }
 
-    private ConsumingMonitoringDataCollector(MonitoringDataConsumer consumer, StringBuilder tags) {
-        this.consumer = consumer;
+    private ConsumingMonitoringDataCollector(MonitoringDataConsumer consumer, 
+            MonitoringAnnotationConsumer annotationConsumer, StringBuilder tags) {
+        this.dataConsumer = consumer;
+        this.annotationConsumer = annotationConsumer;
         this.tags = tags;
     }
 
     @Override
-    public MonitoringDataCollector collect(CharSequence key, long value) {
+    public MonitoringDataCollector collect(CharSequence metric, long value) {
         int length = tags.length();
-        appendMetricName(tags, key);
-        accept(value);
+        appendMetricName(tags, metric);
+        dataConsumer.accept(tags, value);
+        tags.setLength(length);
+        return this;
+    }
+
+    @Override
+    public MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs) {
+        int length = tags.length();
+        appendMetricName(tags, metric);
+        annotationConsumer.accept(tags, value, attrs);
         tags.setLength(length);
         return this;
     }
@@ -87,7 +100,7 @@ public class ConsumingMonitoringDataCollector implements MonitoringDataCollector
         }
         tagged.append(name).append(TAG_ASSIGN);
         appendTagValue(value, tagged);
-        return new ConsumingMonitoringDataCollector(consumer, tagged);
+        return new ConsumingMonitoringDataCollector(dataConsumer, annotationConsumer, tagged);
     }
 
     private static void appendMetricName(StringBuilder tags, CharSequence key) {
@@ -120,7 +133,4 @@ public class ConsumingMonitoringDataCollector implements MonitoringDataCollector
         return idx < 0 ? idx : idx + 1;
     }
 
-    private void accept(long value) {
-        consumer.accept(tags, value);
-    }
 }

@@ -138,12 +138,16 @@ public class ConsumingMonitoringDataCollectorTest implements MonitoringDataSourc
                     .collect("valueLength", value.length()));
     }
 
-    private final Map<String, Long> dataPoints = new HashMap<>();
+    private final Map<String, Long> dataPointsBySeries = new HashMap<>();
+    private final Map<String, String[]> annotationsBySeries = new HashMap<>();
 
     @Before
     public void collectDataPoints() {
-        dataPoints.clear();
-        MonitoringDataCollector collector = new ConsumingMonitoringDataCollector((series, value) -> dataPoints.put(series.toString(), value));
+        dataPointsBySeries.clear();
+        annotationsBySeries.clear();
+        MonitoringDataCollector collector = new ConsumingMonitoringDataCollector(
+                (series, value) -> dataPointsBySeries.put(series.toString(), value),
+                (series, value, attrs) -> annotationsBySeries.put(series.toString(), attrs));
         collect(collector);
     }
 
@@ -315,13 +319,13 @@ public class ConsumingMonitoringDataCollectorTest implements MonitoringDataSourc
     }
 
     private void assertDataPoint(String key, long value) {
-        Long actual = dataPoints.get(key);
+        Long actual = dataPointsBySeries.get(key);
         assertNotNull("No value for key: " + key, actual);
         assertEquals(value, actual.longValue());
     }
 
     private void assertNoDataPoint(String key) {
-        assertTrue(!dataPoints.containsKey(key));
+        assertTrue(!dataPointsBySeries.containsKey(key));
     }
 
 }

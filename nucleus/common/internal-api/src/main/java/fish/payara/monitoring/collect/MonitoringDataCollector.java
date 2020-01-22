@@ -55,15 +55,6 @@ import java.util.function.Function;
 public interface MonitoringDataCollector {
 
     /**
-     * Collect a single metric data point (within the current context of tags of this collector).
-     * 
-     * @param key the plain (context free) name of the metric (e.g. "Size")
-     * @param value the current value of the metric
-     * @return this collector for chaining (with unchanged tags)
-     */
-    MonitoringDataCollector collect(CharSequence key, long value);
-
-    /**
      * Creates a collector with an extended context.
      * 
      * For example if this collector has the context "foo:bar" and this method is called with name "x" and value "y" the
@@ -80,6 +71,36 @@ public interface MonitoringDataCollector {
      */
     MonitoringDataCollector tag(CharSequence name, CharSequence value);
 
+    /**
+     * Collect a single metric data point (within the current context of tags of this collector).
+     * 
+     * @param metric the plain (context free) name of the metric (e.g. "Size")
+     * @param value  the current value of the metric
+     * @return this collector for chaining (with unchanged tags)
+     */
+    MonitoringDataCollector collect(CharSequence metric, long value);
+
+    /**
+     * Adds an annotation entry for the given metric with an individual value that can differ from collected value at
+     * same point in time in case the collected value represents an aggregate while the annotated value is specific for
+     * the annotation instance.
+     * 
+     * Annotation values do not occur in the time-line of metric data. They exist as meta-data related to the metric
+     * series linked by name and time.
+     * 
+     * Annotation should *only* be used for event based data that does not occur all the time as the store only keeps
+     * most recent annotations for each series.
+     * 
+     * @param metric      name of the metric the annotation relates to
+     * @param value       value for the annotation instance, usually identical to current collected value but
+     *                    potentially different in case of multiple instances that were aggregated to current collected
+     *                    value.
+     * @param attrs       a sequence of key-value pairs the value is annotated with. 
+     *                    For example: ["name", "Foo", "age", "7"]
+     * @return this collector for chaining (with unchanged tags)
+     */
+    MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs);
+
     /*
      * Helper methods for convenience and consistent tagging.
      */
@@ -88,14 +109,26 @@ public interface MonitoringDataCollector {
         MonitoringDataCollector self = this;
         return new MonitoringDataCollector() {
 
+            StringBuilder prefixed = new StringBuilder(prefix);
+
             @Override
             public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
-                return self.tag(name, value);
+                self.tag(name, value);
+                return this;
             }
 
             @Override
-            public MonitoringDataCollector collect(CharSequence key, long value) {
-                return self.collect(new StringBuilder(prefix).append(key), value);
+            public MonitoringDataCollector collect(CharSequence metric, long value) {
+                prefixed.setLength(prefix.length());
+                self.collect(prefixed.append(metric), value);
+                return this;
+            }
+
+            @Override
+            public MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs) {
+                prefixed.setLength(prefix.length());
+                self.annotate(prefixed.append(metric), value, attrs);
+                return this;
             }
         };
     }

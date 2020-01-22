@@ -89,16 +89,25 @@ MonitoringConsole.View.Units = (function() {
     * Factors used for any memory unit to bytes
     */
    const BYTES_FACTORS = {
-      kb: 1024,
-      mb: 1024 * 1024,
-      gb: 1024 * 1024 * 1024,
-      tb: 1024 * 1024 * 1024 * 1024,
+      kB: 1024, kb: 1024,
+      MB: 1024 * 1024, mb: 1024 * 1024,
+      GB: 1024 * 1024 * 1024, gb: 1024 * 1024 * 1024,
+      TB: 1024 * 1024 * 1024 * 1024, tb: 1024 * 1024 * 1024 * 1024,
+   };
+
+   /**
+    * Factors used for usual (unit less) count values
+    */
+   const COUNT_FACTORS = {
+      K: 1000,
+      M: 1000 * 1000
    };
 
    /**
     * Factors by unit
     */
    const FACTORS = {
+      count: COUNT_FACTORS,
       sec: SEC_FACTORS,
       ms: MS_FACTORS,
       ns: NS_FACTORS,
@@ -188,24 +197,33 @@ MonitoringConsole.View.Units = (function() {
       return number % 1 != 0;
    }
 
-   function formatTime(hourOrDateOrTimestamp, minute, second) {
+   function formatTime(hourOrDateOrTimestamp, minute, second, millis) {
+      if (typeof hourOrDateOrTimestamp === 'string')
+         hourOrDateOrTimestamp = Number(hourOrDateOrTimestamp);
       if (typeof hourOrDateOrTimestamp === 'number' && hourOrDateOrTimestamp > 24) { // assume timestamp
          hourOrDateOrTimestamp = new Date(hourOrDateOrTimestamp);
       }
       if (typeof hourOrDateOrTimestamp === 'object') { // assume Date
          minute = hourOrDateOrTimestamp.getMinutes();
          second = hourOrDateOrTimestamp.getSeconds();
+         millis = hourOrDateOrTimestamp.getMilliseconds();
          hourOrDateOrTimestamp = hourOrDateOrTimestamp.getHours();
       }
       let str = as2digits(hourOrDateOrTimestamp);
       str += ':' + as2digits(minute ? minute : 0);
       if (second)
          str += ':' +  as2digits(second);
+      if (millis)
+         str += '.' + as3digits(millis);
       return str;
    }
 
    function as2digits(number) {
       return number.toString().padStart(2, '0');
+   }
+
+   function as3digits(number) {
+      return number.toString().padStart(3, '0');
    }
 
    const DECIMAL_NUMBER_PATTERN = '([0-9]+\.)?[0-9]+';

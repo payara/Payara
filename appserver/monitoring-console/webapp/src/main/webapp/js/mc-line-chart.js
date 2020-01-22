@@ -127,7 +127,7 @@ MonitoringConsole.Chart.Line = (function() {
           display: false,
       }
     };
-    let backgroundPlugin = {
+    let thresholdsPlugin = {
       beforeDraw: function (chart) {
         let yAxis = chart.chart.scales["y-axis-0"];
         let areas = chart.chart.data.areas;
@@ -144,46 +144,68 @@ MonitoringConsole.Chart.Line = (function() {
           let yRange = yMax - yMin;
           return yAxis.bottom - Math.max(0, (yAxis.height * yVisible / yRange));
         }
+        let offsetRight = 0;
+        let barWidth = areas.length < 3 ? 5 : 3;
         for (let i = 0; i < areas.length; i++) {
-          let area = areas[i];
-          let yAxisMin = yOffset(area.min);
-          let yAxisMax = yOffset(area.max);
-          if (area.min != area.max) {
-            let height = yAxisMax - yAxisMin;
-            let width = 6;
-            let left = xAxis.right + 1;
-            let gradient = ctx.createLinearGradient(0, yAxisMin, 0, yAxisMax);
-            if (i + 1 < areas.length && areas[i+1].max == area.min) {
-              gradient.addColorStop(0.25, area.color);
-              gradient.addColorStop(0, areas[i+1].color);
-            } else if (i > 0 && areas[i-1].max == area.min) {
-              gradient.addColorStop(0.25, area.color);
-              gradient.addColorStop(0, areas[i-1].color);
-            } else {
-              gradient.addColorStop(0, area.color);  
-            }            
-            gradient.addColorStop(1, area.color);
-            ctx.fillStyle = gradient;
-            ctx.fillRect(left, yAxisMin, width, height);
+          let group = areas[i];
+          let offsetBar = false;
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            let barLeft = xAxis.right + 1 + offsetRight;
+            // solid fill
+            if (area.min != area.max) {
+              offsetBar = true;
+              let barHeight = yAxisMax - yAxisMin;
+              ctx.fillStyle = area.color;
+              ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);
+            }
+            // and the line
+            let yLine = area.type == 'lower' ? yAxisMax : yAxisMin;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeStyle = area.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(xAxis.left, yLine);
+            ctx.lineTo(barLeft, yLine);
+            ctx.stroke();
           }
-          // and the line
-          let yLine = area.type == 'lower' ? yAxisMax + 1 : yAxisMin - 1;
-          ctx.setLineDash([5, 3]);
-          ctx.strokeStyle = area.color;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(xAxis.left, yLine);
-          ctx.lineTo(xAxis.right, yLine);
-          ctx.stroke();
+          // gradients between colors
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            let barLeft = xAxis.right + 1 + offsetRight;
+            if (area.min != area.max) {
+              let barHeight = yAxisMax - yAxisMin;
+              let colors = [];
+              if (j + 1 < group.length && group[j+1].max == area.min) {
+                colors = [area.color, group[j+1].color];
+              } else if (j > 0 && group[j-1].max == area.min) {
+                colors = [area.color, group[j-1].color];
+              }
+              if (colors.length == 2) {
+                let yTop = area.type == 'lower' ? yAxisMin - 6 : yAxisMin;
+                let gradient = ctx.createLinearGradient(0, yTop, 0, yTop+6);
+                gradient.addColorStop(0, colors[0]);
+                gradient.addColorStop(1, colors[1]);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(barLeft, yTop, barWidth, 6);                
+              }
+            }            
+          }
+          if (offsetBar)
+            offsetRight += barWidth + 1;
         }
       }
     };
     return new Chart(widget.target, {
-          type: 'line',
-          data: { datasets: [], },
-          options: options,
-          plugins: [ backgroundPlugin ],       
-        });
+      type: 'line',
+      data: { datasets: [], },
+      options: options,
+      plugins: [ thresholdsPlugin ],       
+    });
   }
 
   /**
@@ -266,43 +288,57 @@ MonitoringConsole.Chart.Line = (function() {
 
   function createBackgroundAreas(widget, watches) {    
     let areas = [];
-    if (Array.isArray(watches) && watches.length > 0) {
-      let watch = watches[0];
-      if (watch.red)
-        areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
-      if (watch.amber)
-        areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
-      if (watch.green)
-        areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    let decoAreas = createDecorationBackgroundAreas(widget);
+    if (decoAreas.length > 0) {
+      areas.push(decoAreas);
     }
+    if (Array.isArray(watches) && watches.length > 0) {
+      for (let i = 0; i < watches.length; i++) {
+        areas.push(createWatchBackgroundAreas(watches[0]));
+      }
+    }
+    return areas;
+  }
+
+  function createDecorationBackgroundAreas(widget) {
+    let areas = [];
     let decorations = widget.decorations;
-    if (areas.length == 0) {
-      let critical = decorations.thresholds.critical.value;
-      let alarming = decorations.thresholds.alarming.value;
-      if (decorations.thresholds.critical.display && critical !== undefined) {
-        let color = decorations.thresholds.critical.color || Theme.color('critical');        
-        if (alarming > critical) {
-          areas.push({ color: color, min: 0, max: critical, type: 'lower' });
-        } else {
-          areas.push({ color: color, min: critical, type: 'upper' });
-        }
+    let critical = decorations.thresholds.critical.value;
+    let alarming = decorations.thresholds.alarming.value;
+    if (decorations.thresholds.critical.display && critical !== undefined) {
+      let color = decorations.thresholds.critical.color || Theme.color('critical');        
+      if (alarming > critical) {
+        areas.push({ color: color, min: 0, max: critical, type: 'lower' });
+      } else {
+        areas.push({ color: color, min: critical, type: 'upper' });
       }
-      if (decorations.thresholds.alarming.display && alarming !== undefined) {
-        let color = decorations.thresholds.alarming.color || Theme.color('alarming');
-        if (alarming > critical) {
-          areas.push({ color: color, min: critical, max: alarming, type: 'lower' });
-        } else {
-          areas.push({ color: color, min: alarming, max: critical, type: 'upper' });
-        }
+    }
+    if (decorations.thresholds.alarming.display && alarming !== undefined) {
+      let color = decorations.thresholds.alarming.color || Theme.color('alarming');
+      if (alarming > critical) {
+        areas.push({ color: color, min: critical, max: alarming, type: 'lower' });
+      } else {
+        areas.push({ color: color, min: alarming, max: critical, type: 'upper' });
       }
-    }    
+    }
     if (decorations.waterline && decorations.waterline.value) {
       let color = decorations.waterline.color || Theme.color('waterline');
       let value = decorations.waterline.value;
       areas.push({ color: color, min: value, max: value });
     }
-    return areas;
+    return areas;    
   }
+
+  function createWatchBackgroundAreas(watch) { 
+    let areas = [];
+    if (watch.red)
+      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
+    if (watch.amber)
+      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
+    if (watch.green)
+      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    return areas;
+  }   
 
   function createBackgroundArea(level, levels) {
     let color = Theme.color(level.level);

@@ -108,11 +108,14 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     public void init() {
         isDas = serverEnv.isDas();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
-        Watch watch = new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration")))
-                .red(800L, 3, true, 800L, 5, false)
-                .amber(600L, 3, true, 600L, 5, false)
-                .green(-400L, 1, false, null, null, false);
-        addWatch(watch);
+        addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration")))
+                .red(800L, 2, true, 800L, 3, false)
+                .amber(600L, 2, true, 600L, 3, false)
+                .green(-400L, 1, false, null, null, false));
+        addWatch(new Watch("Watch Loop Duration", new Metric(new Series("ns:monitoring WatchLoopDuration")))
+                .red(800L, 2, true, 800L, 3, false)
+                .amber(600L, 3, true, 600L, 3, false)
+                .green(-400L, 1, false, null, null, false));
     }
 
     @Override
@@ -123,12 +126,12 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
         if (!enabled) {
             checker.stop();
         } else {
-            checker.start(executor, 2, SECONDS, this::checkWatches);
+            checker.start(executor, 1, SECONDS, this::checkWatches);
         }
     }
 
     @Override
-    @MonitoringData(ns = "monitoring", intervalSeconds = 2)
+    @MonitoringData(ns = "monitoring")
     public void collect(MonitoringDataCollector collector) {
         if (isDas) {
             collector.collect("WatchLoopDuration", evalLoopTime.get());
@@ -379,12 +382,16 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
             Deque<Alert> seriesAlerts = alerts.computeIfAbsent(newlyRaised.getSeries(),
                     key -> new ConcurrentLinkedDeque<>());
             seriesAlerts.add(newlyRaised);
-            if (seriesAlerts.size() > MAX_ALERTS_PER_SERIES) {
-                if (!removeFirst(seriesAlerts, alert -> alert.getLevel().isLessSevereThan(Level.AMBER))) {
-                    if (!removeFirst(seriesAlerts, Alert::isAcknowledged)) {
-                        if (!removeFirst(seriesAlerts, alert -> alert.getLevel() == Level.AMBER)) {
-                            seriesAlerts.removeFirst();
-                        }
+            limitQueueSize(seriesAlerts);
+        }
+    }
+
+    private static void limitQueueSize(Deque<Alert> seriesAlerts) {
+        if (seriesAlerts.size() > MAX_ALERTS_PER_SERIES) {
+            if (!removeFirst(seriesAlerts, alert -> alert.getLevel().isLessSevereThan(Level.AMBER))) {
+                if (!removeFirst(seriesAlerts, Alert::isAcknowledged)) {
+                    if (!removeFirst(seriesAlerts, alert -> alert.getLevel() == Level.AMBER)) {
+                        seriesAlerts.removeFirst();
                     }
                 }
             }

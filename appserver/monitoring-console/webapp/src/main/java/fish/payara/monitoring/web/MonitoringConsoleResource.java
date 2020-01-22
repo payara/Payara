@@ -39,7 +39,9 @@
  */
 package fish.payara.monitoring.web;
 
+import static fish.payara.monitoring.web.ApiRequests.DataType.POINTS;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
@@ -63,11 +65,14 @@ import fish.payara.monitoring.alert.Alert;
 import fish.payara.monitoring.alert.AlertService;
 import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
+import fish.payara.monitoring.web.ApiRequests.DataType;
 import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
 import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
 import fish.payara.monitoring.web.ApiResponses.AlertsResponse;
+import fish.payara.monitoring.web.ApiResponses.AnnotationData;
 import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
 import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
 import fish.payara.monitoring.web.ApiResponses.WatchesResponse;
@@ -108,6 +113,15 @@ public class MonitoringConsoleResource {
     }
 
     @GET
+    @Path("/annotations/data/{series}/")
+    public List<AnnotationData> getAnnotationsData(@PathParam("series") String series) {
+        Series key = seriesOrNull(series);
+        return key == null 
+                ? emptyList()
+                : getDataStore().selectAnnotations(key).stream().map(AnnotationData::new).collect(toList());
+    }
+
+    @GET
     @Path("/series/data/{series}/")
     public SeriesResponse getSeriesData(@PathParam("series") String series) {
         return getSeriesData(new SeriesRequest(series));
@@ -117,28 +131,34 @@ public class MonitoringConsoleResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
     public SeriesResponse getSeriesData(SeriesRequest request) {
-        List<List<SeriesDataset>> data = new ArrayList<>(request.queries.length);
-        List<Collection<Watch>> watches = new ArrayList<>(request.queries.length);
-        List<Collection<Alert>> alerts = new ArrayList<>(request.queries.length);
+        int length = request.queries.length;
+        List<List<SeriesDataset>> data = new ArrayList<>(length);
+        List<List<SeriesAnnotation>> annotations = new ArrayList<>(length);
+        List<Collection<Watch>> watches = new ArrayList<>(length);
+        List<Collection<Alert>> alerts = new ArrayList<>(length);
         MonitoringDataRepository dataStore = getDataStore();
         AlertService alertService = getAlertService();
         for (SeriesQuery query : request.queries) {
             Series key = seriesOrNull(query.series);
-            if (key == null) {
-                data.add(emptyList());
-                watches.add(emptyList());
-                alerts.add(emptyList());
-            } else {
-                watches.add(alertService.wachtesFor(key));
-                if (Series.ANY.equalTo(key) && query.truncatePoints) {
-                    data.add(emptyList()); // if all alerts are requested don't send any particular data
-                } else {
-                    data.add(dataStore.selectSeries(key, query.instances));
-                }
-                alerts.add(alertService.alertsFor(key));
-            }
+            List<SeriesDataset> queryData = key == null || query.excludes(DataType.POINTS) //
+                    || Series.ANY.equalTo(key) && query.truncates(POINTS)  // if all alerts are requested don't send any particular data
+                    ? emptyList()
+                    : dataStore.selectSeries(key, query.instances);
+            List<SeriesAnnotation> queryAnnotations = key == null || query.excludes(DataType.ANNOTATIONS)
+                    ? emptyList()
+                    : dataStore.selectAnnotations(key, query.instances);
+            Collection<Watch> queryWatches = key == null || query.excludes(DataType.WATCHES)
+                    ? emptyList()
+                    : alertService.wachtesFor(key);
+            Collection<Alert> queryAlerts = key == null || query.excludes(DataType.ALERTS)
+                    ? emptyList()
+                    : alertService.alertsFor(key);
+            data.add(queryData);
+            watches.add(queryWatches);
+            annotations.add(queryAnnotations);
+            alerts.add(queryAlerts);
         }
-        return new SeriesResponse(request.queries, data, watches, alerts, alertService.getAlertStatistics());
+        return new SeriesResponse(request.queries, data, annotations, watches, alerts, alertService.getAlertStatistics());
     }
 
     @GET

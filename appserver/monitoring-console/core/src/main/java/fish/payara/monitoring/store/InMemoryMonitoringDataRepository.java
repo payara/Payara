@@ -44,19 +44,22 @@ import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -76,6 +79,7 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.model.EmptyDataset;
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
@@ -113,6 +117,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     private volatile Map<Series, SeriesDataset> secondsWrite = new ConcurrentHashMap<>();
     private volatile Map<Series, SeriesDataset> secondsRead = new ConcurrentHashMap<>();
     private final Map<Series, SeriesDataset[]> remoteInstanceDatasets = new ConcurrentHashMap<>();
+    private final Map<Series, Queue<SeriesAnnotation>> annotationsBySeries = new ConcurrentHashMap<>();
     private final Set<String> instances = ConcurrentHashMap.newKeySet();
     private final JobHandle dataCollectionJob = new JobHandle("monitoring data collection");
     private long collectedSecond;
@@ -165,7 +170,13 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             }
             if (series != null) {
                 long value = snapshot.values[i];
-                remoteInstanceDatasets.compute(series, (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+                remoteInstanceDatasets.compute(series, //
+                        (key, seriesByInstance) -> addRemotePoint(seriesByInstance, instance, key, time, value));
+            }
+        }
+        if (snapshot.annotations != null) {
+            for (SeriesAnnotation a : snapshot.annotations) {
+                addAnnotation(a);
             }
         }
     }
@@ -188,15 +199,15 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
 
     private void collectSourcesToMemory() {
         tick();
-        collectAll(new ConsumingMonitoringDataCollector(this::addLocalPoint));
+        collectAll(new ConsumingMonitoringDataCollector(this::addLocalPoint, this::addLocalAnnotation));
         swapLocalBuffer();
     }
 
     private void collectSourcesToPublish() {
         if (exchange != null) {
             tick();
-            SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(collectedSecond, estimatedNumberOfSeries);
-            collectAll(new ConsumingMonitoringDataCollector(msg));
+            SeriesDatasetsSnapshot msg = new SeriesDatasetsSnapshot(instanceName, collectedSecond, estimatedNumberOfSeries);
+            collectAll(new ConsumingMonitoringDataCollector(msg, msg));
             estimatedNumberOfSeries = msg.numberOfSeries;
             exchange.publish(msg);
         }
@@ -270,16 +281,37 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
     private void addLocalPoint(CharSequence key, long value) {
-        Series series = null;
-        try {
-            series = new Series(key.toString());
-        } catch (Exception ex) {
-            LOGGER.log(Level.FINEST, "Failed to add local series: " + key, ex);
-            return;
-        }
-        secondsWrite.compute(series, (s, dataset) -> dataset == null 
+        Series series = seriesOrNull(key);
+        if (series != null) {
+            secondsWrite.compute(series, (s, dataset) -> dataset == null 
                 ?  emptySet(s).add(collectedSecond, value) 
                 : dataset.add(collectedSecond, value));
+        }
+    }
+
+    private void addLocalAnnotation(CharSequence series, long value, String[] annotations) {
+        Series s = seriesOrNull(series);
+        if (s != null) {
+            addAnnotation(new SeriesAnnotation(collectedSecond, s, instanceName, value, annotations));
+        }
+    }
+
+    private void addAnnotation(SeriesAnnotation annotation) {
+        Queue<SeriesAnnotation> annotations = annotationsBySeries.computeIfAbsent(annotation.getSeries(), //
+                key -> new ConcurrentLinkedQueue<>());
+        annotations.add(annotation);
+        if (annotations.size() > 20) {
+            annotations.poll();
+        }
+    }
+
+    static Series seriesOrNull(CharSequence key) {
+        try {
+            return new Series(key.toString());
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINEST, "Failed to create local series: " + key, ex);
+            return null;
+        }
     }
 
     private SeriesDataset emptySet(Series series) {
@@ -287,16 +319,50 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
     @Override
+    public List<SeriesAnnotation> selectAnnotations(Series series, String... instances) {
+        if (!isDas) {
+            return emptyList();
+        }
+        if (series.isPattern()) {
+            List<SeriesAnnotation> matches = new ArrayList<>();
+            Set<String> filter = createInstanceFilter(instances);
+            for (Entry<Series, Queue<SeriesAnnotation>> entry : annotationsBySeries.entrySet()) {
+                if (series.matches(entry.getKey())) {
+                    for (SeriesAnnotation a : entry.getValue()) {
+                        if (filter.contains(a.getInstance())) {
+                            matches.add(a);
+                        }
+                    }
+                }
+            }
+            return matches;
+        }
+        Queue<SeriesAnnotation> annotations = annotationsBySeries.get(series);
+        if (annotations == null || annotations.isEmpty()) {
+            return emptyList();
+        }
+        if (instances == null || instances.length == 0) {
+            return new ArrayList<>(annotations);
+        }
+        Set<String> filter = new HashSet<>(asList(instances));
+        return annotations.stream().filter(a -> filter.contains(a.getInstance())).collect(toList());
+    }
+
+    @Override
     public List<SeriesDataset> selectSeries(Series series, String... instances) {
         if (!isDas) {
             return emptyList();
         }
+        List<SeriesDataset> res = new ArrayList<>();
+        selectSeries(res, singleton(series), createInstanceFilter(instances));
+        return res;
+    }
+
+    public Set<String> createInstanceFilter(String... instances) {
         Set<String> instanceFilter = instances == null || instances.length == 0 
                 ? this.instances
                 : new HashSet<>(asList(instances));
-        List<SeriesDataset> res = new ArrayList<>(instanceFilter.size());
-        selectSeries(res, Collections.singleton(series), instanceFilter);
-        return res;
+        return instanceFilter;
     }
 
     private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter) {
@@ -345,13 +411,20 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         return secondsRead.values();
     }
 
-    static final class SeriesDatasetsSnapshot implements Serializable, MonitoringDataConsumer {
+    static final class SeriesDatasetsSnapshot
+            implements Serializable, MonitoringDataConsumer, MonitoringAnnotationConsumer {
+
+        private final transient String instance;
         final long time;
+        // data
         int numberOfSeries;
         String[] series;
         long[] values;
+        // annotations
+        List<SeriesAnnotation> annotations;
 
-        SeriesDatasetsSnapshot(long time, int estimatedNumberOfSeries) {
+        SeriesDatasetsSnapshot(String instance, long time, int estimatedNumberOfSeries) {
+            this.instance = instance;
             this.time = time;
             this.series = new String[estimatedNumberOfSeries];
             this.values = new long[estimatedNumberOfSeries];
@@ -365,6 +438,17 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             }
             this.series[numberOfSeries] = series.toString();
             values[numberOfSeries++] = value;
+        }
+
+        @Override
+        public void accept(CharSequence series, long value, String[] attrs) {
+            if (this.annotations == null) {
+                this.annotations = new ArrayList<>();
+            }
+            Series s = seriesOrNull(series.toString());
+            if (s != null) {
+                this.annotations.add(new SeriesAnnotation(time, s, instance, value, attrs));
+            }
         }
     }
 

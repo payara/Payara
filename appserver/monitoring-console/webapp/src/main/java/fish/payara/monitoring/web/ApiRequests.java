@@ -51,6 +51,9 @@ import fish.payara.monitoring.web.ApiResponses.SeriesData;
  * @author Jan Bernitt
  */
 public final class ApiRequests {
+
+    public enum DataType { POINTS, WATCHES, ALERTS, ANNOTATIONS }
+
     /**
      * A container for a full request consisting of one or more {@link SeriesQuery}s.
      */
@@ -87,13 +90,12 @@ public final class ApiRequests {
          */
         public String[] instances;
         /**
-         * When true alerts will only contains the most recent {@link AlertFrame}
+         * When {@link DataType#ALERTS} is contained alerts will only contains the most recent {@link AlertFrame}.
+         * When {@link DataType#POINTS} is contained {@link SeriesData} will only contain the most recent point.
          */
-        public boolean truncateAlerts = true;
-        /**
-         * When true {@link SeriesData} will only contain the most recent point.
-         */
-        public boolean truncatePoints = false;
+        public DataType[] truncate;
+
+        public DataType[] exclude;
 
         public SeriesQuery() {
             // from JSON
@@ -102,6 +104,26 @@ public final class ApiRequests {
         SeriesQuery(String series, String... instances) {
             this.series = series;
             this.instances = instances;
+            this.truncate = new DataType[] { DataType.ALERTS };
+            this.exclude = new DataType[0];
+        }
+
+        public boolean excludes(DataType type) {
+            return contains(exclude, type);
+        }
+
+        public boolean truncates(DataType type) {
+            return contains(truncate, type);
+        }
+
+        private static boolean contains(DataType[] set, DataType type) {
+            for (DataType t : set) {
+                if (t == type) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
+
 }

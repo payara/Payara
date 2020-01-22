@@ -97,7 +97,7 @@ public final class Alert implements Iterable<Alert.Frame> {
             this.level = level;
             this.cause = cause;
             this.captured = captured;
-            this.start = System.currentTimeMillis();
+            this.start = cause.lastTime();
         }
 
         @Override
@@ -109,6 +109,15 @@ public final class Alert implements Iterable<Alert.Frame> {
             return end;
         }
     }
+
+    /**
+     * The maximal number of {@link Frame}s each {@link Alert} can have. When further frames are added old frames are
+     * compacted away by cutting out a pair of amber-red or red-amber transitions while updating the end of the frame
+     * before to connect to the frame after the cut out frames.
+     * 
+     * Frames are limited to avoid excessive use of memory and data transfer.
+     */
+    static final int MAX_FRAMES = 20;
 
     private static final AtomicInteger NEXT_SERIAL = new AtomicInteger();
     /**
@@ -145,7 +154,7 @@ public final class Alert implements Iterable<Alert.Frame> {
             if (!frames.isEmpty()) {
                 Frame recent = getEndFrame();
                 assertSameSeriesAndInstance(cause, recent.cause);
-                recent.end = System.currentTimeMillis();
+                recent.end = cause.lastTime();
                 acknowledged = acknowledged && to.isLessSevereThan(recent.level);
             } else {
                 assertMatchesWachtedSeries(cause);
@@ -154,8 +163,21 @@ public final class Alert implements Iterable<Alert.Frame> {
             frames.add(new Frame(to, cause, captured));
             CHANGE_COUNT.incrementAndGet();
             level = to;
+            if (frames.size() > MAX_FRAMES) {
+                compactFrames();
+            }
         }
         return this;
+    }
+
+    /**
+     * This is not synchronized since there is only one thread updating alerts so there should not be concurrent
+     * changes.
+     */
+    private void compactFrames() {
+        frames.get(0).end = frames.get(2).end;
+        frames.remove(1);
+        frames.remove(1); // which was 2 before
     }
 
     public boolean isStarted() {
@@ -177,11 +199,11 @@ public final class Alert implements Iterable<Alert.Frame> {
         return level.isLessSevereThan(Level.AMBER) && !frames.isEmpty();
     }
 
-    public void stop(Level to) {
+    public void stop(Level to, long now) {
         if (!isStopped()) {
             assertGreenOrWhiteLevel(to);
             this.level = to;
-            getEndFrame().end = System.currentTimeMillis();
+            getEndFrame().end = now;
             CHANGE_COUNT.incrementAndGet();
         }
     }
@@ -208,6 +230,10 @@ public final class Alert implements Iterable<Alert.Frame> {
 
     public Frame getEndFrame() {
         return frames.get(frames.size() - 1);
+    }
+
+    public int getFrameCount() {
+        return frames.size();
     }
 
     @Override

@@ -181,20 +181,22 @@ button:hover {
   padding-bottom: 60px;
 }
 #grid-console {
-    position: relative;
-    border-spacing: 0;
-    border-collapse: collapse;
+  position: relative;
+  border-spacing: 0;
+  border-collapse: collapse;
 }
 .console-area {
 	padding: 5px 10px;
 	vertical-align: top;
 }
 #chart-container {
-    padding: 0 5px;
+  padding: 0 5px;
 }
 .widget-chart-box {
-    position: absolute;
-    top: 40px;
+  position: absolute;
+  top: 40px;
+  width: calc(100% - 20px); 
+  height: calc(100% - 100px);
 }
 .widget-title-bar {
   position: absolute;
@@ -232,13 +234,13 @@ button:hover {
   border-collapse: separate;
   padding-top: 5px;
 }
-#chart-grid td {
+#chart-grid > tr > td {
     background-color: #002433;
     padding: 10px;
     vertical-align: top;
     position: relative;
 }
-#chart-grid td.chart-selected h3 {
+#chart-grid > tr > td.chart-selected h3 {
     background-color: #0096D6;
 }
 .stable {
@@ -307,7 +309,7 @@ button:hover {
   white-space: nowrap;
 }
 #Settings table div input[type=text] {
-  width: 60px;
+  width: 50px;
 }
 #console #Settings {
 	display: none;
@@ -520,6 +522,9 @@ table.tags th, table.tags td {
   left: 15px;
   width: calc(100% - 38px);
   background-color: rgba(0, 36, 51, .75);
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;  
 }
 .AlertTable .Item {
   border-left: 5px solid transparent; /* colored via inline style */
@@ -551,6 +556,89 @@ table.tags th, table.tags td {
 .AlertTable .Item span {
   white-space: nowrap;
 }
+.AlertTable .Item pre {
+  white-space: pre-wrap;
+  color: #DAE0E2;
+  background-color: #434445;
+  margin: 0.25em 0;
+}
+.AlertTable .Item a {
+  cursor: pointer;
+}
 .AlertTable .Item .Group {
   display: inline-block;
+}
+.AlertTable .Item .Group.Annotation {
+  display: block;
+  border: 0 solid transparent;
+  border-width: 0 0 0 5px;
+  padding: 0 5px;
+  margin: 5px 0 0 0;
+}
+
+
+/* Alert Tables */
+.AnnotationTable {
+  position: absolute;
+  top: 40px;
+  left: 15px;
+  width: calc(100% - 38px);
+  background-color: rgba(0, 36, 51, .75);
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.AnnotationTable .Group.Annotation {
+  display: block;
+  border: 0 solid transparent;
+  border-width: 0 0 0 5px;
+  padding: 0 5px;
+  margin: 5px 0 0 0;
+}
+.AnnotationTable .Annotation strong {
+  display: inline-block;
+  margin: 0 0.9em 0 0.4em;
+  padding: 1px;
+  background-color: rgba(0,36,51,0.75);
+}
+.AnnotationTable .Annotation small {
+  color: #bbb;
+  background-color: rgba(0,36,51,0.75);
+}
+.AnnotationTable .Annotation span {
+  white-space: nowrap;
+}
+.AnnotationTable .Annotation pre {
+  white-space: pre-wrap;
+  color: #DAE0E2;
+  background-color: rgba(67,68,69, 0.75);
+  margin: 0;
+  padding: 0.2em 0.5em;
+  text-align: left;
+  font-size: 13px;
+}
+.AnnotationTable .Annotation code {
+  text-align: left;
+  font-size: 13px;
+}
+table.AnnotationTable {
+  border-collapse: separate;
+  border-spacing: 0 3px;
+}
+.AnnotationTable th {
+  border-bottom: 1px solid #0096D6;
+}
+.AnnotationTable td {
+  border-left: 1px solid #0096D6;
+  padding: 0 0.5em;
+  text-align: right;
+  font-size: 15px;
+  line-height: 1em;
+}
+.AnnotationTable td:first-child {
+  border-left: 5px solid transparent;
+  text-align: left;
+}
+.AnnotationTable tr:hover {
+  background-color: #0096D6;
 }

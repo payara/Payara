@@ -39,76 +39,66 @@
  */
 package fish.payara.monitoring.alert;
 
-import java.util.Collection;
-import java.util.function.Predicate;
+import static java.util.Collections.emptyList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.junit.Test;
 
+import fish.payara.monitoring.alert.Alert.Frame;
+import fish.payara.monitoring.alert.Alert.Level;
+import fish.payara.monitoring.model.EmptyDataset;
+import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesDataset;
 
 /**
- * The {@link AlertService} manages and evaluates {@link Watch}s that cause {@link Alert}s.
+ * Tests some of the formal correctness of {@link Alert} logic.
  *
  * @author Jan Bernitt
- * @since 5.201
  */
-@Contract
-public interface AlertService {
+public class AlertTest {
 
-    /*
-     * Alerts
-     */
+    private final Series series = new Series("Series");
 
-    class AlertStatistics {
-        /**
-         * Can be used by (asynchronous) consumers to determine if they have seen the most recent state of alerts. If
-         * the change count is still the same they have processed already there is nothing new to process.
-         */
-        public int changeCount;
-        public int unacknowledgedRedAlerts;
-        public int acknowledgedRedAlerts;
-        public int unacknowledgedAmberAlerts;
-        public int acknowledgedAmberAlerts;
-        public int watches;
+    @Test
+    public void compactionDoesLimitFrames() {
+        Alert a = new Alert(new Watch("name", new Metric(series)));
+        long startTime = 0;
+        for (int i = 0; i < Alert.MAX_FRAMES + 10; i++) {
+            SeriesDataset cause = createDatasetWithPoints(i);
+            Level level = i % 2 == 0 ? Level.AMBER : Level.RED;
+            a.addTransition(level, cause, emptyList());
+            if (i == 0) {
+                startTime = a.getStartTime();
+            }
+            assertEquals(startTime, a.getStartTime()); // still same start time
+            assertEquals(cause.lastTime(), a.getEndFrame().start);
+            assertEquals(level, a.getLevel());
+            assertFramesAreConnectedInTime(a);
+            assertTrue("Too many frames at " + i, a.getFrameCount() <= Alert.MAX_FRAMES);
+        }
     }
 
-    AlertStatistics getAlertStatistics();
-
-    Collection<Alert> alertsMatching(Predicate<Alert> filter);
-
-    default Alert alertBySerial(int serial) {
-        Collection<Alert> matches = alertsMatching(alert -> alert.serial == serial);
-        return matches.isEmpty() ? null : matches.iterator().next();
+    private static void assertFramesAreConnectedInTime(Alert a) {
+        Frame last = null;
+        for (Frame f : a) {
+            if (last != null) {
+                assertEquals(last.getEnd(), f.start);
+                assertNotSame(last.level, f.level);
+            }
+            last = f;
+        }
     }
 
-    default Collection<Alert> alertsFor(Series series) {
-        return alertsMatching(alert -> alert.getSeries().equalTo(series));
+    private SeriesDataset createDatasetWithPoints(int n) {
+        SeriesDataset data = new EmptyDataset("instance", series, n);
+        long time = 0;
+        for (int j = 0; j < n; j++) {
+            time += 1000; // 1 sec
+            data = data.add(time, j);
+        }
+        return data;
     }
-
-    default Collection<Alert> alerts() {
-        return alertsMatching(alert -> true);
-    }
-
-    /*
-     * Watches
-     */
-
-    /**
-     * Adds a watch to the evaluation loop. To remove the watch just use {@link Watch#stop()}.
-     *
-     * @param watch new watch to add to evaluation loop
-     */
-    void addWatch(Watch watch);
-
-    /**
-     * @return All watches registered for evaluation.
-     */
-    Collection<Watch> watches();
-
-    /**
-     * @param series a simple or pattern {@link Series}, not null
-     * @return All watches matching the given {@link Series}. {@link Series#ANY} will match all watches similar to
-     *         {@link #watches()}.
-     */
-    Collection<Watch> wachtesFor(Series series);
 }

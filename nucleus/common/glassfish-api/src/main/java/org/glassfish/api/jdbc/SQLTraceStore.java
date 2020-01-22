@@ -8,16 +8,16 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/master/LICENSE.txt
- * See the License for the specific
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at packager/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * The Payara Foundation designates this particular file as subject to the "Classpath"
- * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,26 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.model;
+package org.glassfish.api.jdbc;
 
-import java.util.List;
+import org.jvnet.hk2.annotations.Contract;
 
-/**
- * Most basic lookup abstraction for a source of {@link SeriesDataset}s.
- *
- * @author Jan Bernitt
- * @since 5.201
- */
-@FunctionalInterface
-public interface SeriesLookup {
+@Contract
+public interface SQLTraceStore {
 
-    /**
-     * Lists all {@link SeriesDataset}s that match given {@link Series} with a {@link SeriesDataset#getInstance()} name
-     * that is included in the given set of instance names.
-     *
-     * @param series    the {@link Series} to list
-     * @param instances set if instances to include, an empty set includes all instances
-     * @return current data of matching {@link SeriesDataset}s.
-     */
-    List<SeriesDataset> selectSeries(Series series, String... instances);
+    void trace(SQLTraceRecord record, String sql);
 }

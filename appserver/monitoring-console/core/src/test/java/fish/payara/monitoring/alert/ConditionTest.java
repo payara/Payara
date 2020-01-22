@@ -92,6 +92,7 @@ public class ConditionTest {
         assertSatisfied(lt5, -1);
         assertSatisfied(lt5, 0, 0, 0, 0, 0);
         assertFalse(lt5.isForLastPresent());
+        assertEquals("value < 5", lt5.toString());
     }
 
     @Test
@@ -107,6 +108,7 @@ public class ConditionTest {
         assertSatisfied(ltOrEq5, -1);
         assertSatisfied(ltOrEq5, 0, 0, 0, 0, 0);
         assertFalse(ltOrEq5.isForLastPresent());
+        assertEquals("value <= 5", ltOrEq5.toString());
     }
 
     @Test
@@ -120,6 +122,7 @@ public class ConditionTest {
         assertNotSatisfied(eq5, 0, 0, 0, 0, 0);
         assertSatisfied(eq5, 5, 5, 5, 5, 5);
         assertFalse(eq5.isForLastPresent());
+        assertEquals("value = 5", eq5.toString());
     }
 
     @Test
@@ -134,6 +137,7 @@ public class ConditionTest {
         assertNotSatisfied(gt5, -1);
         assertNotSatisfied(gt5, 0, 0, 0, 0, 0);
         assertFalse(gt5.isForLastPresent());
+        assertEquals("value > 5", gt5.toString());
     }
 
     @Test
@@ -151,6 +155,7 @@ public class ConditionTest {
         assertSatisfied(ge5, 5, 5, 5, 5, 5);
         assertNotSatisfied(ge5, 4, 4, 4, 4, 4);
         assertFalse(ge5.isForLastPresent());
+        assertEquals("value >= 5", ge5.toString());
     }
 
     @Test
@@ -166,6 +171,7 @@ public class ConditionTest {
         assertNotSatisfied(gt5for3x, 5, 5, 5, 5, 5);
         assertSatisfied(gt5for3x, 6, 6, 6, 6, 6);
         assertTrue(gt5for3x.isForLastPresent());
+        assertEquals("value > 5 for last 3x", gt5for3x.toString());
     }
 
     @Test
@@ -182,6 +188,7 @@ public class ConditionTest {
         assertNotSatisfied(avgGt5for3x, 5, 5, 5, 5, 5);
         assertSatisfied(avgGt5for3x, 6, 6, 6, 6, 6);
         assertTrue(avgGt5for3x.isForLastPresent());
+        assertEquals("value > 5 for average of last 3x", avgGt5for3x.toString());
     }
 
     @Test
@@ -199,6 +206,7 @@ public class ConditionTest {
         assertNotSatisfied(gt5for3sec, 5, 5, 5, 5, 5);
         assertSatisfied(gt5for3sec, 6, 6, 6, 6, 6);
         assertTrue(gt5for3sec.isForLastPresent());
+        assertEquals("value > 5 for last 3000ms", gt5for3sec.toString());
     }
 
     @Test
@@ -218,6 +226,48 @@ public class ConditionTest {
         assertNotSatisfied(avgOf3secGt5, 5, 5, 5, 5, 5);
         assertSatisfied(avgOf3secGt5, 6, 6, 6, 6, 6);
         assertTrue(avgOf3secGt5.isForLastPresent());
+        assertEquals("value > 5 for average of last 3000ms", avgOf3secGt5.toString());
+    }
+
+    @Test
+    public void trueForAnyInLastTimes() {
+        Condition anyGt5 = new Condition(Operator.GT, 5, 0, false);
+        assertNotSatisfied(anyGt5, 5);
+        assertSatisfied(anyGt5, 6);
+        assertSatisfied(anyGt5, 6, 5);
+        assertSatisfied(anyGt5, 5, 6);
+        assertSatisfied(anyGt5, 5, 6, 5);
+        assertSatisfied(anyGt5, 5, 6, 5, 4);
+        assertNotSatisfied(anyGt5, 5, 5, 5, 4);
+        assertEquals("any 1 value > 5", anyGt5.toString());
+    }
+
+    @Test
+    public void trueForAnyInLast3Times() {
+        Condition anyGt5in3x = new Condition(Operator.GT, 5, -3, false);
+        assertNotSatisfied(anyGt5in3x, 5);
+        assertSatisfied(anyGt5in3x, 6);
+        assertSatisfied(anyGt5in3x, 6, 5);
+        assertSatisfied(anyGt5in3x, 5, 6);
+        assertSatisfied(anyGt5in3x, 5, 6, 5);
+        assertSatisfied(anyGt5in3x, 5, 6, 5, 4);
+        assertNotSatisfied(anyGt5in3x, 6, 5, 5, 4);
+        assertNotSatisfied(anyGt5in3x, 5, 5, 5, 4);
+        assertEquals("any 1 value > 5 in last 3x", anyGt5in3x.toString());
+    }
+
+    @Test
+    public void trueForAnyInLast3Seconds() {
+        Condition anyGt5in3sec = new Condition(Operator.GT, 5, -3000L, false);
+        assertSatisfied(anyGt5in3sec, 6);
+        assertNotSatisfied(anyGt5in3sec, 5);
+        assertSatisfied(anyGt5in3sec, 6, 5);
+        assertSatisfied(anyGt5in3sec, 5, 6);
+        assertSatisfied(anyGt5in3sec, 5, 6, 5);
+        assertSatisfied(anyGt5in3sec, 5, 6, 5, 4);
+        assertNotSatisfied(anyGt5in3sec, 6, 5, 5, 5, 4);
+        assertNotSatisfied(anyGt5in3sec, 5, 5, 5, 4);
+        assertEquals("any 1 value > 5 in last 3000ms", anyGt5in3sec.toString());
     }
 
     private static void assertSatisfied(Condition c, long... points) {
