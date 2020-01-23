@@ -62,7 +62,7 @@ public class StuckThreadsStore {
     private Logger logger;
 
     public StuckThreadsStore() {
-        threads = new ConcurrentHashMap<Long, Long>();
+        threads = new ConcurrentHashMap<>();
     }
 
     @PostConstruct
@@ -76,7 +76,7 @@ public class StuckThreadsStore {
      * @param threadid the id of the thread to register
      */    
     public void registerThread(Long threadid){
-        threads.put(threadid, System.nanoTime());
+        threads.put(threadid, System.currentTimeMillis());
     }
 
     /**

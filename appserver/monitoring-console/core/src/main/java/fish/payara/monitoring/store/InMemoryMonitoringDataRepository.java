@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,6 +103,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 @RunLevel(StartupRunLevel.VAL)
 public class InMemoryMonitoringDataRepository extends AbstractMonitoringService implements MonitoringDataRepository {
 
+    private static final int MAX_ANNOTATIONS_PER_SERIES = 20;
     /**
      * The topic name used to share data of instances with the DAS.
      */
@@ -289,19 +291,22 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         }
     }
 
-    private void addLocalAnnotation(CharSequence series, long value, String[] annotations) {
+    private void addLocalAnnotation(CharSequence series, long value, boolean keyed, String[] annotations) {
         Series s = seriesOrNull(series);
         if (s != null) {
-            addAnnotation(new SeriesAnnotation(collectedSecond, s, instanceName, value, annotations));
+            addAnnotation(new SeriesAnnotation(collectedSecond, s, instanceName, value, keyed, annotations));
         }
     }
 
     private void addAnnotation(SeriesAnnotation annotation) {
         Queue<SeriesAnnotation> annotations = annotationsBySeries.computeIfAbsent(annotation.getSeries(), //
                 key -> new ConcurrentLinkedQueue<>());
+        if (annotation.isKeyed()) {
+            annotations.removeIf(a -> Objects.equals(a.getKeyAttribute(), annotation.getKeyAttribute()));
+        }
         annotations.add(annotation);
-        if (annotations.size() > 20) {
-            annotations.poll();
+        if (annotations.size() > MAX_ANNOTATIONS_PER_SERIES) {
+                annotations.poll();
         }
     }
 
@@ -441,13 +446,13 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         }
 
         @Override
-        public void accept(CharSequence series, long value, String[] attrs) {
+        public void accept(CharSequence series, long value, boolean keyed, String[] attrs) {
             if (this.annotations == null) {
                 this.annotations = new ArrayList<>();
             }
             Series s = seriesOrNull(series.toString());
             if (s != null) {
-                this.annotations.add(new SeriesAnnotation(time, s, instance, value, attrs));
+                this.annotations.add(new SeriesAnnotation(time, s, instance, value, keyed, attrs));
             }
         }
     }

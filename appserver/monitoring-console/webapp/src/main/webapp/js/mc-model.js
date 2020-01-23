@@ -262,6 +262,24 @@ MonitoringConsole.Model = (function() {
 							decorations: { alerts: { noOngoing: true, noAcknowledged: true}},
 							options: { noAnnotations: true}},
 					],
+				},
+				threads: {
+					name: 'Threads',
+					numberOfColumns: 4,
+					widgets: [
+						{ series: 'ns:health StuckThreadDuration', type: 'annotation', mode: 'table', unit: 'ms',
+							displayName: 'Stuck Thread Incidents',
+							grid: {column: 0, item: 1, colspan: 3, rowspan: 1},
+							fields: ["Thread", "Started", "Value", "Threshold", "Suspended", "Locked", "State"]},
+						{ series: 'ns:health HoggingThreadDuration', type: 'annotation', mode: 'table', unit: 'ms',
+							displayName: 'Hogging Thread Incidents',
+							grid: {column: 0, item: 2, colspan: 3, rowspan: 1},
+							fields: ["Thread", "When", "Value", "Usage%", "Threshold%", "Method", "Exited"]},
+						{ series: 'ns:jvm ThreadCount', displayName: 'Live Threads', 
+							grid: {column: 3, item: 1}},
+						{ series: 'ns:jvm DaemonThreadCount', displayName: 'Daemon Threads', 
+							grid: {column: 3, item: 2}},							
+					],
 				}
 			},
 	};

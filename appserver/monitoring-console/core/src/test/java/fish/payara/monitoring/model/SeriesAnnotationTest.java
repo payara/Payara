@@ -79,7 +79,7 @@ public class SeriesAnnotationTest {
     }
 
     private static void assertAttributesCanBeIterated(String... attrs) {
-        SeriesAnnotation annotation = new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs);
+        SeriesAnnotation annotation = new SeriesAnnotation(1L, Series.ANY, "instance", 1L, false, attrs);
         assertEquals(attrs.length / 2, annotation.getAttriuteCount());
         Iterator<Entry<String, String>> iter = annotation.iterator();
         for (int i = 0; i < attrs.length; i+=2) {
@@ -94,7 +94,7 @@ public class SeriesAnnotationTest {
     private static void assertInvalidAttributes(String...attrs) {
         String attrsString = Arrays.toString(attrs);
         try {
-            assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs));
+            assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, false, attrs));
             fail("Expected attributes cause exception but were accepted: " + attrsString);
         } catch (IllegalArgumentException ex) {
             assertEquals("Annotation attributes always must be given in pairs but got: " + attrsString, ex.getMessage());
@@ -102,7 +102,7 @@ public class SeriesAnnotationTest {
     }
 
     private static void assertValidAttributes(String...attrs) {
-        assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs));
+        assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, false, attrs));
     }
 
 }
