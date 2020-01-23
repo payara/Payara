@@ -17,6 +17,7 @@
     <modules>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
+        <module>datagrid-encryption</module>
         <module>dynamic-roles</module>
         <module>formauth</module>
         <module>jacc-per-app</module>

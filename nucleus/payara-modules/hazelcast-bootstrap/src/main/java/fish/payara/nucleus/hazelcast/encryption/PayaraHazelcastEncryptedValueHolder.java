@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.nucleus.hazelcast.encryption;
 
-import org.glassfish.internal.api.JavaEEContextUtil;
-import com.hazelcast.internal.serialization.impl.JavaDefaultSerializers;
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.StreamSerializer;
-import java.io.IOException;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import java.io.Serializable;
 
 /**
- *
- * @author lprimak
- * @since 4.1.2.173
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
-    @SuppressWarnings("unchecked")
-    public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
-        this.ctxUtil = ctxUtil;
-        this.delegate = delegate != null ? (StreamSerializer<Object>) delegate : new JavaDefaultSerializers.JavaSerializer(
-                true, false, null);
+public class PayaraHazelcastEncryptedValueHolder implements Serializable {
+
+    private byte[] encryptedObjectBytes;
+
+    public PayaraHazelcastEncryptedValueHolder(byte[] encryptedObjectBytes) {
+        this.encryptedObjectBytes = encryptedObjectBytes;
     }
 
-
-    @Override
-    public void write(ObjectDataOutput out, Object object) throws IOException {
-        delegate.write(out, ctxUtil.getInvocationComponentId());
-        delegate.write(out, object);
+    public byte[] getEncryptedObjectBytes() {
+        return encryptedObjectBytes;
     }
-
-    @Override
-    public Object read(ObjectDataInput in) throws IOException {
-        String componentId = (String)delegate.read(in);
-        ctxUtil.setInstanceComponentId(componentId);
-        try (Context ctx = ctxUtil.setApplicationClassLoader()) {
-            return delegate.read(in);
-        }
-    }
-
-    @Override
-    public int getTypeId() {
-        return 1;
-    }
-
-    @Override
-    public void destroy() {
-        delegate.destroy();
-    }
-
-    private final JavaEEContextUtil ctxUtil;
-    private final StreamSerializer<Object> delegate;
 }

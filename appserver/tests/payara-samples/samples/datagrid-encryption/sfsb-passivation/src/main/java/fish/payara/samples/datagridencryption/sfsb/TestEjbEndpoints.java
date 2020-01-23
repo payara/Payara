@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.samples.datagridencryption.sfsb;
 
-import org.glassfish.internal.api.JavaEEContextUtil;
-import com.hazelcast.internal.serialization.impl.JavaDefaultSerializers;
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.StreamSerializer;
-import java.io.IOException;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import java.io.Serializable;
+import java.util.Random;
 
 /**
- *
- * @author lprimak
- * @since 4.1.2.173
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
-    @SuppressWarnings("unchecked")
-    public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
-        this.ctxUtil = ctxUtil;
-        this.delegate = delegate != null ? (StreamSerializer<Object>) delegate : new JavaDefaultSerializers.JavaSerializer(
-                true, false, null);
+@ApplicationScoped
+@Path("/TestEjb")
+public class TestEjbEndpoints implements Serializable {
+
+    @Inject
+    TestEjb testEjb;
+
+    @Inject
+    TestEjb testEjb2;
+
+    @GET
+    public String testEjb() {
+        testEjb.addItem("apple");
+        testEjb.addItem("pear");
+        testEjb.addItem("bear");
+        testEjb.removeItem("bear");
+
+        return testEjb.getItems();
     }
 
+    @GET
+    @Path("2")
+    public String testEjb2() {
+        testEjb2.addItem("bapple");
+        testEjb2.addItem("bear");
+        testEjb2.addItem("care");
+        testEjb2.removeItem("bear");
 
-    @Override
-    public void write(ObjectDataOutput out, Object object) throws IOException {
-        delegate.write(out, ctxUtil.getInvocationComponentId());
-        delegate.write(out, object);
+        return testEjb2.getItems();
     }
 
-    @Override
-    public Object read(ObjectDataInput in) throws IOException {
-        String componentId = (String)delegate.read(in);
-        ctxUtil.setInstanceComponentId(componentId);
-        try (Context ctx = ctxUtil.setApplicationClassLoader()) {
-            return delegate.read(in);
+    @GET
+    @Path("Lookup")
+    public String lookup() {
+
+        try {
+            for (int i = 0; i < 600; i++) {
+                InitialContext initialContext = new InitialContext();
+                TestEjb testEjbLookup = (TestEjb) initialContext.lookup(
+                        "java:global/sfsb-passivation/TestEjbImpl!fish.payara.samples.datagridencryption.sfsb.TestEjb");
+
+                if (new Random().nextBoolean()) {
+                    testEjbLookup.addItem("bipple");
+                } else {
+                    testEjbLookup.addItem("bopple");
+                }
+            }
+
+            return "Finished: check logs...";
+        } catch (NamingException ne) {
+            System.out.println(ne);
+            return "Ruh Roh!";
         }
     }
-
-    @Override
-    public int getTypeId() {
-        return 1;
-    }
-
-    @Override
-    public void destroy() {
-        delegate.destroy();
-    }
-
-    private final JavaEEContextUtil ctxUtil;
-    private final StreamSerializer<Object> delegate;
 }

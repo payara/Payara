@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,66 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.samples.datagridencryption.sfsb;
 
-import org.glassfish.internal.api.JavaEEContextUtil;
-import com.hazelcast.internal.serialization.impl.JavaDefaultSerializers;
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.StreamSerializer;
-import java.io.IOException;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
+import javax.ejb.Stateful;
 
 /**
- *
- * @author lprimak
- * @since 4.1.2.173
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
-    @SuppressWarnings("unchecked")
-    public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
-        this.ctxUtil = ctxUtil;
-        this.delegate = delegate != null ? (StreamSerializer<Object>) delegate : new JavaDefaultSerializers.JavaSerializer(
-                true, false, null);
+@Stateful
+public class TestEjbImpl implements TestEjb, Serializable {
+
+    List<String> items;
+
+    public TestEjbImpl() {
+        items = new ArrayList<>();
     }
 
-
-    @Override
-    public void write(ObjectDataOutput out, Object object) throws IOException {
-        delegate.write(out, ctxUtil.getInvocationComponentId());
-        delegate.write(out, object);
+    @PostConstruct
+    public void postConstruct () {
+        System.out.println("##### New EJB #####");
     }
 
     @Override
-    public Object read(ObjectDataInput in) throws IOException {
-        String componentId = (String)delegate.read(in);
-        ctxUtil.setInstanceComponentId(componentId);
-        try (Context ctx = ctxUtil.setApplicationClassLoader()) {
-            return delegate.read(in);
+    public void addItem(String item) {
+        items.add(item);
+    }
+
+    @Override
+    public void removeItem(String item) {
+        items.remove(item);
+    }
+
+    @Override
+    public String getItems() {
+        String allItems = "";
+        if (!items.isEmpty()) {
+            for (String item : items) {
+                allItems += item + ",";
+            }
+            allItems = allItems.substring(0, allItems.length() - 1);
         }
+        return allItems;
     }
 
-    @Override
-    public int getTypeId() {
-        return 1;
+    @PrePassivate
+    private void prePassivate() {
+        System.out.println("##### Passivating... #####");
+        System.out.println(getItems());
+        System.out.println("##### Finished Passivating... #####");
     }
 
-    @Override
-    public void destroy() {
-        delegate.destroy();
+    @PostActivate
+    private void postActivate() {
+        System.out.println("##### Reactivating... #####");
+        System.out.println(getItems());
+        System.out.println("##### Finished Reactivating... #####");
     }
-
-    private final JavaEEContextUtil ctxUtil;
-    private final StreamSerializer<Object> delegate;
 }
