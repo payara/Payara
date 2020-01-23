@@ -68,7 +68,7 @@ public final class SeriesAnnotation implements Serializable, Iterable<Entry<Stri
         this.series = series;
         this.instance = instance;
         this.value = value;
-        this.keyed = keyed;
+        this.keyed = keyed && attrs.length >= 2;
         this.attrs = attrs;
         if (attrs.length % 2 == 1) {
             throw new IllegalArgumentException(
@@ -100,7 +100,7 @@ public final class SeriesAnnotation implements Serializable, Iterable<Entry<Stri
      * @return By convention the first attribute is the key, null if not defined
      */
     public String getKeyAttribute() {
-        return getAttriuteCount() < 1 ? null : attrs[1];
+        return isKeyed() ? attrs[1] : null;
     }
 
     public int getAttriuteCount() {
