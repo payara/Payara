@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,10 +56,12 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -266,6 +268,22 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
+            }
+        }
+        // ensures the same application id is used when there is a deployment 
+        // if the application id is in the cluster keyed by application name
+        else if (event.is(Deployment.APPLICATION_PREPARED)) {
+            if (event.hook() != null && event.hook() instanceof DeploymentContext) {
+                DeploymentContext deploymentContext = (DeploymentContext) event.hook();
+                Application app = deploymentContext.getModuleMetaData(Application.class);
+                if(app != null) {
+                    Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
+                    if (appID != null) {
+                        app.setUniqueId(appID);
+                    } else {
+                        cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), app.getUniqueId());
+                    }
+                }
             }
         }
         // removes the application from the clustered registry of applications
