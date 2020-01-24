@@ -183,7 +183,7 @@ public class HoggingThreadsHealthCheck
                 });
         collector
                 .collect("HoggingThreadCount", hoggingThreadCount)
-        .collect("HoggingThreadDuration", hoggingThreadMaxDuration);
+                .collect("HoggingThreadDuration", hoggingThreadMaxDuration);
     }
 
     @Override
