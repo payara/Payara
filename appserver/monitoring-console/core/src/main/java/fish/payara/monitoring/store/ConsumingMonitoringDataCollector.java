@@ -78,10 +78,10 @@ public class ConsumingMonitoringDataCollector implements MonitoringDataCollector
     }
 
     @Override
-    public MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs) {
+    public MonitoringDataCollector annotate(CharSequence metric, long value, boolean keyed, String... attrs) {
         int length = tags.length();
         appendMetricName(tags, metric);
-        annotationConsumer.accept(tags, value, attrs);
+        annotationConsumer.accept(tags, value, keyed, attrs);
         tags.setLength(length);
         return this;
     }

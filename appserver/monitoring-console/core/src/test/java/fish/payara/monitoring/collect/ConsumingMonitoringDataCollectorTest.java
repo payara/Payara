@@ -147,7 +147,7 @@ public class ConsumingMonitoringDataCollectorTest implements MonitoringDataSourc
         annotationsBySeries.clear();
         MonitoringDataCollector collector = new ConsumingMonitoringDataCollector(
                 (series, value) -> dataPointsBySeries.put(series.toString(), value),
-                (series, value, attrs) -> annotationsBySeries.put(series.toString(), attrs));
+                (series, value, keyed, attrs) -> annotationsBySeries.put(series.toString(), attrs));
         collect(collector);
     }
 

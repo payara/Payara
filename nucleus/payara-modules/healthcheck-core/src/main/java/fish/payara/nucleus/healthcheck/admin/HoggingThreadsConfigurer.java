@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2020 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -107,7 +107,7 @@ public class HoggingThreadsConfigurer implements AdminCommand {
     @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String threshold;
 
-    @Min(value = 1, message = "Retry count must be 1 or more")
+    @Min(value = 0, message = "Retry count must be zero or more")
     @Param(name = "retry-count")
     private String retryCount;
 

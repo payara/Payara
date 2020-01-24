@@ -42,6 +42,7 @@ package fish.payara.monitoring.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -78,8 +79,32 @@ public class SeriesAnnotationTest {
         assertAttributesCanBeIterated("Key1", "Val1", "Key2", "Val2", "Key3", "Val3");
     }
 
+    @Test
+    public void annotationsWithKeyAreRecognised() {
+        assertFalse(newAnnotation(false).isKeyed());
+        assertFalse(newAnnotation(true).isKeyed());
+        assertCanBeNonKeyed("Key1", "Val1");
+        assertCanBeNonKeyed("Key1", "Val1", "Key2", "Val2");
+        assertCanBeNonKeyed("Key1", "Val1", "Key2", "Val2", "Key3", "Val3");
+        assertCanBeKeyed("Key1", "Val1");
+        assertCanBeKeyed("Key1", "Val1", "Key2", "Val2");
+        assertCanBeKeyed("Key1", "Val1", "Key2", "Val2", "Key3", "Val3");
+    }
+
+    private static void assertCanBeNonKeyed(String... attrs) {
+        SeriesAnnotation annotation = newAnnotation(false, attrs);
+        assertFalse(annotation.isKeyed());
+        assertNull(annotation.getKeyAttribute());
+    }
+
+    private static void assertCanBeKeyed(String... attrs) {
+        SeriesAnnotation annotation = newAnnotation(true, attrs);
+        assertTrue(annotation.isKeyed());
+        assertEquals(attrs[1], annotation.getKeyAttribute());
+    }
+
     private static void assertAttributesCanBeIterated(String... attrs) {
-        SeriesAnnotation annotation = new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs);
+        SeriesAnnotation annotation = newAnnotation(false, attrs);
         assertEquals(attrs.length / 2, annotation.getAttriuteCount());
         Iterator<Entry<String, String>> iter = annotation.iterator();
         for (int i = 0; i < attrs.length; i+=2) {
@@ -94,7 +119,7 @@ public class SeriesAnnotationTest {
     private static void assertInvalidAttributes(String...attrs) {
         String attrsString = Arrays.toString(attrs);
         try {
-            assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs));
+            assertNotNull(newAnnotation(false, attrs));
             fail("Expected attributes cause exception but were accepted: " + attrsString);
         } catch (IllegalArgumentException ex) {
             assertEquals("Annotation attributes always must be given in pairs but got: " + attrsString, ex.getMessage());
@@ -102,7 +127,11 @@ public class SeriesAnnotationTest {
     }
 
     private static void assertValidAttributes(String...attrs) {
-        assertNotNull(new SeriesAnnotation(1L, Series.ANY, "instance", 1L, attrs));
+        assertNotNull(newAnnotation(false, attrs));
+    }
+
+    public static SeriesAnnotation newAnnotation(boolean keyed, String... attrs) {
+        return new SeriesAnnotation(1L, Series.ANY, "instance", 1L, keyed, attrs);
     }
 
 }

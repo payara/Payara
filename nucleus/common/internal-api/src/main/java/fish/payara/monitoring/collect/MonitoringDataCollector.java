@@ -95,15 +95,24 @@ public interface MonitoringDataCollector {
      * @param value       value for the annotation instance, usually identical to current collected value but
      *                    potentially different in case of multiple instances that were aggregated to current collected
      *                    value.
+     * @param keyed       true, if the first attribute value given refers to the key used to identify duplicate 
+     *                    annotations, else false. Annotations for same key replace each other.
      * @param attrs       a sequence of key-value pairs the value is annotated with. 
      *                    For example: ["name", "Foo", "age", "7"]
      * @return this collector for chaining (with unchanged tags)
      */
-    MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs);
+    MonitoringDataCollector annotate(CharSequence metric, long value, boolean keyed, String... attrs);
 
     /*
      * Helper methods for convenience and consistent tagging.
      */
+
+    /**
+     * Same as {@link #annotate(CharSequence, long, boolean, String...)} with {@code keyed} being {@code false}.
+     */
+    default MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs) {
+        return annotate(metric, value, false, attrs);
+    }
 
     default MonitoringDataCollector prefix(CharSequence prefix) {
         MonitoringDataCollector self = this;
@@ -125,9 +134,9 @@ public interface MonitoringDataCollector {
             }
 
             @Override
-            public MonitoringDataCollector annotate(CharSequence metric, long value, String... attrs) {
+            public MonitoringDataCollector annotate(CharSequence metric, long value, boolean keyed, String... attrs) {
                 prefixed.setLength(prefix.length());
-                self.annotate(prefixed.append(metric), value, attrs);
+                self.annotate(prefixed.append(metric), value, keyed, attrs);
                 return this;
             }
         };

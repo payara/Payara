@@ -17,8 +17,10 @@ public interface MonitoringAnnotationConsumer {
      *
      * @param series      the full metric name, e.g. <code>x:y a:b xCount</code>
      * @param value       numeric value of the metric
+     * @param keyed       true, if the first attribute value given refers to the key used to identify duplicate 
+     *                    annotations, else false. Annotations for same key replace each other.
      * @param attrs       a sequence of key-value pairs the value is annotated with. 
      *                    For example: ["name", "Foo", "age", "7"]
      */
-    void accept(CharSequence series, long value, String[] attrs);
+    void accept(CharSequence series, long value, boolean keyed, String[] attrs);
 }

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -160,7 +160,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Max(value = 100, message ="Hogging threads threshold is a percentage so must be less than 100")
     private String hogginThreadsThreshold;
 
-    @Min(value = 1, message = "Hogging threads retry count must be 1 or more")
+    @Min(value = 0, message = "Hogging threads retry count must be zero or more")
     @Param(name = "hogging-threads-retry-count", optional = true)
     private String hogginThreadsRetryCount;
 

@@ -60,13 +60,15 @@ public final class SeriesAnnotation implements Serializable, Iterable<Entry<Stri
     private final Series series;
     private final String instance;
     private final long value;
+    private final boolean keyed;
     private final String[] attrs;
 
-    public SeriesAnnotation(long time, Series series, String instance, long value, String[] attrs) {
+    public SeriesAnnotation(long time, Series series, String instance, long value, boolean keyed, String[] attrs) {
         this.time = time;
         this.series = series;
         this.instance = instance;
         this.value = value;
+        this.keyed = keyed && attrs.length >= 2;
         this.attrs = attrs;
         if (attrs.length % 2 == 1) {
             throw new IllegalArgumentException(
@@ -88,6 +90,17 @@ public final class SeriesAnnotation implements Serializable, Iterable<Entry<Stri
 
     public String getInstance() {
         return instance;
+    }
+
+    public boolean isKeyed() {
+        return keyed;
+    }
+
+    /**
+     * @return By convention the first attribute is the key, null if not defined
+     */
+    public String getKeyAttribute() {
+        return isKeyed() ? attrs[1] : null;
     }
 
     public int getAttriuteCount() {
