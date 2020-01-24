@@ -7,10 +7,6 @@ FROM "${docker.basicJdkImage}"
 # 8181: https
 EXPOSE 4848 9009 8080 8181
 
-ARG PAYARA_UNPACKED
-ARG ADDITIONAL_SCRIPTS
-ARG TINI_VERSION=v0.18.0
-
 # Initialize the configurable environment variables
 ENV HOME_DIR=/opt/payara\
     PAYARA_DIR=/opt/payara/appserver\
@@ -19,7 +15,7 @@ ENV HOME_DIR=/opt/payara\
     DEPLOY_DIR=/opt/payara/deployments\
     PASSWORD_FILE=/opt/payara/passwordFile\
     # Payara Server Domain options
-    DOMAIN_NAME=production\
+    DOMAIN_NAME=${docker.payara.domainName} \
     ADMIN_USER=admin\
     ADMIN_PASSWORD=admin \
     # Utility environment variables
@@ -29,6 +25,10 @@ ENV HOME_DIR=/opt/payara\
     POSTBOOT_COMMANDS=/opt/payara/config/post-boot-commands.asadmin\
     PREBOOT_COMMANDS=/opt/payara/config/pre-boot-commands.asadmin
 ENV PATH="${PATH}:${PAYARA_DIR}/bin"
+
+ARG PAYARA_UNPACKED
+ARG ADDITIONAL_SCRIPTS
+ARG TINI_VERSION=v0.18.0
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
@@ -55,8 +55,10 @@ WORKDIR ${HOME_DIR}
 
 # Download and unzip the Payara distribution
 COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
+COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${SCRIPT_DIR}/
 
 RUN true \
+    && chmod +x ${SCRIPT_DIR}/* \
     # Configure the password file for configuring Payara
     && echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/tmpfile \
     && echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE} \
@@ -64,25 +66,24 @@ RUN true \
     && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=/tmp/tmpfile change-admin-password --domain_name=${DOMAIN_NAME} \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain ${DOMAIN_NAME} \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} enable-secure-admin \
-    && for MEMORY_JVM_OPTION in $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]"); do\
-        ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options $MEMORY_JVM_OPTION;\
-    done \
-    # FIXME: when upgrading this container to Java 10+, this needs to be changed to '-XX:+UseContainerSupport' and '-XX:MaxRAMPercentage'
-    && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:MaxRAMFraction=1' \
-    && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
+    && for MEMORY_JVM_OPTION in \
+       $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]"); \
+       do\
+         ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options $MEMORY_JVM_OPTION;\
+       done \
+    # FIXME: when upgrading this container to Java 10+, this needs to be changed to
+    #        '-XX:+UseContainerSupport' and '-XX:MaxRAMPercentage'
+    && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options \
+      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:MaxRAMFraction=1' \
+    && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
+      set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} \
-    # Cleanup unused files
+    # Cleanup after initialization
     && rm -rf \
         /tmp/tmpFile \
-        payara.zip \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs \
-        ${PAYARA_DIR}/glassfish/domains/domain1 \
     && true
-
-# Copy across docker scripts
-COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${SCRIPT_DIR}/
-RUN chmod +x ${SCRIPT_DIR}/*
 
 ENTRYPOINT ["/tini", "--"]
 CMD ${SCRIPT_DIR}/entrypoint.sh

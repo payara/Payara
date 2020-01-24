@@ -26,17 +26,11 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-# Install Payara Server and remove unused domains
+# Install Payara Server
 ARG PAYARA_UNPACKED
 ARG ADDITIONAL_SCRIPTS
 
 COPY --chown=payara:payara ${PAYARA_UNPACKED} ${PAYARA_DIR}
-RUN true \
-    && rm -rf ${PAYARA_DIR}/glassfish/domains/domain1/ \
-    && rm -rf ${PAYARA_DIR}/glassfish/domains/production \
-    && true
-
-# Install scripts
 COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${HOME_DIR}
 RUN chmod +x ${HOME_DIR}/*.sh
 
