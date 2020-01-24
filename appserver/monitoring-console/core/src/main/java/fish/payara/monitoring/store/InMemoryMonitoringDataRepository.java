@@ -306,7 +306,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         }
         annotations.add(annotation);
         if (annotations.size() > MAX_ANNOTATIONS_PER_SERIES) {
-                annotations.poll();
+            annotations.poll();
         }
     }
 
@@ -458,4 +458,3 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
 }
-
