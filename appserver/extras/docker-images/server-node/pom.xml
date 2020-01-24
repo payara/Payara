@@ -12,6 +12,7 @@
 
     <properties>
         <dockerRepositoryName>payara/server-node</dockerRepositoryName>
+        <docker.payara.excludeFromZip>payara5/glassfish/domains/**</docker.payara.excludeFromZip>
     </properties>
 
     <dependencies>
