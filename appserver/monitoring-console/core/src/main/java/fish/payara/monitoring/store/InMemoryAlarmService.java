@@ -199,6 +199,11 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     @Override
+    public Watch watchByName(String name) {
+        return watchesByName.get(name);
+    }
+
+    @Override
     public void addWatch(Watch watch) {
         Watch existing = watchesByName.put(watch.name, watch);
         if (existing != null) {
@@ -209,7 +214,8 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
         target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.name, watch);
     }
 
-    private void removeWatch(Watch watch) {
+    @Override
+    public void removeWatch(Watch watch) {
         watch.stop();
         if (watchesByName.get(watch.name) == watch) {
             watchesByName.remove(watch.name);
@@ -378,6 +384,9 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     private void checkWatch(Watch watch) {
+        if (watch.isDisabled()) {
+            return;
+        }
         for (Alert newlyRaised : watch.check(monitoringData)) {
             Deque<Alert> seriesAlerts = alerts.computeIfAbsent(newlyRaised.getSeries(),
                     key -> new ConcurrentLinkedDeque<>());

@@ -118,6 +118,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     private final Metric[] captured;
     private final Map<String, State> statesByInstanceSeries = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(false);
+    private boolean disabled;
 
     public Watch(String name, Metric watched) {
         this(name, watched, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
@@ -153,6 +154,18 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
     public boolean isStopped() {
         return stopped.get();
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void disable() {
+        this.disabled = true;
+    }
+
+    public void enable() {
+        this.disabled = false;
     }
 
     public List<Alert> check(SeriesLookup lookup) {

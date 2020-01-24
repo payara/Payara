@@ -160,6 +160,7 @@ public final class ApiResponses {
         public final String name;
         public final String series;
         public final String unit;
+        public final boolean disabled;
         public final CircumstanceData red;
         public final CircumstanceData amber;
         public final CircumstanceData green;
@@ -169,6 +170,7 @@ public final class ApiResponses {
             this.name = watch.name;
             this.series = watch.watched.series.toString();
             this.unit = watch.watched.unit.toString();
+            this.disabled = watch.isDisabled();
             this.red = watch.red.isUnspecified() ? null : new CircumstanceData(watch.red);
             this.amber = watch.amber.isUnspecified() ? null : new CircumstanceData(watch.amber);
             this.green = watch.green.isUnspecified() ? null : new CircumstanceData(watch.green);

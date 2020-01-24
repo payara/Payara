@@ -94,11 +94,24 @@ public interface AlertService {
      */
 
     /**
+     * @param name name of the {@link Watch} to look up
+     * @return the {@link Watch} with the give name or {@code null} if no such watch exist.
+     */
+    Watch watchByName(String name);
+
+    /**
      * Adds a watch to the evaluation loop. To remove the watch just use {@link Watch#stop()}.
      *
      * @param watch new watch to add to evaluation loop
      */
     void addWatch(Watch watch);
+
+    /**
+     * Removes the given watch. Alerts triggered by this watch will end now.
+     * 
+     * @param watch the watch to end, not null
+     */
+    void removeWatch(Watch watch);
 
     /**
      * @return All watches registered for evaluation.
@@ -111,4 +124,5 @@ public interface AlertService {
      *         {@link #watches()}.
      */
     Collection<Watch> wachtesFor(Series series);
+
 }

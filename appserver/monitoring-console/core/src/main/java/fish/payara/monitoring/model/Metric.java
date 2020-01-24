@@ -75,4 +75,8 @@ public final class Metric {
     public String toString() {
         return series + " unit:" + unit.toString();
     }
+
+    public static Metric parse(String series, String unit) {
+        return new Metric(new Series(series), Unit.fromShortName(unit));
+    }
 }

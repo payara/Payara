@@ -544,45 +544,11 @@ MonitoringConsole.View.Components = (function() {
       let endFrame = item.frames[0];
       let circumstance = item.watch[endFrame.level];
       let group = $('<div/>', { 'class': 'Group' });
-      appendProperty(group, 'Start', formatCondition(item, circumstance.start));
+      appendProperty(group, 'Start', formatCondition(circumstance.start, item.unit));
       if (circumstance.stop) {
-        appendProperty(group, 'Stop', formatCondition(item, circumstance.stop));
+        appendProperty(group, 'Stop', formatCondition(circumstance.stop, item.unit));
       }
       return group;
-    }
-
-    function formatCondition(item, condition) {
-      if (condition === undefined)
-        return '';
-      let any = condition.forTimes === 0 || condition.forMillis === 0;
-      let anyN = condition.forTimes < 0 || condition.forMillis < 0;
-      let threshold = Units.converter(item.unit).format(condition.threshold);
-      let text = ''; 
-      let forText = '';
-      let forValue;
-      if (any || anyN) {
-        text += 'any 1 ';
-      }
-      text += 'value ' + condition.operator + threshold;
-      if (condition.forTimes > 0 || condition.forMillis > 0) {
-        if (condition.onAverage) {
-          forText += ' for average of last ';
-        } else if (anyN) {
-          forText += ' in last ';
-        } else {
-          forText += ' for last ';
-        }
-      }
-      if (condition.forTimes !== 0) {
-        forValue = Math.abs(condition.forTimes) + 'x';
-      }
-      if (condition.forMillis !== undefined) {
-        forValue = Units.converter('ms').format(Math.abs(condition.forMillis));
-      }
-      let desc = $('<span/>').append(text);
-      if (forText != '')
-        desc.append($('<small/>', { text: forText})).append(forValue);
-      return desc;
     }
 
     function createStatisticsGroup(item, verbose) {
@@ -811,6 +777,90 @@ MonitoringConsole.View.Components = (function() {
     };
   })();
 
+  /**
+   * Lists existing watches to explain their logic to the user.
+   */
+  const WatchList = (function() {
+
+    function createComponent(model) {
+      const config = { 'class': 'WatchList' };
+      if (model.id)
+        config.id = model.id;
+      const list = $('<div/>', config);
+      for (let item of model.items) {
+        list.append(createItem(item, model.colors, model.actions));
+      }
+      //TODO show states
+      return list;
+    }
+
+    function createItem(item, colors, actions) {
+      const watch = $('<div/>', { 'class': 'WatchItem ' + 'state-' + (item.disabled ? 'disabled' : 'enabled') });
+      const general = $('<h3/>').text(item.name);
+      //TODO make disabled into menu for the "widget"
+      watch.append(general);
+      for (let level of ['red', 'amber', 'green'])
+        if (item[level])
+          watch.append(createCircumstance(level, item[level], item.unit, item.series, colors[level]));
+      return watch;
+    }
+
+    function createCircumstance(level, model, unit, series, color) {
+      function plainText(condition) {
+        let text = condition.text();
+        return text.substring(text.indexOf('value') + 5);
+      }
+      const circumstance = $('<div/>', { 'class': 'WatchCondition', style: 'color: '+ color +';'});
+      let = text = '<b>' + Units.Alerts.name(level) + ':</b> ' + Units.names()[unit] + ' ' + series + ' ';
+      if (model.start)
+        text += plainText(formatCondition(model.start, unit));
+      if (model.suppress)
+        text += ' unless ' + model.surpressingSeries + ' ' + plainText(formatCondition(model.suppress, modelsurpressingUnit));
+      if (model.stop)
+        text += ' until ' + plainText(formatCondition(model.stop, unit));
+      return circumstance.html(text);
+    }
+
+    return { createComponent: createComponent };
+  })();
+
+  /**
+   * A component that creates the form to compose a single new watch
+   */
+  const WatchBuilder = (function() {
+    
+    function createComponent(model) {
+      const config = { 'class': 'WatchBuilder' };
+      if (model.id)
+        config.id = model.id;
+      const builder = $('<div/>', config);
+
+      return builder;
+    }
+
+    return { createComponent: createComponent };
+
+  })();
+
+  /**
+   * Combines the WatchList and WatchBuilder into one component to list and create watches.
+   */ 
+  const WatchManager = (function() {
+
+    function createComponent(model) {
+      const config = { 'class': 'WatchManager' };
+      if (model.id)
+        config.id = model.id;
+      const manager = $('<div/>', config);
+      model.id = undefined; // id should not be set by sub-components
+      manager.append(WatchList.createComponent(model));
+      manager.append(WatchBuilder.createComponent(model));
+      return manager;
+    }
+
+    return { createComponent: createComponent };
+  })();
+
 
   /*
    * Shared functions
@@ -820,8 +870,42 @@ MonitoringConsole.View.Components = (function() {
     parent.append($('<span/>')
       .append($('<small>', { text: label + ':' }))
       .append($('<' + tag + '/>').append(value))
-      ).append('\n'); // so browser will line break;
+    ).append('\n'); // so browser will line break;
   }
+
+  function formatCondition(condition, unit) {
+    if (condition === undefined)
+      return '';
+    let any = condition.forTimes === 0 || condition.forMillis === 0;
+    let anyN = condition.forTimes < 0 || condition.forMillis < 0;
+    let threshold = Units.converter(unit).format(condition.threshold);
+    let text = ''; 
+    let forText = '';
+    let forValue;
+    if (any || anyN) {
+      text += 'any 1 ';
+    }
+    text += 'value ' + condition.operator + ' ' + threshold;
+    if (condition.forTimes > 0 || condition.forMillis > 0) {
+      if (condition.onAverage) {
+        forText += ' for average of last ';
+      } else if (anyN) {
+        forText += ' in last ';
+      } else {
+        forText += ' for last ';
+      }
+    }
+    if (condition.forTimes !== 0) {
+      forValue = Math.abs(condition.forTimes) + 'x';
+    }
+    if (condition.forMillis !== undefined) {
+      forValue = Units.converter('ms').format(Math.abs(condition.forMillis));
+    }
+    let desc = $('<span/>').append(text);
+    if (forText != '')
+      desc.append($('<small/>', { text: forText})).append(forValue);
+    return desc;
+  }  
 
   /*
   * Public API below:
@@ -835,6 +919,7 @@ MonitoringConsole.View.Components = (function() {
       createMenu: (model) => Menu.createComponent(model),
       createAlertTable: (model) => AlertTable.createComponent(model),
       createAnnotationTable: (model) => AnnotationTable.createComponent(model),
+      createWatchManager: (model) => WatchManager.createComponent(model),
   };
 
 })();

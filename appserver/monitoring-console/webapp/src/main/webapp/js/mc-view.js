@@ -67,14 +67,15 @@ MonitoringConsole.View = (function() {
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
-    function updatePageNavigation() {
+    function updatePageNavigation(selectedPage) {
         let pages = MonitoringConsole.Model.listPages();
-        let activePage = pages.find(page => page.active);
+        let activePage = selectedPage || pages.find(page => page.active).name;
         let items = pages.filter(page => !page.active).map(function(page) {
             return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
         });
+        items.push({ label: 'Watches', onClick: onOpenWatchSettings });
         let nav = { id: 'Navigation', groups: [
-            {label: activePage.name, items: items }
+            {label: activePage, items: items }
         ]};
         $('#Navigation').replaceWith(Components.createMenu(nav));
     }
@@ -107,7 +108,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Hide', icon: '&times;', hidden: !settingsOpen, onClick: toggleSettings },
                 { label: 'Show', icon: '&plus;', hidden: settingsOpen, onClick: toggleSettings },
                 { label: 'Import...', icon: '&#9111;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
-                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
+                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },
             ]},
         ]};
         $('#Menu').replaceWith(Components.createMenu(menu));
@@ -243,6 +244,7 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
+            { label: 'Watches', input: $('<button/>').text('Open Settings').click(onOpenWatchSettings) },
         ]};
     }
 
@@ -296,7 +298,7 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
             { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
-                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
+                { type: 'dropdown', options: Units.names(), value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
@@ -526,7 +528,7 @@ MonitoringConsole.View = (function() {
         return legend;
     }
 
-    const ALERT_STATUS_NAMES = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
+    
 
     function createLegendModelFromAlerts(widget, alerts) {
         if (!Array.isArray(alerts))
@@ -542,7 +544,7 @@ MonitoringConsole.View = (function() {
             let color = Colors.lookup('instance', instance, palette);
             return {
                 label: instance,
-                value: ALERT_STATUS_NAMES[level == undefined ? 'white' : level],
+                value: Units.Alerts.name(level),
                 color: color,
                 background: Colors.hex2rgba(color, alpha),
                 status: level, 
@@ -691,6 +693,50 @@ MonitoringConsole.View = (function() {
     }
 
     /**
+     * This function is called when the watch details settings should be opened
+     */
+    function onOpenWatchSettings() {
+        $.getJSON("api/watches/data/", (response) => {
+            const model = { 
+                id: 'WatchManager', 
+                items: response.watches, 
+                colors: { red: Theme.color('red'), amber: Theme.color('amber'), green: Theme.color('green') },
+                actions: { 
+                    onCreate: (watch, onSuccess, onFailure) => {
+                        $.ajax({
+                            type: 'PUT',
+                            url: 'api/watches/data/',
+                            contentType: 'application/json',
+                            data: watch
+                        }).done(onSuccess).fail(onFailure);
+                    },
+                    onDelete: (name, onSuccess, onFailure) => {
+                        $.ajax({
+                            type: 'DELETE',
+                            url: 'api/watches/data/' + name + '/',
+                        }).done(onSuccess).fail(onFailure);
+                    },
+                    onDisable: (name, onSuccess, onFailure) => {
+                        $.ajax({
+                            type: 'PATCH',
+                            url: 'api/watches/data/' + name + '/?disable=true',
+                        }).done(onSuccess).fail(onFailure);
+                    },
+                    onEnable: (name, onSuccess, onFailure) => {
+                        $.ajax({
+                            type: 'PATCH',
+                            url: 'api/watches/data/' + name + '/?disable=false',
+                        }).done(onSuccess).fail(onFailure);
+                    },
+                },
+            };
+            updatePageNavigation('Watches');
+            $('#chart-grid').hide();
+            $('#WatchManager').replaceWith(Components.createWatchManager(model));
+        });
+    }
+
+    /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
      * Depending on the update different content is rendered within a chart box.
@@ -761,6 +807,8 @@ MonitoringConsole.View = (function() {
      */
     function onPageChange(layout) {
         MonitoringConsole.Chart.Trace.onClosePopup();
+        $('#WatchManager').hide();
+        $('#chart-grid').show();
         onPageUpdate(layout);
         updatePageNavigation();
         updateSettings();

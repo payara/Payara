@@ -52,18 +52,28 @@ import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.monitoring.alert.Alert;
 import fish.payara.monitoring.alert.AlertService;
+import fish.payara.monitoring.alert.Circumstance;
+import fish.payara.monitoring.alert.Condition;
+import fish.payara.monitoring.alert.Condition.Operator;
 import fish.payara.monitoring.alert.Watch;
+import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.Series;
 import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
@@ -73,8 +83,11 @@ import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
 import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
 import fish.payara.monitoring.web.ApiResponses.AlertsResponse;
 import fish.payara.monitoring.web.ApiResponses.AnnotationData;
+import fish.payara.monitoring.web.ApiResponses.CircumstanceData;
+import fish.payara.monitoring.web.ApiResponses.ConditionData;
 import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
 import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
+import fish.payara.monitoring.web.ApiResponses.WatchData;
 import fish.payara.monitoring.web.ApiResponses.WatchesResponse;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -118,7 +131,7 @@ public class MonitoringConsoleResource {
         Series key = seriesOrNull(series);
         return key == null 
                 ? emptyList()
-                : getDataStore().selectAnnotations(key).stream().map(AnnotationData::new).collect(toList());
+                        : getDataStore().selectAnnotations(key).stream().map(AnnotationData::new).collect(toList());
     }
 
     @GET
@@ -143,20 +156,20 @@ public class MonitoringConsoleResource {
             List<SeriesDataset> queryData = key == null || query.excludes(DataType.POINTS) //
                     || Series.ANY.equalTo(key) && query.truncates(POINTS)  // if all alerts are requested don't send any particular data
                     ? emptyList()
-                    : dataStore.selectSeries(key, query.instances);
-            List<SeriesAnnotation> queryAnnotations = key == null || query.excludes(DataType.ANNOTATIONS)
-                    ? emptyList()
-                    : dataStore.selectAnnotations(key, query.instances);
-            Collection<Watch> queryWatches = key == null || query.excludes(DataType.WATCHES)
-                    ? emptyList()
-                    : alertService.wachtesFor(key);
-            Collection<Alert> queryAlerts = key == null || query.excludes(DataType.ALERTS)
-                    ? emptyList()
-                    : alertService.alertsFor(key);
-            data.add(queryData);
-            watches.add(queryWatches);
-            annotations.add(queryAnnotations);
-            alerts.add(queryAlerts);
+                            : dataStore.selectSeries(key, query.instances);
+                    List<SeriesAnnotation> queryAnnotations = key == null || query.excludes(DataType.ANNOTATIONS)
+                            ? emptyList()
+                                    : dataStore.selectAnnotations(key, query.instances);
+                            Collection<Watch> queryWatches = key == null || query.excludes(DataType.WATCHES)
+                                    ? emptyList()
+                                            : alertService.wachtesFor(key);
+                                    Collection<Alert> queryAlerts = key == null || query.excludes(DataType.ALERTS)
+                                            ? emptyList()
+                                                    : alertService.alertsFor(key);
+                                            data.add(queryData);
+                                            watches.add(queryWatches);
+                                            annotations.add(queryAnnotations);
+                                            alerts.add(queryAlerts);
         }
         return new SeriesResponse(request.queries, data, annotations, watches, alerts, alertService.getAlertStatistics());
     }
@@ -212,5 +225,75 @@ public class MonitoringConsoleResource {
     @Path("/watches/data/")
     public WatchesResponse getWatchesData() {
         return new WatchesResponse(getAlertService().watches());
+    }
+
+    @DELETE
+    @Path("/watches/data/{name}/")
+    public Response deleteWatch(@PathParam("name") String name) {
+        AlertService alertService = getAlertService();
+        Watch watch = alertService.watchByName(name);
+        if (watch != null) {
+            alertService.removeWatch(watch);
+        }
+        return Response.noContent().build();
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/watches/data/")
+    public Response createWatch(WatchData data) {
+        Circumstance red = createCircumstance(data.red);
+        Circumstance amber = createCircumstance(data.amber);
+        Circumstance green = createCircumstance(data.green);
+        Metric metric = Metric.parse(data.series, data.unit);
+        Watch watch = new Watch(data.name, metric, red, amber, green);
+        getAlertService().addWatch(watch);
+        return Response.noContent().build();
+    }
+
+    @PATCH
+    @Path("/watches/data/{name}/")
+    public Response patchWatch(@PathParam("name") String name, @QueryParam("disable") boolean disable) {
+        AlertService alertService = getAlertService();
+        Watch watch = alertService.watchByName(name);
+        if (watch == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        if (disable) {
+            watch.disable();
+        } else {
+            watch.enable();
+        }
+        return Response.noContent().build();
+    }
+
+    private static Circumstance createCircumstance(CircumstanceData data) {
+        if (data == null) {
+            return Circumstance.UNSPECIFIED;
+        }
+        Circumstance res = new Circumstance(fish.payara.monitoring.alert.Alert.Level.parse(data.level),
+                createCondition(data.start), createCondition(data.stop));
+        if (data.suppress != null) {
+            res = res.suppressedWhen(Metric.parse(data.surpressingSeries, data.surpressingUnit),
+                    createCondition(data.suppress));
+        }
+        return res;
+    }
+
+    private static Condition createCondition(ConditionData data) {
+        if (data == null) {
+            return Condition.NONE;
+        }
+        Condition res = new Condition(Operator.parse(data.operator), data.threshold);
+        if (data.forMillis != null) {
+            res = res.forLastMillis(data.forMillis.longValue());
+        }
+        if (data.forTimes != null) {
+            res = res.forLastTimes(data.forTimes.intValue());
+        }
+        if (data.onAverage) {
+            res = res.onAverage();
+        }
+        return res;
     }
 }

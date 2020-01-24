@@ -218,10 +218,11 @@ end                  = number
 
 Watch Data (as received from server):
 ```
-WATCH                = { name, series, unit, red, amber, green }
+WATCH                = { name, series, unit, disabled, red, amber, green, states }
 name                 = string
 series               = string
 unit                 = string
+disabled             = boolean
 red                  = CIRCUMSTANCE
 amber                = CIRCUMSTANCE
 green                = CIRCUMSTANCE
@@ -229,9 +230,12 @@ CIRCUMSTANCE         = { level, start, stop, suppress, surpressingSeries, surpre
 level                = string,
 start                = CONDITION
 stop                 = CONDITION
-suppress              = CONDITION 
+suppress             = CONDITION 
 surpressingSeries    = string
 surpressingUnit      = string
+states               = SERIES_STATES
+SERIES_STATES        = { *:INSTANCE_STATES }
+INSTANCE_STATES      = { *:string }
 ```
 
 
@@ -460,6 +464,31 @@ type             = undefined | 'pre'
 * `type` and `background` can be omitted (assumes `'em'` and no background colour)
 * `color` is the colour of the annotation item border indicator
 * `fields` is a list of attribute keys that works as filter as well as giving the order; can be undefined or empty to use all attributes in their given order.
+
+
+
+### Watch Manager API
+Describes the model expected by the `WatchManager` component which combines the `WatchList` and `WatchBuilder` components.
+The manager shows a configuration with a list of watches which also allows to create new watches.
+
+```
+WATCH_LIST      = { id, items, colors, actions  }
+WATCH_BUILDER   = { id, colors, actions }
+WATCH_MANAGER	= { id, items, colors, actions }
+items           = [ WATCH ]
+actions         = { onCreate, onDelete, onDisable, onEnable }
+onCreate        = fn (WATCH, onSuccess, onFailure) => ()
+onDelete        = fn (name, onSuccess, onFailure) => ()
+onDisable       = fn (name, onSuccess, onFailure) => ()
+onEnable        = fn (name, onSuccess, onFailure) => ()
+colors          = { red, amber, green }
+red             = string
+amber           = string
+green           = string
+```
+* `WATCH` refers to an object as described for update data structures
+* `onDelete` is a function to call to delete the watch by its `name` (a `string`)
+* `onCreate` is a function to create new watches
 
 
 ## Data Driven Chart Plugins

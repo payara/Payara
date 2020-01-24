@@ -42,6 +42,7 @@ package fish.payara.monitoring.alert;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import fish.payara.monitoring.model.SeriesDataset;
@@ -73,6 +74,15 @@ public final class Condition {
         @Override
         public String toString() {
             return symbol;
+        }
+
+        public static Operator parse(String symbol) {
+            for (Operator op : values()) {
+                if (op.symbol.equals(symbol) ) {
+                    return op;
+                }
+            }
+            throw new NoSuchElementException("Operator with symbol does not exist: " + symbol);
         }
     }
 

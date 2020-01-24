@@ -317,7 +317,9 @@ button:hover {
 #console.state-show-settings #Settings {
 	display: block;
 }
-#console.state-show-settings #panel-grid, #console.state-show-settings #panel-trace {
+#console.state-show-settings #panel-grid, 
+#console.state-show-settings #panel-trace,
+#console.state-show-settings #WatchManager {
   width: calc(100% - 390px);
 }
 
@@ -641,4 +643,29 @@ table.AnnotationTable {
 }
 .AnnotationTable tr:hover {
   background-color: #0096D6;
+}
+
+
+/* Watch Manager/Settings Component */
+.WatchManager {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  z-index: 110;
+  padding: 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Watch List Component */
+.WatchItem {
+  background-color: #002433;
+  padding: 10px;
+  margin: 5px 0;
+}
+.WatchItem.state-disabled h3 {
+  color: #888;
+}
+.WatchList .WatchItem .WatchCondition {
+  padding: 0.25em 0.5em;
 }
