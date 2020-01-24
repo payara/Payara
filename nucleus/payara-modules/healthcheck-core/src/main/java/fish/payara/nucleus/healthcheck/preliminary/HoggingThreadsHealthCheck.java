@@ -182,7 +182,7 @@ public class HoggingThreadsHealthCheck
                     hoggingThreadMaxDuration.updateAndGet(value -> Math.max(value, totalTimeHogging));
                 });
         collector
-        .collect("HoggingThreadCount", hoggingThreadCount)
+                .collect("HoggingThreadCount", hoggingThreadCount)
         .collect("HoggingThreadDuration", hoggingThreadMaxDuration);
     }
 
