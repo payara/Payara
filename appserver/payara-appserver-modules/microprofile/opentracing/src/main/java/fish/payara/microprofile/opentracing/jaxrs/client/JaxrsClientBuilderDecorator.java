@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,16 @@ package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
+
 import java.security.KeyStore;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -55,22 +59,21 @@ import javax.ws.rs.core.Configuration;
 
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.client.Initializable;
-import org.glassfish.jersey.client.JerseyClientBuilder;
 
 /**
  * Decorator for the default JerseyClientBuilder class to allow us to add our ClientFilter and instrument asynchronous
  * clients.
- * 
+ *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     public static final String EARLY_BUILDER_INIT = "fish.payara.requesttracing.jaxrs.client.decorators.EarlyBuilderInit";
+    private static final PayaraTracingServices PAYARA_SERVICES = new PayaraTracingServices();
 
     protected ClientBuilder clientBuilder;
-    
+
     /**
      * Initialises a new JerseyClientBuilder and sets it as the decorated object.
      * @param clientBuilder
@@ -82,9 +85,8 @@ class JaxrsClientBuilderDecorator extends ClientBuilder {
     public static ClientBuilder wrap(ClientBuilder clientBuilder) {
         if (clientBuilder instanceof JaxrsClientBuilderDecorator) {
             return clientBuilder;
-        } else {
-            return new JaxrsClientBuilderDecorator(clientBuilder);
         }
+        return new JaxrsClientBuilderDecorator(clientBuilder);
     }
 
     @Override
@@ -152,7 +154,7 @@ class JaxrsClientBuilderDecorator extends ClientBuilder {
 
         // initialize the client if requested
         Object earlyInit = getConfiguration().getProperty(EARLY_BUILDER_INIT);
-        if (earlyInit instanceof Boolean && (Boolean)earlyInit) {
+        if (earlyInit instanceof Boolean && (Boolean) earlyInit) {
             if (client instanceof Initializable) {
                 ((Initializable) client).preInitialize();
             }
@@ -163,17 +165,19 @@ class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     private boolean requestTracingPresent() {
         try {
-            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-            if (serviceLocator != null) {
-                ServiceHandle<RequestTracingService> requestTracingHandle = serviceLocator.getServiceHandle(RequestTracingService.class);
-                ServiceHandle<OpenTracingService> openTracingHandle = serviceLocator.getServiceHandle(OpenTracingService.class);
-                return requestTracingHandle != null && openTracingHandle != null
-                        && requestTracingHandle.isActive() && openTracingHandle.isActive();
+            ServiceLocator locator = PAYARA_SERVICES.getBasicServiceLocator();
+            if (locator == null) {
+                return false;
             }
+            ServiceHandle<RequestTracingService> requestTracing = locator.getServiceHandle(RequestTracingService.class);
+            ServiceHandle<OpenTracingService> openTracing = locator.getServiceHandle(OpenTracingService.class);
+            return requestTracing != null && openTracing != null && requestTracing.isActive() && openTracing.isActive();
         } catch (Exception e) {
+            Logger logger = Logger.getLogger(JaxrsClientBuilderDecorator.class.getName());
+            logger.log(Level.WARNING, "Cannot find required service handles.", e);
             // means that we likely cannot do request tracing anyway
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -234,5 +238,5 @@ class JaxrsClientBuilderDecorator extends ClientBuilder {
         clientBuilder = clientBuilder.register(component, contracts);
         return this;
     }
-    
+
 }

@@ -1,1 +1,2 @@
-create-file-user --groups ROLE_ADMIN --passwordfile ${user.dir}/src/test/resources/password.txt test
+create-file-user --groups ROLE_ADMIN --passwordfile ${user.dir}/src/test/resources/password.txt RealmTestUser
+create-file-user --groups ROLE_ADMIN --passwordfile ${user.dir}/src/test/resources/password.txt --authrealmname new-file-realm RealmTestUser2

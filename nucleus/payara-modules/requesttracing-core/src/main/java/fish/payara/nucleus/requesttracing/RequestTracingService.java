@@ -59,8 +59,11 @@ import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
+import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
@@ -84,9 +87,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,7 +109,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
-public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource {
+public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource, MonitoringWatchSource {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
     
@@ -164,6 +174,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
      * gets larger than a fixed limit before adding a new trace to the queue.
      */
     private final ConcurrentLinkedQueue<RequestTrace> uncollectedTraces = new ConcurrentLinkedQueue<>();
+    private final Map<String, Integer> activeCollectionGroups = new ConcurrentHashMap<>();
 
     /**
      * The filter which determines whether to sample a given request
@@ -444,8 +455,8 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 }
             }
             // collect any trace exceeding the threshold
-            if (uncollectedTraces.size() > 50) {
-                uncollectedTraces.poll();
+            if (uncollectedTraces.size() >= 50) {
+                uncollectedTraces.poll(); // avoid queue creating a memory leak by accumulating entries in case no consumer polls them
             }
             RequestTrace requestTrace = requestEventStore.getTrace();
             uncollectedTraces.add(requestTrace);
@@ -563,26 +574,70 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
     }
 
     @Override
-    public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector tracingCollector = rootCollector.in("trace");
+    public void collect(MonitoringWatchCollector collector) {
+        if ("true".equals(configuration.getEnabled())) {
+            long thresholdMillis = getConfigurationThresholdInMillis();
+            collector.watch("ns:trace @:* Duration", "Request Trace Duration", "ms")
+                .amber(thresholdMillis, -30, false, null, null, false)
+                .red(thresholdMillis, 10, true, null, null, false)
+                .green(-(thresholdMillis/2), 1, false, null, null, false);
+        }
+    }
+
+    private long getConfigurationThresholdInMillis() {
+        return TimeUnit.MILLISECONDS.convert(Long.parseLong(configuration.getThresholdValue()), 
+                TimeUnit.valueOf(configuration.getThresholdUnit()));
+    }
+
+    @Override
+    @MonitoringData(ns = "trace")
+    public void collect(MonitoringDataCollector collector) {
+        for (String group : activeCollectionGroups.keySet()) {
+            collector.group(group).collect("Duration", 0);
+            activeCollectionGroups.compute(group, (key, value) -> {
+               return value <= 1 ? null : value - 1;
+            });
+        }
+        long thresholdInMillis = getConfigurationThresholdInMillis();
         RequestTrace trace = uncollectedTraces.poll();
         while (trace != null) {
-            collectTrace(tracingCollector, trace);
+            String group = collectTrace(collector, trace, thresholdInMillis);
+            if (group != null) {
+                activeCollectionGroups.compute(group, (key, value) -> 35);
+            }
             trace = uncollectedTraces.poll();
         }
     }
 
-    private static void collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace) {
+    private static String collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace, long threshold) {
         try {
             UUID traceId = trace.getTraceId();
             if (traceId != null) {
                 String group = metricGroupName(trace);
-                long duration = trace.getTraceSpans().getFirst().getSpanDuration() / 1000000;
-                tracingCollector.group(group).collect("Duration", duration);
+                long durationMillis = trace.getTraceSpans().getFirst().getSpanDuration() / 1000000;
+                RequestTraceSpan annotationSpan = trace.getTraceSpans().getLast();
+                List<String> attrs = new ArrayList<>();
+                attrs.add("Threshold");
+                attrs.add(String.valueOf(threshold));
+                attrs.add("Operation");
+                attrs.add(annotationSpan.getEventName());
+                attrs.add("Start");
+                attrs.add(String.valueOf(annotationSpan.getStartInstant().toEpochMilli()));
+                attrs.add("End");
+                attrs.add(String.valueOf(annotationSpan.getTraceEndTime().toEpochMilli()));
+                for (Entry<String, String> tag : annotationSpan.getSpanTags().entrySet()) {
+                    attrs.add(tag.getKey());
+                    attrs.add(tag.getValue());
+                }
+                tracingCollector.group(group)
+                    .collect("Duration", durationMillis)
+                    .annotate("Duration", durationMillis, attrs.toArray(new String[0]));
+                return group;
             }
         } catch (Exception ex) {
             logger.log(Level.FINE, "Failed to collect trace", ex);
         }
+        return null;
     }
 
     public static String metricGroupName(RequestTrace trace) {

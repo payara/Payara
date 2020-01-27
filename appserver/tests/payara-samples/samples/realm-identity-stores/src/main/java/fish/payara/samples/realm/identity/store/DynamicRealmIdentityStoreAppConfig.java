@@ -39,14 +39,16 @@
  */
 package fish.payara.samples.realm.identity.store;
 
-import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
-import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.USER;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
+
 import javax.annotation.security.DeclareRoles;
 import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+
+import static fish.payara.samples.realm.identity.store.DynamicRealmIdentityStoreAppConfig.REALM_NAME;
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
+import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.USER;
 
 /**
  *

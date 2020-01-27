@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -147,8 +147,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     programOpts.isTerse(),
                     getServerDirs(),
                     launcher,
-                    mpv,
-                    debug);
+                    mpv);
 
             if (helper.prepareForLaunch() == false){
                 return ERROR;

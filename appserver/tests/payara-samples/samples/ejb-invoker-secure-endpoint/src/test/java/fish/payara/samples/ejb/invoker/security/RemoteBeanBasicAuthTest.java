@@ -40,13 +40,15 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.samples.CliCommands;
-import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
-import static java.util.Arrays.asList;
-import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
+import static java.util.Arrays.asList;
+import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 
 /**
  * Calls an EJB bean from a remote server via ejb-invoker endpoint secured with
@@ -59,7 +61,7 @@ public class RemoteBeanBasicAuthTest extends AbstractRemoteBeanSecurityTest {
     private static final String USERNAME = "myuser";
     private static final String PASSWORD = "mypassword";
     private static final String ROLE = "invoker";
-    
+
     @BeforeClass
     public static void enableSecurity() {
         // undeploy the ejb-invoker app

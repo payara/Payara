@@ -319,6 +319,7 @@ public final class AMXConfigLoader implements TransactionListener {
 
             mLoaderThread = new AMXConfigLoaderThread(mPendingConfigBeans);
             mLoaderThread.setDaemon(true);
+            mLoaderThread.setName("AMX Config Loader");
             mLoaderThread.start();
 
             mPendingConfigBeans.swapTransactionListener(this);

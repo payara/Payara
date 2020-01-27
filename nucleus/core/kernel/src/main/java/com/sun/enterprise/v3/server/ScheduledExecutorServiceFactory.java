@@ -64,6 +64,7 @@ public class ScheduledExecutorServiceFactory implements Factory<ScheduledExecuto
             public Thread newThread(Runnable r) {
                     Thread t = Executors.defaultThreadFactory().newThread(r);
                     t.setDaemon(true);
+                    t.setName("Scheduled Executor Service");
                     return t;
                 }
             }

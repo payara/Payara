@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,11 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
@@ -50,7 +55,8 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 
@@ -67,12 +73,12 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker> {
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker>
+        implements MonitoringDataSource, MonitoringWatchSource {
 
-    private volatile long youngLastCollectionCount;
-    private volatile long youngLastCollectionTime;
-    private volatile long oldLastCollectionCount;
-    private volatile long oldLastCollectionTime;
+    private final GcUsage youngHealthCheck = new GcUsage();
+    private final GcUsage oldHealthCheck = new GcUsage();
+    private final Map<String, GcUsage> collect = new ConcurrentHashMap<>();
 
     @PostConstruct
     void postConstruct() {
@@ -92,52 +98,114 @@ public class GarbageCollectorHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-
-        List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
-        for (GarbageCollectorMXBean gcBean : gcBeanList) {
-
-            double percentage = 0;
-
-            if (YOUNG_PS_SCAVENGE.equals(gcBean.getName()) ||
-                    YOUNG_G1GC.equals(gcBean.getName()) ||
-                    YOUNG_COPY.equals(gcBean.getName()) ||
-                    YOUNG_PARNEW.equals(gcBean.getName())) {
-                long diffCount = gcBean.getCollectionCount() - youngLastCollectionCount;
-                long diffTime = gcBean.getCollectionTime() - youngLastCollectionTime;
-
-                if (diffTime > 0 && youngLastCollectionCount > 0) {
-                    percentage = ((diffCount) / (youngLastCollectionCount)) * 100;
-
-                    result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage),
-                            diffCount + " times Young GC (" + gcBean.getName()  + ") after " + prettyPrintDuration(diffTime)));
-                }
-
-                youngLastCollectionCount = gcBean.getCollectionCount();
-                youngLastCollectionTime = gcBean.getCollectionTime();
-            }
-            else if (OLD_PS_MARKSWEEP.equals(gcBean.getName()) ||
-                    OLD_G1GC.equals(gcBean.getName()) ||
-                    OLD_MARK_SWEEP_COMPACT.equals(gcBean.getName()) ||
-                    OLD_CONCURRENTMARKSWEEP.equals(gcBean.getName())) {
-                long diffCount = gcBean.getCollectionCount() - oldLastCollectionCount;
-                long diffTime = gcBean.getCollectionTime() - oldLastCollectionTime;
-
-                if (diffTime > 0 && oldLastCollectionCount > 0) {
-                    percentage = ((diffCount) / (oldLastCollectionCount)) * 100;
-
-                    result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage),
-                            diffCount + " times Old GC (" + gcBean.getName()  + ") after " + prettyPrintDuration(diffTime)));
-                }
-
-                oldLastCollectionCount = gcBean.getCollectionCount();
-                oldLastCollectionTime = gcBean.getCollectionTime();
-            }
-            else {
+        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            if (isYoungGenerationGC(gcBean)) {
+                result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(youngHealthCheck.percentage(gcBean)),
+                        youngHealthCheck.getNumberOfGcs() + " times Young GC (" + gcBean.getName() + ") collecting for "
+                                + prettyPrintDuration(youngHealthCheck.getTimeSpendDoingGc())));
+            } else if (isOldGenerationGC(gcBean)) {
+                result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(oldHealthCheck.percentage(gcBean)),
+                        oldHealthCheck.getNumberOfGcs() + " times Old GC (" + gcBean.getName() + ") after "
+                                + prettyPrintDuration(oldHealthCheck.getTimeSpendDoingGc())));
+            } else {
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "Could not identify " +
                         "GarbageCollectorMXBean with name: " + gcBean.getName()));
             }
         }
 
         return result;
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health TotalGcPercentage", "GC Percentage", 10, true);
+    }
+
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 4)
+    public void collect(MonitoringDataCollector collector) {
+        if (options == null || !options.isEnabled()) {
+            return;
+        }
+        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            GcUsage usage = collect.computeIfAbsent(gcBean.getName(), key -> new GcUsage());
+            double percentage = usage.percentage(gcBean); // update
+            if (isYoungGenerationGC(gcBean) ) {
+                collectGcUage(collector, "Young", percentage, usage.getNumberOfGcs(), usage.getTimeSpendDoingGc());
+            } else if (isOldGenerationGC(gcBean)) {
+                collectGcUage(collector, "Old", percentage, usage.getNumberOfGcs(), usage.getTimeSpendDoingGc());
+            }
+        }
+        long timeSpendDoingGc = 0;
+        long timePassed = 0;
+        long numberOfGcs = 0;
+        for (GcUsage u : collect.values()) {
+            timePassed = Math.max(timePassed, u.getTimePassed());
+            timeSpendDoingGc += u.getTimeSpendDoingGc();
+            numberOfGcs += u.getNumberOfGcs();
+        }
+        collectGcUage(collector, "Total", 100d * timeSpendDoingGc / timePassed, numberOfGcs, timeSpendDoingGc);
+    }
+
+    private static void collectGcUage(MonitoringDataCollector collector, String label, double usage, long numberOfGcs, long timeSpendDoingGc) {
+        collector
+            .collect(label + "GcPercentage", (long) usage)
+            .collect(label + "GcCount", numberOfGcs)
+            .collect(label + "GcDuration", timeSpendDoingGc);
+    }
+
+    private static final class GcUsage {
+
+        private volatile long timeLastChecked;
+        private volatile long lastCollectionCount;
+        private volatile long lastCollectionTime;
+        private volatile long timeSpendDoingGc;
+        private volatile long numberOfGcs;
+        private volatile long timePassed;
+
+        GcUsage() {
+            // make visible
+        }
+
+        public double percentage(GarbageCollectorMXBean gcBean) {
+            long collectionCount = gcBean.getCollectionCount();
+            numberOfGcs = collectionCount - lastCollectionCount;
+            lastCollectionCount = collectionCount;
+            long collectionTime = gcBean.getCollectionTime();
+            timeSpendDoingGc = collectionTime - lastCollectionTime;
+            lastCollectionTime = collectionTime;
+            long now = System.currentTimeMillis();
+            timePassed = now - timeLastChecked;
+            timeLastChecked = now;
+            return numberOfGcs == 0 || lastCollectionCount == 0 ? 0d : 100d * timeSpendDoingGc / timePassed;
+        }
+
+        long getNumberOfGcs() {
+            return numberOfGcs;
+        }
+
+        long getTimeSpendDoingGc() {
+            return timeSpendDoingGc;
+        }
+
+        long getTimePassed() {
+            return timePassed;
+        }
+    }
+
+    private static boolean isOldGenerationGC(GarbageCollectorMXBean gcBean) {
+        String name = gcBean.getName();
+        return OLD_PS_MARKSWEEP.equals(name) ||
+                OLD_G1GC.equals(name) ||
+                OLD_MARK_SWEEP_COMPACT.equals(name) ||
+                OLD_CONCURRENTMARKSWEEP.equals(name);
+    }
+
+    private static boolean isYoungGenerationGC(GarbageCollectorMXBean gcBean) {
+        String name = gcBean.getName();
+        return YOUNG_PS_SCAVENGE.equals(name) ||
+                YOUNG_G1GC.equals(name) ||
+                YOUNG_COPY.equals(name) ||
+                YOUNG_PARNEW.equals(name);
     }
 }

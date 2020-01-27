@@ -50,7 +50,6 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-import fish.payara.jdbc.SlowSQLLogger;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -59,7 +58,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.ResourceException;
@@ -1198,7 +1196,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             detectSqlTraceListeners();
         }
     }
-    
+
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
         double threshold = Double.parseDouble(seconds);
@@ -1206,14 +1204,13 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long)(threshold * 1000), TimeUnit.MILLISECONDS));
         }
     }
-    
+
     public String getSlowQueryThresholdInSeconds() {
-         return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);       
+        return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);
     }
-    
+
     public void setLogJdbcCalls(String enabled) {
         spec.setDetail(DataSourceSpec.LOGJDBCCALLS, enabled);
         if (Boolean.valueOf(enabled)) {

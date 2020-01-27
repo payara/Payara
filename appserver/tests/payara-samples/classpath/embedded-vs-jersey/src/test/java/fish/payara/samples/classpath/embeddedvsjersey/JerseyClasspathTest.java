@@ -45,6 +45,10 @@ import org.junit.Test;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
+/**
+ * Tests if it is possible to use jersey client with embedded payara on the classpath.
+ * Response does not matter, it is only required to execute the request.
+ */
 public class JerseyClasspathTest {
 
     @Test

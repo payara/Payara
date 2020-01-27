@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.microprofile.opentracing.cdi;
 
 import fish.payara.opentracing.OpenTracingService;
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -69,8 +70,6 @@ import javax.ws.rs.PUT;
 
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import static fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils.getAnnotation;
 
@@ -107,9 +106,9 @@ public class TracedInterceptor implements Serializable {
     public Object traceCdiCall(final InvocationContext invocationContext) throws Exception {
         LOG.fine(() -> "traceCdiCall(" + invocationContext + ")");
         // Get the required HK2 services
-        final ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        final OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-        final InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
+        final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+        final OpenTracingService openTracing = payaraTracingServices.getOpenTracingService();
+        final InvocationManager invocationManager = payaraTracingServices.getInvocationManager();
 
         // If Request Tracing is enabled, and this isn't a JaxRs method
         if (openTracing == null || !openTracing.isEnabled() //
@@ -194,15 +193,15 @@ public class TracedInterceptor implements Serializable {
      * @return the name of the operation. Never null.
      */
     private String getOperationName(final InvocationContext invocationContext, final Traced traced) {
-        String operationName = OpenTracingCdiUtils
+        final String operationName = OpenTracingCdiUtils
             .getConfigOverrideValue(Traced.class, "operationName", invocationContext, String.class)
             .orElse(traced.operationName());
 
-        if (!"".equals(operationName)) {
-            return operationName;
+        if (operationName.isEmpty()) {
+            // If the operation name is blank, set it to the full method signature
+            return invocationContext.getMethod().getDeclaringClass().getCanonicalName() + "."
+                + invocationContext.getMethod().getName();
         }
-        // If the operation name is blank, set it to the full method signature
-        return invocationContext.getMethod().getDeclaringClass().getCanonicalName() + "."
-            + invocationContext.getMethod().getName();
+        return operationName;
     }
 }

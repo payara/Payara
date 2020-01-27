@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -47,8 +47,26 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.XMLEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * The change-master-password command for the DAS.
@@ -120,11 +138,23 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
             manager.changeMasterPassword(domainConfig);
 
+            try {
+                if (dataGridEncryptionEnabled()) {
+                    logger.warning("Data grid encryption is enabled - " +
+                            "you will need to regenerate the encryption key");
+                }
+            } catch (IOException | XMLStreamException exception) {
+                logger.warning("Could not determine if data grid encryption is enabled - " +
+                        "you will need to regenerate the encryption key if it is");
+            }
+
             return 0;
         } catch(Exception e) {
             throw new CommandException(e.getMessage(),e);
         }
     }
+
+
 }
 
 

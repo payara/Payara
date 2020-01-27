@@ -78,6 +78,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
            public Thread newThread(Runnable r) {
              Thread th = new Thread(r);
              th.setDaemon(true);
+             th.setName("RA Shutdown");
              return th;
            }
     });   

@@ -1,8 +1,16 @@
 package fish.payara.samples;
 
-import com.gargoylesoftware.htmlunit.WebClient;
+import static java.math.BigInteger.ONE;
 import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.logging.Level.FINEST;
+import static org.omnifaces.utils.Lang.isEmpty;
+import static org.omnifaces.utils.security.Certificates.createTempJKSKeyStore;
+import static org.omnifaces.utils.security.Certificates.createTempJKSTrustStore;
+import static org.omnifaces.utils.security.Certificates.generateRandomRSAKeys;
+import static org.omnifaces.utils.security.Certificates.getCertificateChainFromServer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,19 +18,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.impl.Jdk14Logger;
-import static java.math.BigInteger.ONE;
-import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.DAYS;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -32,10 +31,17 @@ import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
-import static java.util.logging.Level.FINEST;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.impl.Jdk14Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -43,12 +49,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import static org.omnifaces.utils.Lang.isEmpty;
 import org.omnifaces.utils.security.Certificates;
-import static org.omnifaces.utils.security.Certificates.createTempJKSKeyStore;
-import static org.omnifaces.utils.security.Certificates.createTempJKSTrustStore;
-import static org.omnifaces.utils.security.Certificates.generateRandomRSAKeys;
-import static org.omnifaces.utils.security.Certificates.getCertificateChainFromServer;
 
 /**
  * Various high level Java EE 7 samples specific operations to execute against
@@ -172,10 +173,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain");
+            String domain = System.getProperty("payara.domain.name");
             if (domain == null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path libsPath = gfHomePath.resolve("glassfish/lib");
@@ -232,10 +233,10 @@ public class ServerOperations {
                 return;
             }
                         
-            String domain = System.getProperty("payara_domain", "domain1");
+            String domain = System.getProperty("payara.domain.name", "domain1");
             if (domain != null) {
                 domain = getPayaraDomainFromServer();
-                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara_domain to override.");
+                logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
             }
             
             Path cacertsPath = gfHomePath.resolve("glassfish/domains/" + domain + "/config/cacerts.jks");
@@ -270,36 +271,79 @@ public class ServerOperations {
         }
         
     }
+
+    /**
+     * Switch the provided URL to use the admin port if the running server supports
+     * it.
+     * <p>
+     * TODO: add support for embedded. Not necessary while this suite doesn't have
+     * an embedded profile
+     * <p>
+     * TODO: add support for servers with secure admin enabled
+     * 
+     * @param url the url to transform
+     * @return the transformed URL, or null if the running server isn't using an
+     *         admin listener.
+     */
+    public static URL toAdminPort(URL url) {
+        try {
+            return switchPort(url, 4848, "http");
+        } catch (MalformedURLException e) {
+            System.out.println("Failure creating admin URL");
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failure creating admin URL", e);
+            return null;
+        }
+    }
     
+    /**
+     * Switch the provided URL to use the secure port if the running server supports
+     * it.
+     * 
+     * @param url the url to transform
+     * @return the transformed URL, or null if the running server isn't using a
+     *         secure listener.
+     */
     public static URL toContainerHttps(URL url) {
         if ("https".equals(url.getProtocol())) {
             return url;
         }
         
+        try {
+            return switchPort(url, 8181, "https");
+        } catch (MalformedURLException e) {
+            System.out.println("Failure creating HTTPS URL");
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failure creating HTTPS URL", e);
+            return null;
+        }
+    }
+
+    /**
+     * If the Payara Server being tested supports the provided port, switch the
+     * given URL to use that port.
+     * 
+     * @param url      the URL to transform
+     * @param port     the target port
+     * @param protocol the target protocol to use
+     * @return a new URL using the target port, or null if that port isn't supported
+     * @throws MalformedURLException if the target URL is invalid
+     */
+    private static URL switchPort(URL url, int port, String protocol) throws MalformedURLException {
         String javaEEServer = System.getProperty("javaEEServer");
-        
-        // String protocol, String host, int port, String file
         
         if ("glassfish-remote".equals(javaEEServer) || "payara-remote".equals(javaEEServer)) {
             
-            try {
-                URL httpsUrl = new URL(
-                    "https",
-                    url.getHost(),
-                    8181,
-                    url.getFile()
-                );
-                
-                System.out.println("Changing base URL from " + url + " into " + httpsUrl);
-                
-                return httpsUrl;
-                
-            } catch (MalformedURLException e) {
-                System.out.println("Failure creating HTTPS URL");
-                e.printStackTrace();
-                logger.log(Level.SEVERE, "Failure creating HTTPS URL", e);
-            }
+            URL result = new URL(
+                protocol,
+                url.getHost(),
+                port,
+                url.getFile()
+            );
             
+            System.out.println("Changing base URL from " + url + " into " + result);
+            
+            return result;
         } else {
             if (javaEEServer == null) {
                 System.out.println("javaEEServer not specified");
@@ -378,7 +422,7 @@ public class ServerOperations {
             
             String restartDomain = domain;
             if (restartDomain == null) {
-                restartDomain = System.getProperty("payara_domain");
+                restartDomain = System.getProperty("payara.domain.name");
             }
             
             if (restartDomain == null) {
@@ -487,6 +531,34 @@ public class ServerOperations {
         // WildFly ./bin/add-user.sh -a -u u1 -p p1 -g g1
     }
 
+    public static void setupContainerFileIdentityStore(String fileRealmName) {
+
+        String javaEEServer = System.getProperty("javaEEServer");
+
+        if ("glassfish-remote".equals(javaEEServer) || "payara-remote".equals(javaEEServer)) {
+
+            System.out.println("Setting up container File identity store for " + javaEEServer);
+
+            List<String> cmd = new ArrayList<>();
+
+            cmd.add("create-auth-realm");
+            cmd.add("--classname");
+            cmd.add("com.sun.enterprise.security.auth.realm.file.FileRealm");
+            cmd.add("--property");
+            cmd.add("jaas-context=fileRealm:file=" + fileRealmName);
+            cmd.add(fileRealmName);
+
+            CliCommands.payaraGlassFish(cmd);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+
+    }
+
     public static X509Certificate createSelfSignedCertificate(KeyPair keys) {
         try {
             Provider provider = new BouncyCastleProvider();
@@ -579,7 +651,7 @@ public class ServerOperations {
 
         // Add the client certificate that we just generated to the trust store of the server.
         // That way the server will trust our certificate.
-        // Set the actual domain used with -Dpayara_domain=[domain name]
+        // Set the actual domain used with -Dpayara.domain.name=[domain name]
         addCertificateToContainerTrustStore(clientCertificate);
 
         return clientKeyStorePath;
@@ -665,6 +737,69 @@ public class ServerOperations {
             return keyStore;
         } catch (final IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    public static void enableDataGridEncryption() {
+        String javaEEServer = System.getProperty("javaEEServer");
+        if ("payara-remote".equals(javaEEServer)) {
+            System.out.println("Enabling Data Grid Encryption");
+            CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true");
+
+            System.out.println("Stopping Server");
+            String domain = System.getProperty("payara.domain.name", "domain1");
+            if (domain != null) {
+                domain = getPayaraDomainFromServer();
+                if (domain != null && !domain.equals("null")) {
+                    logger.info("Using domain \"" + domain + "\" obtained from server. " +
+                            "If this is not correct use -Dpayara.domain.name to override.");
+                } else {
+                    // Default to domain1
+                    domain = "domain1";
+                }
+            }
+            CliCommands.payaraGlassFish("stop-domain", domain);
+
+            System.out.println("Generating Encryption Key");
+            CliCommands.payaraGlassFish("-W",
+                    Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt",
+                    "generate-encryption-key");
+
+            System.out.println("Restarting Server");
+            CliCommands.payaraGlassFish("start-domain", domain);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
+        }
+    }
+
+    public static void disableDataGridEncryption() {
+        String javaEEServer = System.getProperty("javaEEServer");
+        if ("payara-remote".equals(javaEEServer)) {
+            System.out.println("Disabling Data Grid Encryption");
+            CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false");
+
+            String domain = System.getProperty("payara.domain.name", "domain1");
+            if (domain != null) {
+                domain = getPayaraDomainFromServer();
+                if (domain != null && !domain.equals("null")) {
+                    logger.info("Using domain \"" + domain + "\" obtained from server. " +
+                            "If this is not correct use -Dpayara.domain.name to override.");
+                } else {
+                    // Default to domain1
+                    domain = "domain1";
+                }
+            }
+            restartContainer(domain);
+        } else {
+            if (javaEEServer == null) {
+                System.out.println("javaEEServer not specified");
+            } else {
+                System.out.println(javaEEServer + " not supported");
+            }
         }
     }
 }

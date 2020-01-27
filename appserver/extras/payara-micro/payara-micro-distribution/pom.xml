@@ -161,7 +161,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>glassfish-common-web</artifactId>
+            <artifactId>appserver-core</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

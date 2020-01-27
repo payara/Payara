@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -121,9 +121,9 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p9</grizzly.version>
+        <grizzly.version>2.4.3.payara-p10</grizzly.version>
         <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
-        <jersey.version>2.29.1.payara-p1</jersey.version>
+        <jersey.version>2.30.payara-p1</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.0.16.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.0.16.Final</hibernate.validator-cdi.version>
@@ -204,6 +204,8 @@
         <concurrent-api.version>1.1.2</concurrent-api.version>
         <concurrent.version>1.0.payara-p2</concurrent.version>
         <asm.version>7.2</asm.version>
+
+        <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
     </properties>
 
     <profiles>
@@ -443,6 +445,36 @@
                             <goals>
                                 <goal>flatten</goal>
                             </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>1.0.2</version>
+                    <executions>
+                        <execution>
+                            <id>validate-xml-files</id>
+                            <goals>
+                                <goal>validate</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <validationSets>
+                                    <validationSet>
+                                        <dir>${validation.xml.root}</dir>
+                                        <includes>
+                                            <include>**/*.xml</include>
+                                        </includes>
+                                        <excludes>
+                                            <!-- these files contain templates with placeholders -->
+                                            <exclude>**/glassfish/lib/install/templates/resources/custom/**</exclude>
+                                            <!-- no xml in file yet -->
+                                            <exclude>**/payara5/mq/etc/registry/servicetag.xml</exclude>
+                                        </excludes>
+                                    </validationSet>
+                                </validationSets>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>

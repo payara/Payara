@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,22 +60,6 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.cache.spi.CachingProvider;
-import javax.inject.Inject;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -91,7 +75,25 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.annotation.PostConstruct;
+import javax.cache.spi.CachingProvider;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -115,6 +117,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
     private boolean booted=false;
     private String memberName;
     private String memberGroup;
+
+    private boolean datagridEncryptionValue;
 
     @Inject
     Events events;
@@ -175,6 +179,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberName = context.getInstanceName();
             memberGroup = nodeConfig.getMemberGroup();
         }
+
+        datagridEncryptionValue = Boolean.parseBoolean(configuration.getDatagridEncryptionEnabled());
+        Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Data grid encryption is enabled");
     }
 
     /**
@@ -348,7 +355,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 config.setLicenseKey(configuration.getLicenseKey());
                 config.setLiteMember(Boolean.parseBoolean(nodeConfig.getLite()));
                 
-                
+
                 // set group config
                 GroupConfig gc = config.getGroupConfig();
                 gc.setName(configuration.getClusterGroupName());
@@ -555,6 +562,22 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
-        return null;
+        List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
+        for (PropertyChangeEvent pce : pces) {
+            if (pce.getPropertyName().equalsIgnoreCase("datagrid-encryption-enabled")) {
+                unprocessedChanges.add(new UnprocessedChangeEvent(pce, "Hazelcast encryption settings changed"));
+            }
+        }
+
+        if (unprocessedChanges.isEmpty()) {
+            return null;
+        }
+        return new UnprocessedChangeEvents(unprocessedChanges);
+    }
+
+    public boolean isDatagridEncryptionEnabled() {
+        // We want to return the value as it was at boot time here to prevent the server changing encryption behaviour
+        // without a restart
+        return datagridEncryptionValue;
     }
 }

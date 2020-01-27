@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli.cluster;
 
 import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_OFF;
@@ -172,7 +172,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             createLauncher();
 
             startServerHelper = new StartServerHelper(
-                    logger, programOpts.isTerse(), getServerDirs(), launcher, getMasterPassword(), debug);
+                    logger, programOpts.isTerse(), getServerDirs(), launcher, getMasterPassword());
 
             if (!startServerHelper.prepareForLaunch()) {
                 return ERROR;

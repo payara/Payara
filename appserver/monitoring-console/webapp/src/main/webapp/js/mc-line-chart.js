@@ -1,7 +1,7 @@
 /*
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,22 @@ MonitoringConsole.Chart.Line = (function() {
 	
   const Units = MonitoringConsole.View.Units;
   const Colors = MonitoringConsole.View.Colors;
-  const ColorModel = MonitoringConsole.Model.Colors;
+  const Theme = MonitoringConsole.Model.Theme;
+
+  function timeLable(secondsAgo, index, lastIndex, secondsInterval) {
+    if (index == lastIndex && secondsAgo == 0)
+      return 'now';
+    if (index == 0 || index == lastIndex && secondsAgo > 0) {
+      if (Math.abs(secondsAgo - 60) <= secondsInterval * 2)
+        return '60s ago'; // this corrects off by 1 which is technically inaccurate but still 'more readable' for the user
+      if (Math.abs((secondsAgo % 60) - 60) <= secondsInterval)
+        return Math.round(secondsAgo / 60) + 'mins ago';
+      if (secondsAgo <= 60)
+        return secondsAgo +'s ago';
+      return Math.floor(secondsAgo / 60) + 'mins ' + (secondsAgo % 60) + 's ago';
+    }
+    return undefined;
+  }
 
   /**
    * This is like a constant but it needs to yield new objects for each chart.
@@ -76,9 +91,19 @@ MonitoringConsole.Chart.Line = (function() {
                 return value;
               let lastIndex = values.length - 1;
               let reference = new Date(values[lastIndex].value);
-              let isLive = new Date() - reference < 5000; // is within the last 5 secs
+              let now = new Date();
+              let isLive = now - reference < 5000; // is within the last 5 secs
+              if (values.length == 1)
+                return isLive ? 'now' : Units.formatTime(new Date(reference));
+              let secondsInterval = (values[1].value - values[0].value) / 1000;
+              let secondsAgo = (values[lastIndex].value - values[index].value) / 1000;
               if (isLive) {
-                return index == 0 ? (((values[lastIndex].value - values[0].value)/1000)+1) +'s ago' : index == lastIndex ? 'now' : undefined;
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
+              }
+              let reference2 = new Date(values[lastIndex-1].value);
+              let isRecent = now - reference < (5000 + (reference - reference2));
+              if (isRecent) {
+                return timeLable(secondsAgo, index, lastIndex, secondsInterval);
               }
               if (index != 0 && index != lastIndex)
                 return undefined;
@@ -102,11 +127,85 @@ MonitoringConsole.Chart.Line = (function() {
           display: false,
       }
     };
+    let thresholdsPlugin = {
+      beforeDraw: function (chart) {
+        let yAxis = chart.chart.scales["y-axis-0"];
+        let areas = chart.chart.data.areas;
+        if (!Array.isArray(areas) || areas.length === 0)
+          return;
+        let ctx = chart.chart.ctx;
+        let xAxis = chart.chart.scales["x-axis-0"];
+        function yOffset(y) {
+          let yMax = yAxis.ticksAsNumbers[0];
+          if (y === undefined)
+            y = yMax;
+          let yMin = yAxis.ticksAsNumbers[yAxis.ticksAsNumbers.length - 1];
+          let yVisible = y - yMin;
+          let yRange = yMax - yMin;
+          return yAxis.bottom - Math.max(0, (yAxis.height * yVisible / yRange));
+        }
+        let offsetRight = 0;
+        let barWidth = areas.length < 3 ? 5 : 3;
+        for (let i = 0; i < areas.length; i++) {
+          let group = areas[i];
+          let offsetBar = false;
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            let barLeft = xAxis.right + 1 + offsetRight;
+            // solid fill
+            if (area.min != area.max) {
+              offsetBar = true;
+              let barHeight = yAxisMax - yAxisMin;
+              ctx.fillStyle = area.color;
+              ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);
+            }
+            // and the line
+            let yLine = area.type == 'lower' ? yAxisMax : yAxisMin;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeStyle = area.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(xAxis.left, yLine);
+            ctx.lineTo(barLeft, yLine);
+            ctx.stroke();
+          }
+          // gradients between colors
+          for (let j = 0; j < group.length; j++) {
+            let area = group[j];
+            let yAxisMin = yOffset(area.min);
+            let yAxisMax = yOffset(area.max);
+            let barLeft = xAxis.right + 1 + offsetRight;
+            if (area.min != area.max) {
+              let barHeight = yAxisMax - yAxisMin;
+              let colors = [];
+              if (j + 1 < group.length && group[j+1].max == area.min) {
+                colors = [area.color, group[j+1].color];
+              } else if (j > 0 && group[j-1].max == area.min) {
+                colors = [area.color, group[j-1].color];
+              }
+              if (colors.length == 2) {
+                let yTop = area.type == 'lower' ? yAxisMin - 6 : yAxisMin;
+                let gradient = ctx.createLinearGradient(0, yTop, 0, yTop+6);
+                gradient.addColorStop(0, colors[0]);
+                gradient.addColorStop(1, colors[1]);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(barLeft, yTop, barWidth, 6);                
+              }
+            }            
+          }
+          if (offsetBar)
+            offsetRight += barWidth + 1;
+        }
+      }
+    };
     return new Chart(widget.target, {
-          type: 'line',
-          data: { datasets: [], },
-          options: options,
-        });
+      type: 'line',
+      data: { datasets: [], },
+      options: options,
+      plugins: [ thresholdsPlugin ],       
+    });
   }
 
   /**
@@ -153,12 +252,14 @@ MonitoringConsole.Chart.Line = (function() {
     let label = seriesData.instance;
     if (widget.series.indexOf('*') > 0)
       label += ': '+ (seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1'));
+    let lineWidth = Theme.option('line-width', 3) / 2;
     return {
 			data: points,
 			label: label,
+      fill: widget.options.noFill !== true,
 			backgroundColor: bgColor,
 			borderColor: lineColor,
-			borderWidth: 2.5,
+			borderWidth: lineWidth,
       pointRadius: pointRadius,
 		};
   }
@@ -167,9 +268,9 @@ MonitoringConsole.Chart.Line = (function() {
    * Creates one or more lines for a single series dataset related to the widget.
    * A widget might display multiple series in the same graph generating one or more dataset for each of them.
    */
-  function createSeriesDatasets(widget, seriesData) {
+  function createSeriesDatasets(widget, seriesData, watches) {
     let lineColor = seriesData.legend.color;
-    let bgColor = seriesData.legend.backgroundColor;
+    let bgColor = seriesData.legend.background;
   	let points = points1Dto2D(seriesData.points);
   	let datasets = [];
   	datasets.push(createCurrentLineDataset(widget, seriesData, points, lineColor, bgColor));
@@ -182,20 +283,87 @@ MonitoringConsole.Chart.Line = (function() {
 		if (points.length > 0 && widget.options.drawMaxLine) {
 			datasets.push(createMaximumLineDataset(seriesData, points, lineColor));
 		}
-    let decorations = widget.decorations;
-    if (decorations.waterline && decorations.waterline.value) {
-      let color = decorations.waterline.color || ColorModel.default('waterline');
-      datasets.push(createHorizontalLineDataset(' waterline ', points, decorations.waterline.value, color, [2,2]));
-    }
-    if (decorations.thresholds.alarming.display) {
-      let color = decorations.thresholds.alarming.color || ColorModel.default('alarming');
-      datasets.push(createHorizontalLineDataset(' alarming ', points, decorations.thresholds.alarming.value, color, [2,2]));
-    }
-    if (decorations.thresholds.critical.display) {
-      let color = decorations.thresholds.critical.color || ColorModel.default('critical');
-      datasets.push(createHorizontalLineDataset(' critical ', points, decorations.thresholds.critical.value, color, [2,2]));      
-    }
 	  return datasets;
+  }
+
+  function createBackgroundAreas(widget, watches) {    
+    let areas = [];
+    let decoAreas = createDecorationBackgroundAreas(widget);
+    if (decoAreas.length > 0) {
+      areas.push(decoAreas);
+    }
+    if (Array.isArray(watches) && watches.length > 0) {
+      for (let i = 0; i < watches.length; i++) {
+        areas.push(createWatchBackgroundAreas(watches[0]));
+      }
+    }
+    return areas;
+  }
+
+  function createDecorationBackgroundAreas(widget) {
+    let areas = [];
+    let decorations = widget.decorations;
+    let critical = decorations.thresholds.critical.value;
+    let alarming = decorations.thresholds.alarming.value;
+    if (decorations.thresholds.critical.display && critical !== undefined) {
+      let color = decorations.thresholds.critical.color || Theme.color('critical');        
+      if (alarming > critical) {
+        areas.push({ color: color, min: 0, max: critical, type: 'lower' });
+      } else {
+        areas.push({ color: color, min: critical, type: 'upper' });
+      }
+    }
+    if (decorations.thresholds.alarming.display && alarming !== undefined) {
+      let color = decorations.thresholds.alarming.color || Theme.color('alarming');
+      if (alarming > critical) {
+        areas.push({ color: color, min: critical, max: alarming, type: 'lower' });
+      } else {
+        areas.push({ color: color, min: alarming, max: critical, type: 'upper' });
+      }
+    }
+    if (decorations.waterline && decorations.waterline.value) {
+      let color = decorations.waterline.color || Theme.color('waterline');
+      let value = decorations.waterline.value;
+      areas.push({ color: color, min: value, max: value });
+    }
+    return areas;    
+  }
+
+  function createWatchBackgroundAreas(watch) { 
+    let areas = [];
+    if (watch.red)
+      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
+    if (watch.amber)
+      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
+    if (watch.green)
+      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+    return areas;
+  }   
+
+  function createBackgroundArea(level, levels) {
+    let color = Theme.color(level.level);
+    let min = 0;
+    let max;
+    let type = 'upper';
+    if (level.start.operator == '>' || level.start.operator == '>=') {
+      min = level.start.threshold;
+      for (let i = 0; i < levels.length; i++) {
+        let other = levels[i];
+        if (other !== undefined && other.start.threshold > min) {
+          max = max === undefined ? other.start.threshold : Math.min(max, other.start.threshold);
+        }
+      }
+    } else if (level.start.operator == '<' || level.start.operator == '<=') {
+      max = level.start.threshold;
+      type = 'lower';
+      for (let i = 0; i < levels.length; i++) {
+        let other = levels[i];
+        if (other !== undefined && other.start.threshold < max) {
+          min = Math.max(min, other.start.threshold);
+        }
+      }
+    }
+    return { color: color, min: min, max: max, type: type };
   }
 
   /**
@@ -204,7 +372,7 @@ MonitoringConsole.Chart.Line = (function() {
    */
   function onConfigUpdate(widget, chart) {
     let options = chart.options;
-    options.elements.line.tension = widget.options.noCurves ? 0 : 0.4;
+    options.elements.line.tension = widget.options.drawCurves ? 0.4 : 0;
     let time = 0; //widget.options.drawAnimations ? 1000 : 0;
     options.animation.duration = time;
     options.responsiveAnimationDuration = time;
@@ -229,9 +397,10 @@ MonitoringConsole.Chart.Line = (function() {
     let chart = update.chart();
     let datasets = [];
     for (let j = 0; j < data.length; j++) {
-      datasets = datasets.concat(createSeriesDatasets(widget, data[j]));
+      datasets = datasets.concat(createSeriesDatasets(widget, data[j], update.watches));
     }
     chart.data.datasets = datasets;
+    chart.data.areas = createBackgroundAreas(widget, update.watches);    
     chart.update(0);
   }
   

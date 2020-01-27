@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,11 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
@@ -49,6 +54,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
@@ -62,10 +68,11 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 @Service(name = "healthcheck-cpu")
 @RunLevel(StartupRunLevel.VAL)
 public class CpuUsageHealthCheck
-        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> {
+extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker>
+implements MonitoringDataSource, MonitoringWatchSource {
 
-    private volatile long nanotimeBefore = System.nanoTime();
-    private volatile long totalCpuNanosBefore = 0;
+    private final CpuUsage healthCheck = new CpuUsage();
+    private final CpuUsage collect = new CpuUsage();
 
     @PostConstruct
     void postConstruct() {
@@ -85,36 +92,68 @@ public class CpuUsageHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-
-        if (!threadBean.isCurrentThreadCpuTimeSupported()) {
+        try {
+            double percentage = healthCheck.percentage();
+            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), 
+                    "CPU%: " + new DecimalFormat("#.00").format(percentage)
+                    + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(healthCheck.getLastTimeDelta()))));
+        } catch (UnsupportedOperationException ex) {
             result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "JVM implementation or OS does not support getting CPU times"));
             return result;
         }
+        return result;
+    }
 
-        long currentThreadId = Thread.currentThread().getId();
-        long totalCpuNanos = 0L;
-        for (long id : threadBean.getAllThreadIds()) {
-            if (id != currentThreadId) {
-                final long threadCpuTime = threadBean.getThreadCpuTime(id);
-                if (threadCpuTime >= 0L) {
-                    totalCpuNanos += threadCpuTime;
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 4)
+    public void collect(MonitoringDataCollector collector) {
+        if (options != null && options.isEnabled()) {
+            collector.collect("CpuUsage", (int) collect.percentage());
+        }
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health CpuUsage", "CPU Usage", 15, true);
+    }
+
+    private static final class CpuUsage {
+
+        private volatile long nanotimeBefore = System.nanoTime();
+        private volatile long totalCpuNanosBefore = 0;
+        private volatile long timeDelta;
+
+        CpuUsage() {
+            // make visible
+        }
+
+        double percentage() {
+            ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+            if (!threadBean.isCurrentThreadCpuTimeSupported()) {
+                throw new UnsupportedOperationException("CurrentThreadCpuTimeSupported not supported.");
+            }
+            long currentThreadId = Thread.currentThread().getId();
+            long totalCpuNanos = 0L;
+            for (long id : threadBean.getAllThreadIds()) {
+                if (id != currentThreadId) {
+                    final long threadCpuTime = threadBean.getThreadCpuTime(id);
+                    if (threadCpuTime >= 0L) {
+                        totalCpuNanos += threadCpuTime;
+                    }
                 }
             }
+            long nanotime = System.nanoTime();
+            timeDelta = nanotime - nanotimeBefore;
+            long cpuTimeDelta = totalCpuNanos - totalCpuNanosBefore;
+            double percentage = Math.max(0d, Math.min(100d, 100d * cpuTimeDelta / timeDelta));
+            totalCpuNanosBefore = totalCpuNanos;
+            nanotimeBefore = nanotime;
+            return percentage;
         }
-        long nanotime = System.nanoTime();
-        long timeDelta = nanotime - nanotimeBefore;
-        long cpuTimeDelta = totalCpuNanos - totalCpuNanosBefore;
-        double percentage = Math.max(0d, Math.min(100d, 100d * cpuTimeDelta / timeDelta));
 
-        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), 
-                "CPU%: " + new DecimalFormat("#.00").format(percentage)
-                + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(cpuTimeDelta))));
-
-        totalCpuNanosBefore = totalCpuNanos;
-        nanotimeBefore = nanotime;
-
-        return result;
+        long getLastTimeDelta() {
+            return timeDelta;
+        }
     }
 
 }

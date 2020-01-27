@@ -164,7 +164,7 @@ public class RealmExtension implements Extension {
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
-                    .addToId(RealmIdentityStore.class)
+                    .addToId(RealmIdentityStore.class + "-" + definition.value())
                     .create(e -> {
                         RealmIdentityStore mechanism = CDI.current().select(RealmIdentityStore.class).get();
                         mechanism.setConfiguration(definition);
@@ -186,7 +186,7 @@ public class RealmExtension implements Extension {
                         .scope(ApplicationScoped.class)
                         .beanClass(IdentityStore.class)
                         .types(Object.class, IdentityStore.class)
-                        .addToId(RealmIdentityStore.class)
+                        .addToId(RealmIdentityStore.class + "-" + definition.value())
                         .create(e -> {
                             RealmIdentityStore mechanism = CDI.current().select(RealmIdentityStore.class).get();
                             mechanism.setConfiguration(definition);

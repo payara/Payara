@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,14 @@
  */
 package fish.payara.monitoring.web;
 
+import static fish.payara.monitoring.web.ApiRequests.DataType.POINTS;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,9 +61,21 @@ import javax.ws.rs.core.MediaType;
 
 import org.glassfish.internal.api.Globals;
 
+import fish.payara.monitoring.alert.Alert;
+import fish.payara.monitoring.alert.AlertService;
+import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Series;
+import fish.payara.monitoring.model.SeriesAnnotation;
 import fish.payara.monitoring.model.SeriesDataset;
 import fish.payara.monitoring.store.MonitoringDataRepository;
+import fish.payara.monitoring.web.ApiRequests.DataType;
+import fish.payara.monitoring.web.ApiRequests.SeriesQuery;
+import fish.payara.monitoring.web.ApiRequests.SeriesRequest;
+import fish.payara.monitoring.web.ApiResponses.AlertsResponse;
+import fish.payara.monitoring.web.ApiResponses.AnnotationData;
+import fish.payara.monitoring.web.ApiResponses.RequestTraceResponse;
+import fish.payara.monitoring.web.ApiResponses.SeriesResponse;
+import fish.payara.monitoring.web.ApiResponses.WatchesResponse;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
@@ -74,12 +87,20 @@ public class MonitoringConsoleResource {
 
     private static final Logger LOGGER = Logger.getLogger(MonitoringConsoleResource.class.getName());
 
+    private static <T> T getService(Class<T> type) {
+        return Globals.getDefaultBaseServiceLocator().getService(type);
+    }
+
     private static MonitoringDataRepository getDataStore() {
-        return Globals.getDefaultBaseServiceLocator().getService(MonitoringDataRepository.class);
+        return getService(MonitoringDataRepository.class);
+    }
+
+    public static AlertService getAlertService() {
+        return getService(AlertService.class);
     }
 
     private static RequestTraceStoreInterface getRequestTracingStore() {
-        return Globals.getDefaultBaseServiceLocator().getService( RequestTracingService.class).getRequestTraceStore();
+        return getService( RequestTracingService.class).getRequestTraceStore();
     }
 
     private static Series seriesOrNull(String series) {
@@ -92,31 +113,52 @@ public class MonitoringConsoleResource {
     }
 
     @GET
-    @Path("/series/data/{series}/")
-    public List<SeriesResponse> getSeriesData(@PathParam("series") String series) {
+    @Path("/annotations/data/{series}/")
+    public List<AnnotationData> getAnnotationsData(@PathParam("series") String series) {
         Series key = seriesOrNull(series);
-        return key == null ? Collections.emptyList() : SeriesResponse.from(getDataStore().selectSeries(key));
+        return key == null 
+                ? emptyList()
+                : getDataStore().selectAnnotations(key).stream().map(AnnotationData::new).collect(toList());
+    }
+
+    @GET
+    @Path("/series/data/{series}/")
+    public SeriesResponse getSeriesData(@PathParam("series") String series) {
+        return getSeriesData(new SeriesRequest(series));
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/series/data/")
-    public Map<Series, List<SeriesResponse>> getSeriesData(SeriesRequest request) {
-        Map<Series, List<SeriesResponse>> res = new HashMap<>();
+    public SeriesResponse getSeriesData(SeriesRequest request) {
+        int length = request.queries.length;
+        List<List<SeriesDataset>> data = new ArrayList<>(length);
+        List<List<SeriesAnnotation>> annotations = new ArrayList<>(length);
+        List<Collection<Watch>> watches = new ArrayList<>(length);
+        List<Collection<Alert>> alerts = new ArrayList<>(length);
+        MonitoringDataRepository dataStore = getDataStore();
+        AlertService alertService = getAlertService();
         for (SeriesQuery query : request.queries) {
             Series key = seriesOrNull(query.series);
-            List<SeriesDataset> value = key == null ? null : getDataStore().selectSeries(key, query.instances);
-            if (value != null && !value.isEmpty()) {
-                if (res.containsKey(key)) {
-                    res.get(key).addAll(SeriesResponse.from(value));
-                } else {
-                    res.put(key, SeriesResponse.from(value));
-                }
-            } else {
-                res.put(key, new ArrayList<>());
-            }
+            List<SeriesDataset> queryData = key == null || query.excludes(DataType.POINTS) //
+                    || Series.ANY.equalTo(key) && query.truncates(POINTS)  // if all alerts are requested don't send any particular data
+                    ? emptyList()
+                    : dataStore.selectSeries(key, query.instances);
+            List<SeriesAnnotation> queryAnnotations = key == null || query.excludes(DataType.ANNOTATIONS)
+                    ? emptyList()
+                    : dataStore.selectAnnotations(key, query.instances);
+            Collection<Watch> queryWatches = key == null || query.excludes(DataType.WATCHES)
+                    ? emptyList()
+                    : alertService.wachtesFor(key);
+            Collection<Alert> queryAlerts = key == null || query.excludes(DataType.ALERTS)
+                    ? emptyList()
+                    : alertService.alertsFor(key);
+            data.add(queryData);
+            watches.add(queryWatches);
+            annotations.add(queryAnnotations);
+            alerts.add(queryAlerts);
         }
-        return res;
+        return new SeriesResponse(request.queries, data, annotations, watches, alerts, alertService.getAlertStatistics());
     }
 
     @GET
@@ -143,5 +185,32 @@ public class MonitoringConsoleResource {
             }
         }
         return response;
+    }
+
+    @GET
+    @Path("/alerts/data/")
+    public AlertsResponse getAlertsData() {
+        return new AlertsResponse(getAlertService().alerts());
+    }
+
+    @GET
+    @Path("/alerts/data/{series}/")
+    public AlertsResponse getAlertsData(@PathParam("series") String series) {
+        return new AlertsResponse(getAlertService().alertsFor(seriesOrNull(series)));
+    }
+
+    @POST
+    @Path("/alerts/ack/{serial}")
+    public void acknowledgeAlert(@PathParam("serial") int serial) {
+        Alert alert = getAlertService().alertBySerial(serial);
+        if (alert != null) {
+            alert.acknowledge();
+        }
+    }
+
+    @GET
+    @Path("/watches/data/")
+    public WatchesResponse getWatchesData() {
+        return new WatchesResponse(getAlertService().watches());
     }
 }

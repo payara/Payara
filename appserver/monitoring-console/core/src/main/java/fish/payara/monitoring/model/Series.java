@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,12 +51,15 @@ import java.util.regex.Pattern;
  */
 public final class Series implements Comparable<Series>, Serializable {
 
-    private static final char QUERY_WILDCARD = '*';
+    private static final char VALUE_WILDCARD = '*';
+    private static final char NAME_WILDCARD = '?';
     public static final char TAG_ASSIGN = ':';
     public static final char TAG_SEPARATOR = ' ';
     private static final char[] TAG_SEPARATORS = { ' ', ',', ';' };
 
     private static final String SPLIT_PATTERN = "[" + Pattern.quote(new String(TAG_SEPARATORS)) + "]+";
+
+    public static final Series ANY = new Series("" + VALUE_WILDCARD);
 
     private final String metric;
     private final String[] tags;
@@ -117,31 +120,43 @@ public final class Series implements Comparable<Series>, Serializable {
     }
 
     public boolean isPattern() {
-        if (isWildCard(metric)) {
+        if (isWildCardValue(metric)) {
             return true;
         }
         for (int i = 0; i < values.length; i++) {
-            if (isWildCard(values[i])) {
+            if (isWildCardValue(values[i]) || isWildCardName(tags[i])) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean isWildCard(String str) {
-        return str.length() == 1 && str.charAt(0) == QUERY_WILDCARD;
+    private static boolean isWildCardValue(String str) {
+        return str.length() == 1 && str.charAt(0) == VALUE_WILDCARD;
+    }
+
+    private static boolean isWildCardName(String str) {
+        return str.length() == 1 && str.charAt(0) == NAME_WILDCARD;
     }
 
     public boolean matches(Series other) {
-        if (tagCount() != other.tagCount() || !isWildCard(metric) && !metric.equals(other.metric)) {
+        if (!isWildCardValue(metric) && !metric.equals(other.metric) || other.tags.length < tags.length - 1) {
             return false;
         }
-        for (int i = 0; i < tags.length; i++) {
-            if (!tags[i].equals(other.tags[i]) || !isWildCard(values[i]) && !values[i].equals(other.values[i])) {
+        for (int i = 0; i < tags.length - 1; i++) {
+            if (!tags[i].equals(other.tags[i]) || !isWildCardValue(values[i]) && !values[i].equals(other.values[i])) {
                 return false;
             }
         }
-        return true;
+        if (tags.length == 0) {
+            return other.tags.length == 0;
+        }
+        int n = tags.length - 1;
+        if (isWildCardName(tags[n])) {
+            return other.tags.length <= n || isWildCardValue(values[n]) || values[n].equals(other.values[n]);
+        }
+        return tags.length == other.tags.length && tags[n].equals(other.tags[n])
+                && (isWildCardValue(values[n]) || values[n].equals(other.values[n]));
     }
 
     @Override
@@ -153,6 +168,10 @@ public final class Series implements Comparable<Series>, Serializable {
     public int hashCode() {
         // not including the tags is "good enough" to avoid to many collisions for this domain
         return metric.hashCode() ^ Arrays.hashCode(values);
+    }
+
+    public boolean equalTo(Series other) {
+        return metric.equals(other.metric) && Arrays.equals(tags, other.tags) && Arrays.equals(values, other.values);
     }
 
     @Override
@@ -198,7 +217,7 @@ public final class Series implements Comparable<Series>, Serializable {
     }
 
     public static boolean isSpecialTagCharacter(char c) {
-        if (c == TAG_ASSIGN || c == QUERY_WILDCARD) {
+        if (c == TAG_ASSIGN || c == VALUE_WILDCARD || c == NAME_WILDCARD) {
             return true;
         }
         for (char sep : TAG_SEPARATORS) {
@@ -208,4 +227,5 @@ public final class Series implements Comparable<Series>, Serializable {
         }
         return false;
     }
+
 }

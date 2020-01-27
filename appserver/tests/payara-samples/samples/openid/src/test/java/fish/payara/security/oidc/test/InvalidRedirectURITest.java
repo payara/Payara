@@ -41,23 +41,27 @@ package fish.payara.security.oidc.test;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_REDIRECT_URI;
+
 import java.io.IOException;
 import java.net.URL;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_REDIRECT_URI;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *

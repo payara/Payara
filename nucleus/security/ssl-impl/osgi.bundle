@@ -37,9 +37,11 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2020] [Payara Foundation and/or its affiliates.]
 
 -exportcontents: \
                         com.sun.enterprise.security.ssl.manager; \
+                        com.sun.enterprise.security.ssl.impl; \
                         com.sun.enterprise.server.pluggable; version=${project.osgi.version}
 
 DynamicImport-Package: \
