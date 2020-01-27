@@ -141,12 +141,12 @@
                 <config-property>
                     <config-property-name>User</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value>sa</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>Password</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value></config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>LoginTimeOut</config-property-name>
@@ -161,7 +161,7 @@
                 <config-property>
                     <config-property-name>ClassName</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>org.apache.derby.jdbc.ClientDriver</config-property-value>
+                    <config-property-value>org.h2.Driver</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>ConnectionValidationRequired</config-property-name>
