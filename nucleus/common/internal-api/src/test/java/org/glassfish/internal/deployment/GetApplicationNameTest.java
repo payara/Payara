@@ -83,23 +83,48 @@ public class GetApplicationNameTest {
         when(habitat.getService(ApplicationInfoProvider.class)).thenReturn(applicationInfoProvider);
     }
 
+    /**
+     * Application name provided in the deployment descriptor will always take
+     * precedence over the one provided by a user.
+     */
     @Test
     public void testWhenDDHasAppName() {
-        when(applicationInfoProvider.getNameFor(readableArchive, null)).thenReturn(DD_APP_NAME);
-        assertEquals(DD_APP_NAME, genericHandler.getDefaultApplicationName(readableArchive, null, USER_PROVIDED_APP_NAME));
+        assertTheAppName(DD_APP_NAME, DD_APP_NAME, USER_PROVIDED_APP_NAME);
     }
 
+    /**
+     * When application name is not provided in the deployment descriptor and
+     * the user hasn't provided an application name, use the name of the
+     * archive.
+     */
     @Test
-    public void testWhenDDDoesNotHaveAppName() {
-        when(applicationInfoProvider.getNameFor(readableArchive, null)).thenReturn(null);
-        assertEquals(USER_PROVIDED_APP_NAME, genericHandler.getDefaultApplicationName(readableArchive, null, USER_PROVIDED_APP_NAME));
+    public void testWithoutUserProvidedAppName() {
+        assertTheAppName(DEFAULT_ARCHIVE_NAME, null, null);
     }
 
+    /**
+     * If application name is not provided in the deployment descriptor, it
+     * should use the one provided by a user if present.
+     */
     @Test
-    public void testWhenDDAppNameIsSetToDefaultArchiveName() {
-        when(applicationInfoProvider.getNameFor(readableArchive, null)).thenReturn(DEFAULT_ARCHIVE_NAME);
+    public void testDDWithoutAppName() {
+        assertTheAppName(USER_PROVIDED_APP_NAME, null, USER_PROVIDED_APP_NAME);
+    }
+
+    /**
+     * When Application name is not set in the deployment descriptor, it should
+     * use the one provided by a user if present, rather than replace it with
+     * the name of the archive.
+     */
+    @Test
+    public void testDDWithoutAppNameWithArchiveName() {
+        assertTheAppName(USER_PROVIDED_APP_NAME, DEFAULT_ARCHIVE_NAME, USER_PROVIDED_APP_NAME);
+    }
+
+    private void assertTheAppName(String correctAppName, String appNameToBeprocessed, String userProvidedAppName) {
+        when(applicationInfoProvider.getNameFor(readableArchive, null)).thenReturn(appNameToBeprocessed);
         when(readableArchive.getName()).thenReturn(DEFAULT_ARCHIVE_NAME);
-        assertEquals(USER_PROVIDED_APP_NAME, genericHandler.getDefaultApplicationName(readableArchive, null, USER_PROVIDED_APP_NAME));
+        assertEquals(correctAppName, genericHandler.getDefaultApplicationName(readableArchive, null, userProvidedAppName));
     }
 
     class GenericHandlerStub extends GenericHandler {
@@ -116,7 +141,7 @@ public class GetApplicationNameTest {
 
         @Override
         public ClassLoader getClassLoader(ClassLoader parent, DeploymentContext context) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
