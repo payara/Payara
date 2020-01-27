@@ -56,7 +56,7 @@
       <jdbc-connection-pool datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.XADataSource" name="__TimerPool">
           <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/ejbtimer;AUTO_SERVER=TRUE" />
       </jdbc-connection-pool>
-      <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="H2Pool">      
+      <jdbc-connection-pool datasource-classname="org.h2.jdbcx.JdbcDataSourcee" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="H2Pool">      
           <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
       </jdbc-connection-pool>
   </resources>
