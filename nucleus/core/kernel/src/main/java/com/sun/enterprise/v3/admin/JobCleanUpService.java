@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.appserv.server.util.Version;
@@ -94,11 +95,12 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobCleanUpService.class);
 
-
+    private boolean micro;
 
     @Override
     public void postConstruct() {
-        if (Version.getFullVersion().contains("Micro")) {
+        micro = Version.getFullVersion().contains("Micro");
+        if (micro) {
             //if Micro we don't have any jobs to cleanup
             return;
         }
@@ -130,6 +132,9 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      * This will schedule a cleanup of expired jobs based on configurable values
      */
     private void scheduleCleanUp() {
+        if (micro) {
+            return;
+        }
 
         if (managedJobConfig == null) {
             managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
