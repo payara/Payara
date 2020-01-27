@@ -218,11 +218,13 @@ end                  = number
 
 Watch Data (as received from server):
 ```
-WATCH                = { name, series, unit, disabled, red, amber, green, states }
+WATCH                = { name, series, unit, stopped, disabled, programmatic, red, amber, green, states }
 name                 = string
 series               = string
 unit                 = string
+stopped              = boolean
 disabled             = boolean
+programmatic         = boolean
 red                  = CIRCUMSTANCE
 amber                = CIRCUMSTANCE
 green                = CIRCUMSTANCE
@@ -294,12 +296,12 @@ entries     = [ENTRY]
 ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue, collapsed } 
 label       = string
 type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text' | 'color'
-unit        = string
+unit        = string | fn () => string
 value       = number | string
 defaultValue= number | string
 min         = number
 max         = number
-options     = { *:string }
+options     = { *:string } | [ * ]
 input       = fn () => string | fn () => jquery | string | jquery | [ENTRY]
 onChange    = fn (widget, newValue) => () | fn (newValue) => ()
 description = string

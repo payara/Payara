@@ -108,11 +108,13 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     public void init() {
         isDas = serverEnv.isDas();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
-        addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration")))
+        addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration"), Unit.MILLIS))
+                .programmatic()
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 2, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
-        addWatch(new Watch("Watch Loop Duration", new Metric(new Series("ns:monitoring WatchLoopDuration")))
+        addWatch(new Watch("Watch Loop Duration", new Metric(new Series("ns:monitoring WatchLoopDuration"), Unit.MILLIS))
+                .programmatic()
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 3, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
@@ -217,11 +219,13 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     @Override
     public void removeWatch(Watch watch) {
         watch.stop();
-        if (watchesByName.get(watch.name) == watch) {
-            watchesByName.remove(watch.name);
+        String name = watch.name;
+        if (watchesByName.get(name) == watch) {
+            watchesByName.remove(name);
+            collectedWatches.remove(name);
+            removeWatch(watch, simpleWatches);
+            removeWatch(watch, patternWatches);
         }
-        removeWatch(watch, simpleWatches);
-        removeWatch(watch, patternWatches);
     }
 
     private static void removeWatch(Watch watch, Map<Series, Map<String, Watch>> map) {
@@ -311,7 +315,8 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
                         notYetCollectedWatches.remove(name);
                         Watch watch = collectedBefore.get(name);
                         if (watch == null) {
-                            watch = new Watch(name, new Metric(new Series(series.toString()), Unit.fromShortName(unit)));
+                            Metric watched = new Metric(new Series(series.toString()), Unit.fromShortName(unit));
+                            watch = new Watch(name, watched).programmatic();
                         }
                         Watch updated = watch.with(level, startThreshold, startForLast, startOnAverage, stopTheshold,
                                 stopForLast, stopOnAverage);

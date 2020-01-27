@@ -37,8 +37,23 @@
    only if the new code is made subject to such option by the copyright
    holder.
 */
+:root {
+  /* Color RGB values to be used in other variable definitions */
+  --primary-color-rgb-orange:  240, 152,  27; /* #F0981B */
+  --primary-color-rgb-blue:      0,  44,  62; /* #002C3E */
+  --secondary-color-rgb-blue:    0, 150, 214; /* #0096D6 */
+  --secondary-color-rgb-dark:   67,  68,  69; /* #434445 */
+  --secondary-color-rgb-light: 218, 224, 226; /* #DAE0E2 */
+  --button-color-rgb-text:      16,  16,  18; /* #101012 */
+  --button-color-rgb-bg:       210, 216, 218; /* #D2D8DA */
+
+  /* Variables used in style definitons */
+  --page-bg-color: #003247;
+
+}
+
 body {
-    background-color: #003247;
+    background-color: var(--page-bg-color);
     font: 13px/1.231 'IBM Plex Sans', helvetica,clean,sans-serif;
     color: white;
     margin: 0;
@@ -46,7 +61,7 @@ body {
 }
 h1 {
 	font-size: 21px;
-    font-weight: bold;
+  font-weight: bold;
 }
 select {
 	width: 100%;
@@ -666,6 +681,25 @@ table.AnnotationTable {
 .WatchItem.state-disabled h3 {
   color: #888;
 }
-.WatchList .WatchItem .WatchCondition {
-  padding: 0.25em 0.5em;
+.WatchCondition {
+  padding: 0 0.5em;
+  font-family: monospace;
+}
+.WatchCondition em {
+  color: #bbb;
+  font-style: normal;
+}
+.WatchCondition select, .WatchCondition input {
+  width: auto;
+  max-width: auto;
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
+  font-family: monospace;
+}
+.WatchCondition input {
+  border-bottom: 1px dotted #ccc;
+}
+.WatchCondition input.input-value {
+  width: 60px;
 }

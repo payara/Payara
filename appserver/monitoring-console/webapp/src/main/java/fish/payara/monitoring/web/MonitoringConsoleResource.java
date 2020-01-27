@@ -242,11 +242,17 @@ public class MonitoringConsoleResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/watches/data/")
     public Response createWatch(WatchData data) {
+        if (data.name == null || data.name.isEmpty()) {
+            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Name missing").build();
+        }
         Circumstance red = createCircumstance(data.red);
         Circumstance amber = createCircumstance(data.amber);
         Circumstance green = createCircumstance(data.green);
+        if (red.start.isNone() && amber.start.isNone()) {
+            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Red or amber start condition must be given").build();
+        }
         Metric metric = Metric.parse(data.series, data.unit);
-        Watch watch = new Watch(data.name, metric, red, amber, green);
+        Watch watch = new Watch(data.name, metric, false, red, amber, green);
         getAlertService().addWatch(watch);
         return Response.noContent().build();
     }

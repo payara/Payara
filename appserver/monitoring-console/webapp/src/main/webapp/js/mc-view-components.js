@@ -145,37 +145,52 @@ MonitoringConsole.View.Components = (function() {
       }
 
       function createDropdownInput(model) {
-         let config = { id: model.id };
-         if (model.description && !model.label)
+        let config = { id: model.id };
+        if (model.description && !model.label)
           config.title = description;
-         let dropdown = $('<select/>',  );
-         Object.keys(model.options).forEach(option => dropdown.append($('<option/>', 
-            {text:model.options[option], value:option, selected: model.value === option})));
-         let onChange = enhancedOnChange(model.onChange, true);
-         dropdown.change(() => onChange(dropdown.val()));
-         return dropdown;
+        let dropdown = $('<select/>',  );
+        if (Array.isArray(model.options)) {
+          model.options.forEach(option => dropdown.append($('<option/>',
+            { text: option, value: option, selected: model.value === option})));
+        } else {
+          Object.keys(model.options).forEach(option => dropdown.append($('<option/>', 
+            { text:model.options[option], value:option, selected: model.value === option})));          
+        }
+        let onChange = enhancedOnChange(model.onChange, true);
+        dropdown.change(() => onChange(dropdown.val()));
+        return dropdown;
       }
 
       function createValueInput(model) {
-        if (model.unit === 'percent')
-          return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
-        if (model.unit === 'count')
-          return createRangeInput(model);
-        return createTextInput(model, Units.converter(model.unit));
+        let unit = model.unit;
+        if (typeof unit === 'string') {
+          if (unit === 'percent')
+            return createRangeInput({id: model.id, min: 0, max: 100, value: model.value, onChange: model.onChange });
+          if (unit === 'count')
+            return createRangeInput(model);
+        }
+        return createTextInput(model, unit);
       }
 
-      function createTextInput(model, converter) {
-        if (!converter)
-          converter = { format: (str) => str, parse: (str) => str };
+      function createTextInput(model) {
+        function getConverter() {
+          if (model.unit === undefined)
+            return { format: (str) => str, parse: (str) => str };
+          if (typeof model.unit === 'function')
+            return Units.converter(model.unit());
+          return Units.converter(model.unit);
+        }
+        let converter = getConverter();
         let config = { 
           id: model.id,
           type: 'text', 
           value: converter.format(model.value), 
+          'class': 'input-' + model.type,
         };
         if (model.description && !model.label)
           config.title = description;
         let readonly = model.onChange === undefined;
-        if (!readonly) {
+        if (!readonly && typeof model.unit === 'string') {
           if (converter.pattern !== undefined)
             config.pattern = converter.pattern();
           if (converter.patternHint !== undefined)
@@ -185,7 +200,7 @@ MonitoringConsole.View.Components = (function() {
         if (!readonly) {
           let onChange = enhancedOnChange(model.onChange, true);
           input.on('input change paste', function() {
-            let val = converter.parse(this.value);
+            let val = getConverter().parse(this.value);
             onChange(val);
           });          
         } else {
@@ -339,7 +354,10 @@ MonitoringConsole.View.Components = (function() {
         return [box, syntheticId];
       }
 
-      return { createComponent: createComponent };
+      return { 
+        createComponent: createComponent,
+        createInput: createInput,
+      };
    })();
 
   /**
@@ -796,7 +814,17 @@ MonitoringConsole.View.Components = (function() {
 
     function createItem(item, colors, actions) {
       const watch = $('<div/>', { 'class': 'WatchItem ' + 'state-' + (item.disabled ? 'disabled' : 'enabled') });
-      const general = $('<h3/>').text(item.name);
+      const disableButton = $('<input/>', { type: 'checkbox', checked: !item.disabled }).change(() => {
+        if (this.checked) {
+          actions.onEnable(item.name);
+        } else {
+          actions.onDisable(item.name);
+        }
+      });
+      const deleteButton = item.programmatic 
+        ? " (from server configuration)"
+        : $('<button/>').html('&times;').click(() => actions.onDelete(item.name));
+      const general = $('<h3/>').append(disableButton).append(item.name).append(deleteButton);
       //TODO make disabled into menu for the "widget"
       watch.append(general);
       for (let level of ['red', 'amber', 'green'])
@@ -811,13 +839,13 @@ MonitoringConsole.View.Components = (function() {
         return text.substring(text.indexOf('value') + 5);
       }
       const circumstance = $('<div/>', { 'class': 'WatchCondition', style: 'color: '+ color +';'});
-      let = text = '<b>' + Units.Alerts.name(level) + ':</b> ' + Units.names()[unit] + ' ' + series + ' ';
-      if (model.start)
-        text += plainText(formatCondition(model.start, unit));
+      let levelText = paddedLeftWith('&nbsp;', Units.Alerts.name(level), 'Unhealthy'.length);
+      let = text = '<b>' + levelText + ':</b> <em>If</em> ' + Units.names()[unit] + ' <em>of</em> ' + series + ' <em>is</em> ';
+      text += plainText(formatCondition(model.start, unit));
       if (model.suppress)
-        text += ' unless ' + model.surpressingSeries + ' ' + plainText(formatCondition(model.suppress, modelsurpressingUnit));
+        text += ' <em>unless</em> ' + model.surpressingSeries + ' ' + plainText(formatCondition(model.suppress, modelsurpressingUnit));
       if (model.stop)
-        text += ' until ' + plainText(formatCondition(model.stop, unit));
+        text += ' <em>until</em> ' + plainText(formatCondition(model.stop, unit));
       return circumstance.html(text);
     }
 
@@ -829,13 +857,116 @@ MonitoringConsole.View.Components = (function() {
    */
   const WatchBuilder = (function() {
     
-    function createComponent(model) {
-      const config = { 'class': 'WatchBuilder' };
+    function createComponent(model, watch) {
+      const config = { 'class': 'WatchBuilder WatchItem' };
       if (model.id)
         config.id = model.id;
+      const editedWatch = watch || { unit: 'count', name: '(unnamed)' };
       const builder = $('<div/>', config);
-
+      const nameInput = Settings.createInput({ type: 'text', value: editedWatch.name, onChange: (name) => editedWatch.name = name });
+      builder.append($('<h3/>').append('Name: ').append(nameInput));
+      const unitDropdowns = [];
+      const seriesInputs = [];
+      for (let level of ['red', 'amber', 'green']) {
+        builder.append(createLevelBuilder(level, editedWatch, model.colors[level], unitDropdowns, seriesInputs));
+      }
+      builder.append($('<button/>').text('Save or Update').click(() => {
+        model.actions.onCreate(editedWatch, () => alert("success"), () => alert("failure"));
+      }));
       return builder;
+    }
+
+    function createLevelBuilder(level, editedWatch, color, unitDropdowns, seriesInputs) {
+      const editedCircumstance = editedWatch[level] || { level: level };
+      const editedStartCondition = editedCircumstance.start || { operator: '>', forLastType: 'forTimes' };
+      const editedStopCondition = editedCircumstance.stop || { operator: '<', forLastType: 'forTimes' };
+      const defined = editedWatch[level] !== undefined;
+      const levelBox = $('<span/>', defined ? {} : { style: 'display: none;'});
+      let enableCheckbox = Settings.createInput({type: 'checkbox', value: defined, onChange: (checked) => {
+        if (checked) {
+          levelBox.show();
+          editedWatch[level] = editedCircumstance;
+          editedCircumstance.start = editedStartCondition;
+        } else {
+          levelBox.hide();
+          editedWatch[level] = undefined;
+        }
+      }});
+      const unitDropdown = Settings.createInput({ type: 'dropdown', value: editedWatch.unit, options: Units.names(), onChange: (selected) => {
+        editedWatch.unit = selected;
+        unitDropdowns.forEach(dropdown => dropdown.val(selected));
+      }});
+      unitDropdowns.push(unitDropdown);
+      const seriesInput = Settings.createInput({ type: 'text', value: editedWatch.series, onChange: (series) => {
+        editedWatch.series = series;
+        seriesInputs.forEach(input => input.val(series));
+      }});
+      seriesInputs.push(seriesInput);
+      const isUntilDefined = editedCircumstance.stop !== undefined;
+      const untilBox = $('<span/>', isUntilDefined ? {} : { style: 'display: none;'})
+        .append(createConditionBuilder(editedWatch, editedCircumstance, editedStopCondition));      
+      const untilCheckbox = Settings.createInput({ type: 'checkbox', value: isUntilDefined, onChange: (checked) => {
+        if (checked) {
+          untilBox.show();
+          editedCircumstance.stop = editedStopCondition;
+        } else {
+          untilBox.hide();
+          editedCircumstance.stop = undefined;
+        }
+      }});
+      levelBox
+        .append(' <em>If</em> ').append(unitDropdown)
+        .append(' <em>of</em> ').append(seriesInput)
+        .append(' <em>is<em/> ').append(createConditionBuilder(editedWatch, editedCircumstance, editedStartCondition))
+        .append(' <em>until</em> ').append(untilCheckbox).append(untilBox);
+      return $('<div/>', {'class': 'WatchCondition', style: 'color: ' + color + ';' })
+        .append(enableCheckbox).append('<b>' + paddedLeftWith('&nbsp;', Units.Alerts.name(level), 'Unhealthy'.length) + ':</b>')
+        .append(levelBox);
+    }
+
+    function createConditionBuilder(editedWatch, editedCircumstance, editedCondition) {
+      if (editedCondition.forLastType === undefined)
+        editedCondition.forLastType = editedCondition.forTimes !== undefined ? 'forTimes' : 'forMillis';
+      editedCondition.forLast = editedCondition[editedCondition.forLastType];
+      const operatorDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.operator, options: ['<', '<=', '=', '>', '>='], onChange: (selected) => editedCondition.operator = selected});
+      const thresholdInput = Settings.createInput({ type: 'value', unit: () => editedWatch.unit, value: editedCondition.threshold, onChange: (value) => editedCondition.threshold = value});
+      const forInUnitDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.forLastType, options: { forTimes: 'x', forMillis: 'ms'}, onChange: (selected) => {
+        editedCondition[selected] = editedCondition[editedCondition.forLastType];
+        editedCondition[editedCondition.forLastType] = undefined;
+        editedCondition.forLastType = selected;
+      }});
+      const forInInput = Settings.createInput({ type: 'value', unit: () => editedCondition.forLastType === 'forTimes' ? 'count' : 'ms', value: editedCondition.forLast, onChange: (value) => {
+        editedCondition.forLast = value;
+        editedCondition[editedCondition.forLastType] = value; 
+      }});
+      const kindOptions = {
+        forLast: 'for last', 
+        forAvgOfLast: 'for average of last', 
+        inLast: 'in last', 
+        inSample: 'in sample'
+      };
+      const kindDropdown = Settings.createInput({ type: 'dropdown', value: undefined, options: kindOptions, onChange: (selected) => {
+        editedCondition.average = selected === 'forAvgOfLast';
+        if (selected == 'forLast' || selected == 'forAvgOfLast') {
+          editedCondition[editedCondition.forLastType] = Math.abs(editedCondition.forLast);
+        } else if (selected == 'inLast') {
+          editedCondition[editedCondition.forLastType] = - Math.abs(editedCondition.forLast);
+        }
+        if (selected !== 'inSample') {
+          forInInput.show();
+          forInUnitDropdown.show();
+        } else {
+          forInInput.hide();
+          forInUnitDropdown.hide();
+          editedCondition[editedCondition.forLastType] = 0;
+        }
+      }});
+      return $('<span/>')
+        .append(operatorDropdown)
+        .append(thresholdInput)
+        .append(kindDropdown)
+        .append(forInInput)
+        .append(forInUnitDropdown);
     }
 
     return { createComponent: createComponent };
@@ -882,15 +1013,14 @@ MonitoringConsole.View.Components = (function() {
     let text = ''; 
     let forText = '';
     let forValue;
-    if (any || anyN) {
-      text += 'any 1 ';
-    }
     text += 'value ' + condition.operator + ' ' + threshold;
-    if (condition.forTimes > 0 || condition.forMillis > 0) {
+    if (condition.forTimes != 0 || condition.forMillis != 0) {
       if (condition.onAverage) {
         forText += ' for average of last ';
       } else if (anyN) {
         forText += ' in last ';
+      } else if (any) {
+        forText += ' in sample';
       } else {
         forText += ' for last ';
       }
@@ -905,7 +1035,14 @@ MonitoringConsole.View.Components = (function() {
     if (forText != '')
       desc.append($('<small/>', { text: forText})).append(forValue);
     return desc;
-  }  
+  }
+
+  function paddedLeftWith(char, text, length) {
+    let n = length - text.length;
+    for (let i = 0; i < n; i++)
+      text = char + text;
+    return text;
+  }
 
   /*
   * Public API below:

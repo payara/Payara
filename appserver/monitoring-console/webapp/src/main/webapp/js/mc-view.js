@@ -256,7 +256,10 @@ MonitoringConsole.View = (function() {
             return (value) => { Theme.configure(theme => theme.options[name] = value); };
         }    
         function createColorDefaultSettingMapper(name) {
-            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
+            let label = Units.Alerts.name(name);
+            if (label === undefined)
+                label = name[0].toUpperCase() + name.slice(1);
+            return { label: label, type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
         }
         let collapsed = $('#settings-colors').children('tr:visible').length <= 1;
         return { id: 'settings-colors', caption: 'Colors', collapsed: collapsed, entries: [
@@ -706,8 +709,8 @@ MonitoringConsole.View = (function() {
                         $.ajax({
                             type: 'PUT',
                             url: 'api/watches/data/',
-                            contentType: 'application/json',
-                            data: watch
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify(watch)
                         }).done(onSuccess).fail(onFailure);
                     },
                     onDelete: (name, onSuccess, onFailure) => {

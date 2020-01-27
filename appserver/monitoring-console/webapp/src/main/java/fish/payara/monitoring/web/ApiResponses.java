@@ -157,20 +157,28 @@ public final class ApiResponses {
 
     public static final class WatchData {
 
-        public final String name;
-        public final String series;
-        public final String unit;
-        public final boolean disabled;
-        public final CircumstanceData red;
-        public final CircumstanceData amber;
-        public final CircumstanceData green;
+        public String name;
+        public String series;
+        public String unit;
+        public boolean stopped;
+        public boolean disabled;
+        public boolean programmatic; 
+        public CircumstanceData red;
+        public CircumstanceData amber;
+        public CircumstanceData green;
         public final Map<String, Map<String, String>> states = new HashMap<>();
+
+        public WatchData() {
+            // from JSON
+        }
 
         public WatchData(Watch watch) {
             this.name = watch.name;
             this.series = watch.watched.series.toString();
             this.unit = watch.watched.unit.toString();
+            this.stopped = watch.isStopped();
             this.disabled = watch.isDisabled();
+            this.programmatic = watch.isProgrammatic();
             this.red = watch.red.isUnspecified() ? null : new CircumstanceData(watch.red);
             this.amber = watch.amber.isUnspecified() ? null : new CircumstanceData(watch.amber);
             this.green = watch.green.isUnspecified() ? null : new CircumstanceData(watch.green);
@@ -183,12 +191,16 @@ public final class ApiResponses {
 
     public static final class CircumstanceData {
 
-        public final String level;
-        public final ConditionData start;
-        public final ConditionData stop;
-        public final ConditionData suppress;
-        public final String surpressingSeries;
-        public final String surpressingUnit;
+        public String level;
+        public ConditionData start;
+        public ConditionData stop;
+        public ConditionData suppress;
+        public String surpressingSeries;
+        public String surpressingUnit;
+
+        public CircumstanceData() {
+            // from JSON
+        }
 
         public CircumstanceData(Circumstance circumstance) {
             this.level = circumstance.level.name().toLowerCase();
@@ -202,11 +214,15 @@ public final class ApiResponses {
 
     public static final class ConditionData {
 
-        public final String operator;
-        public final long threshold;
-        public final Integer forTimes;
-        public final Long forMillis;
-        public final boolean onAverage;
+        public String operator;
+        public long threshold;
+        public Integer forTimes;
+        public Long forMillis;
+        public boolean onAverage;
+
+        public ConditionData() {
+            // from JSON
+        }
 
         public ConditionData(Condition condition) {
             this.operator = condition.comparison.toString();

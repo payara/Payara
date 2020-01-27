@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.alert.Condition.Operator;
 import fish.payara.monitoring.collect.MonitoringWatchCollector.WatchBuilder;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.Series;
@@ -118,15 +119,18 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     private final Metric[] captured;
     private final Map<String, State> statesByInstanceSeries = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(false);
-    private boolean disabled;
+    private final AtomicBoolean disabled = new AtomicBoolean(false);
+    private final boolean programmatic;
 
     public Watch(String name, Metric watched) {
-        this(name, watched, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
+        this(name, watched, false, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
     }
 
-    public Watch(String name, Metric watched, Circumstance red, Circumstance amber, Circumstance green, Metric... captured) {
+    public Watch(String name, Metric watched, boolean programmatic, Circumstance red, Circumstance amber,
+            Circumstance green, Metric... captured) {
         this.name = name;
         this.watched = watched;
+        this.programmatic = programmatic;
         this.red = red;
         this.amber = amber;
         this.green = green;
@@ -144,10 +148,14 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
     public void stop() {
         if (stopped.compareAndSet(false, true)) {
-            for (State s : statesByInstanceSeries.values()) {
-                if (s.ongoing != null) {
-                    s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
-                }
+            stopAlertsOfThisWatch();
+        }
+    }
+
+    private void stopAlertsOfThisWatch() {
+        for (State s : statesByInstanceSeries.values()) {
+            if (s.ongoing != null) {
+                s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
             }
         }
     }
@@ -157,15 +165,31 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     }
 
     public boolean isDisabled() {
-        return disabled;
+        return disabled.get();
     }
 
     public void disable() {
-        this.disabled = true;
+        if (disabled.compareAndSet(false, true)) {
+            stopAlertsOfThisWatch();
+        }
     }
 
     public void enable() {
-        this.disabled = false;
+        disabled.set(true);
+    }
+
+    public boolean isProgrammatic() {
+        return programmatic;
+    }
+
+    /**
+     * Programmatic watches are collected from {@link MonitoringWatchSource}s or created during initialisation.
+     * The programmatic flag can be used by UIs to determine if a watch should be possible to delete.
+     * 
+     * @return A new {@link Watch} instance that {@link #isProgrammatic()}. 
+     */
+    public Watch programmatic() {
+        return new Watch(name, watched, true, red, amber, green, captured);
     }
 
     public List<Alert> check(SeriesLookup lookup) {
@@ -329,20 +353,20 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         case "red":
             return isEqual(red, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, //
+                : new Watch(name, watched, programmatic, //
                     create(RED, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
                     amber, green, captured);
         case "amber":
             return isEqual(amber, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, red, //
+                : new Watch(name, watched, programmatic, red, //
                     create(AMBER, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
                     green, captured);
 
         case "green":
             return isEqual(green, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, red, amber, //
+                : new Watch(name, watched, programmatic, red, amber, //
                     create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage),
                     captured);
         default:

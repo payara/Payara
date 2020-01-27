@@ -258,16 +258,15 @@ public final class Condition {
         StringBuilder str = new StringBuilder();
         boolean any = isForLastPresent() && forLast.intValue() == 0;
         boolean anyN = isForLastPresent() && forLast.intValue() < 0;
-        if (any || anyN) {
-            str.append("any 1 ");
-        }
         str.append("value ").append(comparison.toString()).append(' ').append(threshold);
-        if (isForLastPresent() && !any) {
+        if (isForLastPresent()) {
             if (onAverage) {
                 str.append(" for average of last ");
             } else if (anyN) {
                 str.append(" in last ");
-            }else {
+            } else if (any) {
+                str.append(" in sample");
+            } else {
                 str.append(" for last ");
             }
         }
