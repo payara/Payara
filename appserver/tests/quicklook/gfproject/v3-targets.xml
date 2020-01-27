@@ -44,7 +44,7 @@
 
 <project name="v3-targets" default="all" basedir=".">
     
-    <property name="db.root" value="${glassfish.home}/javadb"/>
+    <property name="db.root" value="${glassfish.home}/h2db"/>
     <property name="db.classpath" value="${db.root}/lib"/>
     <property name="dist.dir" value="${ws.root}/dist/${testsuite.name}"/>
 
@@ -95,21 +95,35 @@
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message">
-	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\\:h2\\:mem\\:test\;DB_CLOSE_DELAY\=-1 QLJdbcPool"/>
+	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\:h2\:tcp\:\/\/localhost\:9092/~/test|sa\; TestJdbcPool"/>
+    </exec>
+    <echo message="${message}"/>
+</target>
+
+<target name="create-jdbc-resource" depends="setOSConditions,asenv-unix,asenv-windows">
+    <exec executable="${ASADMIN}" outputproperty="message">
+        <arg line="create-jdbc-resource --port 4848 --enabled=true --poolName=TestJdbcPool jdbc/__Test"/>
     </exec>
     <echo message="${message}"/>
 </target>
 
 <target name="ping-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-        <arg line="ping-connection-pool --port 4848 QLJdbcPool"/>
+        <arg line="ping-connection-pool --port 4848 TestJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>
 
+    <target name="delete-jdbc-resource" depends="setOSConditions,asenv-unix,asenv-windows">
+        <exec executable="${ASADMIN}" outputproperty="message1">
+            <arg line="delete-jdbc-resource --port 4848 jdbc/__Test"/>
+        </exec>
+        <echo message="${message1}"/>
+    </target>
+
 <target name="delete-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-	<arg line="delete-jdbc-connection-pool --port 4848 QLJdbcPool"/>
+	<arg line="delete-jdbc-connection-pool --port 4848 TestJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>

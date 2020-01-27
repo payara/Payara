@@ -141,28 +141,6 @@
         tofile="${glassfish.home}/domains/${domain.name}/config/server.policy"/>
 </target>
 
-<target name="startH2" depends="initprop">
-    <echo message="Starting H2 DB servers in the Network Mode"/>    
-    
-    <java classname="org.h2.tools.Server"
-          classpathref="db.class.path" fork="true" spawn="true">
-        <sysproperty key="h2.system.home" value="${h2.home}"/>
-        <arg line="-tcpPort ${db.port} -tcpAllowOthers"/>
-    </java> 
-    <echo message="Finished starting datbase"/>
-</target>
-
-<target name="stopH2" depends="initprop">
-    <echo message="Stopping H2 DB servers in the Network Mode"/>
-    
-    <java classname="org.h2.tools.Server"
-          classpathref="db.class.path" fork="true">
-        <sysproperty key="h2.system.home" value="${h2.home}"/>
-        <arg line="-tcpShutdown tcp://localhost:${db.port}"/>
-    </java> 
-    <echo message="Finished stopping datbase"/>
-</target>
-
 <target name="sql-common" depends="initprop">
   <echo message="sql.file = ${sql.file}"/>
   <echo message="db.class.path = ${db.class.path}"/>

@@ -47,8 +47,8 @@
         name="h2db_pool"
         datasource-classname="org.h2.jdbcx.JdbcDataSource"
         res-type="javax.sql.DataSource">
-        <property name="user" value="sa"/>
+        <property name="user" value=""/>
         <property name="password" value=""/>
-        <property name="url" value="jdbc:h2:tcp://localhost:9092/~/test"/>
+        <property name="url" value="jdbc:h2:tcp://localhost:9092/~/test|sa;"/>
     </jdbc-connection-pool>
 </resources>
