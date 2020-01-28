@@ -720,3 +720,7 @@ table.AnnotationTable {
   right: 10px;
   bottom: 10px;
 }
+.WatchBuilder h3 input {
+  width: 200px;
+  max-width: 200px;
+}

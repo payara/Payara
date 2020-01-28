@@ -938,8 +938,8 @@ MonitoringConsole.View.Components = (function() {
 
     function createConditionBuilder(editedWatch, editedCircumstance, editedCondition) {
       if (editedCondition.forLastType === undefined)
-        editedCondition.forLastType = editedCondition.forTimes !== undefined ? 'forTimes' : 'forMillis';
-      editedCondition.forLast = Math.abs(editedCondition[editedCondition.forLastType]);
+        editedCondition.forLastType = editedCondition.forMillis === undefined ? 'forTimes' : 'forMillis';
+      editedCondition.forLast = Math.abs(editedCondition[editedCondition.forLastType] || 1);
       const operatorDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.operator, options: ['<', '<=', '=', '>', '>='], onChange: (selected) => editedCondition.operator = selected});
       const thresholdInput = Settings.createInput({ type: 'value', unit: () => editedWatch.unit, value: editedCondition.threshold, onChange: (value) => editedCondition.threshold = value});
       const forInUnit = () => editedCondition.forLastType === 'forTimes' ? 'count' : 'ms';
@@ -967,6 +967,9 @@ MonitoringConsole.View.Components = (function() {
       } else if (editedCondition.onAverage) {
         kind = 'forAvgOfLast';
       }
+      const forInBox = $('<span/>', kind != 'inSample' ? {} : { style: 'display: none;' })
+        .append(forInInput)
+        .append(forInUnitDropdown);
       const kindDropdown = Settings.createInput({ type: 'dropdown', value: kind, options: kindOptions, onChange: (selected) => {
         editedCondition.onAverage = selected === 'forAvgOfLast';
         if (selected == 'forLast' || selected == 'forAvgOfLast') {
@@ -974,21 +977,21 @@ MonitoringConsole.View.Components = (function() {
         } else if (selected == 'inLast') {
           editedCondition[editedCondition.forLastType] = - Math.abs(editedCondition.forLast);
         }
-        if (selected !== 'inSample') {
-          forInInput.show();
-          forInUnitDropdown.show();
+        if (selected == 'inSample') {
+          forInBox.hide();
+          editedCondition.forLastType = 'forTimes';
+          editedCondition.forTimes = 0;
+          editedCondition.forLast = 0;
+          editedCondition.forMillis = undefined;
         } else {
-          forInInput.hide();
-          forInUnitDropdown.hide();
-          editedCondition[editedCondition.forLastType] = 0;
+          forInBox.show();
         }
       }});
       return $('<span/>')
         .append(operatorDropdown)
         .append(thresholdInput)
         .append(kindDropdown)
-        .append(forInInput)
-        .append(forInUnitDropdown);
+        .append(forInBox);
     }
 
     return { createComponent: createComponent };
@@ -1045,13 +1048,13 @@ MonitoringConsole.View.Components = (function() {
     let forText = '';
     let forValue;
     text += 'value ' + condition.operator + ' ' + threshold;
-    if (forTimes !== undefined && forTimes !== 0 || forMillis !== undefined && forMillis !== 0) {
-      if (condition.onAverage) {
-        forText += ' for average of last ';
+    if (forTimes !== undefined || forMillis !== undefined) {
+      if (any) {
+        forText += ' in sample';
       } else if (anyN) {
         forText += ' in last ';
-      } else if (any) {
-        forText += ' in sample';
+      } else if (condition.onAverage) {
+        forText += ' for average of last ';
       } else {
         forText += ' for last ';
       }
