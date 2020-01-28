@@ -870,12 +870,14 @@ MonitoringConsole.View.Components = (function() {
       const config = { 'class': 'WatchBuilder WatchItem' };
       if (model.id)
         config.id = model.id;
-      const editedWatch = watch || { unit: 'count', name: 'New Watch' };
+      let editedWatch = watch || { unit: 'count', name: 'New Watch' };
+      if (editedWatch.programmatic) {
+        editedWatch = JSON.parse(JSON.stringify(watch));
+        editedWatch.name = 'Copy of ' + watch.name;
+        editedWatch.programmatic = false;
+      }
       const builder = $('<div/>', config);
-      let name = editedWatch.name;
-      if (editedWatch.programmatic)
-        name = 'Copy of ' + name;
-      const nameInput = Settings.createInput({ type: 'text', value: name, onChange: (name) => editedWatch.name = name });
+      const nameInput = Settings.createInput({ type: 'text', value: editedWatch.name, onChange: (name) => editedWatch.name = name });
       builder.append($('<h3/>').append('Name: ').append(nameInput));
       const unitDropdowns = [];
       const seriesInputs = [];

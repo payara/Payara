@@ -134,6 +134,7 @@ MonitoringConsole.Chart.Line = (function() {
         if (!Array.isArray(areas) || areas.length === 0)
           return;
         let ctx = chart.chart.ctx;
+        ctx.save();
         let xAxis = chart.chart.scales["x-axis-0"];
         function yOffset(y) {
           let yMax = yAxis.ticksAsNumbers[0];
@@ -209,6 +210,7 @@ MonitoringConsole.Chart.Line = (function() {
           if (offsetBar)
             offsetRight += barWidth + 1;
         }
+        ctx.restore();
       }
     };
     return new Chart(widget.target, {
