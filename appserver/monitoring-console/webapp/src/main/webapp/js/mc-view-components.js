@@ -962,11 +962,11 @@ MonitoringConsole.View.Components = (function() {
         kind = 'inSample';
       } else if (editedCondition[editedCondition.forLastType] < 0) {
         kind = 'inLast';
-      } else if (editedCondition.average) {
+      } else if (editedCondition.onAverage) {
         kind = 'forAvgOfLast';
       }
       const kindDropdown = Settings.createInput({ type: 'dropdown', value: kind, options: kindOptions, onChange: (selected) => {
-        editedCondition.average = selected === 'forAvgOfLast';
+        editedCondition.onAverage = selected === 'forAvgOfLast';
         if (selected == 'forLast' || selected == 'forAvgOfLast') {
           editedCondition[editedCondition.forLastType] = Math.abs(editedCondition.forLast);
         } else if (selected == 'inLast') {

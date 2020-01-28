@@ -506,12 +506,14 @@ decorations onto the chart background.
 
 ```
 BACKGROUND_AREA = [ AREA_ITEM ];
-AREA_ITEM       = { color, min, max, type }
+AREA_ITEM       = { color, min, max, type, style }
 color           = string
 min             = number
 max             = number
 type            = 'lower' | 'upper'
+style           = 'fill' | 'outline' 
 ```
 * default for `type` is `upper`
+* default for `style` is `fill`
 
 

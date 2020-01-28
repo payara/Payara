@@ -844,13 +844,20 @@ MonitoringConsole.Model = (function() {
 				let instance = seriesData.instance;
 				let series = seriesData.series;
 				let status = 'normal';
-				if (Array.isArray(watches) && watches.length == 1) {
+				if (Array.isArray(watches) && watches.length > 0) {
 					let states = watches
+						.filter(watch => !watch.disabled && !watch.stopped)
 						.map(watch => watch.states[series]).filter(e => e != undefined)
 						.map(states => states[instance]).filter(e => e != undefined);
-					if (states.length == 1) {
-						status = states[0];
-					}					
+					if (states.includes('red')) {
+						status = 'red';
+					} else if (states.includes('amber')) {
+						status = 'amber';
+					} else if (states.includes('green')) {
+						status = 'green';
+					} else if (states.length > 0) {
+						status = 'white';
+					}
 				}
 				let thresholds = widget.decorations.thresholds;
 				if (thresholds.reference && thresholds.reference !== 'off') {
