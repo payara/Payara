@@ -46,15 +46,28 @@ Chart.defaults.global.tooltips.enabled = false;
 /**
  * The different parts of the Monitoring Console are added as the below properties by the individual files.
  */
-var MonitoringConsole =  {
+const MonitoringConsole =  {
+
+  /**
+   * Static configuration data for page presets.
+   */
+  Data: {},
+
+   /**
+    * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
+    **/ 
+  Model: {},
+
    /**
     * Functions to update the actual HTML page of the MC
     **/
 	View: {},
+
    /**
-    * Functions of manipulate the model of the MC (often returns a layout that is applied to the View)
+    * API functions to talk to the server.
     **/ 
-	Model: {},
+  Controller: {},
+
    /**
     * Functions specifically to take the data and prepare the display particular chart type using the underlying charting library.
     *

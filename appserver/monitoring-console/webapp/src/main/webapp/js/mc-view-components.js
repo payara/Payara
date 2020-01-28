@@ -52,9 +52,10 @@
  **/
 MonitoringConsole.View.Components = (function() {
 
-   const Units = MonitoringConsole.View.Units;
-   const Colors = MonitoringConsole.View.Colors;
-   const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
+  const Controller = MonitoringConsole.Controller;
+  const Units = MonitoringConsole.View.Units;
+  const Colors = MonitoringConsole.View.Colors;
+  const Selection = MonitoringConsole.Model.Page.Widgets.Selection;
 
    /**
     * This is the side panel showing the details and settings of widgets
@@ -531,7 +532,7 @@ MonitoringConsole.View.Components = (function() {
     }
 
     function acknowledge(item) {
-      $.ajax({ type: 'POST', url: 'api/alerts/ack/' + item.serial + '/' });
+      Controller.requestAcknowledgeAlert(item.serial);
     }
 
     function createAnnotationGroup(item) {
@@ -808,25 +809,33 @@ MonitoringConsole.View.Components = (function() {
       for (let item of model.items) {
         list.append(createItem(item, model.colors, model.actions));
       }
-      //TODO show states
       return list;
     }
 
     function createItem(item, colors, actions) {
       const watch = $('<div/>', { 'class': 'WatchItem ' + 'state-' + (item.disabled ? 'disabled' : 'enabled') });
-      const disableButton = $('<input/>', { type: 'checkbox', checked: !item.disabled }).change(() => {
-        if (this.checked) {
+      const disableButton = Settings.createInput({ type: 'checkbox', value: !item.disabled, onChange: (checked) => {
+        if (checked) {
           actions.onEnable(item.name);
         } else {
           actions.onDisable(item.name);
         }
-      });
-      const deleteButton = item.programmatic 
-        ? " (from server configuration)"
-        : $('<button/>').html('&times;').click(() => actions.onDelete(item.name));
-      const general = $('<h3/>').append(disableButton).append(item.name).append(deleteButton);
-      //TODO make disabled into menu for the "widget"
-      watch.append(general);
+      }});
+      const menu = [
+        { icon: '&#128295;', label: 'Edit', onClick: () => actions.onEdit(item) }
+      ];
+      if (item.disabled) {
+        menu.push({ icon: '&#9745;', label: 'Enable', onClick: () => actions.onEnable(item.name) });        
+      } else {
+        menu.push({ icon: '&#9746;', label: 'Disable', onClick: () => actions.onDisable(item.name) });        
+      }
+      if (!item.programmatic) {
+        menu.push({ icon: '&times;', label: 'Delete', onClick: () => actions.onDelete(item.name) });
+      }
+      const general = $('<h3/>').append(disableButton).append(item.name).click(() => actions.onEdit(item));
+      watch
+        .append(Menu.createComponent({ groups: [{ icon: '&#9881;', items: menu }]}))
+        .append(general);
       for (let level of ['red', 'amber', 'green'])
         if (item[level])
           watch.append(createCircumstance(level, item[level], item.unit, item.series, colors[level]));
@@ -840,7 +849,7 @@ MonitoringConsole.View.Components = (function() {
       }
       const circumstance = $('<div/>', { 'class': 'WatchCondition', style: 'color: '+ color +';'});
       let levelText = paddedLeftWith('&nbsp;', Units.Alerts.name(level), 'Unhealthy'.length);
-      let = text = '<b>' + levelText + ':</b> <em>If</em> ' + Units.names()[unit] + ' <em>of</em> ' + series + ' <em>is</em> ';
+      let = text = '<b>' + levelText + ':</b> <em>If</em> ' + series + ' <em>in</em> ' + Units.names()[unit] + ' <em>is</em> ';
       text += plainText(formatCondition(model.start, unit));
       if (model.suppress)
         text += ' <em>unless</em> ' + model.surpressingSeries + ' ' + plainText(formatCondition(model.suppress, modelsurpressingUnit));
@@ -861,18 +870,19 @@ MonitoringConsole.View.Components = (function() {
       const config = { 'class': 'WatchBuilder WatchItem' };
       if (model.id)
         config.id = model.id;
-      const editedWatch = watch || { unit: 'count', name: '(unnamed)' };
+      const editedWatch = watch || { unit: 'count', name: 'New Watch' };
       const builder = $('<div/>', config);
-      const nameInput = Settings.createInput({ type: 'text', value: editedWatch.name, onChange: (name) => editedWatch.name = name });
+      let name = editedWatch.name;
+      if (editedWatch.programmatic)
+        name = 'Copy of ' + name;
+      const nameInput = Settings.createInput({ type: 'text', value: name, onChange: (name) => editedWatch.name = name });
       builder.append($('<h3/>').append('Name: ').append(nameInput));
       const unitDropdowns = [];
       const seriesInputs = [];
       for (let level of ['red', 'amber', 'green']) {
         builder.append(createLevelBuilder(level, editedWatch, model.colors[level], unitDropdowns, seriesInputs));
       }
-      builder.append($('<button/>').text('Save or Update').click(() => {
-        model.actions.onCreate(editedWatch, () => alert("success"), () => alert("failure"));
-      }));
+      builder.append($('<button/>').text('Save or Update').click(() => model.actions.onCreate(editedWatch)));
       return builder;
     }
 
@@ -915,8 +925,8 @@ MonitoringConsole.View.Components = (function() {
         }
       }});
       levelBox
-        .append(' <em>If</em> ').append(unitDropdown)
-        .append(' <em>of</em> ').append(seriesInput)
+        .append(' <em>If</em> ').append(seriesInput)
+        .append(' <em>in</em> ').append(unitDropdown)
         .append(' <em>is<em/> ').append(createConditionBuilder(editedWatch, editedCircumstance, editedStartCondition))
         .append(' <em>until</em> ').append(untilCheckbox).append(untilBox);
       return $('<div/>', {'class': 'WatchCondition', style: 'color: ' + color + ';' })
@@ -927,25 +937,35 @@ MonitoringConsole.View.Components = (function() {
     function createConditionBuilder(editedWatch, editedCircumstance, editedCondition) {
       if (editedCondition.forLastType === undefined)
         editedCondition.forLastType = editedCondition.forTimes !== undefined ? 'forTimes' : 'forMillis';
-      editedCondition.forLast = editedCondition[editedCondition.forLastType];
+      editedCondition.forLast = Math.abs(editedCondition[editedCondition.forLastType]);
       const operatorDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.operator, options: ['<', '<=', '=', '>', '>='], onChange: (selected) => editedCondition.operator = selected});
       const thresholdInput = Settings.createInput({ type: 'value', unit: () => editedWatch.unit, value: editedCondition.threshold, onChange: (value) => editedCondition.threshold = value});
+      const forInUnit = () => editedCondition.forLastType === 'forTimes' ? 'count' : 'ms';
+      const forInInput = Settings.createInput({ type: 'value', unit: forInUnit, value: editedCondition.forLast, onChange: (value) => {
+        editedCondition.forLast = value;
+        editedCondition[editedCondition.forLastType] = value; 
+      }});
       const forInUnitDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.forLastType, options: { forTimes: 'x', forMillis: 'ms'}, onChange: (selected) => {
         editedCondition[selected] = editedCondition[editedCondition.forLastType];
         editedCondition[editedCondition.forLastType] = undefined;
         editedCondition.forLastType = selected;
-      }});
-      const forInInput = Settings.createInput({ type: 'value', unit: () => editedCondition.forLastType === 'forTimes' ? 'count' : 'ms', value: editedCondition.forLast, onChange: (value) => {
-        editedCondition.forLast = value;
-        editedCondition[editedCondition.forLastType] = value; 
-      }});
+        forInInput.val(Units.converter(forInUnit()).format(editedCondition.forLast));
+      }});      
       const kindOptions = {
         forLast: 'for last', 
         forAvgOfLast: 'for average of last', 
         inLast: 'in last', 
         inSample: 'in sample'
       };
-      const kindDropdown = Settings.createInput({ type: 'dropdown', value: undefined, options: kindOptions, onChange: (selected) => {
+      let kind = 'forLast';
+      if (editedCondition[editedCondition.forLastType] === 0) {
+        kind = 'inSample';
+      } else if (editedCondition[editedCondition.forLastType] < 0) {
+        kind = 'inLast';
+      } else if (editedCondition.average) {
+        kind = 'forAvgOfLast';
+      }
+      const kindDropdown = Settings.createInput({ type: 'dropdown', value: kind, options: kindOptions, onChange: (selected) => {
         editedCondition.average = selected === 'forAvgOfLast';
         if (selected == 'forLast' || selected == 'forAvgOfLast') {
           editedCondition[editedCondition.forLastType] = Math.abs(editedCondition.forLast);
@@ -984,8 +1004,15 @@ MonitoringConsole.View.Components = (function() {
         config.id = model.id;
       const manager = $('<div/>', config);
       model.id = undefined; // id should not be set by sub-components
-      manager.append(WatchList.createComponent(model));
-      manager.append(WatchBuilder.createComponent(model));
+      let builder = WatchBuilder.createComponent(model);
+      const list = WatchList.createComponent(model);
+      model.actions.onEdit = (watch) => {
+        const newBuilder = WatchBuilder.createComponent(model, watch);
+        builder.replaceWith(newBuilder);
+        builder = newBuilder;
+      };
+      manager.append(list);
+      manager.append(builder);
       return manager;
     }
 
@@ -1007,14 +1034,16 @@ MonitoringConsole.View.Components = (function() {
   function formatCondition(condition, unit) {
     if (condition === undefined)
       return '';
-    let any = condition.forTimes === 0 || condition.forMillis === 0;
-    let anyN = condition.forTimes < 0 || condition.forMillis < 0;
+    const forTimes = condition.forTimes;
+    const forMillis = condition.forMillis;
+    let any = forTimes === 0 || forMillis === 0;
+    let anyN = forTimes < 0 || forMillis < 0;
     let threshold = Units.converter(unit).format(condition.threshold);
     let text = ''; 
     let forText = '';
     let forValue;
     text += 'value ' + condition.operator + ' ' + threshold;
-    if (condition.forTimes != 0 || condition.forMillis != 0) {
+    if (forTimes !== undefined && forTimes !== 0 || forMillis !== undefined && forMillis !== 0) {
       if (condition.onAverage) {
         forText += ' for average of last ';
       } else if (anyN) {
@@ -1025,12 +1054,10 @@ MonitoringConsole.View.Components = (function() {
         forText += ' for last ';
       }
     }
-    if (condition.forTimes !== 0) {
+    if (forTimes !== undefined && forTimes !== 0)
       forValue = Math.abs(condition.forTimes) + 'x';
-    }
-    if (condition.forMillis !== undefined) {
+    if (forMillis !== undefined && forMillis !== 0)
       forValue = Units.converter('ms').format(Math.abs(condition.forMillis));
-    }
     let desc = $('<span/>').append(text);
     if (forText != '')
       desc.append($('<small/>', { text: forText})).append(forValue);

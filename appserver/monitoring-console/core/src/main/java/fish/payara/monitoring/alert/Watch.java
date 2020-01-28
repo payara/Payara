@@ -175,7 +175,7 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     }
 
     public void enable() {
-        disabled.set(true);
+        disabled.set(false);
     }
 
     public boolean isProgrammatic() {

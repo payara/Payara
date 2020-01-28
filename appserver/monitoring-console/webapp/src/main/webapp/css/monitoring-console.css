@@ -218,7 +218,7 @@ button:hover {
   z-index: 101;
   width: calc(100% - 20px);
 }
-.widget-title-bar h3 {
+h3 {
   font-size: 130%;
   font-weight: bold;
   margin: 0;
@@ -229,7 +229,7 @@ button:hover {
   padding: 1px 5px;
   text-align: center;
 }
-.widget-title-bar h3 span {
+h3 span {
   font-size: 80%;
   font-weight: normal;
   font-style: normal;
@@ -237,7 +237,7 @@ button:hover {
   margin-right: 1em;
   float: left;
 }
-.widget-title-bar h3 strong {
+h3 strong {
   font-style: normal;
   margin-left: 0.5em;
   color: white;
@@ -251,12 +251,13 @@ button:hover {
 }
 #chart-grid > tr > td {
     background-color: #002433;
-    padding: 10px;
+    padding: 8px;
     vertical-align: top;
     position: relative;
+    border: 2px solid transparent;
 }
-#chart-grid > tr > td.chart-selected h3 {
-    background-color: #0096D6;
+#chart-grid > tr > td.chart-selected {
+    border: 2px solid #0096D6;
 }
 .stable {
 	background-color: rgba(153, 102, 255, 0.2);
@@ -524,7 +525,7 @@ table.tags th, table.tags td {
 .Menu .Item:hover .Group {
   display: block;
 }
-.widget .Menu .Group {
+.widget .Menu .Group, .WatchList .Menu .Group {
   margin-left: -85px;
 }
 .Menu .clickable {
@@ -681,6 +682,9 @@ table.AnnotationTable {
 .WatchItem.state-disabled h3 {
   color: #888;
 }
+.WatchItem h3 input[type=checkbox] {
+  float: left;
+}
 .WatchCondition {
   padding: 0 0.5em;
   font-family: monospace;
@@ -701,5 +705,18 @@ table.AnnotationTable {
   border-bottom: 1px dotted #ccc;
 }
 .WatchCondition input.input-value {
-  width: 60px;
+  width: 50px;
+}
+.WatchCondition input.input-text {
+  width: 300px;
+  max-width: 300px;
+}
+.WatchBuilder {
+  position: relative;
+  padding-bottom: 2.5em;
+}
+.WatchBuilder button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
 }

@@ -479,6 +479,7 @@ WATCH_BUILDER   = { id, colors, actions }
 WATCH_MANAGER	= { id, items, colors, actions }
 items           = [ WATCH ]
 actions         = { onCreate, onDelete, onDisable, onEnable }
+onEdit          = fn (WATCH) => ()
 onCreate        = fn (WATCH, onSuccess, onFailure) => ()
 onDelete        = fn (name, onSuccess, onFailure) => ()
 onDisable       = fn (name, onSuccess, onFailure) => ()
@@ -491,6 +492,7 @@ green           = string
 * `WATCH` refers to an object as described for update data structures
 * `onDelete` is a function to call to delete the watch by its `name` (a `string`)
 * `onCreate` is a function to create new watches
+* `onEdit` is created by the `WatchManager` for the `WATCH_LIST` to use when an list entry should be edited.
 
 
 ## Data Driven Chart Plugins

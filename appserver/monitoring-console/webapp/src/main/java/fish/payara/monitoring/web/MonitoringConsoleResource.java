@@ -235,7 +235,7 @@ public class MonitoringConsoleResource {
         if (watch != null) {
             alertService.removeWatch(watch);
         }
-        return Response.noContent().build();
+        return noContent();
     }
 
     @PUT
@@ -243,18 +243,18 @@ public class MonitoringConsoleResource {
     @Path("/watches/data/")
     public Response createWatch(WatchData data) {
         if (data.name == null || data.name.isEmpty()) {
-            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Name missing").build();
+            return badRequest("Name missing");
         }
         Circumstance red = createCircumstance(data.red);
         Circumstance amber = createCircumstance(data.amber);
         Circumstance green = createCircumstance(data.green);
         if (red.start.isNone() && amber.start.isNone()) {
-            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Red or amber start condition must be given").build();
+            return badRequest("A start condition for red or amber must be given");
         }
         Metric metric = Metric.parse(data.series, data.unit);
         Watch watch = new Watch(data.name, metric, false, red, amber, green);
         getAlertService().addWatch(watch);
-        return Response.noContent().build();
+        return noContent();
     }
 
     @PATCH
@@ -263,14 +263,14 @@ public class MonitoringConsoleResource {
         AlertService alertService = getAlertService();
         Watch watch = alertService.watchByName(name);
         if (watch == null) {
-            return Response.status(Status.NOT_FOUND).build();
+            return notFound();
         }
         if (disable) {
             watch.disable();
         } else {
             watch.enable();
         }
-        return Response.noContent().build();
+        return noContent();
     }
 
     private static Circumstance createCircumstance(CircumstanceData data) {
@@ -301,5 +301,17 @@ public class MonitoringConsoleResource {
             res = res.onAverage();
         }
         return res;
+    }
+
+    private static Response badRequest(String reason) {
+        return Response.status(Status.BAD_REQUEST.getStatusCode(),reason).build();
+    }
+
+    private static Response noContent() {
+        return Response.noContent().build();
+    }
+
+    private static Response notFound() {
+        return Response.status(Status.NOT_FOUND).build();
     }
 }

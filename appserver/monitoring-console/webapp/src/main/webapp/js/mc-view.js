@@ -45,20 +45,7 @@
  **/
 MonitoringConsole.View = (function() {
 
-    const NS_TEXTS = {
-        web: 'Web Statistics',
-        http: 'HTTP Statistics',
-        jvm: 'JVM Statistics',
-        metric: 'MP Metrics',
-        trace: 'Request Tracing',
-        map: 'Cluster Map Storage Statistics',
-        topic: 'Cluster Topic IO Statistics',
-        monitoring: 'Monitoring Console Internals',
-        health: 'Health Checks',
-        sql: 'SQL Tracing',
-        other: 'Other',
-    };
-
+    const Controller = MonitoringConsole.Controller;
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
     const Colors = MonitoringConsole.View.Colors;
@@ -221,7 +208,7 @@ MonitoringConsole.View = (function() {
             items.push({ icon: '&#9202', label: 'Sort By Wall Time', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'time') });
             items.push({ icon: '&#128292;', label: 'Sort By Value', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'value') });
         }
-        items.push({ icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(widgetId) });
+        items.push({ icon: '&#128295;', label: 'Edit...', onClick: () => onOpenWidgetSettings(widgetId) });
         let menu = { groups: [
             { icon: '&#9881;', items: items },
         ]};
@@ -387,12 +374,12 @@ MonitoringConsole.View = (function() {
                     $.each(names, function() {
                         let key = this;
                         let ns =  this.substring(3, this.indexOf(' '));
-                        if (NS_TEXTS[ns] === undefined) {
+                        if (NAMESPACES[ns] === undefined) {
                             ns = 'other';
                         }
                         if (nsAdded.indexOf(ns) < 0) {
                             nsAdded.push(ns);
-                            nsSelection.append($('<option/>').val(ns).text(NS_TEXTS[ns]));
+                            nsSelection.append($('<option/>').val(ns).text(NAMESPACES[ns]));
                         }
                     });
                 });
@@ -406,7 +393,7 @@ MonitoringConsole.View = (function() {
                 $.each(names, function() {
                     let key = this;
                     let ns =  this.substring(3, this.indexOf(' '));
-                    if (NS_TEXTS[ns] === undefined) {
+                    if (NAMESPACES[ns] === undefined) {
                         ns = 'other';
                     }
                     if (ns === nsSelection.val()) {
@@ -699,43 +686,28 @@ MonitoringConsole.View = (function() {
      * This function is called when the watch details settings should be opened
      */
     function onOpenWatchSettings() {
-        $.getJSON("api/watches/data/", (response) => {
-            const model = { 
+        function wrapOnSuccess(onSuccess) {
+            return () => {
+                if (typeof onSuccess === 'function')
+                    onSuccess();
+                onOpenWatchSettings();
+            };
+        }
+        Controller.requestListOfWatches((watches) => {
+            const manager = { 
                 id: 'WatchManager', 
-                items: response.watches, 
+                items: watches, 
                 colors: { red: Theme.color('red'), amber: Theme.color('amber'), green: Theme.color('green') },
                 actions: { 
-                    onCreate: (watch, onSuccess, onFailure) => {
-                        $.ajax({
-                            type: 'PUT',
-                            url: 'api/watches/data/',
-                            contentType: 'application/json; charset=utf-8',
-                            data: JSON.stringify(watch)
-                        }).done(onSuccess).fail(onFailure);
-                    },
-                    onDelete: (name, onSuccess, onFailure) => {
-                        $.ajax({
-                            type: 'DELETE',
-                            url: 'api/watches/data/' + name + '/',
-                        }).done(onSuccess).fail(onFailure);
-                    },
-                    onDisable: (name, onSuccess, onFailure) => {
-                        $.ajax({
-                            type: 'PATCH',
-                            url: 'api/watches/data/' + name + '/?disable=true',
-                        }).done(onSuccess).fail(onFailure);
-                    },
-                    onEnable: (name, onSuccess, onFailure) => {
-                        $.ajax({
-                            type: 'PATCH',
-                            url: 'api/watches/data/' + name + '/?disable=false',
-                        }).done(onSuccess).fail(onFailure);
-                    },
+                    onCreate: (watch, onSuccess, onFailure) => Controller.requestCreateWatch(watch, wrapOnSuccess(onSuccess), onFailure),
+                    onDelete: (name, onSuccess, onFailure) => Controller.requestDeleteWatch(name, wrapOnSuccess(onSuccess), onFailure),
+                    onDisable: (name, onSuccess, onFailure) => Controller.requestDisableWatch(name, wrapOnSuccess(onSuccess), onFailure),
+                    onEnable: (name, onSuccess, onFailure) => Controller.requestEnableWatch(name, wrapOnSuccess(onSuccess), onFailure),
                 },
             };
             updatePageNavigation('Watches');
             $('#chart-grid').hide();
-            $('#WatchManager').replaceWith(Components.createWatchManager(model));
+            $('#WatchManager').replaceWith(Components.createWatchManager(manager));
         });
     }
 
