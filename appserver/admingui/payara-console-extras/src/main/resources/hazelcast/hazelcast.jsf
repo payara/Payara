@@ -54,7 +54,7 @@
     <!beforeCreate
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic","autoIncrementPort","hostAwarePartitioning"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic","autoIncrementPort","hostAwarePartitioning","encryptDatagrid"});
         setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
@@ -114,6 +114,9 @@
         </sun:property>
         <sun:property id="autoIncrementPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.autoIncrementPort}"  helpText="$resource{i18nhc.hazelcast.configuration.autoIncrementPortHelp}">
             <sun:checkbox id="autoIncrementPort" selected="#{pageSession.valueMap['autoIncrementPort']}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="datagridEncryptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.datagridEncryption}"  helpText="$resource{i18nhc.hazelcast.configuration.datagridEncryptionHelp}">
+            <sun:checkbox id="datagridEncryption" selected="#{pageSession.valueMap['encryptDatagrid']}" selectedValue="true" />
         </sun:property>
         <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
             <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />
