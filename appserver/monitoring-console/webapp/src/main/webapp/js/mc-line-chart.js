@@ -76,7 +76,7 @@ MonitoringConsole.Chart.Line = (function() {
           display: true,
           type: 'time',
           gridLines: {
-            color: 'rgba(100,100,100,0.3)',
+            color: 'rgba(0, 127, 255,0.5)',
             lineWidth: 0.5,
           },
           time: {
@@ -114,7 +114,7 @@ MonitoringConsole.Chart.Line = (function() {
         yAxes: [{
           display: true,
           gridLines: {
-            color: 'rgba(100,100,100,0.7)',
+            color: 'rgba(0, 127, 255,0.5)',
             lineWidth: 0.5,
           },
           ticks: {

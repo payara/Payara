@@ -878,7 +878,7 @@ MonitoringConsole.View.Components = (function() {
       }
       const builder = $('<div/>', config);
       const nameInput = Settings.createInput({ type: 'text', value: editedWatch.name, onChange: (name) => editedWatch.name = name });
-      builder.append($('<h3/>').append('Name: ').append(nameInput));
+      builder.append($('<h3/>').append(nameInput));
       const unitDropdowns = [];
       const seriesInputs = [];
       for (let level of ['red', 'amber', 'green']) {

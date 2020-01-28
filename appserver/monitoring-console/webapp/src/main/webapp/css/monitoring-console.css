@@ -48,7 +48,7 @@
   --button-color-rgb-bg:       210, 216, 218; /* #D2D8DA */
 
   /* Variables used in style definitons */
-  --page-bg-color: #003247;
+  --page-bg-color: #002C3E;
 
 }
 
@@ -181,7 +181,7 @@ button:hover {
   box-sizing: border-box;
 }
 #trace-widget {
-  background-color: #002433;
+  background-color: #001A25;
   position: relative;
   padding: 10px;
 }
@@ -250,7 +250,7 @@ h3 strong {
   padding-top: 5px;
 }
 #chart-grid > tr > td {
-    background-color: #002433;
+    background-color: #001A25;
     padding: 8px;
     vertical-align: top;
     position: relative;
@@ -258,22 +258,6 @@ h3 strong {
 }
 #chart-grid > tr > td.chart-selected {
     border: 2px solid #0096D6;
-}
-.stable {
-	background-color: rgba(153, 102, 255, 0.2);
-	border: 1px solid rgba(153, 102, 255, 1);
-	font-size: 50px;
-	font-weight: bold;
-	color: rgba(153, 102, 255, 1);
-    text-align: center;
-    height: 90%;
-}
-.stable span {
-	position: relative;
-	float: left;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
 }
 
 #panel-grid {
@@ -292,7 +276,7 @@ h3 strong {
     right: 10px;
 }
 #Settings table {
-    background-color: #002433;
+    background-color: #001A25;
     padding: 10px;
     margin-top: 5px;
     width: 100%;
@@ -354,7 +338,7 @@ table.tags th {
   width: 25%;
 }
 table.tags th, table.tags td {
-  background-color: #002433;
+  background-color: #001A25;
 }
 
 /* Widget Settings Toolbar */
@@ -384,7 +368,7 @@ table.tags th, table.tags td {
   bottom: 10px;
   left: 15px;
   padding: 0;
-  background-color: rgba(0, 36, 51, .75);  
+  background-color: rgba(0, 26, 37, .75);  
 }
 .Legend li {
   display: inline-block;
@@ -420,7 +404,7 @@ table.tags th, table.tags td {
     color: red;
 }
 .Legend span, .Legend strong {
-  background-color: #002433;
+  background-color: #001A25;
 }
 @keyframes blinker {
   50% {
@@ -430,14 +414,14 @@ table.tags th, table.tags td {
 
 /* Widget Indicator */
 .Indicator {
-  border: 1px solid #ccc;
-  font-weight: bold;
   padding: 5px 10px;
   text-align: center;
   position: absolute;
-  width: 50%;
-  margin: 15% 25%;
-  background-color: rgba(0,36,51,0.5);
+  max-width: 50%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: 25%;
+  background-color: #001A25;
 }
 .Indicator.status-missing {
   border-color: #0096D6;
@@ -539,7 +523,7 @@ table.tags th, table.tags td {
   top: 40px;
   left: 15px;
   width: calc(100% - 38px);
-  background-color: rgba(0, 36, 51, .75);
+  background-color: rgba(0, 26, 37, .75);
   max-height: calc(100% - 100px);
   overflow-y: auto;
   overflow-x: hidden;  
@@ -565,11 +549,11 @@ table.tags th, table.tags td {
   display: inline-block;
   margin: 0 0.9em 0 0.4em;
   padding: 1px;
-  background-color: rgba(0,36,51,0.75);
+  background-color: rgba(0, 26, 37,0.75);
 }
 .AlertTable .Item small {
   color: #bbb;
-  background-color: rgba(0,36,51,0.75);
+  background-color: rgba(0, 26, 37,0.75);
 }
 .AlertTable .Item span {
   white-space: nowrap;
@@ -601,7 +585,7 @@ table.tags th, table.tags td {
   top: 40px;
   left: 15px;
   width: calc(100% - 38px);
-  background-color: rgba(0, 36, 51, .75);
+  background-color: rgba(0, 26, 37, .75);
   max-height: calc(100% - 100px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -617,11 +601,11 @@ table.tags th, table.tags td {
   display: inline-block;
   margin: 0 0.9em 0 0.4em;
   padding: 1px;
-  background-color: rgba(0,36,51,0.75);
+  background-color: rgba(0, 26, 37,0.75);
 }
 .AnnotationTable .Annotation small {
   color: #bbb;
-  background-color: rgba(0,36,51,0.75);
+  background-color: rgba(0, 26, 37,0.75);
 }
 .AnnotationTable .Annotation span {
   white-space: nowrap;
@@ -675,12 +659,16 @@ table.AnnotationTable {
 
 /* Watch List Component */
 .WatchItem {
-  background-color: #002433;
+  background-color: #001A25;
   padding: 10px;
   margin: 5px 0;
 }
 .WatchItem.state-disabled h3 {
   color: #888;
+}
+.WatchItem h3 {
+  text-align: left;
+  margin-bottom: 0.25em;
 }
 .WatchItem h3 input[type=checkbox] {
   float: left;

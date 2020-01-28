@@ -98,7 +98,7 @@ public final class Condition {
     public Condition(Operator comparison, long threshold, Number forLast, boolean onAverage) {
         this.comparison = comparison;
         this.threshold = threshold;
-        this.forLast = forLast;
+        this.forLast = !onAverage && forLast instanceof Integer && forLast.intValue() == 1 ? null : forLast;
         this.onAverage = onAverage && forLast != null && forLast.longValue() > 0L;
     }
 
