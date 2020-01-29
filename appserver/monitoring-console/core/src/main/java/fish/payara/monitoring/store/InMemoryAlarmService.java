@@ -64,9 +64,16 @@ import java.util.function.Predicate;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import fish.payara.monitoring.alert.Alert;
 import fish.payara.monitoring.alert.Alert.Level;
@@ -75,6 +82,7 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
+import fish.payara.monitoring.configuration.MonitoringConsoleConfiguration;
 import fish.payara.monitoring.alert.AlertService;
 import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Metric;
@@ -88,7 +96,18 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     private static final int MAX_ALERTS_PER_SERIES = 10;
 
     @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
+    InternalSystemAdministrator kernelIdentity;
+
+    @Inject
+    private Domain domain;
+
+    @Inject
     private MonitoringDataRepository monitoringData;
+
+    private MonitoringConsoleConfiguration config;
 
     private boolean isDas;
     private final JobHandle checker = new JobHandle("watch checker");
@@ -107,7 +126,7 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     @PostConstruct
     public void init() {
         isDas = serverEnv.isDas();
-        changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
+        config = domain.getExtensionByType(MonitoringConsoleConfiguration.class);
         addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration"), Unit.MILLIS))
                 .programmatic()
                 .red(800L, 2, true, 800L, 3, false)
@@ -118,6 +137,38 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 3, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
+        changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
+    }
+
+    @Override
+    public boolean toggleWatch(String name, boolean disabled) {
+        Watch watch = watchByName(name);
+        if (watch == null) {
+            return false;
+        }
+        if (disabled) {
+            watch.disable();
+        } else {
+            watch.enable();
+        }
+        updateWatchConfiguration(watch);
+        return true;
+    }
+
+    private void updateWatchConfiguration(Watch watch) {
+        try {
+            ActionReport report = commandRunner.getActionReport("plain");
+            CommandInvocation cmd = commandRunner.getCommandInvocation("set-monitoring-console-configuration", report, kernelIdentity.getSubject());
+            ParameterMap params = new ParameterMap();
+            if (watch.isDisabled()) {
+                params.add("disable-watch", watch.name);
+            } else {
+                params.add("enable-watch", watch.name);
+            }
+            cmd.parameters(params).execute();
+        } catch (Exception ex) {
+            LOGGER.log(java.util.logging.Level.WARNING, "Failed to update config", ex);
+        }
     }
 
     @Override
@@ -207,6 +258,9 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
 
     @Override
     public void addWatch(Watch watch) {
+        if (config.getDisabledWatchNames().contains(watch.name)) {
+            watch.disable();
+        }
         Watch existing = watchesByName.put(watch.name, watch);
         if (existing != null) {
             removeWatch(existing);

@@ -113,6 +113,8 @@ public interface AlertService {
      */
     void removeWatch(Watch watch);
 
+    boolean toggleWatch(String name, boolean disabled);
+
     /**
      * @return All watches registered for evaluation.
      */

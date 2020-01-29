@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,14 @@
 
 package fish.payara.monitoring.admin;
 
+import static java.util.Collections.singletonList;
 import static org.glassfish.config.support.CommandTarget.DAS;
 
+import java.beans.PropertyVetoException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -53,6 +57,8 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.deployment.autodeploy.AutoDeployer;
@@ -61,21 +67,40 @@ import org.glassfish.deployment.autodeploy.AutoUndeploymentOperation;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.monitoring.configuration.MonitoringConsoleConfiguration;
 
 @Service(name = "set-monitoring-console-configuration")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "set-monitoring-console-configuration",
+            description = "Set Monitoring Console Configuration")
+})
 public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
+
+    private static final Logger LOGGER = Logger.getLogger(SetMonitoringConsoleConfigurationCommand.class.getName());
 
     private static final String MONITORING_CONSOLE_APP_NAME = "__monitoringconsole";
     private final static String GLASSFISH_LIB_INSTALL_APPLICATIONS = "glassfish/lib/install/applications";
 
     @Param(optional = true)
     private Boolean enabled;
+
+    @Param(optional = true, alias = "disable-watch")
+    private String disableWatch;
+
+    @Param(optional = true, alias = "enable-watch")
+    private String enableWatch;
 
     @Inject
     protected CommandRunner commandRunner;
@@ -88,12 +113,44 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        if (enabled != null) {
+        MonitoringConsoleConfiguration config = domain.getExtensionByType(MonitoringConsoleConfiguration.class);
+        if (config == null) {
+            context.getActionReport().failure(LOGGER, "Monitoring Console configuration does not exist.");
+            return;
+        }
+        if (enabled != null && Boolean.parseBoolean(config.getEnabled()) != enabled.booleanValue()) {
             if (enabled.booleanValue()) {
                 deployMonitoringConsole(context.getActionReport());
             } else {
                 undeployMonitoringConsole(context.getActionReport());
             }
+        }
+        try {
+            ConfigSupport.apply(new SingleConfigCode<MonitoringConsoleConfiguration>(){
+                @Override
+                public Object run(MonitoringConsoleConfiguration configProxy) throws PropertyVetoException {
+                    if (enabled != null) {
+                        configProxy.setEnabled(enabled.toString());
+                    }
+                    if (disableWatch != null && !disableWatch.isEmpty()) {
+                        List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
+                        if (disabledWatchNames == null) {
+                            configProxy.setDisabledWatchNames(singletonList(disableWatch));
+                        } else if (!disabledWatchNames.contains(disableWatch)) {
+                           disabledWatchNames.add(disableWatch);
+                        }
+                    }
+                    if (enableWatch != null && !enableWatch.isEmpty()) {
+                        List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
+                        if (disabledWatchNames != null) {
+                            disabledWatchNames.remove(enableWatch);
+                        }
+                    }
+                    return null;
+                }
+            }, config);
+        } catch (TransactionFailure ex) {
+            context.getActionReport().failure(LOGGER, "Failed to update Monitoring Console configuration", ex);
         }
     }
 

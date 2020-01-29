@@ -260,17 +260,7 @@ public class MonitoringConsoleResource {
     @PATCH
     @Path("/watches/data/{name}/")
     public Response patchWatch(@PathParam("name") String name, @QueryParam("disable") boolean disable) {
-        AlertService alertService = getAlertService();
-        Watch watch = alertService.watchByName(name);
-        if (watch == null) {
-            return notFound();
-        }
-        if (disable) {
-            watch.disable();
-        } else {
-            watch.enable();
-        }
-        return noContent();
+        return getAlertService().toggleWatch(name, disable) ? noContent() : notFound();
     }
 
     private static Circumstance createCircumstance(CircumstanceData data) {
