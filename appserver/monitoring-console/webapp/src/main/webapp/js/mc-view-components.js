@@ -832,10 +832,12 @@ MonitoringConsole.View.Components = (function() {
       if (!item.programmatic) {
         menu.push({ icon: '&times;', label: 'Delete', onClick: () => actions.onDelete(item.name) });
       }
+      const icon = item.stopped ? '&#9209;' : item.disabled ? '&#9208;' : '&#9210;';
       const general = $('<h3/>').append(disableButton).append(item.name).click(() => actions.onEdit(item));
       watch
         .append(Menu.createComponent({ groups: [{ icon: '&#9881;', items: menu }]}))
-        .append(general);
+        .append(general)
+        .append($('<span/>', { 'class': 'Icon' }).html(icon));
       for (let level of ['red', 'amber', 'green'])
         if (item[level])
           watch.append(createCircumstance(level, item[level], item.unit, item.series, colors[level]));

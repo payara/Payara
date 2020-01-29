@@ -652,6 +652,15 @@ table.AnnotationTable {
   background-color: #001A25;
   padding: 10px;
   margin: 5px 0;
+  padding-left: 40px;
+  position: relative;
+}
+.WatchItem .Icon {
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  font-size: 150%;
+  color: #0096D6;
 }
 .WatchItem.state-disabled h3 {
   color: #888;
