@@ -413,14 +413,14 @@ MonitoringConsole.View.Components = (function() {
   /**
    * Component drawn for each widget legend item to indicate data status.
    */
-  let Indicator = (function() {
+  const Indicator = (function() {
 
     function createComponent(model) {
        if (!model.text) {
           return $('<div/>', {'class': 'Indicator', style: 'display: none;'});
        }
        let html = model.text.replace(/\*([^*]+)\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>');
-       return $('<div/>', { 'class': 'Indicator status-' + model.status }).html(html);
+       return $('<div/>', { 'class': 'Indicator status-' + model.status, style: 'color: ' + model.color + ';' }).html(html);
     }
 
     return { createComponent: createComponent };
@@ -429,7 +429,7 @@ MonitoringConsole.View.Components = (function() {
   /**
    * Component for any of the text+icon menus/toolbars.
    */
-  let Menu = (function() {
+  const Menu = (function() {
 
     function createComponent(model) {
       let attrs = { 'class': 'Menu' };
@@ -822,7 +822,7 @@ MonitoringConsole.View.Components = (function() {
         }
       }});
       const menu = [
-        { icon: '&#128295;', label: 'Edit', onClick: () => actions.onEdit(item) }
+        { icon: '&#128295;', label: item.programmatic ? 'Duplicate' : 'Edit', onClick: () => actions.onEdit(item) }
       ];
       if (item.disabled) {
         menu.push({ icon: '&#9745;', label: 'Enable', onClick: () => actions.onEnable(item.name) });        

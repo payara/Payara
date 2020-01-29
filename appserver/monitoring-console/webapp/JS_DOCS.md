@@ -366,9 +366,10 @@ Describes the model expected by the `Indicator` component.
 This component gives feedback on the status of each widget.
 
 ```
-INDICATOR = { status, text }
+INDICATOR = { status, text, color }
 status    = Status
 text      = string
+color     = string
 ```
 
 

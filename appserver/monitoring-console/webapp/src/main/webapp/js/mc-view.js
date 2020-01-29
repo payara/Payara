@@ -57,7 +57,7 @@ MonitoringConsole.View = (function() {
     function updatePageNavigation(selectedPage) {
         let pages = MonitoringConsole.Model.listPages();
         let activePage = selectedPage || pages.find(page => page.active).name;
-        let items = pages.filter(page => !page.active).map(function(page) {
+        let items = pages.map(function(page) {
             return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
         });
         items.push({ label: 'Watches', onClick: onOpenWatchSettings });
@@ -253,6 +253,7 @@ MonitoringConsole.View = (function() {
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
             { label: 'Data #', type: 'color', value: Theme.palette(), onChange: (colors) => Theme.palette(colors) },
             { label: 'Defaults', input: [
+                ['error', 'missing'].map(createColorDefaultSettingMapper),
                 ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', description: 'Fill transparency 0-100%', input: [
@@ -585,17 +586,15 @@ MonitoringConsole.View = (function() {
 
     function createIndicatorModel(widget, data) {
         if (!data)
-            return { status: 'error' };
+            return { status: 'error', color: Theme.color('error') };
         if (Array.isArray(data) && data.length == 0)
-            return { status: 'missing', text: widget.status.missing.hint };
+            return { status: 'missing', color: Theme.color('missing'), text: widget.status.missing.hint };
         let status = 'normal';
-        for (let j = 0; j < data.length; j++) {
-            let seriesData = data[j];
-            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
-                status = seriesData.assessments.status;
-        }
-        let statusInfo = widget.status[status] || {};
-        return { status: status, text: statusInfo.hint };
+        for (let seriesData of data)
+            status = Units.Alerts.maxLevel(status, seriesData.assessments.status);
+        const infoKey = status == 'red' ? 'critical' : status == 'amber' ? 'alarming' : status;
+        let statusInfo = widget.status[infoKey] || {};
+        return { status: status, color: Theme.color(status), text: statusInfo.hint };
     }
 
     function createAlertTableModel(widget, alerts, annotations) {

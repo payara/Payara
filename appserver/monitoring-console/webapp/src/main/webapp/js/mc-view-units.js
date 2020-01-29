@@ -256,7 +256,7 @@ MonitoringConsole.View.Units = (function() {
    }
 
    function maxAlertLevel(a, b) {
-      const table = ['white', 'green', 'amber', 'red'];
+      const table = ['white', 'normal', 'green', 'alarming', 'amber', 'critical', 'red'];
       return table[Math.max(0, Math.max(table.indexOf(a), table.indexOf(b)))];
    }
 

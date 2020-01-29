@@ -85,7 +85,7 @@ input[type=color] {
   vertical-align: middle;
   width: 24px;
   height: 24px;
-  border-radius: 12px;
+  border-radius: 24px;
   overflow: hidden;
   border: 1px solid #444;
   margin: 1px 1px 0 0;  
@@ -423,23 +423,13 @@ table.tags th, table.tags td {
   top: 25%;
   background-color: #001A25;
 }
-.Indicator.status-missing {
-  border-color: #0096D6;
-  color: #0096D6;
-}
-.Indicator.status-alarming {
-  border-color: gold; 
-  color: gold;
-}
-.Indicator.status-critical {
-  border-color: crimson; 
-  color: crimson;
-}
 .Indicator b {
   color: white;
   white-space: nowrap;
+  font-weight: normal;
 }
 .Indicator i {
+  color: #DAE0E2;
   white-space: nowrap;
 }
 

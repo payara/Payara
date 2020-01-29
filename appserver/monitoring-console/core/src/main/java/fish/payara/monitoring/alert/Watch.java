@@ -117,9 +117,9 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     public final Circumstance amber;
     public final Circumstance green;
     private final Metric[] captured;
-    private final Map<String, State> statesByInstanceSeries = new ConcurrentHashMap<>();
+    private final Map<String, State> statesByInstanceSeries;
     private final AtomicBoolean stopped = new AtomicBoolean(false);
-    private final AtomicBoolean disabled = new AtomicBoolean(false);
+    private final AtomicBoolean disabled;
     private final boolean programmatic;
 
     public Watch(String name, Metric watched) {
@@ -128,6 +128,13 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
     public Watch(String name, Metric watched, boolean programmatic, Circumstance red, Circumstance amber,
             Circumstance green, Metric... captured) {
+        this(name, watched, programmatic, red, amber, green, captured, new AtomicBoolean(false),
+                new ConcurrentHashMap<>());
+    }
+
+    private Watch(String name, Metric watched, boolean programmatic, Circumstance red, Circumstance amber,
+            Circumstance green, Metric[] captured, AtomicBoolean disabled,
+            Map<String, State> statesByInstanceSeries) {
         this.name = name;
         this.watched = watched;
         this.programmatic = programmatic;
@@ -135,6 +142,8 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         this.amber = amber;
         this.green = green;
         this.captured = captured;
+        this.disabled = disabled;
+        this.statesByInstanceSeries = statesByInstanceSeries;
     }
 
     @Override
@@ -189,11 +198,11 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
      * @return A new {@link Watch} instance that {@link #isProgrammatic()}. 
      */
     public Watch programmatic() {
-        return new Watch(name, watched, true, red, amber, green, captured);
+        return new Watch(name, watched, true, red, amber, green, captured, disabled, statesByInstanceSeries);
     }
 
     public List<Alert> check(SeriesLookup lookup) {
-        if (isStopped()) {
+        if (isStopped() || isDisabled()) {
             return emptyList();
         }
         List<Alert> raised = new ArrayList<>();
@@ -353,25 +362,28 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         case "red":
             return isEqual(red, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, programmatic, //
+                : with(
                     create(RED, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
-                    amber, green, captured);
+                    amber, green);
         case "amber":
             return isEqual(amber, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, programmatic, red, //
+                : with(red,
                     create(AMBER, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
-                    green, captured);
+                    green);
 
         case "green":
             return isEqual(green, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, programmatic, red, amber, //
-                    create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage),
-                    captured);
+                : with(red, amber, //
+                    create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage));
         default:
             throw new IllegalArgumentException("No such alert level: " + level);
         }
+    }
+
+    private Watch with(Circumstance red, Circumstance amber, Circumstance green) {
+        return new Watch(name, watched, programmatic, red, amber, green, captured, disabled, statesByInstanceSeries);
     }
 
     @Override
@@ -402,9 +414,12 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         if (threshold == null) {
             return sample.isNone();
         }
+        if (!onAverage && forLast instanceof Integer && forLast.intValue() == 1) {
+            forLast = null;
+        }
         return !sample.isNone()
                 && sample.threshold == Math.abs(threshold.longValue())
-                && Objects.equals(sample.forLast, forLast)
+                && (Objects.equals(sample.forLast, forLast))
                 && sample.onAverage == onAverage;
     }
 
