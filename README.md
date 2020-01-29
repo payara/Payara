@@ -42,14 +42,11 @@ We take GlassFish, support it, add fixes, add customer-requested enhancements an
 
 Payara Server 5 currently supports the following JDKs:
 
-* Azul Zulu 8
-* IBM J9 8 [Payara Blue Only]
-* OpenJDK 8
-* Oracle JDK 8
+* Oracle JDK8 (u162+), Oracle JDK 11 (11.0.5+)
+* Azul Zulu JDK8 (u162+), Azul Zulu JDK 11 (11.0.5u10+)
+* OpenJDK JDK8 (u162+), OpenJDK 11 (11.0.5+)
 
-Payara Server 5 currently is in technical preview for the following JDKs:
-
- * Azul Zulu 11
+TLS 1.3 is supported on JDK 8 with Azul Zulu 1.8.222+ only and all JDK 11 versions.
 
 Payara Server 5 currently supports the following OSs:
 

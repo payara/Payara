@@ -671,14 +671,18 @@ public class EJBContainerTransactionManager {
             LOG.log(Level.FINE, "ejb.transaction_abort_exception", ex);
             // EJB2.0 section 18.3.6
             final EJBException result = new EJBException("Transaction aborted", ex);
-            result.addSuppressed(newException);
+            if (newException != null) {
+                result.addSuppressed(newException);
+            }
             return result;
         } catch (Exception ex) {
             LOG.log(Level.FINE, "ejb.cmt_exception", ex);
             // Commit or rollback failed.
             // EJB2.0 section 18.3.6
             final EJBException result = new EJBException("Unable to complete container-managed transaction.", ex);
-            result.addSuppressed(newException);
+            if (newException != null) {
+                result.addSuppressed(newException);
+            }
             return result;
         }
     }
