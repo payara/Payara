@@ -39,6 +39,10 @@
  */
 package fish.payara.monitoring.model;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 public final class Metric {
 
     public final Series series;
@@ -78,5 +82,20 @@ public final class Metric {
 
     public static Metric parse(String series, String unit) {
         return new Metric(new Series(series), Unit.fromShortName(unit));
+    }
+
+    public JsonObject toJSON() {
+        return Json.createObjectBuilder()
+                .add("series", series.toString())
+                .add("unit", unit.toString())
+                .build();
+    }
+
+    public static Metric fromJSON(JsonValue value) {
+        if (value == null || value == JsonValue.NULL) {
+            return null;
+        }
+        JsonObject obj = value.asJsonObject();
+        return new Metric(new Series(obj.getString("series")), Unit.fromShortName(obj.getString("unit", "count")));
     }
 }

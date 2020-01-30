@@ -137,7 +137,16 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 3, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
+        addWatchesFromConfiguration();
         changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
+    }
+
+    private void addWatchesFromConfiguration() {
+        if (config != null) {
+            for (String watch : config.getCustomWatchValues()) {
+                addWatch(Watch.fromJSON(watch));
+            }
+        }
     }
 
     @Override
@@ -156,18 +165,21 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     private void updateWatchConfiguration(Watch watch) {
+        runCommand("set-monitoring-console-configuration", 
+                watch.isDisabled() ? "disable-watch" : "enable-watch", watch.name);
+    }
+
+    private void runCommand(String name, String... params) {
         try {
             ActionReport report = commandRunner.getActionReport("plain");
-            CommandInvocation cmd = commandRunner.getCommandInvocation("set-monitoring-console-configuration", report, kernelIdentity.getSubject());
-            ParameterMap params = new ParameterMap();
-            if (watch.isDisabled()) {
-                params.add("disable-watch", watch.name);
-            } else {
-                params.add("enable-watch", watch.name);
+            CommandInvocation cmd = commandRunner.getCommandInvocation(name, report, kernelIdentity.getSubject());
+            ParameterMap paramsMap = new ParameterMap();
+            for (int i = 0; i < params.length; i += 2) {
+                paramsMap.add(params[i], params[i + 1]);
             }
-            cmd.parameters(params).execute();
+            cmd.parameters(paramsMap).execute();
         } catch (Exception ex) {
-            LOGGER.log(java.util.logging.Level.WARNING, "Failed to update config", ex);
+            LOGGER.log(java.util.logging.Level.WARNING, "Failed to run command: " + name, ex);
         }
     }
 
@@ -268,6 +280,11 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
         Series series = watch.watched.series;
         Map<Series, Map<String, Watch>> target = series.isPattern() ? patternWatches : simpleWatches;
         target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.name, watch);
+        if (!watch.isProgrammatic()) {
+            runCommand("set-monitoring-console-configuration", 
+                    "add-watch-name", watch.name, 
+                    "add-watch-json", watch.toJSON().toString());
+        }
     }
 
     @Override
@@ -279,6 +296,9 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
             collectedWatches.remove(name);
             removeWatch(watch, simpleWatches);
             removeWatch(watch, patternWatches);
+            if (!watch.isProgrammatic()) {
+                runCommand("set-monitoring-console-configuration", "remove-watch", watch.name);
+            }
         }
     }
 

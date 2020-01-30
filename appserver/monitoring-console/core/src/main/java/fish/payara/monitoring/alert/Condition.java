@@ -45,6 +45,11 @@ import static java.lang.Math.min;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
 import fish.payara.monitoring.model.SeriesDataset;
 
 /**
@@ -279,4 +284,39 @@ public final class Condition {
         return str.toString();
     }
 
+    public JsonValue toJSON() {
+        if (isNone()) {
+            return JsonValue.NULL;
+        }
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("comparison", comparison.symbol)
+                .add("threshold", threshold)
+                .add("onAverage", onAverage);
+         if (isForLastMillis()) {
+             builder.add("forMillis", forLast.longValue());
+         }
+         if (isForLastTimes()) {
+             builder.add("forTimes", forLast.intValue());
+         }
+         return builder.build();
+    }
+
+    public static Condition fromJSON(JsonValue value) {
+        if (value == null || value == JsonValue.NULL) {
+            return Condition.NONE;
+        }
+        JsonObject obj = value.asJsonObject();
+        Number forLast = null;
+        if (obj.containsKey("forMillis")) {
+            forLast = obj.getJsonNumber("forMillis").longValue();
+        }
+        if (obj.containsKey("forTimes")) {
+            forLast = obj.getInt("forTimes");
+        }
+        return new Condition(
+                Operator.parse(obj.getString("comparison", ">")), 
+                obj.getJsonNumber("threshold").longValue(),
+                forLast,
+                obj.getBoolean("onAverage", false));
+    }
 }

@@ -40,7 +40,6 @@
 
 package fish.payara.monitoring.admin;
 
-import static java.util.Collections.singletonList;
 import static org.glassfish.config.support.CommandTarget.DAS;
 
 import java.beans.PropertyVetoException;
@@ -102,6 +101,15 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
     @Param(optional = true, alias = "enable-watch")
     private String enableWatch;
 
+    @Param(optional = true, alias = "add-watch-name")
+    private String addWatchName;
+
+    @Param(optional = true, alias = "add-watch-json")
+    private String addWatchJson;
+
+    @Param(optional = true, alias = "remove-watch")
+    private String removeWatch;
+
     @Inject
     protected CommandRunner commandRunner;
 
@@ -128,22 +136,41 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringConsoleConfiguration>(){
                 @Override
-                public Object run(MonitoringConsoleConfiguration configProxy) throws PropertyVetoException {
+                public Object run(MonitoringConsoleConfiguration configProxy) throws PropertyVetoException, TransactionFailure {
                     if (enabled != null) {
                         configProxy.setEnabled(enabled.toString());
                     }
-                    if (disableWatch != null && !disableWatch.isEmpty()) {
+                    if (isDefined(disableWatch)) {
                         List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
-                        if (disabledWatchNames == null) {
-                            configProxy.setDisabledWatchNames(singletonList(disableWatch));
-                        } else if (!disabledWatchNames.contains(disableWatch)) {
+                        if (!disabledWatchNames.contains(disableWatch)) {
                            disabledWatchNames.add(disableWatch);
                         }
                     }
-                    if (enableWatch != null && !enableWatch.isEmpty()) {
-                        List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
-                        if (disabledWatchNames != null) {
-                            disabledWatchNames.remove(enableWatch);
+                    if (isDefined(enableWatch)) {
+                        configProxy.getDisabledWatchNames().remove(enableWatch);
+                    }
+                    if (isDefined(addWatchName) && isDefined(addWatchJson)) {
+                        List<String> customWatchNames = configProxy.getCustomWatchNames();
+                        List<String> customWatchValues = configProxy.getCustomWatchValues();
+                        int index = customWatchNames.indexOf(addWatchName);
+                        if (index >= 0) {
+                            customWatchNames.remove(index);
+                            if (index < customWatchValues.size()) {
+                                customWatchValues.remove(index);
+                            }
+                        } 
+                        customWatchNames.add(addWatchName);
+                        customWatchValues.add(addWatchJson);
+                    }
+                    if (isDefined(removeWatch)) {
+                        List<String> customWatchNames = configProxy.getCustomWatchNames();
+                        int index = customWatchNames.indexOf(removeWatch);
+                        if (index >= 0) {
+                            customWatchNames.remove(index);
+                            List<String> customWatchValues = configProxy.getCustomWatchValues();
+                            if (index < customWatchValues.size()) {
+                                customWatchValues.remove(index);
+                            }
                         }
                     }
                     return null;
@@ -152,6 +179,10 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             context.getActionReport().failure(LOGGER, "Failed to update Monitoring Console configuration", ex);
         }
+    }
+
+    static boolean isDefined(String value) {
+        return value != null && !value.isEmpty();
     }
 
     private void undeployMonitoringConsole(ActionReport report) {

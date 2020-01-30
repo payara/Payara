@@ -58,15 +58,32 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 @Configured
 public interface MonitoringConsoleConfiguration extends DomainExtension {
 
+    /**
+     * Note that this is not reflecting whether or not the monitoring data is collected.
+     * This is controlled by the general monitoring configuration.
+     * 
+     * @return True, if monitoring console web-app is deployed, else false.
+     */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * @return A list of names of watches that are disabled
+     * @return Names of the watches that are disabled (this includes collected and custom watches)
      */
     @Element
-    public List<String> getDisabledWatchNames();
+    List<String> getDisabledWatchNames();
 
-    void setDisabledWatchNames(List<String> watchNames) throws PropertyVetoException;
+    /**
+     * @return Names of custom watches (so collected watches are not included)
+     */
+    @Element
+    List<String> getCustomWatchNames();
+
+    /**
+     * @return JSON values of the custom watches (index is same in {@link #getCustomWatchNames()})
+     */
+    @Element
+    List<String> getCustomWatchValues();
+
 }

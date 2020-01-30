@@ -42,6 +42,7 @@ package fish.payara.monitoring.alert;
 import static fish.payara.monitoring.alert.Alert.Level.*;
 import static java.util.Collections.emptyList;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -50,6 +51,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 
 import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.alert.Condition.Operator;
@@ -436,6 +444,57 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
                 ? Condition.NONE
                 : new Condition(stopOperator, Math.abs(stopTheshold), stopForLast, stopOnAverage);
         return new Circumstance(level, start, stop);
+    }
+
+    public JsonObject toJSON() {
+        JsonArrayBuilder capturedArray = Json.createArrayBuilder();
+        for (Metric m : captured) {
+            capturedArray.add(m.toJSON());
+        }
+        return Json.createObjectBuilder()
+                .add("name", name)
+                .add("watched", watched.toJSON())
+                .add("programmatic", programmatic)
+                .add("disabled", isDisabled())
+                .add("stopped", isStopped())
+                .add("red", red.toJSON())
+                .add("amber", amber.toJSON())
+                .add("green", green.toJSON())
+                .add("captured", capturedArray.build())
+                .build();
+    }
+
+    public static Watch fromJSON(String json) {
+        JsonValue value = null;
+        try (JsonParser parser = Json.createParser(new StringReader(json))) {
+            if (!parser.hasNext()) {
+                return null;
+            }
+            parser.next();
+            value = parser.getValue();
+        }
+        if (value == null || value == JsonValue.NULL) {
+            return null;
+        }
+        JsonObject obj = value.asJsonObject(); 
+        JsonArray array = obj.getJsonArray("captured");
+        Metric[] captured = array == null 
+                ? new Metric[0]
+                : array.stream().map(Metric::fromJSON).toArray(Metric[]::new);
+        Watch out = new Watch(obj.getString("name"), 
+                Metric.fromJSON(obj.get("watched")), 
+                obj.getBoolean("programmatic", false), 
+                Circumstance.fromJson(obj.get("red")), 
+                Circumstance.fromJson(obj.get("amber")), 
+                Circumstance.fromJson(obj.get("green")), 
+                captured);
+        if (obj.getBoolean("disabled", false)) {
+            out.disable();
+        }
+        if (obj.getBoolean("stopped", false)) {
+            out.stop();
+        }
+        return out;
     }
 
 }
