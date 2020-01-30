@@ -140,7 +140,7 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
                     if (enabled != null) {
                         configProxy.setEnabled(enabled.toString());
                     }
-                    if (isDefined(disableWatch)) {
+                    if (isDefined(disableWatch) ) {
                         List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
                         if (!disabledWatchNames.contains(disableWatch)) {
                            disabledWatchNames.add(disableWatch);
@@ -172,6 +172,7 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
                                 customWatchValues.remove(index);
                             }
                         }
+                        configProxy.getDisabledWatchNames().remove(removeWatch);
                     }
                     return null;
                 }

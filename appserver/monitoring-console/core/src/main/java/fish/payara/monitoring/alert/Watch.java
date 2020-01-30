@@ -173,6 +173,8 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         for (State s : statesByInstanceSeries.values()) {
             if (s.ongoing != null) {
                 s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
+                s.ongoing = null;
+                s.level = WHITE;
             }
         }
     }
