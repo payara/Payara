@@ -171,7 +171,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private String stuckThreadsThreshold;
 
     @Param(name = "stuck-threads-threshold-unit", optional = true,
-            acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
+            acceptableValues = "DAYS,HOURS,MILLISECONDS,MINUTES,SECONDS")
     private String stuckThreadsThresholdUnit;
 
     // threshold properties params:
