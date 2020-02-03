@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,21 +39,22 @@
  */
 package fish.payara.monitoring.collect;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
- * Implemented by each source of monitoring watches to provide the current watch configuration.
+ * Implemented by each source of monitoring data to provide the current data.
  * 
+ * Each source first establishes its relative context using the
+ * {@link MonitoringDataCollector#tag(CharSequence, CharSequence)} method. After the context is complete for a group of
+ * data points these are added using {@link MonitoringDataCollector#collect(CharSequence, long)}.
+ *
  * @author Jan Bernitt
  */
-@Contract
 @FunctionalInterface
-public interface MonitoringWatchSource {
+public interface MonitoringDataSource {
 
     /**
-     * Collects watches of this source at current configuration.
-     *
-     * @param collector the {@link MonitoringWatchCollector} instance to use to collect current watch configuration.
+     * Collects all the data points of this source at the current moment.
+     * 
+     * @param collector the {@link MonitoringDataCollector} instance to use to collect the data points of this source
      */
-    void collect(MonitoringWatchCollector collector);
+    void collect(MonitoringDataCollector collector);
 }

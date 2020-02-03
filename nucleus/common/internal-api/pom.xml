@@ -145,5 +145,10 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        </dependencies>
 </project>

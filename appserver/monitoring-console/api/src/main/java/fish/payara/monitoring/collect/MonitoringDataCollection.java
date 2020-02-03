@@ -44,15 +44,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import org.glassfish.external.statistics.CountStatistic;
-import org.glassfish.external.statistics.RangeStatistic;
-
 /**
  * Utility to collect beans using their getter {@link Method}s.
  * 
  * Only return types a known collection function has been {@link #register(Class, BiConsumer)}ed for are included.
- * 
- * By default {@link RangeStatistic} and {@link CountStatistic} are mapped.
  * 
  * The usual usage of this helper is to call {@link #collectObject(MonitoringDataCollector, Object)}.
  */
@@ -63,11 +58,6 @@ public final class MonitoringDataCollection {
     }
 
     private static final Map<Class<?>, BiConsumer<MonitoringDataCollector, ?>>  MAPPED_TYPES = new ConcurrentHashMap<>();
-
-    static {
-        register(RangeStatistic.class, MonitoringDataCollection::collectRange);
-        register(CountStatistic.class, MonitoringDataCollection::collectCount);
-    }
 
     /**
      * Can be used to plug in collection functions for types that otherwise would not be collected even for objects that
@@ -88,6 +78,8 @@ public final class MonitoringDataCollection {
                     Class<?> returnType = getter.getReturnType();
                     if (MAPPED_TYPES.containsKey(returnType)) {
                         collectMapped(collector, returnType, value);
+                    } else if (value instanceof Number) {
+                        collector.collect(name(getter), (Number) value);
                     }
                 } catch (Exception ex) {
                     // ignore this getter
@@ -101,18 +93,13 @@ public final class MonitoringDataCollection {
                 && (method.getName().startsWith("get") || method.getName().startsWith("is"));
     }
 
+    private static String name(Method method) {
+        String name = method.getName();
+        return name.startsWith("get") ? name.substring(3) : name.substring(2);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> void collectMapped(MonitoringDataCollector collector, Class<T> type, Object value) {
         collector.collectObject((T) value, (BiConsumer<MonitoringDataCollector, T>) MAPPED_TYPES.get(type));
-    }
-
-    public static void collectRange(MonitoringDataCollector collector, RangeStatistic range) {
-        collector
-            .collect(range.getName(), range.getCurrent());
-    }
-
-    public static void collectCount(MonitoringDataCollector collector, CountStatistic count) {
-        collector
-            .collect(count.getName(), count.getCount());
     }
 }

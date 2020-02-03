@@ -52,6 +52,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.external.statistics.CountStatistic;
+import org.glassfish.external.statistics.RangeStatistic;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.config.serverbeans.MonitoringService;
@@ -192,6 +194,13 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
             sb.append(NODE_SEPARATOR).append(other);
         }
         return sb.toString();
+    }
+
+    static {
+        MonitoringDataCollection.register(CountStatistic.class,
+                (collector, count) -> collector.collect(count.getName(), count.getCount()));
+        MonitoringDataCollection.register(RangeStatistic.class,
+                (collector, count) -> collector.collect(count.getName(), count.getCurrent()));
     }
 
     @Override
