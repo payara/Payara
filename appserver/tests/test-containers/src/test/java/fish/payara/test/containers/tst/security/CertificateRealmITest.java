@@ -410,7 +410,7 @@ public class CertificateRealmITest {
         final String prefix = "configs.config.server-config.security-service.auth-realm.certificate.property.";
         payara.asAdmin("set", prefix + "dn-parts-used-for-groups=" + dnParts);
         payara.asAdmin("set", prefix + "common-name-as-principal-name=" + cnAsPrincipal);
-        // HACK for PAYARA-4230 - only first change is reflected, following are ignored.
+        // HACK for CUSTCOM-106 - only first change is reflected, following are ignored.
         // this line creates always a new property, so realm will be reconfigured.
         payara.asAdmin("set", prefix + "_hack" + ix.getAndIncrement() + "=" + (cnAsPrincipal ? "true" : "false"));
         Thread.yield();
