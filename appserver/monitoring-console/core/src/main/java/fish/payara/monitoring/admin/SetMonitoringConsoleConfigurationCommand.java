@@ -96,19 +96,19 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
     private Boolean enabled;
 
     @Param(optional = true, alias = "disable-watch")
-    private String disableWatch;
+    private String _disableWatch;
 
     @Param(optional = true, alias = "enable-watch")
-    private String enableWatch;
+    private String _enableWatch;
 
     @Param(optional = true, alias = "add-watch-name")
-    private String addWatchName;
+    private String _addWatchName;
 
     @Param(optional = true, alias = "add-watch-json")
-    private String addWatchJson;
+    private String _addWatchJson;
 
     @Param(optional = true, alias = "remove-watch")
-    private String removeWatch;
+    private String _removeWatch;
 
     @Inject
     protected CommandRunner commandRunner;
@@ -140,31 +140,31 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
                     if (enabled != null) {
                         configProxy.setEnabled(enabled.toString());
                     }
-                    if (isDefined(disableWatch) ) {
+                    if (isDefined(_disableWatch) ) {
                         List<String> disabledWatchNames = configProxy.getDisabledWatchNames();
-                        if (!disabledWatchNames.contains(disableWatch)) {
-                           disabledWatchNames.add(disableWatch);
+                        if (!disabledWatchNames.contains(_disableWatch)) {
+                           disabledWatchNames.add(_disableWatch);
                         }
                     }
-                    if (isDefined(enableWatch)) {
-                        configProxy.getDisabledWatchNames().remove(enableWatch);
+                    if (isDefined(_enableWatch)) {
+                        configProxy.getDisabledWatchNames().remove(_enableWatch);
                     }
-                    if (isDefined(addWatchName) && isDefined(addWatchJson)) {
+                    if (isDefined(_addWatchName) && isDefined(_addWatchJson)) {
                         List<String> customWatchNames = configProxy.getCustomWatchNames();
                         List<String> customWatchValues = configProxy.getCustomWatchValues();
-                        int index = customWatchNames.indexOf(addWatchName);
+                        int index = customWatchNames.indexOf(_addWatchName);
                         if (index >= 0) {
                             customWatchNames.remove(index);
                             if (index < customWatchValues.size()) {
                                 customWatchValues.remove(index);
                             }
                         } 
-                        customWatchNames.add(addWatchName);
-                        customWatchValues.add(addWatchJson);
+                        customWatchNames.add(_addWatchName);
+                        customWatchValues.add(_addWatchJson);
                     }
-                    if (isDefined(removeWatch)) {
+                    if (isDefined(_removeWatch)) {
                         List<String> customWatchNames = configProxy.getCustomWatchNames();
-                        int index = customWatchNames.indexOf(removeWatch);
+                        int index = customWatchNames.indexOf(_removeWatch);
                         if (index >= 0) {
                             customWatchNames.remove(index);
                             List<String> customWatchValues = configProxy.getCustomWatchValues();
@@ -172,7 +172,7 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
                                 customWatchValues.remove(index);
                             }
                         }
-                        configProxy.getDisabledWatchNames().remove(removeWatch);
+                        configProxy.getDisabledWatchNames().remove(_removeWatch);
                     }
                     return null;
                 }

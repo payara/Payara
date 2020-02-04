@@ -48,6 +48,12 @@ import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.SeriesDataset;
 
+/**
+ * The {@link Circumstance} in context of {@link Alert}s describes under what {@link Condition}s a certain
+ * {@link Alert.Level} {@link #starts(SeriesDataset, SeriesLookup)} and {@link #stops(SeriesDataset)}.
+ *
+ * @author Jan Bernitt
+ */
 public final class Circumstance {
 
     /**

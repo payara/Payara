@@ -85,7 +85,7 @@ public final class Alert implements Iterable<Alert.Frame> {
             return ordinal() > other.ordinal();
         }
 
-        public static fish.payara.monitoring.alert.Alert.Level parse(String level) {
+        public static Level parse(String level) {
             return valueOf(level.toUpperCase());
         }
     }

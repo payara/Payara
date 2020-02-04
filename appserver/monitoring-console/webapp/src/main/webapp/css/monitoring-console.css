@@ -38,7 +38,7 @@
    holder.
 */
 :root {
-  /* Color RGB values to be used in other variable definitions */
+  /* Colour RGB values to be used in other variable definitions */
   --primary-color-rgb-orange:  240, 152,  27; /* #F0981B */
   --primary-color-rgb-blue:      0,  44,  62; /* #002C3E */
   --secondary-color-rgb-blue:    0, 150, 214; /* #0096D6 */
@@ -655,13 +655,6 @@ table.AnnotationTable {
   padding-left: 40px;
   position: relative;
 }
-.WatchItem .Icon {
-  position: absolute;
-  left: 15px;
-  top: 10px;
-  font-size: 150%;
-  color: #0096D6;
-}
 .WatchItem.state-disabled h3 {
   color: #888;
 }
@@ -670,7 +663,8 @@ table.AnnotationTable {
   margin-bottom: 0.25em;
 }
 .WatchItem h3 input[type=checkbox] {
-  float: left;
+  position: absolute;
+  left: 15px;
 }
 .WatchCondition {
   padding: 0 0.5em;
@@ -691,7 +685,7 @@ table.AnnotationTable {
 .WatchCondition input {
   border-bottom: 1px dotted #ccc;
 }
-.WatchCondition input.input-value {
+.WatchCondition input.input-value, .WatchCondition span span span input.input-text {
   width: 50px;
 }
 .WatchCondition input.input-text {

@@ -53,7 +53,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
  * This is first of all the data and watch collection and evaluation.
  * 
  * @author Jan Bernitt
- * @since 5.204
+ * @since 5.201
  */
 @Configured
 public interface MonitoringConsoleConfiguration extends DomainExtension {

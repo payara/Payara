@@ -813,7 +813,7 @@ MonitoringConsole.View.Components = (function() {
     }
 
     function createItem(item, colors, actions) {
-      const watch = $('<div/>', { 'class': 'WatchItem ' + 'state-' + (item.disabled ? 'disabled' : 'enabled') });
+      const watch = $('<div/>', { 'class': 'WatchItem ' + 'state-' + (item.disabled || item.stopped ? 'disabled' : 'enabled') });
       const disableButton = Settings.createInput({ type: 'checkbox', value: !item.disabled, onChange: (checked) => {
         if (checked) {
           actions.onEnable(item.name);
@@ -832,12 +832,10 @@ MonitoringConsole.View.Components = (function() {
       if (!item.programmatic) {
         menu.push({ icon: '&times;', label: 'Delete', onClick: () => actions.onDelete(item.name) });
       }
-      const icon = item.stopped ? '&#9209;' : item.disabled ? '&#9208;' : '&#9210;';
-      const general = $('<h3/>').append(disableButton).append(item.name).click(() => actions.onEdit(item));
+      const general = $('<h3/>').append(disableButton).append(item.name + (item.stopped ? ' (stopped)' : '')).click(() => actions.onEdit(item));
       watch
         .append(Menu.createComponent({ groups: [{ icon: '&#9881;', items: menu }]}))
-        .append(general)
-        .append($('<span/>', { 'class': 'Icon' }).html(icon));
+        .append(general);
       for (let level of ['red', 'amber', 'green'])
         if (item[level])
           watch.append(createCircumstance(level, item[level], item.unit, item.series, colors[level]));
@@ -892,8 +890,8 @@ MonitoringConsole.View.Components = (function() {
 
     function createLevelBuilder(level, editedWatch, color, unitDropdowns, seriesInputs) {
       const editedCircumstance = editedWatch[level] || { level: level };
-      const editedStartCondition = editedCircumstance.start || { operator: '>', forLastType: 'forTimes' };
-      const editedStopCondition = editedCircumstance.stop || { operator: '<', forLastType: 'forTimes' };
+      const editedStartCondition = editedCircumstance.start || { operator: '>', forTimes: 1 };
+      const editedStopCondition = editedCircumstance.stop || { operator: '<', forTimes: 1 };
       const defined = editedWatch[level] !== undefined;
       const levelBox = $('<span/>', defined ? {} : { style: 'display: none;'});
       let enableCheckbox = Settings.createInput({type: 'checkbox', value: defined, onChange: (checked) => {
@@ -939,61 +937,59 @@ MonitoringConsole.View.Components = (function() {
     }
 
     function createConditionBuilder(editedWatch, editedCircumstance, editedCondition) {
-      if (editedCondition.forLastType === undefined)
-        editedCondition.forLastType = editedCondition.forMillis === undefined ? 'forTimes' : 'forMillis';
-      editedCondition.forLast = Math.abs(editedCondition[editedCondition.forLastType] || 1);
-      const operatorDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.operator, options: ['<', '<=', '=', '>', '>='], onChange: (selected) => editedCondition.operator = selected});
-      const thresholdInput = Settings.createInput({ type: 'value', unit: () => editedWatch.unit, value: editedCondition.threshold, onChange: (value) => editedCondition.threshold = value});
-      const forInUnit = () => editedCondition.forLastType === 'forTimes' ? 'count' : 'ms';
-      const forInInput = Settings.createInput({ type: 'value', unit: forInUnit, value: editedCondition.forLast, onChange: (value) => {
-        editedCondition.forLast = value;
-        editedCondition[editedCondition.forLastType] = value; 
-      }});
-      const forInUnitDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.forLastType, options: { forTimes: 'x', forMillis: 'ms'}, onChange: (selected) => {
-        editedCondition[selected] = editedCondition[editedCondition.forLastType];
-        editedCondition[editedCondition.forLastType] = undefined;
-        editedCondition.forLastType = selected;
-        forInInput.val(Units.converter(forInUnit()).format(editedCondition.forLast));
-      }});      
+      function getKind() {
+        if (editedCondition.forTimes === 0 || editedCondition.forMillis === 0)
+          return 'inSample';
+        if (editedCondition.forTimes < 0 || editedCondition.forMillis < 0)
+          return 'inLast';
+        if (editedCondition.onAverage)
+          return 'forAvgOfLast';
+        return 'forLast';
+      }
       const kindOptions = {
         forLast: 'for last', 
         forAvgOfLast: 'for average of last', 
         inLast: 'in last', 
         inSample: 'in sample'
       };
-      let kind = 'forLast';
-      if (editedCondition[editedCondition.forLastType] === 0) {
-        kind = 'inSample';
-      } else if (editedCondition[editedCondition.forLastType] < 0) {
-        kind = 'inLast';
-      } else if (editedCondition.onAverage) {
-        kind = 'forAvgOfLast';
-      }
-      const forInBox = $('<span/>', kind != 'inSample' ? {} : { style: 'display: none;' })
-        .append(forInInput)
-        .append(forInUnitDropdown);
-      const kindDropdown = Settings.createInput({ type: 'dropdown', value: kind, options: kindOptions, onChange: (selected) => {
-        editedCondition.onAverage = selected === 'forAvgOfLast';
-        if (selected == 'forLast' || selected == 'forAvgOfLast') {
-          editedCondition[editedCondition.forLastType] = Math.abs(editedCondition.forLast);
-        } else if (selected == 'inLast') {
-          editedCondition[editedCondition.forLastType] = - Math.abs(editedCondition.forLast);
+      const forInBox = $('<span/>', getKind() != 'inSample' ? {} : { style: 'display: none;' });
+      function updateEditedCondition(selectedKind, forLastInputValue) {
+        if (selectedKind === undefined)
+          selectedKind = getKind();
+        const isCount = forLastInputValue === undefined 
+          ? editedCondition.forTimes !== undefined
+          : /^[0-9]+$/i.test(forLastInputValue);
+        const forLast = forLastInputValue === undefined
+          ? editedCondition.forTimes !== undefined ? Math.abs(editedCondition.forTimes) : Math.abs(editedCondition.forMillis)
+          : Units.converter(isCount ? 'count' : 'ms').parse(forLastInputValue);
+        editedCondition.onAverage = selectedKind === 'forAvgOfLast';
+        if (selectedKind == 'forLast' || selectedKind == 'forAvgOfLast') {
+          editedCondition.forTimes = isCount ? Math.abs(forLast) : undefined;
+          editedCondition.forMillis = isCount ? undefined : Math.abs(forLast);
+        } else if (selectedKind == 'inLast') {
+          editedCondition.forTimes = isCount ? - Math.abs(forLast) : undefined;
+          editedCondition.forMillis = isCount ? undefined : - Math.abs(forLast);
         }
-        if (selected == 'inSample') {
+        if (selectedKind == 'inSample') {
           forInBox.hide();
-          editedCondition.forLastType = 'forTimes';
           editedCondition.forTimes = 0;
-          editedCondition.forLast = 0;
           editedCondition.forMillis = undefined;
         } else {
           forInBox.show();
-        }
-      }});
+        }        
+      }
+      const forInValue = editedCondition.forTimes !== undefined 
+        ? Math.abs(editedCondition.forTimes) 
+        : editedCondition.forMillis !== undefined ? Units.converter('ms').format(Math.abs(editedCondition.forMillis)) : 1;
+      const operatorDropdown = Settings.createInput({ type: 'dropdown', value: editedCondition.operator, options: ['<', '<=', '=', '>', '>='], onChange: (selected) => editedCondition.operator = selected});
+      const thresholdInput = Settings.createInput({ type: 'value', unit: () => editedWatch.unit, value: editedCondition.threshold, onChange: (value) => editedCondition.threshold = value});
+      const forInInput = Settings.createInput({ type: 'text', value: forInValue, onChange: (value) => updateEditedCondition(undefined, value)});     
+      const kindDropdown = Settings.createInput({ type: 'dropdown', value: getKind(), options: kindOptions, onChange: (selected) => updateEditedCondition(selected, undefined)});
       return $('<span/>')
         .append(operatorDropdown)
         .append(thresholdInput)
         .append(kindDropdown)
-        .append(forInBox);
+        .append(forInBox.append(forInInput));
     }
 
     return { createComponent: createComponent };
