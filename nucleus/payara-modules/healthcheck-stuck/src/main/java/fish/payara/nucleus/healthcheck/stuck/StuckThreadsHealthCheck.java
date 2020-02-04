@@ -138,7 +138,7 @@ public class StuckThreadsHealthCheck extends
             .red(getThresholdInMillis(), -30000L, false, null, null, false);
     }
 
-    public String composeStateText(ThreadInfo info) {
+    private static String composeStateText(ThreadInfo info) {
         if (info.getLockInfo() == null) {
             return "Running";
         }
@@ -166,8 +166,8 @@ public class StuckThreadsHealthCheck extends
         }
     }
 
-    public long getThresholdInMillis() {
-        return TimeUnit.MILLISECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
+    private long getThresholdInMillis() {
+        return Math.max(1, TimeUnit.MILLISECONDS.convert(options.getTimeStuck(), options.getUnitStuck()));
     }
 
 

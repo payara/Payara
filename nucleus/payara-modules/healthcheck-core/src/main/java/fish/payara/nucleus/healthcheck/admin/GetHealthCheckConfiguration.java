@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,6 +72,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
@@ -339,34 +340,48 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     
     private void addHoggingThreadsCheckerExtraProps(Properties hoggingThreadsExtraProps, 
             HoggingThreadsChecker hoggingThreadsChecker) {
-        Map<String, Object> extraPropsMap = new HashMap<>(6);       
-        
+        Map<String, Object> extraPropsMap = new HashMap<>(6);
+
         extraPropsMap.put("checkerName", hoggingThreadsChecker.getName());
         extraPropsMap.put("enabled", hoggingThreadsChecker.getEnabled());
         extraPropsMap.put("time", hoggingThreadsChecker.getTime());
         extraPropsMap.put("unit", hoggingThreadsChecker.getUnit());
         extraPropsMap.put("threshold-percentage", hoggingThreadsChecker.getThresholdPercentage());
         extraPropsMap.put("retry-count", hoggingThreadsChecker.getRetryCount());
-        
+
         hoggingThreadsExtraProps.put(hoggingThreadsPropertyName, extraPropsMap);
     }
-    
+
     private void addStuckThreadsCheckerExtrasProps(Properties stuckThreadsExtrasProps, StuckThreadsChecker stuckThreadsChecker){
-        Map<String, Object> extraPropsMap = new HashMap<String, Object>(6);
-        
+        Map<String, Object> extraPropsMap = new HashMap<>(6);
+
         extraPropsMap.put("checkerName", stuckThreadsChecker.getName());
         extraPropsMap.put("enabled", stuckThreadsChecker.getEnabled());
         extraPropsMap.put("time", stuckThreadsChecker.getTime());
         extraPropsMap.put("unit", stuckThreadsChecker.getUnit());
-        extraPropsMap.put("threshold", stuckThreadsChecker.getThreshold());
-        extraPropsMap.put("thresholdUnit", stuckThreadsChecker.getThresholdTimeUnit());
-        
+        Long thesholdInMillis = stuckThreadsThesholdInMillis(stuckThreadsChecker);
+        if (thesholdInMillis != null && thesholdInMillis <= 0) {
+            extraPropsMap.put("threshold", "1");
+            extraPropsMap.put("thresholdUnit", TimeUnit.MILLISECONDS.name());
+        } else {
+            extraPropsMap.put("threshold", stuckThreadsChecker.getThreshold());
+            extraPropsMap.put("thresholdUnit", stuckThreadsChecker.getThresholdTimeUnit());
+        }
         stuckThreadsExtrasProps.put(stuckThreadsPropertyName, extraPropsMap);
-        
     }
-    
+
+    private static Long stuckThreadsThesholdInMillis(StuckThreadsChecker stuckThreadsChecker) {
+        try {
+            return TimeUnit.MILLISECONDS.convert(
+                    Long.parseLong(stuckThreadsChecker.getThreshold()), 
+                    TimeUnit.valueOf(stuckThreadsChecker.getThresholdTimeUnit()));
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
     private void addMPHealthcheckCheckerExtrasProps(Properties mpHealthcheckExtrasProps, MicroProfileHealthCheckerConfiguration mpHealthcheckCheck) {
-        Map<String, Object> extraPropsMap = new HashMap<String, Object>(5);
+        Map<String, Object> extraPropsMap = new HashMap<>(5);
         extraPropsMap.put("checkerName", mpHealthcheckCheck.getName());
         extraPropsMap.put("enabled", mpHealthcheckCheck.getEnabled());
         extraPropsMap.put("time", mpHealthcheckCheck.getTime());
@@ -425,7 +440,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         }
     }
     
-    private void addBaseCheckerExtraProps(Properties baseExtraProps, 
+    private static void addBaseCheckerExtraProps(Properties baseExtraProps, 
             Checker checker) {
         Map<String, Object> extraPropsMap = new HashMap<>(4);       
         
@@ -486,7 +501,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         return extraProps;
     }
     
-    private Map<String, Object> populateDefaultValuesMap(Map<String, Object> extraPropsMap) {
+    private static Map<String, Object> populateDefaultValuesMap(Map<String, Object> extraPropsMap) {
         // Common properties
         extraPropsMap.put("enabled", DEFAULT_ENABLED);
         extraPropsMap.put("time", DEFAULT_TIME);
@@ -510,7 +525,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         return extraPropsMap;
     }
 
-    private Class<Notifier> resolveNotifierClass(Notifier input) {
+    private static Class<Notifier> resolveNotifierClass(Notifier input) {
         ConfigView view = ConfigSupport.getImpl(input);
         return view.getProxyType();
     }
