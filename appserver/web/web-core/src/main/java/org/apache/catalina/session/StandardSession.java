@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -209,7 +209,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
     /**
      * The collection of user data attributes associated with this Session.
      */
-    protected Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    protected Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     /**
      * The authentication type used to authenticate our cached Principal,
@@ -303,7 +303,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      * and event listeners.  <b>IMPLEMENTATION NOTE:</b> This object is
      * <em>not</em> saved and restored across session serializations!
      */
-    protected transient Map<String, Object> notes = new Hashtable<String, Object>();
+    protected transient Map<String, Object> notes = new Hashtable<>();
 
     /**
      * The authenticated Principal associated with this session, if any.
@@ -939,9 +939,9 @@ public class StandardSession implements HttpSession, Session, Serializable {
             expiring = false;
 
             // Unbind any objects associated with this session
-            String keys[] = keys();
-            for (int i = 0; i < keys.length; i++)
-                removeAttribute(keys[i], notify, false);
+            for (String key : keys()) {
+                removeAttribute(key, notify, false);
+            }
 
             // Notify interested session event listeners
             if (notify) {
@@ -1203,7 +1203,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
                 String nextAttrName = attrNamesEnum.nextElement();
                 Object nextAttrValue = getAttribute(nextAttrName);
                 sb.append("\n");
-                sb.append(nextAttrName + "attrName = ");
+                sb.append(nextAttrName).append("attrName = ");
                 sb.append(" : attrValue = ").append(nextAttrValue);
             }
         }
@@ -1362,7 +1362,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
                 ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
 
-        return (new Enumerator<String>(attributes.keySet(), true));
+        return (new Enumerator<>(attributes.keySet(), true));
 
     }
 
@@ -1379,10 +1379,9 @@ public class StandardSession implements HttpSession, Session, Serializable {
      * @deprecated As of Version 2.2, this method is replaced by
      *  <code>getAttribute()</code>
      */
+    @Override
     public Object getValue(String name) {
-
         return (getAttribute(name));
-
     }
 
 
@@ -2064,7 +2063,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
 
         // Deserialize the attribute count and attribute values
         if (attributes == null)
-            attributes = new ConcurrentHashMap<String, Object>();
+            attributes = new ConcurrentHashMap<>();
         /* PWC 6444754
         int n = ((Integer) stream.readObject()).intValue();
         */
@@ -2151,8 +2150,8 @@ public class StandardSession implements HttpSession, Session, Serializable {
 
         // Accumulate the names of serializable and non-serializable attributes
         String keys[] = keys();
-        ArrayList<String> saveNames = new ArrayList<String>();
-        ArrayList<Object> saveValues = new ArrayList<Object>();
+        ArrayList<String> saveNames = new ArrayList<>();
+        ArrayList<Object> saveValues = new ArrayList<>();
         for (int i = 0; i < keys.length; i++) {
             Object value = attributes.get(keys[i]);
             if (value == null) {
@@ -2432,13 +2431,9 @@ public class StandardSession implements HttpSession, Session, Serializable {
      * @return true if the given value may be serialized, false otherwise
      */
     static boolean isSerializable(Object value) {
-        if ((value instanceof Serializable)
+        return (value instanceof Serializable)
                 || (value instanceof BaseIndirectlySerializable)
-                || (value instanceof javax.naming.Context)) {
-            return true;
-        } else {
-            return false;
-        }
+                || (value instanceof javax.naming.Context);
     }
 
     private static Cache<Object, Boolean> buildSerializableCache() {
@@ -2478,7 +2473,7 @@ final class StandardSessionContext implements HttpSessionContext {
      */
     @Override
     public Enumeration<String> getIds() {
-        return (new Enumerator<String>(dummy));
+        return (new Enumerator<>(dummy));
     }
 
 

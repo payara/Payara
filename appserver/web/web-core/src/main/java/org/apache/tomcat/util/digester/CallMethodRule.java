@@ -310,7 +310,7 @@ public class CallMethodRule extends Rule {
             // copy the parameter class names into an array
             // the classes will be loaded when the digester is set 
             this.paramClassNames = new String[paramTypes.length];
-            System.arraycopy(paramTypes, 0, this.paramClassNames, 0, this.paramClassNames.length);
+            this.paramClassNames = paramTypes.clone();
         }
 
     }

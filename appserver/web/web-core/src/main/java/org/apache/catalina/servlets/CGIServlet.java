@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package org.apache.catalina.servlets;
 
@@ -311,7 +311,7 @@ public final class CGIServlet extends HttpServlet {
     static Object expandFileLock = new Object();
 
     /** the shell environment variables to be passed to the CGI script */
-    static Hashtable<String, String> shellEnv = new Hashtable<String, String>();
+    static Hashtable<String, String> shellEnv = new Hashtable<>();
 
     /**
      * Sets instance variables.
@@ -593,6 +593,7 @@ public final class CGIServlet extends HttpServlet {
      * @see javax.servlet.http.HttpServlet
      *
      */
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
         doGet(req, res);
@@ -677,15 +678,6 @@ public final class CGIServlet extends HttpServlet {
 
     } //doGet
 
-
-
-    /** For future testing use only; does nothing right now */
-    public static void main(String[] args) {
-        System.out.println("$Header$");
-    }
-
-
-
     /**
      * Encapsulates the CGI environment and rules to derive
      * that environment from the servlet container and request information.
@@ -728,7 +720,7 @@ public final class CGIServlet extends HttpServlet {
         private File workingDirectory = null;
 
         /** cgi command's command line parameters */
-        private ArrayList<String> cmdLineParameters = new ArrayList<String>();
+        private ArrayList<String> cmdLineParameters = new ArrayList<>();
 
         /** whether or not this object is valid or not */
         private boolean valid = false;
@@ -984,7 +976,7 @@ public final class CGIServlet extends HttpServlet {
              * (apologies to Marv Albert regarding MJ)
              */
 
-            Hashtable<String, String> envp = new Hashtable<String, String>();
+            Hashtable<String, String> envp = new Hashtable<>();
 
             // Add the shell environment variables (if any)
             envp.putAll(shellEnv);
@@ -1525,15 +1517,11 @@ public final class CGIServlet extends HttpServlet {
          * Checks & sets ready status
          */
         protected void updateReadyStatus() {
-            if (command != null
-                && env != null
-                && wd != null
-                && params != null
-                && response != null) {
-                readyToRun = true;
-            } else {
-                readyToRun = false;
-            }
+            readyToRun = command != null
+                    && env != null
+                    && wd != null
+                    && params != null
+                    && response != null;
         }
 
 
@@ -1670,7 +1658,7 @@ public final class CGIServlet extends HttpServlet {
 
             if ((command.contains(File.separator + "." + File.separator))
                 || (command.contains(File.separator + ".."))
-                || (command.indexOf(File.separator + "..") >= 0)) {
+                || (command.contains(".." + File.separator))) {
                 throw new IOException(this.getClass().getName()
                                       + "Illegal Character in CGI command "
                                       + "path ('.' or '..') detected.  Not "
@@ -1745,6 +1733,7 @@ public final class CGIServlet extends HttpServlet {
                 final BufferedReader stdErrRdr = commandsStdErr ;
 
                 errReaderThread = new Thread() {
+                    @Override
                     public void run () {
                         sendToLog(stdErrRdr) ;
                     }
@@ -1767,7 +1756,7 @@ public final class CGIServlet extends HttpServlet {
                             }
                             if (line.startsWith("HTTP")) {
                                 response.setStatus(getSCFromHttpStatusLine(line));
-                            } else if (line.indexOf(":") >= 0) {
+                            } else if (line.indexOf(':') >= 0) {
                                 String header =
                                     line.substring(0, line.indexOf(":")).trim();
                                 String value =

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -102,5 +102,5 @@ public final class Constants {
      */
     // In Tomcat, the following constant is in org.apache.coyote.Constants with default true.
     public static final boolean USE_CUSTOM_STATUS_MSG_IN_HEADER =
-            Boolean.valueOf(System.getProperty("org.apache.coyote.USE_CUSTOM_STATUS_MSG_IN_HEADER","true")); 
+            Boolean.parseBoolean(System.getProperty("org.apache.coyote.USE_CUSTOM_STATUS_MSG_IN_HEADER","true")); 
 }

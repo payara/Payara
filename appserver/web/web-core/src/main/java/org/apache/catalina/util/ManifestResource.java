@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -191,7 +191,7 @@ public class ManifestResource {
         sb.append(resourceName);
 
         sb.append(", isFulfilled=");
-        sb.append(isFulfilled()).append("");
+        sb.append(isFulfilled());
         sb.append(", requiredExtensionCount =");
         sb.append(getRequiredExtensionCount());
         sb.append(", availableExtensionCount=");
@@ -231,7 +231,7 @@ public class ManifestResource {
         if (names == null)
             return null;
 
-        ArrayList<Extension> extensionList = new ArrayList<Extension>();
+        ArrayList<Extension> extensionList = new ArrayList<>();
         names += " ";
 
         while (true) {
@@ -278,7 +278,7 @@ public class ManifestResource {
         if (name == null)
             return null;
 
-        HashMap<String, Extension> extensionMap = new HashMap<String, Extension>();
+        HashMap<String, Extension> extensionMap = new HashMap<>();
 
         Extension extension = new Extension();
         extension.setExtensionName(name);

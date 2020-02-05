@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -671,10 +671,7 @@ public final class ApplicationDispatcher
                 State state)
             throws IOException, ServletException {
         //START OF 6364900 original invoke has been renamed to doInvoke
-        boolean crossContext = false;
-        if (crossContextFlag != null && crossContextFlag) {
-            crossContext = true;
-        }
+        boolean crossContext = crossContextFlag != null && crossContextFlag;
         if (crossContext) {
             context.getManager().lockSession(request); 
         }       
@@ -1069,7 +1066,7 @@ public final class ApplicationDispatcher
                 crossContext = !(context.getPath().equals(contextPath));
             }
             //START OF 6364900
-            crossContextFlag = Boolean.valueOf(crossContext);
+            crossContextFlag = crossContext;
             //END OF 6364900
 
             if (this.name != null) {

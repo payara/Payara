@@ -80,7 +80,6 @@ import java.util.*;
  * @author Remy Maucherat
  * @version $Revision: 1.5.6.2 $ $Date: 2008/04/17 18:37:07 $
  */
-@SuppressWarnings("override")
 public class DummyRequest implements HttpRequest, HttpServletRequest {
 
     protected String queryString;
