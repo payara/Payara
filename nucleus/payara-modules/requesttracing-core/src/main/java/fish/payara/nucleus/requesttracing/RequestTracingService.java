@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.nucleus.config.ClusteredConfig;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -91,12 +92,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -157,9 +157,12 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
-    
+
     @Inject
     private HazelcastCore hazelcast;
+
+    @Inject
+    private ClusteredConfig clusteredConfig;
 
     @Inject
     private PayaraExecutorService payaraExecutorService;
@@ -265,8 +268,9 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             // Set up the historic request trace store if enabled
             if (executionOptions.isHistoricTraceStoreEnabled()) {
                 historicRequestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), true);
-                historicRequestTraceStore.setSize(executionOptions.getHistoricTraceStoreSize());
-                
+                initStoreSize(historicRequestTraceStore, executionOptions::getHistoricTraceStoreSize, "historicRequestTraceStoreSize");
+
+
                 // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
                 if (executionOptions.getTraceStoreTimeout() != null 
                         && executionOptions.getTraceStoreTimeout() > 0 
@@ -280,10 +284,10 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                             0, period, TimeUnit.SECONDS);
                 }
             }
-            
+
             // Set up the general request trace store
             requestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), false);
-            requestTraceStore.setSize(executionOptions.getTraceStoreSize());
+            initStoreSize(requestTraceStore, executionOptions::getTraceStoreSize, "requestTraceStoreSize");
 
             // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
             if (executionOptions.getTraceStoreTimeout() != null && executionOptions.getTraceStoreTimeout() > 0 
@@ -298,6 +302,18 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             }
             
             logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
+        } else {
+            clusteredConfig.clearSharedConfiguration("requestTraceStoreSize");
+            clusteredConfig.clearSharedConfiguration("historicRequestTraceStore");
+        }
+    }
+
+    private void initStoreSize(RequestTraceStoreInterface store, IntSupplier size, String clusteredConfigProperty) {
+        if (store.isShared()) {
+            store.setSize(() -> clusteredConfig.getSharedConfiguration(clusteredConfigProperty, size.getAsInt(), Integer::max));
+        } else {
+            clusteredConfig.clearSharedConfiguration(clusteredConfigProperty);
+            store.setSize(size);
         }
     }
 

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
 /**
@@ -55,13 +56,13 @@ import java.util.stream.Collectors;
 public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, Serializable {
 
     private final Map<UUID, RequestTrace> store;
-    private int maxStoreSize;
+    private IntSupplier maxStoreSize;
 
     private final TraceStorageStrategy strategy;
 
     ClusteredRequestTraceStore(Map<UUID, RequestTrace> store, TraceStorageStrategy strategy) {
         this.store = store;
-        this.maxStoreSize = store.size();
+        this.maxStoreSize = () -> store.size();
         this.strategy = strategy;
     }
 
@@ -73,7 +74,7 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
     @Override
     public RequestTrace addTrace(RequestTrace trace, RequestTrace traceToRemove) {
         store.put(trace.getTraceId(), trace);
-        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize, traceToRemove);
+        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize.getAsInt(), traceToRemove);
         if (traceToRemove == null) {
             return null;
         }
@@ -92,16 +93,17 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
     }
 
     @Override
-    public void setSize(int maxSize) {
-        while (store.size() > maxSize) {
-            store.remove(strategy.getTraceForRemoval(getTraces(), maxSize, null).getTraceId());
+    public void setSize(IntSupplier maxSize) {
+        int currentMaxSize = maxSize.getAsInt();
+        while (store.size() > currentMaxSize) {
+            store.remove(strategy.getTraceForRemoval(getTraces(), currentMaxSize, null).getTraceId());
         }
         this.maxStoreSize = maxSize;
     }
 
     @Override
     public int getStoreSize() {
-        return this.maxStoreSize;
+        return maxStoreSize.getAsInt();
     }
 
     @Override
@@ -111,4 +113,8 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
         return traces;
     }
 
+    @Override
+    public boolean isShared() {
+        return true;
+    }
 }
