@@ -85,7 +85,7 @@ import java.util.logging.Level;
  *     "catalina.base" system property.   [conf/server.xml]
  * <li><b>-help</b> - Display usage information.
  * <li><b>-stop</b> - Stop the currently running instance of Catalina.
- * </u>
+ * </ul>
  *
  * Should do the same thing as Embedded, but using a server.xml file.
  *
