@@ -64,9 +64,16 @@ import java.util.function.Predicate;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import fish.payara.monitoring.alert.Alert;
 import fish.payara.monitoring.alert.Alert.Level;
@@ -75,6 +82,7 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
+import fish.payara.monitoring.configuration.MonitoringConsoleConfiguration;
 import fish.payara.monitoring.alert.AlertService;
 import fish.payara.monitoring.alert.Watch;
 import fish.payara.monitoring.model.Metric;
@@ -88,7 +96,18 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     private static final int MAX_ALERTS_PER_SERIES = 10;
 
     @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
+    InternalSystemAdministrator kernelIdentity;
+
+    @Inject
+    private Domain domain;
+
+    @Inject
     private MonitoringDataRepository monitoringData;
+
+    private MonitoringConsoleConfiguration config;
 
     private boolean isDas;
     private final JobHandle checker = new JobHandle("watch checker");
@@ -107,15 +126,61 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     @PostConstruct
     public void init() {
         isDas = serverEnv.isDas();
-        changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
-        addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration")))
+        config = domain.getExtensionByType(MonitoringConsoleConfiguration.class);
+        addWatch(new Watch("Metric Collection Duration", new Metric(new Series("ns:monitoring CollectionDuration"), Unit.MILLIS))
+                .programmatic()
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 2, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
-        addWatch(new Watch("Watch Loop Duration", new Metric(new Series("ns:monitoring WatchLoopDuration")))
+        addWatch(new Watch("Watch Loop Duration", new Metric(new Series("ns:monitoring WatchLoopDuration"), Unit.MILLIS))
+                .programmatic()
                 .red(800L, 2, true, 800L, 3, false)
                 .amber(600L, 3, true, 600L, 3, false)
                 .green(-400L, 1, false, null, null, false));
+        addWatchesFromConfiguration();
+        changedConfig(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
+    }
+
+    private void addWatchesFromConfiguration() {
+        if (config != null) {
+            for (String watch : config.getCustomWatchValues()) {
+                addWatch(Watch.fromJSON(watch));
+            }
+        }
+    }
+
+    @Override
+    public boolean toggleWatch(String name, boolean disabled) {
+        Watch watch = watchByName(name);
+        if (watch == null) {
+            return false;
+        }
+        if (disabled) {
+            watch.disable();
+        } else {
+            watch.enable();
+        }
+        updateWatchConfiguration(watch);
+        return true;
+    }
+
+    private void updateWatchConfiguration(Watch watch) {
+        runCommand("set-monitoring-console-configuration", 
+                watch.isDisabled() ? "disable-watch" : "enable-watch", watch.name);
+    }
+
+    private void runCommand(String name, String... params) {
+        try {
+            ActionReport report = commandRunner.getActionReport("plain");
+            CommandInvocation cmd = commandRunner.getCommandInvocation(name, report, kernelIdentity.getSubject());
+            ParameterMap paramsMap = new ParameterMap();
+            for (int i = 0; i < params.length; i += 2) {
+                paramsMap.add(params[i], params[i + 1]);
+            }
+            cmd.parameters(paramsMap).execute();
+        } catch (Exception ex) {
+            LOGGER.log(java.util.logging.Level.WARNING, "Failed to run command: " + name, ex);
+        }
     }
 
     @Override
@@ -199,7 +264,15 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     @Override
+    public Watch watchByName(String name) {
+        return watchesByName.get(name);
+    }
+
+    @Override
     public void addWatch(Watch watch) {
+        if (config.getDisabledWatchNames().contains(watch.name)) {
+            watch.disable();
+        }
         Watch existing = watchesByName.put(watch.name, watch);
         if (existing != null) {
             removeWatch(existing);
@@ -207,15 +280,26 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
         Series series = watch.watched.series;
         Map<Series, Map<String, Watch>> target = series.isPattern() ? patternWatches : simpleWatches;
         target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.name, watch);
+        if (!watch.isProgrammatic()) {
+            runCommand("set-monitoring-console-configuration", 
+                    "add-watch-name", watch.name, 
+                    "add-watch-json", watch.toJSON().toString());
+        }
     }
 
-    private void removeWatch(Watch watch) {
+    @Override
+    public void removeWatch(Watch watch) {
         watch.stop();
-        if (watchesByName.get(watch.name) == watch) {
-            watchesByName.remove(watch.name);
+        String name = watch.name;
+        if (watchesByName.get(name) == watch) {
+            watchesByName.remove(name);
+            collectedWatches.remove(name);
+            removeWatch(watch, simpleWatches);
+            removeWatch(watch, patternWatches);
+            if (!watch.isProgrammatic()) {
+                runCommand("set-monitoring-console-configuration", "remove-watch", watch.name);
+            }
         }
-        removeWatch(watch, simpleWatches);
-        removeWatch(watch, patternWatches);
     }
 
     private static void removeWatch(Watch watch, Map<Series, Map<String, Watch>> map) {
@@ -305,7 +389,8 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
                         notYetCollectedWatches.remove(name);
                         Watch watch = collectedBefore.get(name);
                         if (watch == null) {
-                            watch = new Watch(name, new Metric(new Series(series.toString()), Unit.fromShortName(unit)));
+                            Metric watched = new Metric(new Series(series.toString()), Unit.fromShortName(unit));
+                            watch = new Watch(name, watched).programmatic();
                         }
                         Watch updated = watch.with(level, startThreshold, startForLast, startOnAverage, stopTheshold,
                                 stopForLast, stopOnAverage);
@@ -378,6 +463,9 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     private void checkWatch(Watch watch) {
+        if (watch.isDisabled()) {
+            return;
+        }
         for (Alert newlyRaised : watch.check(monitoringData)) {
             Deque<Alert> seriesAlerts = alerts.computeIfAbsent(newlyRaised.getSeries(),
                     key -> new ConcurrentLinkedDeque<>());

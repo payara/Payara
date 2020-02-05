@@ -42,6 +42,7 @@ package fish.payara.monitoring.alert;
 import static fish.payara.monitoring.alert.Alert.Level.*;
 import static java.util.Collections.emptyList;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -51,9 +52,17 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
+
 import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.alert.Condition.Operator;
 import fish.payara.monitoring.collect.MonitoringWatchCollector.WatchBuilder;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.Series;
@@ -116,20 +125,33 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     public final Circumstance amber;
     public final Circumstance green;
     private final Metric[] captured;
-    private final Map<String, State> statesByInstanceSeries = new ConcurrentHashMap<>();
+    private final Map<String, State> statesByInstanceSeries;
     private final AtomicBoolean stopped = new AtomicBoolean(false);
+    private final AtomicBoolean disabled;
+    private final boolean programmatic;
 
     public Watch(String name, Metric watched) {
-        this(name, watched, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
+        this(name, watched, false, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED, Circumstance.UNSPECIFIED);
     }
 
-    public Watch(String name, Metric watched, Circumstance red, Circumstance amber, Circumstance green, Metric... captured) {
+    public Watch(String name, Metric watched, boolean programmatic, Circumstance red, Circumstance amber,
+            Circumstance green, Metric... captured) {
+        this(name, watched, programmatic, red, amber, green, captured, new AtomicBoolean(false),
+                new ConcurrentHashMap<>());
+    }
+
+    private Watch(String name, Metric watched, boolean programmatic, Circumstance red, Circumstance amber,
+            Circumstance green, Metric[] captured, AtomicBoolean disabled,
+            Map<String, State> statesByInstanceSeries) {
         this.name = name;
         this.watched = watched;
+        this.programmatic = programmatic;
         this.red = red;
         this.amber = amber;
         this.green = green;
         this.captured = captured;
+        this.disabled = disabled;
+        this.statesByInstanceSeries = statesByInstanceSeries;
     }
 
     @Override
@@ -143,10 +165,16 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
     public void stop() {
         if (stopped.compareAndSet(false, true)) {
-            for (State s : statesByInstanceSeries.values()) {
-                if (s.ongoing != null) {
-                    s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
-                }
+            stopAlertsOfThisWatch();
+        }
+    }
+
+    private void stopAlertsOfThisWatch() {
+        for (State s : statesByInstanceSeries.values()) {
+            if (s.ongoing != null) {
+                s.ongoing.stop(WHITE, (System.currentTimeMillis() / 1000L) * 1000L);
+                s.ongoing = null;
+                s.level = WHITE;
             }
         }
     }
@@ -155,8 +183,36 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         return stopped.get();
     }
 
+    public boolean isDisabled() {
+        return disabled.get();
+    }
+
+    public void disable() {
+        if (disabled.compareAndSet(false, true)) {
+            stopAlertsOfThisWatch();
+        }
+    }
+
+    public void enable() {
+        disabled.set(false);
+    }
+
+    public boolean isProgrammatic() {
+        return programmatic;
+    }
+
+    /**
+     * Programmatic watches are collected from {@link MonitoringWatchSource}s or created during initialisation.
+     * The programmatic flag can be used by UIs to determine if a watch should be possible to delete.
+     * 
+     * @return A new {@link Watch} instance that {@link #isProgrammatic()}. 
+     */
+    public Watch programmatic() {
+        return new Watch(name, watched, true, red, amber, green, captured, disabled, statesByInstanceSeries);
+    }
+
     public List<Alert> check(SeriesLookup lookup) {
-        if (isStopped()) {
+        if (isStopped() || isDisabled()) {
             return emptyList();
         }
         List<Alert> raised = new ArrayList<>();
@@ -316,25 +372,28 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         case "red":
             return isEqual(red, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, //
+                : with(
                     create(RED, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
-                    amber, green, captured);
+                    amber, green);
         case "amber":
             return isEqual(amber, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, red, //
+                : with(red,
                     create(AMBER, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
-                    green, captured);
+                    green);
 
         case "green":
             return isEqual(green, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
-                : new Watch(name, watched, red, amber, //
-                    create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage),
-                    captured);
+                : with(red, amber, //
+                    create(GREEN, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, startOnAverage));
         default:
             throw new IllegalArgumentException("No such alert level: " + level);
         }
+    }
+
+    private Watch with(Circumstance red, Circumstance amber, Circumstance green) {
+        return new Watch(name, watched, programmatic, red, amber, green, captured, disabled, statesByInstanceSeries);
     }
 
     @Override
@@ -365,9 +424,12 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         if (threshold == null) {
             return sample.isNone();
         }
+        if (!onAverage && forLast instanceof Integer && forLast.intValue() == 1) {
+            forLast = null;
+        }
         return !sample.isNone()
                 && sample.threshold == Math.abs(threshold.longValue())
-                && Objects.equals(sample.forLast, forLast)
+                && (Objects.equals(sample.forLast, forLast))
                 && sample.onAverage == onAverage;
     }
 
@@ -384,6 +446,57 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
                 ? Condition.NONE
                 : new Condition(stopOperator, Math.abs(stopTheshold), stopForLast, stopOnAverage);
         return new Circumstance(level, start, stop);
+    }
+
+    public JsonObject toJSON() {
+        JsonArrayBuilder capturedArray = Json.createArrayBuilder();
+        for (Metric m : captured) {
+            capturedArray.add(m.toJSON());
+        }
+        return Json.createObjectBuilder()
+                .add("name", name)
+                .add("watched", watched.toJSON())
+                .add("programmatic", programmatic)
+                .add("disabled", isDisabled())
+                .add("stopped", isStopped())
+                .add("red", red.toJSON())
+                .add("amber", amber.toJSON())
+                .add("green", green.toJSON())
+                .add("captured", capturedArray.build())
+                .build();
+    }
+
+    public static Watch fromJSON(String json) {
+        JsonValue value = null;
+        try (JsonParser parser = Json.createParser(new StringReader(json))) {
+            if (!parser.hasNext()) {
+                return null;
+            }
+            parser.next();
+            value = parser.getValue();
+        }
+        if (value == null || value == JsonValue.NULL) {
+            return null;
+        }
+        JsonObject obj = value.asJsonObject(); 
+        JsonArray array = obj.getJsonArray("captured");
+        Metric[] captured = array == null 
+                ? new Metric[0]
+                : array.stream().map(Metric::fromJSON).toArray(Metric[]::new);
+        Watch out = new Watch(obj.getString("name"), 
+                Metric.fromJSON(obj.get("watched")), 
+                obj.getBoolean("programmatic", false), 
+                Circumstance.fromJson(obj.get("red")), 
+                Circumstance.fromJson(obj.get("amber")), 
+                Circumstance.fromJson(obj.get("green")), 
+                captured);
+        if (obj.getBoolean("disabled", false)) {
+            out.disable();
+        }
+        if (obj.getBoolean("stopped", false)) {
+            out.stop();
+        }
+        return out;
     }
 
 }

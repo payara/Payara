@@ -37,65 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.model;
+package fish.payara.monitoring.configuration;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
-public final class Metric {
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
-    public final Series series;
-    public final Unit unit;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 
-    public Metric(Series series) {
-        this(series, Unit.COUNT);
-    }
+/**
+ * Configuration for the monitoring console core.
+ * This is first of all the data and watch collection and evaluation.
+ * 
+ * @author Jan Bernitt
+ * @since 5.201
+ */
+@Configured
+public interface MonitoringConsoleConfiguration extends DomainExtension {
 
-    public Metric(Series series, Unit unit) {
-        this.series = series;
-        this.unit = unit;
-    }
+    /**
+     * Note that this is not reflecting whether or not the monitoring data is collected.
+     * This is controlled by the general monitoring configuration.
+     * 
+     * @return True, if monitoring console web-app is deployed, else false.
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getEnabled();
+    void setEnabled(String value) throws PropertyVetoException;
 
-    public Metric withUnit(Unit unit) {
-        return new Metric(series, unit);
-    }
+    /**
+     * @return Names of the watches that are disabled (this includes collected and custom watches)
+     */
+    @Element
+    List<String> getDisabledWatchNames();
 
-    @Override
-    public int hashCode() {
-        return series.hashCode() ^ unit.hashCode();
-    }
+    /**
+     * @return Names of custom watches (so collected watches are not included)
+     */
+    @Element
+    List<String> getCustomWatchNames();
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof Metric && equalTo((Metric) obj);
-    }
+    /**
+     * @return JSON values of the custom watches (index is same in {@link #getCustomWatchNames()})
+     */
+    @Element
+    List<String> getCustomWatchValues();
 
-    public boolean equalTo(Metric other) {
-        return series.equalTo(other.series) && unit == other.unit;
-    }
-
-    @Override
-    public String toString() {
-        return series + " unit:" + unit.toString();
-    }
-
-    public static Metric parse(String series, String unit) {
-        return new Metric(new Series(series), Unit.fromShortName(unit));
-    }
-
-    public JsonObject toJSON() {
-        return Json.createObjectBuilder()
-                .add("series", series.toString())
-                .add("unit", unit.toString())
-                .build();
-    }
-
-    public static Metric fromJSON(JsonValue value) {
-        if (value == null || value == JsonValue.NULL) {
-            return null;
-        }
-        JsonObject obj = value.asJsonObject();
-        return new Metric(new Series(obj.getString("series")), Unit.fromShortName(obj.getString("unit", "count")));
-    }
 }

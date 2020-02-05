@@ -76,7 +76,7 @@ MonitoringConsole.Chart.Line = (function() {
           display: true,
           type: 'time',
           gridLines: {
-            color: 'rgba(100,100,100,0.3)',
+            color: 'rgba(0, 127, 255,0.5)',
             lineWidth: 0.5,
           },
           time: {
@@ -114,7 +114,7 @@ MonitoringConsole.Chart.Line = (function() {
         yAxes: [{
           display: true,
           gridLines: {
-            color: 'rgba(100,100,100,0.7)',
+            color: 'rgba(0, 127, 255,0.5)',
             lineWidth: 0.5,
           },
           ticks: {
@@ -134,6 +134,7 @@ MonitoringConsole.Chart.Line = (function() {
         if (!Array.isArray(areas) || areas.length === 0)
           return;
         let ctx = chart.chart.ctx;
+        ctx.save();
         let xAxis = chart.chart.scales["x-axis-0"];
         function yOffset(y) {
           let yMax = yAxis.ticksAsNumbers[0];
@@ -150,7 +151,7 @@ MonitoringConsole.Chart.Line = (function() {
           let group = areas[i];
           let offsetBar = false;
           for (let j = 0; j < group.length; j++) {
-            let area = group[j];
+            const area = group[j];
             let yAxisMin = yOffset(area.min);
             let yAxisMax = yOffset(area.max);
             let barLeft = xAxis.right + 1 + offsetRight;
@@ -158,8 +159,17 @@ MonitoringConsole.Chart.Line = (function() {
             if (area.min != area.max) {
               offsetBar = true;
               let barHeight = yAxisMax - yAxisMin;
-              ctx.fillStyle = area.color;
-              ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);
+              if (area.style != 'outline') {
+                ctx.fillStyle = area.color;
+                ctx.fillRect(barLeft, yAxisMin, barWidth, barHeight);                
+              } else {
+                ctx.strokeStyle = area.color;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.rect(barLeft, yAxisMin, barWidth, barHeight);
+                ctx.stroke();
+              }
             }
             // and the line
             let yLine = area.type == 'lower' ? yAxisMax : yAxisMin;
@@ -174,30 +184,33 @@ MonitoringConsole.Chart.Line = (function() {
           // gradients between colors
           for (let j = 0; j < group.length; j++) {
             let area = group[j];
-            let yAxisMin = yOffset(area.min);
-            let yAxisMax = yOffset(area.max);
-            let barLeft = xAxis.right + 1 + offsetRight;
-            if (area.min != area.max) {
-              let barHeight = yAxisMax - yAxisMin;
-              let colors = [];
-              if (j + 1 < group.length && group[j+1].max == area.min) {
-                colors = [area.color, group[j+1].color];
-              } else if (j > 0 && group[j-1].max == area.min) {
-                colors = [area.color, group[j-1].color];
+            if (area.style != 'outline') {
+              let yAxisMin = yOffset(area.min);
+              let yAxisMax = yOffset(area.max);
+              let barLeft = xAxis.right + 1 + offsetRight;
+              if (area.min != area.max) {
+                let barHeight = yAxisMax - yAxisMin;
+                let colors = [];
+                if (j + 1 < group.length && group[j+1].max == area.min) {
+                  colors = [area.color, group[j+1].color];
+                } else if (j > 0 && group[j-1].max == area.min) {
+                  colors = [area.color, group[j-1].color];
+                }
+                if (colors.length == 2) {
+                  let yTop = area.type == 'lower' ? yAxisMin - 6 : yAxisMin;
+                  let gradient = ctx.createLinearGradient(0, yTop, 0, yTop+6);
+                  gradient.addColorStop(0, colors[0]);
+                  gradient.addColorStop(1, colors[1]);
+                  ctx.fillStyle = gradient;
+                  ctx.fillRect(barLeft, yTop, barWidth, 6);                
+                }
               }
-              if (colors.length == 2) {
-                let yTop = area.type == 'lower' ? yAxisMin - 6 : yAxisMin;
-                let gradient = ctx.createLinearGradient(0, yTop, 0, yTop+6);
-                gradient.addColorStop(0, colors[0]);
-                gradient.addColorStop(1, colors[1]);
-                ctx.fillStyle = gradient;
-                ctx.fillRect(barLeft, yTop, barWidth, 6);                
-              }
-            }            
+            }          
           }
           if (offsetBar)
             offsetRight += barWidth + 1;
         }
+        ctx.restore();
       }
     };
     return new Chart(widget.target, {
@@ -331,16 +344,17 @@ MonitoringConsole.Chart.Line = (function() {
 
   function createWatchBackgroundAreas(watch) { 
     let areas = [];
+    let enabled = !watch.disabled;
     if (watch.red)
-      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green]));
+      areas.push(createBackgroundArea(watch.red, [watch.amber, watch.green], enabled));
     if (watch.amber)
-      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green])); 
+      areas.push(createBackgroundArea(watch.amber, [watch.red, watch.green], enabled)); 
     if (watch.green)
-      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red]));
+      areas.push(createBackgroundArea(watch.green, [watch.amber, watch.red], enabled));
     return areas;
   }   
 
-  function createBackgroundArea(level, levels) {
+  function createBackgroundArea(level, levels, enabled) {
     let color = Theme.color(level.level);
     let min = 0;
     let max;
@@ -363,7 +377,7 @@ MonitoringConsole.Chart.Line = (function() {
         }
       }
     }
-    return { color: color, min: min, max: max, type: type };
+    return { color: color, min: min, max: max, type: type, style: enabled ? 'fill' : 'outline' };
   }
 
   /**

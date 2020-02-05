@@ -45,6 +45,7 @@
  */ 
 MonitoringConsole.Chart.Trace = (function() {
 
+   const Controller = MonitoringConsole.Controller;
    const Components = MonitoringConsole.View.Components;
    const Colors = MonitoringConsole.View.Colors;
    const Common = MonitoringConsole.Chart.Common;
@@ -228,7 +229,7 @@ MonitoringConsole.Chart.Trace = (function() {
 
 
    function onDataRefresh() {
-      $.getJSON("api/trace/data/"+model.series, onDataUpdate);
+      Controller.requestListOfRequestTraces(model.series, onDataUpdate);
    }
 
    function onOpenPopup(series) {

@@ -42,7 +42,13 @@ package fish.payara.monitoring.alert;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import fish.payara.monitoring.model.SeriesDataset;
 
@@ -74,6 +80,15 @@ public final class Condition {
         public String toString() {
             return symbol;
         }
+
+        public static Operator parse(String symbol) {
+            for (Operator op : values()) {
+                if (op.symbol.equals(symbol) ) {
+                    return op;
+                }
+            }
+            throw new NoSuchElementException("Operator with symbol does not exist: " + symbol);
+        }
     }
 
     public final Operator comparison;
@@ -88,7 +103,7 @@ public final class Condition {
     public Condition(Operator comparison, long threshold, Number forLast, boolean onAverage) {
         this.comparison = comparison;
         this.threshold = threshold;
-        this.forLast = forLast;
+        this.forLast = !onAverage && forLast instanceof Integer && forLast.intValue() == 1 ? null : forLast;
         this.onAverage = onAverage && forLast != null && forLast.longValue() > 0L;
     }
 
@@ -248,16 +263,15 @@ public final class Condition {
         StringBuilder str = new StringBuilder();
         boolean any = isForLastPresent() && forLast.intValue() == 0;
         boolean anyN = isForLastPresent() && forLast.intValue() < 0;
-        if (any || anyN) {
-            str.append("any 1 ");
-        }
         str.append("value ").append(comparison.toString()).append(' ').append(threshold);
-        if (isForLastPresent() && !any) {
+        if (isForLastPresent()) {
             if (onAverage) {
                 str.append(" for average of last ");
             } else if (anyN) {
                 str.append(" in last ");
-            }else {
+            } else if (any) {
+                str.append(" in sample");
+            } else {
                 str.append(" for last ");
             }
         }
@@ -270,4 +284,39 @@ public final class Condition {
         return str.toString();
     }
 
+    public JsonValue toJSON() {
+        if (isNone()) {
+            return JsonValue.NULL;
+        }
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("comparison", comparison.symbol)
+                .add("threshold", threshold)
+                .add("onAverage", onAverage);
+         if (isForLastMillis()) {
+             builder.add("forMillis", forLast.longValue());
+         }
+         if (isForLastTimes()) {
+             builder.add("forTimes", forLast.intValue());
+         }
+         return builder.build();
+    }
+
+    public static Condition fromJSON(JsonValue value) {
+        if (value == null || value == JsonValue.NULL) {
+            return Condition.NONE;
+        }
+        JsonObject obj = value.asJsonObject();
+        Number forLast = null;
+        if (obj.containsKey("forMillis")) {
+            forLast = obj.getJsonNumber("forMillis").longValue();
+        }
+        if (obj.containsKey("forTimes")) {
+            forLast = obj.getInt("forTimes");
+        }
+        return new Condition(
+                Operator.parse(obj.getString("comparison", ">")), 
+                obj.getJsonNumber("threshold").longValue(),
+                forLast,
+                obj.getBoolean("onAverage", false));
+    }
 }

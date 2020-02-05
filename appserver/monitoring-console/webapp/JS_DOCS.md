@@ -218,10 +218,13 @@ end                  = number
 
 Watch Data (as received from server):
 ```
-WATCH                = { name, series, unit, red, amber, green }
+WATCH                = { name, series, unit, stopped, disabled, programmatic, red, amber, green, states }
 name                 = string
 series               = string
 unit                 = string
+stopped              = boolean
+disabled             = boolean
+programmatic         = boolean
 red                  = CIRCUMSTANCE
 amber                = CIRCUMSTANCE
 green                = CIRCUMSTANCE
@@ -229,9 +232,12 @@ CIRCUMSTANCE         = { level, start, stop, suppress, surpressingSeries, surpre
 level                = string,
 start                = CONDITION
 stop                 = CONDITION
-suppress              = CONDITION 
+suppress             = CONDITION 
 surpressingSeries    = string
 surpressingUnit      = string
+states               = SERIES_STATES
+SERIES_STATES        = { *:INSTANCE_STATES }
+INSTANCE_STATES      = { *:string }
 ```
 
 
@@ -290,12 +296,12 @@ entries     = [ENTRY]
 ENTRY       = { label, type, input, value, unit, min, max, options, onChange, description, defaultValue, collapsed } 
 label       = string
 type        = undefined | 'header' | 'checkbox' | 'range' | 'dropdown' | 'value' | 'text' | 'color'
-unit        = string
+unit        = string | fn () => string
 value       = number | string
 defaultValue= number | string
 min         = number
 max         = number
-options     = { *:string }
+options     = { *:string } | [ * ]
 input       = fn () => string | fn () => jquery | string | jquery | [ENTRY]
 onChange    = fn (widget, newValue) => () | fn (newValue) => ()
 description = string
@@ -360,9 +366,10 @@ Describes the model expected by the `Indicator` component.
 This component gives feedback on the status of each widget.
 
 ```
-INDICATOR = { status, text }
+INDICATOR = { status, text, color }
 status    = Status
 text      = string
+color     = string
 ```
 
 
@@ -462,6 +469,33 @@ type             = undefined | 'pre'
 * `fields` is a list of attribute keys that works as filter as well as giving the order; can be undefined or empty to use all attributes in their given order.
 
 
+
+### Watch Manager API
+Describes the model expected by the `WatchManager` component which combines the `WatchList` and `WatchBuilder` components.
+The manager shows a configuration with a list of watches which also allows to create new watches.
+
+```
+WATCH_LIST      = { id, items, colors, actions  }
+WATCH_BUILDER   = { id, colors, actions }
+WATCH_MANAGER	= { id, items, colors, actions }
+items           = [ WATCH ]
+actions         = { onCreate, onDelete, onDisable, onEnable }
+onEdit          = fn (WATCH) => ()
+onCreate        = fn (WATCH, onSuccess, onFailure) => ()
+onDelete        = fn (name, onSuccess, onFailure) => ()
+onDisable       = fn (name, onSuccess, onFailure) => ()
+onEnable        = fn (name, onSuccess, onFailure) => ()
+colors          = { red, amber, green }
+red             = string
+amber           = string
+green           = string
+```
+* `WATCH` refers to an object as described for update data structures
+* `onDelete` is a function to call to delete the watch by its `name` (a `string`)
+* `onCreate` is a function to create new watches
+* `onEdit` is created by the `WatchManager` for the `WATCH_LIST` to use when an list entry should be edited.
+
+
 ## Data Driven Chart Plugins
 Code can be found in `md-line-chart.js`.
 
@@ -473,12 +507,14 @@ decorations onto the chart background.
 
 ```
 BACKGROUND_AREA = [ AREA_ITEM ];
-AREA_ITEM       = { color, min, max, type }
+AREA_ITEM       = { color, min, max, type, style }
 color           = string
 min             = number
 max             = number
 type            = 'lower' | 'upper'
+style           = 'fill' | 'outline' 
 ```
 * default for `type` is `upper`
+* default for `style` is `fill`
 
 
