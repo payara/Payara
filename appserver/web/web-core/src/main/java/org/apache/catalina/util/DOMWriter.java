@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -142,9 +143,11 @@ public class DOMWriter {
 
 
    public static boolean isValidJavaEncoding( String encoding ) {
-      for ( int i = 0; i < MIME2JAVA_ENCODINGS.length; i++ )
-         if ( encoding.equals( MIME2JAVA_ENCODINGS[i] ) )
-            return (true);
+       for (String MIME2JAVA_ENCODINGS1 : MIME2JAVA_ENCODINGS) {
+           if (encoding.equals(MIME2JAVA_ENCODINGS1)) {
+               return (true);
+           }
+       }
 
       return (false);
    }// isValidJavaEncoding

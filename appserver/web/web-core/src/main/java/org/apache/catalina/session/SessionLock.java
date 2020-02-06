@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -227,12 +228,12 @@ public class SessionLock {
     public void unlockBackground() {
         //unlock if the lock is background locked
         //else do nothing
-        if(!isLocked())
+        if(!isLocked()) {
             return;
+        }
         if(isBackgroundLocked()) {
             this.setLockType(null);
             this.setForegroundRefCount(0);
-            return;
         }                        
     }     
     
@@ -286,10 +287,11 @@ public class SessionLock {
     /**
      * returns String representation of the state of the lock
      */     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(50);
-        sb.append("_lockType= " + _lockType);
-        sb.append("\n" + "foregroundRefCount= " + _foregroundRefCount);
+        sb.append("_lockType= ").append(_lockType);
+        sb.append("\nforegroundRefCount= ").append(_foregroundRefCount);
         return sb.toString();
     }
     

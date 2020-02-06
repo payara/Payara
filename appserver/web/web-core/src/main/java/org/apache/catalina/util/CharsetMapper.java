@@ -200,6 +200,7 @@ public class CharsetMapper implements Cloneable {
 
 
     // START SJSAS 6292972
+    @Override
     public final Object clone() {
         
         try {

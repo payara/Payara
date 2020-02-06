@@ -55,7 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+
 package org.apache.catalina.core;
 
 import org.apache.catalina.*;
@@ -270,12 +271,13 @@ public class StandardPipeline implements Pipeline, Contained, Lifecycle {
         started = true;
 
         // Start the Valves in our pipeline (including the basic), if any
-        for (int i = 0; i < valves.length; i++) {
-            if (valves[i] instanceof Lifecycle)
-                ((Lifecycle) valves[i]).start();
-            /**
-             * CR 6411114 (MBean registration moved to ValveBase.start()) registerValve(valves[i]);
-             */
+        for (GlassFishValve valve : valves) {
+            if (valve instanceof Lifecycle) {
+                ((Lifecycle) valve).start();
+                /**
+                 * CR 6411114 (MBean registration moved to ValveBase.start()) registerValve(valves[i]);
+                 */
+            }
         }
         if ((basic != null) && (basic instanceof Lifecycle))
             ((Lifecycle) basic).start();
@@ -321,13 +323,13 @@ public class StandardPipeline implements Pipeline, Contained, Lifecycle {
          * CR 6411114 (MBean deregistration moved to ValveBase.stop()) if( basic!=null ) {
          * unregisterValve(basic); }
          */
-        for (int i = 0; i < valves.length; i++) {
-            if (valves[i] instanceof Lifecycle)
-                ((Lifecycle) valves[i]).stop();
-            /**
-             * CR 6411114 (MBean deregistration moved to ValveBase.stop()) unregisterValve(valves[i]);
-             */
-
+        for (GlassFishValve valve : valves) {
+            if (valve instanceof Lifecycle) {
+                ((Lifecycle) valve).stop();
+                /**
+                 * CR 6411114 (MBean deregistration moved to ValveBase.stop()) unregisterValve(valves[i]);
+                 */
+            }
         }
 
         // Notify our interested LifecycleListeners

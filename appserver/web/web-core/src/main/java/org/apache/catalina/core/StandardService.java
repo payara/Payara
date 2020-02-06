@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -107,7 +108,7 @@ public class StandardService
     /**
      * The lifecycle event support for this component.
      */
-    private LifecycleSupport lifecycle = new LifecycleSupport(this);
+    private final LifecycleSupport lifecycle = new LifecycleSupport(this);
 
 
     /**
@@ -177,10 +178,9 @@ public class StandardService
      * Return the <code>Container</code> that handles requests for all
      * <code>Connectors</code> associated with this Service.
      */
+    @Override
     public Container getContainer() {
-
         return (this.container);
-
     }
 
 
@@ -190,6 +190,7 @@ public class StandardService
      *
      * @param container The new Container
      */
+    @Override
     public void setContainer(Container container) {
 
         Container oldContainer = this.container;
@@ -261,20 +262,18 @@ public class StandardService
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+     @Override
     public String getInfo() {
-
         return (this.info);
-
     }
 
 
     /**
      * Return the name of this Service.
      */
+    @Override
     public String getName() {
-
         return (this.name);
-
     }
 
 
@@ -283,20 +282,18 @@ public class StandardService
      *
      * @param name The new service name
      */
+    @Override
     public void setName(String name) {
-
         this.name = name;
-
     }
 
 
     /**
      * Return the <code>Server</code> with which we are associated (if any).
      */
+    @Override
     public Server getServer() {
-
         return (this.server);
-
     }
 
 
@@ -305,19 +302,17 @@ public class StandardService
      *
      * @param server The server that owns this Service
      */
+    @Override
     public void setServer(Server server) {
-
         this.server = server;
-
     }
 
      /**
       * Return the <code>NotificationBroadcasterSupport</code> that sends notification for this Service.
       */
+    @Override
      public NotificationBroadcasterSupport getBroadcaster() {
-
          return broadcaster;
-
      }
 
      /**
@@ -326,10 +321,9 @@ public class StandardService
       * @param broadcaster The new NotificationBroadcasterSupport
       */
 
+    @Override
      public void setBroadcaster(NotificationBroadcasterSupport broadcaster) {
-
          this.broadcaster = broadcaster;
-
      }
 
 
@@ -342,6 +336,7 @@ public class StandardService
      *
      * @param connector The Connector to be added
      */
+    @Override
     public void addConnector(Connector connector) {
 
         synchronized (connectorsMonitor) {
@@ -401,10 +396,9 @@ public class StandardService
     /**
      * Find and return the set of Connectors associated with this Service.
      */
+    @Override
     public Connector[] findConnectors() {
-
         return (connectors);
-
     }
 
 
@@ -432,6 +426,7 @@ public class StandardService
      */
     // START SJSAS 6231069
     //public void removeConnector(Connector connector) {
+    @Override
     public void removeConnector(Connector connector) throws LifecycleException{
     // END SJSAS 6231069
 
@@ -492,8 +487,8 @@ public class StandardService
     /**
      * Return a String representation of this component.
      */
+    @Override
     public String toString() {
-
         StringBuilder sb = new StringBuilder("StandardService[");
         sb.append(getName());
         sb.append("]");
@@ -510,6 +505,7 @@ public class StandardService
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -519,6 +515,7 @@ public class StandardService
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this StandardService.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -529,6 +526,7 @@ public class StandardService
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -543,6 +541,7 @@ public class StandardService
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -596,6 +595,7 @@ public class StandardService
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -615,9 +615,10 @@ public class StandardService
 
         // Stop our defined Connectors first
         synchronized (connectorsMonitor) {
-            for (int i = 0; i < connectors.length; i++) {
-                if (connectors[i] instanceof Lifecycle)
-                    ((Lifecycle) connectors[i]).stop();
+            for (Connector connector : connectors) {
+                if (connector instanceof Lifecycle) {
+                    ((Lifecycle) connector).stop();
+                }
             }
         }
 
@@ -640,9 +641,8 @@ public class StandardService
      * Invoke a pre-startup initialization. This is used to allow connectors
      * to bind to restricted ports under Unix operating environments.
      */
-    public void initialize()
-            throws LifecycleException
-    {
+    @Override
+    public void initialize() throws LifecycleException {
         // Service shouldn't be used with embedded, so it doesn't matter
         if (initialized) {
             if (log.isLoggable(Level.INFO)) {
@@ -675,9 +675,9 @@ public class StandardService
 
         // Initialize our defined Connectors
         synchronized (connectorsMonitor) {
-                for (int i = 0; i < connectors.length; i++) {
-                    connectors[i].initialize();
-                }
+            for (Connector connector : connectors) {
+                connector.initialize();
+            }
         }
     }
     

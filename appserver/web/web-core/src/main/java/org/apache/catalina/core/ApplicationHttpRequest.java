@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -446,7 +446,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         parseParameters();
         synchronized (parameters) {
-            return (new Enumerator<String>(parameters.keySet()));
+            return (new Enumerator<>(parameters.keySet()));
         }
 
     }
@@ -825,7 +825,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             return;
         }
 
-        parameters = new HashMap<String, String[]>();
+        parameters = new HashMap<>();
         synchronized (parameters) {
             copyMap(getRequest().getParameterMap(), parameters);
             mergeParameters();
@@ -870,7 +870,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
                                String servletPath,
                                String pathInfo,
                                String queryString) {
-        specialAttributes = new HashMap<String, Object>(5);
+        specialAttributes = new HashMap<>(6);
         HttpServletMapping originalMapping;
 
         switch (dispatcherType) {
@@ -933,29 +933,25 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
      */
     protected String[] mergeValues(Object values1, Object values2) {
 
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results = new ArrayList<>();
 
-        if (values1 == null)
-            ;
-        else if (values1 instanceof String)
-            results.add((String)values1);
-        else if (values1 instanceof String[]) {
+        if (values1 instanceof String) {
+            results.add((String) values1);
+        } else if (values1 instanceof String[]) {
             String values[] = (String[]) values1;
-            for (int i = 0; i < values.length; i++)
-                results.add(values[i]);
-        } else
+            results.addAll(Arrays.asList(values));
+        } else if (values1 != null) {
             results.add(values1.toString());
+        }
 
-        if (values2 == null)
-            ;
-        else if (values2 instanceof String)
-            results.add((String)values2);
-        else if (values2 instanceof String[]) {
+        if (values2 instanceof String) {
+            results.add((String) values2);
+        } else if (values2 instanceof String[]) {
             String values[] = (String[]) values2;
-            for (int i = 0; i < values.length; i++)
-                results.add(values[i]);
-        } else
+            results.addAll(Arrays.asList(values));
+        } else if (values2 != null) {
             results.add(values2.toString());
+        }
 
         String values[] = new String[results.size()];
         return results.toArray(values);
@@ -977,7 +973,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             return;
         }
 
-        HashMap<String, String[]> queryParameters = new HashMap<String, String[]>();
+        HashMap<String, String[]> queryParameters = new HashMap<>();
         String encoding = getCharacterEncoding();
         if (encoding == null)
             encoding = Globals.ISO_8859_1_ENCODING;
@@ -1037,12 +1033,14 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             }
         }
 
+        @Override
         public boolean hasMoreElements() {
             return (specialNames != null && specialNames.hasNext())
                     || (next != null)
                     || ((next = findNext()) != null);
         }
 
+        @Override
         public String nextElement() {
 
             if (specialNames != null && specialNames.hasNext()) {
@@ -1086,7 +1084,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
         String versionString = Long.toString(ss.incrementVersion());
         Map<String, String> sessionVersions = getSessionVersions();
         if (sessionVersions == null) {
-            sessionVersions = new HashMap<String, String>();
+            sessionVersions = new HashMap<>();
             setAttribute(Globals.SESSION_VERSIONS_REQUEST_ATTRIBUTE,
                          sessionVersions);
         }

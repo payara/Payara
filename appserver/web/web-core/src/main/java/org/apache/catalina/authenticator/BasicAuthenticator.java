@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import java.io.IOException;
@@ -159,11 +159,8 @@ public class BasicAuthenticator extends AuthenticatorBase {
         String realmName = config.getRealmName();
         if (realmName == null)
             realmName = REALM_NAME;
-        // if (debug >= 1)
-        // log("Challenging for realm '" + realmName + "'");
         hres.setHeader(AUTH_HEADER_NAME, "Basic realm=\"" + realmName + "\"");
         hres.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        // hres.flushBuffer();
         return (false);
 
     }
@@ -189,7 +186,6 @@ public class BasicAuthenticator extends AuthenticatorBase {
         if (colon < 0)
             return (null);
         String username = unencoded.substring(0, colon);
-        // String password = unencoded.substring(colon + 1).trim();
         return (username);
 
     }
@@ -212,7 +208,6 @@ public class BasicAuthenticator extends AuthenticatorBase {
         int colon = unencoded.indexOf(':');
         if (colon < 0)
             return (null);
-        // String username = unencoded.substring(0, colon).trim();
         char[] password = unencoded.substring(colon + 1).toCharArray();
         return (password);
 

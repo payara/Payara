@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import java.io.Serializable;
@@ -85,6 +85,7 @@ public class CoyotePrincipal implements Principal, Serializable {
      */
     protected String name;
 
+    @Override
     public String getName() {
         return name;
     }
@@ -94,6 +95,7 @@ public class CoyotePrincipal implements Principal, Serializable {
     /**
      * Return a String representation of this object, which exposes only information that should be public.
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CoyotePrincipal[");
         sb.append(name);

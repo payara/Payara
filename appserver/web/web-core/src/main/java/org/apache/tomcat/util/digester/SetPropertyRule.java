@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -137,6 +138,7 @@ public class SetPropertyRule extends Rule {
      * @exception NoSuchMethodException if the bean does not
      *  have a writeable property of the specified name
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Identify the actual property name and value to be used
@@ -160,9 +162,8 @@ public class SetPropertyRule extends Rule {
 
         // Log some debugging information
         if (digester.log.isLoggable(Level.FINE)) {
-            digester.log.log(Level.FINE, "[SetPropertyRule]{" + digester.match +
-                    "} Set " + top.getClass().getName() + " property " +
-                    actualName + " to " + actualValue);
+            digester.log.log(Level.FINE, "[SetPropertyRule]'{'{0}'}' Set {1} property {2} to {3}",
+                    new Object[]{digester.match, top.getClass().getName(), actualName, actualValue});
         }
 
         // Set the property (with conversion as necessary)
@@ -179,6 +180,7 @@ public class SetPropertyRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetPropertyRule[");

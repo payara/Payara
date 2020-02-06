@@ -55,10 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina;
-
-import org.apache.catalina.HttpRequest;
 
 import javax.servlet.ServletException;
 

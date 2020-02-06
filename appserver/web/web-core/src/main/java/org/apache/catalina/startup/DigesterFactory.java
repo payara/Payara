@@ -55,10 +55,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.LogFacade;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
@@ -124,14 +124,14 @@ public class DigesterFactory {
         
         String parserName = 
                 digester.getFactory().getClass().getName();
-        if (parserName.indexOf("xerces")!=-1) {
+        if (parserName.contains("xerces")) {
             digester = patchXerces(digester);
         }
 
         if (xmlValidation) {
             // Xerces 2.3 and up has a special way to turn on validation
             // for both DTD and Schema
-            if (parserName.indexOf("xerces")!=-1) {
+            if (parserName.contains("xerces")) {
                 turnOnXercesValidation(digester);
             } else {
                 turnOnValidation(digester);
@@ -157,11 +157,7 @@ public class DigesterFactory {
         try{
             digester.setFeature(
                 "http://apache.org/xml/features/allow-java-encodings", true);
-        } catch(ParserConfigurationException e){
-                // log("contextConfig.registerLocalSchema", e);
-        } catch(SAXNotRecognizedException e){
-                // log("contextConfig.registerLocalSchema", e);
-        } catch(SAXNotSupportedException e){
+        } catch(ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e){
                 // log("contextConfig.registerLocalSchema", e);
         }
         return digester;
@@ -187,13 +183,10 @@ public class DigesterFactory {
             digester.setFeature(
                 "http://apache.org/xml/features/validation/schema",
                 true);
-        } catch(ParserConfigurationException e){
-            // log("contextConfig.registerLocalSchema", e);
-        } catch(SAXNotRecognizedException e){
-            // log("contextConfig.registerLocalSchema", e);
-        } catch(SAXNotSupportedException e){
+        } catch(ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e){
             // log("contextConfig.registerLocalSchema", e);
         }
+        
     }
 
     protected static final Logger _logger = LogFacade.getLogger();

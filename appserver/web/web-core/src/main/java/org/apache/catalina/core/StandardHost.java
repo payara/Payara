@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -222,8 +223,7 @@ public class StandardHost
      * The status code error pages for this StandardHost, keyed by HTTP status
      * code.
      */
-    private HashMap<Integer, ErrorPage> statusPages =
-        new HashMap<Integer, ErrorPage>();
+    private final HashMap<Integer, ErrorPage> statusPages = new HashMap<Integer, ErrorPage>();
     // END SJSAS 6324911
 
 
@@ -271,6 +271,7 @@ public class StandardHost
      * Return the application root for this Host.  This can be an absolute
      * pathname, a relative pathname, or a URL.
      */
+    @Override
     public String getAppBase() {
 
         return (this.appBase);
@@ -284,6 +285,7 @@ public class StandardHost
      *
      * @param appBase The new application root
      */
+    @Override
     public void setAppBase(String appBase) {
 
         String oldAppBase = this.appBase;
@@ -297,6 +299,7 @@ public class StandardHost
      * Return the value of the auto deploy flag.  If true, it indicates that 
      * this host's child webapps will be dynamically deployed.
      */
+    @Override
     public boolean getAutoDeploy() {
 
         return (this.autoDeploy);
@@ -309,6 +312,7 @@ public class StandardHost
      * 
      * @param autoDeploy The new auto deploy flag
      */
+    @Override
     public void setAutoDeploy(boolean autoDeploy) {
 
         boolean oldAutoDeploy = this.autoDeploy;
@@ -378,10 +382,9 @@ public class StandardHost
      * that this host's child webapps should be discovered and automatically 
      * deployed at startup time.
      */
+    @Override
     public boolean getDeployOnStartup() {
-
         return (this.deployOnStartup);
-
     }
 
 
@@ -390,6 +393,7 @@ public class StandardHost
      * 
      * @param deployOnStartup The new deploy on startup flag
      */
+    @Override
     public void setDeployOnStartup(boolean deployOnStartup) {
 
         boolean oldDeployOnStartup = this.deployOnStartup;
@@ -504,6 +508,7 @@ public class StandardHost
      * parsing xml instances.
      * @param xmlValidation true to enable xml instance validation
      */
+    @Override
     public void setXmlValidation(boolean xmlValidation){
         this.xmlValidation = xmlValidation;
     }
@@ -513,6 +518,7 @@ public class StandardHost
      * @return true if validation is enabled.
      *
      */
+    @Override
     public boolean getXmlValidation(){
         return xmlValidation;
     }
@@ -522,6 +528,7 @@ public class StandardHost
      * @return true if namespace awareness is enabled.
      *
      */
+    @Override
     public boolean getXmlNamespaceAware(){
         return xmlNamespaceAware;
     }
@@ -532,6 +539,7 @@ public class StandardHost
      * parsing xml instances.
      * @param xmlNamespaceAware true to enable namespace awareness
      */
+    @Override
     public void setXmlNamespaceAware(boolean xmlNamespaceAware){
         this.xmlNamespaceAware=xmlNamespaceAware;
     }    
@@ -558,6 +566,7 @@ public class StandardHost
      *
      * @param networkListenerNames The network listener names with which to associate this StandardHost
      */
+    @Override
     public void setNetworkListenerNames(String[] networkListenerNames) {
         String[] oldListenerNames = this.networkListenerNames;
         this.networkListenerNames = networkListenerNames.clone();
@@ -571,6 +580,7 @@ public class StandardHost
      * @return The network listener names with which this StandardHost is associated,
      * or null if this StandardHost has not been associated with any ports
      */
+    @Override
     public String[] getNetworkListenerNames() {
         return this.networkListenerNames.clone();
     }
@@ -642,6 +652,7 @@ public class StandardHost
      *
      * @param alias The alias to be added
      */
+    @Override
     public void addAlias(String alias) {
 
         // START OF PE 4989789
@@ -657,8 +668,7 @@ public class StandardHost
 
         // Add this alias to the list
         String newAliases[] = new String[aliases.length + 1];
-        for (int i = 0; i < aliases.length; i++)
-            newAliases[i] = aliases[i];
+        System.arraycopy(aliases, 0, newAliases, 0, aliases.length);
         newAliases[aliases.length] = alias;
 
         aliases = newAliases;
@@ -705,6 +715,7 @@ public class StandardHost
      * Return the set of alias names for this Host.  If none are defined,
      * a zero length array is returned.
      */
+    @Override
     public String[] findAliases() {
 
         return (this.aliases);
@@ -736,10 +747,12 @@ public class StandardHost
      *
      * @param uri Request URI to be mapped
      */
+    @Override
     public Context map(String uri) {
 
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Mapping request URI '" + uri + "'");
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Mapping request URI ''{0}''", uri);
+        }
         if (uri == null)
             return (null);
 
@@ -773,7 +786,7 @@ public class StandardHost
 
         // Return the mapped Context (if any)
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, " Mapped to context '" + context.getPath() + "'");
+            log.log(Level.FINE, " Mapped to context ''{0}''", context.getPath());
         return (context);
 
     }
@@ -784,6 +797,7 @@ public class StandardHost
      *
      * @param alias Alias name to be removed
      */
+    @Override
     public void removeAlias(String alias) {
 
         // START OF PE 4989789
@@ -848,7 +862,7 @@ public class StandardHost
      * code, or null if no error page exists for that HTTP error code
      */
     public ErrorPage findErrorPage(int errorCode) {
-        return statusPages.get(Integer.valueOf(errorCode));
+        return statusPages.get(errorCode);
     }
     // END SJSAS 6324911
 
@@ -940,7 +954,7 @@ public class StandardHost
          if (broadcaster != null) {
              broadcaster.sendNotification(notification);
          }
-         return;
+
      }
 
 
@@ -971,6 +985,7 @@ public class StandardHost
      * @exception IOException if an input/output error was encountered
      *  during install
      */
+    @Override
     public void install(String contextPath, URL war) throws IOException {
         getDeployer().install(contextPath, war);
 
@@ -1001,10 +1016,9 @@ public class StandardHost
      * @exception IOException if an input/output error was encountered
      *  during installation
      */
+    @Override
     public synchronized void install(URL config, URL war) throws IOException {
-
         getDeployer().install(config, war);
-
     }
 
 
@@ -1015,10 +1029,9 @@ public class StandardHost
      *
      * @param contextPath The context path of the requested web application
      */
+    @Override
     public Context findDeployedApp(String contextPath) {
-
         return (getDeployer().findDeployedApp(contextPath));
-
     }
 
 
@@ -1027,10 +1040,9 @@ public class StandardHost
      * Container.  If there are no deployed applications, a zero-length
      * array is returned.
      */
+    @Override
     public String[] findDeployedApps() {
-
         return (getDeployer().findDeployedApps());
-
     }
 
 
@@ -1050,10 +1062,9 @@ public class StandardHost
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath) throws IOException {
-
         getDeployer().remove(contextPath);
-
     }
 
 
@@ -1075,10 +1086,9 @@ public class StandardHost
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath, boolean undeploy) throws IOException {
-
         getDeployer().remove(contextPath,undeploy);
-
     }
 
 
@@ -1095,10 +1105,9 @@ public class StandardHost
      * @exception IOException if an input/output error occurs during
      *  startup
      */
+    @Override
     public void start(String contextPath) throws IOException {
-
         getDeployer().start(contextPath);
-
     }
 
 
@@ -1115,10 +1124,9 @@ public class StandardHost
      * @exception IOException if an input/output error occurs while stopping
      *  the web application
      */
+    @Override
     public void stop(String contextPath) throws IOException {
-
         getDeployer().stop(contextPath);
-
     }
 
     
@@ -1270,8 +1278,9 @@ public class StandardHost
     public ObjectName createObjectName(String domain, ObjectName parent)
         throws Exception
     {
-        if( log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Create ObjectName " + domain + " " + parent);
+        if( log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Create ObjectName {0} {1}", new Object[]{domain, parent});
+        }
         return new ObjectName( domain + ":type=Host,host=" + getName());
     }
 

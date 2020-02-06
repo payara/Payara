@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -399,8 +400,8 @@ public class ExpandWar {
         if (files == null) {
             files = new String[0];
         }
-        for (int i = 0; i < files.length; i++) {
-            File file = new File(dir, files[i]);
+        for (String file1 : files) {
+            File file = new File(dir, file1);
             if (file.isDirectory()) {
                 deleteDir(file, logFailure);
             } else {
