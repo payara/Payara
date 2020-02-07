@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,14 +54,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
@@ -78,6 +75,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -109,17 +107,16 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
  *
  * @author Steve Millidge (Payara Foundation)
  */
-@Service(name = "microprofile-config-provider") // this specifies that the classis an HK2 service
+@Service(name = "microprofile-config-provider")
+@ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
 @RunLevel(StartupRunLevel.VAL)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
+    private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
     private static final String CUSTOM_CONVERTERS_KEY = "MICROPROFILE_CUSTOM_CONVERTERS";
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
-
-    static final CountDownLatch initialized = new CountDownLatch(1);
-    static volatile ConfigProviderResolver instance;
 
     @Inject
     private InvocationManager invocationManager;
@@ -129,31 +126,34 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     // Gives access to deployed applications
     @Inject
-    ApplicationRegistry applicationRegistry;
-    
+    private ApplicationRegistry applicationRegistry;
+
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional // PAYARA-2255 make optional due to race condition writing a missing entry into domain.xml
-    MicroprofileConfigConfiguration configuration;
+    private MicroprofileConfigConfiguration configuration;
 
     // a config used at the server level when there is no application associated with the thread
     private Config serverLevelConfig;
 
+    /**
+     * Sets the global {@link ConfigProviderResolver#instance()} to this instance.
+     */
     public ConfigProviderResolverImpl() {
+        LOG.finest("ConfigProviderResolverImpl()");
+        // the setInstance is not synchronized, but instance() method body is.
+        // this will block possible concurrent access.
+        synchronized (ConfigProviderResolver.class) {
+            LOG.log(Level.CONFIG, "Setting global ConfigProviderResolver instance to {0}", this);
+            ConfigProviderResolver.setInstance(this);
+        }
     }
-
-    @PostConstruct
-    public void postConstruct() {
-        ConfigProviderResolver.setInstance(this);
-        instance = this;
-        initialized.countDown();
-    }
-
 
     public MicroprofileConfigConfiguration getMPConfig() {
         if (configuration == null) {
+            LOG.config("getMPConfig() - initialization of the configuration field (not set by @Inject annotation).");
             configuration = context.getConfigBean().getConfig().getExtensionByType(MicroprofileConfigConfiguration.class);
         }
         return configuration;
@@ -169,7 +169,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         // fast check against current app
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation == null) {
-            // OK we are not a normal request see if we can find the app name from the 
+            // OK we are not a normal request see if we can find the app name from the
             // app registry via the classloader
             Set<String> allApplicationNames = applicationRegistry.getAllApplicationNames();
             for (String allApplicationName : allApplicationNames) {
@@ -204,7 +204,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             }
         }
 
-        // fast check fails search the app registry 
+        // fast check fails search the app registry
         for (String name : applicationRegistry.getAllApplicationNames()) {
             ApplicationInfo testInfo = applicationRegistry.get(name);
             if (testInfo.getClassLoaders().contains(loader) ||
@@ -217,6 +217,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     }
 
     Config getConfig(ApplicationInfo appInfo) {
+        LOG.log(Level.FINEST, "getConfig(appInfo={0})", appInfo);
         Config result;
         // manage server level config first
         if (appInfo == null) {
@@ -413,7 +414,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         }
         return converters;
     }
-    
+
     private void initialiseApplicationConfig(ApplicationInfo info) {
         LinkedList<Properties> appConfigProperties = new LinkedList<>();
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
@@ -422,7 +423,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
             appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
         } catch (IOException ex) {
-            Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
