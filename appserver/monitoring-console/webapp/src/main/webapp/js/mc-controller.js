@@ -48,7 +48,7 @@
 MonitoringConsole.Controller = (function() {
 
    function requestWithJsonBody(method, url, queryData, onSuccess, onFailure) {
-      const request = $.ajax({
+      $.ajax({
          url: url,
          type: method,
          data: JSON.stringify(queryData),

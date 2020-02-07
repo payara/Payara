@@ -95,18 +95,23 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
     @Param(optional = true)
     private Boolean enabled;
 
+    @SuppressWarnings("squid:S116")
     @Param(optional = true, alias = "disable-watch")
     private String _disableWatch;
 
+    @SuppressWarnings("squid:S116")
     @Param(optional = true, alias = "enable-watch")
     private String _enableWatch;
 
+    @SuppressWarnings("squid:S116")
     @Param(optional = true, alias = "add-watch-name")
     private String _addWatchName;
 
+    @SuppressWarnings("squid:S116")
     @Param(optional = true, alias = "add-watch-json")
     private String _addWatchJson;
 
+    @SuppressWarnings("squid:S116")
     @Param(optional = true, alias = "remove-watch")
     private String _removeWatch;
 

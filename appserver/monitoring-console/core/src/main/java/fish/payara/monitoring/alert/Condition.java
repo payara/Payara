@@ -65,6 +65,9 @@ import fish.payara.monitoring.model.SeriesDataset;
  */
 public final class Condition {
 
+    private static final String FOR_TIMES = "forTimes";
+    private static final String FOR_MILLIS = "forMillis";
+
     public static final Condition NONE = new Condition(Operator.EQ, 0L);
 
     public enum Operator {
@@ -293,10 +296,10 @@ public final class Condition {
                 .add("threshold", threshold)
                 .add("onAverage", onAverage);
          if (isForLastMillis()) {
-             builder.add("forMillis", forLast.longValue());
+             builder.add(FOR_MILLIS, forLast.longValue());
          }
          if (isForLastTimes()) {
-             builder.add("forTimes", forLast.intValue());
+             builder.add(FOR_TIMES, forLast.intValue());
          }
          return builder.build();
     }
@@ -307,11 +310,11 @@ public final class Condition {
         }
         JsonObject obj = value.asJsonObject();
         Number forLast = null;
-        if (obj.containsKey("forMillis")) {
-            forLast = obj.getJsonNumber("forMillis").longValue();
+        if (obj.containsKey(FOR_MILLIS)) {
+            forLast = obj.getJsonNumber(FOR_MILLIS).longValue();
         }
-        if (obj.containsKey("forTimes")) {
-            forLast = obj.getInt("forTimes");
+        if (obj.containsKey(FOR_TIMES)) {
+            forLast = obj.getInt(FOR_TIMES);
         }
         return new Condition(
                 Operator.parse(obj.getString("comparison", ">")), 

@@ -50,6 +50,7 @@ import fish.payara.monitoring.web.ApiResponses.SeriesData;
  * 
  * @author Jan Bernitt
  */
+@SuppressWarnings("squid:S1104")
 public final class ApiRequests {
 
     public enum DataType { POINTS, WATCHES, ALERTS, ANNOTATIONS }

@@ -103,6 +103,8 @@ extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCh
 implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileHealthChecker.class.getPackage().getName());
+
+    private static final String UNABLE_TO_CONNECT = "UNABLE TO CONNECT - ";
     private static final String GET_MP_CONFIG_STRING = "get-microprofile-healthcheck-configuration";
 
     @Inject
@@ -146,7 +148,10 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
             } catch (InterruptedException | TimeoutException ex) {
                 LOGGER.log(Level.FINE, "Error processing MP Healthcheck checker", ex);
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
-                        "UNABLE TO CONNECT - " + ex.toString()));
+                        UNABLE_TO_CONNECT + ex.toString()));
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
             } catch (ExecutionException ex) {
                 Throwable cause = ex.getCause();
                 if (cause instanceof URISyntaxException) {
@@ -155,11 +160,11 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
                 } else if (cause instanceof ProcessingException) {
                     LOGGER.log(Level.FINE, "Error sending JAX-RS Request", cause);
                     result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
-                            "UNABLE TO CONNECT - " + cause.getMessage()));
+                            UNABLE_TO_CONNECT + cause.getMessage()));
                 } else {
                     LOGGER.log(Level.FINE, "Error processing MP Healthcheck checker", cause);
                     result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
-                            "UNABLE TO CONNECT - " + cause.toString()));
+                            UNABLE_TO_CONNECT + cause.toString()));
                 }
             }
         }
@@ -216,8 +221,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
      */
     private Map<String, Future<Integer>> pingAllInstances(long timeoutMillis) {
         Map<String, Future<Integer>> tasks = new ConcurrentHashMap<>();
-        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING,
-                new String[0]);
+        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
 
         for (Server server : domain.getServers().getServer()) {
 

@@ -93,6 +93,9 @@ import fish.payara.monitoring.model.Unit;
 @RunLevel(StartupRunLevel.VAL)
 class InMemoryAlarmService extends AbstractMonitoringService implements AlertService, MonitoringDataSource {
 
+    private static final String ALERT_COUNT = "AlertCount";
+    private static final String SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND = "set-monitoring-console-configuration";
+
     private static final int MAX_ALERTS_PER_SERIES = 10;
 
     @Inject
@@ -165,7 +168,7 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
     }
 
     private void updateWatchConfiguration(Watch watch) {
-        runCommand("set-monitoring-console-configuration", 
+        runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND, 
                 watch.isDisabled() ? "disable-watch" : "enable-watch", watch.name);
     }
 
@@ -202,10 +205,10 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
             collector.collect("WatchLoopDuration", evalLoopTime.get());
             AlertStatistics stats = statistics.get();
             if (stats != null) {
-                collector.group("Red").collect("AlertCount", stats.unacknowledgedRedAlerts);
-                collector.group("RedAck").collect("AlertCount", stats.acknowledgedRedAlerts);
-                collector.group("Amber").collect("AlertCount", stats.unacknowledgedAmberAlerts);
-                collector.group("AmberAck").collect("AlertCount", stats.acknowledgedAmberAlerts);
+                collector.group("Red").collect(ALERT_COUNT, stats.unacknowledgedRedAlerts);
+                collector.group("RedAck").collect(ALERT_COUNT, stats.acknowledgedRedAlerts);
+                collector.group("Amber").collect(ALERT_COUNT, stats.unacknowledgedAmberAlerts);
+                collector.group("AmberAck").collect(ALERT_COUNT, stats.acknowledgedAmberAlerts);
             }
         }
     }
@@ -281,7 +284,7 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
         Map<Series, Map<String, Watch>> target = series.isPattern() ? patternWatches : simpleWatches;
         target.computeIfAbsent(series, key -> new ConcurrentHashMap<>()).put(watch.name, watch);
         if (!watch.isProgrammatic()) {
-            runCommand("set-monitoring-console-configuration", 
+            runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND, 
                     "add-watch-name", watch.name, 
                     "add-watch-json", watch.toJSON().toString());
         }
@@ -297,7 +300,7 @@ class InMemoryAlarmService extends AbstractMonitoringService implements AlertSer
             removeWatch(watch, simpleWatches);
             removeWatch(watch, patternWatches);
             if (!watch.isProgrammatic()) {
-                runCommand("set-monitoring-console-configuration", "remove-watch", watch.name);
+                runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND, "remove-watch", watch.name);
             }
         }
     }

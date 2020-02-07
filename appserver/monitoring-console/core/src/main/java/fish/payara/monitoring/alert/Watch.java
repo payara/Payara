@@ -81,6 +81,10 @@ import fish.payara.monitoring.model.SeriesDataset;
  */
 public final class Watch implements WatchBuilder, Iterable<Watch.State> {
 
+    private static final String GREEN_PROPERTY = "green";
+    private static final String AMBER_PROPERTY = "amber";
+    private static final String RED_PROPERTY = "red";
+
     /**
      * A {@link Watch} is a state machine where the state of each {@link SeriesDataset} matching the
      * {@link Watch#watched} {@link Metric} is tracked individually with {@link Level} and potentially the ongoing
@@ -369,20 +373,20 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     public Watch with(String level, long startThreshold, Number startForLast, boolean startOnAverage, Long stopTheshold,
             Number stopForLast, boolean stopOnAverage) {
         switch (level) {
-        case "red":
+        case RED_PROPERTY:
             return isEqual(red, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
                 : with(
                     create(RED, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
                     amber, green);
-        case "amber":
+        case AMBER_PROPERTY:
             return isEqual(amber, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
                 : with(red,
                     create(AMBER, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage),
                     green);
 
-        case "green":
+        case GREEN_PROPERTY:
             return isEqual(green, startThreshold, startForLast, startOnAverage, stopTheshold, stopForLast, stopOnAverage)
                 ? this
                 : with(red, amber, //
@@ -399,19 +403,19 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
     @Override
     public Watch red(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
             Number stopFor, boolean stopOnAverage) {
-        return with("red", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+        return with(RED_PROPERTY, startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
     }
 
     @Override
     public Watch amber(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
             Number stopFor, boolean stopOnAverage) {
-        return with("amber", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+        return with(AMBER_PROPERTY, startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
     }
 
     @Override
     public Watch green(long startThreshold, Number startFor, boolean startOnAverage, Long stopTheshold,
             Number stopFor, boolean stopOnAverage) {
-        return with("green", startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
+        return with(GREEN_PROPERTY, startThreshold, startFor, startOnAverage, stopTheshold, stopFor, stopOnAverage);
     }
 
     private static boolean isEqual(Circumstance sample, long startThreshold, Number startForLast,
@@ -459,9 +463,9 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
                 .add("programmatic", programmatic)
                 .add("disabled", isDisabled())
                 .add("stopped", isStopped())
-                .add("red", red.toJSON())
-                .add("amber", amber.toJSON())
-                .add("green", green.toJSON())
+                .add(RED_PROPERTY, red.toJSON())
+                .add(AMBER_PROPERTY, amber.toJSON())
+                .add(GREEN_PROPERTY, green.toJSON())
                 .add("captured", capturedArray.build())
                 .build();
     }
@@ -486,9 +490,9 @@ public final class Watch implements WatchBuilder, Iterable<Watch.State> {
         Watch out = new Watch(obj.getString("name"), 
                 Metric.fromJSON(obj.get("watched")), 
                 obj.getBoolean("programmatic", false), 
-                Circumstance.fromJson(obj.get("red")), 
-                Circumstance.fromJson(obj.get("amber")), 
-                Circumstance.fromJson(obj.get("green")), 
+                Circumstance.fromJson(obj.get(RED_PROPERTY)), 
+                Circumstance.fromJson(obj.get(AMBER_PROPERTY)), 
+                Circumstance.fromJson(obj.get(GREEN_PROPERTY)), 
                 captured);
         if (obj.getBoolean("disabled", false)) {
             out.disable();
