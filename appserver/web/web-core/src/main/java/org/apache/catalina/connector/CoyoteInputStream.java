@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -101,6 +102,7 @@ public class CoyoteInputStream
     /**
     * Prevent cloning the facade.
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -121,6 +123,7 @@ public class CoyoteInputStream
     // --------------------------------------------- ServletInputStream Methods
 
 
+    @Override
     public int read()
         throws IOException {      
 
@@ -136,14 +139,14 @@ public class CoyoteInputStream
                 Integer result = 
                     AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Integer>(){
-
+                            @Override
                             public Integer run() throws IOException{
-                                Integer integer = Integer.valueOf(ib.readByte());
+                                Integer integer = ib.readByte();
                                 return integer;
                             }
 
                 });
-                return result.intValue();
+                return result;
             } catch(PrivilegedActionException pae){
                 Exception e = pae.getException();
                 if (e instanceof IOException){
@@ -157,6 +160,7 @@ public class CoyoteInputStream
         }   
     }
 
+    @Override
     public int available() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -168,14 +172,13 @@ public class CoyoteInputStream
                 Integer result = 
                     AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Integer>(){
-
                             public Integer run() throws IOException{
-                                Integer integer = Integer.valueOf(ib.available());
+                                Integer integer = ib.available();
                                 return integer;
                             }
 
                 });
-                return result.intValue();
+                return result;
             } catch(PrivilegedActionException pae){
                 Exception e = pae.getException();
                 if (e instanceof IOException){
@@ -189,6 +192,7 @@ public class CoyoteInputStream
         }           
     }
 
+    @Override
     public int read(final byte[] b) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -200,15 +204,14 @@ public class CoyoteInputStream
                 Integer result = 
                     AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Integer>(){
-
+                            @Override
                             public Integer run() throws IOException{
-                                Integer integer = 
-                                    Integer.valueOf(ib.read(b, 0, b.length));
+                                Integer integer = ib.read(b, 0, b.length);
                                 return integer;
                             }
 
                 });
-                return result.intValue();
+                return result;
             } catch(PrivilegedActionException pae){
                 Exception e = pae.getException();
                 if (e instanceof IOException){
@@ -222,7 +225,7 @@ public class CoyoteInputStream
         }          
     }
 
-
+    @Override
     public int read(final byte[] b, final int off, final int len)
         throws IOException {
 
@@ -236,15 +239,15 @@ public class CoyoteInputStream
                 Integer result = 
                     AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Integer>(){
-
+                            @Override
                             public Integer run() throws IOException{
                                 Integer integer = 
-                                    Integer.valueOf(ib.read(b, off, len));
+                                        ib.read(b, off, len);
                                 return integer;
                             }
 
                 });
-                return result.intValue();
+                return result;
             } catch(PrivilegedActionException pae){
                 Exception e = pae.getException();
                 if (e instanceof IOException){
@@ -258,7 +261,7 @@ public class CoyoteInputStream
         }        
     }
 
-    
+    @Override
     public int readLine(byte[] b, int off, int len) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -268,7 +271,7 @@ public class CoyoteInputStream
         return super.readLine(b, off, len);
     }
 
-
+    @Override
     public boolean isFinished() {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -277,7 +280,7 @@ public class CoyoteInputStream
         return ib.isFinished();
     }
 
-
+    @Override
     public boolean isReady() {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -286,7 +289,7 @@ public class CoyoteInputStream
         return ib.isReady();
     }
 
-
+    @Override
     public void setReadListener(ReadListener readListener) {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -315,7 +318,7 @@ public class CoyoteInputStream
             try{
                 AccessController.doPrivileged(
                     new PrivilegedExceptionAction<Void>(){
-
+                        @Override
                         public Void run() throws IOException{
                             ib.close();
                             return null;

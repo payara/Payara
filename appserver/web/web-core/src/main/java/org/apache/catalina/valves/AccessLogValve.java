@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -331,7 +332,7 @@ public final class AccessLogValve
      * ThreadLocal for a date formatter to format a Date into a time in the format
      * "kk:mm:ss" (kk is a 24-hour representation of the hour).
      */
-    private ThreadLocal<SimpleDateFormat> timeFormatter =
+    private final ThreadLocal<SimpleDateFormat> timeFormatter =
          new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
@@ -358,7 +359,7 @@ public final class AccessLogValve
     /**
      * When formatting log lines, we often use strings like this one (" ").
      */
-    private String space = " ";
+    private final String space = " ";
 
 
     /**
@@ -413,10 +414,9 @@ public final class AccessLogValve
     /**
      * Return descriptive information about this implementation.
      */
+    @Override
     public String getInfo() {
-
         return (this.info);
-
     }
 
 
@@ -445,15 +445,9 @@ public final class AccessLogValve
             pattern = Constants.AccessLog.COMBINED_PATTERN;
         this.pattern = pattern;
 
-        if (this.pattern.equals(Constants.AccessLog.COMMON_PATTERN))
-            common = true;
-        else
-            common = false;
+        common = this.pattern.equals(Constants.AccessLog.COMMON_PATTERN);
 
-        if (this.pattern.equals(Constants.AccessLog.COMBINED_PATTERN))
-            combined = true;
-        else
-            combined = false;
+        combined = this.pattern.equals(Constants.AccessLog.COMBINED_PATTERN);
 
     }
 
@@ -598,16 +592,17 @@ public final class AccessLogValve
      * @exception IOException if an input/output error has occurred
      * @exception ServletException if a servlet error has occurred
      */
-    public int invoke(Request request, Response response)
-         throws IOException, ServletException {
+    @Override
+    public int invoke(Request request, Response response)throws IOException, ServletException {
 
         // Pass this request on to the next valve in our pipeline
-        request.setNote(REQUEST_START_TIME_NOTE, Long.valueOf(System.currentTimeMillis()));
+        request.setNote(REQUEST_START_TIME_NOTE, System.currentTimeMillis());
 
         return INVOKE_NEXT;
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response){
 
         long t2 = System.currentTimeMillis();
@@ -617,7 +612,7 @@ public final class AccessLogValve
             return;
         }
 
-        long time = t2 - ((Long)startTimeObj).longValue();
+        long time = t2 - ((Long)startTimeObj);
 
         if (condition!=null &&
                 null!=request.getRequest().getAttribute(condition)) {
@@ -882,111 +877,129 @@ public final class AccessLogValve
         ServletResponse res = response.getResponse();
         HttpServletResponse hres = (HttpServletResponse) res;
 
-        if (pattern == 'a') {
-            value = req.getRemoteAddr();
-        } else if (pattern == 'A') {
-            try {
-                value = InetAddress.getLocalHost().getHostAddress();
-            } catch(Throwable e){
-                value = "127.0.0.1";
-            }
-        } else if (pattern == 'b') {
-            int length = response.getContentCount();
-            if (length <= 0)
-                value = "-";
-            else
-                value = "" + length;
-        } else if (pattern == 'B') {
-            value = "" + response.getContentLength();
-        } else if (pattern == 'h') {
-            value = req.getRemoteHost();
-        } else if (pattern == 'H') {
-            value = req.getProtocol();
-        } else if (pattern == 'l') {
-            value = "-";
-        } else if (pattern == 'm') {
-            if (hreq != null)
-                value = hreq.getMethod();
-            else
-                value = "";
-        } else if (pattern == 'p') {
-            value = "" + req.getServerPort();
-        } else if (pattern == 'D') {
-                    value = "" + time;
-        } else if (pattern == 'q') {
-            String query = null;
-            if (hreq != null)
-                query = hreq.getQueryString();
-            if (query != null)
-                value = "?" + query;
-            else
-                value = "";
-        } else if (pattern == 'r') {
-            if (hreq != null) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(hreq.getMethod());
-                sb.append(space);
-                sb.append(hreq.getRequestURI());
-                if (hreq.getQueryString() != null) {
-                    sb.append('?');
-                    sb.append(hreq.getQueryString());
-                }
-                sb.append(space);
-                sb.append(hreq.getProtocol());
-                value = sb.toString();
-            } else {
-                value = "- - -";
-            }
-        } else if (pattern == 'S') {
-            if (request instanceof org.apache.catalina.connector.Request) {
-                Session sess = ((org.apache.catalina.connector.Request) request).getSessionInternal(false);
-                if (sess != null) {
-                    value = sess.getIdInternal();
-                } else {
+        switch (pattern) {
+            case 'a':
+                value = req.getRemoteAddr();
+                break;
+            case 'A':
+                try {
+                    value = InetAddress.getLocalHost().getHostAddress();
+                } catch(Throwable e){
+                    value = "127.0.0.1";
+                }   break;
+            case 'b':
+                int length = response.getContentCount();
+                if (length <= 0)
                     value = "-";
-                }
-            } else {
+                else
+                    value = "" + length;
+                break;
+            case 'B':
+                value = "" + response.getContentLength();
+                break;
+            case 'h':
+                value = req.getRemoteHost();
+                break;
+            case 'H':
+                value = req.getProtocol();
+                break;
+            case 'l':
+                value = "-";
+                break;
+            case 'm':
                 if (hreq != null)
-                    if (hreq.getSession(false) != null)
-                        value = hreq.getSession(false).getId();
-                    else value = "-";
+                    value = hreq.getMethod();
+                else
+                    value = "";
+                break;
+            case 'p':
+                value = "" + req.getServerPort();
+                break;
+            case 'D':
+                value = "" + time;
+                break;
+            case 'q':
+                String query = null;
+                if (hreq != null)
+                    query = hreq.getQueryString();
+                if (query != null)
+                    value = "?" + query;
+                else
+                    value = "";
+                break;
+            case 'r':
+                if (hreq != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(hreq.getMethod());
+                    sb.append(space);
+                    sb.append(hreq.getRequestURI());
+                    if (hreq.getQueryString() != null) {
+                        sb.append('?');
+                        sb.append(hreq.getQueryString());
+                    }
+                    sb.append(space);
+                    sb.append(hreq.getProtocol());
+                    value = sb.toString();
+                } else {
+                    value = "- - -";
+                }   break;
+            case 'S':
+                if (request instanceof org.apache.catalina.connector.Request) {
+                    Session sess = ((org.apache.catalina.connector.Request) request).getSessionInternal(false);
+                    if (sess != null) {
+                        value = sess.getIdInternal();
+                    } else {
+                        value = "-";
+                    }
+                } else {
+                    if (hreq != null)
+                        if (hreq.getSession(false) != null)
+                            value = hreq.getSession(false).getId();
+                        else value = "-";
+                    else
+                        value = "-";
+                }   break;
+            case 's':
+                if (hres != null)
+                    value = "" + ((HttpResponse) response).getStatus();
                 else
                     value = "-";
-            }
-        } else if (pattern == 's') {
-            if (hres != null)
-                value = "" + ((HttpResponse) response).getStatus();
-            else
-                value = "-";
-        } else if (pattern == 't') {
-            StringBuilder temp = new StringBuilder("[");
-            temp.append(dayFormatter.get().format(date));             // Day
-            temp.append('/');
-            temp.append(lookup(monthFormatter.get().format(date)));   // Month
-            temp.append('/');
-            temp.append(yearFormatter.get().format(date));            // Year
-            temp.append(':');
-            temp.append(timeFormatter.get().format(date));            // Time
-            temp.append(' ');
-            temp.append(timeZone);                                    // Timezone
-            temp.append(']');
-            value = temp.toString();
-        } else if (pattern == 'T') {
-            value = timeTakenFormatter.get().format(time/1000d);
-        } else if (pattern == 'u') {
-            if (hreq != null)
-                value = hreq.getRemoteUser();
-            if (value == null)
-                value = "-";
-        } else if (pattern == 'U') {
-            if (hreq != null)
-                value = hreq.getRequestURI();
-            else
-                value = "-";
-        } else if (pattern == 'v') {
-            value = req.getServerName();
-        } else {
-            value = "???" + pattern + "???";
+                break;
+            case 't':
+                StringBuilder temp = new StringBuilder("[");
+                temp.append(dayFormatter.get().format(date));             // Day
+                temp.append('/');
+                temp.append(lookup(monthFormatter.get().format(date)));   // Month
+                temp.append('/');
+                temp.append(yearFormatter.get().format(date));            // Year
+                temp.append(':');
+                temp.append(timeFormatter.get().format(date));            // Time
+                temp.append(' ');
+                temp.append(timeZone);                                    // Timezone
+                temp.append(']');
+                value = temp.toString();
+                break;
+            case 'T':
+                value = timeTakenFormatter.get().format(time/1000d);
+                break;
+            case 'u':
+                if (hreq != null)
+                    value = hreq.getRemoteUser();
+                if (value == null)
+                    value = "-";
+                break;
+            case 'U':
+                if (hreq != null)
+                    value = hreq.getRequestURI();
+                else
+                    value = "-";
+                break;
+            case 'v':
+                value = req.getServerName();
+                break;
+            default:
+                value = "???" + pattern + "???";
+                break;
         }
 
         if (value == null)
@@ -1162,6 +1175,7 @@ public final class AccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // START CR 6411114
@@ -1201,6 +1215,7 @@ public final class AccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // START CR 6411114

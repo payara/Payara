@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -90,10 +90,7 @@ import java.util.logging.Level;
  * @author Jean-Francois Arcand
  * @version $Revision: 1.14.6.2 $ $Date: 2008/04/17 18:37:20 $
  */
-
-public class StandardManager
-    extends ManagerBase
-    implements Lifecycle, PropertyChangeListener {
+public class StandardManager extends ManagerBase implements Lifecycle, PropertyChangeListener {
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedDoLoadFromFile
@@ -103,6 +100,7 @@ public class StandardManager
             // NOOP
         }
 
+        @Override
         public Void run() throws Exception{
            doLoadFromFile();
            return null;
@@ -112,14 +110,15 @@ public class StandardManager
     private class PrivilegedDoUnload
         implements PrivilegedExceptionAction<Void> {
 
-        private boolean expire;
-        private boolean isShutdown;
+        private final boolean expire;
+        private final boolean isShutdown;
 
         PrivilegedDoUnload(boolean expire, boolean shutDown) {
             this.expire = expire;
             isShutdown = shutDown;
         }
 
+        @Override
         public Void run() throws Exception{
             doUnload(expire, isShutdown);
             return null;
@@ -374,6 +373,7 @@ public class StandardManager
      * found during the reload
      * @exception IOException if a read error occurs
      */
+    @Override
     public void load() throws ClassNotFoundException, IOException {
         if (SecurityUtil.isPackageProtectionEnabled()){   
             try{
@@ -386,8 +386,7 @@ public class StandardManager
                     throw (IOException)exception;
                 }
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Unreported exception in load() "
-                            + exception);
+                    log.log(Level.FINE, "Unreported exception in load() {0}", exception);
                 }
             }
         } else {
@@ -444,7 +443,7 @@ public class StandardManager
 
     private void deleteFile(File file) {
         if (!file.delete() && log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Cannot delete file: " + file);
+            log.log(Level.FINE, "Cannot delete file: {0}", file);
         }
     }
 
@@ -487,9 +486,9 @@ public class StandardManager
         synchronized (sessions) {
             try {
                 Integer count = (Integer) ois.readObject();
-                int n = count.intValue();
+                int n = count;
                 if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Loading " + n + " persisted sessions");
+                    log.log(Level.FINE, "Loading {0} persisted sessions", n);
                 for (int i = 0; i < n; i++) {
                     StandardSession session =
                         StandardSession.deserialize(ois, this);
@@ -543,6 +542,7 @@ public class StandardManager
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void unload() throws IOException {
         unload(true, false);
     }
@@ -583,7 +583,7 @@ public class StandardManager
                     throw (IOException)exception;
                 }
                 if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Unreported exception in unLoad() " + exception);
+                    log.log(Level.FINE, "Unreported exception in unLoad() {0}", exception);
             }
         } else {
             doUnload(doExpire, isShutdown);
@@ -672,7 +672,7 @@ public class StandardManager
         StandardSession[] currentStandardSessions = null;
         synchronized (sessions) {
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Unloading " + sessions.size() + " sessions");
+                log.log(Level.FINE, "Unloading {0} sessions", sessions.size());
             try {
                 // START SJSAS 6375689
                 for (Session actSession : findSessions()) {
@@ -683,7 +683,7 @@ public class StandardManager
                 Session[] currentSessions = findSessions();
                 int size = currentSessions.length;
                 currentStandardSessions = new StandardSession[size];
-                oos.writeObject(Integer.valueOf(size));
+                oos.writeObject(size);
                 for (int i = 0; i < size; i++) {
                     StandardSession session =
                         (StandardSession) currentSessions[i];
@@ -735,7 +735,7 @@ public class StandardManager
         if (doExpire) {
             // Expire all the sessions we just wrote
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Expiring " + currentStandardSessions.length + " persisted sessions");
+                log.log(Level.FINE, "Expiring {0} persisted sessions", currentStandardSessions.length);
             for (StandardSession session : currentStandardSessions) {
                 try {
                     session.expire(false);
@@ -771,6 +771,7 @@ public class StandardManager
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -780,6 +781,7 @@ public class StandardManager
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this StandardManager.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -790,6 +792,7 @@ public class StandardManager
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -802,6 +805,7 @@ public class StandardManager
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         if( ! initialized )
@@ -842,6 +846,7 @@ public class StandardManager
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         stop(false);
     }
@@ -912,6 +917,7 @@ public class StandardManager
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         // Validate the source of this event

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -127,8 +128,9 @@ public class SchemaResolver implements EntityResolver {
      */
      public void register(String publicId, String entityURL) {
          String key = publicId;
-         if (publicId.indexOf(schemaExtension) != -1)
+         if (publicId.contains(schemaExtension)) {
              key = publicId.substring(publicId.lastIndexOf('/')+1);
+         }
          entityValidator.put(key, entityURL);
      }
 
@@ -142,8 +144,8 @@ public class SchemaResolver implements EntityResolver {
      * @exception SAXException if a parsing exception occurs
      *
      */
-    public InputSource resolveEntity(String publicId, String systemId)
-        throws SAXException {
+    @Override
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
         if (publicId != null) {
             digester.setPublicId(publicId);

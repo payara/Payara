@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -87,6 +88,7 @@ public class SetContextPropertiesRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(String namespace, String nameX, Attributes attributes)
         throws Exception {
 

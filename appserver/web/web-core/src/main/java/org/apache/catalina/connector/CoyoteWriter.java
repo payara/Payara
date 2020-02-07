@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -108,7 +109,10 @@ public class CoyoteWriter
 
     /**
     * Prevent cloning the facade.
+     * @return 
+     * @throws CloneNotSupportedException 
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -135,7 +139,7 @@ public class CoyoteWriter
 
     // --------------------------------------------------------- Writer Methods
 
-
+    @Override
     public void flush() {
 
         // Disallow operation if the object has gone out of scope
@@ -154,7 +158,7 @@ public class CoyoteWriter
 
     }
 
-
+    @Override
     public void close() {
 
         // Disallow operation if the object has gone out of scope
@@ -173,7 +177,7 @@ public class CoyoteWriter
 
     }
 
-
+    @Override
     public boolean checkError() {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
@@ -183,7 +187,7 @@ public class CoyoteWriter
         return error;
     }
 
-
+    @Override
     public void write(int c) {
 
         // Disallow operation if the object has gone out of scope
@@ -202,7 +206,7 @@ public class CoyoteWriter
 
     }
 
-
+    @Override
     public void write(char buf[], int off, int len) {
 
         // Disallow operation if the object has gone out of scope
@@ -220,12 +224,12 @@ public class CoyoteWriter
         }
     }
 
-
+    @Override
     public void write(char buf[]) {
 	write(buf, 0, buf.length);
     }
 
-
+    @Override
     public void write(String s, int off, int len) {
 
         // Disallow operation if the object has gone out of scope
@@ -244,7 +248,7 @@ public class CoyoteWriter
 
     }
 
-
+    @Override
     public void write(String s) {
         write(s, 0, s.length());
     }
@@ -270,7 +274,7 @@ public class CoyoteWriter
 
     // ---------------------------------------------------- PrintWriter Methods
 
-
+    @Override
     public void print(boolean b) {
         if (b) {
             write("true");
@@ -279,37 +283,37 @@ public class CoyoteWriter
         }
     }
 
-
+    @Override
     public void print(char c) {
         write(c);
     }
 
-
+    @Override
     public void print(int i) {
         write(String.valueOf(i));
     }
 
-
+    @Override
     public void print(long l) {
         write(String.valueOf(l));
     }
 
-
+    @Override
     public void print(float f) {
         write(String.valueOf(f));
     }
 
-
+    @Override
     public void print(double d) {
         write(String.valueOf(d));
     }
 
-
+    @Override
     public void print(char s[]) {
         write(s);
     }
 
-
+    @Override
     public void print(String s) {
         if (s == null) {
             s = "null";
@@ -317,65 +321,65 @@ public class CoyoteWriter
         write(s);
     }
 
-
+    @Override
     public void print(Object obj) {
         write(String.valueOf(obj));
     }
 
-
+    @Override
     public void println() {
         write(LINE_SEP);
     }
 
-
+    @Override
     public void println(boolean b) {
         print(b);
         println();
     }
 
-
+    @Override
     public void println(char c) {
         print(c);
         println();
     }
 
-
+    @Override
     public void println(int i) {
         print(i);
         println();
     }
 
-
+    @Override
     public void println(long l) {
         print(l);
         println();
     }
 
-
+    @Override
     public void println(float f) {
         print(f);
         println();
     }
 
-
+    @Override
     public void println(double d) {
         print(d);
         println();
     }
 
-
+    @Override
     public void println(char c[]) {
         print(c);
         println();
     }
 
-
+    @Override
     public void println(String s) {
         print(s);
         println();
     }
 
-
+    @Override
     public void println(Object o) {
         print(o);
         println();

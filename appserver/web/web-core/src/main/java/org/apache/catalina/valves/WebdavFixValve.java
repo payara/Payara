@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -83,14 +84,13 @@ import java.io.IOException;
  *
  * @version $Revision: 420067 $, $Date: 2006-07-08 09:16:58 +0200 (sub, 08 srp 2006) $
  */
-
-public class WebdavFixValve
-    extends ValveBase {
+public class WebdavFixValve extends ValveBase {
 
     /**
      * Check for the broken MS WebDAV client and if detected issue a re-direct
      * that hopefully will cause the non-broken client to be used.
      */
+    @Override
     public int invoke(Request request, Response response)
         throws IOException, ServletException {
 

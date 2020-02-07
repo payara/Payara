@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.valve;
 
@@ -59,10 +60,10 @@ import java.lang.reflect.Method;
 public class GlassFishValveAdapter implements GlassFishValve {
 
     // The wrapped GlassFish-style valve to which to delegate
-    private Valve gfValve;
+    private final Valve gfValve;
 
-    private Method invokeMethod;
-    private Method postInvokeMethod;
+    private final Method invokeMethod;
+    private final Method postInvokeMethod;
 
     /**
      * Constructor.
@@ -71,13 +72,11 @@ public class GlassFishValveAdapter implements GlassFishValve {
      */
     public GlassFishValveAdapter(Valve gfValve) throws Exception {
         this.gfValve = gfValve;
-        invokeMethod = gfValve.getClass().getMethod("invoke", Request.class,
-                                                    Response.class);
-        postInvokeMethod = gfValve.getClass().getMethod("postInvoke",
-                                                        Request.class,
-                                                        Response.class);
+        invokeMethod = gfValve.getClass().getMethod("invoke", Request.class, Response.class);
+        postInvokeMethod = gfValve.getClass().getMethod("postInvoke", Request.class, Response.class);
     }
 
+    @Override
     public String getInfo() {
         return gfValve.getInfo();
     }
@@ -85,11 +84,10 @@ public class GlassFishValveAdapter implements GlassFishValve {
     /**
      * Delegates to the invoke() of the wrapped GlassFish-style valve.
      */
-    public int invoke(Request request,
-                      Response response)
-                throws IOException, ServletException {
+    @Override
+    public int invoke(Request request, Response response) throws IOException, ServletException {
         try {
-            return ((Integer) invokeMethod.invoke(gfValve, request, response)).intValue();
+            return ((Integer) invokeMethod.invoke(gfValve, request, response));
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -98,8 +96,8 @@ public class GlassFishValveAdapter implements GlassFishValve {
     /**
      * Delegates to the postInvoke() of the wrapped GlassFish-style valve.
      */
-    public void postInvoke(Request request, Response response)
-                throws IOException, ServletException {
+    @Override
+    public void postInvoke(Request request, Response response) throws IOException, ServletException {
         try {
             postInvokeMethod.invoke(gfValve, request, response);
         } catch (Exception e) {

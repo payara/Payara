@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.realm;
 
@@ -70,7 +71,6 @@ import java.security.acl.Group;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.logging.Level;
 
 /**
@@ -185,6 +185,7 @@ public class JAASRealm
         return appName;
     }
 
+    @Override
     public void setContainer(Container container) {
         super.setContainer(container);
         String name=container.getName();
@@ -276,6 +277,7 @@ public class JAASRealm
      * @param credentials Password or other credentials to use in
      *  authenticating this username
      */
+    @Override
     public Principal authenticate(String username, char[] credentials) {
 
         // Establish a LoginContext to use for authentication
@@ -283,8 +285,9 @@ public class JAASRealm
         LoginContext loginContext = null;
         if( appName==null ) appName="Tomcat";
 
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Authenticating " + appName + " " +  username);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Authenticating {0} {1}", new Object[]{appName, username});
+        }
 
         // What if the LoginModule is in the container class loader ?
         //
@@ -296,7 +299,7 @@ public class JAASRealm
                                                   credentials));
         } catch (Throwable e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Error initializing JAAS: " +  e.toString());
+                log.log(Level.FINE, "Error initializing JAAS: {0}", e.toString());
 
                 String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), username);
                 log.log(Level.FINE, msg, e);
@@ -306,8 +309,9 @@ public class JAASRealm
             Thread.currentThread().setContextClassLoader(ocl);
         }
 
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Login context created " + username);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Login context created {0}", username);
+        }
 
         // Negotiate a login via this LoginContext
         Subject subject = null;
@@ -346,18 +350,18 @@ public class JAASRealm
         }
 
         if( log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Getting principal " + subject);
+            log.log(Level.FINE, "Getting principal {0}", subject);
 
         // Return the appropriate Principal for this authenticated Subject
         Principal principal = createPrincipal(username, subject);
         if (principal == null) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Failed to authenticate username " + username);
+                log.log(Level.FINE, "Failed to authenticate username {0}", username);
             }
             return (null);
         }
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Successful to authenticate username " + username);
+            log.log(Level.FINE, "Successful to authenticate username {0}", username);
         }
 
         return (principal);
@@ -377,30 +381,27 @@ public class JAASRealm
     /**
      * Return a short name for this Realm implementation.
      */
+    @Override
     protected String getName() {
-
         return (this.name);
-
     }
 
 
     /**
      * Return the password associated with the given principal's user name.
      */
+    @Override
     protected char[] getPassword(String username) {
-
         return (null);
-
     }
 
 
     /**
      * Return the Principal associated with the given user name.
      */
+    @Override
     protected Principal getPrincipal(String username) {
-
         return (null);
-
     }
 
 
@@ -414,20 +415,19 @@ public class JAASRealm
     protected Principal createPrincipal(String username, Subject subject) {
         // Prepare to scan the Principals for this Subject
         ArrayList<String> roles = new ArrayList<String>();
-
+        
         // Scan the Principals for this Subject
-        Iterator principals = subject.getPrincipals().iterator();
-        while (principals.hasNext()) {
-            Principal principal = (Principal) principals.next();
+        for (Principal principal : subject.getPrincipals()) {
             // No need to look further - that's our own stuff
             if( principal instanceof GenericPrincipal ) {
-                if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Found old GenericPrincipal " + principal);
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Found old GenericPrincipal {0}", principal);
+                }
                 return principal;
             }
             String principalClass = principal.getClass().getName();
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Principal: " + principalClass + " " + principal);
+                log.log(Level.FINE, "Principal: {0} {1}", new Object[]{principalClass, principal});
 
             if (userClasses.contains(principalClass)) {
                 // Override the default - which is the original user, accepted by
@@ -439,7 +439,7 @@ public class JAASRealm
             }
             // Same as Jboss - that's a pretty clean solution
             if( (principal instanceof Group) &&
-                 "Roles".equals( principal.getName())) {
+                    "Roles".equals( principal.getName())) {
                 Group grp=(Group)principal;
                 Enumeration en=grp.members();
                 while( en.hasMoreElements() ) {
@@ -470,6 +470,7 @@ public class JAASRealm
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents it from being started
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Perform normal superclass initialization
@@ -484,6 +485,7 @@ public class JAASRealm
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Perform normal superclass finalization

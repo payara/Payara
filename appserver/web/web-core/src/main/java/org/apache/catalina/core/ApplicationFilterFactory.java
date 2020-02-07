@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -84,7 +85,7 @@ public final class ApplicationFilterFactory {
 
     // -------------------------------------------------------------- Constants
 
-    private static ApplicationFilterFactory factory = new ApplicationFilterFactory();
+    private static final ApplicationFilterFactory factory = new ApplicationFilterFactory();
 
 
     // ----------------------------------------------------------- Constructors
@@ -114,10 +115,11 @@ public final class ApplicationFilterFactory {
      * a filter chain at all, return <code>null</code>.
      *
      * @param request The servlet request we are processing
+     * @param wrapper The wrapper for the servlet
      * @param servlet The servlet instance to be wrapped
+     * @return Filterchain that wraps the instance
      */
-    public ApplicationFilterChain createFilterChain
-        (ServletRequest request, Wrapper wrapper, Servlet servlet) {
+    public ApplicationFilterChain createFilterChain(ServletRequest request, Wrapper wrapper, Servlet servlet) {
         
         // If there is no servlet to execute, return null
         if (servlet == null)

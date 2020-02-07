@@ -60,7 +60,6 @@ package com.sun.enterprise.web.connector.grizzly;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.management.ObjectName;
 
 import org.apache.catalina.connector.ProtocolHandler;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;

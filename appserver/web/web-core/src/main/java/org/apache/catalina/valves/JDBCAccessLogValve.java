@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -406,7 +407,7 @@ public final class JDBCAccessLogValve
      * is desired or not.
      */
     public void setResolveHosts(String resolveHosts) {
-        this.resolveHosts = Boolean.valueOf(resolveHosts).booleanValue();
+        this.resolveHosts = Boolean.valueOf(resolveHosts);
     }
 
 
@@ -422,15 +423,14 @@ public final class JDBCAccessLogValve
      * @exception ServletException Database SQLException is wrapped 
      * in a ServletException.
      */    
-     public int invoke(Request request, Response response)
-         throws IOException, ServletException {
-
+    @Override
+     public int invoke(Request request, Response response) throws IOException, ServletException {
         return INVOKE_NEXT;
     }
 
 
-    public void postInvoke(Request request, Response response)
-                                    throws IOException, ServletException{
+    @Override
+    public void postInvoke(Request request, Response response) throws IOException, ServletException{
 
         ServletRequest req = request.getRequest();
         HttpServletRequest hreq = null;
@@ -554,11 +554,7 @@ public final class JDBCAccessLogValve
 
         try {
             Class.forName(driverName).newInstance(); 
-        } catch (ClassNotFoundException e) {
-            throw new LifecycleException(e);
-        } catch (InstantiationException e) {
-            throw new LifecycleException(e);
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw new LifecycleException(e);
         }
         Properties info = new Properties();
@@ -595,6 +591,7 @@ public final class JDBCAccessLogValve
      * @exception LifecycleException Can be thrown on lifecycle 
      * inconsistencies or on database errors (as a wrapped SQLException).
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // START CR 6411114

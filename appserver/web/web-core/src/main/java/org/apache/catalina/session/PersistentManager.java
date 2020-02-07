@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -99,19 +100,17 @@ public final class PersistentManager extends PersistentManagerBase {
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
-
         return (this.info);
-
     }
 
     /**
      * Return the descriptive short name of this Manager implementation.
      */
+    @Override
     public String getName() {
-
         return (name);
-
     }
  }
 

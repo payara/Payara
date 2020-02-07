@@ -149,12 +149,12 @@ public class HoggingThreadsHealthCheck
             return result;
         }
         acceptHoggingThreads(checkRecordsByThreadId, 
-                (percentage, threshold, totalTimeHogging, initialMethod, info) -> {
+                (percentage, threshold, totalTimeHogging, initialMethod, info) ->
                     result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
                             "Thread with <id-name>: " + info.getThreadId() + "-" + info.getThreadName() +
                             " is a hogging thread for the last " +
-                            prettyPrintDuration(totalTimeHogging) + "\n" + prettyPrintStackTrace(info.getStackTrace())));
-                });
+                            prettyPrintDuration(totalTimeHogging) + "\n" + prettyPrintStackTrace(info.getStackTrace())))
+                );
         return result;
     }
 
@@ -197,44 +197,49 @@ public class HoggingThreadsHealthCheck
     }
 
     private void acceptHoggingThreads(Map<Long, ThreadCpuTimeRecord> recordsById, HoggingThreadConsumer consumer) {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        long now = System.currentTimeMillis();
-        long currentThreadId = Thread.currentThread().getId();
-        int retryCount = options.getRetryCount();
-        int threshold = options.getThresholdPercentage().intValue();
+        final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        final long now = System.currentTimeMillis();
+        final long currentThreadId = Thread.currentThread().getId();
+        final int retryCount = options.getRetryCount();
+        final int threshold = options.getThresholdPercentage().intValue();
         for (long threadId : bean.getAllThreadIds()) {
-            if (threadId == currentThreadId)
-                continue;
-            final long cpuTimeInNanos = bean.getThreadCpuTime(threadId);
-            if (cpuTimeInNanos == -1)
-                continue;
-            long cpuTime = TimeUnit.NANOSECONDS.toMillis(cpuTimeInNanos); 
-            // from here all times are in millis
-            ThreadCpuTimeRecord record = recordsById.get(threadId);
-            if (record == null) {
-                record = new ThreadCpuTimeRecord();
-                recordsById.put(threadId, record);
-            } else {
-                long intervalLength = now - record.startOfIntervalTimestamp;
-                long intervalCpuTime = cpuTime - record.startOfIntervalCpuTime;
-                int percentage = (int) (intervalCpuTime * 100L / intervalLength);
-                if (percentage > threshold) {
-                    if (record.identifiedAsHoggingCount == 0) {
-                        record.startOfExceedingThresholdTimestamp = record.startOfIntervalTimestamp;
-                        record.identifiedAsHoggingMethod = getMethod(bean.getThreadInfo(threadId, 1));
-                    }
-                    record.identifiedAsHoggingCount++;
-                    if (record.identifiedAsHoggingCount > retryCount) {
-                        ThreadInfo info = bean.getThreadInfo(threadId, 1);
-                        long totalTimeHogging = now - record.startOfExceedingThresholdTimestamp;
-                        consumer.accept(percentage, threshold, totalTimeHogging, record.identifiedAsHoggingMethod, info);
-                    }
+            if (threadId != currentThreadId) {
+                final long cpuTimeInNanos = bean.getThreadCpuTime(threadId);
+                if (cpuTimeInNanos == -1)
+                    continue;
+                long cpuTime = TimeUnit.NANOSECONDS.toMillis(cpuTimeInNanos); 
+                // from here all times are in millis
+                ThreadCpuTimeRecord record = recordsById.get(threadId);
+                if (record == null) {
+                    record = new ThreadCpuTimeRecord();
+                    recordsById.put(threadId, record);
                 } else {
-                    record.identifiedAsHoggingCount = 0;
+                    acceptHoggingThread(bean, now, retryCount, threshold, threadId, cpuTime, record, consumer);
                 }
+                record.startOfIntervalTimestamp = now;
+                record.startOfIntervalCpuTime = cpuTime;
             }
-            record.startOfIntervalTimestamp = now;
-            record.startOfIntervalCpuTime = cpuTime;
+        }
+    }
+
+    private static void acceptHoggingThread(final ThreadMXBean bean, final long now, final int retryCount, final int threshold,
+            long threadId, long cpuTime, ThreadCpuTimeRecord record, HoggingThreadConsumer consumer) {
+        long intervalLength = now - record.startOfIntervalTimestamp;
+        long intervalCpuTime = cpuTime - record.startOfIntervalCpuTime;
+        int percentage = (int) (intervalCpuTime * 100L / intervalLength);
+        if (percentage > threshold) {
+            if (record.identifiedAsHoggingCount == 0) {
+                record.startOfExceedingThresholdTimestamp = record.startOfIntervalTimestamp;
+                record.identifiedAsHoggingMethod = getMethod(bean.getThreadInfo(threadId, 1));
+            }
+            record.identifiedAsHoggingCount++;
+            if (record.identifiedAsHoggingCount > retryCount) {
+                ThreadInfo info = bean.getThreadInfo(threadId, 1);
+                long totalTimeHogging = now - record.startOfExceedingThresholdTimestamp;
+                consumer.accept(percentage, threshold, totalTimeHogging, record.identifiedAsHoggingMethod, info);
+            }
+        } else {
+            record.identifiedAsHoggingCount = 0;
         }
     }
 

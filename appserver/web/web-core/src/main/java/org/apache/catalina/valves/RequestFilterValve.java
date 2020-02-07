@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -212,10 +213,9 @@ public abstract class RequestFilterValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -234,8 +234,8 @@ public abstract class RequestFilterValve
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
-    public abstract int invoke(Request request, Response response)
-        throws IOException, ServletException;
+    @Override
+    public abstract int invoke(Request request, Response response) throws IOException, ServletException;
 
 
     // ------------------------------------------------------ Protected Methods
@@ -269,12 +269,8 @@ public abstract class RequestFilterValve
             try {
                 reList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
-                String msg = MessageFormat.format(rb.getString(LogFacade.SYNTAX_ERROR),
-                                                  pattern);
-                IllegalArgumentException iae = new IllegalArgumentException
-                    (msg);
-                iae.initCause(e);
-                throw iae;
+                String msg = MessageFormat.format(rb.getString(LogFacade.SYNTAX_ERROR), pattern);
+                throw new IllegalArgumentException(msg, e);
             }
             list = list.substring(comma + 1);
         }
@@ -300,14 +296,14 @@ public abstract class RequestFilterValve
         throws IOException, ServletException {
 
         // Check the deny patterns, if any
-        for (int i = 0; i < denies.length; i++) {
-            if (denies[i].matcher(property).matches()) {
+        for (Pattern denie : denies) {
+            if (denie.matcher(property).matches()) {
                 //ServletResponse sres = response.getResponse();
-                /* GlassFish 6386229 
+                /* GlassFish 6386229
                 if (sres instanceof HttpServletResponse) {
-                    HttpServletResponse hres = (HttpServletResponse) sres;
-                    hres.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return END_PIPELINE;
+                HttpServletResponse hres = (HttpServletResponse) sres;
+                hres.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return END_PIPELINE;
                 }
                 */
                 // START GlassFish 6386229 
@@ -321,8 +317,8 @@ public abstract class RequestFilterValve
         }
 
         // Check the allow patterns, if any
-        for (int i = 0; i < allows.length; i++) {
-            if (allows[i].matcher(property).matches()) {
+        for (Pattern allow1 : allows) {
+            if (allow1.matcher(property).matches()) {
                 return INVOKE_NEXT;
             }
         }

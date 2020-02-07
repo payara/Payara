@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -147,6 +148,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @exception IllegalStateException if the response has already
      *  been committed
      */
+    @Override
     public void reset() {
 
         // If already committed, the wrapped response will throw ISE
@@ -161,6 +163,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param len The new content length
      */
+    @Override
     public void setContentLength(int len) {
 
         if (!included)
@@ -174,6 +177,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param type The new content type
      */
+    @Override
     public void setContentType(String type) {
 
         if (!included)
@@ -187,6 +191,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param loc The new locale
      */
+    @Override
     public void setLocale(Locale loc) {
 
         if (!included)
@@ -200,6 +205,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param size The buffer size
      */
+    @Override
     public void setBufferSize(int size) {
         if (!included)
             getResponse().setBufferSize(size);
@@ -214,6 +220,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param cookie The new cookie
      */
+    @Override
     public void addCookie(Cookie cookie) {
 
         if (!included)
@@ -228,6 +235,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void addDateHeader(String name, long value) {
 
         if (!included)
@@ -242,6 +250,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void addHeader(String name, String value) {
 
         if (!included)
@@ -256,6 +265,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void addIntHeader(String name, int value) {
 
         if (!included)
@@ -271,6 +281,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendError(int sc) throws IOException {
 
         if (!included)
@@ -287,6 +298,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendError(int sc, String msg) throws IOException {
 
         if (!included)
@@ -302,6 +314,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendRedirect(String location) throws IOException {
 
         if (!included)
@@ -316,6 +329,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void setDateHeader(String name, long value) {
 
         if (!included)
@@ -330,6 +344,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void setHeader(String name, String value) {
 
         if (!included)
@@ -344,6 +359,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param name The new header name
      * @param value The new header value
      */
+    @Override
     public void setIntHeader(String name, int value) {
 
         if (!included)
@@ -357,6 +373,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      *
      * @param sc The new status code
      */
+    @Override
     public void setStatus(int sc) {
 
         if (!included)
@@ -371,6 +388,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
      * @param sc The new status code
      * @param msg The new message
      */
+    @Override
     public void setStatus(int sc, String msg) {
 
         if (!included)
@@ -384,6 +402,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
 
     /**
      * Return descriptive information about this implementation.
+     * @return descriptive information 
      */
     public String getInfo() {
 

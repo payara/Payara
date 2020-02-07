@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -96,10 +97,9 @@ public class RequestDumperValve extends ValveBase {
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -116,8 +116,8 @@ public class RequestDumperValve extends ValveBase {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
-     public int invoke(Request request, Response response)
-         throws IOException, ServletException {
+    @Override
+     public int invoke(Request request, Response response) throws IOException, ServletException {
 
         // Skip logging for non-HTTP requests and responses
         if (!(request instanceof HttpRequest) ||
@@ -138,9 +138,9 @@ public class RequestDumperValve extends ValveBase {
         log("       contextPath=" + hreq.getContextPath());
         Cookie cookies[] = hreq.getCookies();
         if (cookies != null) {
-            for (int i = 0; i < cookies.length; i++)
-                log("            cookie=" + cookies[i].getName() + "=" +
-                    cookies[i].getValue());
+            for (Cookie cookie : cookies) {
+                log("            cookie=" + cookie.getName() + "=" + cookie.getValue());
+            }
         }
         Enumeration<String> hnames = hreq.getHeaderNames();
         while (hnames.hasMoreElements()) {
@@ -187,8 +187,8 @@ public class RequestDumperValve extends ValveBase {
      /**
       * Log the interesting response parameters.
       */
-     public void postInvoke(Request request, Response response)
-         throws IOException, ServletException {
+    @Override
+     public void postInvoke(Request request, Response response) throws IOException, ServletException {
 
         HttpRequest hrequest = (HttpRequest) request;
         HttpResponse hresponse = (HttpResponse) response;
@@ -203,10 +203,8 @@ public class RequestDumperValve extends ValveBase {
         log("     contentLength=" + hresponse.getContentLength());
         log("       contentType=" + hresponse.getContentType());
         Cookie[] rcookies = hreq.getCookies();
-        for (int i = 0; i < rcookies.length; i++) {
-            log("            cookie=" + rcookies[i].getName() + "=" +
-                rcookies[i].getValue() + "; domain=" +
-                rcookies[i].getDomain() + "; path=" + rcookies[i].getPath());
+        for (Cookie rcookie : rcookies) {
+            log("            cookie=" + rcookie.getName() + "=" + rcookie.getValue() + "; domain=" + rcookie.getDomain() + "; path=" + rcookie.getPath());
         }
         for (String rhname : hres.getHeaderNames()) {
             for (String rhvalue : hres.getHeaders(rhname)) {
@@ -224,6 +222,7 @@ public class RequestDumperValve extends ValveBase {
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("RequestDumperValve[");
@@ -248,7 +247,7 @@ public class RequestDumperValve extends ValveBase {
         if (logger != null) {
             logger.log(this.toString() + ": " + message);
         } else {
-            log.log(Level.INFO, this.toString() + ": " + message);
+            log.log(Level.INFO, "{0}: {1}", new Object[]{this.toString(), message});
         }
     }
 

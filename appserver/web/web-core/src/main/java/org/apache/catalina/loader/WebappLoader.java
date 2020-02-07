@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.loader;
 
@@ -270,6 +270,7 @@ public class WebappLoader
     /**
      * Return the Java class loader to be used by this Container.
      */
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -278,6 +279,7 @@ public class WebappLoader
     /**
      * Return the Container with which this Logger has been associated.
      */
+    @Override
     public Container getContainer() {
         return (container);
     }
@@ -288,6 +290,7 @@ public class WebappLoader
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
 
         // Deregister from the old Container (if any)
@@ -332,6 +335,7 @@ public class WebappLoader
      * Return the "follow standard delegation model" flag used to configure
      * our ClassLoader.
      */
+    @Override
     public boolean getDelegate() {
         return (this.delegate);
     }
@@ -343,6 +347,7 @@ public class WebappLoader
      *
      * @param delegate The new flag
      */
+    @Override
     public void setDelegate(boolean delegate) {
         boolean oldDelegate = this.delegate;
         this.delegate = delegate;
@@ -356,6 +361,7 @@ public class WebappLoader
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
         return (info);
     }
@@ -382,6 +388,7 @@ public class WebappLoader
     /**
      * Return the reloadable flag for this Loader.
      */
+    @Override
     public boolean getReloadable() {
         return (this.reloadable);
     }
@@ -392,6 +399,7 @@ public class WebappLoader
      *
      * @param reloadable The new reloadable flag
      */
+    @Override
     public void setReloadable(boolean reloadable) {
 
         // Process this property change
@@ -416,6 +424,7 @@ public class WebappLoader
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -426,14 +435,16 @@ public class WebappLoader
      *
      * @param repository Repository to be added
      */
+    @Override
     public void addRepository(String repository) {
 
         if (log.isLoggable(Level.FINEST))
-            log.log(Level.FINEST, "Adding repository " + repository);
+            log.log(Level.FINEST, "Adding repository {0}", repository);
 
-        for (int i = 0; i < repositories.length; i++) {
-            if (repository.equals(repositories[i]))
+        for (String repositorie : repositories) {
+            if (repository.equals(repositorie)) {
                 return;
+            }
         }
         String results[] = new String[repositories.length + 1];
         for (int i = 0; i < repositories.length; i++)
@@ -455,6 +466,7 @@ public class WebappLoader
      * For security reason, returns a clone of the Array (since 
      * String are immutable).
      */
+    @Override
     public String[] findRepositories() {
         return repositories.clone();
     }
@@ -479,6 +491,7 @@ public class WebappLoader
      * Has the internal repository associated with this Loader been modified,
      * such that the loaded classes should be reloaded?
      */
+    @Override
     public boolean modified() {
         return (classLoader.modified());
     }
@@ -499,6 +512,7 @@ public class WebappLoader
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -507,6 +521,7 @@ public class WebappLoader
     /**
      * Return a String representation of this component.
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("WebappLoader[");
         if (container != null)
@@ -524,6 +539,7 @@ public class WebappLoader
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -533,6 +549,7 @@ public class WebappLoader
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this WebappLoader.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -543,6 +560,7 @@ public class WebappLoader
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -605,8 +623,7 @@ public class WebappLoader
                 } catch (Throwable t) {
                     // This is likely a dual registration
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "Dual registration of jndi stream handler: " +
-                                t.getMessage());
+                        log.log(Level.FINE, "Dual registration of jndi stream handler: {0}", t.getMessage());
                     }
                 }
             }
@@ -618,6 +635,7 @@ public class WebappLoader
      *
      * @exception LifecycleException if a lifecycle error occurs
      */
+    @Override
     public void start() throws LifecycleException {
         // Validate and update our current component state
         if( ! initialized ) init();
@@ -742,6 +760,7 @@ public class WebappLoader
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         // Validate the source of this event
@@ -752,8 +771,7 @@ public class WebappLoader
         String propName = event.getPropertyName();
         if ("reloadable".equals(propName)) {
             try {
-                setReloadable
-                    ( ((Boolean) event.getNewValue()).booleanValue() );
+                setReloadable((Boolean) event.getNewValue());
             } catch (NumberFormatException e) {
                 log.log(Level.SEVERE, LogFacade.SET_RELOADABLE_PROPERTY_EXCEPTION, event.getNewValue().toString());
             }
@@ -990,8 +1008,7 @@ public class WebappLoader
         }
 
         if (log.isLoggable(Level.FINEST) && workDir != null)
-            log.log(Level.FINEST, "Deploying class repositories to work directory"
-                    + workDir.getAbsolutePath());
+            log.log(Level.FINEST, "Deploying class repositories to work directory{0}", workDir.getAbsolutePath());
 
         DirContext resources = container.getResources();
 
@@ -1035,9 +1052,7 @@ public class WebappLoader
             }
 
             if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "Deploy class files "
-                        +classesPath+" to "
-                        + classRepository.getAbsolutePath());
+                log.log(Level.FINEST, "Deploy class files {0} to {1}", new Object[]{classesPath, classRepository.getAbsolutePath()});
         }
 
         // Setting up the JAR repository (/WEB-INF/lib), if it exists
@@ -1103,7 +1118,7 @@ public class WebappLoader
                     File destFile = new File(destDir, binding.getName());
 
                     if (log.isLoggable(Level.FINEST)) {
-                        log.log(Level.FINEST, "Deploy JAR "+filename+" to " + destFile.getAbsolutePath());
+                        log.log(Level.FINEST, "Deploy JAR {0} to {1}", new Object[]{filename, destFile.getAbsolutePath()});
                     }
 
                     Object obj = binding.getObject();
@@ -1171,18 +1186,18 @@ public class WebappLoader
                 }
             } else {
                 URL[] repositories = ((URLClassLoader) loader).getURLs();
-                for (int i = 0; i < repositories.length; i++) {
-                    if (repositories[i] == null) {
+                for (URL repositorie : repositories) {
+                    if (repositorie == null) {
                         continue;
                     }
-                    String repository = repositories[i].toString();
+                    String repository = repositorie.toString();
                     if (repository.startsWith("file://")) {
                         repository = repository.substring(7);
                     } else if (repository.startsWith("file:")) {
                         repository = repository.substring(5);
                     } else if (repository.startsWith("jndi:")) {
                         repository = servletContext.getRealPath(
-                            repository.substring(5));
+                                repository.substring(5));
                     } else {
                         continue;
                     }
@@ -1213,10 +1228,10 @@ public class WebappLoader
         try {
             Method m=loader.getClass().getMethod("getClasspath", new Class[] {});
             if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "getClasspath " + m);
+                log.log(Level.FINEST, "getClasspath {0}", m);
             Object o=m.invoke( loader, new Object[] {} );
             if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "gotClasspath " + o);
+                log.log(Level.FINEST, "gotClasspath {0}", o);
             if (o instanceof String )
                 return (String)o;
             return null;
@@ -1257,9 +1272,7 @@ public class WebappLoader
                 }
             }
 
-        } catch (NamingException e) {
-            return false;
-        } catch (IOException e) {
+        } catch (NamingException | IOException e) {
             return false;
         }
 
@@ -1314,6 +1327,7 @@ public class WebappLoader
      * Adds the given package name to the list of packages that may always be
      * overriden, regardless of whether they belong to a protected namespace
      */
+    @Override
     public void addOverridablePackage(String packageName){
        if ( overridablePackages == null){
            overridablePackages = new ArrayList<String>();
@@ -1325,6 +1339,7 @@ public class WebappLoader
 
 
     // START PWC 1.1 6314481
+    @Override
     public void setIgnoreHiddenJarFiles(boolean ignoreHiddenJarFiles) {
         this.ignoreHiddenJarFiles = ignoreHiddenJarFiles;
     }

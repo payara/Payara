@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -309,9 +310,7 @@ public class CallMethodRule extends Rule {
             // copy the parameter class names into an array
             // the classes will be loaded when the digester is set 
             this.paramClassNames = new String[paramTypes.length];
-            for (int i = 0; i < this.paramClassNames.length; i++) {
-                this.paramClassNames[i] = paramTypes[i];
-            }
+            this.paramClassNames = paramTypes.clone();
         }
 
     }
@@ -375,9 +374,7 @@ public class CallMethodRule extends Rule {
             }
         } else {
             this.paramTypes = new Class[paramTypes.length];
-            for (int i = 0; i < this.paramTypes.length; i++) {
-                this.paramTypes[i] = paramTypes[i];
-            }
+            System.arraycopy(paramTypes, 0, this.paramTypes, 0, this.paramTypes.length);
         }
 
     }
@@ -452,8 +449,8 @@ public class CallMethodRule extends Rule {
      * Set the associated digester.
      * If needed, this class loads the parameter classes from their names.
      */
-    public void setDigester(Digester digester)
-    {
+    @Override
+    public void setDigester(Digester digester) {
         // call superclass
         super.setDigester(digester);
         // if necessary, load parameter classes
@@ -477,6 +474,7 @@ public class CallMethodRule extends Rule {
      *
      * @param attributes The attribute list for this element
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Push an array to capture the parameter values if necessary
@@ -496,18 +494,18 @@ public class CallMethodRule extends Rule {
      *
      * @param bodyText The body text of this element
      */
+    @Override
     public void body(String bodyText) throws Exception {
-
         if (paramCount == 0) {
             this.bodyText = bodyText.trim();
         }
-
     }
 
 
     /**
      * Process the end of this element.
      */
+    @Override
     public void end() throws Exception {
 
         // Retrieve or construct the parameter values array
@@ -518,7 +516,7 @@ public class CallMethodRule extends Rule {
             
             if (digester.log.isLoggable(Level.FINEST)) {
                 for (int i=0,size=parameters.length;i<size;i++) {
-                    digester.log.finest("[CallMethodRule](" + i + ")" + parameters[i]) ;
+                    digester.log.log(Level.FINEST, "[CallMethodRule]({0}){1}", new Object[]{i, parameters[i]}) ;
                 }
             }
             
@@ -621,10 +619,9 @@ public class CallMethodRule extends Rule {
     /**
      * Clean up after parsing is complete.
      */
+    @Override
     public void finish() throws Exception {
-
         bodyText = null;
-
     }
 
     /**
@@ -640,6 +637,7 @@ public class CallMethodRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("CallMethodRule[");

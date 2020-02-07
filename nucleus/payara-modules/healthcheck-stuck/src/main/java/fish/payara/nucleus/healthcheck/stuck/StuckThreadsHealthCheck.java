@@ -143,9 +143,18 @@ public class StuckThreadsHealthCheck extends
             return "Running";
         }
         Thread.State state = info.getThreadState();
-        String action = state == State.BLOCKED ? "Blocked on " //
-                : state == State.WAITING || state == State.TIMED_WAITING ? "Waiting on " : "Running ";
-        return action + info.getLockInfo().toString();
+        return composeActionText(state) + info.getLockInfo().toString();
+    }
+
+    private static String composeActionText(Thread.State state) {
+        switch(state) {
+        case BLOCKED: 
+            return "Blocked on ";
+        case WAITING:
+        case TIMED_WAITING:
+            return "Waiting on ";
+        default: return "Running ";
+        }
     }
 
     private void acceptStuckThreads(StuckThreadConsumer consumer) {

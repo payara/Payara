@@ -121,12 +121,16 @@ MonitoringConsole.Chart.Bar = (function() {
             scales: {
                xAxes: [{
                   stacked: true,
+                  gridLines: {
+                    color: 'rgba(0, 127, 255,0.3)',
+                    lineWidth: 0.5,
+                  },                  
                   ticks: {
                     callback: function(value, index, values) {
                       let converter = Units.converter(widget.unit);
                       return converter.format(converter.parse(value));
                     },
-                  },                 
+                  },                
                }],
                yAxes: [{
                   maxBarThickness: 15, //px
@@ -136,7 +140,11 @@ MonitoringConsole.Chart.Bar = (function() {
                   stacked: true,
                   ticks: {
                      display: false,
-                  }
+                  },
+                  gridLines: {
+                    color: 'rgba(0, 127, 255,0.7)',
+                    lineWidth: 0.5,
+                  },
                }]
             },
             legend: {

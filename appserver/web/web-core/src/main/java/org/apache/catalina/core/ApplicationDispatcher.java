@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -124,6 +124,7 @@ public final class ApplicationDispatcher
             this.dispatcherType = dispatcherType;
         }
 
+        @Override
         public Void run() throws java.lang.Exception {
             doDispatch(request, response, dispatcherType);
             return null;
@@ -132,14 +133,15 @@ public final class ApplicationDispatcher
 
     protected class PrivilegedInclude implements PrivilegedExceptionAction<Void> {
 
-        private ServletRequest request;
-        private ServletResponse response;
+        private final ServletRequest request;
+        private final ServletResponse response;
 
         PrivilegedInclude(ServletRequest request, ServletResponse response) {
             this.request = request;
             this.response = response;
         }
 
+        @Override
         public Void run() throws ServletException, IOException {
             doInclude(request,response);
             return null;
@@ -321,6 +323,7 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
+    @Override
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
         dispatch(request, response, DispatcherType.FORWARD);
@@ -555,9 +558,8 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
-    public void include(ServletRequest request, ServletResponse response)
-        throws ServletException, IOException
-    {
+    @Override
+    public void include(ServletRequest request, ServletResponse response) throws ServletException, IOException {
         if (Globals.IS_SECURITY_ENABLED) {
             try {
                 PrivilegedInclude dp = new PrivilegedInclude(request,response);
@@ -669,10 +671,7 @@ public final class ApplicationDispatcher
                 State state)
             throws IOException, ServletException {
         //START OF 6364900 original invoke has been renamed to doInvoke
-        boolean crossContext = false;
-        if (crossContextFlag != null && crossContextFlag.booleanValue()) {
-            crossContext = true;
-        }
+        boolean crossContext = crossContextFlag != null && crossContextFlag;
         if (crossContext) {
             context.getManager().lockSession(request); 
         }       
@@ -803,8 +802,7 @@ public final class ApplicationDispatcher
                 if (reqFacHelper != null) {
                     reqFacHelper.incrementDispatchDepth();
                     if (reqFacHelper.isMaxDispatchDepthReached()) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED),
-                                                          new Object[]{Integer.valueOf(Request.getMaxDispatchDepth())});
+                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED), new Object[]{Request.getMaxDispatchDepth()});
                         throw new ServletException(msg);
                     }
                 }
@@ -1068,7 +1066,7 @@ public final class ApplicationDispatcher
                 crossContext = !(context.getPath().equals(contextPath));
             }
             //START OF 6364900
-            crossContextFlag = Boolean.valueOf(crossContext);
+            crossContextFlag = crossContext;
             //END OF 6364900
 
             if (this.name != null) {

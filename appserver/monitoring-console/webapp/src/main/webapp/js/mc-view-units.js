@@ -115,6 +115,21 @@ MonitoringConsole.View.Units = (function() {
       percent: PERCENT_FACTORS,
    };
 
+   const UNIT_NAMES = {
+      count: 'Count', 
+      ms: 'Milliseconds', 
+      ns: 'Nanoseconds', 
+      bytes: 'Bytes', 
+      percent: 'Percentage'
+   };
+
+   const ALERT_STATUS_NAMES = { 
+      white: 'Normal', 
+      green: 'Healthy', 
+      amber: 'Degraded', 
+      red: 'Unhealthy' 
+   };
+
    function parseNumber(valueAsString, factors) {
       if (!valueAsString || typeof valueAsString === 'string' && valueAsString.trim() === '')
          return undefined;
@@ -241,7 +256,7 @@ MonitoringConsole.View.Units = (function() {
    }
 
    function maxAlertLevel(a, b) {
-      const table = ['white', 'green', 'amber', 'red'];
+      const table = ['white', 'normal', 'green', 'alarming', 'amber', 'critical', 'red'];
       return table[Math.max(0, Math.max(table.indexOf(a), table.indexOf(b)))];
    }
 
@@ -251,8 +266,11 @@ MonitoringConsole.View.Units = (function() {
    return {
       Alerts: {
          maxLevel: maxAlertLevel,
+         name: (level) => ALERT_STATUS_NAMES[level == undefined ? 'white' : level],
       },
       
+      names: () => UNIT_NAMES,
+
       formatTime: formatTime,
       formatNumber: formatNumber,
       formatMilliseconds: (valueAsNumber) => formatNumber(valueAsNumber, MS_FACTORS),

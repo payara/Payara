@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -123,10 +123,9 @@ final class StandardHostValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -485,7 +484,7 @@ final class StandardHostValve
         try {
             Integer statusCodeObj = (Integer) hreq.getAttribute(
                 RequestDispatcher.ERROR_STATUS_CODE);
-            int statusCode = statusCodeObj.intValue();
+            int statusCode = statusCodeObj;
             String message = (String) hreq.getAttribute(
                 RequestDispatcher.ERROR_MESSAGE);
             hres.setStatus(statusCode, message);
@@ -533,7 +532,7 @@ final class StandardHostValve
             logger.log(this.toString() + ": " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, this.toString() + ": " + message);
+                log.log(Level.INFO, "{0}: {1}", new Object[]{this.toString(), message});
             }
         }
     }
@@ -680,17 +679,12 @@ final class StandardHostValve
         }
 
         if (throwable != null) {
-            sreq.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
-                Integer.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            sreq.setAttribute(RequestDispatcher.ERROR_MESSAGE,
-                              throwable.getMessage());
-            sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION,
-                              realError);
-            sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE,
-                              realError.getClass());
+            sreq.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            sreq.setAttribute(RequestDispatcher.ERROR_MESSAGE, throwable.getMessage());
+            sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, realError);
+            sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE, realError.getClass());
         } else {
-            sreq.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
-                              Integer.valueOf(statusCode));
+            sreq.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, statusCode);
             String message = ((HttpResponse) response).getMessage();
             if (message == null) {
                 message = "";
