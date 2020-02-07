@@ -170,7 +170,7 @@ MonitoringConsole.View.Components = (function() {
           if (unit === 'count')
             return createRangeInput(model);
         }
-        return createTextInput(model, unit);
+        return createTextInput(model);
       }
 
       function createTextInput(model) {
@@ -513,7 +513,6 @@ MonitoringConsole.View.Components = (function() {
     function createAlertRow(item, verbose) {
       item.frames = item.frames.sort(sortMostRecentFirst); //NB. even though sortMostUrgetFirst does this as well we have to redo it here - JS...
       let endFrame = item.frames[0];
-      let startFrame = item.frames[Math.max(0, frames.length - 1)];
       let ongoing = endFrame.until === undefined;
       let level = endFrame.level;
       let color = ongoing ? endFrame.color : Colors.hex2rgba(endFrame.color, 0.6);
@@ -664,7 +663,7 @@ MonitoringConsole.View.Components = (function() {
     }
 
     let SQLValueFormatter = {
-      applies: (item, attrKey, attrValue) => attrValue.indexOf(' ') > 0 && attrValue.trim().endsWith(';'),
+      applies: (item, attrKey, attrValue) => attrValue.includes(' ') && attrValue.trim().endsWith(';'),
       format:  (item, attrValue) => attrValue,
       type: 'pre',
     };
@@ -743,7 +742,7 @@ MonitoringConsole.View.Components = (function() {
       let attrs = createAttributesModel(item);
       let row = $('<tr/>', { 'class': 'Annotation' });
       let style = { 'style': 'border-left-color: ' + item.color + ';' };
-      for (let [key, entry] of Object.entries(attrs)) {
+      for (let entry of Object.values(attrs)) {
         let td = $('<td/>', style);
         style = {}; // clear after 1. column
         if (entry.type) {
@@ -849,7 +848,7 @@ MonitoringConsole.View.Components = (function() {
       }
       const circumstance = $('<div/>', { 'class': 'WatchCondition', style: 'color: '+ color +';'});
       let levelText = paddedLeftWith('&nbsp;', Units.Alerts.name(level), 'Unhealthy'.length);
-      let = text = '<b>' + levelText + ':</b> <em>If</em> ' + series + ' <em>in</em> ' + Units.names()[unit] + ' <em>is</em> ';
+      let text = '<b>' + levelText + ':</b> <em>If</em> ' + series + ' <em>in</em> ' + Units.names()[unit] + ' <em>is</em> ';
       text += plainText(formatCondition(model.start, unit));
       if (model.suppress)
         text += ' <em>unless</em> ' + model.surpressingSeries + ' ' + plainText(formatCondition(model.suppress, modelsurpressingUnit));

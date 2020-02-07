@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 
 /**
@@ -119,6 +120,9 @@ public final class SeriesAnnotation implements Serializable, Iterable<Entry<Stri
 
             @Override
             public Entry<String, String> next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("No more attribute available.");
+                }
                 return new AbstractMap.SimpleImmutableEntry<>(elems[i++], elems[i++]);
             }
         };

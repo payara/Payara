@@ -76,6 +76,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
  * @author Jan Bernitt
  * @since 5.201
  */
+@SuppressWarnings("squid:S1104")
 public final class ApiResponses {
 
     /**

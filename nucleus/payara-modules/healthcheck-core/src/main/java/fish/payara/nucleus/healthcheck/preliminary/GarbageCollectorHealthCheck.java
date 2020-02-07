@@ -144,7 +144,8 @@ public class GarbageCollectorHealthCheck
             timeSpendDoingGc += u.getTimeSpendDoingGc();
             numberOfGcs += u.getNumberOfGcs();
         }
-        collectGcUage(collector, "Total", 100d * timeSpendDoingGc / timePassed, numberOfGcs, timeSpendDoingGc);
+        double usage = timePassed == 0 ? 0d : 100d * timeSpendDoingGc / timePassed;
+        collectGcUage(collector, "Total", usage, numberOfGcs, timeSpendDoingGc);
     }
 
     private static void collectGcUage(MonitoringDataCollector collector, String label, double usage, long numberOfGcs, long timeSpendDoingGc) {

@@ -473,7 +473,7 @@ MonitoringConsole.View = (function() {
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
-            if (widget.series.indexOf('*') > 0 && widget.series.indexOf('?') < 0) {
+            if (widget.series.includes('*') && !widget.series.includes('?')) {
                 let tag = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');                
                 label = widget.coloring == 'series' ? tag : [label, tag];
             }

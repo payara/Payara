@@ -48,6 +48,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 
 import org.junit.Test;
@@ -114,6 +115,12 @@ public class SeriesAnnotationTest {
             assertEquals(attrs[i + 1], attr.getValue());
         }
         assertFalse(iter.hasNext());
+        try {
+            iter.next(); // try anyway
+            fail("Expected a NoSuchElementException as there should not be more elements");
+        } catch (NoSuchElementException ex) {
+            assertEquals("No more attribute available.", ex.getMessage());
+        }
     }
 
     private static void assertInvalidAttributes(String...attrs) {
