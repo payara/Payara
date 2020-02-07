@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,18 @@
 package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -145,7 +149,11 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
                 ParameterMap parameters = new ParameterMap();
                 parameters.add("target", instance);
                 parameters.add("name", applicationRef.getRef());
-                parameters.add("virtualservers", applicationRef.getVirtualServers());
+                String virtualServers = applicationRef.getVirtualServers();
+                if (virtualServers == null || virtualServers.isEmpty()) {
+                    virtualServers = getVirtualServers(server);
+                }
+                parameters.add("virtualservers", virtualServers);
                 parameters.add("enabled", applicationRef.getEnabled());
                 parameters.add("lbenabled", applicationRef.getLbEnabled());
                 inv.parameters(parameters).execute();
@@ -164,4 +172,24 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
         }
     }
 
+    private String getVirtualServers(Server server) {
+        Config config = domain.getConfigs().getConfigByName(
+                server.getConfigRef());
+
+        StringJoiner virtualServers = new StringJoiner(",");
+        if (config != null) {
+            HttpService httpService = config.getHttpService();
+            if (httpService != null) {
+                List<VirtualServer> hosts = httpService.getVirtualServer();
+                if (hosts != null) {
+                    for (VirtualServer host : hosts) {
+                        if (!("__asadmin").equals(host.getId())) {
+                            virtualServers.add(host.getId());
+                        }
+                    }
+                }
+            }
+        }
+        return virtualServers.toString();
+    }
 }
