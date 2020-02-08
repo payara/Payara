@@ -167,7 +167,11 @@
             <sun:staticText id="statusReason" text="#{pageSession.statusReason}" />
         </sun:property>
         <sun:property id="uptimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.Uptime}:" >
-            <sun:staticText id="uptime" text="#{pageSession.statusUptime} (ms)" />
+            <!beforeCreate
+                convertMillisToReadable(milliseconds="#{pageSession.statusUptime}"
+                                        readableString=>$attribute{formattedUpTime});
+                />
+            <sun:staticText id="uptime" text="#{formattedUpTime}" />
         </sun:property>
         <sun:property id="deploymentGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.DeploymentGroup}:" >
             <sun:staticText id="deploymentGRoup" text="#{pageSession.statusDG}" />
