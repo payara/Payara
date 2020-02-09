@@ -167,7 +167,9 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
                     ssoEntryMetadataBackingStore.load(ssoId, null);
                 if (mdata != null) {
                     ssoEntry = new HASingleSignOnEntry(getContainer(), mdata, ioUtils);
-                    cache.put(ssoId, ssoEntry);
+                    synchronized (cache) {
+                        cache.put(ssoId, ssoEntry);
+                    }
                 }
             } catch(BackingStoreException ex) {
                 throw new IllegalStateException(ex);
