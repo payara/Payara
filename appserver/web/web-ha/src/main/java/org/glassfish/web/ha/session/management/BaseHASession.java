@@ -225,7 +225,7 @@ public abstract class BaseHASession extends StandardSession
     /**
      * Return a string representation of this object.
      */
-    public String superToString() {
+    private CharSequence superToString() {
 
         StringBuilder sb = new StringBuilder(1000);
         sb.append("BaseHASession[");
@@ -233,7 +233,7 @@ public abstract class BaseHASession extends StandardSession
         sb.append("]");
 
         sb.append("\n");
-        sb.append("isValid:" + getIsValid());
+        sb.append("isValid:").append(getIsValid());
 
         if (getIsValid()) {
             Enumeration<String> attrNamesEnum = getAttributeNamesInternal();
@@ -241,23 +241,22 @@ public abstract class BaseHASession extends StandardSession
                 String nextAttrName = attrNamesEnum.nextElement();
                 Object nextAttrValue = getAttributeInternal(nextAttrName);
                 sb.append("\n");
-                sb.append("attrName = " + nextAttrName);
-                sb.append(" : attrValue = " + nextAttrValue);
+                sb.append("attrName = ").append(nextAttrName);
+                sb.append(" : attrValue = ").append(nextAttrValue);
             }
         }
 
-        return sb.toString();
+        return sb;
         // END S1AS
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder(200);
-        //sb.append(super.toString());
-        sb.append(this.superToString());
-        sb.append(" ssoid: " + this.getSsoId());
-        sb.append(" userName: " + this.getUserName());
-        sb.append(" version: " + this.getVersion());
-        sb.append(" persistent: " + this.isPersistent());
+        StringBuilder sb = new StringBuilder(1200);
+        sb.append(superToString());
+        sb.append(" ssoid: ").append(getSsoId());
+        sb.append(" userName: ").append(getUserName());
+        sb.append(" version: ").append(getVersion());
+        sb.append(" persistent: ").append(isPersistent());
         return sb.toString();
     }
 
