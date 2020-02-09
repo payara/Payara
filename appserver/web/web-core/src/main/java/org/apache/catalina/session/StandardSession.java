@@ -1299,6 +1299,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  Java Servlet API.
      */
     @Override
+    @Deprecated
     public HttpSessionContext getSessionContext() {
         if (sessionContext == null)
             sessionContext = new StandardSessionContext();
@@ -1368,6 +1369,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>getAttribute()</code>
      */
     @Override
+    @Deprecated
     public Object getValue(String name) {
         return (getAttribute(name));
     }
@@ -1384,6 +1386,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>getAttributeNames()</code>
      */
     @Override
+    @Deprecated
     public String[] getValueNames() {
 
         if (!isValid())
@@ -1628,6 +1631,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>setAttribute()</code>
      */
     @Override
+    @Deprecated
     public void putValue(String name, Object value) {
         setAttribute(name, value);
     }
@@ -1775,6 +1779,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>removeAttribute()</code>
      */
     @Override
+    @Deprecated
     public void removeValue(String name) {
         removeAttribute(name);
     }
@@ -2445,7 +2450,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
  * @deprecated As of Java Servlet API 2.1 with no replacement.  The
  *  interface will be removed in a future version of this API.
  */
-
+@Deprecated
 final class StandardSessionContext implements HttpSessionContext {
 
 
@@ -2460,6 +2465,7 @@ final class StandardSessionContext implements HttpSessionContext {
      *  and will be removed in a future version of the API.
      */
     @Override
+    @Deprecated
     public Enumeration<String> getIds() {
         return (new Enumerator<>(dummy));
     }
@@ -2476,6 +2482,7 @@ final class StandardSessionContext implements HttpSessionContext {
      *  future version of the API.
      */
     @Override
+    @Deprecated
     public HttpSession getSession(String id) {
         return (null);
     }
