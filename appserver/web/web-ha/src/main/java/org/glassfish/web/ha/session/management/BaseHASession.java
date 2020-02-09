@@ -250,6 +250,7 @@ public abstract class BaseHASession extends StandardSession
         // END S1AS
     }
 
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(1200);
         sb.append(superToString());
