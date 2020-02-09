@@ -233,9 +233,9 @@ public abstract class BaseHASession extends StandardSession
         sb.append("]");
 
         sb.append("\n");
-        sb.append("isValid:" + this.isValid);
+        sb.append("isValid:" + getIsValid());
 
-        if (this.isValid) {
+        if (getIsValid()) {
             Enumeration<String> attrNamesEnum = getAttributeNames();
             while(attrNamesEnum.hasMoreElements()) {
                 String nextAttrName = attrNamesEnum.nextElement();
