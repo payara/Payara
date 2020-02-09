@@ -1346,13 +1346,22 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public Enumeration<String> getAttributeNames() {
 
-        if (!getIsValid()) {
+        if (!isValid()) {
             throw new IllegalStateException
               ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         }
 
-        return (new Enumerator<>(attributes.keySet(), true));
+        return getAttributeNamesInternal();
 
+    }
+
+    /**
+     * Returns names of attributes even for expired session.
+     *
+     * @return names of attributes ignoring state of session
+     */
+    protected Enumerator<String> getAttributeNamesInternal() {
+        return new Enumerator<>(attributes.keySet(), true);
     }
 
 
