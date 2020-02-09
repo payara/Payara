@@ -1345,10 +1345,10 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public Enumeration<String> getAttributeNames() {
 
-        if (!isValid())
+        if (!getIsValid()) {
             throw new IllegalStateException
-                ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
-
+              ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
+        }
 
         return (new Enumerator<>(attributes.keySet(), true));
 
