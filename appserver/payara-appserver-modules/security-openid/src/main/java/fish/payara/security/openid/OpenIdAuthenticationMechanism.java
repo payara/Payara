@@ -56,10 +56,10 @@ import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
 import fish.payara.security.openid.domain.RefreshTokenImpl;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-
 import java.util.Optional;
 import java.util.logging.Level;
 import static java.util.logging.Level.WARNING;
@@ -70,8 +70,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
@@ -147,6 +147,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     private StateController stateController;
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
+
+    private static class Lock implements Serializable {
+    }
 
     private static final String SESSION_LOCK_NAME = OpenIdAuthenticationMechanism.class.getName();
 
@@ -375,7 +378,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             synchronized (OpenIdAuthenticationMechanism.class) {
                 lock = session.getAttribute(SESSION_LOCK_NAME);
                 if (isNull(lock)) {
-                    lock = new Object();
+                    lock = new Lock();
                     session.setAttribute(SESSION_LOCK_NAME, lock);
                 }
 
