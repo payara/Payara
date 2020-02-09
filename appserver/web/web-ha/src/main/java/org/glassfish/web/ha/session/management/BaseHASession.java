@@ -227,7 +227,7 @@ public abstract class BaseHASession extends StandardSession
      */
     private CharSequence superToString() {
 
-        StringBuilder sb = new StringBuilder(1000);
+        final StringBuilder sb = new StringBuilder(1000);
         sb.append("BaseHASession[");
         sb.append(id);
         sb.append("]");
@@ -251,7 +251,7 @@ public abstract class BaseHASession extends StandardSession
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder(1200);
+        final StringBuilder sb = new StringBuilder(1200);
         sb.append(superToString());
         sb.append(" ssoid: ").append(getSsoId());
         sb.append(" userName: ").append(getUserName());
