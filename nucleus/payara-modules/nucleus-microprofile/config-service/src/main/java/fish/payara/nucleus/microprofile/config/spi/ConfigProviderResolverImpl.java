@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
@@ -139,10 +140,17 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private Config serverLevelConfig;
 
     /**
-     * Sets the global {@link ConfigProviderResolver#instance()} to this instance.
+     * Logs constructor as finest - may be useful to watch sequence of operations.
      */
     public ConfigProviderResolverImpl() {
         LOG.finest("ConfigProviderResolverImpl()");
+    }
+
+    /**
+     * Sets the global {@link ConfigProviderResolver#instance()} to this instance.
+     */
+    @PostConstruct
+    public void postConstruct() {
         // the setInstance is not synchronized, but instance() method body is.
         // this will block possible concurrent access.
         synchronized (ConfigProviderResolver.class) {
