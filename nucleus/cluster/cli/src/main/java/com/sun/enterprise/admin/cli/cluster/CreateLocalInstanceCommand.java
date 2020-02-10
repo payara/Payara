@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -118,7 +118,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
     private boolean autoName;
     
-    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
+    @Param(name = "dataGridStartPort", optional = true, alias = "datagridstartport")
     private String dataGridStartPort;
 
     // Override for hostname, as getting it from the system can be fragile when comparing against node config

@@ -351,6 +351,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
                             }
                             if (configSpecificDataGridStartPort != null) {
+                                if (configSpecificDataGridStartPort.isEmpty()) {
+                                    configSpecificDataGridStartPort = null;
+                                }
                                 if (!configToApply.isDas()) {
                                     hazelcastRuntimeConfigurationProxy.setConfigSpecificDataGridStartPort(configSpecificDataGridStartPort);
                                 }
@@ -363,7 +366,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    actionReport.setMessage(ex.getCause().getMessage());
+                } else {
+                    actionReport.setMessage(ex.getMessage());
+                }
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
