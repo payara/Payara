@@ -1,6 +1,6 @@
 <!--
 
- Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -126,7 +126,7 @@
                       label="$resource{i18nhx.healthcheck.checker.configuration.stuckThreads.thresholdUnitLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.stuckThreads.thresholdUnitLabelHelpText}">
             <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['thresholdUnit']}" 
-                          labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+                          labels={"MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>

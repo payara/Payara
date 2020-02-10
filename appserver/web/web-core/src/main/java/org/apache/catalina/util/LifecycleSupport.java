@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -64,7 +65,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -107,8 +107,7 @@ public final class LifecycleSupport {
     /**
      * The list of registered LifecycleListeners for event notifications.
      */
-    private List<LifecycleListener> listeners =
-        new ArrayList<LifecycleListener>();
+    private final List<LifecycleListener> listeners = new ArrayList<LifecycleListener>();
 
 
     // --------------------------------------------------------- Public Methods
@@ -159,8 +158,8 @@ public final class LifecycleSupport {
 
         LifecycleEvent event = new LifecycleEvent(lifecycle, type, data);
 
-        for (int i = 0; i < listenersArray.length; i++) {
-            listenersArray[i].lifecycleEvent(event);
+        for (LifecycleListener listenersArray1 : listenersArray) {
+            listenersArray1.lifecycleEvent(event);
         }
 
     }

@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.fileupload;
 
@@ -73,7 +74,7 @@ abstract class LimitedInputStream
     /**
      * The maximum size of an item, in bytes.
      */
-    private long sizeMax;
+    private final long sizeMax;
     /**
      * The current number of bytes.
      */
@@ -132,6 +133,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public int read() throws IOException {
         int res = super.read();
         if (res != -1) {
@@ -164,6 +166,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int res = super.read(b, off, len);
         if (res > 0) {
@@ -191,6 +194,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public void close() throws IOException {
         closed = true;
         super.close();

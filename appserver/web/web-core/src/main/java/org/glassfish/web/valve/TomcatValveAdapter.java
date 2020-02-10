@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.valve;
 
@@ -71,18 +72,22 @@ public class TomcatValveAdapter implements Valve {
         this.gfValve = gfValve;
     }
 
+    @Override
     public String getInfo() {
         return gfValve.getInfo();
     }
 
+    @Override
     public Valve getNext() {
         return next;
     }
 
+    @Override
     public void setNext(Valve valve) {
         this.next = valve;
     }
 
+    @Override
     public void backgroundProcess() {
         // Deliberate no-op
     }
@@ -91,6 +96,7 @@ public class TomcatValveAdapter implements Valve {
      * Delegates to the invoke() and postInvoke() methods of the wrapped
      * GlassFish-style valve.
      */
+    @Override
     public void invoke(org.apache.catalina.connector.Request request,
                        org.apache.catalina.connector.Response response)
             throws IOException, ServletException {
@@ -102,6 +108,7 @@ public class TomcatValveAdapter implements Valve {
         gfValve.postInvoke(request, response);
     }
 
+    @Override
     public void event(org.apache.catalina.connector.Request request,
                       org.apache.catalina.connector.Response response,
                       CometEvent event)

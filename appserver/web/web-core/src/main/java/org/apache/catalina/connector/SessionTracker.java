@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -95,7 +96,7 @@ public class SessionTracker implements SessionListener {
      * The size of this list will be greater than one only in cross
      * context request dispatch scenarios
      */
-    private ArrayList<String> contextNames = new ArrayList<String>(2);
+    private final ArrayList<String> contextNames = new ArrayList<String>(2);
 
     /**
      * Processes the given session event, by unregistering this SessionTracker
@@ -104,6 +105,7 @@ public class SessionTracker implements SessionListener {
      *
      * @param event The session event
      */
+    @Override
     public void sessionEvent(SessionEvent event) {
 
         if (!Session.SESSION_DESTROYED_EVENT.equals(event.getType())) {

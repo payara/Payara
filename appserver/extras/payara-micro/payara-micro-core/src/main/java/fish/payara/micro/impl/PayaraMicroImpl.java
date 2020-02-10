@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1043,23 +1043,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
-            HazelcastCore.setThreadLocalDisabled(true);
-            try {
-                gf.start();
+            gf.start();
 
-                // Execute post boot commands
-                postBootCommands.executeCommands(gf.getCommandRunner());
-                this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
+            // Execute post boot commands
+            postBootCommands.executeCommands(gf.getCommandRunner());
+            this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
-                // load all applications, but do not start them until Hazelcast gets a chance to initialize
-                deployAll();
-            } finally {
-                HazelcastCore.setThreadLocalDisabled(false);
-            }
+            // Enable hazelcast
             if (!noCluster) {
                 gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true", "--target", "server-config", "--hostawarepartitioning", Boolean.toString(hostAware), "--lite", Boolean.toString(liteMember));
             }
 
+            // deploy all applications and then initialize them
+            deployAll();
+            // These steps are separated in case any steps need to be done in between
             gf.getCommandRunner().run("initialize-all-applications");
 
             postDeployCommands.executeCommands(gf.getCommandRunner());

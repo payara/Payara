@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
@@ -129,7 +129,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
     /**
      * MD5 message digest provider.
      */
-    protected volatile static MessageDigest messageDigest;
+    protected static volatile MessageDigest messageDigest;
 
     // ----------------------------------------------------- Instance Variables
 
@@ -377,8 +377,8 @@ public class DigestAuthenticator extends AuthenticatorBase {
      * Generates the WWW-Authenticate header.
      * <p>
      * The header MUST follow this template :
-     *
      * <pre>
+     * {@code
      *      WWW-Authenticate    = "WWW-Authenticate" ":" "Digest"
      *                            digest-challenge
      *
@@ -393,8 +393,8 @@ public class DigestAuthenticator extends AuthenticatorBase {
      *      opaque              = "opaque" "=" quoted-string
      *      stale               = "stale" "=" ( "true" | "false" )
      *      algorithm           = "algorithm" "=" ( "MD5" | token )
+     * }
      * </pre>
-     *
      * @param request HTTP Servlet request
      * @param response HTTP Servlet response
      * @param config Login configuration describing how authentication should be performed
@@ -504,8 +504,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
 
             String opaque_client = null;
 
-            for (int i = 0; i < tokens.length; i++) {
-                String currentToken = tokens[i];
+            for (String currentToken : tokens) {
                 if (currentToken.length() == 0)
                     continue;
 
@@ -568,7 +567,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
             }
 
             // Validate nonce
-            int i = nonce.indexOf(":");
+            int i = nonce.indexOf(':');
             if (i < 0 || (i + 1) == nonce.length()) {
                 return false;
             }

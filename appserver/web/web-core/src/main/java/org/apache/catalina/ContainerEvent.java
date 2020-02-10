@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina;
 
@@ -299,8 +299,8 @@ public final class ContainerEvent extends EventObject {
     /**
      * Return a string representation of this event.
      */
+    @Override
     public String toString() {
-
         return ("ContainerEvent['" + getContainer() + "','" +
                 getType() + "','" + getData() + "']");
 

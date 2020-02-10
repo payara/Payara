@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -198,7 +198,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * The count of allocations that are currently active (even if they
      * are for the same instance, as will be true on a non-STM servlet).
      */
-    private AtomicInteger countAllocated = new AtomicInteger(0);
+    private final AtomicInteger countAllocated = new AtomicInteger(0);
 
 
     /**
@@ -210,8 +210,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * The facade associated with this wrapper.
      */
-    private StandardWrapperFacade facade =
-        new StandardWrapperFacade(this);
+    private final StandardWrapperFacade facade = new StandardWrapperFacade(this);
 
 
     /**
@@ -232,7 +231,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * The support object for our instance listeners.
      */
-    private InstanceSupport instanceSupport = new InstanceSupport(this);
+    private final InstanceSupport instanceSupport = new InstanceSupport(this);
 
     /**
      * The context-relative URI of the JSP file for this servlet.
@@ -248,20 +247,20 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Mappings associated with the wrapper.
      */
-    private ArrayList<String> mappings = new ArrayList<String>();
+    private final ArrayList<String> mappings = new ArrayList<String>();
 
     /**
      * The initialization parameters for this servlet, keyed by
      * parameter name.
      */
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private final Map<String, String> parameters = new HashMap<String, String>();
 
     /**
      * The security role references for this servlet, keyed by role name
      * used in the servlet.  The corresponding value is the role name of
      * the web application itself.
      */
-    private HashMap<String, String> references = new HashMap<String, String>();
+    private final HashMap<String, String> references = new HashMap<String, String>();
 
     /**
      * The run-as identity for this servlet.
@@ -324,7 +323,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private ObjectName jspMonitorON;
 
     // To support jmx attributes
-    private StandardWrapperValve swValve;
+    private final StandardWrapperValve swValve;
     private long loadTime;
     private int classLoadTime;
 
@@ -339,13 +338,13 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Static class array used when the SecurityManager is turned on and
      * <code>Servlet.init</code> is invoked.
      */
-    private static Class<?>[] classType = { ServletConfig.class };
+    private static final Class<?>[] classType = { ServletConfig.class };
 
     /**
      * Static class array used when the SecurityManager is turned on and
      * <code>Servlet.service</code>  is invoked.
      */
-    private static Class<?>[] classTypeUsedInService = { ServletRequest.class, ServletResponse.class };
+    private static final Class<?>[] classTypeUsedInService = { ServletRequest.class, ServletResponse.class };
 
     /**
      * File upload (multipart) support
@@ -820,15 +819,22 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 continue;
             }
 
-            if (method.getName().equals("doGet")) {
-                allow.add("GET");
-                allow.add("HEAD");
-            } else if (method.getName().equals("doPost")) {
-                allow.add("POST");
-            } else if (method.getName().equals("doPut")) {
-                allow.add("PUT");
-            } else if (method.getName().equals("doDelete")) {
-                allow.add("DELETE");
+            switch (method.getName()) {
+                case "doGet":
+                    allow.add("GET");
+                    allow.add("HEAD");
+                    break;
+                case "doPost":
+                    allow.add("POST");
+                    break;
+                case "doPut":
+                    allow.add("PUT");
+                    break;
+                case "doDelete":
+                    allow.add("DELETE");
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1139,6 +1145,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *  an exception
      * @exception ServletException if a loading error occurs
      */
+    @Override
     public synchronized Servlet allocate() throws ServletException {
 
         // If we are currently unloading this servlet, throw an exception
@@ -1454,6 +1461,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 try{
                     clazz = AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Class>(){
+                            @Override
                             public Class run() throws Exception{
                                 if (fclassLoader != null) {
                                     return fclassLoader.loadClass(factualClass);
@@ -1653,28 +1661,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             }
 
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
-        } catch (IOException e) {
-            // Set response status before firing event, see IT 10022
-            if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
-            }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
-            throw e;
-        } catch (ServletException e) {
-            // Set response status before firing event, see IT 10022
-            if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
-            }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
-            throw e;
-        } catch (RuntimeException e) {
-            // Set response status before firing event, see IT 10022
-            if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
-            }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
-            throw e;
-        } catch (Error e) {
+        } catch (IOException | ServletException | RuntimeException | Error e) {
             // Set response status before firing event, see IT 10022
             if (response instanceof HttpServletResponse) {
                 ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
@@ -2057,13 +2044,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private boolean isServletAllowed(Object servlet) {
 
         if (servlet instanceof ContainerServlet) {
-            if (((Context) getParent()).getPrivileged()
-                    || (servlet.getClass().getName().equals("org.apache.catalina.servlets.InvokerServlet"))) {
-                return true;
-            }
-
-            return false;
-
+            return ((Context) getParent()).getPrivileged() || (servlet.getClass().getName().equals("org.apache.catalina.servlets.InvokerServlet"));
         }
 
         return true;

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -65,6 +66,7 @@ import java.io.File;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -187,15 +189,14 @@ public final class ClassLoaderFactory {
 
         // Add unpacked directories
         if (unpacked != null) {
-            for (int i = 0; i < unpacked.length; i++)  {
-                File file = unpacked[i];
-                if (!file.exists() || !file.canRead())
+            for (File file : unpacked) {
+                if (!file.exists() || !file.canRead()) {
                     continue;
-                if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Including directory or JAR "
-                            + file.getAbsolutePath());
-                URL url = new URL("file", null,
-                                  file.getCanonicalPath() + File.separator);
+                }
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Including directory or JAR {0}", file.getAbsolutePath());
+                }
+                URL url = new URL("file", null, file.getCanonicalPath() + File.separator);
                 set.add(url);
             }
         }
@@ -208,16 +209,16 @@ public final class ClassLoaderFactory {
                     !directory.canRead())
                     continue;
                 String filenames[] = directory.list();
-                for (int j = 0; j < filenames.length; j++) {
-                    String filename = filenames[j].toLowerCase(Locale.ENGLISH);
-                    if (!filename.endsWith(".jar"))
+                for (String filename1 : filenames) {
+                    String filename = filename1.toLowerCase(Locale.ENGLISH);
+                    if (!filename.endsWith(".jar")) {
                         continue;
-                    File file = new File(directory, filenames[j]);
-                    if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Including jar file " +
-                                file.getAbsolutePath());
-                    URL url = new URL("file", null,
-                                      file.getCanonicalPath());
+                    }
+                    File file = new File(directory, filename1);
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "Including jar file {0}", file.getAbsolutePath());
+                    }
+                    URL url = new URL("file", null, file.getCanonicalPath());
                     set.add(url);
                 }
             }
@@ -225,9 +226,7 @@ public final class ClassLoaderFactory {
 
         // Add remote URLs
         if (urls != null) {
-            for (int i = 0; i < urls.length; i++) {
-                set.add(urls[i]);
-            }
+            set.addAll(Arrays.asList(urls));
         }
 
         // Construct the class loader itself

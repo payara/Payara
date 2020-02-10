@@ -51,238 +51,9 @@ MonitoringConsole.Model = (function() {
 	 */
 	const LOCAL_UI_KEY = 'fish.payara.monitoring-console.defaultConfigs';
 	
-	const TEXT_HTTP_HIGH = "Requires *HTTP monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'HTTP Service'* to *'HIGH'*.";
-	const TEXT_WEB_HIGH = "Requires *WEB monitoring* to be enabled: Goto _Configurations_ => _Monitoring_ and set *'Web Container'* to *'HIGH'*.";
-	const TEXT_REQUEST_TRACING = "If you did enable request tracing at _Configurations_ => _Request Tracing_ not seeing any data means no requests passed the tracing threshold which is a good thing.";
 
-	const TEXT_CPU_USAGE = "Requires *CPU Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _CPU Usage_ tab and check *'enabled'*";
-	const TEXT_HEAP_USAGE = "Requires *Heap Usage HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Heap Usage_ tab and check *'enabled'*";
-	const TEXT_GC_PERCENTAGE = "Requires *Garbage Collector HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Garbage Collector_ tab and check *'enabled'*";
-	const TEXT_MEM_USAGE = "Requires *Machine Memory HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Machine Memory Usage_ tab and check *'enabled'*";
-	const TEXT_POOL_USAGE = "Requires *Connection Pool HealthCheck* to be enabled: Goto _Configurations_ => _HealthCheck_ => _Connection Pool_ tab and check *'enabled'*";
-	const TEXT_LIVELINESS = "Requires *MicroProfile HealthCheck Checker* to be enabled: Goto _Configurations_ => _HealthCheck_ => _MicroProfile HealthCheck Checker_ tab and check *'enabled'*";
-
-	const UI_PRESETS = {
-			pages: {
-				core: {
-					name: 'Core',
-					numberOfColumns: 3,
-					widgets: [
-						{ series: 'ns:jvm HeapUsage', unit: 'percent',  
-							grid: { item: 1, column: 0}, 
-							axis: { min: 0, max: 100 },
-							decorations: {
-								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},
-						{ series: 'ns:jvm CpuUsage', unit: 'percent',
-							grid: { item: 1, column: 1}, 
-							axis: { min: 0, max: 100 },
-							decorations: {
-								thresholds: { reference: 'now', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},							
-						{ series: 'ns:jvm ThreadCount', unit: 'count',  
-							grid: { item: 0, column: 1}},
-						{ series: 'ns:http ThreadPoolCurrentThreadUsage', unit: 'percent',
-							grid: { item: 1, column: 2},
-							status: { missing: { hint: TEXT_HTTP_HIGH }},
-							axis: { min: 0, max: 100 },
-							decorations: {
-								thresholds: { reference: 'avg', alarming: { value: 50, display: true }, critical: { value: 80, display: true }}}},														
-						{ series: 'ns:web RequestCount', unit: 'count',
-							grid: { item: 0, column: 2}, 
-							options: { perSec: true },
-							status: { missing: { hint: TEXT_WEB_HIGH }}},
-						{ series: 'ns:web ActiveSessions', unit: 'count',
-							grid: { item: 0, column: 0},
-							status: { missing: { hint: TEXT_WEB_HIGH }}},
-					]
-				},
-				request_tracing: {
-					name: 'Request Tracing',
-					numberOfColumns: 4,
-					widgets: [
-						{ id: '1 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'bar', unit: 'ms',
-							displayName: 'Trace Duration Range',
-							grid: { item: 0, column: 0, colspan: 4, rowspan: 1 },
-							axis: { min: 0, max: 5000 },
-							options: { drawMinLine: true },
-							status: { missing: { hint: TEXT_REQUEST_TRACING }},
-							coloring: 'instance-series',
-							decorations: { alerts: { noAmber: true, noRed: true }}},
-						{ id: '2 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'line', unit: 'ms', 
-							displayName: 'Trace Duration Above Threshold',
-							grid: { item: 1, column: 0, colspan: 2, rowspan: 3 },
-							options: { noFill: true },
-							coloring: 'instance-series'},
-						{ id: '3 ns:trace @:* Duration', series: 'ns:trace @:* Duration', type: 'annotation', unit: 'ms',
-							displayName: 'Trace Data',
-							grid: { item: 1, column: 2, colspan: 2, rowspan: 3 },
-							coloring: 'instance-series'},
-					]
-				},
-				http: {
-					name: 'HTTP',
-					numberOfColumns: 3,
-					widgets: [
-						{ series: 'ns:http ConnectionQueueCountOpenConnections', unit: 'count',
-							grid: { column: 0, item: 0},
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ThreadPoolCurrentThreadsBusy', unit: 'count',
-							grid: { column: 0, item: 1},
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ServerCount2xx', unit: 'count', 
-							grid: { column: 1, item: 0},
-							options: { perSec: true },
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ServerCount3xx', unit: 'count', 
-							grid: { column: 1, item: 1},
-							options: { perSec: true },
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ServerCount4xx', unit: 'count', 
-							grid: { column: 2, item: 0},
-							options: { perSec: true },
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-						{ series: 'ns:http ServerCount5xx', unit: 'count', 
-							grid: { column: 2, item: 1},
-							options: { perSec: true },
-							status: { missing : { hint: TEXT_HTTP_HIGH }}},
-					]
-				},
-				health_checks: {
-					name: 'Health Checks',
-					numberOfColumns: 4,
-					widgets: [
-						{ series: 'ns:health CpuUsage', unit: 'percent', displayName: 'CPU',
-          					grid: { column: 0, item: 0},
-          					axis: { max: 100 },
-          					status: { missing : { hint: TEXT_CPU_USAGE }}},
-						{ series: 'ns:health HeapUsage', unit: 'percent', displayName: 'Heap',
-          					grid: { column: 1, item: 1},
-          					axis: { max: 100 },
-          					status: { missing : { hint: TEXT_HEAP_USAGE }}},
-						{ series: 'ns:health TotalGcPercentage', unit: 'percent', displayName: 'GC',
-          					grid: { column: 1, item: 0},
-          					axis: { max: 30 },
-          					status: { missing : { hint: TEXT_GC_PERCENTAGE }}},
-						{ series: 'ns:health PhysicalMemoryUsage', unit: 'percent', displayName: 'Memory',
-          					grid: { column: 0, item: 1},
-          					axis: { max: 100 },
-          					status: { missing : { hint: TEXT_MEM_USAGE }}},
-						{ series: 'ns:health @:* PoolUsage', unit: 'percent', coloring: 'series', displayName: 'Connection Pools',
-          					grid: { column: 1, item: 2},
-          					axis: { max: 100 },          					
-          					status: { missing : { hint: TEXT_POOL_USAGE }}},
-						{ series: 'ns:health LivelinessUp', unit: 'percent', displayName: 'MP Health',
-          					grid: { column: 0, item: 2},
-          					axis: { max: 100 },
-          					options: { noCurves: true },
-          					status: { missing : { hint: TEXT_LIVELINESS }}},
-						{ series: 'ns:health ?:* *', unit: 'percent', type: 'alert', displayName: 'Alerts',
-          					grid: { column: 2, item: 0, colspan: 2, rowspan: 3}}, 
-					]
-				},
-				monitoring: {
-					name: 'Monitoring',
-					numberOfColumns: 3,
-					widgets: [
-						{ series: 'ns:monitoring @:* CollectionDuration', unit: 'ms', displayName: 'Sources Time',
-							grid: { column: 0, item: 0, span: 2},
-							axis: { max: 200 },
-							coloring: 'series'},
-						{ series: 'ns:monitoring @:* AlertCount', displayName: 'Alerts',
-							grid: { column: 2, item: 2},
-							coloring: 'series'},
-						{ series: 'ns:monitoring CollectedSourcesCount', displayName: 'Sources',
-							grid: { column: 0, item: 2}},
-						{ series: 'ns:monitoring CollectedSourcesErrorCount', displayName: 'Sources with Errors', 
-							grid: { column: 1, item: 2}},
-						{ series: 'ns:monitoring CollectionDuration', unit: 'ms', displayName: 'Metrics Time',
-							grid: { column: 2, item: 0},
-							axis: { max: 1000},
-							options: { drawMaxLine: true }},
-						{ series: 'ns:monitoring WatchLoopDuration', unit: 'ms', displayName: 'Watches Time', 
-							grid: { column: 2, item: 1},
-							options: { drawMaxLine: true }},
-					],
-				},
-				jvm: {
-					name: 'JVM',
-					numberOfColumns: 3,
-					widgets: [
-						{ series: 'ns:jvm TotalLoadedClassCount', displayName: 'Loaded Classes', 
-							grid: { column: 2, item: 0}},
-						{ series: 'ns:jvm UnLoadedClassCount', displayName: 'Unloaded Classes',
-							grid: { column: 2, item: 1}},
-						{ series: 'ns:jvm CommittedHeapSize', unit: 'bytes', displayName: 'Heap Size',
-							grid: { column: 1, item: 0}},
-						{ series: 'ns:jvm UsedHeapSize', unit: 'bytes', displayName: 'Used Heap', 
-							grid: { column: 0, item: 0}},
-						{ series: 'ns:jvm ThreadCount', displayName: 'Live Threads', 
-							grid: { column: 1, item: 1}},
-						{ series: 'ns:jvm DaemonThreadCount', displayName: 'Daemon Threads',
-							grid: { column: 0, item: 1}},
-					],
-				},
-				sql: {
-					name: 'SQL',
-					numberOfColumns: 3,
-					widgets: [
-						{ id: '1 ns:sql @:* MaxExecutionTime', 
-							unit: 'ms',
-							type: 'annotation',
-							series: 'ns:sql @:* MaxExecutionTime',
-							displayName: 'Slow SQL Queries',
-							grid: { column: 0, item: 1, colspan: 2, rowspan: 2},
-							mode: 'table',
-							sort: 'value',
-							fields: ['Timestamp', 'SQL', 'Value']},
-						{ id: '2 ns:sql @:* MaxExecutionTime',
-							unit: 'ms',
-							series: 'ns:sql @:* MaxExecutionTime',
-							displayName: 'Worst SQL Execution Time',
-							grid: { column: 2, item: 1 },
-							coloring: 'series' },						
-						{ id: '3 ns:sql @:* MaxExecutionTime',
-							unit: 'ms',
-							type: 'alert',
-							series: 'ns:sql @:* MaxExecutionTime',
-							displayName: 'Slow SQL Alerts',
-							grid: { column: 2, item: 2 },
-							options: { noAnnotations: true }},
-					],
-				},
-				alerts: {
-					name: 'Alerts',
-					numberOfColumns: 1,
-					widgets: [
-						{id: '1 ?:* *', series: '?:* *', type: 'alert', displayName: 'Ongoing Alerts',
-							grid: {column: 0, item: 1},
-							decorations: { alerts: { noStopped: true }},
-							options: { noAnnotations: true}},
-						{id: '2 ?:* *', series: '?:* *', type: 'alert', displayName: 'Past Unacknowledged Alerts',
-							grid: {column: 0, item: 2},
-							decorations: { alerts: { noOngoing: true, noAcknowledged: true}},
-							options: { noAnnotations: true}},
-					],
-				},
-				threads: {
-					name: 'Threads',
-					numberOfColumns: 4,
-					widgets: [
-						{ series: 'ns:health StuckThreadDuration', type: 'annotation', mode: 'table', unit: 'ms',
-							displayName: 'Stuck Thread Incidents',
-							grid: {column: 0, item: 1, colspan: 3, rowspan: 1},
-							fields: ["Thread", "Started", "Value", "Threshold", "Suspended", "Locked", "State"]},
-						{ series: 'ns:health HoggingThreadDuration', type: 'annotation', mode: 'table', unit: 'ms',
-							displayName: 'Hogging Thread Incidents',
-							grid: {column: 0, item: 2, colspan: 3, rowspan: 1},
-							fields: ["Thread", "When", "Value", "Usage%", "Threshold%", "Method", "Exited"]},
-						{ series: 'ns:jvm ThreadCount', displayName: 'Live Threads', 
-							grid: {column: 3, item: 1}},
-						{ series: 'ns:jvm DaemonThreadCount', displayName: 'Daemon Threads', 
-							grid: {column: 3, item: 2}},							
-					],
-				}
-			},
-	};
+	const Data = MonitoringConsole.Data;
+	const Controller = MonitoringConsole.Controller;
 
 	//TODO idea: Classification. one can setup a table where a value range is assigned a certain state - this table is used to show that state in the UI, simple but effective
 
@@ -633,7 +404,7 @@ MonitoringConsole.Model = (function() {
 				let ui = localStorage.getItem(LOCAL_UI_KEY);
 				if (ui)
 				doImport(JSON.parse(ui), true);
-				doImport(JSON.parse(JSON.stringify(UI_PRESETS)), false);
+				doImport(JSON.parse(JSON.stringify({ pages: Data.PAGES })), false);
 				return pages[settings.home];
 			},
 			
@@ -673,10 +444,10 @@ MonitoringConsole.Model = (function() {
 			},
 
 			resetPage: function() {
-				let presets = UI_PRESETS;
+				let presets = Data.PAGES;
 				let currentPageId = settings.home;
-				if (presets && presets.pages && presets.pages[currentPageId]) {
-					let preset = presets.pages[currentPageId];
+				if (presets && presets[currentPageId]) {
+					let preset = presets[currentPageId];
 					pages[currentPageId] = sanityCheckPage(JSON.parse(JSON.stringify(preset)));
 					doStore();
 					return true;
@@ -685,8 +456,8 @@ MonitoringConsole.Model = (function() {
 			},
 
 			hasPreset: function() {
-				let presets = UI_PRESETS;
-				return presets && presets.pages && presets.pages[settings.home];
+				let presets = Data.PAGES;
+				return presets && presets[settings.home];
 			},
 			
 			switchPage: function(pageId) {
@@ -1073,13 +844,20 @@ MonitoringConsole.Model = (function() {
 				let instance = seriesData.instance;
 				let series = seriesData.series;
 				let status = 'normal';
-				if (Array.isArray(watches) && watches.length == 1) {
+				if (Array.isArray(watches) && watches.length > 0) {
 					let states = watches
+						.filter(watch => !watch.disabled && !watch.stopped)
 						.map(watch => watch.states[series]).filter(e => e != undefined)
 						.map(states => states[instance]).filter(e => e != undefined);
-					if (states.length == 1) {
-						status = states[0];
-					}					
+					if (states.includes('red')) {
+						status = 'red';
+					} else if (states.includes('amber')) {
+						status = 'amber';
+					} else if (states.includes('green')) {
+						status = 'green';
+					} else if (states.length > 0) {
+						status = 'white';
+					}
 				}
 				let thresholds = widget.decorations.thresholds;
 				if (thresholds.reference && thresholds.reference !== 'off') {
@@ -1133,7 +911,7 @@ MonitoringConsole.Model = (function() {
 		}
 
 		function createOnError(widgets, onDataUpdate) {
-			return function(jqXHR, textStatus) {
+			return function() {
 				Object.values(widgets).forEach(function(widget) {
 					onDataUpdate({
 						widget: widget,
@@ -1154,8 +932,7 @@ MonitoringConsole.Model = (function() {
 		UI.load();
 		Interval.init(function() {
 			let widgets = UI.currentPage().widgets;
-			let payload = {};
-			payload.queries = Object.values(widgets).map(function(widget) { 
+			const queries = Object.values(widgets).map(function(widget) { 
 				let truncate = [];
 				let exclude = [];
 				let alerts = widget.decorations.alerts;
@@ -1179,22 +956,16 @@ MonitoringConsole.Model = (function() {
 					default:
 						truncate.push('ALERTS');
 				}				
-				return { 
+				return {
 					series: widget.series,
 					truncate: truncate,
 					exclude: exclude,
 					instances: undefined, // all
 				}; 
 			});
-			let request = $.ajax({
-				url: 'api/series/data/',
-				type: 'POST',
-				data: JSON.stringify(payload),
-				contentType:"application/json; charset=utf-8",
-				dataType:"json",
-			});
-			request.done(Update.createOnSuccess(widgets, onDataUpdate));
-			request.fail(Update.createOnError(widgets, onDataUpdate));
+			Controller.requestListOfSeriesData(queries, 
+				Update.createOnSuccess(widgets, onDataUpdate),
+				Update.createOnError(widgets, onDataUpdate));
 		});
 		if (UI.Refresh.interval() === undefined) {
 			UI.Refresh.interval(DEFAULT_INTERVAL);
@@ -1248,7 +1019,7 @@ MonitoringConsole.Model = (function() {
 		/**
 		 * @param {function} consumer - a function with one argument accepting the array of series names
 		 */
-		listSeries: (consumer) => $.getJSON("api/series/", consumer),
+		listSeries: (consumer) => Controller.requestListOfSeriesNames(consumer),
 
 		listPages: UI.listPages,
 		exportPages: UI.exportPages,

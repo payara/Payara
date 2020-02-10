@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -149,7 +150,7 @@ public class ManifestResource {
      * @return true if required extensions are present
      */
     public boolean requiresExtensions() {
-        return (requiredExtensions != null) ? true : false;
+        return requiredExtensions != null;
     }
     
     /**
@@ -183,13 +184,14 @@ public class ManifestResource {
         return true;
     }
     
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ManifestResource[");
         sb.append(resourceName);
 
         sb.append(", isFulfilled=");
-        sb.append(isFulfilled() +"");
+        sb.append(isFulfilled());
         sb.append(", requiredExtensionCount =");
         sb.append(getRequiredExtensionCount());
         sb.append(", availableExtensionCount=");
@@ -198,7 +200,7 @@ public class ManifestResource {
             case SYSTEM : sb.append(", resourceType=SYSTEM"); break;
             case WAR : sb.append(", resourceType=WAR"); break;
             case APPLICATION : sb.append(", resourceType=APPLICATION"); break;
-            default: sb.append(", resourceType=" + resourceType); break;
+            default: sb.append(", resourceType=").append(resourceType); break;
         }
         sb.append("]");
         return (sb.toString());
@@ -229,7 +231,7 @@ public class ManifestResource {
         if (names == null)
             return null;
 
-        ArrayList<Extension> extensionList = new ArrayList<Extension>();
+        ArrayList<Extension> extensionList = new ArrayList<>();
         names += " ";
 
         while (true) {
@@ -276,7 +278,7 @@ public class ManifestResource {
         if (name == null)
             return null;
 
-        HashMap<String, Extension> extensionMap = new HashMap<String, Extension>();
+        HashMap<String, Extension> extensionMap = new HashMap<>();
 
         Extension extension = new Extension();
         extension.setExtensionName(name);

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -94,9 +95,7 @@ import java.util.logging.Level;
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @version $Revision: 1.19 $ $Date: 2007/05/05 05:32:41 $
  */
-
-public class ErrorReportValve
-    extends ValveBase {
+public class ErrorReportValve extends ValveBase {
 
     /**
      * The descriptive information related to this implementation.
@@ -116,7 +115,7 @@ public class ErrorReportValve
     /**
      * The debugging detail level for this component.
      */
-    private int debug = 0;
+    private final int debug = 0;
 
 
     // ------------------------------------------------------------- Properties
@@ -125,6 +124,7 @@ public class ErrorReportValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -145,14 +145,15 @@ public class ErrorReportValve
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
-     public int invoke(Request request, Response response)
-         throws IOException, ServletException {
+    @Override
+     public int invoke(Request request, Response response) throws IOException, ServletException {
 
         // Perform the request
         return INVOKE_NEXT;
 
      }
 
+    @Override
      public void postInvoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -234,6 +235,7 @@ public class ErrorReportValve
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ErrorReportValve[");
@@ -355,9 +357,7 @@ public class ErrorReportValve
                 // been hard committed already, which should never happen
                 writer.write(errorPage);
             }
-        } catch (IOException e) {
-            ;
-        } catch (IllegalStateException e) {
+        } catch (IOException | IllegalStateException e) {
             ;
         }
 
@@ -374,7 +374,7 @@ public class ErrorReportValve
         if (logger != null) {
             logger.log(this.toString() + ": " + message);
         } else {
-            log.log(Level.INFO, this.toString() + ": " + message);
+            log.log(Level.INFO, "{0}: {1}", new Object[]{this.toString(), message});
         }
     }
 

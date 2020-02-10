@@ -201,6 +201,9 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
 
     private void collectSourcesToMemory() {
         tick();
+        for (Entry<Series, SeriesDataset> e : secondsRead.entrySet()) {
+            secondsWrite.put(e.getKey(), e.getValue());
+        }
         collectAll(new ConsumingMonitoringDataCollector(this::addLocalPoint, this::addLocalAnnotation));
         swapLocalBuffer();
     }
@@ -216,9 +219,6 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
     private void collectAll(MonitoringDataCollector collector) {
-        for (Entry<Series, SeriesDataset> e : secondsRead.entrySet()) {
-            secondsWrite.put(e.getKey(), e.getValue());
-        }
         List<MonitoringDataSource> sources = serviceLocator.getAllServices(MonitoringDataSource.class);
         long collectionStart = System.currentTimeMillis();
         int collectedSources = 0;
@@ -228,7 +228,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         for (MonitoringDataSource source : sources) {
             String sourceId = source.getClass().getSimpleName(); // for now this is the ID, we might want to replace that later
             MonitoringData meta = getMetaAnnotation(source);
-            if (meta == null || second % meta.intervalSeconds() == 0) {
+            if (collectNow(second, meta)) {
                 try {
                     collectedSources++;
                     long sourceStart = System.currentTimeMillis();
@@ -258,6 +258,10 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             .collectNonZero("AverageBytesMemoryPerSeries", seriesCount == 0 ? 0L : estimatedTotalBytesMemory / seriesCount)
             .collect("CollectedSourcesCount", collectedSources)
             .collect("CollectedSourcesErrorCount", failedSources);
+    }
+
+    private static boolean collectNow(final long now, MonitoringData meta) {
+        return meta == null || now % meta.intervalSeconds() == 0;
     }
 
     private static MonitoringData getMetaAnnotation(MonitoringDataSource source) {
@@ -329,18 +333,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
             return emptyList();
         }
         if (series.isPattern()) {
-            List<SeriesAnnotation> matches = new ArrayList<>();
-            Set<String> filter = createInstanceFilter(instances);
-            for (Entry<Series, Queue<SeriesAnnotation>> entry : annotationsBySeries.entrySet()) {
-                if (series.matches(entry.getKey())) {
-                    for (SeriesAnnotation a : entry.getValue()) {
-                        if (filter.contains(a.getInstance())) {
-                            matches.add(a);
-                        }
-                    }
-                }
-            }
-            return matches;
+            return selectAnnotationsForPattern(series, instances);
         }
         Queue<SeriesAnnotation> annotations = annotationsBySeries.get(series);
         if (annotations == null || annotations.isEmpty()) {
@@ -351,6 +344,21 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         }
         Set<String> filter = new HashSet<>(asList(instances));
         return annotations.stream().filter(a -> filter.contains(a.getInstance())).collect(toList());
+    }
+
+    private List<SeriesAnnotation> selectAnnotationsForPattern(Series pattern, String... instances) {
+        List<SeriesAnnotation> matches = new ArrayList<>();
+        Set<String> filter = createInstanceFilter(instances);
+        for (Entry<Series, Queue<SeriesAnnotation>> entry : annotationsBySeries.entrySet()) {
+            if (pattern.matches(entry.getKey())) {
+                for (SeriesAnnotation a : entry.getValue()) {
+                    if (filter.contains(a.getInstance())) {
+                        matches.add(a);
+                    }
+                }
+            }
+        }
+        return matches;
     }
 
     @Override
@@ -364,10 +372,9 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
     }
 
     public Set<String> createInstanceFilter(String... instances) {
-        Set<String> instanceFilter = instances == null || instances.length == 0 
+        return instances == null || instances.length == 0 
                 ? this.instances
                 : new HashSet<>(asList(instances));
-        return instanceFilter;
     }
 
     private void selectSeries(List<SeriesDataset> res, Set<Series> seriesSet, Set<String> instanceFilter) {
@@ -426,7 +433,7 @@ public class InMemoryMonitoringDataRepository extends AbstractMonitoringService 
         String[] series;
         long[] values;
         // annotations
-        List<SeriesAnnotation> annotations;
+        ArrayList<SeriesAnnotation> annotations;
 
         SeriesDatasetsSnapshot(String instance, long time, int estimatedNumberOfSeries) {
             this.instance = instance;

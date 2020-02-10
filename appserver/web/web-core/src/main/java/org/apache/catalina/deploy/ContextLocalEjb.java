@@ -55,11 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
-
-import java.io.Serializable;
-
 
 /**
  * Representation of a local EJB resource reference for a web application, as
@@ -81,10 +79,12 @@ public class ContextLocalEjb extends ResourceBase {
      */
     private String description = null;
 
+    @Override
     public String getDescription() {
         return (this.description);
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -137,10 +137,12 @@ public class ContextLocalEjb extends ResourceBase {
      */
     private String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -151,10 +153,12 @@ public class ContextLocalEjb extends ResourceBase {
      */
     private String type = null;
 
+    @Override
     public String getType() {
         return (this.type);
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
@@ -166,6 +170,7 @@ public class ContextLocalEjb extends ResourceBase {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ContextLocalEjb[");
