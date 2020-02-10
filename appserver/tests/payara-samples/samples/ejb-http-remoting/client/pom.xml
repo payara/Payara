@@ -59,7 +59,7 @@
         <payara.username>admin</payara.username>
         <payara.password></payara.password>
         <payara.hostname>localhost</payara.hostname>
-        <payara.domainName>domain1</payara.domainName>
+        <payara.domainName>test-domain</payara.domainName>
         <payara.home></payara.home>
         <payara.domainDir>${payara.home}/glassfish/domains</payara.domainDir>
         <servlet.port>8080</servlet.port>
