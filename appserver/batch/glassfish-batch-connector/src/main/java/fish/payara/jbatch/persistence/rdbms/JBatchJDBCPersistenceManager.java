@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -224,7 +224,7 @@ public class JBatchJDBCPersistenceManager implements
     @Override
     public void updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
         logger.entering(CLASSNAME, "updateCheckpointData", new Object[]{key, value});
-
+        
         CheckpointData data = queryCheckpointData(key.getCommaSeparatedKey());
         if (data != null) {
             updateCheckpointData(key.getCommaSeparatedKey(), value);
@@ -268,12 +268,12 @@ public class JBatchJDBCPersistenceManager implements
 
             DatabaseMetaData dbmd = connection.getMetaData();
             schema = dbmd.getUserName();
-            String databaseProductName = dbmd.getDatabaseProductName();
-            if (databaseProductName.contains("MySQL")) {
+            String databaseProductName = dbmd.getDatabaseProductName().toLowerCase();
+            if (databaseProductName.contains("mysql")) {
                 schema = "test";
-            } else if (databaseProductName.contains("PostgreSQL")) {
+            } else if (databaseProductName.contains("postgres")) {
                 schema = "public";
-            } else if (databaseProductName.contains("H2")) {
+            } else if (databaseProductName.contains("h2")) {
                 schema = "PUBLIC";
             }
 

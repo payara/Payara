@@ -337,7 +337,6 @@ public class RosterServlet extends HttpServlet{
 
        try {
            // Leagues
-System.out.println("Adding things");
            myRoster.createLeague(new LeagueDetails(
               "L1", "Mountain", "Soccer"));
 
