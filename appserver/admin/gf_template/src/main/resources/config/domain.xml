@@ -418,7 +418,7 @@
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
-      <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
+      <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}"></hazelcast-config-specific-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
       <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
@@ -563,6 +563,7 @@
          <system-property name="JMX_SYSTEM_CONNECTOR_PORT" value="28686"/>
          <system-property name="OSGI_SHELL_TELNET_PORT" value="26666"/>
          <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>
+         <system-property name="HZ_LISTENER_PORT" value="" />
      </config>
   </configs>
   <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%"/>

@@ -100,7 +100,7 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     String getLite();
     public void setLite(String value);
     
-    @Attribute(dataType = Integer.class)
+    @Attribute
     String getConfigSpecificDataGridStartPort();
     public void setConfigSpecificDataGridStartPort(String value);
     

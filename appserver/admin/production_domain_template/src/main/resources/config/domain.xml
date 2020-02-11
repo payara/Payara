@@ -371,7 +371,7 @@
              <property name="xaresource-txn-timeout" value="300"/>
              <property name="purge-cancelled-transactions-after" value="500"/>
          </transaction-service>
-         <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
+         <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}"></hazelcast-config-specific-configuration>
          <request-tracing-service-configuration>
              <log-notifier></log-notifier>
          </request-tracing-service-configuration>
@@ -494,6 +494,7 @@
          <system-property name="JMX_SYSTEM_CONNECTOR_PORT" value="28686"/>
          <system-property name="OSGI_SHELL_TELNET_PORT" value="26666"/>
          <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>
+         <system-property name="HZ_LISTENER_PORT" value="" />
          <system-property name="fish.payara.classloading.delegate" value="false"/>
          <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
      </config>
