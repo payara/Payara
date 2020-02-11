@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -53,7 +55,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
     <applications />
     <resources>
         <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
-        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource"> 
+        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
             <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
         </jdbc-connection-pool>
         <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
@@ -67,17 +69,17 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
             <resource-ref ref="concurrent/__defaultContextService"></resource-ref>
             <resource-ref ref="concurrent/__defaultManagedExecutorService"></resource-ref>
             <resource-ref ref="concurrent/__defaultManagedScheduledExecutorService"></resource-ref>
-            <resource-ref ref="concurrent/__defaultManagedThreadFactory"></resource-ref>        
+            <resource-ref ref="concurrent/__defaultManagedThreadFactory"></resource-ref>
         </server>
     </servers>
     <configs>
         <config name="server-config">
-            <payara-executor-service-configuration/>
+            <payara-executor-service-configuration />
             <cdi-service enable-concurrent-deployment="true" pre-loader-thread-pool-size="2"></cdi-service>
             <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
-                <log-notifier enabled="true"/>
-                <eventbus-notifier enabled="false"/>
+                <log-notifier enabled="true" />
+                <eventbus-notifier enabled="false" />
                 <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
                 <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
                 <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
@@ -87,13 +89,12 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
             <http-service access-logging-enabled="false">
                 <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd"></access-log>
                 <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
-            </http-service>  
+            </http-service>
             <admin-service system-jmx-connector-name="system" type="das-and-server">
                 <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
                 <das-config></das-config>
-            </admin-service>     
-            <connector-service class-loading-policy="global" shutdown-timeout-in-seconds="30">
-            </connector-service>
+            </admin-service>
+            <connector-service class-loading-policy="global" shutdown-timeout-in-seconds="30"></connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
                 <ejb-timer-service ejb-timer-service="DataGrid"></ejb-timer-service>
             </ejb-container>
@@ -101,8 +102,8 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                 <module-log-levels />
             </log-service>
             <monitoring-service-configuration amx="false" enabled="false" log-frequency="30">
-        	<log-notifier></log-notifier>
-        	<eventbus-notifier></eventbus-notifier>
+                <log-notifier></log-notifier>
+                <eventbus-notifier></eventbus-notifier>
             </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
@@ -158,8 +159,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                 </message-security-config>
                 <property value="SHA-256" name="default-digest-algorithm" />
             </security-service>
-            <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
-            </transaction-service>
+            <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs"></transaction-service>
             <java-config></java-config>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
@@ -170,16 +170,16 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                 <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
-            <availability-service availability-enabled="true" >
+            <availability-service availability-enabled="true">
                 <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>
-                <ejb-container-availability sfsb-ha-persistence-type="hazelcast" sfsb-persistence-type="hazelcast" ></ejb-container-availability>
+                <ejb-container-availability sfsb-ha-persistence-type="hazelcast" sfsb-persistence-type="hazelcast"></ejb-container-availability>
             </availability-service>
             <network-config>
                 <protocols>
                     <protocol name="http-listener">
-                        <http default-virtual-server="server" xpowered-by="false" max-connections="250"  comet-support-enabled="true">
+                        <http default-virtual-server="server" xpowered-by="false" max-connections="250" comet-support-enabled="true">
                             <file-cache enabled="false"></file-cache>
-                        </http>       
+                        </http>
                     </protocol>
                     <protocol security-enabled="true" name="https-listener">
                         <http default-virtual-server="server" xpowered-by="false" comet-support-enabled="true" max-connections="250">
@@ -198,12 +198,12 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
             </network-config>
             <thread-pools>
                 <thread-pool name="http-thread-pool" min-thread-pool-size="2" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
-                <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
+                <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200" />
             </thread-pools>
-            <microprofile-config/>
-            <system-property name="jersey.config.client.readTimeout" value="300000"/>
-            <system-property name="jersey.config.client.connectTimeout" value="300000"/>
-        </config> 
+            <microprofile-config />
+            <system-property name="jersey.config.client.readTimeout" value="300000" />
+            <system-property name="jersey.config.client.connectTimeout" value="300000" />
+        </config>
     </configs>
-    <property name="administrative.domain.name" value="domain1"/>
+    <property name="administrative.domain.name" value="domain1" />
 </domain>
