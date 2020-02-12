@@ -110,7 +110,7 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
  */
 @Service(name = "microprofile-config-provider")
 @ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
-@RunLevel(StartupRunLevel.VAL)
+@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
