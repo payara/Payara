@@ -42,8 +42,9 @@
 
 package test.admincli;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.Assert;
+import test.admincli.util.*;
 
 public class ExistStatusTests {
     
