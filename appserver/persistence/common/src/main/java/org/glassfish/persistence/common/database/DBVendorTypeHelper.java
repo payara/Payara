@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.persistence.common.database;
 

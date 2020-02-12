@@ -41,6 +41,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 
 <resources>
     <jdbc-connection-pool

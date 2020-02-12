@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] Payara Foundation and/or affiliates
+
 package org.glassfish.admingui.devtests;
 
 import org.junit.Test;

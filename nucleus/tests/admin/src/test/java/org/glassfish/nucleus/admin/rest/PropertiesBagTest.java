@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.nucleus.admin.rest;
@@ -51,10 +51,9 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.testng.annotations.Test;
 
 import static org.testng.AssertJUnit.*;
-
-import org.testng.annotations.Test;
 
 /**
  *

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbcruntime.config.validation;
 
@@ -45,16 +46,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.validation.ConstraintViolationException;
-
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
-import org.junit.Test;
-import org.junit.Before;
+import org.glassfish.jdbcruntime.config.ConfigApiTest;
 import org.glassfish.tests.utils.Utils;
+import org.junit.Before;
+import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.glassfish.jdbcruntime.config.ConfigApiTest;
 
 import static org.junit.Assert.*;
 

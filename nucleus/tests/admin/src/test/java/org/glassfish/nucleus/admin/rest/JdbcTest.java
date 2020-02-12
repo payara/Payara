@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.nucleus.admin.rest;
 
 import java.io.UnsupportedEncodingException;

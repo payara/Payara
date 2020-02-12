@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] Payara Foundation and/or affiliates
+
 /*
  * JdbcHandler.java
  *

@@ -41,6 +41,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <project name="v2-targets" default="all" basedir=".">
     <property name="war.file.ext" value="${war.file}.war"/>
     <property name="deployed.app" value=""/>

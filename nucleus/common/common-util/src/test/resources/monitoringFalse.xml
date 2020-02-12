@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="bnevins-private">
   <system-applications />
   <applications>

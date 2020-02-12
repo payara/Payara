@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
     <web-module context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" directory-deployed="true" name="adminapp" object-type="system-admin" />

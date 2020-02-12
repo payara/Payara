@@ -40,6 +40,8 @@
 
 -->
 
+<!--  Portions Copyright [2017-2020] Payara Foundation and/or affiliates -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <system-applications>
     <application enabled="true" context-root="" location="${com.sun.aas.installRootURI}/lib/install/applications/__admingui" name="__admingui" directory-deployed="true" object-type="system-admin">

@@ -38,11 +38,12 @@
  * holder.
  */
 
+//Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package test.admincli;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
-import test.admincli.util.*;
+import org.testng.annotations.Test;
 
 public class ExistStatusTests {
     

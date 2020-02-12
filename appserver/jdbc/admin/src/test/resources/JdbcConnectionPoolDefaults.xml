@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 
   <jdbc-connection-pool datasource-classname="org.h2.jdbcx.JdbcDataSource"
                         res-type="javax.sql.XADataSource" 

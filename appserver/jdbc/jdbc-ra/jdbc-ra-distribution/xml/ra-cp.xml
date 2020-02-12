@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
@@ -80,7 +81,7 @@
     <!-- This should specify the name of the driver vendor. The following is an example.
         <vendor-name>XYZ INC.</vendor-name>
     -->
-    <vendor-name>Sun Microsystems</vendor-name>
+    <vendor-name>H2</vendor-name>
 
     <!-- The "eis-type" element should occur exactly once. -->
     <!-- This should specify the database, for example the product name of

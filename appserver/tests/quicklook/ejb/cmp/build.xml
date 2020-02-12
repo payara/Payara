@@ -41,6 +41,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <project name="cmp" default="default" basedir=".">
     <property file="build.properties"/>
     <property file="${ws.root}/gfproject/${deploy.platform}-config.properties"/>

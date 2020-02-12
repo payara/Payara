@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portion Copyright [2020] Payara Foundation and/or affiliates -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <security-configurations>
     <authorization-service default="true" name="authorizationService">
