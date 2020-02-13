@@ -351,9 +351,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
                             }
                             if (configSpecificDataGridStartPort != null) {
-                                if (configSpecificDataGridStartPort.isEmpty()) {
-                                    configSpecificDataGridStartPort = null;
-                                }
                                 if (!configToApply.isDas()) {
                                     hazelcastRuntimeConfigurationProxy.setConfigSpecificDataGridStartPort(configSpecificDataGridStartPort);
                                 }
