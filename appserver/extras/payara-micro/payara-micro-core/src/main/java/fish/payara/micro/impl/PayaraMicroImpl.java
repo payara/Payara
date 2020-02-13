@@ -69,6 +69,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -150,6 +151,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean disablePhoneHome = false;
     private List<String> GAVs;
     private File uberJar;
+    private boolean outputLauncher;
     private File copyDirectory;
     private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
@@ -186,6 +188,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean sniEnabled = false;
     private String publicAddress = "";
     private int initialJoinWait = 1;
+    private boolean warmup;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -207,8 +210,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         main.scanArgs(args);
         if (main.getUberJar() != null) {
             main.packageUberJar();
+        } else if (main.outputLauncher) {
+            main.createLauncher();
         } else {
             main.bootStrap();
+            if (main.warmup) {
+                main.shutdown();
+            }
         }
         return main;
     }
@@ -365,15 +373,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     /**
      * Set user defined interval for the access log
-     * 
+     *
      * @param interval
-     * @return 
+     * @return
      */
     public PayaraMicroBoot setAccessLogInterval(int interval) {
         this.accessLogInterval = interval;
         return this;
     }
-    
+
     /**
      * Gets the cluster multicast port used for cluster communications
      *
@@ -1261,6 +1269,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case copytouberjar:
                         copyDirectory = new File(value);
                         break;
+                    case outputlauncher:
+                        outputLauncher = true;
+                        break;
+                    case warmup:
+                        warmup = true;
+                        break;
                     case disablephonehome:
                         disablePhoneHome = true;
                         break;
@@ -1378,7 +1392,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         initialJoinWait = Integer.parseInt(value);
                         break;
                     case contextroot:
-                        
+
                         if (contextRoot != null) {
                             LOGGER.warning("Multiple --contextroot arguments only the last one will apply");
                         }
@@ -1412,28 +1426,28 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             preBootCommands.add(new BootCommand("set",
                     "configs.config.server-config.request-tracing-service-configuration.threshold-unit="
-                    + requestTracingThresholdUnit));
+                            + requestTracingThresholdUnit));
 
             preBootCommands.add(new BootCommand("set",
                     "configs.config.server-config.request-tracing-service-configuration.threshold-value" + "="
-                    + Long.toString(requestTracingThresholdValue)));
+                            + Long.toString(requestTracingThresholdValue)));
 
             if (enableRequestTracingAdaptiveSampling) {
                 preBootCommands.add(new BootCommand("set",
                         "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-enabled="
-                        + Boolean.toString(enableRequestTracingAdaptiveSampling)));
+                                + Boolean.toString(enableRequestTracingAdaptiveSampling)));
 
                 preBootCommands.add(new BootCommand("set",
                         "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-target-count="
-                        + Integer.toString(requestTracingAdaptiveSamplingTargetCount)));
+                                + Integer.toString(requestTracingAdaptiveSamplingTargetCount)));
 
                 preBootCommands.add(new BootCommand("set",
                         "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-time-value="
-                        + Integer.toString(requestTracingAdaptiveSamplingTimeValue)));
+                                + Integer.toString(requestTracingAdaptiveSamplingTimeValue)));
 
                 preBootCommands.add(new BootCommand("set",
                         "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-time-unit="
-                        + requestTracingAdaptiveSamplingTimeUnit));
+                                + requestTracingAdaptiveSamplingTimeUnit));
             }
         }
     }
@@ -1547,9 +1561,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     if (contextRoots != null && contextRoots.containsKey(file.getName())) {
                         deployContext = contextRoots.getProperty(file.getName());
                     }
-                        deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
-                                "true", "--contextroot",
-                                deployContext, "--name", name, "--force", "true", "--loadOnly", "true");
+                    deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
+                            "true", "--contextroot",
+                            deployContext, "--name", name, "--force", "true", "--loadOnly", "true");
 
                     deploymentCount++;
                 }
@@ -1619,7 +1633,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         // unset so only used once
                         contextRoot = null;
                     }
-                    
+
                     if (entry.getName().startsWith("ROOT.")) {
                         deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
@@ -1627,17 +1641,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             if (deployContext.equals("ROOT")) {
                                 deployContext = "/";
                             }
-                            
+
                             if (hasJavaArchiveExtension(deployContext)) {
                                 deployContext = deployContext.substring(0, deployContext.length() - 4);
                             }
-                            
+
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else {
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                         }
                     }
-                    
+
                     deploymentCount++;
                 }
             }
@@ -1661,7 +1675,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         deploymentCount++;
                     } catch (URISyntaxException ex) {
                         LOGGER.log(Level.WARNING, "{0} could not be converted to a URI,"
-                                + " artefact will be skipped",
+                                        + " artefact will be skipped",
                                 deploymentMapEntry.getValue().toString());
                     }
                 }
@@ -1670,8 +1684,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
-    
-    private boolean hasJavaArchiveExtension(String filePath) {        
+
+    private boolean hasJavaArchiveExtension(String filePath) {
         return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
     }
 
@@ -2072,21 +2086,21 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 if (sslPort != Integer.MIN_VALUE) {
                     if (autoBindSsl == true) {
                         LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
-                                + " in {0} and auto-binding against " + sslPort,
+                                        + " in {0} and auto-binding against " + sslPort,
                                 alternateDomainXML.getAbsolutePath());
                     } else {
                         LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
-                                + " in {0} with " + sslPort,
+                                        + " in {0} with " + sslPort,
                                 alternateDomainXML.getAbsolutePath());
                     }
                 } else if (autoBindSsl == true) {
                     LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
-                            + " in {0} and auto-binding against "
-                            + defaultHttpsPort,
+                                    + " in {0} and auto-binding against "
+                                    + defaultHttpsPort,
                             alternateDomainXML.getAbsolutePath());
                 } else {
                     LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
-                            + " in {0} with " + defaultHttpsPort,
+                                    + " in {0} with " + defaultHttpsPort,
                             alternateDomainXML.getAbsolutePath());
                 }
             }
@@ -2103,18 +2117,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                     + sslPort, configFile.getAbsolutePath());
                         } else {
                             LOGGER.log(Level.INFO, "Overriding HTTPS port value"
-                                    + " set in {0} with " + sslPort,
+                                            + " set in {0} with " + sslPort,
                                     configFile.getAbsolutePath());
                         }
                     } else if (autoBindSsl == true) {
                         LOGGER.log(Level.INFO, "Overriding HTTPS port value"
-                                + " set in {0} and auto-binding against "
-                                + defaultHttpsPort,
+                                        + " set in {0} and auto-binding against "
+                                        + defaultHttpsPort,
                                 configFile.getAbsolutePath());
                     } else {
                         LOGGER.log(Level.INFO, "Overriding HTTPS port value"
-                                + " set in {0} with default value of "
-                                + defaultHttpsPort,
+                                        + " set in {0} with default value of "
+                                        + defaultHttpsPort,
                                 configFile.getAbsolutePath());
                     }
                 }
@@ -2124,22 +2138,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 if (httpPort != Integer.MIN_VALUE) {
                     if (autoBindHttp == true) {
                         LOGGER.log(Level.INFO, "Overriding HTTP port value set "
-                                + "in {0} and auto-binding against " + httpPort,
+                                        + "in {0} and auto-binding against " + httpPort,
                                 alternateDomainXML.getAbsolutePath());
                     } else {
                         LOGGER.log(Level.INFO, "Overriding HTTP port value set "
-                                + "in {0} with " + httpPort,
+                                        + "in {0} with " + httpPort,
                                 alternateDomainXML.getAbsolutePath());
                     }
                 } else if (autoBindHttp == true) {
                     LOGGER.log(Level.INFO, "Overriding HTTP port value set "
-                            + "in {0} and auto-binding against "
-                            + defaultHttpPort,
+                                    + "in {0} and auto-binding against "
+                                    + defaultHttpPort,
                             alternateDomainXML.getAbsolutePath());
                 } else {
                     LOGGER.log(Level.INFO, "Overriding HTTP port value set "
-                            + "in {0} with default value of "
-                            + defaultHttpPort,
+                                    + "in {0} with default value of "
+                                    + defaultHttpPort,
                             alternateDomainXML.getAbsolutePath());
                 }
             }
@@ -2156,18 +2170,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                     + httpPort, configFile.getAbsolutePath());
                         } else {
                             LOGGER.log(Level.INFO, "Overriding HTTP port value "
-                                    + "set in {0} with " + httpPort,
+                                            + "set in {0} with " + httpPort,
                                     configFile.getAbsolutePath());
                         }
                     } else if (autoBindHttp == true) {
                         LOGGER.log(Level.INFO, "Overriding HTTP port value "
-                                + "set in {0} and auto-binding against "
-                                + defaultHttpPort,
+                                        + "set in {0} and auto-binding against "
+                                        + defaultHttpPort,
                                 configFile.getAbsolutePath());
                     } else {
                         LOGGER.log(Level.INFO, "Overriding HTTP port value "
-                                + "set in {0} with default value of "
-                                + defaultHttpPort,
+                                        + "set in {0} with default value of "
+                                        + defaultHttpPort,
                                 configFile.getAbsolutePath());
                     }
                 }
@@ -2397,7 +2411,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
         }
-        
+
         if (httpPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.port", Integer.toString(httpPort));
         }
@@ -2454,6 +2468,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             creator.setAlternateHZConfigFile(alternateHZConfigFile);
         }
         creator.buildUberJar();
+    }
+
+
+    private void createLauncher() throws BootstrapException {
+        try {
+            if (rootDir == null) {
+                LOGGER.severe("--rootdir is required for creating a launcher");
+                System.exit(-1);
+            }
+            unPackRuntime();
+            addLibraries();
+            LauncherCreator creator = new LauncherCreator(rootDir, ((URLClassLoader)getClass().getClassLoader()));
+            creator.buildLauncher();
+        } catch (RuntimeException | URISyntaxException | IOException e) {
+            throw new BootstrapException("Unable to create launcher", e);
+        }
     }
 
     private static String unifyTimeUnit(String option) {
