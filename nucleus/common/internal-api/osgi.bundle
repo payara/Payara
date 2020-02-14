@@ -52,5 +52,3 @@
                         org.glassfish.internal.embedded.admin; \
                         org.glassfish.internal.logging; \
                         org.glassfish.flashlight; version=${project.osgi.version}
-
-DynamicImport-Package: fish.payara.monitoring.collect

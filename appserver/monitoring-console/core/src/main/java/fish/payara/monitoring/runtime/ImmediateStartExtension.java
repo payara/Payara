@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,26 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.monitoring.model;
 
-import java.util.List;
+package fish.payara.monitoring.runtime;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
+import fish.payara.monitoring.adapt.MonitoringConsole;
 
 /**
- * Most basic lookup abstraction for a source of {@link SeriesDataset}s.
+ * The sole purpose of this extension is to eagerly bootstrap the {@link MonitoringConsole}.
  *
  * @author Jan Bernitt
- * @since 5.201
  */
-@FunctionalInterface
-public interface SeriesLookup {
+public class ImmediateStartExtension implements Extension {
 
-    /**
-     * Lists all {@link SeriesDataset}s that match given {@link Series} with a {@link SeriesDataset#getInstance()} name
-     * that is included in the given set of instance names.
-     *
-     * @param series    the {@link Series} to list
-     * @param instances set if instances to include, an empty set includes all instances
-     * @return current data of matching {@link SeriesDataset}s.
-     */
-    List<SeriesDataset> selectSeries(Series series, String... instances);
+    void beforeBeanDiscovery(@SuppressWarnings("unused") @Observes BeforeBeanDiscovery beforeBeanDiscovery) {
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        serviceLocator.getService(MonitoringConsoleRuntimeImpl.class);
+    }
 }
