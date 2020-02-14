@@ -1031,11 +1031,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return false;
         }
 
+        final Schema schema = AnnotationInfo.valueOf(referenceClass).getAnnotation(Schema.class);
+
         // Set the reference name
         referee.setRef(referenceClass.getSimpleName());
+        if (schema == null || schema.name().isEmpty()) {
+            referee.setRef(referenceClass.getSimpleName());
+        } else {
+            referee.setRef(schema.name());
+        }
 
         // Create the schema
         visitSchema(AnnotationInfo.valueOf(referenceClass).getAnnotation(Schema.class), referenceClass, context);
+        visitSchema(schema, referenceClass, context);
 
         return true;
     }
