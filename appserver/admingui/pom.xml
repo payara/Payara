@@ -108,6 +108,7 @@
         <module>cluster</module>
         <module>reference-manual</module>
         <module>payara-theme</module>
+        <module>payara-enterprise-theme</module>
         <module>web</module>
         <module>gf-admingui-connector</module>
         <module>jts</module>

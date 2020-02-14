@@ -118,6 +118,29 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>community</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>console-payara-branding-plugin</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>enterprise</id>
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>console-payara-enterprise-branding-plugin</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -134,11 +157,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>console-payara-branding-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
