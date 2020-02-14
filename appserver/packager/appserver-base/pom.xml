@@ -111,7 +111,7 @@
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
-                                 <id>copy-eula</id>
+                                 <id>copy-license</id>
                                  <phase>process-resources</phase>
                                  <goals>
                                      <goal>copy-resources</goal>
@@ -121,7 +121,7 @@
                                      <resources>
                                          <resource>
                                              <directory>src/main/docs</directory>
-                                             <include>EULA.txt</include>
+                                             <include>LICENSE.txt</include>
                                              <filtering>false</filtering>
                                          </resource>
                                      </resources>
