@@ -684,4 +684,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>enterprise</id>
+            <properties>
+                <product.name>Payara Server Enterprise</product.name>
+            </properties>
+        </profile>
+    </profiles>
 </project>

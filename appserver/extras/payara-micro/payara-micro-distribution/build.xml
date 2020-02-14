@@ -132,7 +132,7 @@
                 <include name="*payara-micro-boot*.jar"/>      
             </fileset>
         </delete>
-	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Micro"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="${product.name}"/>
 	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@BUILD_NUMBER@@@" value="${build.number}"/>
      </target>
      

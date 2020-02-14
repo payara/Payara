@@ -51,6 +51,10 @@
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Distribution</name>
 
+    <properties>
+        <product.name>Payara Micro</product.name>
+    </properties>
+
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>
@@ -91,6 +95,7 @@
                                         value="${project.build.directory}/payara-micro.jar" />
                                     <property name="install.dir.name"
                                         value="${install.dir.name}" />
+                                    <property name="product.name" value="${product.name}" />
                                 </ant>
                             </tasks>
                         </configuration>
@@ -496,6 +501,12 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>enterprise</id>
+            <properties>
+                <product.name>Payara Micro Enterprise</product.name>
+            </properties>
         </profile>
     </profiles>
 </project>
