@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.ejb.codegen;
 
@@ -297,7 +298,7 @@ public class StaticRmiStubGenerator {
         _logger.info("[RMIC] options: " + cmds);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        sun.rmi.rmic.Main compiler = new sun.rmi.rmic.Main(baos, "rmic");
+        org.glassfish.rmic.Main compiler = new org.glassfish.rmic.Main(baos, "rmic");
         boolean success = compiler.compile(cmds.toArray(new String[cmds.size()]));
         //success = true;  // it ALWAYS returns an "error" if -Xnocompile is used!!
 
