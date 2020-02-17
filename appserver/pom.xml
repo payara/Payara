@@ -585,7 +585,7 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-javaee-base</artifactId>
-                <version>1.0.7</version>
+                <version>1.0.9</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.glassfish.hk2.external</groupId>
@@ -596,27 +596,27 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-web-container</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.2</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-ejb-container</artifactId>
-                <version>1.0.3</version>
+                <version>1.0.5</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-jpa</artifactId>
-                <version>1.0.2</version>
+                <version>1.0.4</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-jpa-extension</artifactId>
-                <version>1.0.2</version>
+                <version>1.0.4</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-http</artifactId>
-                <version>1.0.6</version>
+                <version>1.0.8</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
@@ -626,17 +626,17 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-jta</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.3</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-jdbc</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.3</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-ee-resources</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.2</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.ha</groupId>
