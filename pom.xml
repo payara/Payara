@@ -183,7 +183,7 @@
         <jakarta.activation-impl.version>1.2.1</jakarta.activation-impl.version>
         <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <jsonp.version>1.1.5</jsonp.version>
+        <jsonp.version>1.1.6</jsonp.version>
         <jbi.version>1.0</jbi.version>
         <jakarta-platform.version>8.0.0</jakarta-platform.version>
         <microprofile-release.version>3.2</microprofile-release.version>
