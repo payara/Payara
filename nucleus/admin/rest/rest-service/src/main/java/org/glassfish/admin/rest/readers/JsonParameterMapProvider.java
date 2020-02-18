@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 
@@ -94,11 +95,10 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
                 if (value instanceof JsonArray) {
                     JsonArray array = (JsonArray) value;
                     for (int i = 0; i < array.size(); i++) {
-                        map.add(entry.getKey(), "" + array.get(i));
+                        map.add(entry.getKey(), getStringValue(array.get(i)));
                     }
-
                 } else {
-                    map.add(entry.getKey(), "" + value);
+                    map.add(entry.getKey(), getStringValue(value));
                 }
             }
             return map;
@@ -110,8 +110,19 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
 
             return map;
         }
+    }
 
-
+    /**
+     * @return a string representation of the passed JsonValue.
+     */
+    private static String getStringValue(JsonValue json) {
+        if (json == null) {
+            return "";
+        }
+        if (json instanceof JsonString) {
+            return ((JsonString)json).getString();
+        }
+        return json.toString();
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {
