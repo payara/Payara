@@ -181,7 +181,7 @@
         <jakarta.management.j2ee-api.version>1.1.4</jakarta.management.j2ee-api.version>
         <jakarta.activation-api.version>1.2.1</jakarta.activation-api.version>
         <jakarta.activation-impl.version>1.2.1</jakarta.activation-impl.version>
-        <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
+        <istack-commons-runtime.version>3.0.10</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <jsonp.version>1.1.5</jsonp.version>
         <jbi.version>1.0</jbi.version>
