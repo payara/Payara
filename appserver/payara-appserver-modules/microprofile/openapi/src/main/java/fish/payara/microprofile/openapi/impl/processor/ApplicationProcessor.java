@@ -1041,7 +1041,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the schema
-        visitSchema(AnnotationInfo.valueOf(referenceClass).getAnnotation(Schema.class), referenceClass, context);
         visitSchema(schema, referenceClass, context);
 
         return true;
