@@ -87,6 +87,12 @@ public class DriverLoader implements ConnectorConstants {
     private static final String DRIVER_INTERFACE_NAME="java.sql.Driver";
     private static final String SERVICES_DRIVER_IMPL_NAME = "META-INF/services/java.sql.Driver";
     private static final String DATABASE_VENDOR_H2 = "H2";
+    private static final String DATABASE_VENDOR_DERBY = "DERBY";
+    private static final String DATABASE_VENDOR_JAVADB = "JAVADB";
+    private static final String DATABASE_VENDOR_EMBEDDED_DERBY = "EMBEDDED-DERBY";
+    private static final String DATABASE_VENDOR_DERBY_30 = "DERBY-30";
+    private static final String DATABASE_VENDOR_EMBEDDED_DERBY_30 = "EMBEDDED-DERBY-30";
+    private static final String DATABASE_VENDOR_JAVADB_30 = "JAVADB-30";
     private static final String DATABASE_VENDOR_MSSQLSERVER = "MICROSOFTSQLSERVER";
     private static final String DATABASE_VENDOR_SUN_SQLSERVER = "SUN-SQLSERVER";
     private static final String DATABASE_VENDOR_SUN_ORACLE = "SUN-ORACLE";
@@ -95,6 +101,9 @@ public class DriverLoader implements ConnectorConstants {
     private static final String DATABASE_VENDOR_SYBASE = "SYBASE";
     private static final String DATABASE_VENDOR_ORACLE = "ORACLE";
     private static final String DATABASE_VENDOR_DB2 = "DB2";
+    private static final String DATABASE_VENDOR_EMBEDDED = "EMBEDDED";
+    private static final String DATABASE_VENDOR_30 = "30";
+    private static final String DATABASE_VENDOR_40 = "40";
     
     private static final String DATABASE_VENDOR_SQLSERVER = "SQLSERVER";
     private static final String DBVENDOR_MAPPINGS_ROOT = 
@@ -172,7 +181,13 @@ public class DriverLoader implements ConnectorConstants {
      * @return
      */
     private String getEquivalentName(String dbVendor) {
-        if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_MSSQLSERVER) ||
+        if (dbVendor.toUpperCase(Locale.getDefault()).startsWith(DATABASE_VENDOR_JAVADB) ||
+                dbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY) ||
+                dbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30) ||
+                dbVendor.equalsIgnoreCase(DATABASE_VENDOR_DERBY_30) ||
+                dbVendor.equalsIgnoreCase(DATABASE_VENDOR_JAVADB_30)) {
+            return DATABASE_VENDOR_DERBY;
+        } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_MSSQLSERVER) ||
                 dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_SQLSERVER)) {
             return DATABASE_VENDOR_SQLSERVER;
         } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_DB2)) {
@@ -520,8 +535,8 @@ public class DriverLoader implements ConnectorConstants {
         if(origDbVendor != null) {
             if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_H2)) {
                 return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_H2) != -1;
-            }
-        }
+                    }
+                }
 
         String vendor = getVendorFromManifest(f);
 
@@ -539,7 +554,14 @@ public class DriverLoader implements ConnectorConstants {
                 isVendorSpecific = true;
             }
         }
-
+        if(isVendorSpecific) {
+            if(origDbVendor != null && origDbVendor.endsWith(DATABASE_VENDOR_30)) {
+                if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30)) {
+                    return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1;
+                }
+                return !(className.toUpperCase(Locale.getDefault()).endsWith(DATABASE_VENDOR_40));
+            }
+        }
         return isVendorSpecific;
     }
 
