@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-   Portions Copyright [2020] [Payara Foundation]
+   Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <sun:image url="#{request.contextPath}/resource/payara-enterprise-theme/images/login-product_name_open.png"
