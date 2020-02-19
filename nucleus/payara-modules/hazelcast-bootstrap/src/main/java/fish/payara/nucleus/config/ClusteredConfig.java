@@ -96,13 +96,16 @@ public class ClusteredConfig extends MembershipAdapter {
 
     @PostConstruct
     public void postConstruct() {
-        membershipListenerRegistrationId = hzCore.getInstance().getCluster().addMembershipListener(this);
+        HazelcastInstance hzInstance = hzCore.getInstance();
+        if (hzInstance != null) {
+            membershipListenerRegistrationId = hzInstance.getCluster().addMembershipListener(this);
+        }
     }
 
     @PreDestroy
     public void preDestroy() {
         HazelcastInstance hzInstance = hzCore.getInstance();
-        if (hzInstance != null) { // can already be null when HZ was shutdown before
+        if (hzInstance != null && membershipListenerRegistrationId != null) { // can already be null when HZ was shutdown before
             hzInstance.getCluster().removeMembershipListener(membershipListenerRegistrationId);
         }
     }
