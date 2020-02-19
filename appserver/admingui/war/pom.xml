@@ -164,6 +164,7 @@
         </dependency>
     </dependencies>
 
+    <!-- Workaround until we pull out all branding from this external artefact -->
     <profiles>
         <profile>
             <id>community</id>
