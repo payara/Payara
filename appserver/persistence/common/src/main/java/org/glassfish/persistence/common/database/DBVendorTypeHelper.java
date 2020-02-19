@@ -77,10 +77,10 @@ public class DBVendorTypeHelper {
     public final static int INGRES_ENUM      = 8;
     public final static int DERBY_ENUM       = 9;
     public final static int SYMFOWARE_ENUM   = 10;
+    public final static int H2_ENUM       = 11;
 
     //Please increment following when a new known database is added.
-    public final static int MAX_KNOWN_DB     = 11;
-    public final static int H2_ENUM       = 12;
+    public final static int MAX_KNOWN_DB     = 12;
 
     /**
      * Array that defines mapping from given string name to enum.
