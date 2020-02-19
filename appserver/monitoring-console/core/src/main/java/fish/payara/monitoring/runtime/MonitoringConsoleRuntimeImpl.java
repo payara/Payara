@@ -40,7 +40,6 @@
 package fish.payara.monitoring.runtime;
 
 import static java.lang.Boolean.parseBoolean;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.jvnet.hk2.config.Dom.unwrap;
 
@@ -201,11 +200,6 @@ public class MonitoringConsoleRuntimeImpl
         }
         exchange.addMessageListener(msg -> receiver.accept(type.cast(msg.getMessageObject())));
         return true;
-    }
-
-    @Override
-    public Iterable<ClassLoader> contexts() {
-        return asList(this.getClass().getClassLoader());
     }
 
     @Override
