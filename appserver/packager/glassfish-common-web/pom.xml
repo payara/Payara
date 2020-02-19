@@ -154,7 +154,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline-terminal-jna</artifactId>
-            <version>${jline-terminal-jna}</version>
+            <version>${jline.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.ha</groupId>
