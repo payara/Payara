@@ -177,6 +177,10 @@
                     <artifactId>webui-jsf-suntheme</artifactId>
                 </dependency>
             </dependencies>
+            <properties>
+                <!-- Set to empty so that the replacement is done correctly in sun-web.xml -->
+                <enterprise.theme.classifier></enterprise.theme.classifier>
+            </properties>
         </profile>
         <profile>
             <id>enterprise</id>
@@ -187,6 +191,9 @@
                     <classifier>enterprise</classifier>
                 </dependency>
             </dependencies>
+            <properties>
+                <enterprise.theme.classifier>-enterprise</enterprise.theme.classifier>
+            </properties>
         </profile>
     </profiles>
 </project>
