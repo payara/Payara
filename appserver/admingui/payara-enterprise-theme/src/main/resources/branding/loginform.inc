@@ -42,7 +42,7 @@
 -->
 
 <f:verbatim>
-<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/login-backimage-open.png);
+<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/payara-enterprise-theme/images/login-backimage-open.png);
     background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto; margin: auto; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
     <div style="width: 460px; padding-top: 160px; margin-left: 310px;">
 </f:verbatim>

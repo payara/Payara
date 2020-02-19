@@ -38,11 +38,11 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2019] [Payara Foundation] 
+    Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 -->
 
 <f:verbatim>
-<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/login-backimage-open.png);
+<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/backimage.png);
     background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
     <div style="width: 460px; padding-top: 91px; margin-left: auto">
 </f:verbatim>
@@ -52,7 +52,7 @@
 <f:verbatim>
 &nbsp 
 &nbsp 
-        <table style="color: #002C3E;">
+        <table style="color: #FFFFFF;">
             <tr>
                 <td>
 </f:verbatim>

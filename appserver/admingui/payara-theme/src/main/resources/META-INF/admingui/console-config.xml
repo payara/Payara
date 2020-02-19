@@ -97,6 +97,12 @@
                 type="org.glassfish.admingui:upsellframeee" 
                 priority="100"
                 content="branding/upsellee.inc" 
-        />         
+        />
+        <integration-point
+                id="customtheme"
+                type="fish.payara.admingui:restarttd"
+                priority="100"
+                content="branding/restart.inc"
+        />
 </console-config>
 

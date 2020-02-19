@@ -167,4 +167,17 @@
             <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>enterprise</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun.woodstock</groupId>
+                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <classifier>enterprise</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
