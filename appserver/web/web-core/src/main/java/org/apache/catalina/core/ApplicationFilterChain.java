@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -149,7 +150,7 @@ final class ApplicationFilterChain implements FilterChain {
      * Static class array used when the SecurityManager is turned on and 
      * <code>doFilter</code is invoked.
      */
-    private static Class<?>[] classType = new Class[]{ServletRequest.class, 
+    private static final Class<?>[] classType = new Class[]{ServletRequest.class, 
                                                    ServletResponse.class,
                                                    FilterChain.class};
                                                    
@@ -177,6 +178,7 @@ final class ApplicationFilterChain implements FilterChain {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet exception occurs
      */
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response)
         throws IOException, ServletException {
 
@@ -253,17 +255,7 @@ final class ApplicationFilterChain implements FilterChain {
 
                 support.fireInstanceEvent(AFTER_FILTER_EVENT,
                                           filter, request, response);
-            } catch (IOException e) {
-                if (filter != null)
-                    support.fireInstanceEvent(AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
-                throw e;
-            } catch (ServletException e) {
-                if (filter != null)
-                    support.fireInstanceEvent(AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
-                throw e;
-            } catch (RuntimeException e) {
+            } catch (IOException | ServletException | RuntimeException e) {
                 if (filter != null)
                     support.fireInstanceEvent(AFTER_FILTER_EVENT,
                                               filter, request, response, e);

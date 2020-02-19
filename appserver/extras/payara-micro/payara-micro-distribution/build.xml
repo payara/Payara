@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
@@ -132,7 +132,7 @@
                 <include name="*payara-micro-boot*.jar"/>      
             </fileset>
         </delete>
-	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Micro"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="${product.name}"/>
 	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@BUILD_NUMBER@@@" value="${build.number}"/>
      </target>
      

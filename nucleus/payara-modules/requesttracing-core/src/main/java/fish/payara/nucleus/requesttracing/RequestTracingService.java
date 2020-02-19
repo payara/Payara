@@ -91,12 +91,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,8 +109,10 @@ import java.util.logging.Logger;
 @RunLevel(StartupRunLevel.VAL)
 public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource, MonitoringWatchSource {
 
+
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
-    
+
+    private static final String DURATION = "Duration";
     public static final String EVENT_BUS_LISTENER_NAME = "RequestTracingEvents";
 
     private static final int SECOND = 1;
@@ -593,10 +593,8 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
     @MonitoringData(ns = "trace")
     public void collect(MonitoringDataCollector collector) {
         for (String group : activeCollectionGroups.keySet()) {
-            collector.group(group).collect("Duration", 0);
-            activeCollectionGroups.compute(group, (key, value) -> {
-               return value <= 1 ? null : value - 1;
-            });
+            collector.group(group).collect(DURATION, 0);
+            activeCollectionGroups.compute(group, (key, value) -> value <= 1 ? null : value - 1);
         }
         long thresholdInMillis = getConfigurationThresholdInMillis();
         RequestTrace trace = uncollectedTraces.poll();
@@ -630,8 +628,8 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                     attrs.add(tag.getValue());
                 }
                 tracingCollector.group(group)
-                    .collect("Duration", durationMillis)
-                    .annotate("Duration", durationMillis, attrs.toArray(new String[0]));
+                    .collect(DURATION, durationMillis)
+                    .annotate(DURATION, durationMillis, attrs.toArray(new String[0]));
                 return group;
             }
         } catch (Exception ex) {

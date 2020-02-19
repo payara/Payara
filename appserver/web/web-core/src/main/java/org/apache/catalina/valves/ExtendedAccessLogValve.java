@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -396,10 +397,9 @@ public final class ExtendedAccessLogValve
     /**
      * Return descriptive information about this implementation.
      */
+    @Override
     public String getInfo() {
-
         return (this.info);
-
     }
 
 
@@ -572,16 +572,18 @@ public final class ExtendedAccessLogValve
      * @exception IOException if an input/output error has occurred
      * @exception ServletException if a servlet error has occurred
      */
+    @Override
      public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
         // Pass this request on to the next valve in our pipeline
-        request.setNote(REQUEST_START_TIME_NOTE, Long.valueOf(System.currentTimeMillis()));
+        request.setNote(REQUEST_START_TIME_NOTE, System.currentTimeMillis());
 
         return INVOKE_NEXT;
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response)
                                     throws IOException, ServletException{
 
@@ -592,7 +594,7 @@ public final class ExtendedAccessLogValve
             return;
         }
 
-        long runTime = endTime - ((Long)startTimeObj).longValue();
+        long runTime = endTime - ((Long)startTimeObj);
 
         if (fieldInfos==null || condition!=null &&
               null!=request.getRequest().getAttribute(condition)) {
@@ -604,26 +606,39 @@ public final class ExtendedAccessLogValve
         Date date = getDate(endTime);
         StringBuilder result = new StringBuilder();
 
-        for (int i=0; fieldInfos!=null && i<fieldInfos.length; i++) {
-            switch(fieldInfos[i].type) {
+        for (int i=0; fieldInfos != null && i < fieldInfos.length; i++) {
+            switch (fieldInfos[i].type) {
                 case FieldInfo.DATA_CLIENT:
-                    if (FieldInfo.FIELD_IP==fieldInfos[i].location)
-                        result.append(request.getRequest().getRemoteAddr());
-                    else if (FieldInfo.FIELD_DNS==fieldInfos[i].location)
-                        result.append(request.getRequest().getRemoteHost());
-                    else
-                        result.append("?WTF?"); /* This should never happen! */
+                    switch (fieldInfos[i].location) {
+                        case FieldInfo.FIELD_IP:
+                            result.append(request.getRequest().getRemoteAddr());
+                            break;
+                        case FieldInfo.FIELD_DNS:
+                            result.append(request.getRequest().getRemoteHost());
+                            break;
+                        default:
+                            result.append("?WTF?");
+                            /* This should never happen! */
+                            break;
+                    }
                     break;
                 case FieldInfo.DATA_SERVER:
-                    if (FieldInfo.FIELD_IP==fieldInfos[i].location)
-                        result.append(myIpAddress);
-                    else if (FieldInfo.FIELD_DNS==fieldInfos[i].location)
-                        result.append(myDNSName);
-                    else
-                        result.append("?WTF?"); /* This should never happen! */
+                    switch (fieldInfos[i].location) {
+                        case FieldInfo.FIELD_IP:
+                            result.append(myIpAddress);
+                            break;
+                        case FieldInfo.FIELD_DNS:
+                            result.append(myDNSName);
+                            break;
+                        default:
+                            result.append("?WTF?");
+                            /* This should never happen! */
+                            break;
+                    }
                     break;
                 case FieldInfo.DATA_REMOTE:
-                    result.append('?'); /* I don't know how to handle these! */
+                    result.append('?');
+                    /* I don't know how to handle these! */
                     break;
                 case FieldInfo.DATA_CLIENT_TO_SERVER:
                     result.append(getClientToServer(fieldInfos[i], request));
@@ -639,28 +654,40 @@ public final class ExtendedAccessLogValve
                     result.append(getAppSpecific(fieldInfos[i], request));
                     break;
                 case FieldInfo.DATA_SPECIAL:
-                    if (FieldInfo.SPECIAL_DATE==fieldInfos[i].location)
-                        result.append(dateFormatter.get().format(date));
-                    else if (FieldInfo.SPECIAL_TIME_TAKEN==fieldInfos[i].location)
-                        result.append(timeTakenFormatter.get().format(runTime/1000d));
-                    else if (FieldInfo.SPECIAL_TIME==fieldInfos[i].location)
-                        result.append(timeFormatter.get().format(date));
-                    else if (FieldInfo.SPECIAL_BYTES==fieldInfos[i].location) {
-                        int length = response.getContentCount();
-                        if (length > 0)
-                            result.append(length);
-                        else
-                            result.append("-");
-                    } else if (FieldInfo.SPECIAL_CACHED==fieldInfos[i].location)
-                        result.append('-'); /* I don't know how to evaluate this! */
-                    else
-                        result.append("?WTF?"); /* This should never happen! */
+                    switch (fieldInfos[i].location) {
+                        case FieldInfo.SPECIAL_DATE:
+                            result.append(dateFormatter.get().format(date));
+                            break;
+                        case FieldInfo.SPECIAL_TIME_TAKEN:
+                            result.append(timeTakenFormatter.get().format(runTime / 1000d));
+                            break;
+                        case FieldInfo.SPECIAL_TIME:
+                            result.append(timeFormatter.get().format(date));
+                            break;
+                        case FieldInfo.SPECIAL_BYTES:
+                            int length = response.getContentCount();
+                            if (length > 0) {
+                                result.append(length);
+                            } else {
+                                result.append("-");
+                            }
+                            break;
+                        case FieldInfo.SPECIAL_CACHED:
+                            result.append('-');
+                            /* I don't know how to evaluate this! */
+                            break;
+                        default:
+                            result.append("?WTF?");
+                            /* This should never happen! */
+                            break;
+                    }
                     break;
                 default:
-                    result.append("?WTF?"); /* This should never happen! */
+                    result.append("?WTF?");
+                /* This should never happen! */
             }
 
-            if (fieldInfos[i].postWhiteSpace!=null) {
+            if (fieldInfos[i].postWhiteSpace != null) {
                 result.append(fieldInfos[i].postWhiteSpace);
             }
         }
@@ -810,37 +837,36 @@ public final class ExtendedAccessLogValve
                     if (fieldInfo.value.equals(c[i].getName())){
                         return wrap(c[i].getValue());
                     }
-                 }
+                }
             case FieldInfo.X_APP:
                 return wrap(request.getContext().getServletContext()
-                                .getAttribute(fieldInfo.value));
+                        .getAttribute(fieldInfo.value));
             case FieldInfo.X_SERVLET_REQUEST:
-                if (fieldInfo.location==FieldInfo.X_LOC_AUTHTYPE) {
-                    return wrap(hsr.getAuthType());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_REMOTEUSER) {
-                    return wrap(hsr.getRemoteUser());
-                } else if (fieldInfo.location==
-                            FieldInfo.X_LOC_REQUESTEDSESSIONID) {
-                    return wrap(hsr.getRequestedSessionId());
-                } else if (fieldInfo.location==
-                            FieldInfo.X_LOC_REQUESTEDSESSIONIDFROMCOOKIE) {
-                    return wrap(""+hsr.isRequestedSessionIdFromCookie());
-                } else if (fieldInfo.location==
-                            FieldInfo.X_LOC_REQUESTEDSESSIONIDVALID) {
-                    return wrap(""+hsr.isRequestedSessionIdValid());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_CONTENTLENGTH) {
-                    return wrap(""+hsr.getContentLength());
-                } else if (fieldInfo.location==
-                            FieldInfo.X_LOC_CHARACTERENCODING) {
-                    return wrap(hsr.getCharacterEncoding());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_LOCALE) {
-                    return wrap(hsr.getLocale());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_PROTOCOL) {
-                    return wrap(hsr.getProtocol());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_SCHEME) {
-                    return wrap(hsr.getScheme());
-                } else if (fieldInfo.location==FieldInfo.X_LOC_SECURE) {
-                    return wrap(""+hsr.isSecure());
+                switch (fieldInfo.location) {
+                    case FieldInfo.X_LOC_AUTHTYPE:
+                        return wrap(hsr.getAuthType());
+                    case FieldInfo.X_LOC_REMOTEUSER:
+                        return wrap(hsr.getRemoteUser());
+                    case FieldInfo.X_LOC_REQUESTEDSESSIONID:
+                        return wrap(hsr.getRequestedSessionId());
+                    case FieldInfo.X_LOC_REQUESTEDSESSIONIDFROMCOOKIE:
+                        return wrap("" + hsr.isRequestedSessionIdFromCookie());
+                    case FieldInfo.X_LOC_REQUESTEDSESSIONIDVALID:
+                        return wrap("" + hsr.isRequestedSessionIdValid());
+                    case FieldInfo.X_LOC_CONTENTLENGTH:
+                        return wrap("" + hsr.getContentLength());
+                    case FieldInfo.X_LOC_CHARACTERENCODING:
+                        return wrap(hsr.getCharacterEncoding());
+                    case FieldInfo.X_LOC_LOCALE:
+                        return wrap(hsr.getLocale());
+                    case FieldInfo.X_LOC_PROTOCOL:
+                        return wrap(hsr.getProtocol());
+                    case FieldInfo.X_LOC_SCHEME:
+                        return wrap(hsr.getScheme());
+                    case FieldInfo.X_LOC_SECURE:
+                        return wrap("" + hsr.isSecure());
+                    default:
+                        break;
                 }
                 break;
             default:
@@ -1115,6 +1141,7 @@ public final class ExtendedAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1166,6 +1193,7 @@ public final class ExtendedAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1197,8 +1225,9 @@ public final class ExtendedAccessLogValve
      */
     public FieldInfo[] decodePattern(String fields) {
 
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "decodePattern, fields=" + fields);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "decodePattern, fields={0}", fields);
+        }
 
         LinkedList<FieldInfo> list = new LinkedList<FieldInfo>();
 
@@ -1213,8 +1242,9 @@ public final class ExtendedAccessLogValve
 
         int j;
         while(i<fields.length()) {
-            if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "fields.substring(i)=" + fields.substring(i));
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "fields.substring(i)={0}", fields.substring(i));
+            }
 
             FieldInfo currentFieldInfo = new FieldInfo();
 
@@ -1310,8 +1340,9 @@ public final class ExtendedAccessLogValve
         for (Iterator<FieldInfo> k = list.iterator(); k.hasNext();)
              f[i++] = k.next();
 
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "finished decoding with length of: " + i);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "finished decoding with length of: {0}", i);
+        }
 
         return f;
     }
@@ -1433,33 +1464,50 @@ public final class ExtendedAccessLogValve
         fieldInfo.value = fields.substring(i,j);
 
         if (fieldInfo.xType == FieldInfo.X_SERVLET_REQUEST) {
-            if ("authType".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_AUTHTYPE;
-            } else if ("remoteUser".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_REMOTEUSER;
-            } else if ("requestedSessionId".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONID;
-            } else if ("requestedSessionIdFromCookie".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONIDFROMCOOKIE;
-            } else if ("requestedSessionIdValid".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONID;
-            } else if ("contentLength".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_CONTENTLENGTH;
-            } else if ("characterEncoding".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_CHARACTERENCODING;
-            } else if ("locale".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_LOCALE;
-            } else if ("protocol".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_PROTOCOL;
-            } else if ("scheme".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_SCHEME;
-            } else if ("secure".equals(fieldInfo.value)){
-                fieldInfo.location = FieldInfo.X_LOC_SECURE;
-            } else {
+            if (null == fieldInfo.value){
                 String msg = MessageFormat.format(rb.getString(LogFacade.X_PARAM_CANNOT_DECODE_VALUE),
-                                                  fieldInfo.location);
+                        fieldInfo.location);
                 log.log(Level.SEVERE, msg);
                 return -1;
+            } else switch (fieldInfo.value) {
+                case "authType":
+                    fieldInfo.location = FieldInfo.X_LOC_AUTHTYPE;
+                    break;
+                case "remoteUser":
+                    fieldInfo.location = FieldInfo.X_LOC_REMOTEUSER;
+                    break;
+                case "requestedSessionId":
+                    fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONID;
+                    break;
+                case "requestedSessionIdFromCookie":
+                    fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONIDFROMCOOKIE;
+                    break;
+                case "requestedSessionIdValid":
+                    fieldInfo.location = FieldInfo.X_LOC_REQUESTEDSESSIONID;
+                    break;
+                case "contentLength":
+                    fieldInfo.location = FieldInfo.X_LOC_CONTENTLENGTH;
+                    break;
+                case "characterEncoding":
+                    fieldInfo.location = FieldInfo.X_LOC_CHARACTERENCODING;
+                    break;
+                case "locale":
+                    fieldInfo.location = FieldInfo.X_LOC_LOCALE;
+                    break;
+                case "protocol":
+                    fieldInfo.location = FieldInfo.X_LOC_PROTOCOL;
+                    break;
+                case "scheme":
+                    fieldInfo.location = FieldInfo.X_LOC_SCHEME;
+                    break;
+                case "secure":
+                    fieldInfo.location = FieldInfo.X_LOC_SECURE;
+                    break;
+                default:
+                    String msg = MessageFormat.format(rb.getString(LogFacade.X_PARAM_CANNOT_DECODE_VALUE),
+                            fieldInfo.location);
+                    log.log(Level.SEVERE, msg);
+                    return -1;
             }
         }
 

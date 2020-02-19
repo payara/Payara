@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -789,10 +789,6 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
         void addProtocol(String protocol) {
             allowedProtocols.add(protocol);
-        }
-
-        String[] getAllowedProtocol() {
-            return (String[]) allowedProtocols.toArray();
         }
 
         String[] getSsl3TlsCiphers() {

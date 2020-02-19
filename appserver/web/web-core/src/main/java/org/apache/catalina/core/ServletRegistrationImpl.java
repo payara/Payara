@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import org.apache.catalina.LogFacade;
 

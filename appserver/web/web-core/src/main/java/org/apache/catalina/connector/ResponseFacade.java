@@ -55,11 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
 import org.apache.catalina.LogFacade;
-import org.apache.catalina.security.SecurityUtil;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -101,7 +101,7 @@ public class ResponseFacade
     private final class SetContentTypePrivilegedAction
             implements PrivilegedAction<Void> {
 
-        private String contentType;
+        private final String contentType;
 
         public SetContentTypePrivilegedAction(String contentType){
             this.contentType = contentType;
@@ -142,6 +142,8 @@ public class ResponseFacade
     
     /**
      * Prevent cloning the facade.
+     * @return never
+     * @throws CloneNotSupportedException always
      */
     @Override
     protected Object clone() throws CloneNotSupportedException {
@@ -317,7 +319,7 @@ public class ResponseFacade
         if (isPackageProtectionEnabled()) {
             try {
                 doPrivileged(new PrivilegedExceptionAction<Void>() {
-
+                    @Override
                     public Void run() throws IOException {
                         response.setAppCommitted(true);
 

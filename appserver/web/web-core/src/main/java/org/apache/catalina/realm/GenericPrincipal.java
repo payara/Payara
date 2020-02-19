@@ -55,7 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina.realm;
 
 import org.apache.catalina.Realm;
@@ -131,6 +132,7 @@ public class GenericPrincipal implements Principal {
      */
     protected String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
@@ -186,13 +188,14 @@ public class GenericPrincipal implements Principal {
     /**
      * Return a String representation of this object, which exposes only information that should be public.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("GenericPrincipal[");
         sb.append(this.name);
         sb.append("(");
-        for (int i = 0; i < roles.length; i++) {
-            sb.append(roles[i]).append(",");
+        for (String role : roles) {
+            sb.append(role).append(",");
         }
         sb.append(")]");
         return (sb.toString());

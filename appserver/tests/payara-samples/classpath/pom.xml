@@ -15,9 +15,14 @@
       with client code in unexpected ways.
     </description>
 
-    <modules>
-        <module>embedded-vs-jersey</module>
-    </modules>
+	<profiles>
+		<profile>
+			<id>unstable</id>
+		    <modules>
+		        <module>embedded-vs-jersey</module>
+		    </modules>
+		</profile>
+	</profiles>
 
     <build>
         <plugins>

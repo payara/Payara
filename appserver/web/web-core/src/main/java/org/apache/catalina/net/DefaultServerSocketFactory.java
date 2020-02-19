@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.net;
 
@@ -102,13 +103,10 @@ public final class DefaultServerSocketFactory implements ServerSocketFactory {
      * @exception KeyManagementException     problem in the key management
      *                                       layer (SSL only)
      */
+    @Override
     public ServerSocket createSocket (int port)
-    throws IOException, KeyStoreException, NoSuchAlgorithmException,
-           CertificateException, UnrecoverableKeyException,
-           KeyManagementException {
-
+        throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         return (new ServerSocket(port));
-
     }
 
 
@@ -132,6 +130,7 @@ public final class DefaultServerSocketFactory implements ServerSocketFactory {
      * @exception KeyManagementException     problem in the key management
      *                                       layer (SSL only)
      */
+    @Override
     public ServerSocket createSocket (int port, int backlog)
     throws IOException, KeyStoreException, NoSuchAlgorithmException,
            CertificateException, UnrecoverableKeyException,
@@ -163,6 +162,7 @@ public final class DefaultServerSocketFactory implements ServerSocketFactory {
      * @exception KeyManagementException     problem in the key management
      *                                       layer (SSL only)
      */
+    @Override
     public ServerSocket createSocket (int port, int backlog,
                                       InetAddress ifAddress)
     throws IOException, KeyStoreException, NoSuchAlgorithmException,

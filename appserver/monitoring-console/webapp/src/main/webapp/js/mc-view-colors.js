@@ -61,6 +61,7 @@ MonitoringConsole.View.Colors = (function() {
             '#800000', '#911eb4', '#f032e6', '#fabebe', '#e6beff', '#fffac8' ],
          opacity: 10,
          colors:  { 
+            error: '#e6194B', missing: '#0096D6',
             waterline: '#3cb44b', alarming: '#f58231', critical: '#e6194B',
             white: '#ffffff', green: '#3cb44b', amber: '#f58231', red: '#e6194B',
          }

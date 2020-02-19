@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -137,6 +138,7 @@ public class ApplicationResponse extends ServletResponseWrapper {
      * @exception IllegalStateException if the response has already
      *  been committed
      */
+    @Override
     public void reset() {
 
         // If already committed, the wrapped response will throw ISE
@@ -151,8 +153,8 @@ public class ApplicationResponse extends ServletResponseWrapper {
      *
      * @param len The new content length
      */
+    @Override
     public void setContentLength(int len) {
-
         if (!included)
             getResponse().setContentLength(len);
 
@@ -164,8 +166,8 @@ public class ApplicationResponse extends ServletResponseWrapper {
      *
      * @param type The new content type
      */
+    @Override
     public void setContentType(String type) {
-
         if (!included)
             getResponse().setContentType(type);
 
@@ -177,6 +179,7 @@ public class ApplicationResponse extends ServletResponseWrapper {
      *
      * @param loc The new locale
      */
+    @Override
     public void setLocale(Locale loc) {
         if (!included)
             getResponse().setLocale(loc);
@@ -188,6 +191,7 @@ public class ApplicationResponse extends ServletResponseWrapper {
      *
      * @param size The buffer size
      */
+    @Override
     public void setBufferSize(int size) {
         if (!included)
             getResponse().setBufferSize(size);
@@ -202,6 +206,7 @@ public class ApplicationResponse extends ServletResponseWrapper {
      *
      * @param response The new wrapped response
      */
+    @Override
     public void setResponse(ServletResponse response) {
 
         super.setResponse(response);

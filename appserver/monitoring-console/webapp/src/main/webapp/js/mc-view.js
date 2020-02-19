@@ -45,20 +45,7 @@
  **/
 MonitoringConsole.View = (function() {
 
-    const NS_TEXTS = {
-        web: 'Web Statistics',
-        http: 'HTTP Statistics',
-        jvm: 'JVM Statistics',
-        metric: 'MP Metrics',
-        trace: 'Request Tracing',
-        map: 'Cluster Map Storage Statistics',
-        topic: 'Cluster Topic IO Statistics',
-        monitoring: 'Monitoring Console Internals',
-        health: 'Health Checks',
-        sql: 'SQL Tracing',
-        other: 'Other',
-    };
-
+    const Controller = MonitoringConsole.Controller;
     const Components = MonitoringConsole.View.Components;
     const Units = MonitoringConsole.View.Units;
     const Colors = MonitoringConsole.View.Colors;
@@ -67,14 +54,15 @@ MonitoringConsole.View = (function() {
     /**
      * Updates the DOM with the page navigation tabs so it reflects current model state
      */ 
-    function updatePageNavigation() {
+    function updatePageNavigation(selectedPage) {
         let pages = MonitoringConsole.Model.listPages();
-        let activePage = pages.find(page => page.active);
-        let items = pages.filter(page => !page.active).map(function(page) {
+        let activePage = selectedPage || pages.find(page => page.active).name;
+        let items = pages.map(function(page) {
             return { label: page.name ? page.name : '(Unnamed)', onClick: () => onPageChange(MonitoringConsole.Model.Page.changeTo(page.id)) };
         });
+        items.push({ label: 'Watches', onClick: onOpenWatchSettings });
         let nav = { id: 'Navigation', groups: [
-            {label: activePage.name, items: items }
+            {label: activePage, items: items }
         ]};
         $('#Navigation').replaceWith(Components.createMenu(nav));
     }
@@ -107,7 +95,7 @@ MonitoringConsole.View = (function() {
                 { label: 'Hide', icon: '&times;', hidden: !settingsOpen, onClick: toggleSettings },
                 { label: 'Show', icon: '&plus;', hidden: settingsOpen, onClick: toggleSettings },
                 { label: 'Import...', icon: '&#9111;', description: 'Import Configuration...', onClick: () => $('#cfgImport').click() },
-                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },                
+                { label: 'Export...', icon: '&#9112;', description: 'Export Configuration...', onClick: MonitoringConsole.View.onPageExport },
             ]},
         ]};
         $('#Menu').replaceWith(Components.createMenu(menu));
@@ -220,7 +208,7 @@ MonitoringConsole.View = (function() {
             items.push({ icon: '&#9202', label: 'Sort By Wall Time', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'time') });
             items.push({ icon: '&#128292;', label: 'Sort By Value', onClick: () => Widgets.configure(widgetId, (widget) => widget.sort = 'value') });
         }
-        items.push({ icon: '&#9881;', label: 'More...', onClick: () => onOpenWidgetSettings(widgetId) });
+        items.push({ icon: '&#128295;', label: 'Edit...', onClick: () => onOpenWidgetSettings(widgetId) });
         let menu = { groups: [
             { icon: '&#9881;', items: items },
         ]};
@@ -243,6 +231,7 @@ MonitoringConsole.View = (function() {
                 { type: 'value', unit: 'sec', value: MonitoringConsole.Model.Settings.Rotation.interval(), onChange: (val) => MonitoringConsole.Model.Settings.Rotation.interval(val) },
                 { label: 'enabled', type: 'checkbox', value: MonitoringConsole.Model.Settings.Rotation.isEnabled(), onChange: (checked) => MonitoringConsole.Model.Settings.Rotation.enabled(checked) },
             ]},
+            { label: 'Watches', input: $('<button/>').text('Open Settings').click(onOpenWatchSettings) },
         ]};
     }
 
@@ -254,13 +243,17 @@ MonitoringConsole.View = (function() {
             return (value) => { Theme.configure(theme => theme.options[name] = value); };
         }    
         function createColorDefaultSettingMapper(name) {
-            return { label: name[0].toUpperCase() + name.slice(1), type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
+            let label = Units.Alerts.name(name);
+            if (label === undefined)
+                label = name[0].toUpperCase() + name.slice(1);
+            return { label: label, type: 'color', value: Theme.color(name), onChange: createChangeColorDefaultFn(name) };
         }
         let collapsed = $('#settings-colors').children('tr:visible').length <= 1;
         return { id: 'settings-colors', caption: 'Colors', collapsed: collapsed, entries: [
             { label: 'Scheme', type: 'dropdown', options: Colors.schemes(), value: undefined, onChange: (name) => { Colors.scheme(name); updateSettings(); } },
             { label: 'Data #', type: 'color', value: Theme.palette(), onChange: (colors) => Theme.palette(colors) },
             { label: 'Defaults', input: [
+                ['error', 'missing'].map(createColorDefaultSettingMapper),
                 ['alarming', 'critical', 'waterline'].map(createColorDefaultSettingMapper),
                 ['white', 'green', 'amber', 'red'].map(createColorDefaultSettingMapper)]},
             { label: 'Opacity', description: 'Fill transparency 0-100%', input: [
@@ -296,7 +289,7 @@ MonitoringConsole.View = (function() {
         settings.push({ id: 'settings-data', caption: 'Data', entries: [
             { label: 'Series', input: widget.series },
             { label: 'Unit', input: [
-                { type: 'dropdown', options: {count: 'Count', ms: 'Milliseconds', ns: 'Nanoseconds', bytes: 'Bytes', percent: 'Percentage'}, value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
+                { type: 'dropdown', options: Units.names(), value: widget.unit, onChange: function(widget, selected) { widget.unit = selected; updateSettings(); }},
                 { label: '1/sec', type: 'checkbox', value: options.perSec, onChange: (widget, checked) => widget.options.perSec = checked},
             ]},
             { label: 'Upscaling', description: 'Upscaling is sometimes needed to convert the original value range to a more user freindly display value range', input: [
@@ -382,12 +375,12 @@ MonitoringConsole.View = (function() {
                     $.each(names, function() {
                         let key = this;
                         let ns =  this.substring(3, this.indexOf(' '));
-                        if (NS_TEXTS[ns] === undefined) {
+                        if (NAMESPACES[ns] === undefined) {
                             ns = 'other';
                         }
                         if (nsAdded.indexOf(ns) < 0) {
                             nsAdded.push(ns);
-                            nsSelection.append($('<option/>').val(ns).text(NS_TEXTS[ns]));
+                            nsSelection.append($('<option/>').val(ns).text(NAMESPACES[ns]));
                         }
                     });
                 });
@@ -401,7 +394,7 @@ MonitoringConsole.View = (function() {
                 $.each(names, function() {
                     let key = this;
                     let ns =  this.substring(3, this.indexOf(' '));
-                    if (NS_TEXTS[ns] === undefined) {
+                    if (NAMESPACES[ns] === undefined) {
                         ns = 'other';
                     }
                     if (ns === nsSelection.val()) {
@@ -480,7 +473,7 @@ MonitoringConsole.View = (function() {
         for (let j = 0; j < data.length; j++) {
             let seriesData = data[j];
             let label = seriesData.instance;
-            if (widget.series.indexOf('*') > 0 && widget.series.indexOf('?') < 0) {
+            if (widget.series.includes('*') && !widget.series.includes('?')) {
                 let tag = seriesData.series.replace(new RegExp(widget.series.replace('*', '(.*)')), '$1').replace('_', ' ');                
                 label = widget.coloring == 'series' ? tag : [label, tag];
             }
@@ -526,7 +519,7 @@ MonitoringConsole.View = (function() {
         return legend;
     }
 
-    const ALERT_STATUS_NAMES = { white: 'Normal', green: 'Healthy', amber: 'Degraded', red: 'Unhealthy' };
+    
 
     function createLegendModelFromAlerts(widget, alerts) {
         if (!Array.isArray(alerts))
@@ -542,7 +535,7 @@ MonitoringConsole.View = (function() {
             let color = Colors.lookup('instance', instance, palette);
             return {
                 label: instance,
-                value: ALERT_STATUS_NAMES[level == undefined ? 'white' : level],
+                value: Units.Alerts.name(level),
                 color: color,
                 background: Colors.hex2rgba(color, alpha),
                 status: level, 
@@ -593,17 +586,15 @@ MonitoringConsole.View = (function() {
 
     function createIndicatorModel(widget, data) {
         if (!data)
-            return { status: 'error' };
+            return { status: 'error', color: Theme.color('error') };
         if (Array.isArray(data) && data.length == 0)
-            return { status: 'missing', text: widget.status.missing.hint };
+            return { status: 'missing', color: Theme.color('missing'), text: widget.status.missing.hint };
         let status = 'normal';
-        for (let j = 0; j < data.length; j++) {
-            let seriesData = data[j];
-            if (seriesData.assessments.status == 'alarming' && status != 'critical' || seriesData.assessments.status == 'critical')
-                status = seriesData.assessments.status;
-        }
-        let statusInfo = widget.status[status] || {};
-        return { status: status, text: statusInfo.hint };
+        for (let seriesData of data)
+            status = Units.Alerts.maxLevel(status, seriesData.assessments.status);
+        const infoKey = status == 'red' ? 'critical' : status == 'amber' ? 'alarming' : status;
+        let statusInfo = widget.status[infoKey] || {};
+        return { status: status, color: Theme.color(status), text: statusInfo.hint };
     }
 
     function createAlertTableModel(widget, alerts, annotations) {
@@ -691,6 +682,35 @@ MonitoringConsole.View = (function() {
     }
 
     /**
+     * This function is called when the watch details settings should be opened
+     */
+    function onOpenWatchSettings() {
+        function wrapOnSuccess(onSuccess) {
+            return () => {
+                if (typeof onSuccess === 'function')
+                    onSuccess();
+                onOpenWatchSettings();
+            };
+        }
+        Controller.requestListOfWatches((watches) => {
+            const manager = { 
+                id: 'WatchManager', 
+                items: watches, 
+                colors: { red: Theme.color('red'), amber: Theme.color('amber'), green: Theme.color('green') },
+                actions: { 
+                    onCreate: (watch, onSuccess, onFailure) => Controller.requestCreateWatch(watch, wrapOnSuccess(onSuccess), onFailure),
+                    onDelete: (name, onSuccess, onFailure) => Controller.requestDeleteWatch(name, wrapOnSuccess(onSuccess), onFailure),
+                    onDisable: (name, onSuccess, onFailure) => Controller.requestDisableWatch(name, wrapOnSuccess(onSuccess), onFailure),
+                    onEnable: (name, onSuccess, onFailure) => Controller.requestEnableWatch(name, wrapOnSuccess(onSuccess), onFailure),
+                },
+            };
+            updatePageNavigation('Watches');
+            $('#chart-grid').hide();
+            $('#WatchManager').replaceWith(Components.createWatchManager(manager));
+        });
+    }
+
+    /**
      * This function is called when data was received or was failed to receive so the new data can be applied to the page.
      *
      * Depending on the update different content is rendered within a chart box.
@@ -761,6 +781,8 @@ MonitoringConsole.View = (function() {
      */
     function onPageChange(layout) {
         MonitoringConsole.Chart.Trace.onClosePopup();
+        $('#WatchManager').hide();
+        $('#chart-grid').show();
         onPageUpdate(layout);
         updatePageNavigation();
         updateSettings();

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -152,20 +153,20 @@ public class HostConfig
      * Last modified dates of the web.xml files of the contexts, keyed by
      * context name.
      */
-    private Map<String, Long> webXmlLastModified = new HashMap<String, Long>();
+    private final Map<String, Long> webXmlLastModified = new HashMap<String, Long>();
 
 
     /**
      * Last modified dates of the Context xml files of the contexts, keyed by
      * context name.
      */
-    private Map<String, Long> contextXmlLastModified = new HashMap<String, Long>();
+    private final Map<String, Long> contextXmlLastModified = new HashMap<String, Long>();
 
 
     /**
      * Last modified dates of the source WAR files, keyed by WAR name.
      */
-    private HashMap<String, Long> warLastModified = new HashMap<String, Long>();
+    private final HashMap<String, Long> warLastModified = new HashMap<String, Long>();
 
 
     /**
@@ -346,6 +347,7 @@ public class HostConfig
      *
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         if (event.getType().equals("check"))
@@ -521,46 +523,40 @@ public class HostConfig
      */
     protected void deployWARs(File appBase, String[] files) {
 
-        for (int i = 0; i < files.length; i++) {
-
-            if (files[i].equalsIgnoreCase("META-INF"))
+        for (String file : files) {
+            if (file.equalsIgnoreCase("META-INF")) {
                 continue;
-            if (files[i].equalsIgnoreCase("WEB-INF"))
+            }
+            if (file.equalsIgnoreCase("WEB-INF")) {
                 continue;
-            if (deployed.contains(files[i]))
+            }
+            if (deployed.contains(file)) {
                 continue;
-            File dir = new File(appBase, files[i]);
-            if (files[i].toLowerCase(Locale.ENGLISH).endsWith(".war") && dir.isFile()
-                    && !invalidWars.contains(files[i])) {
-
-                deployed.add(files[i]);
-
+            }
+            File dir = new File(appBase, file);
+            if (file.toLowerCase(Locale.ENGLISH).endsWith(".war") && dir.isFile() && !invalidWars.contains(file)) {
+                deployed.add(file);
                 // Calculate the context path and make sure it is unique
-                String contextPath = "/" + files[i];
+                String contextPath = "/" + file;
                 int period = contextPath.lastIndexOf('.');
                 if (period >= 0)
                     contextPath = contextPath.substring(0, period);
-
                 // Check for WARs with /../ /./ or similar sequences in the name
                 if (!validateContextPath(appBase, contextPath)) {
-                    log.log(Level.SEVERE, LogFacade.INVALID_WAR_NAME_EXCEPTION, files[i]);
-                    invalidWars.add(files[i]);
+                    log.log(Level.SEVERE, LogFacade.INVALID_WAR_NAME_EXCEPTION, file);
+                    invalidWars.add(file);
                     continue;
                 }
-
                 if (contextPath.equals("/ROOT"))
                     contextPath = "";
                 if (host.findChild(contextPath) != null)
                     continue;
-
                 // Checking for a nested /META-INF/context.xml
                 JarFile jar = null;
                 JarEntry entry = null;
                 InputStream istream = null;
                 BufferedOutputStream ostream = null;
-                File xml = new File
-                    (configBase, files[i].substring
-                     (0, files[i].lastIndexOf(".")) + ".xml");
+                File xml = new File(configBase, file.substring(0, file.lastIndexOf(".")) + ".xml");
                 if (!xml.exists()) {
                     try {
                         jar = new JarFile(dir);
@@ -568,8 +564,8 @@ public class HostConfig
                         if (entry != null) {
                             istream = jar.getInputStream(entry);
                             ostream =
-                                new BufferedOutputStream
-                                (new FileOutputStream(xml), 1024);
+                                    new BufferedOutputStream
+                                        (new FileOutputStream(xml), 1024);
                             byte buffer[] = new byte[1024];
                             while (true) {
                                 int n = istream.read(buffer);
@@ -619,26 +615,23 @@ public class HostConfig
                         }
                     }
                 }
-
                 if (isUnpackWARs()) {
-
                     // Expand and deploy this application as a directory
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, LogFacade.EXPANDING_WEB_APP, files[i]);
+                        log.log(Level.FINE, LogFacade.EXPANDING_WEB_APP, file);
                     }
                     URL url = null;
                     String path = null;
                     try {
                         url = new URL("jar:file:" +
-                                      dir.getCanonicalPath() + "!/");
+                                dir.getCanonicalPath() + "!/");
                         path = ExpandWar.expand(host, url);
                     } catch (IOException e) {
                         // JAR decompression failure
-                        log.log(Level.WARNING, LogFacade.EXPANDING_WEB_APP_EXCEPTION, files[i]);
+                        log.log(Level.WARNING, LogFacade.EXPANDING_WEB_APP_EXCEPTION, file);
                         continue;
                     } catch (Throwable t) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.EXPANDING_WEB_APP_ARCHIVE_EXCEPTION),
-                                                          files[i]);
+                        String msg = MessageFormat.format(rb.getString(LogFacade.EXPANDING_WEB_APP_ARCHIVE_EXCEPTION), file);
                         log.log(Level.SEVERE, msg, t);
                         continue;
                     }
@@ -648,25 +641,21 @@ public class HostConfig
                             ((Deployer) host).install(contextPath, url);
                         }
                     } catch (Throwable t) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.EXPANDING_WEB_APP_ARCHIVE_EXCEPTION),
-                                                          files[i]);
+                        String msg = MessageFormat.format(rb.getString(LogFacade.EXPANDING_WEB_APP_ARCHIVE_EXCEPTION), file);
                         log.log(Level.SEVERE, msg, t);
                     }
-
                 } else {
-
                     // Deploy the application in this WAR file
                     if (log.isLoggable(Level.INFO)) {
-                        log.log(Level.INFO, LogFacade.DEPLOYING_WEB_APP_ARCHIVE, files[i]);
+                        log.log(Level.INFO, LogFacade.DEPLOYING_WEB_APP_ARCHIVE, file);
                     }
                     try {
                         URL url = new URL("file", null,
-                                          dir.getCanonicalPath());
+                                dir.getCanonicalPath());
                         url = new URL("jar:" + url.toString() + "!/");
                         ((Deployer) host).install(contextPath, url);
                     } catch (Throwable t) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION),
-                                                          files[i]);
+                        String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION), file);
                         log.log(Level.SEVERE, msg, t);
                     }
                 }
@@ -724,7 +713,7 @@ public class HostConfig
                 }
                 long t2=System.currentTimeMillis();
                 if( (t2-t1) > 200 && log.isLoggable(Level.FINE) )
-                    log.log(Level.FINE, "Deployed " + files[i] + " " + (t2-t1));
+                    log.log(Level.FINE, "Deployed {0} {1}", new Object[]{files[i], t2-t1});
             }
 
         }
@@ -806,16 +795,14 @@ public class HostConfig
                 long webInfLastModified = webInfAttributes.getLastModified();
                 Long lastModified = webXmlLastModified.get(contextName);
                 if (lastModified == null) {
-                    webXmlLastModified.put
-                        (contextName, Long.valueOf(newLastModified));
+                    webXmlLastModified.put(contextName, newLastModified);
                 } else {
-                    if (lastModified.longValue() != newLastModified) {
+                    if (lastModified != newLastModified) {
                         if (newLastModified > (webInfLastModified + 5000)) {
                             webXmlLastModified.remove(contextName);
                             restartContext(context);
                         } else {
-                            webXmlLastModified.put
-                                (contextName, Long.valueOf(newLastModified));
+                            webXmlLastModified.put (contextName, newLastModified);
                         }
                     }
                 }
@@ -829,15 +816,13 @@ public class HostConfig
             if (configFileName != null) {
                 File configFile = new File(configFileName);
                 if (!configFile.isAbsolute()) {
-                    configFile = new File(System.getProperty("catalina.base"),
-                                          configFile.getPath());
+                    configFile = new File(System.getProperty("catalina.base"), configFile.getPath());
                 }
                 long newLastModified = configFile.lastModified();
                 if (lastModified == null) {
-                    contextXmlLastModified.put
-                        (contextName, Long.valueOf(newLastModified));
+                    contextXmlLastModified.put(contextName, newLastModified);
                 } else {
-                    if (lastModified.longValue() != newLastModified) {
+                    if (lastModified != newLastModified) {
                         contextXmlLastModified.remove(contextName);
                         String fileName = configFileName;
                         if (fileName.startsWith(configBase)) {
@@ -868,17 +853,16 @@ public class HostConfig
                 return;
             String files[] = appBase.list();
 
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].endsWith(".war")) {
-                    File dir = new File(appBase, files[i]);
-                    Long lastModified = warLastModified.get(files[i]);
+            for (String file : files) {
+                if (file.endsWith(".war")) {
+                    File dir = new File(appBase, file);
+                    Long lastModified = warLastModified.get(file);
                     long dirLastModified = dir.lastModified();
                     if (lastModified == null) {
-                        warLastModified.put
-                            (files[i], Long.valueOf(dir.lastModified()));
-                    } else if (dirLastModified > lastModified.longValue()) {
+                        warLastModified.put(file, dir.lastModified());
+                    } else if (dirLastModified > lastModified) {
                         // The WAR has been modified: redeploy
-                        String expandedDir = files[i];
+                        String expandedDir = file;
                         int period = expandedDir.lastIndexOf('.');
                         if (period >= 0)
                             expandedDir = expandedDir.substring(0, period);
@@ -889,16 +873,15 @@ public class HostConfig
                         if (dirLastModified > expanded.lastModified()) {
                             try {
                                 // Undeploy current application
-                                deployed.remove(files[i]);
+                                deployed.remove(file);
                                 deployed.remove(expandedDir + ".xml");
                                 if (host.findChild(contextPath) != null) {
-                                    ((Deployer) host).remove(contextPath, 
-                                                             false);
+                                    ((Deployer) host).remove(contextPath,
+                                            false);
                                     ExpandWar.deleteDir(expanded);
                                 }
                             } catch (Throwable t) {
-                                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION),
-                                                                  files[i]);
+                                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION), file);
                                 log.log(Level.SEVERE, msg, t);
                             }
                             deployApps();
@@ -907,8 +890,7 @@ public class HostConfig
                         // the last modified values
                         if (host.findChild(contextPath) != null) {
                             webXmlLastModified.remove(contextPath);
-                            warLastModified.put
-                                (files[i], Long.valueOf(dir.lastModified()));
+                            warLastModified.put(file, dir.lastModified());
                         }
                     }
                 }
@@ -1076,15 +1058,14 @@ public class HostConfig
             log.log(Level.FINE, LogFacade.UNDEPLOYING_WEB_APP);
 
         String contextPaths[] = ((Deployer) host).findDeployedApps();
-        for (int i = 0; i < contextPaths.length; i++) {
+        for (String contextPath : contextPaths) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, LogFacade.UNDEPLOYING_CONTEXT, contextPaths[i]);
+                log.log(Level.FINE, LogFacade.UNDEPLOYING_CONTEXT, contextPath);
             }
             try {
-                ((Deployer) host).remove(contextPaths[i]);
+                ((Deployer) host).remove(contextPath);
             } catch (Throwable t) {
-                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_UNDEPLOYING_WEB_APP_EXCEPTION),
-                                                  contextPaths[i]);
+                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_UNDEPLOYING_WEB_APP_EXCEPTION), contextPath);
                 log.log(Level.SEVERE, msg, t);
             }
         }

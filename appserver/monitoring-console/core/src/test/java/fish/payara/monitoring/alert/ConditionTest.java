@@ -239,7 +239,7 @@ public class ConditionTest {
         assertSatisfied(anyGt5, 5, 6, 5);
         assertSatisfied(anyGt5, 5, 6, 5, 4);
         assertNotSatisfied(anyGt5, 5, 5, 5, 4);
-        assertEquals("any 1 value > 5", anyGt5.toString());
+        assertEquals("value > 5 in sample", anyGt5.toString());
     }
 
     @Test
@@ -253,7 +253,7 @@ public class ConditionTest {
         assertSatisfied(anyGt5in3x, 5, 6, 5, 4);
         assertNotSatisfied(anyGt5in3x, 6, 5, 5, 4);
         assertNotSatisfied(anyGt5in3x, 5, 5, 5, 4);
-        assertEquals("any 1 value > 5 in last 3x", anyGt5in3x.toString());
+        assertEquals("value > 5 in last 3x", anyGt5in3x.toString());
     }
 
     @Test
@@ -267,7 +267,7 @@ public class ConditionTest {
         assertSatisfied(anyGt5in3sec, 5, 6, 5, 4);
         assertNotSatisfied(anyGt5in3sec, 6, 5, 5, 5, 4);
         assertNotSatisfied(anyGt5in3sec, 5, 5, 5, 4);
-        assertEquals("any 1 value > 5 in last 3000ms", anyGt5in3sec.toString());
+        assertEquals("value > 5 in last 3000ms", anyGt5in3sec.toString());
     }
 
     private static void assertSatisfied(Condition c, long... points) {

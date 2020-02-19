@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -171,10 +172,9 @@ public class StandardHostDeployer implements Deployer {
     /**
      * Return the name of the Container with which this Deployer is associated.
      */
+    @Override
     public String getName() {
-
         return (host.getName());
-
     }
 
 
@@ -205,6 +205,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error was encountered
      *  during installation
      */
+    @Override
     public synchronized void install(String contextPath, URL war)
         throws IOException {
 
@@ -453,6 +454,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error was encountered
      *  during installation
      */
+    @Override
     public synchronized void install(URL config, URL war) throws IOException {
 
         // Validate the format and state of our arguments
@@ -539,6 +541,7 @@ public class StandardHostDeployer implements Deployer {
      *
      * @param contextPath The context path of the requested web application
      */
+    @Override
     public Context findDeployedApp(String contextPath) {
 
         return ((Context) host.findChild(contextPath));
@@ -551,6 +554,7 @@ public class StandardHostDeployer implements Deployer {
      * Container.  If there are no deployed applications, a zero-length
      * array is returned.
      */
+    @Override
     public String[] findDeployedApps() {
 
         Container children[] = host.findChildren();
@@ -578,6 +582,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath) throws IOException {
 
         // Validate the format and state of our arguments
@@ -630,6 +635,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath, boolean undeploy)
         throws IOException {
 
@@ -751,6 +757,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  startup
      */
+    @Override
     public void start(String contextPath) throws IOException {
 
         // Validate the format and state of our arguments
@@ -906,8 +913,8 @@ public class StandardHostDeployer implements Deployer {
         if (files == null) {
             files = new String[0];
         }
-        for (int i = 0; i < files.length; i++) {
-            File file = new File(dir, files[i]);
+        for (String file1 : files) {
+            File file = new File(dir, file1);
             if (file.isDirectory()) {
                 deleteDir(file);
             } else {

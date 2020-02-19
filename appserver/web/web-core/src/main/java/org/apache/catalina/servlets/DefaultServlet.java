@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.servlets;
 
@@ -162,9 +163,7 @@ import org.xml.sax.ext.EntityResolver2;
  * @author Remy Maucherat
  * @version $Revision: 1.16 $ $Date: 2007/06/06 16:01:12 $
  */
-
-public class DefaultServlet
-    extends HttpServlet {
+public class DefaultServlet extends HttpServlet {
 
     protected static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
@@ -334,6 +333,7 @@ public class DefaultServlet
     /**
      * Finalize this servlet.
      */
+    @Override
     public void destroy() {
         // NOOP
     }
@@ -342,6 +342,7 @@ public class DefaultServlet
     /**
      * Initialize this servlet.
      */
+    @Override
     public void init() throws ServletException {
         ServletConfig sc = getServletConfig();
         if (sc.getInitParameter("debug") != null)
@@ -500,6 +501,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
         throws IOException, ServletException {
@@ -519,6 +521,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doHead(HttpServletRequest request,
                           HttpServletResponse response)
         throws IOException, ServletException {
@@ -538,6 +541,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response)
         throws IOException, ServletException {
@@ -554,6 +558,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
 
@@ -647,25 +652,16 @@ public class DefaultServlet
             // Ignore
         }
 
-        RandomAccessFile randAccessContentFile =
-            new RandomAccessFile(contentFile, "rw");
-        try {
+        try (RandomAccessFile randAccessContentFile = new RandomAccessFile(contentFile, "rw")) {
             // Copy data in oldRevisionContent to contentFile
             if (oldResource != null) {
-                BufferedInputStream bufOldRevStream = null;
-                try {
-                    bufOldRevStream =
-                        new BufferedInputStream(oldResource.streamContent(),
-                                                BUFFER_SIZE);
+                try (BufferedInputStream bufOldRevStream = new BufferedInputStream(oldResource.streamContent(),
+                        BUFFER_SIZE)) {
 
                     int numBytesRead;
                     byte[] copyBuffer = new byte[BUFFER_SIZE];
                     while ((numBytesRead = bufOldRevStream.read(copyBuffer)) != -1) {
                         randAccessContentFile.write(copyBuffer, 0, numBytesRead);
-                    }
-                } finally {
-                    if (bufOldRevStream != null) {
-                        bufOldRevStream.close();
                     }
                 }
             }
@@ -676,21 +672,12 @@ public class DefaultServlet
             randAccessContentFile.seek(range.start);
             int numBytesRead;
             byte[] transferBuffer = new byte[BUFFER_SIZE];
-            BufferedInputStream requestBufInStream = null;
-            try {
-                requestBufInStream =
-                    new BufferedInputStream(req.getInputStream(), BUFFER_SIZE);
+            try (BufferedInputStream requestBufInStream = new BufferedInputStream(req.getInputStream(), BUFFER_SIZE)) {
 
                 while ((numBytesRead = requestBufInStream.read(transferBuffer)) != -1) {
                     randAccessContentFile.write(transferBuffer, 0, numBytesRead);
                 }
-            } finally {
-                if (requestBufInStream != null) {
-                    requestBufInStream.close();
-                }
             }
-        } finally {
-            randAccessContentFile.close();
         }
 
         return contentFile;
@@ -821,8 +808,7 @@ public class DefaultServlet
 
         CacheEntry cacheEntry = null;
         ProxyDirContext proxyDirContext = resources;
-        if (alternateDocBases == null
-                || alternateDocBases.size() == 0) {
+        if (alternateDocBases == null || alternateDocBases.isEmpty()) {
             cacheEntry = proxyDirContext.lookupCache(path);
         } else {
             AlternateDocBase match = AlternateDocBase.findMatch(
@@ -1924,11 +1910,11 @@ public class DefaultServlet
             && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
             request.setAttribute("org.apache.tomcat.sendfile.filename", entry.attributes.getCanonicalPath());
             if (range == null) {
-                request.setAttribute("org.apache.tomcat.sendfile.start", Long.valueOf(0L));
-                request.setAttribute("org.apache.tomcat.sendfile.end", Long.valueOf(length));
+                request.setAttribute("org.apache.tomcat.sendfile.start", 0L);
+                request.setAttribute("org.apache.tomcat.sendfile.end", length);
             } else {
-                request.setAttribute("org.apache.tomcat.sendfile.start", Long.valueOf(range.start));
-                request.setAttribute("org.apache.tomcat.sendfile.end", Long.valueOf(range.end + 1));
+                request.setAttribute("org.apache.tomcat.sendfile.start", range.start);
+                request.setAttribute("org.apache.tomcat.sendfile.end", range.end + 1);
             }
             request.setAttribute("org.apache.tomcat.sendfile.token", this);
             return true;
@@ -2298,10 +2284,7 @@ public class DefaultServlet
         while ( (exception == null) && (ranges.hasNext()) ) {
 
             InputStream resourceInputStream = cacheEntry.resource.streamContent();
-            InputStream istream = null;
-            try {
-                istream =
-                    new BufferedInputStream(resourceInputStream, input);
+            try (InputStream istream = new BufferedInputStream(resourceInputStream, input)) {
 
                 Range currentRange = ranges.next();
 
@@ -2319,10 +2302,6 @@ public class DefaultServlet
                 exception = copyRange(istream, ostream, currentRange.start,
                                       currentRange.end);
 
-            } finally {
-                if (istream != null) {
-                    istream.close();
-                }
             }
         }
 
@@ -2479,9 +2458,7 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION),
-                                              new Object[] {Long.valueOf(skipped),
-                                                            Long.valueOf(start)});
+            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION), new Object[] {skipped, start});
             return new IOException(msg);
         }
 
@@ -2534,9 +2511,7 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION),
-                                              new Object[] {Long.valueOf(skipped),
-                                                            Long.valueOf(start)});
+            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION), new Object[] {skipped, start});
             return new IOException(msg);
         }
 
@@ -2606,8 +2581,8 @@ public class DefaultServlet
     private static class LastModifiedComparator
             implements Comparator<NameClassPair> {
 
-        private ProxyDirContext resources;
-        private String dirName;
+        private final ProxyDirContext resources;
+        private final String dirName;
 
         public LastModifiedComparator(ProxyDirContext resources,
                                       String dirName) {
@@ -2615,6 +2590,7 @@ public class DefaultServlet
             this.dirName = dirName;
         }
 
+        @Override
         public int compare(NameClassPair p1, NameClassPair p2) {
 
             CacheEntry ce1 = resources.lookupCache(
@@ -2642,8 +2618,8 @@ public class DefaultServlet
     private static class SizeComparator
             implements Comparator<NameClassPair> {
 
-        private ProxyDirContext resources;
-        private String dirName;
+        private final ProxyDirContext resources;
+        private final String dirName;
 
         public SizeComparator(ProxyDirContext resources,
                               String dirName) {
@@ -2651,6 +2627,7 @@ public class DefaultServlet
             this.dirName = dirName;
         }
 
+        @Override
         public int compare(NameClassPair p1, NameClassPair p2) {
 
             CacheEntry ce1 = resources.lookupCache(
@@ -2675,18 +2652,21 @@ public class DefaultServlet
      */
     private static class SecureEntityResolver implements EntityResolver2  {
 
+        @Override
         public InputSource resolveEntity(String publicId, String systemId)
                 throws SAXException, IOException {
             throw new SAXException(
                     MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_ENTITY), publicId, systemId));
         }
 
+        @Override
         public InputSource getExternalSubset(String name, String baseURI)
                 throws SAXException, IOException {
             throw new SAXException(
                     MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_SUBSET), name, baseURI));
         }
 
+        @Override
         public InputSource resolveEntity(String name, String publicId,
                 String baseURI, String systemId) throws SAXException,
                 IOException {

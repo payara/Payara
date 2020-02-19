@@ -136,8 +136,10 @@ implements MonitoringDataSource, MonitoringWatchSource {
         if (options != null && options.isEnabled()) {
             try {
                 collector.collect("PhysicalMemoryUsage", (long) stats.usedPercentage());
+            } catch (RuntimeException ex) {
+                throw ex;
             } catch (Exception ex) {
-                throw ex instanceof RuntimeException ? (RuntimeException) ex : new RuntimeException(ex);
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -193,6 +195,8 @@ implements MonitoringDataSource, MonitoringWatchSource {
                     case MEMFREE:
                         otherAvailableMemory += parseMemInfo(parts); 
                         break;
+                    default:
+                        // NOOP
                     }
                 }
             }

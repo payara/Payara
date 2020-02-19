@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
@@ -136,10 +137,10 @@ public class ApplicationParameter implements Serializable {
 
     // --------------------------------------------------------- Public Methods
 
-
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ApplicationParameter[");
@@ -158,7 +159,7 @@ public class ApplicationParameter implements Serializable {
 
     }
 
-
+    @Override
     public boolean equals(Object obj) {
         if (name == null) {
             throw new IllegalStateException();
@@ -173,7 +174,7 @@ public class ApplicationParameter implements Serializable {
 	return this.name.equals(that.name);
     }
 
-
+    @Override
     public int hashCode() {
         if (name == null) {
             throw new IllegalStateException();

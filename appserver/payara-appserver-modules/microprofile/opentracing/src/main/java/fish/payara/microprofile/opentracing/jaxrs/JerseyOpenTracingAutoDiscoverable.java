@@ -39,13 +39,12 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
-import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
-
 import javax.ws.rs.core.FeatureContext;
 
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 
 /**
  * AutoDiscoverable that registers the {@link OpenTracingApplicationEventListener}.
@@ -58,8 +57,8 @@ public class JerseyOpenTracingAutoDiscoverable implements ForcedAutoDiscoverable
     @Override
     public void configure(FeatureContext context) {
         // Only register for application deployments (not the admin console)
-        final ServiceLocator serviceLocator = new PayaraTracingServices().getBasicServiceLocator();
-        if (serviceLocator.getService(Deployment.class).getCurrentDeploymentContext() == null) {
+        final Deployment deployment = new PayaraTracingServices().getDeployment();
+        if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
             return;
         }
 

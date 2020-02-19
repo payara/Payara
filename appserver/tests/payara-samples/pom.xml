@@ -36,6 +36,15 @@
         <module>samples-programmatic</module>
         <module>classpath</module>
     </modules>
+    
+    <profiles>
+    	<profile>
+    		<id>unstable</id>
+    		<modules>
+    			<module>classpath</module>
+    		</modules>
+    	</profile>
+    </profiles>
 
     <repositories>
         <!-- omnifaces jacc-provider is not in any other repository -->

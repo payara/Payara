@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.logger;
 
@@ -91,10 +92,8 @@ import java.util.logging.Logger;
  * @author Craig R. McClanahan
  * @version $Revision: 1.4 $ $Date: 2006/10/07 01:14:23 $
  */
-
-public class LoggerBase
-    implements Lifecycle, org.apache.catalina.Logger
- {
+public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
+    
      protected static final Logger log = LogFacade.getLogger();
      protected static final ResourceBundle rb = log.getResourceBundle();
 
@@ -144,6 +143,7 @@ public class LoggerBase
     /**
      * Return the Container with which this Logger has been associated.
      */
+    @Override
     public Container getContainer() {
 
         return (container);
@@ -156,6 +156,7 @@ public class LoggerBase
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
 
         Container oldContainer = this.container;
@@ -192,10 +193,9 @@ public class LoggerBase
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -203,10 +203,9 @@ public class LoggerBase
      * Return the verbosity level of this logger.  Messages logged with a
      * higher verbosity than this level will be silently ignored.
      */
+     @Override
     public int getVerbosity() {
-
         return (this.verbosity);
-
     }
 
 
@@ -216,10 +215,9 @@ public class LoggerBase
      *
      * @param verbosity The new verbosity level
      */
+    @Override
     public void setVerbosity(int verbosity) {
-
         this.verbosity = verbosity;
-
     }
 
 
@@ -289,10 +287,9 @@ public class LoggerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-
         support.addPropertyChangeListener(listener);
-
     }
 
 
@@ -304,6 +301,7 @@ public class LoggerBase
      * @param msg A <code>String</code> specifying the message to be
      *  written to the log file
      */
+    @Override
     public void log(String msg) {
         log.log(Level.FINE, msg);
     }
@@ -320,10 +318,9 @@ public class LoggerBase
      * @param exception An <code>Exception</code> to be reported
      * @param msg The associated message string
      */
+    @Override
     public void log(Exception exception, String msg) {
-
         log(msg, exception);
-
     }
 
 
@@ -337,6 +334,7 @@ public class LoggerBase
      *  exception
      * @param throwable The <code>Throwable</code> error or exception
      */
+     @Override
     public void log(String msg, Throwable throwable) {
 
         CharArrayWriter buf = new CharArrayWriter();
@@ -366,11 +364,11 @@ public class LoggerBase
      *  written to the log file
      * @param verbosity Verbosity level of this message
      */
+     @Override
     public void log(String message, int verbosity) {
-
-        if (this.verbosity >= verbosity)
+        if (this.verbosity >= verbosity) {
             log(message);
-
+        }
     }
 
 
@@ -384,11 +382,11 @@ public class LoggerBase
      * @param throwable The <code>Throwable</code> error or exception
      * @param verbosity Verbosity level of this message
      */
+     @Override
     public void log(String message, Throwable throwable, int verbosity) {
-
-        if (this.verbosity >= verbosity)
+        if (this.verbosity >= verbosity) {
             log(message, throwable);
-
+        }
     }
 
 
@@ -397,10 +395,9 @@ public class LoggerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-
         support.removePropertyChangeListener(listener);
-
     }
 
     protected ObjectName oname;
@@ -428,7 +425,7 @@ public class LoggerBase
     
     public ObjectName createObjectName() {
         if(log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "createObjectName with " + container);
+            log.log(Level.FINE, "createObjectName with {0}", container);
         }
         // register
         try {
@@ -470,6 +467,7 @@ public class LoggerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -479,6 +477,7 @@ public class LoggerBase
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this LoggerBase.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -489,6 +488,7 @@ public class LoggerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -502,6 +502,7 @@ public class LoggerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
                                                                 
         // register this logger
@@ -509,7 +510,7 @@ public class LoggerBase
             ObjectName oname = createObjectName();   
             try {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Registering logger " + oname);
+                    log.log(Level.FINE, "Registering logger {0}", oname);
                 }
             } catch( Exception ex ) {
                 String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),
@@ -529,6 +530,7 @@ public class LoggerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+     @Override
     public void stop() throws LifecycleException {
 
         // unregister this logger
@@ -536,7 +538,7 @@ public class LoggerBase
             ObjectName oname = createObjectName();   
             try {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Unregistering logger " + oname);
+                    log.log(Level.FINE, "Unregistering logger {0}", oname);
                 }
             } catch( Exception ex ) {
                 String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),

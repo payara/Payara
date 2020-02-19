@@ -154,13 +154,12 @@ public final class ExtensionValidator {
                     continue;
                 }
                 File[] files = targetDir.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    if (files[i].getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
+                for (File file : files) {
+                    if (file.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                         try {
-                            addSystemResource(files[i]);
+                            addSystemResource(file);
                         } catch (IOException e) {
-                            String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
-                                    files[i]);
+                            String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION), file);
                             log.log(Level.SEVERE, msg, e);
                         }
                     }
@@ -223,11 +222,10 @@ public final class ExtensionValidator {
                     manifest, ManifestResource.WAR);
                 appManifestResources.add(mre);
             } 
-        } catch (NamingException nex) {
+        } catch (NamingException | NoSuchElementException nex) {
             // Application does not contain a MANIFEST.MF file
-        } catch (NoSuchElementException nse) {
-            // Application does not contain a MANIFEST.MF file
-        } finally {
+        }
+         finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();

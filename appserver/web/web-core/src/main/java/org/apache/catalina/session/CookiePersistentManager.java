@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.session;
 
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
-import org.apache.catalina.core.StandardContext;
 
 import java.io.*;
 import java.text.MessageFormat;
@@ -127,15 +126,15 @@ public class CookiePersistentManager extends StandardManager {
     @Override
     public Cookie toCookie(Session session) throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append(IS_VALID + session.isValid() + ';');
-        sb.append(LAST_ACCESSED_TIME + session.getLastAccessedTime() + ';');
-        sb.append(MAX_INACTIVE_INTERVAL + session.getMaxInactiveInterval() + ';');
+        sb.append(IS_VALID).append(session.isValid()).append(';');
+        sb.append(LAST_ACCESSED_TIME).append(session.getLastAccessedTime()).append(';');
+        sb.append(MAX_INACTIVE_INTERVAL).append(session.getMaxInactiveInterval()).append(';');
         synchronized (session.getAttributes()) {
             Set<Map.Entry<String, Object>> entries = session.getAttributes().entrySet();
             int numElements = entries.size();
             int i = 0;
             for (Map.Entry<String,Object> entry : entries) {
-                sb.append(entry.getKey() + "=" + entry.getValue());
+                sb.append(entry.getKey()).append("=").append(entry.getValue());
                 if (i++ < numElements-1) {
                     sb.append(',');
                 }

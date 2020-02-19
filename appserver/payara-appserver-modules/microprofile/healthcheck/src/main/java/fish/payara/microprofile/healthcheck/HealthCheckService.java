@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,31 +39,30 @@
  */
 package fish.payara.microprofile.healthcheck;
 
-import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
-import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
-import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import static java.util.logging.Level.WARNING;
-import org.eclipse.microprofile.config.ConfigProvider;
+
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.glassfish.api.StartupRunLevel;
@@ -79,6 +78,11 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import static java.util.logging.Level.WARNING;
+
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
  *
@@ -89,13 +93,16 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class HealthCheckService implements EventListener, ConfigListener {
 
     @Inject
-    Events events;
+    private Events events;
 
     @Inject
-    ApplicationRegistry applicationRegistry;
+    private ApplicationRegistry applicationRegistry;
 
     @Inject
-    MetricsHealthCheckConfiguration configuration;
+    private MetricsHealthCheckConfiguration configuration;
+
+    @Inject
+    private ConfigProviderResolver microConfigResolver;
 
     private boolean backwardCompEnabled;
 
@@ -116,7 +123,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
         events.register(this);
-        this.backwardCompEnabled = ConfigProvider.getConfig()
+        this.backwardCompEnabled = microConfigResolver.getConfig()
                 .getOptionalValue(BACKWARD_COMP_ENABLED_PROPERTY, Boolean.class)
                 .orElse(false);
     }
@@ -162,7 +169,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
      */
     public void registerHealthCheck(String appName, HealthCheck healthCheck, HealthCheckType type) {
         Map<String, Set<HealthCheck>> healthChecks = getHealthChecks(type);
-        
+
          // If we don't already have the app registered, we need to create a new Set for it
         if (!healthChecks.containsKey(appName)) {
             // Sync so that we don't get clashes
@@ -198,7 +205,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
             }
         }
     }
-    
+
     private Map<String, Set<HealthCheck>> getHealthChecks(HealthCheckType type) {
         final Map<String, Set<HealthCheck>> healthChecks;
         if (type == READINESS) {
@@ -210,7 +217,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
         return healthChecks;
     }
-    
+
     private Map<String, Set<HealthCheck>> getCollectiveHealthChecks(HealthCheckType type) {
         final Map<String, Set<HealthCheck>> healthChecks;
         if (type == READINESS) {
@@ -339,7 +346,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
             unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile HealthCheck configuration changed:" + event.getPropertyName()
                     + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
         }
-        
+
         return new UnprocessedChangeEvents(unchangedList);
     }
 

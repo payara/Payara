@@ -363,7 +363,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    actionReport.setMessage(ex.getCause().getMessage());
+                } else {
+                    actionReport.setMessage(ex.getMessage());
+                }
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }

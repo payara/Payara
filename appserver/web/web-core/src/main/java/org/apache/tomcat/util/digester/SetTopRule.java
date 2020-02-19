@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -213,6 +214,7 @@ public class SetTopRule extends Rule {
     /**
      * Process the end of this element.
      */
+    @Override
     public void end() throws Exception {
 
         // Identify the objects to be used
@@ -221,13 +223,10 @@ public class SetTopRule extends Rule {
         
         if (digester.log.isLoggable(Level.FINE)) {
             if (child == null) {
-                digester.log.log(Level.FINE, "[SetTopRule]{" + digester.match +
-                        "} Call [NULL CHILD]." +
-                        methodName + "(" + parent + ")");
+                digester.log.log(Level.FINE, "[SetTopRule]'{'{0}'}' Call [NULL CHILD].{1}({2})", new Object[]{digester.match, methodName, parent});
             } else {
-                digester.log.log(Level.FINE, "[SetTopRule]{" + digester.match +
-                        "} Call " + child.getClass().getName() + "." +
-                        methodName + "(" + parent + ")");
+                digester.log.log(Level.FINE, "[SetTopRule]'{'{0}'}' Call {1}.{2}({3})",
+                        new Object[]{digester.match, child.getClass().getName(), methodName, parent});
             }
         }
 
@@ -241,6 +240,7 @@ public class SetTopRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetTopRule[");

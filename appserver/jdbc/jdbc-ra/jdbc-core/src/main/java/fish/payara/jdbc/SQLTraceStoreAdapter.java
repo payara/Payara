@@ -68,51 +68,49 @@ public class SQLTraceStoreAdapter implements SQLTraceListener {
 
     @Override
     public void sqlTrace(SQLTraceRecord record) {
-        if (record != null) {    
+        if (record != null) {
             switch (record.getMethodName()) {
-
             // these calls capture a query string
             case "nativeSQL":
             case "prepareCall":
             case "prepareStatement":
             case "addBatch":
-            {
-                // acquire the SQL
-                SQLQuery query = currentQuery.get();
-                if (query == null) {
-                    query = new SQLQuery();
-                    currentQuery.set(query);
-                }  
-                if (record.getParams() != null && record.getParams().length > 0)
-                    query.addSQL((String)record.getParams()[0]);
+                aquireSQL(record);
                 break;
-            }
-
             // these can all run the SQL and contain SQL
             case "execute":
             case "executeQuery":
             case "executeUpdate":
-            {
-                // acquire the SQL
-                SQLQuery query = currentQuery.get();
-                if (query == null) {
-                    query = new SQLQuery();
-                    currentQuery.set(query);
-                }
-                // see if we have more SQL
-                if (record.getParams() != null && record.getParams().length > 0) {
-                    // gather the SQL
-                    query.addSQL((String) record.getParams()[0]);
-                }
-                if (store != null) {
-                    store.trace(record, query.getSQL());
-                }
-                // clean the thread local
-                currentQuery.set(null);
+                trace(record);
                 break;
-            }
+            default:
+                // nothing
             }
         }
+    }
+
+    private void trace(SQLTraceRecord record) {
+        SQLQuery query = aquireSQL(record);
+        if (store != null) {
+            store.trace(record, query.getSQL());
+        }
+        // clean the thread local
+        currentQuery.set(null);
+    }
+
+    private static SQLQuery aquireSQL(SQLTraceRecord record) {
+        // acquire the SQL
+        SQLQuery query = currentQuery.get();
+        if (query == null) {
+            query = new SQLQuery();
+            currentQuery.set(query);
+        }
+        // see if we have more SQL
+        if (record.getParams() != null && record.getParams().length > 0) {
+            // gather the SQL
+            query.addSQL((String)record.getParams()[0]);
+        }
+        return query;
     }
 
 }

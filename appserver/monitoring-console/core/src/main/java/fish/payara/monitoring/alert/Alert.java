@@ -84,6 +84,10 @@ public final class Alert implements Iterable<Alert.Frame> {
         public boolean isLessSevereThan(Level other) {
             return ordinal() > other.ordinal();
         }
+
+        public static Level parse(String level) {
+            return valueOf(level.toUpperCase());
+        }
     }
 
     public static final class Frame implements Iterable<SeriesDataset> {

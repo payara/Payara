@@ -371,7 +371,7 @@ public class ServerOperations {
                 continue;
             }
             
-            if (line.endsWith(" running")) {
+            if (line.contains(" running")) {
                 domain = line.substring(0, line.lastIndexOf(" running"));
                 break;
             }

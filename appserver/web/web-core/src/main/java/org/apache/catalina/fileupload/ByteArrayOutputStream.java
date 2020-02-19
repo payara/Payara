@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.fileupload;
  
@@ -182,6 +183,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param off The start offset
      * @param len The number of bytes to write
      */
+    @Override
     public void write(byte[] b, int off, int len) {
         if ((off < 0) 
                 || (off > b.length) 
@@ -213,6 +215,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * Write a byte to byte array.
      * @param b the byte to write
      */
+    @Override
     public synchronized void write(int b) {
         int inBufferPos = count - filledBufferSum;
         if (inBufferPos == currentBuffer.length) {
@@ -267,6 +270,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @throws IOException never (this method should not declare this exception
      * but it has to now due to backwards compatability)
      */
+    @Override
     public void close() throws IOException {
         //nop
     }
@@ -330,10 +334,11 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
-     * Gets the curent contents of this byte stream as a string.
+     * Gets the current contents of this byte stream as a string.
      * @return the contents of the byte array as a String
      * @see java.io.ByteArrayOutputStream#toString()
      */
+    @Override
     public String toString() {
         return new String(toByteArray(), Charset.defaultCharset());
     }

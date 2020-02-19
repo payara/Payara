@@ -39,11 +39,21 @@
  */
 package fish.payara.monitoring.alert;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import fish.payara.monitoring.alert.Alert.Level;
 import fish.payara.monitoring.model.SeriesLookup;
 import fish.payara.monitoring.model.Metric;
 import fish.payara.monitoring.model.SeriesDataset;
 
+/**
+ * The {@link Circumstance} in context of {@link Alert}s describes under what {@link Condition}s a certain
+ * {@link Alert.Level} {@link #starts(SeriesDataset, SeriesLookup)} and {@link #stops(SeriesDataset)}.
+ *
+ * @author Jan Bernitt
+ */
 public final class Circumstance {
 
     /**
@@ -136,5 +146,31 @@ public final class Circumstance {
             str.append(" until ").append(stop.toString());
         }
         return str.toString();
+    }
+
+    public JsonValue toJSON() {
+        if (isUnspecified()) {
+            return JsonValue.NULL;
+        }
+        return Json.createObjectBuilder()
+                .add("level", level.name().toLowerCase())
+                .add("start", start.toJSON())
+                .add("stop", stop.toJSON())
+                .add("suppress", suppress.toJSON())
+                .add("suppressing", suppressing == null ? JsonValue.NULL : suppressing.toJSON())
+                .build();
+    }
+
+    public static Circumstance fromJson(JsonValue value) {
+        if (value == JsonValue.NULL || value == null) {
+            return Circumstance.UNSPECIFIED;
+        }
+        JsonObject obj = value.asJsonObject();
+        return new Circumstance(
+                Level.parse(obj.getString("level")), 
+                Condition.fromJSON(obj.get("start")),
+                Condition.fromJSON(obj.get("stop")),
+                Metric.fromJSON(obj.get("suppressing")),
+                Condition.fromJSON(obj.get("suppress")));
     }
 }

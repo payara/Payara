@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -109,32 +110,38 @@ public class StandardSessionFacade
     // ---------------------------------------------------- HttpSession Methods
 
 
+    @Override
     public long getCreationTime() {
         return session.getCreationTime();
     }
 
 
+    @Override
     public String getId() {
         return session.getId();
     }
 
 
+    @Override
     public long getLastAccessedTime() {
         return session.getLastAccessedTime();
     }
 
 
+    @Override
     public ServletContext getServletContext() {
         // FIXME : Facade this object ?
         return session.getServletContext();
     }
 
 
+    @Override
     public void setMaxInactiveInterval(int interval) {
         session.setMaxInactiveInterval(interval);
     }
 
 
+    @Override
     public int getMaxInactiveInterval() {
         return session.getMaxInactiveInterval();
     }
@@ -143,11 +150,13 @@ public class StandardSessionFacade
     /**
      * @deprecated
      */
+    @Override
     public HttpSessionContext getSessionContext() {
         return session.getSessionContext();
     }
 
 
+    @Override
     public Object getAttribute(String name) {
         return session.getAttribute(name);
     }
@@ -156,6 +165,7 @@ public class StandardSessionFacade
     /**
      * @deprecated
      */
+    @Override
     public Object getValue(String name) {
         return session.getAttribute(name);
     }
@@ -164,16 +174,19 @@ public class StandardSessionFacade
     /**
      * @deprecated
      */
+    @Override
     public Enumeration<String> getAttributeNames() {
         return session.getAttributeNames();
     }
 
 
+    @Override
     public String[] getValueNames() {
         return session.getValueNames();
     }
 
 
+    @Override
     public void setAttribute(String name, Object value) {
         session.setAttribute(name, value);
     }
@@ -182,11 +195,13 @@ public class StandardSessionFacade
     /**
      * @deprecated
      */
+    @Override
     public void putValue(String name, Object value) {
         session.setAttribute(name, value);
     }
 
 
+    @Override
     public void removeAttribute(String name) {
         session.removeAttribute(name);
     }
@@ -195,16 +210,19 @@ public class StandardSessionFacade
     /**
      * @deprecated
      */
+    @Override
     public void removeValue(String name) {
         session.removeAttribute(name);
     }
 
 
+    @Override
     public void invalidate() {
         session.invalidate();
     }
 
 
+    @Override
     public boolean isNew() {
         return session.isNew();
     }
