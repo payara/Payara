@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.samples</groupId>
@@ -9,25 +10,30 @@
         <version>5.202-SNAPSHOT</version>
     </parent>
 
-    <artifactId>datagrid-encryption-parent</artifactId>
-    <packaging>pom</packaging>
+	<artifactId>datagrid-encryption-parent</artifactId>
+	<packaging>pom</packaging>
 
-    <name>Payara Samples - Datagrid Encryption Parent</name>
+	<name>Payara Samples - Datagrid Encryption Parent</name>
 
-    <modules>
-        <module>sfsb-passivation</module>
-    </modules>
+	<profiles>
+		<profile>
+			<id>unstable</id>
+			<modules>
+				<module>sfsb-passivation</module>
+			</modules>
+		</profile>
+	</profiles>
 
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>jakarta.platform</groupId>
+			<artifactId>jakarta.jakartaee-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>fish.payara.samples</groupId>
+			<artifactId>test-utils</artifactId>
+		</dependency>
+	</dependencies>
 
 </project>
