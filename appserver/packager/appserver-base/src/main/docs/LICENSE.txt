@@ -36,7 +36,7 @@ IT IS HEREBY AGREED
 
 3.1 You acknowledge that all intellectual property rights in the Software throughout the world belong to us or our licensors, that rights in the Software are licensed (not sold) to you, and that you have no intellectual property rights in, or to, the Software other than the right to use the Software in accordance with the terms of this Licence.
 
-3.2 Certain components of the Software are made available under open source licences in source code form. You can find out more about the components and the applicable licences [here]. Nothing in this Licence is intended to derogate from the rights granted in respect of those components under the applicable licences.
+3.2 Certain components of the Software are made available under open source licences in source code form. You can find out more about the components and the applicable licences in glassfish/legal/3RD-PARTY-LICENSES.txt. Nothing in this Licence is intended to derogate from the rights granted in respect of those components under the applicable licences.
 
 3.3 The rights granted by an applicable open source licence (including but not limited to any version of the Common Distribution and Development License (CDDL)) in the source code of any component referred to in clause 3.2 above do not apply to the object code form of the Software licensed to you under this Licence.
 
