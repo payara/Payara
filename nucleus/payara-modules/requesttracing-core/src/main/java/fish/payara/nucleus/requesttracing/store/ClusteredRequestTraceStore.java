@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
 /**
@@ -55,13 +56,13 @@ import java.util.stream.Collectors;
 public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, Serializable {
 
     private final Map<UUID, RequestTrace> store;
-    private int maxStoreSize;
+    private IntSupplier maxStoreSize;
 
     private final TraceStorageStrategy strategy;
 
     ClusteredRequestTraceStore(Map<UUID, RequestTrace> store, TraceStorageStrategy strategy) {
         this.store = store;
-        this.maxStoreSize = store.size();
+        this.maxStoreSize = () -> store.size();
         this.strategy = strategy;
     }
 
@@ -73,7 +74,7 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
     @Override
     public RequestTrace addTrace(RequestTrace trace, RequestTrace traceToRemove) {
         store.put(trace.getTraceId(), trace);
-        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize, traceToRemove);
+        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize.getAsInt(), traceToRemove);
         if (traceToRemove == null) {
             return null;
         }
@@ -92,16 +93,17 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
     }
 
     @Override
-    public void setSize(int maxSize) {
-        while (store.size() > maxSize) {
-            store.remove(strategy.getTraceForRemoval(getTraces(), maxSize, null).getTraceId());
+    public void setSize(IntSupplier maxSize) {
+        int currentMaxSize = maxSize.getAsInt();
+        while (store.size() > currentMaxSize) {
+            store.remove(strategy.getTraceForRemoval(getTraces(), currentMaxSize, null).getTraceId());
         }
         this.maxStoreSize = maxSize;
     }
 
     @Override
     public int getStoreSize() {
-        return this.maxStoreSize;
+        return maxStoreSize.getAsInt();
     }
 
     @Override
@@ -111,4 +113,8 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
         return traces;
     }
 
+    @Override
+    public boolean isShared() {
+        return true;
+    }
 }
