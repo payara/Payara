@@ -54,6 +54,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -98,6 +99,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     }
     
     @Test
+    @Ignore("QACI-95. Ignore until problem solved")
     // Runs on Server
     public void test2ServerCheck() throws MalformedURLException {
         assertTrue(isTraceMonitorTriggered());

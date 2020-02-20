@@ -58,6 +58,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE;
@@ -139,6 +140,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
+    @Ignore("QACI-95. Ignore until problem solved")
     public void callRemoteBeanWithCorrectCredentials() throws NamingException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
@@ -149,6 +151,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
+    @Ignore("QACI-95. Ignore until problem solved")
     public void callRemoteBeanWithIncorrectCredentials() throws NamingException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
