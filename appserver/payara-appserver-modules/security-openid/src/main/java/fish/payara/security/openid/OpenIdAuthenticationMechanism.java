@@ -56,12 +56,10 @@ import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
 import fish.payara.security.openid.domain.RefreshTokenImpl;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
-import java.security.Principal;
-import java.util.Date;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-
 import java.util.Optional;
 import java.util.logging.Level;
 import static java.util.logging.Level.WARNING;
@@ -72,8 +70,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
@@ -86,6 +84,7 @@ import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static org.glassfish.common.util.StringHelper.isEmpty;
@@ -149,6 +148,11 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
 
+    private static class Lock implements Serializable {
+    }
+
+    private static final String SESSION_LOCK_NAME = OpenIdAuthenticationMechanism.class.getName();
+
     /**
      * Creates an {@link OpenIdAuthenticationMechanism}.
      * <p>
@@ -182,21 +186,18 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         this.configuration = configurationController.buildConfig(definition);
         return this;
     }
-    
+
     @Override
     public AuthenticationStatus validateRequest(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        Principal userPrincipal = request.getUserPrincipal();
-
-        if (isNull(userPrincipal)) {
+        if (isNull(request.getUserPrincipal())) {
             LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
             // User is not authenticated
             // Perform steps (1) to (6)
             return this.authenticate(request, response, httpContext);
-
         } else {
             // User has been authenticated in request before
 
@@ -226,7 +227,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
-        
+
         if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
             // (1) The End-User is not already authenticated
             return authenticationController.authenticateUser(configuration, httpContext);
@@ -258,7 +259,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * Authorization Code Flow must be validated and exchanged for an ID Token,
      * an Access Token and optionally a Refresh Token directly.
      *
-     * @param httpContext the {@link HttpMessageContext} to validate authorization code from
+     * @param httpContext the {@link HttpMessageContext} to validate
+     * authorization code from
      * @return the authentication status.
      */
     private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
@@ -281,7 +283,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            
+
             // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
             httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
             return httpContext.notifyContainerAboutLogin(validationResult);
@@ -293,34 +295,38 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
     }
-    
+
     private AuthenticationStatus reAuthenticate(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
         if (this.context.getAccessToken().isExpired()) {
-            // Access Token expired
-            LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+            synchronized (this.getSessionLock(request)) {
+                if (this.context.getAccessToken().isExpired()) {
+                    // Access Token expired
+                    LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
 
-            AuthenticationStatus refreshStatus = this.context.getRefreshToken()
-                    .map(rt -> this.refreshTokens(httpContext, rt))
-                    .orElse(AuthenticationStatus.SEND_FAILURE);
+                    AuthenticationStatus refreshStatus = this.context.getRefreshToken()
+                            .map(rt -> this.refreshTokens(httpContext, rt))
+                            .orElse(AuthenticationStatus.SEND_FAILURE);
 
-            if (refreshStatus != AuthenticationStatus.SUCCESS) {
-                LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
-                try {
-                    request.logout();
-                } catch (ServletException ex) {
-                    LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                    if (refreshStatus != AuthenticationStatus.SUCCESS) {
+                        LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
+                        try {
+                            request.logout();
+                        } catch (ServletException ex) {
+                            LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                        }
+                        // Redirect user to OpenID connect provider for re-authentication
+                        return authenticationController.authenticateUser(configuration, httpContext);
+                    }
                 }
-                // Redirect user to OpenID connect provider for re-authentication
-                return authenticationController.authenticateUser(configuration, httpContext);
+
             }
         }
 
         return SUCCESS;
-
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
@@ -332,8 +338,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
-            httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
+
+            // Do not register session, as this will invalidate the currently active session (destroys session beans and removes attributes set in session)!
+            // httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
             // Token Request is invalid (refresh token invalid or expired)
@@ -362,6 +369,22 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         if (nonNull(expiresIn)) {
             context.setExpiresIn(Integer.parseInt(expiresIn));
         }
+    }
+
+    private Object getSessionLock(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Object lock = session.getAttribute(SESSION_LOCK_NAME);
+        if (isNull(lock)) {
+            synchronized (OpenIdAuthenticationMechanism.class) {
+                lock = session.getAttribute(SESSION_LOCK_NAME);
+                if (isNull(lock)) {
+                    lock = new Lock();
+                    session.setAttribute(SESSION_LOCK_NAME, lock);
+                }
+
+            }
+        }
+        return lock;
     }
 
 }
