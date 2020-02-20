@@ -54,6 +54,7 @@ public class AutoNameInstancesTest extends AsadminTest {
 
     private static final String domainNameProperty = "payara.domain.name";
 
+
     @BeforeClass
     public static void setup() {
         String domainName = ServerOperations.getPayaraDomainFromServer();
