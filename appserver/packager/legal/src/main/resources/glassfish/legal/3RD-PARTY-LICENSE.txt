@@ -17,8 +17,8 @@ The following software (or certain identified files distributed with the
 software) may be included in this product. Unless otherwise specified,
 the software identified in this file is licensed under the licenses
 described below. The disclaimers and copyright notices provided are
-based on information made available to Oracle by the third party
-licensors listed.
+based on information made available to Payara Foundation by the third
+party licensors listed.
 
 ****************************************
 
