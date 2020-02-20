@@ -64,9 +64,6 @@
         <fileSet>
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
-            <excludes>
-                <exclude>legal/3RD-PARTY-LICENSE.txt</exclude>
-            </excludes>
         </fileSet>        
         <fileSet>
             <directory>${temp.dir}/${install.dir.name}</directory>
