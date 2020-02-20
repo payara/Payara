@@ -264,9 +264,9 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
         CommandResult result = asadmin("set-healthcheck-service-configuration", 
                 "--service", "ht",
                 "--enabled", "true",
-                "--hogging-threads-retry-count", "0");
+                "--hogging-threads-retry-count", "-1");
         assertUnacceptableParameter("hogginThreadsRetryCount", result);
-        assertContains("Hogging threads retry count must be 1 or more", result.getOutput());
+        assertContains("Hogging threads retry count must be zero or more", result.getOutput());
     }
 
     @Test
