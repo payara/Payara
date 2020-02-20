@@ -44,13 +44,13 @@ import static java.util.Collections.emptyList;
 import static org.jvnet.hk2.config.Dom.unwrap;
 
 import java.beans.PropertyChangeEvent;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -65,8 +65,14 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.InternalSystemAdministrator;
+import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -97,12 +103,21 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
  * This implementation of the {@link MonitoringConsoleRuntime} connects the Payara independent parts of the monitoring
  * console with the Payara server.
  * 
+ * The most complicated aspect about the implementation is the way it is bootstrapped. By implementing
+ * {@link ApplicationLifecycleInterceptor} it forces the creation of an instance of this {@link Service} even though it
+ * is not otherwise referenced within the HK2 context. As this happens fairly early in the bootstrapping it then
+ * registers itself as an {@link EventListener} so that it can run its actual {@link #init()} bootstrapping as soon as
+ * the {@link EventTypes#SERVER_READY} is received. This makes sure the bootstrapping of the console runtime does not
+ * alter the order of services created by starting to collect data from services that implement
+ * {@link MonitoringDataSource} or {@link MonitoringWatchSource}.
+ * 
  * @author Jan Bernitt
  * @since 5.201
  */
 @Service
 public class MonitoringConsoleRuntimeImpl
-        implements ConfigListener, MonitoringConsoleRuntime, MonitoringConsoleWatchConfig, GroupDataRepository {
+        implements ConfigListener, ApplicationLifecycleInterceptor, EventListener,
+        MonitoringConsoleRuntime, MonitoringConsoleWatchConfig, GroupDataRepository {
 
     private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
 
@@ -131,14 +146,32 @@ public class MonitoringConsoleRuntimeImpl
     private RequestTracingService requestTracingService;
     @Inject
     private ServiceLocator serviceLocator;
+    @Inject
+    private Events events;
 
-    private ITopic<?> exchange;
+    private final AtomicBoolean initialised = new AtomicBoolean();
+    private ITopic<byte[]> exchange;
     private MonitoringConsoleConfiguration config;
     private MonitoringConsole console;
 
     @PostConstruct
+    public void postConstruct() {
+        events.register(this);
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            init();
+        }
+    }
+
     public void init() {
+        if (!initialised.compareAndSet(false, true) ) {
+            return;
+        }
         try {
+            LOGGER.info("Bootstrapping Monitoring Console Runtime");
             boolean isDas = serverEnv.isDas();
             config = domain.getExtensionByType(MonitoringConsoleConfiguration.class);
             String instanceName = "server"; // default
@@ -183,22 +216,21 @@ public class MonitoringConsoleRuntimeImpl
         return executor.scheduleAtFixedRate(task, initialDelay, period, unit);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends Serializable> boolean send(Class<T> type, T snapshot) {
+    public boolean send(byte[] snapshot) {
         if (exchange == null) {
             return false;
         }
-        ((ITopic<T>) exchange).publish(snapshot);
+        exchange.publish(snapshot);
         return true;
     }
 
     @Override
-    public <T extends Serializable> boolean receive(Class<T> type, Consumer<T> receiver) {
+    public boolean receive(Consumer<byte[]> receiver) {
         if (exchange == null) {
             return false;
         }
-        exchange.addMessageListener(msg -> receiver.accept(type.cast(msg.getMessageObject())));
+        exchange.addMessageListener(msg -> receiver.accept(msg.getMessageObject()));
         return true;
     }
 
@@ -288,5 +320,17 @@ public class MonitoringConsoleRuntimeImpl
             }
         }
         return matches;
+    }
+
+    @Override
+    public void before(Phase phase, ExtendedDeploymentContext context) {
+        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup 
+        // even through it is not needed by any other service but we know all ApplicationLifecycleInterceptor are resolved
+    }
+
+    @Override
+    public void after(Phase phase, ExtendedDeploymentContext context) {
+        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup 
+        // even through it is not needed by any other service but we know all ApplicationLifecycleInterceptor are resolved
     }
 }
