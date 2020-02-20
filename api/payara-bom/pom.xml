@@ -540,7 +540,7 @@
             <dependency>
                 <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
                 <artifactId>org.osgi.dto</artifactId>
-                <version>1.0.0</version>
+                <version>1.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
