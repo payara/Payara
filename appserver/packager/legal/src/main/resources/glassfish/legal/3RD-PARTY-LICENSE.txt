@@ -1,4 +1,4 @@
-GlassFish Server_4.0_THIRDPARTYLICENSEREADME.txt
+Payara Platform 3rd Party Licenses
 
 DO NOT TRANSLATE OR LOCALIZE.
 
