@@ -37,49 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.rest.management;
+package fish.payara.samples.rest.management.extension;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 
-import javax.ws.rs.client.WebTarget;
-
-import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.impl.enricher.resource.ContainerURLResourceProvider;
+import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.jboss.arquillian.test.spi.event.suite.AfterClass;
+import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.PayaraTestShrinkWrap;
-import fish.payara.samples.ServerOperations;
-import fish.payara.samples.rest.management.util.RestManagementClientBuilder;
+public class TemporaryInstanceProvider extends ContainerURLResourceProvider {
 
-@RunWith(PayaraArquillianTestRunner.class)
-@NotMicroCompatible
-public abstract class RestManagementTest {
+    private static TemporaryInstance instance;
 
-    protected WebTarget target;
-
-    @ArquillianResource
-    private URL baseUrl;
-
-    @Deployment(testable = false)
-    public static Archive<?> deploy() {
-        return PayaraTestShrinkWrap.getWebArchive()
-            .addClass(RestManagementTest.class);
+    @Override
+    public boolean canProvide(Class<?> type) {
+        return type.isAssignableFrom(TemporaryInstance.class);
     }
 
-    @Before
-    public final void setUpFields() throws URISyntaxException {
-        URI adminBaseUri;
-        try {
-            adminBaseUri = ServerOperations.toAdminPort(baseUrl).toURI();
-        } catch (Exception ex) {
-            throw new IllegalStateException("Unable to find admin base URL. Should this profile have an admin console?", ex);
+    @Override
+    public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
+        if (!instance.isInitialized()) {
+            instance.initialise((URL) super.lookup(resource, qualifiers));
         }
-        target = RestManagementClientBuilder.newClient(adminBaseUri);
+        return instance;
+    }
+
+    public void beforeClassEvent(@Observes BeforeClass event) {
+        instance = new TemporaryInstance();
+    }
+
+    public void afterClassEvent(@Observes AfterClass event) {
+        if (instance.isCreated()) {
+            instance.destroy();
+        }
+        instance = null;
     }
 }

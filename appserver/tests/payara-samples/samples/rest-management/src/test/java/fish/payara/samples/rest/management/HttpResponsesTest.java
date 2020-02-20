@@ -41,16 +41,11 @@ package fish.payara.samples.rest.management;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-
 import org.junit.Test;
-
-import fish.payara.samples.NotMicroCompatible;
 
 /**
  * Test the REST management interface for it's basic HTTP responses
  */
-@NotMicroCompatible
 public class HttpResponsesTest extends RestManagementTest {
 
     /**
@@ -59,7 +54,11 @@ public class HttpResponsesTest extends RestManagementTest {
      */
     @Test
     public void when_DELETE_non_existent_resource_expect_404() {
-        int status = request(HttpMethod.DELETE, "servers/server/server/application-ref/non-existent-application-ref").getStatus();
+        int status = target
+                .path("servers/server/server/application-ref/non-existent-application-ref")
+                .request()
+                .delete()
+                .getStatus();
         assertEquals("A non-existent resource should return a 404.", 404, status);
     }
 
