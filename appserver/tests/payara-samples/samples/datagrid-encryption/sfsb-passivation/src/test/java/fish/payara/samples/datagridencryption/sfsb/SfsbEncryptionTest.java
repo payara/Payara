@@ -48,6 +48,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,6 +84,7 @@ public class SfsbEncryptionTest {
     }
 
     @Test
+    @Ignore("QACI-95. Ignore until problem solved")
     public void testStateRestoredAfterPassivation() {
         Client client = ClientBuilder.newClient();
         WebTarget endpoint1 = client.target(url + "TestEjb");

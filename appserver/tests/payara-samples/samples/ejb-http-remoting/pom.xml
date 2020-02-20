@@ -62,6 +62,15 @@
     <artifactId>ejb-http-remoting</artifactId>
     <name>Payara Samples - EJB http remoting</name>
     <packaging>pom</packaging>
+    
+    <profiles>
+        <profile>
+            <id>unstable</id>
+            <modules>
+                <module>client</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

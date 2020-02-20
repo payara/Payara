@@ -15,6 +15,10 @@
 
 	<name>Payara Samples - Datagrid Encryption Parent</name>
 
+    <modules>
+        <module>sfsb-passivation</module>
+    </modules>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.platform</groupId>
