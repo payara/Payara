@@ -167,8 +167,9 @@
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
-
-        <mimepull.version>1.9.11</mimepull.version>
+      
+        <mimepull.version>1.9.12</mimepull.version>
+        <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
         <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
@@ -199,7 +200,7 @@
 
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
@@ -970,13 +971,13 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
