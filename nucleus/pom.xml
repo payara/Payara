@@ -168,7 +168,7 @@
 
         <commons-io.version>2.6</commons-io.version>
 
-        <mimepull.version>1.9.11</mimepull.version>
+        <mimepull.version>1.9.12</mimepull.version>
         <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
