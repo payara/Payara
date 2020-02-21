@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import javax.ws.rs.ApplicationPath;
@@ -69,7 +70,6 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -117,25 +117,7 @@ public class OpenApiWalker implements ApiWalker {
 
     public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses) {
         this.api = api;
-        this.classes = new TreeSet<>((class1, class2) -> {
-            if (class1.equals(class2)) {
-                return 0;
-            }
-            // Subclasses first
-            if (class1.isAssignableFrom(class2)) {
-                return -1;
-            }
-            // Non contextual objects at the start
-            if (!class1.isAnnotationPresent(ApplicationPath.class) && !class1.isAnnotationPresent(Path.class)) {
-                return -1;
-            }
-            // Followed by applications
-            if (class1.isAnnotationPresent(ApplicationPath.class)) {
-                return -1;
-            }
-            // Followed by everything else
-            return 1;
-        });
+        this.classes = new TreeSet<>(Comparator.comparing(Class::getName, String::compareTo));
         this.classes.addAll(allowedClasses);
         addInnerClasses(); // must happen before generating the resource mapping
         this.resourceMapping = generateResourceMapping(classes);
