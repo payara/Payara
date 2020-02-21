@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
@@ -51,6 +51,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.api.ActionReport;
@@ -151,6 +152,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     @Inject
     Events events;
 
+    @Inject
+    private HotDeployService hotDeployService;
+
     private ActionReport report;
     private Logger logger;
     private List<String> matchedVersions;
@@ -243,8 +247,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     @Override
     public void execute(AdminCommandContext context) {
 
-
-
         // for each matched version
         for (String appName : matchedVersions) {
             if (target == null) {
@@ -333,13 +335,17 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 return;
             }
 
+            hotDeployService.removeApplicationState(sourceFile);
+
             // now start the normal undeploying
             this.name = appName;
             this._type = application.archiveType();
 
             ExtendedDeploymentContext deploymentContext = null;
             try {
-                deploymentContext = deployment.getBuilder(logger, this, report).source(source).build();
+                deploymentContext = deployment.getBuilder(logger, this, report)
+                        .source(source)
+                        .build();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Cannot create context for undeployment ", e);
                 report.setMessage(localStrings.getLocalString("undeploy.contextcreation.failed","Cannot create context for undeployment : {0} ", e.getMessage()));

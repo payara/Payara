@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 /*
  * DeploymentProperties.java
@@ -556,8 +556,6 @@ public class DeploymentProperties extends Properties {
 
     // internal use - from autodeployer
     public static final String LOG_REPORTED_ERRORS = "logReportedErrors";
-
-    public static final String HOT_DEPLOY = "hotDeploy";
 
     public static final String KEEP_SESSIONS = "keepSessions";
 

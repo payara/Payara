@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package org.glassfish.apf.impl;
 
+import fish.payara.nucleus.hotdeploy.AnnotationProcessorState;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.HashMap;
@@ -55,6 +57,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.glassfish.apf.ProcessingContext;
@@ -69,6 +73,9 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.Scanner;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.hk2.classmodel.reflect.Type;
 
 
 /**
@@ -130,15 +137,34 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     public ProcessingResult process(ProcessingContext ctx)
         throws AnnotationProcessorException
     {
+        ApplicationState state = ctx.getArchive().getExtraData(ApplicationState.class);
+        Optional<AnnotationProcessorState> processorState = Optional.empty();
+        if(state != null) {
+            processorState = state.getProcessingState(ctx);
+        }
         
         Scanner<Object> scanner = ctx.getProcessingInput();
-        ProcessingResultImpl result = new ProcessingResultImpl();
+        ProcessingResultImpl result;
         errorCount=0;
-        
-        for (Class c : scanner.getElements()) {
-            
-            result.add(process(ctx, c));          
+
+        if (state == null) {
+            result = new ProcessingResultImpl();
+            for (Class c : scanner.getElements()) {
+                result.add(process(ctx, c));
+            }
+        } else if (state.isInactive()) {
+            result = new ProcessingResultImpl();
+            for (Class c : scanner.getElements()) {
+                result.add(process(ctx, c));
+            }
+            processorState.ifPresent(s -> s.setProcessingResult(result));
+        } else {
+            result = processorState.get().getProcessingResult(ProcessingResultImpl.class);
+            for (Class modifiedClass : scanner.getElements(state.getClassesChanged())) {
+                result.add(process(ctx, modifiedClass));
+            }
         }
+
         return result;
     }
     

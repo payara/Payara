@@ -63,10 +63,11 @@ public interface InstrumentableClassLoader {
     public ClassLoader copy();    
 
     /**
-     * Add a new ClassFileTransformer to this class loader. This transfomer should be called for
-     * each class loading event.
+     * Add a new ClassFileTransformer to this class loader. This transformer
+     * should be called for each class loading event.
      *
-     * @param transformer new class file transformer to do byte code enhancement.
+     * @param transformer new class file transformer to do byte code
+     * enhancement.
      */
     public void addTransformer(ClassFileTransformer transformer);
 

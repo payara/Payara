@@ -38,10 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.v3.server;
 
+import fish.payara.nucleus.hotdeploy.HotDeployService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -107,7 +109,6 @@ import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -137,8 +138,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -180,7 +187,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Inject
     ServerEnvironmentImpl env;
 
-    @Inject @Optional
+    @Inject @org.jvnet.hk2.annotations.Optional
     VirtualizationEnv virtEnv;
 
     @Inject
@@ -194,6 +201,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     PayaraExecutorService executorService;
+
+    @Inject
+    private HotDeployService hotDeployService;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -277,6 +287,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = commandParams.name();
         ApplicationInfo appInfo;
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(context);
 
         final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
         ProgressTracker tracker = new ProgressTracker() {
@@ -398,13 +409,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // is that some container do not support to be restarted.
             if (sniffers != null && logger.isLoggable(Level.FINE)) {
                 for (Sniffer sniffer : sniffers) {
-                    logger.fine("Before Sorting" + sniffer.getModuleType());
+                    logger.log(FINE, "Before Sorting{0}", sniffer.getModuleType());
                 }
             }
 
             span.start(DeploymentTracing.AppStage.PREPARE, "Sniffer");
 
             sniffers = getSniffers(handler, sniffers, context);
+            final Collection<? extends Sniffer> selectedSniffers = sniffers;
+            appState.ifPresent(s -> s.setSniffers(selectedSniffers));
 
             span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
 
@@ -420,8 +433,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             span.start(DeploymentTracing.AppStage.PREPARE, "Container");
 
-            List<EngineInfo> sortedEngineInfos
-                    = setupContainerInfos(handler, sniffers, context);
+            final List<EngineInfo> sortedEngineInfos;
+            if (appState.map(ApplicationState::getEngineInfos).isPresent()) {
+                sortedEngineInfos = appState.get().getEngineInfos();
+                loadDeployers(
+                        sortedEngineInfos.stream()
+                                .collect(toMap(EngineInfo::getDeployer, Function.identity())),
+                        context
+                );
+            } else {
+                sortedEngineInfos = setupContainerInfos(handler, sniffers, context);
+                appState.ifPresent(s -> s.setEngineInfos(sortedEngineInfos));
+            }
 
             // a bit more is happening here, but I cannot quite describe it yet
             span.start(DeploymentTracing.AppStage.CREATE_CLASSLOADER);
@@ -433,7 +456,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             if (logger.isLoggable(Level.FINE)) {
                 for (EngineInfo info : sortedEngineInfos) {
-                    logger.log(Level.FINE, "After Sorting {0}", info.getSniffer().getModuleType());
+                    logger.log(FINE, "After Sorting {0}", info.getSniffer().getModuleType());
                 }
             }
 
@@ -456,7 +479,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } catch (Throwable interceptorException) {
                 report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
                 report.setFailureCause(interceptorException);
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
                 tracker.actOn(logger);
                 return null;
             }
@@ -470,9 +493,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // this is a first time deployment as opposed as load following an unload event,
             // we need to create the application info
             // todo : we should come up with a general Composite API solution
-            ModuleInfo moduleInfo = null;
+            final ModuleInfo moduleInfo;
             try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.PREPARE, "Module")){
-                moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+                if (appState.map(ApplicationState::getModuleInfo).isPresent()) {
+                    moduleInfo = appState.get().getModuleInfo();
+                    moduleInfo.reset();
+                } else {
+                    moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+                    appState.ifPresent(s -> s.setModuleInfo(moduleInfo));
+                }
                 // Now that the prepare phase is done, any artifacts
                 // should be available.  Go ahead and create the
                 // downloadable client JAR.  We want to do this now, or
@@ -484,7 +513,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } catch (Throwable prepareException) {
                 report.failure(logger, "Exception while preparing the app", null);
                 report.setFailureCause(prepareException);
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
                 tracker.actOn(logger);
                 return null;
             }
@@ -493,14 +522,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             // the deployer did not take care of populating the application info, this
             // is not a composite module.
-            appInfo = context.getModuleMetaData(ApplicationInfo.class);
-            if (appInfo == null) {
-                appInfo = new ApplicationInfo(events, context.getSource(), appName);
+            if (appState.map(ApplicationState::getApplicationInfo).isPresent()) {
+                appInfo = appState.get().getApplicationInfo();
+                appInfo.reset(context.getSource());
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
+                }
+            } else if ((appInfo = context.getModuleMetaData(ApplicationInfo.class)) == null) {
+                ApplicationInfo applicationInfo = new ApplicationInfo(events, context.getSource(), appName);
+                appInfo = applicationInfo;
                 appInfo.addModule(moduleInfo);
-
-                for (Object m : context.getModuleMetadata()) {
-                    moduleInfo.addMetaData(m);
-                    appInfo.addMetaData(m);
+                appState.ifPresent(s -> s.setApplicationInfo(applicationInfo));
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
                 }
             } else {
                 for (EngineRef ref : moduleInfo.getEngineRefs()) {
@@ -522,6 +558,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.setPhase(DeploymentContextImpl.Phase.PREPARED);
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             appInfo.setAppClassLoader(context.getClassLoader());
+            appState.ifPresent(s -> s.setApplicationClassLoader(context.getClassLoader()));
             events.send(new Event<>(Deployment.APPLICATION_PREPARED, context), false);
 
             if (loadOnCurrentInstance(context)) {
@@ -531,7 +568,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     appInfo.load(context, tracker);
                     notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
                 } catch (Throwable loadException) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                    logger.log(SEVERE, KernelLoggerInfo.lifecycleException, loadException);
                     report.failure(logger, "Exception while loading the app", null);
                     report.setFailureCause(loadException);
                     tracker.actOn(logger);
@@ -547,7 +584,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName),
                 null);
             report.setFailureCause(e);
-            logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, e);
+            logger.log(SEVERE, KernelLoggerInfo.lifecycleException, e);
             tracker.actOn(logger);
             return null;
         } finally {
@@ -584,7 +621,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, loadException);
                 report.failure(logger, "Exception while loading the app", null);
                 report.setFailureCause(loadException);
                 tracker.actOn(logger);
@@ -802,85 +839,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         // all containers that have recognized parts of the application being deployed
         // have now been successfully started. Start the deployment process.
-
-        List<ApplicationMetaDataProvider> providers = new LinkedList<>();
-        providers.addAll(habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class));
-
         List<EngineInfo> sortedEngineInfos = new ArrayList<>();
 
-        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
-        Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                for (Class provided : provider.getMetaData().provides()) {
-                    typeByProvider.put(provided, provider);
-                }
-            }
-        }
-
-        // check if everything is provided.
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                 for (Class dependency : provider.getMetaData().requires()) {
-                     if (!typeByProvider.containsKey(dependency)) {
-                         // at this point, I only log problems, because it maybe that what I am deploying now
-                         // will not require this application metadata.
-                         logger.log(Level.WARNING, KernelLoggerInfo.applicationMetaDataProvider,
-                                 new Object[] {provider, dependency});
-                     }
-                 }
-            }
-        }
-
-        Map<Class, Deployer> typeByDeployer = new HashMap<>();
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class provided : deployer.getMetaData().provides()) {
-                    typeByDeployer.put(provided, deployer);
-                }
-            }
-        }
-
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class dependency : deployer.getMetaData().requires()) {
-                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
-
-                        Service s = deployer.getClass().getAnnotation(Service.class);
-                        String serviceName;
-                        if (s!=null && s.name()!=null && s.name().length()>0) {
-                            serviceName = s.name();
-                        } else {
-                            serviceName = deployer.getClass().getSimpleName();
-                        }
-                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
-                        return null;
-                    }
-                }
-            }
-        }
-
         // ok everything is satisfied, just a matter of running things in order
-        List<Deployer> orderedDeployers = new ArrayList<>();
-        for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
-            Deployer deployer = entry.getKey();
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Keyed Deployer {0}", deployer.getClass());
-            }
-            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
-            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
-            span.close();
-        }
+        List<Deployer> orderedDeployers = loadDeployers(
+                containerInfosByDeployers,
+                context
+        );
 
         // now load metadata from deployers.
         for (Deployer deployer : orderedDeployers) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Ordered Deployer {0}", deployer.getClass());
+                logger.log(FINE, "Ordered Deployer {0}", deployer.getClass());
             }
 
             final MetaData metadata = deployer.getMetaData();
             EngineInfo engineInfo = containerInfosByDeployers.get(deployer);
-            String containerName = engineInfo == null ? "unknown" : engineInfo.getContainer().getName();
             try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE, "MetaData")) {
                 if (metadata!=null) {
                     if (metadata.provides()==null || metadata.provides().length==0) {
@@ -952,7 +926,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                         innerSpan.close();
 
-                        if (containersInfo == null || containersInfo.size() == 0) {
+                        if (containersInfo == null || containersInfo.isEmpty()) {
                             String msg = "Cannot start container(s) associated to application of type : " + sniffer.getModuleType();
                             report.failure(logger, msg, null);
                             throw new Exception(msg);
@@ -978,6 +952,87 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    private Map<Class, ApplicationMetaDataProvider> getTypeByProvider() {
+        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
+        final List<ApplicationMetaDataProvider> providers = habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class);
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class provided : provider.getMetaData().provides()) {
+                    typeByProvider.put(provided, provider);
+                }
+            }
+        }
+
+        // check if everything is provided.
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class dependency : provider.getMetaData().requires()) {
+                    if (!typeByProvider.containsKey(dependency)) {
+                        // at this point, I only log problems, because it maybe that what I am deploying now
+                        // will not require this application metadata.
+                        logger.log(WARNING, KernelLoggerInfo.applicationMetaDataProvider,
+                                new Object[]{provider, dependency});
+                    }
+                }
+            }
+        }
+        return typeByProvider;
+    }
+
+    private Map<Class, Deployer> getTypeByDeployer(Map<Deployer, EngineInfo> containerInfosByDeployers) {
+        Map<Class, Deployer> typeByDeployer = new HashMap<>();
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class provided : deployer.getMetaData().provides()) {
+                    typeByDeployer.put(provided, deployer);
+                }
+            }
+        }
+        return typeByDeployer;
+    }
+
+    private List<Deployer> loadDeployers(
+            Map<Deployer, EngineInfo> containerInfosByDeployers,
+            DeploymentContext context) throws IOException {
+
+        final ActionReport report = context.getActionReport();
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = getTypeByProvider();
+        final Map<Class, Deployer> typeByDeployer = getTypeByDeployer(containerInfosByDeployers);
+        final StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class dependency : deployer.getMetaData().requires()) {
+                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
+
+                        Service s = deployer.getClass().getAnnotation(Service.class);
+                        String serviceName;
+                        if (s != null && s.name() != null && s.name().length() > 0) {
+                            serviceName = s.name();
+                        } else {
+                            serviceName = deployer.getClass().getSimpleName();
+                        }
+                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
+                        return null;
+                    }
+                }
+            }
+        }
+
+        List<Deployer> orderedDeployers = new ArrayList<>();
+        for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
+            Deployer deployer = entry.getKey();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(FINE, "Keyed Deployer {0}", deployer.getClass());
+            }
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
+            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
+            span.close();
+        }
+        return orderedDeployers;
+    }
+
     private void loadDeployer(List<Deployer> results, Deployer deployer, Map<Class, Deployer> typeByDeployer,  Map<Class, ApplicationMetaDataProvider> typeByProvider, DeploymentContext dc)
         throws IOException {
 
@@ -996,7 +1051,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 } else {
                     ApplicationMetaDataProvider provider = typeByProvider.get(required);
                     if (provider==null) {
-                        logger.log(Level.SEVERE, KernelLoggerInfo.inconsistentLifecycleState, required);
+                        logger.log(SEVERE, KernelLoggerInfo.inconsistentLifecycleState, required);
                     } else {
                         LinkedList<ApplicationMetaDataProvider> providers = new LinkedList<>();
 
@@ -1037,7 +1092,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         tracing.switchToContext(TraceContext.Level.MODULE, moduleName);
 
         for (EngineInfo engineInfo : sortedEngineInfos) {
-
             // get the deployer
             Deployer deployer = engineInfo.getDeployer();
 
@@ -1068,8 +1122,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         // set isComposite property on module props so we know whether to persist
         // module level properties inside ModuleInfo
-        String isComposite = context.getAppProps().getProperty(
-            ServerTags.IS_COMPOSITE);
+        String isComposite = context.getAppProps()
+                .getProperty(ServerTags.IS_COMPOSITE);
         if (isComposite != null) {
             context.getModuleProps().setProperty(ServerTags.IS_COMPOSITE, isComposite);
         }
@@ -1121,7 +1175,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 container = engineInfo.getContainer();
             } catch(Exception e) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.cantStartContainer,
+                logger.log(SEVERE, KernelLoggerInfo.cantStartContainer,
                         new Object[] {engineInfo.getSniffer().getModuleType(), e});
                 return false;
             }
@@ -1151,7 +1205,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 ctrInfo.stop(logger);
             } catch(Exception e) {
                 // this is not a failure per se but we need to document it.
-                logger.log(Level.INFO, KernelLoggerInfo.cantReleaseContainer,
+                logger.log(INFO, KernelLoggerInfo.cantReleaseContainer,
                         new Object[] {ctrInfo.getSniffer().getModuleType(), e});
             }
         }
@@ -1229,11 +1283,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final Properties appProps = context.getAppProps();
         final DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
         Transaction tx = null;
-        Application app_w;
+        Application app_w= null;
 
         if (deployParams.hotDeploy) {
             app_w = applications.getApplication(deployParams.name);
-        } else {
+        }
+        if (app_w == null) {
             try {
                 tx = new Transaction();
                 // prepare the application element
@@ -2000,21 +2055,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 final WritableArchive expandedArchive = archiveFactory.createArchive(expansionDir);
                 archiveHandler.expand(archive, expandedArchive, initial);
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Deployment expansion took " + (System.currentTimeMillis() - start));
+                    logger.log(FINE, "Deployment expansion took {0}", System.currentTimeMillis() - start);
                 }
 
                 // Close the JAR archive before losing the reference to it or else the JAR remains locked.
                 try {
                     archive.close();
                 } catch(IOException e) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.errorClosingArtifact,
+                    logger.log(SEVERE, KernelLoggerInfo.errorClosingArtifact,
                             new Object[] { archive.getURI().getSchemeSpecificPart(), e});
                     throw e;
                 }
                 archive = (FileArchive) expandedArchive;
                 initial.setSource(archive);
             } catch(IOException e) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.errorExpandingFile, e);
+                logger.log(SEVERE, KernelLoggerInfo.errorExpandingFile, e);
                 throw e;
             }
         }
@@ -2437,11 +2492,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 if (sniffer != null) {
                     sniffers.add(sniffer);
                 } else {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSniffer, snifferType);
+                    logger.log(SEVERE, KernelLoggerInfo.cantFindSniffer, snifferType);
                 }
             }
             if (sniffers.isEmpty()) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSnifferForApp, app.getName());
+                logger.log(SEVERE, KernelLoggerInfo.cantFindSnifferForApp, app.getName());
                 return null;
             }
         } else {

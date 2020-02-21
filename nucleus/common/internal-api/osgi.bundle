@@ -41,6 +41,7 @@
 
 -exportcontents: \
                         fish.payara.monitoring.collect; \
+                        fish.payara.nucleus.hotdeploy; \
                         org.glassfish.internal.api; \
                         org.glassfish.internal.data; \
                         org.glassfish.internal.config; \

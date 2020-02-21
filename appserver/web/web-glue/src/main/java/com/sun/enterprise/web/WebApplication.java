@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -109,7 +110,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
         // release DeploymentContext in memory
         wmInfo.setDeploymentContext(null);
 
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             logger.log(Level.SEVERE, "webApplication.unknownError");
             return false;
         }
