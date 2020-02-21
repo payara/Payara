@@ -38,16 +38,16 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <f:verbatim>
-<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/backimage.png);
+<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/payara-enterprise-theme/images/backimage.png);
     background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
     <div style="width: 460px; padding-top: 91px; margin-left: auto">
 </f:verbatim>
         <!beforeCreate
-                setResourceBundle(key="theme" bundle="org.glassfish.admingui.community-theme.Strings");
+                setResourceBundle(key="theme" bundle="fish.payara.admingui.enterprise-theme.Strings");
             />
 <f:verbatim>
 &nbsp 

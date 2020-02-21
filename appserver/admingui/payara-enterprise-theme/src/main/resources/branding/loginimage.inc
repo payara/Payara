@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -38,62 +38,10 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+   Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
-<f:verbatim>
-<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/backimage.png);
-    background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
-    <div style="width: 460px; padding-top: 91px; margin-left: auto">
-</f:verbatim>
-        <!beforeCreate
-                setResourceBundle(key="theme" bundle="org.glassfish.admingui.community-theme.Strings");
-            />
-<f:verbatim>
-&nbsp 
-&nbsp 
-        <table style="color: #FFFFFF;">
-            <tr>
-                <td>
-</f:verbatim>
-                    <sun:staticText text="$resource{i18n.shutdown.RestartHeading}  $resource{i18n.shutdown.RestartInstructions1} "  />
-<f:verbatim>
-                </td>
-            </tr>
-            <tr>
-                <td>
- &nbsp 
-
-<div style=" padding-left: 20px;">
-</f:verbatim>
-
-"        </li><li>
-
-                    <sun:staticText id="text2" text="$resource{i18n.shutdown.RestartStep1}" />
-"        </li><li>
-            
-                    <sun:staticText id="text3" text="$resource{i18n.shutdown.RestartStep2}" />
-"        </li><li>
-                    <sun:staticText id="text4" text="$resource{i18n.shutdown.RestartStep3}" />
-<f:verbatim>
-</div>
-
-                </td>
-            </tr>
-            </li>
-            </ul>
-            <tr>
-                 <td><div class="logLbl"><span class="LblLev2Txt">
-<br/><br/>
-</f:verbatim>
-                    <sun:staticText text="$resource{i18n.shutdown.RestartContinue}" />
-<f:verbatim>
-                    </span></div></td>
-                </tr>
-        </table>
-
-
-
-    </div>
-</div>
-</f:verbatim>
+<sun:image url="#{request.contextPath}/resource/payara-enterprise-theme/images/login-product_name_open.png"
+     alt="$resource{theme.productName}"
+      height="42" width="329"
+/>

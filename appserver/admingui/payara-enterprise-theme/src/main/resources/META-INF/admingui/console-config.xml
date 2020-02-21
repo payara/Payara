@@ -39,70 +39,59 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+ Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
-<console-config id="community-theme">
+<console-config id="payara-enterprise-theme">
         <integration-point 
-                id="customtheme" 
+                id="enterprisetheme"
                 type="org.glassfish.admingui:customtheme" 
                 priority="100"
                 content="customtheme.properties" 
         />
         <integration-point 
-                id="customtheme" 
+                id="enterprisetheme"
                 type="org.glassfish.admingui:masthead" 
                 priority="100"
                 content="branding/masthead.inc" 
         />   
         <integration-point
-                id="customtheme"
+                id="enterprisetheme"
                 type="org.glassfish.admingui:favicon"
                 priority="100"
                 content="branding/favicon.inc"
                 parentId="head"
         />
         <integration-point 
-                id="customtheme" 
+                id="enterprisetheme"
                 type="org.glassfish.admingui:loginimage" 
                 priority="100"
                 content="branding/loginimage.inc" 
         />  
         <integration-point 
-                id="customtheme" 
+                id="enterprisetheme"
                 type="org.glassfish.admingui:loginform"
                 priority="100"
                 content="branding/loginform.inc"
         />          
         <integration-point 
-                id="customtheme" 
+                id="enterprisetheme"
                 type="org.glassfish.admingui:shutdownform"
                 priority="100"
                 content="branding/shutdown.inc"
         />          
         <integration-point
-                id="customtheme"
+                id="enterprisetheme"
                 type="org.glassfish.admingui:versioninfo"
                 priority="100"
                 content="branding/versioninfo.inc"
         />
-        <integration-point 
-                id="customtheme" 
-                type="org.glassfish.admingui:upsellframepe" 
-                priority="100"
-                content="branding/upsellpe.inc" 
-        /> 
-        <integration-point 
-                id="customtheme" 
-                type="org.glassfish.admingui:upsellframeee" 
-                priority="100"
-                content="branding/upsellee.inc" 
-        />
         <integration-point
-                id="customtheme"
+                id="enterprisetheme"
                 type="fish.payara.admingui:restarttd"
                 priority="100"
                 content="branding/restart.inc"
         />
+
 </console-config>
 

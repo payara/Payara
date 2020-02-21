@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -159,12 +159,41 @@
             <artifactId>webui-jsf</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf-suntheme</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.sun.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
+
+    <!-- Workaround until we pull out all branding from this external artefact -->
+    <profiles>
+        <profile>
+            <id>community</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun.woodstock</groupId>
+                    <artifactId>webui-jsf-suntheme</artifactId>
+                </dependency>
+            </dependencies>
+            <properties>
+                <!-- Set to empty so that the replacement is done correctly in sun-web.xml -->
+                <enterprise.theme.classifier></enterprise.theme.classifier>
+            </properties>
+        </profile>
+        <profile>
+            <id>enterprise</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun.woodstock</groupId>
+                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <classifier>enterprise</classifier>
+                </dependency>
+            </dependencies>
+            <properties>
+                <enterprise.theme.classifier>-enterprise</enterprise.theme.classifier>
+            </properties>
+        </profile>
+    </profiles>
 </project>

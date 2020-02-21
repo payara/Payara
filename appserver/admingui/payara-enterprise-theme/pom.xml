@@ -39,25 +39,26 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 -->
-<!--Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.201-SNAPSHOT</version>
     </parent>
-    <artifactId>console-payara-branding-plugin</artifactId>
+
+    <artifactId>console-payara-enterprise-branding-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
 
-    <name>Admin Console Payara Theme Plugin</name>
-    <description>Custom Theme Plugin for Payara Admin Console</description>
+    <name>Admin Console Payara Enterprise Theme Plugin</name>
+    <description>Custom Theme Plugin for Payara Enterprise Admin Console</description>
 
-    <developers>
-        <!-- See parent POM -->
-    </developers>
-
+    <!-- build, plugin, and depdendency config copied from payara-theme -->
     <build>
         <plugins>
             <!-- Configure maven-bundle-plugin to generate OSGi manifest.
@@ -81,7 +82,7 @@
                         -->
                         <!--<Embed-Dependency>*;artifactId=webui-jsf-suntheme;inline=true</Embed-Dependency>-->
                         <Export-Package>
-                        org.glassfish.admingui.customtheme
+                            org.glassfish.admingui.customtheme
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -142,6 +143,7 @@
             <groupId>com.sun.woodstock</groupId>
             <artifactId>webui-jsf-suntheme</artifactId>
             <scope>provided</scope>
+            <classifier>enterprise</classifier>
         </dependency>
     </dependencies>
 </project>
