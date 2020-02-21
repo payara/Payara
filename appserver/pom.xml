@@ -66,7 +66,6 @@
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <jna.version>5.2.0</jna.version>
-        <jline-terminal-jna>3.11.0</jline-terminal-jna>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
