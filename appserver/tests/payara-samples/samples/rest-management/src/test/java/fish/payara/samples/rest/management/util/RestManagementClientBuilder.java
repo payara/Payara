@@ -37,49 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.rest.management;
+package fish.payara.samples.rest.management.util;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+public abstract class RestManagementClientBuilder {
 
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.PayaraTestShrinkWrap;
-import fish.payara.samples.ServerOperations;
-import fish.payara.samples.rest.management.util.RestManagementClientBuilder;
+    private RestManagementClientBuilder() {}
 
-@RunWith(PayaraArquillianTestRunner.class)
-@NotMicroCompatible
-public abstract class RestManagementTest {
-
-    protected WebTarget target;
-
-    @ArquillianResource
-    private URL baseUrl;
-
-    @Deployment(testable = false)
-    public static Archive<?> deploy() {
-        return PayaraTestShrinkWrap.getWebArchive()
-            .addClass(RestManagementTest.class);
+    public static WebTarget newClient(URI adminBaseUrl) {
+        return new RestManagementWebTarget(
+                ClientBuilder.newClient().target(adminBaseUrl.resolve("/management/domain/").toString()));
     }
-
-    @Before
-    public final void setUpFields() throws URISyntaxException {
-        URI adminBaseUri;
-        try {
-            adminBaseUri = ServerOperations.toAdminPort(baseUrl).toURI();
-        } catch (Exception ex) {
-            throw new IllegalStateException("Unable to find admin base URL. Should this profile have an admin console?", ex);
-        }
-        target = RestManagementClientBuilder.newClient(adminBaseUri);
-    }
+    
 }

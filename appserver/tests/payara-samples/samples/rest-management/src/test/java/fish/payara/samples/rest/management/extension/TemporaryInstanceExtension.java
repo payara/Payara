@@ -37,49 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.rest.management;
+package fish.payara.samples.rest.management.extension;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
-import javax.ws.rs.client.WebTarget;
+public class TemporaryInstanceExtension implements LoadableExtension {
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.PayaraTestShrinkWrap;
-import fish.payara.samples.ServerOperations;
-import fish.payara.samples.rest.management.util.RestManagementClientBuilder;
-
-@RunWith(PayaraArquillianTestRunner.class)
-@NotMicroCompatible
-public abstract class RestManagementTest {
-
-    protected WebTarget target;
-
-    @ArquillianResource
-    private URL baseUrl;
-
-    @Deployment(testable = false)
-    public static Archive<?> deploy() {
-        return PayaraTestShrinkWrap.getWebArchive()
-            .addClass(RestManagementTest.class);
-    }
-
-    @Before
-    public final void setUpFields() throws URISyntaxException {
-        URI adminBaseUri;
-        try {
-            adminBaseUri = ServerOperations.toAdminPort(baseUrl).toURI();
-        } catch (Exception ex) {
-            throw new IllegalStateException("Unable to find admin base URL. Should this profile have an admin console?", ex);
-        }
-        target = RestManagementClientBuilder.newClient(adminBaseUri);
+    @Override
+    public void register(ExtensionBuilder builder) {
+        builder.service(ResourceProvider.class, TemporaryInstanceProvider.class)
+                .observer(TemporaryInstanceProvider.class);
     }
 }
