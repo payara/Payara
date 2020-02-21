@@ -113,5 +113,9 @@
             <artifactId>amx-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

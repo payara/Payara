@@ -246,6 +246,11 @@
             <artifactId>jline</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 

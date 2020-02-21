@@ -78,10 +78,10 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>fish.payara.server.monitoring-console</groupId>
+                                    <groupId>fish.payara.monitoring-console</groupId>
                                     <artifactId>monitoring-console-webapp</artifactId>
                                     <type>war</type>
-                                    <version>${project.version}</version>
+                                    <version>${monitoring-console-webapp.version}</version>
                                     <outputDirectory>target/stage/payara5/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
@@ -108,9 +108,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.monitoring-console</groupId>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-process</artifactId>
+            <version>${monitoring-console-process.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
             <artifactId>monitoring-console-webapp</artifactId>
-            <version>${project.version}</version>
+            <version>${monitoring-console-webapp.version}</version>
             <type>war</type>
             <scope>runtime</scope>
         </dependency>
