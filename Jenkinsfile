@@ -27,10 +27,12 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -PQuickBuild \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                -Dsurefire.rerunFailingTestsCount=2"""
+                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
+                    sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
+                    -Dsurefire.rerunFailingTestsCount=2"""
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post{
