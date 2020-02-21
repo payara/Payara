@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -238,7 +238,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
         super.load(containerStarter, dc);
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "EjbDeployer Loading app from: " + dc.getSourceDir());
+            _logger.log(Level.FINE, "EjbDeployer Loading app from: {0}", dc.getSourceDir());
         }
         // Register the EjbSecurityComponentInvocationHandler
 

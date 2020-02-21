@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -45,7 +46,7 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.instanceValues.PageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.instanceValues.PageTitle,$pageSession{propName}}" >
 <!define name="content">
     <event>
         <!beforeCreate

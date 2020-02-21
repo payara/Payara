@@ -155,7 +155,7 @@
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.24.1-GA</javassist.version>
+        <javassist.version>3.26.0-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
@@ -167,9 +167,8 @@
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
-
-        <mimepull.version>1.9.11</mimepull.version>
-        <jline.version>3.11.0</jline.version>
+      
+        <mimepull.version>1.9.12</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
         <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
@@ -200,7 +199,7 @@
 
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
@@ -723,7 +722,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
-                <version>1.0.1</version>
+                <version>${osgi-resource-locator.version}</version>
             </dependency>
 
             <dependency>
@@ -909,7 +908,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
-                <version>2.1</version>
+                <version>2.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -971,13 +970,13 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.javaee.core.deployment;
 
@@ -272,7 +272,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
     // get the object type from the application manifest file if
     // it is present. Application can be user application or system
-    // appliction.
+    // application.
     protected String getObjectType(DeploymentContext context) {
         try{
             Manifest manifest = context.getSource().getManifest();

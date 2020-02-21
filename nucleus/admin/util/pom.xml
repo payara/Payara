@@ -163,7 +163,6 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>${jline.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

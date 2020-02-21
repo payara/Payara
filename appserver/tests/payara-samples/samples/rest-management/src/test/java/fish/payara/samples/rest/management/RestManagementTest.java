@@ -39,18 +39,11 @@
  */
 package fish.payara.samples.rest.management;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -58,14 +51,17 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
+import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.PayaraTestShrinkWrap;
 import fish.payara.samples.ServerOperations;
+import fish.payara.samples.rest.management.util.RestManagementClientBuilder;
 
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public abstract class RestManagementTest {
 
-    private WebTarget target;
+    protected WebTarget target;
 
     @ArquillianResource
     private URL baseUrl;
@@ -78,43 +74,12 @@ public abstract class RestManagementTest {
 
     @Before
     public final void setUpFields() throws URISyntaxException {
-        URI adminBaseUrl = ServerOperations.toAdminPort(baseUrl).toURI();
-        assertNotNull("Something went wrong with the test, and an admin port cannot be found.", adminBaseUrl);
-        target = ClientBuilder
-            .newClient()
-            .target(adminBaseUrl.resolve("/management/domain/").toString());
-    }
-
-    /**
-     * Make a synchronous request to the REST management interface.
-     * 
-     * @param method the HTTP method to use for the request
-     * @param path   the path of the request, relative to /management/domain/
-     * @param entity the entity to send in the request
-     * 
-     * @return the response of the request.
-     */
-    protected Response request(HttpMethod method, String path, Entity<?> entity) {
-        return target
-            .path(path)
-            .request()
-            .header("X-Requested-By", "Payara")
-            .build(method.toString(), entity)
-            .invoke();
-    }
-
-
-    /**
-     * Make a synchronous request to the REST management interface. This method
-     * sends nothing in the body. To send data, see
-     * {@link #request(HttpMethod, String, Entity)}.
-     * 
-     * @param method the HTTP method to use for the request
-     * @param path   the path of the request, relative to /management/domain/
-     * 
-     * @return the response of the request.
-     */
-    protected Response request(HttpMethod method, String path) {
-        return request(method, path, null);
+        URI adminBaseUri;
+        try {
+            adminBaseUri = ServerOperations.toAdminPort(baseUrl).toURI();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to find admin base URL. Should this profile have an admin console?", ex);
+        }
+        target = RestManagementClientBuilder.newClient(adminBaseUri);
     }
 }

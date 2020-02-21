@@ -37,16 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.interceptors;
 
 import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
 import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilderFactory;
-import com.sun.enterprise.container.common.spi.InterceptorInvoker;
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
@@ -64,17 +63,22 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
     private static Logger _logger = LogDomains.getLogger(JavaEEInterceptorBuilderImpl.class,
             LogDomains.CORE_LOGGER);
 
+    @Override
     public JavaEEInterceptorBuilder createBuilder(InterceptorInfo info) throws Exception {
 
         Class targetObjectClass = info.getTargetClass();
 
         // Create an interface with all public methods of the target class
         // in order to create a dynamic proxy
-        String subClassIntfName = EJBUtils.getGeneratedOptionalInterfaceName(targetObjectClass.getName());
+        String targetObjectClassName = targetObjectClass.getName();
+        String subClassIntfName = EJBUtils.getGeneratedOptionalInterfaceName(targetObjectClassName);
 
         EjbOptionalIntfGenerator gen = new EjbOptionalIntfGenerator(targetObjectClass.getClassLoader());
-        gen.generateOptionalLocalInterface(targetObjectClass, subClassIntfName);
-        Class subClassIntf = gen.loadClass(subClassIntfName);
+        Class subClassIntf = gen.loadClass(
+                targetObjectClassName,
+                subClassIntfName,
+                () -> gen.generateOptionalLocalInterface(targetObjectClass, subClassIntfName)
+        );
 
         String beanSubClassName = subClassIntfName + "__Bean__";
 
@@ -82,17 +86,16 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
         // as the actual object passed back to the application.  The sub-class instance
         // delegates all public methods to the dyanamic proxy, which calls the
         // InvocationHandler.
-        gen.generateOptionalLocalInterfaceSubClass(
-            targetObjectClass, beanSubClassName, subClassIntf);
-
-        Class subClass = gen.loadClass(beanSubClassName);
-
+        Class subClass = gen.loadClass(
+                targetObjectClassName,
+                beanSubClassName,
+                () -> gen.generateOptionalLocalInterfaceSubClass(targetObjectClass, beanSubClassName, subClassIntf)
+        );
 
         // TODO do interceptor builder once per managed bean
         InterceptorManager interceptorManager = new InterceptorManager(_logger,
                 targetObjectClass.getClassLoader(), targetObjectClass.getName(),
                 info);
-
 
         JavaEEInterceptorBuilderImpl builderImpl =
                 new JavaEEInterceptorBuilderImpl(info, interceptorManager,
@@ -103,8 +106,13 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
     }
 
     /**
-      * Tests if a given object is a client proxy associated with an interceptor invoker.
-      */
+     * Tests if a given object is a client proxy associated with an interceptor
+     * invoker.
+     *
+     * @param obj
+     * @return
+     */
+    @Override
     public boolean isClientProxy(Object obj) {
 
         Class clazz = obj.getClass();
