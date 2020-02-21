@@ -39,14 +39,24 @@
  */
 package fish.payara.samples.rest.management;
 
+import static java.lang.String.format;
+import static javax.ws.rs.client.Entity.entity;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 import org.junit.Test;
 
 /**
  * Test the REST management interface for it's basic HTTP responses
  */
-public class HttpResponsesTest extends RestManagementTest {
+public class HttpSemanticsTest extends RestManagementTest {
 
     /**
      * Tests that when deleting a non-existent resource a 404 is returned instead of
@@ -54,12 +64,34 @@ public class HttpResponsesTest extends RestManagementTest {
      */
     @Test
     public void when_DELETE_non_existent_resource_expect_404() {
-        int status = target
-                .path("servers/server/server/application-ref/non-existent-application-ref")
+        Response response = target.path("servers/server/server/application-ref/non-existent-application-ref")
                 .request()
-                .delete()
-                .getStatus();
-        assertEquals("A non-existent resource should return a 404.", 404, status);
+                .delete();
+        assertEquals("A non-existent resource should return a 404.", 404, response.getStatus());
+    }
+
+    /**
+     * Tests that when invoking an asadmin command using the REST management
+     * interface with a JSON request, the parameters are unwrapped correctly (and
+     * without quotation marks). See CUSTCOM-199 for details.
+     */
+    @Test
+    public void when_JSON_parameters_in_request_expect_correct_parsing() {
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("node", "invalid-node");
+
+        JsonObject response = target.path("create-instance")
+                .request()
+                .post(entity(parameters, APPLICATION_JSON))
+                .readEntity(JsonObject.class);
+
+        String commandLog = response
+                .getJsonObject("extraProperties")
+                .getJsonArray("commandLog")
+                .toString();
+
+        assertTrue(format("The \"node\" parameter was unwrapped incorrectly. command log: %s", commandLog),
+            commandLog.contains("--node invalid-node"));
     }
 
 }
