@@ -174,15 +174,13 @@ public class MonitoringConsoleRuntimeImpl
             LOGGER.info("Bootstrapping Monitoring Console Runtime");
             boolean isDas = serverEnv.isDas();
             config = domain.getExtensionByType(MonitoringConsoleConfiguration.class);
-            String instanceName = "server"; // default
             if (hazelcastCore.isEnabled()) {
                 HazelcastInstance hz = hazelcastCore.getInstance();
-                instanceName = hz.getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
                 exchange = hz.getTopic(MONITORING_DATA_TOPIC_NAME);
             }
             Supplier<List<MonitoringDataSource>> dataSources = () -> serviceLocator.getAllServices(MonitoringDataSource.class);
             Supplier<List<MonitoringWatchSource>> watchSources = () -> serviceLocator.getAllServices(MonitoringWatchSource.class);
-            console = MonitoringConsoleFactory.getInstance().create(instanceName, isDas, this, dataSources, watchSources);
+            console = MonitoringConsoleFactory.getInstance().create(serverEnv.getInstanceName(), isDas, this, dataSources, watchSources);
             setEnabled(parseBoolean(serverConfig.getMonitoringService().getMonitoringEnabled()));
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Failed to init monitoring console runtime", ex);
