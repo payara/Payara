@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -47,14 +48,14 @@
 
     <profiles>
 
-		<!-- Profiles for the application servers against which the samples are run -->
+        <!-- Profiles for the application servers against which the samples 
+            are run -->
 
         <profile>
-            <!--
-            This profile will install a Payara server and start up the server per sample. Useful for CI servers.
-            The Payara version that's used can be set via the payara.version property.
-            This is the default profile and does not have to be specified explicitly.
-            -->
+            <!-- This profile will install a Payara server and start up the 
+                server per sample. Useful for CI servers. The Payara version that's used 
+                can be set via the payara.version property. This is the default profile and 
+                does not have to be specified explicitly. -->
             <id>payara-server-managed</id>
 
             <activation>
@@ -66,7 +67,8 @@
 
             <dependencies>
 
-                <!-- Rely on the distribution to make sure it builds after the distributions -->
+                <!-- Rely on the distribution to make sure it builds after 
+                    the distributions -->
                 <dependency>
                     <groupId>fish.payara.distributions</groupId>
                     <artifactId>payara</artifactId>
@@ -132,10 +134,9 @@
 
         <profile>
             <id>payara-micro-managed</id>
-            <!--
-            This profile will install a Payara Micro and start up the server per sample. Useful for CI servers.
-            The Payara version that's used can be set via the payara.version property.
-            -->
+            <!-- This profile will install a Payara Micro and start up the 
+                server per sample. Useful for CI servers. The Payara version that's used 
+                can be set via the payara.version property. -->
             <properties>
                 <micro.isActive>true</micro.isActive>
             </properties>
@@ -192,12 +193,9 @@
 
         <profile>
             <id>payara-server-remote</id>
-            <!--
-            This profile requires you to start up a Payara server outside of the build.
-
-            Each sample will then reuse this instance to run the tests.
-            Useful for development to avoid the server start up cost per sample.
-            -->
+            <!-- This profile requires you to start up a Payara server outside 
+                of the build. Each sample will then reuse this instance to run the tests. 
+                Useful for development to avoid the server start up cost per sample. -->
             <modules>
                 <module>ejb-http-remoting</module>
             </modules>
