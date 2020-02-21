@@ -40,111 +40,125 @@
 
 package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-
-import io.opentracing.Tracer;
-
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
+
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Tracer;
 
 /**
- * This is a class hiding internal mechanism of lookup of HK2 services.
- * The lookup is lazy, done with first request, but this may be simply changed later.
- * <p>
- * The lazy lookup prevents problems with embedded distributions, when jersey lookups
- * may detect filters in this package and try to use them before Payara started, which
- * is not supported use case.
+ * This is a class hiding internal mechanism of lookup of HK2 services. The
+ * required services will be eagerly initialised using their service handles,
+ * and throwing an exception if the handle is available but not the service
+ * itself.
  *
  * @author David Matejcek
  */
 public final class PayaraTracingServices {
 
-    private static volatile boolean initialized;
+    private final RequestTracingService requestTracingService;
+    private final OpenTracingService openTracingService;
 
-    private static ServiceLocator basicServiceLocator;
-    private static RequestTracingService requestTracingService;
-    private static OpenTracingService openTracingService;
-
-
-    private static void checkInitialized() {
-        if (initialized) {
-            return;
-        }
-        synchronized (PayaraTracingServices.class) {
-            if (initialized) {
-                return;
-            }
-            basicServiceLocator = Globals.getStaticBaseServiceLocator();
-            requestTracingService = basicServiceLocator.getService(RequestTracingService.class);
-            openTracingService = basicServiceLocator.getService(OpenTracingService.class);
-            initialized = true;
-        }
-    }
-
+    private final InvocationManager invocationManager;
+    private final Deployment deployment;
 
     /**
-     * @return default service locator, same as {@link Globals#getStaticBaseServiceLocator()}.
+     * Initialise the tracing services if they are available.
+     * 
+     * @throws RuntimeException if an exception occurs initialising the services.
      */
-    public ServiceLocator getBasicServiceLocator() {
-        checkInitialized();
-        return basicServiceLocator;
+    public PayaraTracingServices() {
+        final ServiceLocator baseServiceLocator = Globals.getStaticBaseServiceLocator();
+
+        requestTracingService = getFromServiceHandle(baseServiceLocator, RequestTracingService.class);
+        openTracingService = getFromServiceHandle(baseServiceLocator, OpenTracingService.class);
+        invocationManager = getFromServiceHandle(baseServiceLocator, InvocationManager.class);
+        deployment = getFromServiceHandle(baseServiceLocator, Deployment.class);
     }
 
+    /**
+     * @return true if the Request Tracing services are available and have been
+     *         initialised, or false if the services are not available.
+     */
+    public boolean isTracingAvailable() {
+        return requestTracingService != null && openTracingService != null;
+    }
 
     /**
-     * @return {@link RequestTracingService}
+     * @return {@link RequestTracingService}, or null if the HK2 service couldn't be
+     *         initialised.
      */
     public RequestTracingService getRequestTracingService() {
-        checkInitialized();
-        return requestTracingService;
+        if (isTracingAvailable()) {
+            return requestTracingService;
+        }
+        return null;
     }
-
 
     /**
-     * @return {@link OpenTracingService}
+     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
+     *         initialised.
      */
     public OpenTracingService getOpenTracingService() {
-        checkInitialized();
-        return openTracingService;
+        if (isTracingAvailable()) {
+            return openTracingService;
+        }
+        return null;
     }
-
 
     /**
      * @return {@link InvocationManager}
      */
     public InvocationManager getInvocationManager() {
-        checkInitialized();
-        return basicServiceLocator.getService(InvocationManager.class);
+        return invocationManager;
     }
 
+    /**
+     * @return {@link Deployment}
+     */
+    public Deployment getDeployment() {
+        return deployment;
+    }
 
     /**
-     * @return application name known to the actual {@link InvocationManager}.
+     * @return application name known to the actual {@link InvocationManager}, or
+     *         null if no invocation manager can be found.
      */
     public String getApplicationName() {
-        final InvocationManager invocationManager = getInvocationManager();
-        if (invocationManager == null) {
-            return null;
+        if (isTracingAvailable()) {
+            return openTracingService.getApplicationName(invocationManager);
         }
-        final OpenTracingService otService = getOpenTracingService();
-        return otService == null ? null : otService.getApplicationName(invocationManager);
+        return null;
     }
 
-
     /**
-     * @return actually active {@link Tracer} for the current application.
+     * @return actually active {@link Tracer} for the current application, or null
+     *         if the tracing service is not available.
      */
     public Tracer getActiveTracer() {
         final String applicationName = getApplicationName();
-        if (applicationName == null) {
+        if (applicationName == null || !isTracingAvailable()) {
             return null;
         }
-        final OpenTracingService otService = getOpenTracingService();
-        if (otService == null) {
-            return null;
+        return openTracingService.getTracer(applicationName);
+    }
+
+    /**
+     * Create a service from the given service locator. Throw an exception if the
+     * service handle is available but not the service.
+     * 
+     * @return the specified service, or null if the service handle isn't available.
+     * @throws RuntimeException if the service initialisation failed.
+     */
+    private static final <T> T getFromServiceHandle(ServiceLocator serviceLocator, Class<T> serviceClass) {
+        ServiceHandle<T> serviceHandle = serviceLocator.getServiceHandle(serviceClass);
+        if (serviceHandle != null && serviceHandle.isActive()) {
+            return serviceHandle.getService();
         }
-        return otService.getTracer(applicationName);
+        return null;
     }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -313,10 +313,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
 
-        DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
         ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
         externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
-        externalConfiguration.setBeanIndexOptimization(dc != null ? !dc.isAvailabilityEnabled() : true);
+        externalConfiguration.setBeanIndexOptimization(!deployParams.isAvailabilityEnabled());
         externalConfiguration.setNonPortableMode(false);
         configureConcurrentDeployment(context, externalConfiguration);
         

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -105,7 +105,7 @@ class ProcessingContextImpl implements ProcessingContext {
     }
         
     /** 
-     * @return the previously set ClientContext casted to the requestd
+     * @return the previously set ClientContext casted to the requested
      * type if possible or throw an exception otherwise.
      */
     @Override

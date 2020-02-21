@@ -275,7 +275,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
         if (timers != null) {
             HashSet<HZTimer> timersToCancel = new HashSet<>();
             for (TimerPrimaryKey timer : timers) {
-                HZTimer hzTimer = pkCache.get(((TimerPrimaryKey)primaryKey).timerId);
+                HZTimer hzTimer = pkCache.get(timer.timerId);
                 if (hzTimer != null && hzTimer.getTimedObjectPk().equals(primaryKey)) {
                     timersToCancel.add(hzTimer);
                 }

@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import static java.lang.String.valueOf;
+
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
@@ -408,10 +410,13 @@ public class HazelcastCore implements EventListener, ConfigListener {
         
         int port = Integer.valueOf(configuration.getStartPort());
 
-        int configPort = Integer.valueOf(nodeConfig.getConfigSpecificDataGridStartPort());
-
-        if (configPort > 0) {
-            port = configPort;
+        String configSpecificPort = nodeConfig.getConfigSpecificDataGridStartPort();
+        if (configSpecificPort != null && !configSpecificPort.isEmpty()) {
+            // Setting it equal to zero will be the same as null or empty (to maintain backwards compatibility)
+            int configSpecificPortInt = Integer.parseInt(configSpecificPort);
+            if (configSpecificPortInt != 0) {
+                port = configSpecificPortInt;
+            }
         }
         
         String discoveryMode = configuration.getDiscoveryMode();
@@ -435,7 +440,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
                     .setProperty(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace())
                     .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName())
-                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), String.valueOf(port));
+                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), valueOf(port));
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");

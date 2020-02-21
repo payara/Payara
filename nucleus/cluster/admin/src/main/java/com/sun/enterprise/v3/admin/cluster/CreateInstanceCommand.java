@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -142,7 +142,7 @@ public class CreateInstanceCommand implements AdminCommand {
     @Param(name = "instance_name", primary = true)
     private String instance;
     
-    @Param(name = "dataGridStartPort", optional = true, defaultValue = "0", alias = "datagridstartport")
+    @Param(name = "dataGridStartPort", optional = true, alias = "datagridstartport")
     private String dataGridStartPort;
     
     @Inject

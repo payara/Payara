@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ public abstract class AbstractRequestTraceStoreTest {
 
     @Test
     public void addingTracesUpToTheMaxSizeDoesNotRemoveAnyTraces() {
-        store.setSize(10);
+        store.setSize(() -> 10);
         assertEquals(10, store.getStoreSize());
         addRandomTraces(10);
         assertEquals(10, store.getTraces().size());
@@ -70,7 +70,7 @@ public abstract class AbstractRequestTraceStoreTest {
 
     @Test
     public void addingTraceExceedingMaxSizeDoesRemoveTraces() {
-        store.setSize(10);
+        store.setSize(() -> 10);
         assertEquals(10, store.getStoreSize());
         addRandomTraces(10);
         for (int i = 0; i < 20; i++) {
@@ -81,28 +81,28 @@ public abstract class AbstractRequestTraceStoreTest {
 
     @Test
     public void reducingTheMaxSizeRemovesExceedingTraces() {
-        store.setSize(10);
+        store.setSize(() -> 10);
         assertEquals(10, store.getStoreSize());
         addRandomTraces(10);
         assertEquals(10, store.getTraces().size());
-        store.setSize(5);
+        store.setSize(() -> 5);
         assertEquals(5, store.getStoreSize());
         assertEquals(5, store.getTraces().size());
     }
 
     @Test
     public void increasingTheMaxSizeDoesNotRemoveTraces() {
-        store.setSize(10);
+        store.setSize(() -> 10);
         assertEquals(10, store.getStoreSize());
         addRandomTraces(10);
-        store.setSize(15);
+        store.setSize(() -> 15);
         assertEquals(15, store.getStoreSize());
         assertEquals(10, store.getTraces().size());
     }
 
     @Test
     public void emptyingTheStoreReturnsAllContainedTraces() {
-        store.setSize(10);
+        store.setSize(() -> 10);
         assertEquals(10, store.getStoreSize());
         addRandomTraces(6);
         assertEquals(6, store.emptyStore().size());
