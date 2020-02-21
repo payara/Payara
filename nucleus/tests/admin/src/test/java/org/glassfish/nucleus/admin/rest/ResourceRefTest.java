@@ -38,13 +38,16 @@
  * holder.
  */
 
+//Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
+
+import static org.testng.AssertJUnit.*;
 
 /**
  *
@@ -65,7 +68,7 @@ public class ResourceRefTest extends RestTestBase {
         }};
         Map<String, String> jdbcResource = new HashMap<String, String>() {{
             put("id", jdbcResourceName);
-            put("connectionpoolid", "DerbyPool");
+            put("connectionpoolid", "H2Pool");
             put("target", instanceName);
         }};
         Map<String, String> resourceRef = new HashMap<String, String>() {{

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,6 @@ package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,6 +49,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
@@ -304,6 +303,13 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
         @Override
         protected void setSchemaOnConnection(Connection connection){
             // SQL Server does not support setting default schema for session
+        }
+        
+        protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+            queryStrings = super.getSharedQueryMap(batchConfig);
+            
+            queryStrings.put(Q_SET_SCHEMA, "SET SCHEMA ?");
+            return queryStrings;
         }
 
         /**

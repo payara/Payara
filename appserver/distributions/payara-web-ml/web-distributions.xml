@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates] -->
 
 <project name="Web l10n IPS distribution" default="create-web-distributions" basedir=".">
     <import file="../distributions.xml" />
@@ -57,9 +57,7 @@
         <install.package name="glassfish-jmx"/>
         <install.package name="glassfish-jcdi"/>
         <install.package name="glassfish-gui"/>
-        <install.package name="javadb-common"/>
-        <install.package name="javadb-core"/>
-        <install.package name="javadb-client"/>
+        <install.package name="h2db"/>
         <install.package name="glassfish-web-incorporation"/>
         <install.package name="glassfish-web-profile"/>
     </target>

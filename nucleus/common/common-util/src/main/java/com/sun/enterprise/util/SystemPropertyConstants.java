@@ -42,7 +42,6 @@
 package com.sun.enterprise.util;
 
 import com.sun.enterprise.util.i18n.StringManager;
-
 import java.io.File;
 
 public class SystemPropertyConstants {
@@ -198,7 +197,6 @@ public class SystemPropertyConstants {
 
     public static final String JDMK_HOME_PROPERTY = "com.sun.aas.jdmkHome";
 
-    public static final String DERBY_ROOT_PROPERTY = "com.sun.aas.derbyRoot";
     public static final String H2_ROOT_PROPERTY = "fish.payara.aas.h2Root";
 
     /** Java ES Monitoring Framework install directory */

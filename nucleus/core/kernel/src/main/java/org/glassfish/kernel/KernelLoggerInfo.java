@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2016-2020s] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.kernel;
@@ -339,11 +339,6 @@ public class KernelLoggerInfo {
             message = "Invalid classpath entry for common class loader ignored: {0}, exception: {1}",
             level = "WARNING")
     public static final String invalidClassPathEntry = LOGMSG_PREFIX + "-00045";
-    
-    @LogMessageInfo(
-            message = "Cannot find javadb client jar file, derby jdbc driver will not be available by default.",
-            level = "INFO")
-    public static final String cantFindDerby = LOGMSG_PREFIX + "-00046";
     
     @LogMessageInfo(
             message = "CommonClassLoaderServiceImpl is unable to process {0} because of an exception: {1}",

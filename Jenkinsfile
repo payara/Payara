@@ -166,12 +166,12 @@ void setupDomain() {
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} start-database --dbtype derby || true"
+    sh "${ASADMIN} start-database || true"
 }
 
 void teardownDomain() {
     echo 'tidying up after tests:'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} stop-database --dbtype derby || true"
+    sh "${ASADMIN} stop-database || true"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }

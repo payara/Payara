@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -272,45 +272,9 @@
                     <type>zip</type>
                 </dependency>
                 <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-common</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-core</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-client</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-demo</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-doc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-javadoc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.l10n</groupId>
-                    <artifactId>l10n-distribution</artifactId>
-                    <version>${l10n.version}</version>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2db.version}</version>
                     <type>zip</type>
                 </dependency>
             </dependencies>

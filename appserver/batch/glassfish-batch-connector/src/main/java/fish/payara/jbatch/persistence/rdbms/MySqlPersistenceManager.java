@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,16 +42,14 @@ package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
@@ -240,16 +238,6 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
         result.put(Q_SET_SCHEMA, "USE " + schema);
 
         return result;
-    }
-
-    @Override
-    protected void setSchemaOnConnection(Connection connection) throws SQLException {
-        logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
-        try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
-            preparedStatement.executeUpdate();
-        } finally {
-            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
-        }
     }
 
     /**

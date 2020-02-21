@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.nucleus.admin.rest;
 
 import java.io.UnsupportedEncodingException;
@@ -47,8 +49,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
+
+import static org.testng.AssertJUnit.*;
 
 /**
  *
@@ -69,7 +72,7 @@ public class JdbcTest extends RestTestBase {
         String poolName = "TestPool" + generateRandomString();
         Map<String, String> params = new HashMap<String, String>();
         params.put("name", poolName);
-        params.put("datasourceClassname","org.apache.derby.jdbc.ClientDataSource");
+        params.put("datasourceClassname","org.h2.jdbcx.JdbcDataSource");
         Response response = post(BASE_JDBC_CONNECTION_POOL_URL, params);
         assertTrue(isSuccess(response));
 
@@ -95,7 +98,7 @@ public class JdbcTest extends RestTestBase {
         }
         Map<String, String> params = new HashMap<String, String>();
         params.put("name", poolName);
-        params.put("poolName", "DerbyPool");
+        params.put("poolName", "H2Pool");
 
         Response response = post (BASE_JDBC_RESOURCE_URL, params);
         assertTrue(isSuccess(response));
@@ -115,7 +118,7 @@ public class JdbcTest extends RestTestBase {
         final String resourceName = "jdbc/__default";
         Map<String, String> params = new HashMap<String, String>() {{
            put("id", resourceName);
-           put("poolName", "DerbyPool");
+           put("poolName", "h2Pool");
         }};
 
         Response response = post (BASE_JDBC_RESOURCE_URL, params);
@@ -124,10 +127,10 @@ public class JdbcTest extends RestTestBase {
 
     @Test(enabled=false)
     public void createDuplicateConnectionPool() {
-        final String poolName = "DerbyPool";
+        final String poolName = "h2Pool";
         Map<String, String> params = new HashMap<String, String>() {{
            put("id", poolName);
-           put("datasourceClassname", "org.apache.derby.jdbc.ClientDataSource");
+           put("datasourceClassname", "org.h2.jdbcx.JdbcDataSource");
         }};
 
         Response response = post (BASE_JDBC_CONNECTION_POOL_URL, params);
