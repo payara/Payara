@@ -110,7 +110,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>monitoring-console-api</artifactId>
         </dependency>
     </dependencies>
 </project>
