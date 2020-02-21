@@ -44,6 +44,10 @@ import org.jvnet.hk2.annotations.Service;
 
 import java.net.URL;
 
+/**
+ * Plugin for the Payara Enterprise theme Admin Console branding. 
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service
 public class ThemePlugin implements ConsoleProvider {
 
