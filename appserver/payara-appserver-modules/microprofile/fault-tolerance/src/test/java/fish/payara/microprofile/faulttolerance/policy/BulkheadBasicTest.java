@@ -63,7 +63,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * Needs a timeout because incorrect implementation could otherwise lead to endless waiting.
      */
     @Test(timeout = 500)
-    public void bulkheadWithoutQueue() throws Exception {
+    public void bulkheadWithoutQueue() {
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
         Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 0);
@@ -72,7 +72,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(2, 2);
-        assertCompletedExecution(2, exec1, exec2);
+        assertCompletedExecutionLimitedTo(2, exec1, exec2);
     }
 
     @Bulkhead(value = 2)
@@ -88,7 +88,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * Needs a timeout because incorrect implementation could otherwise lead to endless waiting.
      */
     @Test(timeout = 500)
-    public void bulkheadWithQueue() throws Exception {
+    public void bulkheadWithQueue() {
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
         Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 0);
@@ -100,8 +100,8 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(4, 4);
-        assertCompletedExecution(2, exec1, exec2, queueAndExec1, queueAndExec2);
-        assertExecutionGroups(asList(exec1, exec2), asList(queueAndExec1, queueAndExec2));
+        assertCompletedExecutionLimitedTo(2, exec1, exec2, queueAndExec1, queueAndExec2);
+        assertExecutionGroups(threadsEntered, asList(exec1, exec2), asList(queueAndExec1, queueAndExec2));
     }
 
     @Asynchronous
@@ -115,7 +115,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * be released.
      */
     @Test(timeout = 500)
-    public void bulkheadWithQueueInterruptQueueing() throws Exception {
+    public void bulkheadWithQueueInterruptQueueing() {
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
         Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         // must wait here to ensure these two threads actually are the ones getting permits
@@ -125,7 +125,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 2);
         assertEnteredAndExited(2, 0);
-        assertSameSets(asList(exec1, exec2), threadsEntered);
+        assertEnteredSoFar(exec1, exec2);
         queueing1.interrupt();
         waitUntilPermitsAquired(2, 1);
         queueing2.interrupt();
@@ -133,7 +133,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(2, 2);
-        assertCompletedExecution(2, exec1, exec2);
+        assertCompletedExecutionLimitedTo(2, exec1, exec2);
     }
 
     @Asynchronous
@@ -147,7 +147,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * be released and waiting threads to become executing.
      */
     @Test(timeout = 500)
-    public void bulkheadWithQueueInterruptExecuting() throws Exception {
+    public void bulkheadWithQueueInterruptExecuting() {
         CompletableFuture<Void> exec2Waiter = new CompletableFuture<>();
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
         Thread exec2 = callBulkheadWithNewThreadAndWaitFor(exec2Waiter);
@@ -157,7 +157,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 2);
         assertEnteredAndExited(2, 0);
-        assertSameSets(asList(exec1, exec2), threadsEntered);
+        assertEnteredSoFar(exec1, exec2);
         exec1.interrupt(); // should cause exit of bulkhead
         waitUntilPermitsAquired(2, 1);
         assertEnteredAndExited(3, 1);
@@ -169,7 +169,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(4, 4);
-        assertCompletedExecution(2, exec1, exec2, queueing1, queueing2);
+        assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
     }
 
     @Asynchronous
@@ -178,4 +178,73 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         return waitThenReturnSuccess(waiter);
     }
 
+    /**
+     * Similar to {@link #bulkheadWithQueue()} but one thread executing fails by completing the {@link CompletionStage}
+     * with an exception. This should exit the bulkhead and allow another thread to run.
+     */
+    @Test(timeout = 500)
+    public void bulkheadWithQueueCompleteWithException() {
+        CompletableFuture<Void> exec1Waiter = new CompletableFuture<>();
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(exec1Waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        // must wait here to ensure these two threads actually are the ones getting permits
+        waitUntilPermitsAquired(2, 0);
+        assertEnteredAndExited(2, 0);
+        Thread queueing1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        waitUntilPermitsAquired(2, 2);
+        exec1Waiter.complete(null);
+        waitUntilPermitsAquired(2, 1);
+        assertEnteredAndExited(3, 1);
+        assertExitedSoFar(exec1);
+        waiter.complete(null); //
+        waitUntilPermitsAquired(0, 0);
+        assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 2)
+    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) {
+        if (waiter == this.waiter)
+            return waitThenReturnSuccess(waiter);
+        return waitThenReturn(waiter, () -> {
+            CompletableFuture<String> res = new CompletableFuture<>();
+            res.completeExceptionally(new RuntimeException("Simulated Bulkhead method error"));
+            return res;
+        });
+    }
+
+    /**
+     * Similar to {@link #bulkheadWithQueue()} but one thread executing throws an exception which should exist the
+     * bulkhead and allow another queueing thread to run.
+     */
+    @Test(timeout = 500)
+    public void bulkheadWithQueueThrowsException() {
+        CompletableFuture<Void> exec1Waiter = new CompletableFuture<>();
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(exec1Waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        // must wait here to ensure these two threads actually are the ones getting permits
+        waitUntilPermitsAquired(2, 0);
+        assertEnteredAndExited(2, 0);
+        Thread queueing1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        waitUntilPermitsAquired(2, 2);
+        exec1Waiter.complete(null);
+        waitUntilPermitsAquired(2, 1);
+        assertEnteredAndExited(3, 1);
+        assertExitedSoFar(exec1);
+        waiter.complete(null); //
+        waitUntilPermitsAquired(0, 0);
+        assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 2)
+    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) {
+        if (waiter != this.waiter)
+            return waitThenReturn(waiter, () -> {
+                throw new RuntimeException("Simulated Bulkhead method error");
+            });
+        return waitThenReturnSuccess(waiter);
+    }
 }

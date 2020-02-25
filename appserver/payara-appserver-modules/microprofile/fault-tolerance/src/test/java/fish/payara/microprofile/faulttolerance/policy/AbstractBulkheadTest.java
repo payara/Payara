@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import javax.interceptor.InvocationContext;
 
@@ -110,21 +111,29 @@ abstract class AbstractBulkheadTest {
         }
     }
 
-    void assertCompletedExecution(int expectedMaxConcurrentExecutions, Thread... expectedHaveExecuted) {
+    void assertCompletedExecutionLimitedTo(int expectedMaxConcurrentExecutions, Thread... expectedHaveExecuted) {
         assertEquals(expectedHaveExecuted.length, bulkheadMethodCallCount.get());
         assertEquals(0, concurrentExecutionsCount.get());
         assertRange(1, expectedMaxConcurrentExecutions, maxConcurrentExecutionsCount.get());
-        assertSameSets(asList(expectedHaveExecuted), threadsEntered);
-        assertSameSets(asList(expectedHaveExecuted), threadsExited);
+        assertEnteredSoFar(expectedHaveExecuted);
+        assertExitedSoFar(expectedHaveExecuted);
+    }
+
+    void assertExitedSoFar(Thread... expectedSet) {
+        assertSameSets("exited in unexpected order", asList(expectedSet), threadsExited);
+    }
+
+    void assertEnteredSoFar(Thread... expectedSet) {
+        assertSameSets("entered in unexpected order", asList(expectedSet), threadsEntered);
     }
 
     @SafeVarargs
-    final void assertExecutionGroups(List<Thread>... expectedConcurrentThreadGroups) {
+    final void assertExecutionGroups(List<Thread> actual, List<Thread>... expectedConcurrentThreadGroups) {
         int startIndex = 0;
         for (List<Thread> group : expectedConcurrentThreadGroups) {
             int length = group.size();
-            assertSameSets(group, threadsEntered.subList(startIndex, startIndex + length));
-            assertSameSets(group, threadsExited.subList(startIndex, startIndex + length));
+            assertSameSets((actual == threadsEntered ? "entered" : "exited") + " in unexpected order", group,
+                    actual.subList(startIndex, startIndex + length));
             startIndex += length;
         }
     }
@@ -143,6 +152,10 @@ abstract class AbstractBulkheadTest {
     }
 
     CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws AssertionError {
+        return waitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
+    }
+
+    CompletionStage<String> waitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws AssertionError {
         maxConcurrentExecutionsCount.accumulateAndGet(concurrentExecutionsCount.incrementAndGet(), Integer::max);
         bulkheadMethodCallCount.incrementAndGet();
         threadsEntered.add(Thread.currentThread());
@@ -154,13 +167,17 @@ abstract class AbstractBulkheadTest {
             threadsExited.add(Thread.currentThread());
             concurrentExecutionsCount.decrementAndGet();
         }
-        return CompletableFuture.completedFuture("Success");
+        return result.get();
     }
 
-    void assertFurtherThreadThrowsBulkheadException() throws Exception {
+    void assertFurtherThreadThrowsBulkheadException() {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         for (int i = 0; i < 10; i++) { // 10 attempts to be sure
-            assertProceedingThrowsBulkheadException1(annotatedMethod);
+            try {
+                assertProceedingThrowsBulkheadException1(annotatedMethod);
+            } catch (Exception e) {
+                throw new AssertionError("Did not throw BulkheadException but: ", e);
+            }
         }
     }
 
@@ -196,11 +213,11 @@ abstract class AbstractBulkheadTest {
         return actual == null ? expected == 0 : actual.acquiredPermits() == expected;
     }
 
-    static <E> void assertSameSets(Collection<E> expected, Collection<E> actual) {
-        assertEquals(new HashSet<>(expected), new HashSet<>(actual));
+    private static <E> void assertSameSets(String msg, Collection<E> expected, Collection<E> actual) {
+        assertEquals(msg, new HashSet<>(expected), new HashSet<>(actual));
     }
 
     static void assertRange(int expectedMin, int expectedMax, int actual) {
         assertThat(actual, both(greaterThanOrEqualTo(expectedMin)).and(lessThanOrEqualTo(expectedMax)));
-    }    
+    }
 }
