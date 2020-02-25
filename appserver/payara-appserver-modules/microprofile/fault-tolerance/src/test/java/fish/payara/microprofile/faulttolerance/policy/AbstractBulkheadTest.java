@@ -5,6 +5,9 @@ import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -12,8 +15,11 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -81,17 +87,68 @@ abstract class AbstractBulkheadTest {
 
     private final AtomicInteger nextCallerThreadName = new AtomicInteger();
 
+    private final Map<Thread, String> executionResultsByThread = new ConcurrentHashMap<>();
+    private final Map<Thread, Exception> executionErrorsByThread = new ConcurrentHashMap<>();
+
     /*
      * Helpers 
      */
 
     Thread callBulkheadWithNewThreadAndWaitFor(CompletableFuture<Void> waiter) {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        Runnable task = () ->  proceedToResultValueOrFail(this, annotatedMethod, waiter);
+        Runnable task = () ->  {
+            try {
+                Object res = proceedToResultValue(this, annotatedMethod, waiter);
+                recordCallerResult(res);
+            } catch (Exception e) {
+                executionErrorsByThread.putIfAbsent(Thread.currentThread(), e);
+            }
+        };
         Thread t = new Thread(task);
+        t.setDaemon(true);
         t.setName(nextCallerThreadName.incrementAndGet() + "");
         t.start();
         return t;
+    }
+
+    private void recordCallerResult(Object res) throws AssertionError {
+        try {
+            Object value = res;
+            if (res instanceof CompletionStage<?>) {
+                value = ((CompletionStage<?>) res).toCompletableFuture().get();
+            } else if (res instanceof Future<?>) {
+                value = ((Future<?>) res).get();
+            } 
+            if (value != null) {
+                executionResultsByThread.put(Thread.currentThread(), value.toString());
+            }
+        } catch (Exception e) {
+            executionErrorsByThread.put(Thread.currentThread(), e);
+        }
+    }
+
+    void assertExecutionResult(String expected, Thread... forThreads) {
+        for (Thread t : forThreads) {
+            assertEquals("Unexpected result for thread " + t.getName(), expected, executionResultsByThread.get(t));
+        }
+    }
+
+    void assertExecutionError(Exception expected, Thread... forThreads) {
+        for (Thread t : forThreads) {
+            assertEqualExceptions(expected, executionErrorsByThread.get(t));
+        }
+        assertEquals("There were more threads with errors", executionErrorsByThread.size(), forThreads.length);
+    }
+
+    private void assertEqualExceptions(Throwable expected, Throwable actual) {
+        assertSame(expected.getClass(), actual.getClass());
+        assertEquals(expected.getMessage(), actual.getMessage());
+        if (expected.getCause() != null) {
+            assertNotNull(actual.getCause());
+            assertEqualExceptions(expected.getCause(), actual.getCause());
+        } else {
+            assertNull(actual.getCause());
+        }
     }
 
     void assertEnteredAndExited(int entered, int exited) {
@@ -138,31 +195,23 @@ abstract class AbstractBulkheadTest {
         }
     }
 
-    Object proceedToResultValueOrFail(Object test, Method annotatedMethod, Future<Void> argument) {
-        try {
-            return proceedToResultValue(test, annotatedMethod, argument);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-    }
-
     Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
         return policy.proceed(new StaticAnalysisContext(test, annotatedMethod, argument), service);
     }
 
-    CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws AssertionError {
+    CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws InterruptedException {
         return waitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 
-    CompletionStage<String> waitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws AssertionError {
+    CompletionStage<String> waitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws InterruptedException {
         maxConcurrentExecutionsCount.accumulateAndGet(concurrentExecutionsCount.incrementAndGet(), Integer::max);
         bulkheadMethodCallCount.incrementAndGet();
         threadsEntered.add(Thread.currentThread());
         try {
             waiter.get();
-        } catch (Exception e) {
-            throw new AssertionError(e);
+        } catch (CancellationException | ExecutionException e) {
+            throw new RuntimeException(e);
         } finally {
             threadsExited.add(Thread.currentThread());
             concurrentExecutionsCount.decrementAndGet();

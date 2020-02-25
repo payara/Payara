@@ -44,9 +44,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.junit.Test;
 
 /**
@@ -55,6 +57,8 @@ import org.junit.Test;
  * @author Jan Bernitt
  */
 public class BulkheadBasicTest extends AbstractBulkheadTest {
+
+    private static final RuntimeException SIMULATED_METHOD_ERROR = new RuntimeException("Simulated Bulkhead method error");
 
     /**
      * Makes 2 concurrent request that should succeed acquiring a bulkhead permit.
@@ -73,10 +77,12 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(2, 2);
         assertCompletedExecutionLimitedTo(2, exec1, exec2);
+        assertExecutionResult("Success", exec1, exec2);
+        assertExecutionError(null);
     }
 
     @Bulkhead(value = 2)
-    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) throws InterruptedException {
         return waitThenReturnSuccess(waiter);
     }
 
@@ -102,11 +108,13 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         assertEnteredAndExited(4, 4);
         assertCompletedExecutionLimitedTo(2, exec1, exec2, queueAndExec1, queueAndExec2);
         assertExecutionGroups(threadsEntered, asList(exec1, exec2), asList(queueAndExec1, queueAndExec2));
+        assertExecutionResult("Success", exec1, exec2, queueAndExec1, queueAndExec2);
+        assertExecutionError(null);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) throws InterruptedException {
         return waitThenReturnSuccess(waiter);
     }
 
@@ -134,11 +142,13 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(2, 2);
         assertCompletedExecutionLimitedTo(2, exec1, exec2);
+        assertExecutionResult("Success", exec1, exec2);
+        assertExecutionError(new ExecutionException(new BulkheadException(new InterruptedException())), queueing1, queueing2);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws InterruptedException {
         return waitThenReturnSuccess(waiter);
     }
 
@@ -170,11 +180,13 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(4, 4);
         assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
+        assertExecutionResult("Success", exec2, queueing1, queueing2);
+        assertExecutionError(new ExecutionException(new InterruptedException()), exec1);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws InterruptedException {
         return waitThenReturnSuccess(waiter);
     }
 
@@ -182,7 +194,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * Similar to {@link #bulkheadWithQueue()} but one thread executing fails by completing the {@link CompletionStage}
      * with an exception. This should exit the bulkhead and allow another thread to run.
      */
-    @Test(timeout = 500)
+    @Test //(timeout = 500)
     public void bulkheadWithQueueCompleteWithException() {
         CompletableFuture<Void> exec1Waiter = new CompletableFuture<>();
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(exec1Waiter);
@@ -200,16 +212,18 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null); //
         waitUntilPermitsAquired(0, 0);
         assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
+        assertExecutionResult("Success", exec2, queueing1, queueing2);
+        assertExecutionError(new ExecutionException(SIMULATED_METHOD_ERROR), exec1);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws InterruptedException {
         if (waiter == this.waiter)
             return waitThenReturnSuccess(waiter);
         return waitThenReturn(waiter, () -> {
             CompletableFuture<String> res = new CompletableFuture<>();
-            res.completeExceptionally(new RuntimeException("Simulated Bulkhead method error"));
+            res.completeExceptionally(SIMULATED_METHOD_ERROR);
             return res;
         });
     }
@@ -236,14 +250,16 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waiter.complete(null); //
         waitUntilPermitsAquired(0, 0);
         assertCompletedExecutionLimitedTo(2, exec1, exec2, queueing1, queueing2);
+        assertExecutionResult("Success", exec2, queueing1, queueing2);
+        assertExecutionError(new ExecutionException(SIMULATED_METHOD_ERROR), exec1);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) {
+    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws InterruptedException {
         if (waiter != this.waiter)
             return waitThenReturn(waiter, () -> {
-                throw new RuntimeException("Simulated Bulkhead method error");
+                throw SIMULATED_METHOD_ERROR;
             });
         return waitThenReturnSuccess(waiter);
     }
