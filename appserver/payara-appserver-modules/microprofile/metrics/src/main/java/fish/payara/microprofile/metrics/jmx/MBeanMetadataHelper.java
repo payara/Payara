@@ -88,7 +88,7 @@ public class MBeanMetadataHelper {
     public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
             List<MBeanMetadata> metadataList, boolean isRetry) {
 
-        if (!metricRegistry.getMetadata().isEmpty() && !isRetry) {
+        if (!metricRegistry.getNames().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
         }
 

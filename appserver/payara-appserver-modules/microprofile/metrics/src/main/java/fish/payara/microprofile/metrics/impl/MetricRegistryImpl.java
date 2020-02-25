@@ -39,10 +39,9 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -50,7 +49,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import static java.util.stream.Collectors.toMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
@@ -60,6 +60,11 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
+
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toMap;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -78,13 +83,17 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
 
-    private final ConcurrentMap<MetricID, Metric> metricMap;
-    private final ConcurrentMap<String, Metadata> metadataMap;
+    static final class MetricEntry {
+        final Metric metric;
+        final Metadata metadata;
 
-    public MetricRegistryImpl() {
-        this.metricMap = new ConcurrentHashMap<>();
-        this.metadataMap = new ConcurrentHashMap<>();
+        MetricEntry(Metric metric, Metadata metadata) {
+            this.metric = metric;
+            this.metadata = metadata;
+        }
     }
+
+    private final ConcurrentMap<String, ConcurrentMap<MetricID, MetricEntry>> metricsByNameAndId = new ConcurrentHashMap<>();
 
     @Override
     public Counter counter(String name) {
@@ -95,7 +104,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     public Counter counter(Metadata metadata) {
         return findMetricOrCreate(metadata, COUNTER);
     }
-    
+
     @Override
     public Counter counter(String name, Tag... tags) {
         return findMetricOrCreate(name, COUNTER, tags);
@@ -137,12 +146,67 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedSet<String> getNames() {
-        SortedSet<String> names = new TreeSet<>();
-        for (MetricID metricID: metricMap.keySet()) {
-            names.add(metricID.getName());
+    public ConcurrentGauge concurrentGauge(String name) {
+        return findMetricOrCreate(name, MetricType.CONCURRENT_GAUGE, new Tag[0]);
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(String name, Tag... tags) {
+        return findMetricOrCreate(name, MetricType.CONCURRENT_GAUGE, tags);
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(Metadata metadata) {
+        return findMetricOrCreate(metadata, MetricType.CONCURRENT_GAUGE);
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, MetricType.CONCURRENT_GAUGE, tags);
+    }
+
+    @Override
+    public Histogram histogram(String name, Tag... tags) {
+        return findMetricOrCreate(name, MetricType.HISTOGRAM, tags);
+    }
+
+    @Override
+    public Histogram histogram(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, MetricType.HISTOGRAM, tags);
+    }
+
+    @Override
+    public Meter meter(String name, Tag... tags) {
+        return findMetricOrCreate(name, METERED, tags);
+    }
+
+    @Override
+    public Meter meter(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, METERED, tags);
+    }
+
+    @Override
+    public Timer timer(String name, Tag... tags) {
+        return findMetricOrCreate(name, TIMER, tags);
+    }
+
+    @Override
+    public Timer timer(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, TIMER, tags);
+    }
+
+    @Override
+    public SortedSet<MetricID> getMetricIDs() {
+        TreeSet<MetricID> ids = new TreeSet<>();
+        for (ConcurrentMap<MetricID, MetricEntry> e : metricsByNameAndId.values()) {
+            ids.addAll(e.keySet());
         }
-        return names;
+        return ids;
+    }
+
+    @Override
+    public SortedSet<String> getNames() {
+        return new TreeSet<>(metricsByNameAndId.keySet());
     }
 
     @Override
@@ -154,7 +218,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     public SortedMap<MetricID, Gauge> getGauges(MetricFilter metricFilter) {
         return findMetrics(Gauge.class, metricFilter);
     }
-    
+
     @Override
     public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges() {
         return getConcurrentGauges(ALL);
@@ -207,94 +271,103 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<MetricID, Metric> getMetrics() {
-        return Collections.unmodifiableMap(metricMap);
+        return findMetrics((id, metric) -> true);
     }
 
     @Override
     public Map<String, Metadata> getMetadata() {
-        return Collections.unmodifiableMap(metadataMap);
+        return metricsByNameAndId.entrySet().stream().collect(toMap(Entry::getKey, 
+                e -> e.getValue().values().iterator().next().metadata));
     }
 
     @Override
-    public synchronized boolean remove(String name) {
-        boolean removedAny = false;
-        for (MetricID metricID : metricMap.keySet()) {
-            if (metricID.getName().equals(name)) {
-                metricMap.remove(metricID);
-                removedAny = true;
+    public boolean remove(String name) {
+        return metricsByNameAndId.remove(name) != null;
+    }
+
+    @Override
+    public boolean remove(MetricID metricID) {
+        AtomicBoolean removed = new AtomicBoolean();
+        metricsByNameAndId.computeIfPresent(metricID.getName(), (name, group) -> {
+            if (group.remove(metricID) != null) {
+                removed.set(true);
             }
-        }
-        metadataMap.remove(name);
-        return removedAny;
+            return group.size() == 0 ? null : group;
+        });
+        return removed.get();
     }
 
     @Override
-    public synchronized boolean remove(MetricID mid) {
-        metadataMap.remove(mid.getName());
-        return metricMap.remove(mid) != null;
+    public void removeMatching(MetricFilter filter) {
+        if (filter == MetricFilter.ALL) {
+            metricsByNameAndId.clear();
+        }
+        removeAndCountMatching(filter);
     }
 
-    @Override
-    public void removeMatching(MetricFilter metricFilter) {
-        Iterator<Entry<MetricID, Metric>> iterator = metricMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Entry<MetricID, Metric> entry = iterator.next();
-            if (metricFilter.matches(entry.getKey(), entry.getValue())) {
-                remove(entry.getKey());
-            }
-        }
-    }
-    
-    private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag[] tags) {
-        Metadata existingMetadata = metadataMap.get(name);
-        if (existingMetadata != null) {
-            if (existingMetadata.getTypeRaw().equals(metricType)) {
-                Metric existingMetric = metricMap.get(new MetricID(name, tags));
-                if (existingMetric != null) {
-                    return (T) existingMetric;
-                } else {
-                    return register(existingMetadata, null, tags);
+    private int removeAndCountMatching(MetricFilter filter) {
+        int removed = 0;
+        Iterator<ConcurrentMap<MetricID, MetricEntry>> groupIter = metricsByNameAndId.values().iterator();
+        while (groupIter.hasNext()) {
+            ConcurrentMap<MetricID, MetricEntry> group = groupIter.next();
+            Iterator<Entry<MetricID, MetricEntry>> metricIter = group.entrySet().iterator();
+            while (metricIter.hasNext()) { 
+                Entry<MetricID, MetricEntry> entry = metricIter.next();
+                if (filter.matches(entry.getKey(), entry.getValue().metric)) {
+                    groupIter.remove();
+                    removed++;
                 }
-            } else {
-                throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting MetricType, looking for %s, got %s",
-                        metricType, metadataMap.get(name).getTypeRaw().equals(metricType)));
             }
-        } else {
-            Metadata metadata = Metadata.builder().withName(name).withType(metricType).build();
+            if (group.size() == 0) {
+                groupIter.remove();
+            }
+        }
+        return removed;
+    }
+
+    private <T extends Metric> SortedMap<MetricID, T> findMetrics(Class<T> metricClass, MetricFilter filter) {
+        return findMetrics((id, metric) -> metricClass.isInstance(metric) && filter.matches(id, metric));
+    }
+    @SuppressWarnings("unchecked")
+    private <T extends Metric> SortedMap<MetricID, T> findMetrics(MetricFilter filter) {
+        SortedMap<MetricID, T> matches = new TreeMap<>();
+        for (ConcurrentMap<MetricID, MetricEntry> group : metricsByNameAndId.values()) {
+            for (Entry<MetricID, MetricEntry> entry : group.entrySet()) {
+                if (filter.matches(entry.getKey(), entry.getValue().metric)) {
+                    matches.put(entry.getKey(), (T) entry.getValue().metric);
+                }
+            }
+        }
+        return matches;
+    }
+
+    private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag... tags) {
+        return findMetricOrCreate(Metadata.builder().withName(name).withType(metricType).build(), true, tags);
+    }
+
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, Tag... tags) {
+        return findMetricOrCreate(Metadata.builder(metadata).withType(metricType).build(), false, tags);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, Tag... tags) {
+        MetricID metricID = new MetricID(metadata.getName(), tags);
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(metricID.getName());
+        if (group == null) {
             return register(metadata, null, tags);
         }
-    }
-    
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType) {
-        Metric existing = metricMap.get(new MetricID(metadata.getName()));
-        Metadata existingMetadata = metadataMap.get(metadata.getName());
-        Metadata newMetadata = Metadata.builder(metadata).withType(metricType).build();
-        if (existing != null) {
-            if (newMetadata.equals(existingMetadata)) {
-                return (T) existing;
-            } else {
-                throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
-                        newMetadata.toString(), existingMetadata.toString()));
-            }
-        } else {
-            return addMetric(newMetadata);
+        MetricEntry entry = group.get(metricID);
+        if (entry == null) {
+            return register(metadata, null, tags);
         }
-    }
-    
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, Tag[] tags) {
-        Metric existing = metricMap.get(new MetricID(metadata.getName(), tags));
-        Metadata existingMetadata = metadataMap.get(metadata.getName());
-        Metadata newMetadata = Metadata.builder(metadata).withType(metricType).build();
-        if (existing != null) {
-            if (newMetadata.equals(existingMetadata)) {
-                return (T) existing;
-            } else {
-                throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
-                        newMetadata.toString(), existingMetadata.toString()));
-            }
-        } else {
-            return register(newMetadata, null, tags);
+        Metric existing = entry.metric;
+        Metadata existingMetadata = entry.metadata;
+        if (useExistingMetadata && metadata.getType() != existingMetadata.getType() 
+                || !useExistingMetadata && !metadata.equals(existingMetadata)) {
+            throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
+                    metadata.toString(), existingMetadata.toString()));
         }
+        return (T) existing;
     }
 
     @Override
@@ -303,182 +376,103 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public <T extends Metric> T register(Metadata newMetadata, T metric, Tag... tags) throws IllegalArgumentException {
+    public <T extends Metric> T register(Metadata metadata, T metric) throws IllegalArgumentException {
+        return register(metadata, metric, new Tag[0]);
+    }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Metric> T register(Metadata newMetadata, T metric, Tag... tags) throws IllegalArgumentException {
         String name = newMetadata.getName();
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Metric name must not be null or empty");
         }
-
-        Metadata existingMetadata = metadataMap.get(name);
-        MetricID metricID = new MetricID(name, tags);
-
-        if (existingMetadata == null) {
-            if (metric == null) {
-                metric = createMetricInstance(newMetadata);
-            }
-            synchronized (this) {
-                metricMap.put(metricID, metric);
-                metadataMap.put(name, Metadata.builder(newMetadata).build());
-            }
-        } else if (existingMetadata.equals(newMetadata)) {
-            T existingMetric = (T) metricMap.get(metricID);
-            if (existingMetric == null) {
-                //same metadata, different tags
-                if (metric == null) {
-                    metric = createMetricInstance(newMetadata);
-                }
-                metricMap.put(metricID, metric);
-            } else if (existingMetadata.isReusable() || newMetadata.isReusable()) {
-
-                //if existing metric declared not reusable
-                if (!existingMetadata.isReusable()) {
-                    throw new IllegalArgumentException(String.format(
-                            "Metric ['%s'] already exists and declared not reusable", name
-                    ));
-                }
-
-                //registration call itself declares the metric to not be reusable
-                if (!newMetadata.isReusable()) {
-                    throw new IllegalArgumentException(String.format(
-                            "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
-                    ));
-                }
-
-                //Only metrics of the same type can be reused under the same name
-                if (!existingMetadata.getTypeRaw().equals(newMetadata.getTypeRaw())) {
-                    throw new IllegalArgumentException(String.format(
-                            "Metric ['%s'] type['%s'] does not match with existing type['%s']",
-                            name, newMetadata.getType(), existingMetadata.getType()
-                    ));
-                }
-
-                //reusable does not apply to gauges
-                if (GAUGE.equals(newMetadata.getTypeRaw())) {
-                    throw new IllegalArgumentException(String.format(
-                            "Gauge type metric['%s'] is not reusable", name
-                    ));
-                }
-
-                metric = (T) metricMap.get(new MetricID(name, tags));
-            } else {
-                  throw new IllegalArgumentException(String.format(
-                            "Metric ['%s'] already exists and declared not reusable", name
-                    ));
-            }
-        } else {
-                throw new IllegalArgumentException(String.format(
-                        "Metadata ['%s'] already registered, does not match provided ['%s']",
-                        existingMetadata.toString(), newMetadata.toString()
-                ));
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.computeIfAbsent(name, key -> new ConcurrentHashMap<>());
+        Metric newMetric = metric != null ? metric : createMetricInstance(newMetadata);
+        MetricEntry entry = group.computeIfAbsent(new MetricID(name, tags), metricID -> new MetricEntry(newMetric, newMetadata));
+        if (entry.metric != metric) {
+            checkReusableMetadata(name, newMetadata, entry.metadata);
         }
-        return metric;
-    }
-    
-    @Override
-    public <T extends Metric> T register(Metadata metadata, T t) throws IllegalArgumentException {
-        return register(metadata, t, new Tag[0]);
+        return (T) entry.metric;
     }
 
-    private <T extends Metric> T addMetric(Metadata metadata) {
-        return register(metadata, null);
+    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata) {
+        if (!existingMetadata.equals(newMetadata)) {
+            throw new IllegalArgumentException(String.format(
+                  "Metadata ['%s'] already registered, does not match provided ['%s']",
+                  existingMetadata.toString(), newMetadata.toString()
+          ));
+        }
+
+        //if existing metric declared not reusable
+        if (!existingMetadata.isReusable()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] already exists and declared not reusable", name
+            ));
+        }
+
+        //registration call itself declares the metric to not be reusable
+        if (!newMetadata.isReusable()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
+            ));
+        }
+
+        //Only metrics of the same type can be reused under the same name
+        if (existingMetadata.getTypeRaw() != newMetadata.getTypeRaw()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                    name, newMetadata.getType(), existingMetadata.getType()
+            ));
+        }
+
+        //reusable does not apply to gauges
+        if (GAUGE.equals(newMetadata.getTypeRaw())) {
+            throw new IllegalArgumentException(String.format(
+                    "Gauge type metric['%s'] is not reusable", name
+            ));
+        }
     }
 
-    private <T extends Metric> T createMetricInstance(Metadata metadata) {
+    private static Metric createMetricInstance(Metadata metadata) {
         String name = metadata.getName();
-        Metric metric;
         switch (metadata.getTypeRaw()) {
-            case COUNTER:
-                metric = new CounterImpl();
-                break;
-            case CONCURRENT_GAUGE:
-                metric = new ConcurrentGaugeImpl();
-                break;
-            case GAUGE:
-                throw new IllegalArgumentException(String.format(
-                        "Unsupported operation for Gauge ['%s']", name
-                ));
-            case METERED:
-                metric = new MeterImpl();
-                break;
-            case HISTOGRAM:
-                metric = new HistogramImpl();
-                break;
-            case TIMER:
-                metric = new TimerImpl();
-                break;
-            case INVALID:
-            default:
-                throw new IllegalStateException("Invalid metric type : " + metadata.getTypeRaw());
+        case COUNTER:
+            return new CounterImpl();
+        case CONCURRENT_GAUGE:
+            return new ConcurrentGaugeImpl();
+        case GAUGE:
+            throw new IllegalArgumentException(String.format("Unsupported operation for Gauge ['%s']", name));
+        case METERED:
+            return new MeterImpl();
+        case HISTOGRAM:
+            return new HistogramImpl();
+        case TIMER:
+            return new TimerImpl();
+        case INVALID:
+        default:
+            throw new IllegalStateException("Invalid metric type : " + metadata.getTypeRaw());
         }
-        return (T)metric;
     }
 
-    private <T extends Metric> SortedMap<MetricID, T> findMetrics(Class<T> metricClass, MetricFilter metricFilter) {
-        SortedMap<MetricID, T> out = metricMap.entrySet().stream()
-                .filter(e -> metricClass.isInstance(e.getValue()))
-                .filter(e -> metricFilter.matches(e.getKey(), e.getValue()))
-                .collect(toMap(Entry::getKey, e -> (T) e.getValue(), (e1, e2) -> e1, TreeMap::new));
-        return Collections.unmodifiableSortedMap(out);
+    /*
+     * Non-API Methods (Extra Methods)
+     */
+
+    public Set<MetricID> getMetricsIDs(String name) {
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
+        return group == null ? emptySet() : unmodifiableSet(group.keySet()); 
     }
 
-    @Override
-    public ConcurrentGauge concurrentGauge(String name) {
-        return findMetricOrCreate(name, MetricType.CONCURRENT_GAUGE, new Tag[0]);
+    public Map<MetricID, Metric> getMetrics(String name) {
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
+        return group == null 
+                ? emptyMap()
+                : group.entrySet().stream().collect(toMap(Entry::getKey, e -> e.getValue().metric));
     }
 
-    @Override
-    public ConcurrentGauge concurrentGauge(String name, Tag... tags) {
-        return findMetricOrCreate(name, MetricType.CONCURRENT_GAUGE, tags);
+    public Metadata getMetadata(String name) {
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
+        return group == null ? null : group.values().iterator().next().metadata;
     }
-
-    @Override
-    public ConcurrentGauge concurrentGauge(Metadata metadata) {
-        return findMetricOrCreate(metadata, MetricType.CONCURRENT_GAUGE);
-    }
-
-    @Override
-    public ConcurrentGauge concurrentGauge(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, MetricType.CONCURRENT_GAUGE, tags);
-    }
-    
-    @Override
-    public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, MetricType.HISTOGRAM, tags);
-    }
-    
-    @Override
-    public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, MetricType.HISTOGRAM, tags);
-    }
-
-    @Override
-    public Meter meter(String name, Tag... tags) {
-        return findMetricOrCreate(name, METERED, tags);
-    }
-
-    @Override
-    public Meter meter(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, METERED, tags);
-    }
-
-    @Override
-    public Timer timer(String name, Tag... tags) {
-        return findMetricOrCreate(name, TIMER, tags);
-    }
-
-    @Override
-    public Timer timer(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, TIMER, tags);
-    }
-
-    @Override
-    public SortedSet<MetricID> getMetricIDs() {
-        TreeSet<MetricID> metricIDs = new TreeSet<>();
-        for (MetricID metricID: metricMap.keySet()) {
-            metricIDs.add(metricID);
-        }
-        return metricIDs;
-    }
-
 }
