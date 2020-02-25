@@ -39,55 +39,22 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.lang.reflect.Method;
+import static org.junit.Assert.assertSame;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
-import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.junit.Test;
-
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
-import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 /**
  * Tests the basic correctness of {@link Bulkhead} handling.
  * 
  * @author Jan Bernitt
  */
-public class BulkheadBasicTest {
-
-    final AtomicReference<BulkheadSemaphore> concurrentExecutions = new AtomicReference<>();
-    final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
-    final AtomicInteger bulkheadWithoutQueueCallCount = new AtomicInteger();
-    final AtomicInteger bulkheadWithQueueCallCount = new AtomicInteger();
-    final AtomicInteger bulkheadWithQueueInterruptedCallCount = new AtomicInteger();
-
-    private final FaultToleranceService service = new FaultToleranceServiceStub() {
-        @Override
-        public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
-            return concurrentExecutions.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
-        }
-
-        @Override
-        public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
-            return waitingQueuePopulation.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(queueCapacity));
-        }
-    };
+public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     /**
      * Makes 2 concurrent request that should succeed acquiring a bulkhead permit.
@@ -97,21 +64,19 @@ public class BulkheadBasicTest {
      */
     @Test(timeout = 500)
     public void bulkheadWithoutQueue() throws Exception {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        CompletableFuture<Void> waiter = new CompletableFuture<>();
-        Runnable task = () ->  proceedToResultValueOrFail(this, annotatedMethod, waiter);
-        new Thread(task).start();
-        new Thread(task).start();
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 0);
-        assertProceedingThrowsBulkheadException(annotatedMethod); 
+        assertEnteredAndExited(2, 0);
+        assertFurtherThreadThrowsBulkheadException(); 
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(2, bulkheadWithoutQueueCallCount.get());
+        assertEnteredAndExited(2, 2);
+        assertCompletedExecution(2, exec1, exec2);
     }
 
     @Bulkhead(value = 2)
     public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) {
-        bulkheadWithoutQueueCallCount.incrementAndGet();
         return waitThenReturnSuccess(waiter);
     }
 
@@ -124,24 +89,24 @@ public class BulkheadBasicTest {
      */
     @Test(timeout = 500)
     public void bulkheadWithQueue() throws Exception {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        CompletableFuture<Void> waiter = new CompletableFuture<>();
-        Runnable task = () ->  proceedToResultValueOrFail(this, annotatedMethod, waiter);
-        new Thread(task).start();
-        new Thread(task).start();
-        new Thread(task).start();
-        new Thread(task).start();
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        waitUntilPermitsAquired(2, 0);
+        assertEnteredAndExited(2, 0);
+        Thread queueAndExec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread queueAndExec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 2);
-        assertProceedingThrowsBulkheadException(annotatedMethod); 
+        assertFurtherThreadThrowsBulkheadException(); 
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(4, bulkheadWithQueueCallCount.get());
+        assertEnteredAndExited(4, 4);
+        assertCompletedExecution(2, exec1, exec2, queueAndExec1, queueAndExec2);
+        assertExecutionGroups(asList(exec1, exec2), asList(queueAndExec1, queueAndExec2));
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
     public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) {
-        bulkheadWithQueueCallCount.incrementAndGet();
         return waitThenReturnSuccess(waiter);
     }
 
@@ -150,89 +115,67 @@ public class BulkheadBasicTest {
      * be released.
      */
     @Test(timeout = 500)
-    public void bulkheadWithQueueInterrupted() throws Exception {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        CompletableFuture<Void> waiter = new CompletableFuture<>();
-        Runnable task = () ->  proceedToResultValueOrFail(this, annotatedMethod, waiter);
-        new Thread(task).start();
-        new Thread(task).start();
+    public void bulkheadWithQueueInterruptQueueing() throws Exception {
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         // must wait here to ensure these two threads actually are the ones getting permits
-        waitUntilPermitsAquired(2, 0); 
-        Thread queueing1 = new Thread(task);
-        queueing1.start();
-        Thread queueing2 = new Thread(task);
-        queueing2.start();
+        waitUntilPermitsAquired(2, 0);
+        assertEnteredAndExited(2, 0);
+        Thread queueing1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
         waitUntilPermitsAquired(2, 2);
+        assertEnteredAndExited(2, 0);
+        assertSameSets(asList(exec1, exec2), threadsEntered);
         queueing1.interrupt();
         waitUntilPermitsAquired(2, 1);
         queueing2.interrupt();
         waitUntilPermitsAquired(2, 0);
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(2, bulkheadWithQueueInterruptedCallCount.get());
+        assertEnteredAndExited(2, 2);
+        assertCompletedExecution(2, exec1, exec2);
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterrupted_Method(Future<Void> waiter) {
-        bulkheadWithQueueInterruptedCallCount.incrementAndGet();
+    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) {
         return waitThenReturnSuccess(waiter);
     }
 
-    /*
-     * Helpers 
+    /**
+     * Similar to {@link #bulkheadWithQueue()} just that we interrupt the executing threads and expect their permits to
+     * be released and waiting threads to become executing.
      */
-
-    private Object proceedToResultValueOrFail(Object test, Method annotatedMethod, Future<Void> argument) {
-        try {
-            return proceedToResultValue(test, annotatedMethod, argument);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+    @Test(timeout = 500)
+    public void bulkheadWithQueueInterruptExecuting() throws Exception {
+        CompletableFuture<Void> exec2Waiter = new CompletableFuture<>();
+        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(exec2Waiter);
+        // must wait here to ensure these two threads actually are the ones getting permits
+        waitUntilPermitsAquired(2, 0); 
+        Thread queueing1 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(waiter);
+        waitUntilPermitsAquired(2, 2);
+        assertEnteredAndExited(2, 0);
+        assertSameSets(asList(exec1, exec2), threadsEntered);
+        exec1.interrupt(); // should cause exit of bulkhead
+        waitUntilPermitsAquired(2, 1);
+        assertEnteredAndExited(3, 1);
+        assertSame(exec1, threadsExited.get(0));
+        exec2Waiter.complete(null); // exec2 is done, exit of bulkhead
+        waitUntilPermitsAquired(2, 0);
+        assertEnteredAndExited(4, 2);
+        assertEquals(asList(exec1, exec2), threadsExited);
+        waiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        assertEnteredAndExited(4, 4);
+        assertCompletedExecution(2, exec1, exec2, queueing1, queueing2);
     }
 
-    private Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
-        FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
-        return policy.proceed(new StaticAnalysisContext(test, annotatedMethod, argument), service);
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 2)
+    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) {
+        return waitThenReturnSuccess(waiter);
     }
 
-    private static CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws AssertionError {
-        try {
-            waiter.get();
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return CompletableFuture.completedFuture("Success");
-    }
-
-    private void assertProceedingThrowsBulkheadException(Method annotatedMethod) throws Exception {
-        try {
-            Object resultValue = proceedToResultValue(this, annotatedMethod, null);
-            if (resultValue instanceof Future) {
-                ((Future<?>) resultValue).get(); // should throw the exception
-            }
-            fail("Expected to fail with a BulkheadException");
-        } catch (BulkheadException ex) {
-            // as expected for non asyncronous
-        } catch (ExecutionException ex) {
-            assertEquals(BulkheadException.class, ex.getCause().getClass());
-        }
-    }
-
-    private void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
-        long delayMs = 4;
-        while (    !equalAcquiredPermits(concurrentExecutions, this.concurrentExecutions.get())
-                || !equalAcquiredPermits(waitingQueuePopulation, this.waitingQueuePopulation.get())) {
-            try {
-                Thread.sleep(delayMs);
-            } catch (InterruptedException e) {
-                return; // give up (test was cancelled)
-            }
-            delayMs *= 2;
-        }
-    }
-
-    private static boolean equalAcquiredPermits(int expected, BulkheadSemaphore actual) {
-        return actual == null ? expected == 0 : actual.acquiredPermits() == expected;
-    }
 }
