@@ -302,11 +302,6 @@ public class MetricRegistryImpl extends MetricRegistry {
         if (filter == MetricFilter.ALL) {
             metricsByNameAndId.clear();
         }
-        removeAndCountMatching(filter);
-    }
-
-    private int removeAndCountMatching(MetricFilter filter) {
-        int removed = 0;
         Iterator<ConcurrentMap<MetricID, MetricEntry>> groupIter = metricsByNameAndId.values().iterator();
         while (groupIter.hasNext()) {
             ConcurrentMap<MetricID, MetricEntry> group = groupIter.next();
@@ -315,14 +310,12 @@ public class MetricRegistryImpl extends MetricRegistry {
                 Entry<MetricID, MetricEntry> entry = metricIter.next();
                 if (filter.matches(entry.getKey(), entry.getValue().metric)) {
                     groupIter.remove();
-                    removed++;
                 }
             }
             if (group.size() == 0) {
                 groupIter.remove();
             }
         }
-        return removed;
     }
 
     private <T extends Metric> SortedMap<MetricID, T> findMetrics(Class<T> metricClass, MetricFilter filter) {
@@ -342,6 +335,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag... tags) {
+        checkNameIsNotNullOrEmpty(name);
         return findMetricOrCreate(Metadata.builder().withName(name).withType(metricType).build(), true, tags);
     }
 
@@ -358,52 +352,77 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         MetricEntry entry = group.get(metricID);
         if (entry == null) {
-            return register(metadata, null, tags);
+            Iterator<MetricEntry> iter = group.values().iterator();
+            if (iter.hasNext()) {
+                checkSameType(metricID.getName(), metadata, iter.next().metadata);
+            }
+            return register(metadata, useExistingMetadata, null, tags);
         }
         Metric existing = entry.metric;
         Metadata existingMetadata = entry.metadata;
         if (useExistingMetadata && metadata.getType() != existingMetadata.getType() 
                 || !useExistingMetadata && !metadata.equals(existingMetadata)) {
-            throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
-                    metadata.toString(), existingMetadata.toString()));
+            throw new IllegalArgumentException(
+                    String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
+                            metadata.toString(), existingMetadata.toString()));
         }
         return (T) existing;
     }
 
     @Override
     public <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
-        return register(Metadata.builder().withName(name).withType(MetricType.from(metric.getClass())).build(), metric);
+        checkNameIsNotNullOrEmpty(name);
+        return register(Metadata.builder().withName(name).build(), true, metric);
     }
 
     @Override
     public <T extends Metric> T register(Metadata metadata, T metric) throws IllegalArgumentException {
-        return register(metadata, metric, new Tag[0]);
+        return register(metadata, false, metric);
+    }
+
+    @Override
+    public <T extends Metric> T register(Metadata metadata, T metric, Tag... tags) throws IllegalArgumentException {
+        return register(metadata, false, metric, tags);
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public <T extends Metric> T register(Metadata newMetadata, T metric, Tag... tags) throws IllegalArgumentException {
-        String name = newMetadata.getName();
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Metric name must not be null or empty");
+    private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
+        if (metadata.getTypeRaw() == MetricType.INVALID) {
+            metadata = Metadata.builder(metadata).withType(MetricType.from(metric.getClass())).build();
         }
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.computeIfAbsent(name, key -> new ConcurrentHashMap<>());
-        Metric newMetric = metric != null ? metric : createMetricInstance(newMetadata);
-        MetricEntry entry = group.computeIfAbsent(new MetricID(name, tags), metricID -> new MetricEntry(newMetric, newMetadata));
+        String name = metadata.getName();
+        checkNameIsNotNullOrEmpty(name);
+        if (useExistingMetadata) {
+            Metadata existingMetadata = getMetadata(name);
+            if (existingMetadata != null) {
+                checkSameType(name, metadata, existingMetadata);
+                metadata = existingMetadata;
+            }
+        }
+        final Metadata newMetadata = metadata;
+        final Metric newMetric = metric != null ? metric : createMetricInstance(newMetadata);
+        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.computeIfAbsent(name, 
+                key -> new ConcurrentHashMap<>());
+        MetricID metricID = new MetricID(name, tags);
+        MetricEntry entry = group.computeIfAbsent(metricID, key -> new MetricEntry(newMetric, newMetadata));
         if (entry.metric != metric) {
-            checkReusableMetadata(name, newMetadata, entry.metadata);
+            try {
+                checkReusableMetadata(name, newMetadata, entry.metadata);
+            } catch (IllegalArgumentException ex) {
+                remove(metricID); // this metric was illegal, remove again (best way to make sure valid path is correct)
+                throw ex;
+            }
         }
         return (T) entry.metric;
     }
 
-    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata) {
-        if (!existingMetadata.equals(newMetadata)) {
-            throw new IllegalArgumentException(String.format(
-                  "Metadata ['%s'] already registered, does not match provided ['%s']",
-                  existingMetadata.toString(), newMetadata.toString()
-          ));
+    private static void checkNameIsNotNullOrEmpty(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Metric name must not be null or empty");
         }
+    }
 
+    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata) {
         //if existing metric declared not reusable
         if (!existingMetadata.isReusable()) {
             throw new IllegalArgumentException(String.format(
@@ -418,18 +437,29 @@ public class MetricRegistryImpl extends MetricRegistry {
             ));
         }
 
-        //Only metrics of the same type can be reused under the same name
-        if (existingMetadata.getTypeRaw() != newMetadata.getTypeRaw()) {
-            throw new IllegalArgumentException(String.format(
-                    "Metric ['%s'] type['%s'] does not match with existing type['%s']",
-                    name, newMetadata.getType(), existingMetadata.getType()
-            ));
-        }
+        checkSameType(name, newMetadata, existingMetadata);
 
         //reusable does not apply to gauges
         if (GAUGE.equals(newMetadata.getTypeRaw())) {
             throw new IllegalArgumentException(String.format(
                     "Gauge type metric['%s'] is not reusable", name
+            ));
+        }
+
+        if (!existingMetadata.equals(newMetadata)) {
+            throw new IllegalArgumentException(String.format(
+                  "Metadata ['%s'] already registered, does not match provided ['%s']",
+                  existingMetadata.toString(), newMetadata.toString()
+          ));
+        }
+    }
+
+    private static void checkSameType(String name, Metadata newMetadata, Metadata existingMetadata) {
+        //Only metrics of the same type can be reused under the same name
+        if (existingMetadata.getTypeRaw() != newMetadata.getTypeRaw()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                    name, newMetadata.getType(), existingMetadata.getType()
             ));
         }
     }
@@ -474,5 +504,22 @@ public class MetricRegistryImpl extends MetricRegistry {
     public Metadata getMetadata(String name) {
         ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
         return group == null ? null : group.values().iterator().next().metadata;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (Entry<String, ConcurrentMap<MetricID, MetricEntry>> group : metricsByNameAndId.entrySet()) {
+            str.append(group.getKey());
+            Iterator<MetricEntry> iter = group.getValue().values().iterator();
+            if (iter.hasNext()) {
+                str.append(": ").append(iter.next().metadata);
+            }
+            str.append('\n');
+            for (Entry<MetricID, MetricEntry> entry : group.getValue().entrySet()) {
+                str.append('\t').append(entry.getKey()).append(": ").append(entry.getValue().metric).append('\n');
+            }
+        }
+        return str.toString();
     }
 }
