@@ -50,8 +50,6 @@ import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import java.util.Map;
-import org.eclipse.microprofile.metrics.MetricID;
 
 /**
  * The {@link BindableFaultToleranceMetrics} works both as a factory where {@link #bindTo(InvocationContext)} is used to
@@ -130,16 +128,11 @@ final class BindableFaultToleranceMetrics implements FaultToleranceMetrics {
     @Override
     public void linkGauge(String keyPattern, LongSupplier gauge) {
         String metricName = metricName(keyPattern);
-        Gauge<?> existingGauge = null;
-        for (Map.Entry<MetricID, Gauge> gaugeEntry : metricRegistry.getGauges().entrySet()) {
-            if (gaugeEntry.getKey().getName().equals(metricName)) {
-                existingGauge = gaugeEntry.getValue();
-                break;
-            }
-        }
-        if (existingGauge == null) {
-            Gauge<Long> newGauge = gauge::getAsLong;
+        Gauge<Long> newGauge = gauge::getAsLong; 
+        try {
             metricRegistry.register(metricName, newGauge);
+        } catch (IllegalArgumentException ex) {
+            // gauge already exists. Its ugly but this is the only way to make sure it does exist.
         }
     }
 
