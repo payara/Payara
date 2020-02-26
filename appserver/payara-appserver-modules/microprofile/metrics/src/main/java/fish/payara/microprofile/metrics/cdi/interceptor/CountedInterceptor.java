@@ -40,7 +40,6 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import fish.payara.microprofile.metrics.cdi.MetricsResolver;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import javax.annotation.Priority;
@@ -59,13 +58,11 @@ public class CountedInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        MetricsResolver.Of<Counted> counted = resolver.counted(bean.getBeanClass(), element);
-        MetricID metricID = counted.metricID();
-        Counter counter = registry.getCounters((id, metric) -> id.equals(metricID)).get(metricID);
+        MetricID metricID = resolver.counted(bean.getBeanClass(), element).metricID();
+        Counter counter = getMetric(metricID, Counter.class);
         if (counter == null) {
-            throw new IllegalStateException("No counter with name [" + counted.metricName() + "] found in registry [" + registry + "]");
+            throw new IllegalStateException("No counter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }
-
         counter.inc();
         return context.proceed();
     }

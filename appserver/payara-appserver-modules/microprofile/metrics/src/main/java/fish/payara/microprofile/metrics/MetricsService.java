@@ -304,9 +304,13 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     public void resetMetricsSecureProperty() {
         metricsSecure = null;
     }
-    
+
     public boolean isSecurityEnabled() {
         return Boolean.parseBoolean(metricsServiceConfiguration.getSecurityEnabled());
+    }
+
+    public <T extends Metric> T getApplicationMetric(MetricID metricID, Class<T> type) throws NoSuchRegistryException {
+        return getRegistryInternal(getApplicationName()).getMetric(metricID, type);
     }
 
     public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
@@ -372,6 +376,10 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
      */    
     public MetricRegistry getOrAddRegistry(String registryName) {
         return REGISTRIES.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryImpl());
+    }
+    
+    public MetricRegistry getApplicationRegistry() {
+        return getOrAddRegistry(getApplicationName());
     }
 
     /**

@@ -58,7 +58,7 @@ public class TimedInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricID metricID = resolver.timed(bean.getBeanClass(), element).metricID();
-        Timer timer = registry.getTimers().get(metricID);
+        Timer timer = getMetric(metricID, Timer.class);
         if (timer == null) {
             throw new IllegalStateException("No timer with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }

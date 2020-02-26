@@ -74,7 +74,7 @@ public class MetricRegistryProducer {
     @Produces
     @RegistryType(type = APPLICATION)
     public MetricRegistry getApplicationRegistry() {
-        return metricsService.getOrAddRegistry(metricsService.getApplicationName());
+        return metricsService.getApplicationRegistry();
     }
 
     @Produces

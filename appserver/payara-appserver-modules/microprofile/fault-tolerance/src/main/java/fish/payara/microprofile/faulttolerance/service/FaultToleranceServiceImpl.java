@@ -60,6 +60,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -125,6 +127,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     private final Map<String, FaultToleranceApplicationState> stateByApplication = new ConcurrentHashMap<>();
     private ManagedScheduledExecutorService defaultScheduledExecutorService;
     private ManagedExecutorService defaultExecutorService;
+    private ExecutorService asyncExecutorService;
 
     @PostConstruct
     public void postConstruct() throws NamingException {
@@ -136,6 +139,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         defaultExecutorService = (ManagedExecutorService) context.lookup("java:comp/DefaultManagedExecutorService");
         defaultScheduledExecutorService = (ManagedScheduledExecutorService) context
                 .lookup("java:comp/DefaultManagedScheduledExecutorService");
+        asyncExecutorService = Executors.newWorkStealingPool(10);
     }
 
     @Override
@@ -380,7 +384,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
                 }
             }
         };
-        getManagedExecutorService().submit(completionTask);
+        asyncExecutorService.submit(completionTask);
     }
 
     @Override

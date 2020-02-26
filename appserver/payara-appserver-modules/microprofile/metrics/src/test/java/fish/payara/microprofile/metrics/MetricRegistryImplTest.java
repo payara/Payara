@@ -342,6 +342,21 @@ public class MetricRegistryImplTest {
         assertEquals(0, registry.getNames().size());
     }
 
+    @Test
+    public void getMetricById() {
+        String name = nextName();
+        Counter c1 = registry.counter(name);
+        assertSame(c1, registry.getMetric(new MetricID(name), Counter.class));
+    }
+
+    @Test
+    public void getMetricByIdThrowsExceptionWhenWrongTypeIsRequested() {
+        String name = nextName();
+        registry.counter(name);
+        assertException("Invalid metric type : interface org.eclipse.microprofile.metrics.Histogram", 
+                () -> registry.getMetric(new MetricID(name), Histogram.class));
+    }
+
     private static void assertException(String expectedMsg, Runnable test) {
         try {
             test.run();

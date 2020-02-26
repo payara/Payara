@@ -186,7 +186,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
                 }
             };
 
-            MetricsResolver.Of counted = resolver.counted(bean, element);
+            MetricsResolver.Of<Counted> counted = resolver.counted(bean, element);
             if (counted.isPresent()) {
                 validate.accept(counted);
             }

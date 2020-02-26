@@ -63,6 +63,7 @@ import org.eclipse.microprofile.metrics.MetricFilter;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
@@ -83,17 +84,24 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
 
-    static final class MetricEntry {
-        final Metric metric;
+    static final class MetricFamily<T extends Metric> {
         final Metadata metadata;
+        final ConcurrentMap<MetricID, T> metrics = new ConcurrentHashMap<>();
 
-        MetricEntry(Metric metric, Metadata metadata) {
-            this.metric = metric;
+        MetricFamily(Metadata metadata) {
             this.metadata = metadata;
+        }
+
+        boolean remove(MetricID metricID) {
+            return metrics.remove(metricID) != null;
+        }
+
+        T get(MetricID metricID) {
+            return metrics.get(metricID);
         }
     }
 
-    private final ConcurrentMap<String, ConcurrentMap<MetricID, MetricEntry>> metricsByNameAndId = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
 
     @Override
     public Counter counter(String name) {
@@ -198,15 +206,15 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public SortedSet<MetricID> getMetricIDs() {
         TreeSet<MetricID> ids = new TreeSet<>();
-        for (ConcurrentMap<MetricID, MetricEntry> e : metricsByNameAndId.values()) {
-            ids.addAll(e.keySet());
+        for (MetricFamily<?> e : metricsFamiliesByName.values()) {
+            ids.addAll(e.metrics.keySet());
         }
         return ids;
     }
 
     @Override
     public SortedSet<String> getNames() {
-        return new TreeSet<>(metricsByNameAndId.keySet());
+        return new TreeSet<>(metricsFamiliesByName.keySet());
     }
 
     @Override
@@ -276,23 +284,23 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<String, Metadata> getMetadata() {
-        return metricsByNameAndId.entrySet().stream().collect(toMap(Entry::getKey, 
-                e -> e.getValue().values().iterator().next().metadata));
+        return metricsFamiliesByName.entrySet().stream().collect(toMap(Entry::getKey, 
+                e -> e.getValue().metadata));
     }
 
     @Override
     public boolean remove(String name) {
-        return metricsByNameAndId.remove(name) != null;
+        return metricsFamiliesByName.remove(name) != null;
     }
 
     @Override
     public boolean remove(MetricID metricID) {
         AtomicBoolean removed = new AtomicBoolean();
-        metricsByNameAndId.computeIfPresent(metricID.getName(), (name, group) -> {
-            if (group.remove(metricID) != null) {
+        metricsFamiliesByName.computeIfPresent(metricID.getName(), (name, family) -> {
+            if (family.remove(metricID)) {
                 removed.set(true);
             }
-            return group.size() == 0 ? null : group;
+            return family.metrics.isEmpty() ? null : family;
         });
         return removed.get();
     }
@@ -300,20 +308,17 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public void removeMatching(MetricFilter filter) {
         if (filter == MetricFilter.ALL) {
-            metricsByNameAndId.clear();
+            metricsFamiliesByName.clear();
         }
-        Iterator<ConcurrentMap<MetricID, MetricEntry>> groupIter = metricsByNameAndId.values().iterator();
-        while (groupIter.hasNext()) {
-            ConcurrentMap<MetricID, MetricEntry> group = groupIter.next();
-            Iterator<Entry<MetricID, MetricEntry>> metricIter = group.entrySet().iterator();
+        Iterator<MetricFamily<?>> familyIter = metricsFamiliesByName.values().iterator();
+        while (familyIter.hasNext()) {
+            MetricFamily<?> family = familyIter.next();
+            Iterator<? extends Entry<MetricID, ? extends Metric>> metricIter = family.metrics.entrySet().iterator();
             while (metricIter.hasNext()) { 
-                Entry<MetricID, MetricEntry> entry = metricIter.next();
-                if (filter.matches(entry.getKey(), entry.getValue().metric)) {
-                    groupIter.remove();
+                Entry<MetricID, ? extends Metric> entry = metricIter.next();
+                if (filter.matches(entry.getKey(), entry.getValue())) {
+                    remove(entry.getKey()); // OBS! it is important to not use the iterator.remove() so that the family is removed "atomically" when empty
                 }
-            }
-            if (group.size() == 0) {
-                groupIter.remove();
             }
         }
     }
@@ -324,10 +329,10 @@ public class MetricRegistryImpl extends MetricRegistry {
     @SuppressWarnings("unchecked")
     private <T extends Metric> SortedMap<MetricID, T> findMetrics(MetricFilter filter) {
         SortedMap<MetricID, T> matches = new TreeMap<>();
-        for (ConcurrentMap<MetricID, MetricEntry> group : metricsByNameAndId.values()) {
-            for (Entry<MetricID, MetricEntry> entry : group.entrySet()) {
-                if (filter.matches(entry.getKey(), entry.getValue().metric)) {
-                    matches.put(entry.getKey(), (T) entry.getValue().metric);
+        for (MetricFamily<?> family : metricsFamiliesByName.values()) {
+            for (Entry<MetricID, ? extends Metric> entry : family.metrics.entrySet()) {
+                if (filter.matches(entry.getKey(), entry.getValue())) {
+                    matches.put(entry.getKey(), (T) entry.getValue());
                 }
             }
         }
@@ -346,25 +351,20 @@ public class MetricRegistryImpl extends MetricRegistry {
     @SuppressWarnings("unchecked")
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, Tag... tags) {
         MetricID metricID = new MetricID(metadata.getName(), tags);
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(metricID.getName());
-        if (group == null) {
+        MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
+        if (family == null) {
             return register(metadata, null, tags);
         }
-        MetricEntry entry = group.get(metricID);
-        if (entry == null) {
-            Iterator<MetricEntry> iter = group.values().iterator();
-            if (iter.hasNext()) {
-                checkSameType(metricID.getName(), metadata, iter.next().metadata);
-            }
+        Metric existing = family.get(metricID);
+        if (existing == null) {
+            checkSameType(metricID.getName(), metadata, family.metadata);
             return register(metadata, useExistingMetadata, null, tags);
         }
-        Metric existing = entry.metric;
-        Metadata existingMetadata = entry.metadata;
-        if (useExistingMetadata && metadata.getType() != existingMetadata.getType() 
-                || !useExistingMetadata && !metadata.equals(existingMetadata)) {
+        if (useExistingMetadata && metadata.getType() != family.metadata.getType() 
+                || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
                     String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
-                            metadata.toString(), existingMetadata.toString()));
+                            metadata.toString(), family.metadata.toString()));
         }
         return (T) existing;
     }
@@ -400,20 +400,17 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
         }
         final Metadata newMetadata = metadata;
-        final Metric newMetric = metric != null ? metric : createMetricInstance(newMetadata);
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.computeIfAbsent(name, 
-                key -> new ConcurrentHashMap<>());
-        MetricID metricID = new MetricID(name, tags);
-        MetricEntry entry = group.computeIfAbsent(metricID, key -> new MetricEntry(newMetric, newMetadata));
-        if (entry.metric != metric) {
-            try {
-                checkReusableMetadata(name, newMetadata, entry.metadata);
-            } catch (IllegalArgumentException ex) {
-                remove(metricID); // this metric was illegal, remove again (best way to make sure valid path is correct)
-                throw ex;
-            }
+        final T newMetric = metric != null ? metric : (T) createMetricInstance(newMetadata);
+        MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name, 
+                key -> new MetricFamily<>(newMetadata));
+        if (family.metadata != newMetadata) {
+            checkReusableMetadata(name, newMetadata, family.metadata);
         }
-        return (T) entry.metric;
+        T current = family.metrics.computeIfAbsent(new MetricID(name, tags), key -> newMetric);
+        if (current != newMetric) {
+            checkNotAGauge(name, newMetadata);
+        }
+        return current;
     }
 
     private static void checkNameIsNotNullOrEmpty(String name) {
@@ -438,19 +435,22 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
 
         checkSameType(name, newMetadata, existingMetadata);
-
-        //reusable does not apply to gauges
-        if (GAUGE.equals(newMetadata.getTypeRaw())) {
-            throw new IllegalArgumentException(String.format(
-                    "Gauge type metric['%s'] is not reusable", name
-            ));
-        }
+        checkNotAGauge(name, newMetadata);
 
         if (!existingMetadata.equals(newMetadata)) {
             throw new IllegalArgumentException(String.format(
                   "Metadata ['%s'] already registered, does not match provided ['%s']",
                   existingMetadata.toString(), newMetadata.toString()
           ));
+        }
+    }
+
+    private static void checkNotAGauge(String name, Metadata newMetadata) {
+        //reusable does not apply to gauges
+        if (GAUGE.equals(newMetadata.getTypeRaw())) {
+            throw new IllegalArgumentException(String.format(
+                    "Gauge type metric['%s'] is not reusable", name
+            ));
         }
     }
 
@@ -489,35 +489,43 @@ public class MetricRegistryImpl extends MetricRegistry {
      * Non-API Methods (Extra Methods)
      */
 
+    @SuppressWarnings("unchecked")
+    public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
+        MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
+        if (family == null) {
+            return null;
+        }
+        Metric metric = family.get(metricID);
+        if (!metricType.isAssignableFrom(metric.getClass())) {
+            throw new IllegalArgumentException("Invalid metric type : " + metricType);
+        }
+        return (T) metric;
+    }
+
     public Set<MetricID> getMetricsIDs(String name) {
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
-        return group == null ? emptySet() : unmodifiableSet(group.keySet()); 
+        MetricFamily<?> family = metricsFamiliesByName.get(name);
+        return family == null ? emptySet() : unmodifiableSet(family.metrics.keySet()); 
     }
 
     public Map<MetricID, Metric> getMetrics(String name) {
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
-        return group == null 
+        MetricFamily<?> family = metricsFamiliesByName.get(name);
+        return family == null 
                 ? emptyMap()
-                : group.entrySet().stream().collect(toMap(Entry::getKey, e -> e.getValue().metric));
+                : unmodifiableMap(family.metrics);
     }
 
     public Metadata getMetadata(String name) {
-        ConcurrentMap<MetricID, MetricEntry> group = metricsByNameAndId.get(name);
-        return group == null ? null : group.values().iterator().next().metadata;
+        MetricFamily<?> family = metricsFamiliesByName.get(name);
+        return family == null ? null : family.metadata;
     }
 
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for (Entry<String, ConcurrentMap<MetricID, MetricEntry>> group : metricsByNameAndId.entrySet()) {
-            str.append(group.getKey());
-            Iterator<MetricEntry> iter = group.getValue().values().iterator();
-            if (iter.hasNext()) {
-                str.append(": ").append(iter.next().metadata);
-            }
-            str.append('\n');
-            for (Entry<MetricID, MetricEntry> entry : group.getValue().entrySet()) {
-                str.append('\t').append(entry.getKey()).append(": ").append(entry.getValue().metric).append('\n');
+        for (Entry<String, MetricFamily<?>> family : metricsFamiliesByName.entrySet()) {
+            str.append(family.getKey()).append(": ").append(family.getValue().metadata).append('\n');
+            for (Entry<MetricID, ? extends Metric> entry : family.getValue().metrics.entrySet()) {
+                str.append('\t').append(entry.getKey()).append(": ").append(entry.getValue()).append('\n');
             }
         }
         return str.toString();
