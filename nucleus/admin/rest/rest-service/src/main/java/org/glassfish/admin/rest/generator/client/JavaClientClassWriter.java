@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 package org.glassfish.admin.rest.generator.client;
 
 import java.io.BufferedWriter;
@@ -229,7 +230,6 @@ public class JavaClientClassWriter implements ClientClassWriter {
         if ((params != null) && (!params.isEmpty())) {
             for (ParamModel model : params) {
                 Param param = model.getParam();
-                boolean include = true;
                 if (param.optional() && !includeOptional) {
                     continue;
                 }
