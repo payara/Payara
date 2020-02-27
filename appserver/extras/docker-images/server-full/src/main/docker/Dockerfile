@@ -86,4 +86,4 @@ RUN true \
     && true
 
 ENTRYPOINT ["/tini", "--"]
-CMD ${SCRIPT_DIR}/entrypoint.sh
+CMD "${SCRIPT_DIR}/entrypoint.sh"
