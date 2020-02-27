@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.backup;
 
@@ -99,8 +100,6 @@ abstract class BackupRestoreManager {
      * backupDir is set then it returns a path to backupDir + domainName.
      */
     protected File getBackupDirectory(BackupRequest request) {
-        File backupDir = null;
-
         // The v2 case.
         if (request.backupDir == null && request.backupConfig == null) {
             return (new File(request.domainDir, Constants.BACKUP_DIR));
