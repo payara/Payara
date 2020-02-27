@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
@@ -155,7 +155,6 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         final ActionReport subReport = report.addSubActionsReport();
 
         ActionReport.MessagePart part = report.getTopMessagePart();
-        int numOfApplications = 0;
         List<String[]> rowList = new ArrayList<String[]>();
 
         if (type != null) {
@@ -180,8 +179,6 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
             part.addProperty(app.getName(),
                 getAppSnifferEngines(app, false));
             rowList.add(currentRow);
-            numOfApplications++;
-
         }
         // Starting output formatting
         int numCols = 2;
