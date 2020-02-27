@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.mapping.ejb.beans;
 
@@ -125,8 +125,6 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 		comparators.remove(c);
 	}
 	public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-		boolean restrictionFailure = false;
-		boolean restrictionPassed = false;
 		// Validating property columnName
 		if (sizeColumnName() == 0) {
 			throw new org.netbeans.modules.schema2beans.ValidateException("sizeColumnName() == 0", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "columnName", this);	// NOI18N
@@ -135,9 +133,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 
 	// Dump the content of this bean returning it as a String
 	public void dump(StringBuffer str, String indent){
-		String s;
 		Object o;
-		org.netbeans.modules.schema2beans.BaseBean n;
 		str.append(indent);
 		str.append("ColumnName["+this.sizeColumnName()+"]");	// NOI18N
 		for(int i=0; i<this.sizeColumnName(); i++)
