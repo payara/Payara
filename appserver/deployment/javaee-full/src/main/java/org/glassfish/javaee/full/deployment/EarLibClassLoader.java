@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
@@ -76,8 +76,6 @@ public class EarLibClassLoader extends ASURLClassLoader
     public Enumeration<URL> getResources(String name) throws IOException {
         Enumeration<URL> localResources = super.getResources(name);
         Enumeration<URL> parentResources = getParent().getResources(name);
-        
-        Enumeration<URL> combined = Collections.emptyEnumeration();
         
         Enumeration<URL> combinedResources = currentBeforeParentEnabled?
                         combineEnumerations(localResources, parentResources):
