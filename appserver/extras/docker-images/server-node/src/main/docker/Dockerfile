@@ -30,9 +30,9 @@ WORKDIR ${HOME_DIR}
 ARG PAYARA_UNPACKED
 ARG ADDITIONAL_SCRIPTS
 
-COPY --chown=payara:payara ${PAYARA_UNPACKED} ${PAYARA_DIR}
+COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
 COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${HOME_DIR}
 RUN chmod +x ${HOME_DIR}/*.sh
 
 # Start the instance
-ENTRYPOINT ["${SCRIPT_DIR}/entrypoint.sh"]
+ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"
