@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 /*
  * UuidUtil.java
@@ -152,7 +152,6 @@ public class UuidUtil
      */
     private static String getIdentityHashCode(Object obj) {
 
-        String result = null;
         try {
             int hc = System.identityHashCode(obj);
             return formatHexString(hc);
