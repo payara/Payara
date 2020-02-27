@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.interceptor.InvocationContext;
@@ -246,16 +248,30 @@ abstract class AbstractBulkheadTest {
     }
 
     void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
+        waitSomeUnit(() -> 
+            equalAcquiredPermits(concurrentExecutions, this.concurrentExecutions.get())
+            && equalAcquiredPermits(waitingQueuePopulation, this.waitingQueuePopulation.get()));
+    }
+
+    static void waitSomeUnit(BooleanSupplier test) {
         long delayMs = 4;
-        while (    !equalAcquiredPermits(concurrentExecutions, this.concurrentExecutions.get())
-                || !equalAcquiredPermits(waitingQueuePopulation, this.waitingQueuePopulation.get())) {
-            try {
-                Thread.sleep(delayMs);
-            } catch (InterruptedException e) {
-                return; // give up (test was cancelled)
-            }
+        while (!test.getAsBoolean()) {
+            waitSome(delayMs);
             delayMs *= 2;
         }
+    }
+
+    static void waitSome(long delayMs) {
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            return; // give up (test was cancelled)
+        }
+    }
+
+    void assertPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
+        assertEquals(concurrentExecutions, this.concurrentExecutions.get().acquiredPermits());
+        assertEquals(waitingQueuePopulation, this.waitingQueuePopulation.get().acquiredPermits());
     }
 
     static boolean equalAcquiredPermits(int expected, BulkheadSemaphore actual) {

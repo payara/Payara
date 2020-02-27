@@ -42,10 +42,12 @@ package fish.payara.microprofile.faulttolerance.policy;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +92,7 @@ public final class FaultTolerancePolicy implements Serializable {
     /**
      * A simple cache with a fix {@link #TTL} with a policy for each target method.
      */
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Method, FaultTolerancePolicy>> POLICY_BY_METHOD 
+    private static final ConcurrentHashMap<Class<?>, Map<Method, FaultTolerancePolicy>> POLICY_BY_METHOD 
         = new ConcurrentHashMap<>();
 
     /**
