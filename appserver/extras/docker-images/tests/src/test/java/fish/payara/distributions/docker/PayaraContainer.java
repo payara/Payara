@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
 
@@ -54,6 +55,8 @@ import org.testcontainers.containers.GenericContainer;
  */
 public class PayaraContainer extends GenericContainer<PayaraContainer> {
 
+    /** In container path to passwordfile.txt */
+    public static final String PASSWORDFILE_TXT = "/passwordfile.txt";
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
 
@@ -66,6 +69,11 @@ public class PayaraContainer extends GenericContainer<PayaraContainer> {
      */
     public PayaraContainer(final String baseRepositoryName) {
         super(baseRepositoryName + ":" + getTagFromJvmOption());
+        final String passwordfile = System.getProperty("passwordfile");
+        if (passwordfile != null) {
+            addEnv("PAYARA_PASSWORD_FILE", PASSWORDFILE_TXT);
+            addFileSystemBind(passwordfile, PASSWORDFILE_TXT, BindMode.READ_ONLY);
+        }
     }
 
 
