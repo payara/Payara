@@ -47,6 +47,7 @@ import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
@@ -80,6 +81,7 @@ import javax.naming.NamingException;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -124,6 +126,9 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     @Inject
     private Events events;
 
+    @Inject
+    private MetricsService metricsService;
+
     private final Map<String, FaultToleranceApplicationState> stateByApplication = new ConcurrentHashMap<>();
     private ManagedScheduledExecutorService defaultScheduledExecutorService;
     private ManagedExecutorService defaultExecutorService;
@@ -139,7 +144,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         defaultExecutorService = (ManagedExecutorService) context.lookup("java:comp/DefaultManagedExecutorService");
         defaultScheduledExecutorService = (ManagedScheduledExecutorService) context
                 .lookup("java:comp/DefaultManagedScheduledExecutorService");
-        asyncExecutorService = Executors.newWorkStealingPool(10);
+        asyncExecutorService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -200,9 +205,17 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
 
     @Override
     public FaultToleranceMetrics getMetrics(InvocationContext context) {
+
         FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
-        return appState.getMetrics().updateAndGet(
-                metrics -> metrics != null ? metrics : new BindableFaultToleranceMetrics()).bindTo(context);
+        return appState.getMetrics(this::getApplicationMetricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
+    }
+
+    private MetricRegistry getApplicationMetricRegistry() {
+        try {
+            return metricsService.getApplicationRegistry();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private ManagedExecutorService getManagedExecutorService() {

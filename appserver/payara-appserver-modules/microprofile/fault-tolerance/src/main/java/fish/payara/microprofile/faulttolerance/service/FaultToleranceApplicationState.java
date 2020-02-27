@@ -39,11 +39,15 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+
+import org.eclipse.microprofile.metrics.MetricRegistry;
 
 /**
  * @author Andrew Pielage andrew.pielage@payara.fish
@@ -54,7 +58,7 @@ final class FaultToleranceApplicationState {
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
     private final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
-    private final AtomicReference<BindableFaultToleranceMetrics> metrics = new AtomicReference<>();
+    private final Map<String, FaultToleranceMetrics> metricsByCanonicalMethodName = new ConcurrentHashMap<>();
 
     public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
         return circuitBreakerStates;
@@ -72,7 +76,10 @@ final class FaultToleranceApplicationState {
         return config;
     }
 
-    public AtomicReference<BindableFaultToleranceMetrics> getMetrics() {
-        return metrics;
+    public FaultToleranceMetrics getMetrics(Supplier<MetricRegistry> registry, String canonicalMethodName) {
+        return metricsByCanonicalMethodName.computeIfAbsent(canonicalMethodName, key -> { //
+            MetricRegistry r = registry.get();
+            return r == null ? FaultToleranceMetrics.DISABLED : new MethodFaultToleranceMetrics(r, key);
+        });
     }
 }
