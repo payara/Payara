@@ -8,16 +8,16 @@ FROM "${docker.basicJdkImage}"
 EXPOSE 4848 9009 8080 8181
 
 # Initialize the configurable environment variables
-ENV HOME_DIR=/opt/payara\
-    PAYARA_DIR=/opt/payara/appserver\
-    SCRIPT_DIR=/opt/payara/scripts\
-    CONFIG_DIR=/opt/payara/config\
-    DEPLOY_DIR=/opt/payara/deployments\
-    PASSWORD_FILE=/opt/payara/passwordFile\
+ENV HOME_DIR=/opt/payara \
     # Payara Server Domain options
     DOMAIN_NAME=${docker.payara.domainName} \
     ADMIN_USER=admin\
-    ADMIN_PASSWORD=admin \
+    ADMIN_PASSWORD=admin
+ENV PAYARA_DIR=${HOME_DIR}/appserver\
+    SCRIPT_DIR=${HOME_DIR}/scripts\
+    CONFIG_DIR=${HOME_DIR}/config\
+    DEPLOY_DIR=${HOME_DIR}/deployments\
+    PASSWORD_FILE=${HOME_DIR}/passwordFile \
     # Utility environment variables
     JVM_ARGS=\
     PAYARA_ARGS=\

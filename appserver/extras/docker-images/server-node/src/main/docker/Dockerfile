@@ -1,16 +1,16 @@
 FROM "${docker.basicJdkImage}"
 
-ENV HOME_DIR=/opt/payara\
-    PAYARA_DIR=${HOME_DIR}/payara5 \
+ENV HOME_DIR=/opt/payara
+ENV PAYARA_DIR=${HOME_DIR}/payara5 \
     SCRIPT_DIR=/opt/payara\
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="" \
     PAYARA_CONFIG_NAME="" \
     PAYARA_INSTANCE_NAME="" \
-    DOCKER_CONTAINER_IP="" \
-    PAYARA_PASSWORD_FILE_DIR=${HOME_DIR}/passwords \
-    PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
+    DOCKER_CONTAINER_IP=""
+ENV PAYARA_PASSWORD_FILE_DIR=${HOME_DIR}/passwords
+ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
