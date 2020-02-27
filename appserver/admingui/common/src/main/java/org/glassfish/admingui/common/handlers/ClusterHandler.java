@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 /**
  *
@@ -94,7 +94,6 @@ public class ClusterHandler {
         int running=0;
         int notRunning=0;
         int requireRestart=0;
-        int unknown = 0;
         try{
             for (Iterator it=statusMap.values().iterator(); it.hasNext(); ) {
                 Object value = it.next();
@@ -107,7 +106,6 @@ public class ClusterHandler {
                 if (value.toString().equals(InstanceState.StateType.RESTART_REQUIRED.getDescription())){
                     requireRestart++;
                 }else {
-                    unknown++;
                     GuiUtil.getLogger().severe("Unknown Status");
                 }
             }
@@ -261,7 +259,6 @@ public class ClusterHandler {
     public static void deploymentGroupAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
         List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
-        String  errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
 
         for (Map oneRow : rows) {
