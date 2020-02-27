@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 /**
  *	This generated bean class LoadBalancerStats
@@ -212,7 +213,6 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
-			String childNodeValue = "";
 			if (childNodeName == "cluster-stats") {
 				ClusterStats aClusterStats = new com.sun.enterprise.admin.monitor.stats.lb.ClusterStats();
 				aClusterStats.readNode(childNode);
@@ -272,7 +272,6 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 	}
 
 	public void validate() throws com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException {
-		boolean restrictionFailure = false;
 		// Validating property clusterStats
 		for (int _index = 0; _index < sizeClusterStats(); ++_index) {
 			com.sun.enterprise.admin.monitor.stats.lb.ClusterStats element = getClusterStats(_index);
