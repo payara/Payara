@@ -26,7 +26,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.interceptor.InvocationContext;
@@ -86,6 +85,24 @@ abstract class AbstractBulkheadTest {
      * The order in which threads exited the annotated bulkhead method
      */
     final List<Thread> threadsExited = new CopyOnWriteArrayList<>();
+
+    final List<InOut> threadsInOut = new CopyOnWriteArrayList<>();
+
+    static class InOut {
+        final boolean in;
+        final Thread t;
+        final int inCount;
+
+        InOut(boolean in, Thread t, int inCount) {
+            this.in = in;
+            this.t = t;
+            this.inCount = inCount;
+        }
+        @Override
+        public String toString() {
+            return "No"+ t.getName() + (in ? " in (" : " out (")+ inCount + ")";
+        }
+    }
 
     private final AtomicInteger nextCallerThreadName = new AtomicInteger();
 
@@ -173,9 +190,16 @@ abstract class AbstractBulkheadTest {
     void assertCompletedExecutionLimitedTo(int expectedMaxConcurrentExecutions, Thread... expectedHaveExecuted) {
         assertEquals(expectedHaveExecuted.length, bulkheadMethodCallCount.get());
         assertEquals(0, concurrentExecutionsCount.get());
-        assertRange(1, expectedMaxConcurrentExecutions, maxConcurrentExecutionsCount.get());
         assertEnteredSoFar(expectedHaveExecuted);
         assertExitedSoFar(expectedHaveExecuted);
+        assertMaxConcurrentExecution(expectedMaxConcurrentExecutions);
+    }
+
+    void assertMaxConcurrentExecution(int expectedMaxConcurrentExecutions) {
+        assertRange(1, expectedMaxConcurrentExecutions, maxConcurrentExecutionsCount.get());
+        for (InOut inOut : threadsInOut) {
+            assertRange(1, expectedMaxConcurrentExecutions, inOut.inCount);
+        }
     }
 
     void assertExitedSoFar(Thread... expectedSet) {
@@ -209,13 +233,16 @@ abstract class AbstractBulkheadTest {
     CompletionStage<String> waitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws InterruptedException {
         maxConcurrentExecutionsCount.accumulateAndGet(concurrentExecutionsCount.incrementAndGet(), Integer::max);
         bulkheadMethodCallCount.incrementAndGet();
-        threadsEntered.add(Thread.currentThread());
+        Thread currentThread = Thread.currentThread();
+        threadsEntered.add(currentThread);
+        threadsInOut.add(new InOut(true, currentThread, concurrentExecutionsCount.get()));
         try {
             waiter.get();
         } catch (CancellationException | ExecutionException e) {
             throw new RuntimeException(e);
         } finally {
-            threadsExited.add(Thread.currentThread());
+            threadsExited.add(currentThread);
+            threadsInOut.add(new InOut(false, currentThread, concurrentExecutionsCount.get()));
             concurrentExecutionsCount.decrementAndGet();
         }
         return result.get();
@@ -262,6 +289,8 @@ abstract class AbstractBulkheadTest {
     }
 
     static void waitSome(long delayMs) {
+        if (delayMs <= 0)
+            return;
         try {
             Thread.sleep(delayMs);
         } catch (InterruptedException e) {

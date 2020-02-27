@@ -40,7 +40,7 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -51,64 +51,79 @@ import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.junit.Test;
 
 /**
- * Runs test similar to {@code org.eclipse.microprofile.fault.tolerance.tck.bulkhead.BulkheadAsynchRetryTest} as JUnit
- * tests.
- * 
- * Uses the same test method names and tries the duplicate the test as good as possible on the
- * {@link FaultTolerancePolicy} level. For many identifiers the terminology of the TCK test is used to make them easier
- * to compare.
+ * Tests that bulkhead method is not entered by more callers than its capacity.
  */
-public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
+public class BulkheadConcurrencyTest extends AbstractBulkheadTest {
 
     @Test
-    public void testBulkheadClassAsynchronousPassiveRetry55() {
-        assertExecutionResult("Success", loop(10, 5, 5));
-    }
-
-    @Bulkhead(waitingTaskQueue = 5, value = 5)
-    @Asynchronous
-    @Retry(retryOn = { BulkheadException.class }, delay = 1, delayUnit = ChronoUnit.SECONDS, 
-        maxRetries = 10, maxDuration = 999999)
-    public Future<?> testBulkheadClassAsynchronousPassiveRetry55_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter).toCompletableFuture();
-    }
-
-    @Test
-    public void testBulkheadMethodAsynchronousRetry55() {
-        assertExecutionResult("Success", loop(20, 5, 5));
+    public void bulkheadWithQueueAndRetry_55_100() {
+        loop(10, 100, 5);
     }
 
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
     @Retry(retryOn = {
-            BulkheadException.class }, delay = 1, delayUnit = ChronoUnit.SECONDS, maxRetries = 10, maxDuration = 999999)
-    public Future<?> testBulkheadMethodAsynchronousRetry55_Method(Future<Void> waiter) throws InterruptedException {
+            BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
+    public Future<?> bulkheadWithQueueAndRetry_55_100_Method(Future<Void> waiter) throws InterruptedException {
         return waitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
-    private Thread[] loop(int iterations, int maxSimultaneousWorkers, int maxSimultaneursQueuing) {
-        Thread[] callers = new Thread[iterations];
-        int bulkheadCapacity = maxSimultaneousWorkers + maxSimultaneursQueuing;
+    @Test
+    public void bulkheadWithQueueAndRetry_55_100_NoWork() {
+        loop(1, 100, 5);
+    }
+
+    @Bulkhead(waitingTaskQueue = 5, value = 5)
+    @Asynchronous
+    @Retry(retryOn = {
+            BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
+    public Future<?> bulkheadWithQueueAndRetry_55_100_NoWork_Method(Future<Void> waiter) throws InterruptedException {
+        return waitThenReturnSuccess(CompletableFuture.completedFuture(null)).toCompletableFuture();
+    }
+
+    private void loop(int speed, int concurrentCallers, int maxSimultaneousWorkers) {
+        int bulkheadMethodReturned = 0;
+        Random rng = new Random();
         @SuppressWarnings("unchecked")
-        CompletableFuture<Void>[] waiters = new CompletableFuture[bulkheadCapacity];
-        for (int i = 0; i < bulkheadCapacity; i++) {
+        CompletableFuture<Void>[] waiters = new CompletableFuture[concurrentCallers];
+        Thread[] callers = new Thread[concurrentCallers];
+        for (int i = 0; i < concurrentCallers; i++) {
             waiters[i] = new CompletableFuture<>();
             callers[i] = callBulkheadWithNewThreadAndWaitFor(waiters[i]);
+            if (i > maxSimultaneousWorkers) {
+                for (int j = 0; j < i / maxSimultaneousWorkers; j++) {
+                    waitSome(rng.nextInt(speed*4));
+                    int completedWaiter = rng.nextInt(i);
+                    CompletableFuture<Void> completedCall = waiters[completedWaiter];
+                    switch (rng.nextInt(4)) {
+                    default:
+                    case 0:
+                        if (completedCall.complete(null)) {
+                            bulkheadMethodReturned++;
+                        }
+                        break;
+                    case 1: 
+                        completedCall.cancel(true);
+                        break;
+                    case 2: 
+                        completedCall.cancel(false);
+                        break;
+                    case 3: 
+                        callers[completedWaiter].interrupt();
+                    }
+                }
+            }
         }
-        waitUntilPermitsAquired(maxSimultaneousWorkers, maxSimultaneursQueuing);
-        waitSome(100);
-        assertPermitsAquired(maxSimultaneousWorkers, maxSimultaneursQueuing);
-        for (int i = bulkheadCapacity; i < iterations; i++) {
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(waiter);
-        }
-        waitSome(100);
         for (int i = 0; i < waiters.length; i++) {
-            waiters[i].complete(null);
-            waitSome(50);
+            waiters[i].cancel(true);
         }
         waitUntilPermitsAquired(0, 0);
-        Thread[] expectedExecutingCallers = Arrays.copyOf(callers, bulkheadCapacity);
-        assertCompletedExecutionLimitedTo(maxSimultaneousWorkers, expectedExecutingCallers);
-        return expectedExecutingCallers;
+        // setting the minimum to max - 1 is not logically correct (could be 1) but we expect the bulkhead to be used fully 
+        // so it really should be its capacity or 1 less in a bad corner case
+        assertRange(speed == 1 ? 1 : maxSimultaneousWorkers - 1, maxSimultaneousWorkers, maxConcurrentExecutionsCount.get());
+        assertMaxConcurrentExecution(maxSimultaneousWorkers);
+        // the number of threads that ever entered the method should be between the number of threads that completed waiting
+        // and all threads
+        assertRange(bulkheadMethodReturned - 1, concurrentCallers, bulkheadMethodCallCount.get());
     }
 }
