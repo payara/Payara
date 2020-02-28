@@ -76,7 +76,7 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
                     Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
             FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> env.getConfig(context, this));
             if (policy.isPresent) {
-                return policy.proceed(context, env);
+                return policy.proceed(context, () -> env.getMethodContext(context));
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"

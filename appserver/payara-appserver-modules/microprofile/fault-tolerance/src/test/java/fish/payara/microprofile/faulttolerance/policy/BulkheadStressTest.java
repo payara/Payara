@@ -53,23 +53,23 @@ import org.junit.Test;
 /**
  * Tests that bulkhead method is not entered by more callers than its capacity.
  */
-public class BulkheadConcurrencyTest extends AbstractBulkheadTest {
+public class BulkheadStressTest extends AbstractBulkheadTest {
 
     @Test
     public void bulkheadWithQueueAndRetry_55_100() {
-        loop(10, 100, 5);
+        loop(5, 100, 5);
     }
 
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
     @Retry(retryOn = {
             BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
-    public Future<?> bulkheadWithQueueAndRetry_55_100_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter).toCompletableFuture();
+    public Future<?> bulkheadWithQueueAndRetry_55_100_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
     @Test
-    public void bulkheadWithQueueAndRetry_55_100_NoWork() {
+    public void bulkheadWithQueueAndRetry_55_100_NoDelay() {
         loop(1, 100, 5);
     }
 
@@ -77,8 +77,8 @@ public class BulkheadConcurrencyTest extends AbstractBulkheadTest {
     @Asynchronous
     @Retry(retryOn = {
             BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
-    public Future<?> bulkheadWithQueueAndRetry_55_100_NoWork_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(CompletableFuture.completedFuture(null)).toCompletableFuture();
+    public Future<?> bulkheadWithQueueAndRetry_55_100_NoDelay_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(null).toCompletableFuture();
     }
 
     private void loop(int speed, int concurrentCallers, int maxSimultaneousWorkers) {

@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,8 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-
-import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 
@@ -41,20 +38,14 @@ abstract class AbstractBulkheadTest {
 
     final AtomicReference<BulkheadSemaphore> concurrentExecutions = new AtomicReference<>();
     final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
-    protected final FaultToleranceService service = new FaultToleranceServiceStub() {
-        @Override
-        public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
-            return concurrentExecutions.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
-        }
+    protected final FaultToleranceService service = new FaultToleranceServiceStub(new AtomicReference<>(),
+            concurrentExecutions, waitingQueuePopulation) {
 
         @Override
-        public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
-            return waitingQueuePopulation.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(queueCapacity));
+        public void delay(long delayMillis) throws InterruptedException {
+            waitSome(delayMillis);
         }
     };
-
     protected final CompletableFuture<Void> waiter = new CompletableFuture<>();
 
     /*
@@ -89,18 +80,30 @@ abstract class AbstractBulkheadTest {
     final List<InOut> threadsInOut = new CopyOnWriteArrayList<>();
 
     static class InOut {
-        final boolean in;
+        static final Object IN = new Object();
+
+        final Object result;
         final Thread t;
         final int inCount;
 
-        InOut(boolean in, Thread t, int inCount) {
-            this.in = in;
+        InOut(Thread t, int inCount) {
+            this(t, inCount, IN);
+        }
+
+        InOut(Thread t, int inCount, Object result) {
             this.t = t;
             this.inCount = inCount;
+            this.result = result;
         }
+
         @Override
         public String toString() {
-            return "No"+ t.getName() + (in ? " in (" : " out (")+ inCount + ")";
+            return "No" + t.getName() + (isIn() ? " in (" : " out (") + inCount + ")"
+                    + (isIn() ? "" : " [" + result + "]");
+        }
+
+        boolean isIn() {
+            return result == IN;
         }
     }
 
@@ -131,6 +134,7 @@ abstract class AbstractBulkheadTest {
     }
 
     private void recordCallerResult(Object res) throws AssertionError {
+        Thread currentThread = Thread.currentThread();
         try {
             Object value = res;
             if (res instanceof CompletionStage<?>) {
@@ -139,16 +143,22 @@ abstract class AbstractBulkheadTest {
                 value = ((Future<?>) res).get();
             } 
             if (value != null) {
-                executionResultsByThread.put(Thread.currentThread(), value.toString());
+                executionResultsByThread.put(currentThread, value.toString());
+                threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), value));
             }
         } catch (Exception e) {
-            executionErrorsByThread.put(Thread.currentThread(), e);
+            executionErrorsByThread.put(currentThread, e);
+            threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), e));
         }
     }
 
     void assertExecutionResult(String expected, Thread... forThreads) {
         for (Thread t : forThreads) {
-            assertEquals("Unexpected result for thread " + t.getName(), expected, executionResultsByThread.get(t));
+            String actual = executionResultsByThread.get(t);
+            if (!expected.equals(actual)) {
+                assertEquals("Unexpected result for thread " + t.getName() + ", processing was " + threadsInOut,
+                        expected, actual);
+            }
         }
     }
 
@@ -188,7 +198,6 @@ abstract class AbstractBulkheadTest {
     }
 
     void assertCompletedExecutionLimitedTo(int expectedMaxConcurrentExecutions, Thread... expectedHaveExecuted) {
-        assertEquals(expectedHaveExecuted.length, bulkheadMethodCallCount.get());
         assertEquals(0, concurrentExecutionsCount.get());
         assertEnteredSoFar(expectedHaveExecuted);
         assertExitedSoFar(expectedHaveExecuted);
@@ -198,7 +207,7 @@ abstract class AbstractBulkheadTest {
     void assertMaxConcurrentExecution(int expectedMaxConcurrentExecutions) {
         assertRange(1, expectedMaxConcurrentExecutions, maxConcurrentExecutionsCount.get());
         for (InOut inOut : threadsInOut) {
-            assertRange(1, expectedMaxConcurrentExecutions, inOut.inCount);
+            assertRange(inOut.isIn() ? 1 : 0, expectedMaxConcurrentExecutions, inOut.inCount);
         }
     }
 
@@ -223,29 +232,29 @@ abstract class AbstractBulkheadTest {
 
     Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
-        return policy.proceed(new StaticAnalysisContext(test, annotatedMethod, argument), service);
+        StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod, argument);
+        return policy.proceed(context, () -> service.getMethodContext(context));
     }
 
-    CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
+    CompletionStage<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 
-    CompletionStage<String> waitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws InterruptedException {
+    CompletionStage<String> bodyWaitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws Exception {
         maxConcurrentExecutionsCount.accumulateAndGet(concurrentExecutionsCount.incrementAndGet(), Integer::max);
         bulkheadMethodCallCount.incrementAndGet();
         Thread currentThread = Thread.currentThread();
         threadsEntered.add(currentThread);
-        threadsInOut.add(new InOut(true, currentThread, concurrentExecutionsCount.get()));
+        threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get()));
         try {
-            waiter.get();
-        } catch (CancellationException | ExecutionException e) {
-            throw new RuntimeException(e);
+            if (waiter != null) {
+                waiter.get();
+            }
+            return result.get();
         } finally {
             threadsExited.add(currentThread);
-            threadsInOut.add(new InOut(false, currentThread, concurrentExecutionsCount.get()));
             concurrentExecutionsCount.decrementAndGet();
         }
-        return result.get();
     }
 
     void assertFurtherThreadThrowsBulkheadException() {

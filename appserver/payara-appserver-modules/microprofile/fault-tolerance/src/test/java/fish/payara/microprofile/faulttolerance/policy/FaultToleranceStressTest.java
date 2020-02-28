@@ -65,8 +65,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -122,30 +120,28 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
     final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
 
     final ExecutorService executorService = Executors.newWorkStealingPool(NUMBER_OF_CALLERS / 2);
-    final FaultToleranceService service = new FaultToleranceServiceStub() {
+    final FaultToleranceService service = new FaultToleranceServiceStub(state, concurrentExecutions, waitingQueuePopulation) {
 
         @Override
-        public CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context) {
+        public CircuitBreakerState getState(int requestVolumeThreshold) {
             circuitStateAccessCount.incrementAndGet();
-            return state.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+            return super.getState(requestVolumeThreshold);
         }
 
         @Override
-        public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
+        public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads) {
             concurrentExecutionsAccessCount.incrementAndGet();
-            return concurrentExecutions.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
+            return super.getConcurrentExecutions(maxConcurrentThreads);
         }
 
         @Override
-        public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
+        public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity) {
             waitingQueuePopulationAccessCount.incrementAndGet();
-            return waitingQueuePopulation.updateAndGet(value -> 
-                value != null ? value : new BulkheadSemaphore(queueCapacity));
+            return super.getWaitingQueuePopulation(queueCapacity);
         }
 
         @Override
-        public void delay(long delayMillis, InvocationContext context) throws InterruptedException {
+        public void delay(long delayMillis) throws InterruptedException {
             // we don't really wait in this test but we count waiting time
             delayedExecutionCount.incrementAndGet();
             maxDelayMillis.updateAndGet(value -> Math.max(value, delayMillis));
@@ -154,7 +150,7 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
         }
 
         @Override
-        public void runAsynchronous(CompletableFuture<Object> asyncResult, InvocationContext context,
+        public void runAsynchronous(CompletableFuture<Object> asyncResult,
                 Callable<Object> task) throws RejectedExecutionException {
             Runnable completionTask = () -> {
                 if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
@@ -273,9 +269,10 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
         for (int i = 0; i < NUMBER_OF_CALLS; i++) {
             try {
+                StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod);
                 @SuppressWarnings("unchecked")
                 Future<String> resultValue = (Future<String>)
-                        policy.proceed(new StaticAnalysisContext(test, annotatedMethod), service);
+                        policy.proceed(context, () -> service.getMethodContext(context));
                 assertEquals("Success", resultValue.get());
                 callerSuccessfulInvocationCount.incrementAndGet();
             } catch (ExecutionException ex) {

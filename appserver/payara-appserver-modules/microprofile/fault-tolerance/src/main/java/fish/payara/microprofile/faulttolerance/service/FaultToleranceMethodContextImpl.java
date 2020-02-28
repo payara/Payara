@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,65 +43,63 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
-import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 
-/**
- * A stub of {@link FaultToleranceService} that can be used in tests as a basis.
- * 
- * Most methods need to be overridden with test behaviour.
- * 
- * The {@link #runAsynchronous(CompletableFuture, InvocationContext, Callable)} does run the task synchronous for
- * deterministic tests behaviour.
- * 
- * @author Jan Bernitt
- *
- */
-public class FaultToleranceServiceStub implements FaultToleranceService, FaultToleranceMethodContext {
+public final class FaultToleranceMethodContextImpl implements FaultToleranceMethodContext {
 
-    private final AtomicReference<CircuitBreakerState> state;
+    private final FaultToleranceRequestTracing requestTracing;
+    private final FaultToleranceMetrics metrics;
+    private final ExecutorService asyncExecution;
+    private final ScheduledExecutorService delayedExecution;
+    private final AtomicReference<CircuitBreakerState> circuitBreakerState;
     private final AtomicReference<BulkheadSemaphore> concurrentExecutions;
     private final AtomicReference<BulkheadSemaphore> waitingQueuePopulation;
+    private final InvocationContext context;
 
-    public FaultToleranceServiceStub() {
-        this(new AtomicReference<>(), new AtomicReference<>(), new AtomicReference<>());
+   public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
+           FaultToleranceMetrics metrics, ExecutorService asyncExecution,
+           ScheduledExecutorService delayedExecution) {
+        this(requestTracing, metrics, asyncExecution, delayedExecution, new AtomicReference<>(),
+                new AtomicReference<>(), new AtomicReference<>(), null);
     }
 
-    public FaultToleranceServiceStub(
-            AtomicReference<CircuitBreakerState> state,
+    private FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
+            FaultToleranceMetrics metrics, ExecutorService asyncExecution,
+            ScheduledExecutorService delayedExecution, AtomicReference<CircuitBreakerState> circuitBreakerState,
             AtomicReference<BulkheadSemaphore> concurrentExecutions,
-            AtomicReference<BulkheadSemaphore> waitingQueuePopulation) {
-        this.state = state;
+            AtomicReference<BulkheadSemaphore> waitingQueuePopulation, InvocationContext context) {
+        super();
+        this.requestTracing = requestTracing;
+        this.metrics = metrics;
+        this.asyncExecution = asyncExecution;
+        this.delayedExecution = delayedExecution;
+        this.circuitBreakerState = circuitBreakerState;
         this.concurrentExecutions = concurrentExecutions;
         this.waitingQueuePopulation = waitingQueuePopulation;
-    }
-
-    @Override
-    public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        return FaultToleranceConfig.asAnnotated(context.getTarget().getClass(), context.getMethod());
-    }
-
-    private InvocationContext context;
-
-    @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
         this.context = context;
-        return this;
+    }
+
+    public FaultToleranceMethodContextImpl in(InvocationContext context) {
+        return new FaultToleranceMethodContextImpl(requestTracing, metrics, asyncExecution, delayedExecution,
+                circuitBreakerState, concurrentExecutions, waitingQueuePopulation, context);
     }
 
     @Override
@@ -111,67 +109,83 @@ public class FaultToleranceServiceStub implements FaultToleranceService, FaultTo
 
     @Override
     public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return FaultToleranceMetrics.DISABLED;
+        return enabled ? metrics : FaultToleranceMetrics.DISABLED;
     }
+
+    /*
+     * Execution
+     */
 
     @Override
     public CircuitBreakerState getState(int requestVolumeThreshold) {
-        if (state == null) {
-            throw new UnsupportedOperationException();
-        }
-        return requestVolumeThreshold < 0
-                ? state.get()
-                : state.updateAndGet(
-                        value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+        return requestVolumeThreshold < 0 
+                ? circuitBreakerState.get()
+                : circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
     }
 
     @Override
     public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads) {
-        if (concurrentExecutions == null) {
-            throw new UnsupportedOperationException();
-        }
-        return maxConcurrentThreads < 0 
+        return maxConcurrentThreads < 0
                 ? concurrentExecutions.get()
-                : concurrentExecutions.updateAndGet(
-                        value -> value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
+                : concurrentExecutions.updateAndGet(value -> value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
     }
 
     @Override
     public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity) {
-        if (waitingQueuePopulation == null) {
-            throw new UnsupportedOperationException();
-        }
         return queueCapacity < 0 
                 ? waitingQueuePopulation.get()
-                : waitingQueuePopulation.updateAndGet(
-                        value -> value != null ? value : new BulkheadSemaphore(queueCapacity));
+                : waitingQueuePopulation.updateAndGet(value -> value != null ? value : new BulkheadSemaphore(queueCapacity));
     }
 
     @Override
     public void delay(long delayMillis) throws InterruptedException {
-        throw new UnsupportedOperationException("delay: Override for test case");
-    }
-
-    @Override
-    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-        throw new UnsupportedOperationException("runDelayed: Override for test case");
+        if (delayMillis <= 0) {
+            return;
+        }
+        trace("delayRetry");
+        try {
+            Thread.sleep(delayMillis);
+        } finally {
+            endTrace();
+        }
     }
 
     @Override
     public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
             throws RejectedExecutionException {
-        try {
-            asyncResult.complete(AsynchronousPolicy.toFuture(task.call()).get());
-        } catch (Exception e) {
-            asyncResult.completeExceptionally(e);
-        }
+        Runnable completionTask = () -> {
+            if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                try {
+                    trace("runAsynchronous");
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
+                    if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
+                        if (!asyncResult.isDone()) {
+                            asyncResult.complete(futureResult.get());
+                        }
+                    } else {
+                        futureResult.cancel(true);
+                    }
+                } catch (Exception ex) {
+                    // Note that even ExecutionException is not unpacked (intentionally)
+                    asyncResult.completeExceptionally(ex); 
+                } finally {
+                    endTrace();
+                }
+            }
+        };
+        asyncExecution.submit(completionTask);
+    }
+
+    @Override
+    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
+        return delayedExecution.schedule(task, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass,
             Exception ex) throws Exception {
-        return fallbackClass.newInstance()
-                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
+        return CDI.current().select(fallbackClass).get().handle(
+                new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }
 
     @Override
@@ -188,12 +202,12 @@ public class FaultToleranceServiceStub implements FaultToleranceService, FaultTo
 
     @Override
     public void trace(String method) {
-        //NOOP, tracing not supported
+        requestTracing.startSpan(new RequestTraceSpan(method), context);
     }
 
     @Override
     public void endTrace() {
-        //NOOP, tracing not supported
+        requestTracing.endSpan();
     }
 
 }

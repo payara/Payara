@@ -40,47 +40,39 @@
 package fish.payara.microprofile.faulttolerance.service;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
-import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.eclipse.microprofile.faulttolerance.FallbackHandler;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -106,7 +98,8 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided(FaultToleranceService.class)
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
-public class FaultToleranceServiceImpl implements EventListener, FaultToleranceService, MonitoringDataSource {
+public class FaultToleranceServiceImpl
+        implements EventListener, FaultToleranceService, MonitoringDataSource, FaultToleranceRequestTracing {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
 
@@ -129,7 +122,14 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     @Inject
     private MetricsService metricsService;
 
-    private final Map<String, FaultToleranceApplicationState> stateByApplication = new ConcurrentHashMap<>();
+    private static final class ApplicationState {
+
+        final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
+        final Map<Object, Map<String, FaultToleranceMethodContext>> methodByTargetObjectAndName = new ConcurrentHashMap<>();
+
+    }
+
+    private final Map<String, ApplicationState> stateByApplication = new ConcurrentHashMap<>();
     private ManagedScheduledExecutorService defaultScheduledExecutorService;
     private ManagedExecutorService defaultExecutorService;
     private ExecutorService asyncExecutorService;
@@ -157,57 +157,52 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     @Override
+    @MonitoringData(ns = "ft")
     public void collect(MonitoringDataCollector collector) {
-        MonitoringDataCollector ftCollector = collector.in("ft");
-        for (Entry<String, FaultToleranceApplicationState> appStateEntry : stateByApplication.entrySet()) {
-            String appName = appStateEntry.getKey();
-            FaultToleranceApplicationState appState = appStateEntry.getValue();
-            collectMethodState(ftCollector, appName, "execution",
-                    appState.getBulkheadExecutionSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
-            collectMethodState(ftCollector, appName, "queue",
-                    appState.getBulkheadExecutionQueueSemaphores(), FaultToleranceServiceImpl::collectBulkheadSemaphores);
-            collectMethodState(ftCollector, appName, "circuit-breaker",
-                    appState.getCircuitBreakerStates(), FaultToleranceServiceImpl::collectCircuitBreakerState);
-
+        for (Entry<String, ApplicationState> appStateEntry : stateByApplication.entrySet()) {
+            collectMethodState(collector, appStateEntry.getKey(), appStateEntry.getValue().methodByTargetObjectAndName);
         }
     }
 
-    private static <V> void collectMethodState(MonitoringDataCollector collector, String appName, String type,
-            Map<Object, Map<String, V>> entries, BiConsumer<MonitoringDataCollector, V> collect) {
-        for (Entry<Object, Map<String, V>> entry : entries.entrySet()) {
+    private static void collectMethodState(MonitoringDataCollector collector, String appName,
+            Map<Object, Map<String, FaultToleranceMethodContext>> entries) {
+        for (Entry<Object, Map<String, FaultToleranceMethodContext>> entry : entries.entrySet()) {
             Object target = entry.getKey();
             String targetValue = System.identityHashCode(target) + "@" + target.getClass().getSimpleName();
-            for (Entry<String, V> methodValue : entry.getValue().entrySet()) {
-                String group = appName + "-" + type + "-" + targetValue + "-" + methodValue.getKey();
-                collect.accept(collector.group(group), methodValue.getValue());
+            for (Entry<String, FaultToleranceMethodContext> methodValue : entry.getValue().entrySet()) {
+                String group = appName + "-" + targetValue + "-" + methodValue.getKey();
+                MonitoringDataCollector methodCollector = collector.group(group);
+                FaultToleranceMethodContext context = methodValue.getValue();
+                collectBulkheadSemaphores(methodCollector, "execution", context.getConcurrentExecutions(-1));
+                collectBulkheadSemaphores(methodCollector, "queue", context.getWaitingQueuePopulation(-1));
+                collectCircuitBreakerState(methodCollector, context.getState(-1));
             }
         }
     }
 
-    private static void collectBulkheadSemaphores(MonitoringDataCollector collector, BulkheadSemaphore semaphore) {
+    private static void collectBulkheadSemaphores(MonitoringDataCollector collector, String type, BulkheadSemaphore semaphore) {
+        if (semaphore == null) {
+            return;
+        }
         collector
-            .collect("availablePermits", semaphore.availablePermits())
-            .collect("acquiredPermits", semaphore.acquiredPermits());
+            .collect(type + "AvailablePermits", semaphore.availablePermits())
+            .collect(type + "AcquiredPermits", semaphore.acquiredPermits());
     }
 
     private static void collectCircuitBreakerState(MonitoringDataCollector collector, CircuitBreakerState state) {
+        if (state == null) {
+            return;
+        }
         collector
-            .collect("halfOpenSuccessFul", state.getHalfOpenSuccessFulResultCounter())
-            .collect("state", state.getCircuitState().name().charAt(0));
+            .collect("circuitBreakerHalfOpenSuccessFul", state.getHalfOpenSuccessFulResultCounter())
+            .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
     }
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
-        return appState.getConfig().updateAndGet(
+        ApplicationState appState = getApplicationState(getApplicationContext(context));
+        return appState.config.updateAndGet(
                 config -> config != null ? config : new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
-    }
-
-    @Override
-    public FaultToleranceMetrics getMetrics(InvocationContext context) {
-
-        FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
-        return appState.getMetrics(this::getApplicationMetricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
     }
 
     private MetricRegistry getApplicationMetricRegistry() {
@@ -222,7 +217,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         return lookup(serviceConfig.getManagedExecutorService(), defaultExecutorService);
     }
 
-    private ManagedScheduledExecutorService getManagedScheduledExecutorService() {
+    ManagedScheduledExecutorService getManagedScheduledExecutorService() {
         return lookup(serviceConfig.getManagedScheduledExecutorService(), defaultScheduledExecutorService);
     }
 
@@ -238,31 +233,6 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
             logger.log(Level.INFO, "Could not find configured , " + name + ", so resorting to default", ex);
             return defaultInstance;
         }
-    }
-
-    private FaultToleranceApplicationState getApplicationState(String applicationName) {
-        return stateByApplication.computeIfAbsent(applicationName, key -> new FaultToleranceApplicationState());
-    }
-
-    private BulkheadSemaphore getBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
-            Method annotatedMethod, int bulkheadValue) {
-        return getApplicationState(applicationName).getBulkheadExecutionSemaphores()
-                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
-                .computeIfAbsent( getFullMethodSignature(annotatedMethod), key -> new BulkheadSemaphore(bulkheadValue));
-    }
-
-    private BulkheadSemaphore getBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
-            Method annotatedMethod, int bulkheadWaitingTaskQueue) {
-        return getApplicationState(applicationName).getBulkheadExecutionQueueSemaphores()
-                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
-                .computeIfAbsent( getFullMethodSignature(annotatedMethod), key -> new BulkheadSemaphore(bulkheadWaitingTaskQueue));
-    }
-
-    private CircuitBreakerState getCircuitBreakerState(String applicationName, Object invocationTarget, 
-            Method annotatedMethod, int requestVolumeThreshold) {
-        return getApplicationState(applicationName).getCircuitBreakerStates()
-                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
-                .computeIfAbsent(getFullMethodSignature(annotatedMethod), key -> new CircuitBreakerState(requestVolumeThreshold));
     }
 
     /**
@@ -303,6 +273,10 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         return getFullMethodSignature(context.getMethod());
     }
 
+    private ApplicationState getApplicationState(String applicationName) {
+        return stateByApplication.computeIfAbsent(applicationName, key -> new ApplicationState());
+    }
+
     /**
      * Helper method to generate a full method signature consisting of canonical class name, method name, 
      * parameter types, and return type.
@@ -316,14 +290,16 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
                 + ">" + annotatedMethod.getReturnType().getSimpleName();
     }
 
-    private void startFaultToleranceSpan(RequestTraceSpan span, InvocationContext context) {
+    @Override
+    public void startSpan(RequestTraceSpan span, InvocationContext context) {
         if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
             addGenericFaultToleranceRequestTracingDetails(span, context);
             requestTracingService.startTrace(span);
         }
     }
 
-    private void endFaultToleranceSpan() {
+    @Override
+    public void endSpan() {
         if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
             requestTracingService.endTrace();
         }
@@ -338,99 +314,18 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         span.addSpanTag("Method Name", context.getMethod().getName());
     }
 
-
-    /*
-     * Execution
-     */
-
     @Override
-    public CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context) {
-        return getCircuitBreakerState(getApplicationContext(context), context.getTarget(),
-                context.getMethod(), requestVolumeThreshold);
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+        ApplicationState appState = getApplicationState(getApplicationContext(context));
+        FaultToleranceMethodContext methodContext = appState.methodByTargetObjectAndName //
+                .computeIfAbsent(context.getTarget(), key -> new ConcurrentHashMap<>()) //
+                .computeIfAbsent(getFullMethodSignature(context.getMethod()), key -> {
+                    FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
+                            FaultToleranceUtils.getCanonicalMethodName(context));
+                    return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
+                            getManagedScheduledExecutorService());
+                });
+        return ((FaultToleranceMethodContextImpl) methodContext).in(context);
     }
 
-    @Override
-    public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
-        return getBulkheadExecutionSemaphore(getApplicationContext(context),
-                context.getTarget(), context.getMethod(), maxConcurrentThreads);
-    }
-
-    @Override
-    public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
-        return getBulkheadExecutionQueueSemaphore(getApplicationContext(context),
-                context.getTarget(), context.getMethod(), queueCapacity);
-    }
-
-    @Override
-    public void delay(long delayMillis, InvocationContext context) throws InterruptedException {
-        if (delayMillis <= 0) {
-            return;
-        }
-        trace("delayRetry", context);
-        try {
-            Thread.sleep(delayMillis);
-        } finally {
-            endTrace();
-        }
-    }
-
-    @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, InvocationContext context, Callable<Object> task)
-            throws RejectedExecutionException {
-        Runnable completionTask = () -> {
-            if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
-                try {
-                    trace("runAsynchronous", context);
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
-                    if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
-                        if (!asyncResult.isDone()) {
-                            asyncResult.complete(futureResult.get());
-                        }
-                    } else {
-                        futureResult.cancel(true);
-                    }
-                } catch (Exception ex) {
-                    // Note that even ExecutionException is not unpacked (intentionally)
-                    asyncResult.completeExceptionally(ex); 
-                } finally {
-                    endTrace();
-                }
-            }
-        };
-        asyncExecutorService.submit(completionTask);
-    }
-
-    @Override
-    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-        return getManagedScheduledExecutorService().schedule(task, delayMillis, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, InvocationContext context,
-            Exception ex) throws Exception {
-        return CDI.current().select(fallbackClass).get().handle(
-                new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
-    }
-
-    @Override
-    public Object fallbackInvoke(Method fallbackMethod, InvocationContext context) throws Exception {
-        try {
-            fallbackMethod.setAccessible(true);
-            return fallbackMethod.invoke(context.getTarget(), context.getParameters());
-        } catch (InvocationTargetException e) {
-            throw (Exception) e.getTargetException();
-        } catch (IllegalAccessException e) {
-            throw new FaultToleranceDefinitionException(e); // should not happen as we validated
-        }
-    }
-
-    @Override
-    public void trace(String method, InvocationContext context) {
-        startFaultToleranceSpan(new RequestTraceSpan(method), context);
-    }
-
-    @Override
-    public void endTrace() {
-        endFaultToleranceSpan();
-    }
 }

@@ -82,8 +82,8 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     }
 
     @Bulkhead(value = 2)
-    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter);
+    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter);
     }
 
     /**
@@ -114,8 +114,8 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter);
+    public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter);
     }
 
     /**
@@ -148,15 +148,15 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter);
+    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter);
     }
 
     /**
      * Similar to {@link #bulkheadWithQueue()} just that we interrupt the executing threads and expect their permits to
      * be released and waiting threads to become executing.
      */
-    @Test(timeout = 500)
+    @Test(timeout = 1000)
     public void bulkheadWithQueueInterruptExecuting() {
         CompletableFuture<Void> exec2Waiter = new CompletableFuture<>();
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(waiter);
@@ -186,8 +186,8 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter);
+    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter);
     }
 
     /**
@@ -218,10 +218,10 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws InterruptedException {
+    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws Exception {
         if (waiter == this.waiter)
-            return waitThenReturnSuccess(waiter);
-        return waitThenReturn(waiter, () -> {
+            return bodyWaitThenReturnSuccess(waiter);
+        return bodyWaitThenReturn(waiter, () -> {
             CompletableFuture<String> res = new CompletableFuture<>();
             res.completeExceptionally(SIMULATED_METHOD_ERROR);
             return res;
@@ -256,11 +256,11 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws InterruptedException {
+    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws Exception {
         if (waiter != this.waiter)
-            return waitThenReturn(waiter, () -> {
+            return bodyWaitThenReturn(waiter, () -> {
                 throw SIMULATED_METHOD_ERROR;
             });
-        return waitThenReturnSuccess(waiter);
+        return bodyWaitThenReturnSuccess(waiter);
     }
 }

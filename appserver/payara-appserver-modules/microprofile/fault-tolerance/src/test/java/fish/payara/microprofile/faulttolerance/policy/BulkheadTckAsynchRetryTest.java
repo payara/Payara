@@ -60,20 +60,20 @@ import org.junit.Test;
  */
 public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
 
-    @Test
+    @Test(timeout = 60 * 1000)
     public void testBulkheadClassAsynchronousPassiveRetry55() {
         assertExecutionResult("Success", loop(10, 5, 5));
     }
 
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
-    @Retry(retryOn = { BulkheadException.class }, delay = 1, delayUnit = ChronoUnit.SECONDS, 
+    @Retry(retryOn = { BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, 
         maxRetries = 10, maxDuration = 999999)
-    public Future<?> testBulkheadClassAsynchronousPassiveRetry55_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter).toCompletableFuture();
+    public Future<?> testBulkheadClassAsynchronousPassiveRetry55_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
-    @Test
+    @Test(timeout = 60 * 1000)
     public void testBulkheadMethodAsynchronousRetry55() {
         assertExecutionResult("Success", loop(20, 5, 5));
     }
@@ -81,9 +81,9 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
     @Retry(retryOn = {
-            BulkheadException.class }, delay = 1, delayUnit = ChronoUnit.SECONDS, maxRetries = 10, maxDuration = 999999)
-    public Future<?> testBulkheadMethodAsynchronousRetry55_Method(Future<Void> waiter) throws InterruptedException {
-        return waitThenReturnSuccess(waiter).toCompletableFuture();
+            BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
+    public Future<?> testBulkheadMethodAsynchronousRetry55_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
     private Thread[] loop(int iterations, int maxSimultaneousWorkers, int maxSimultaneursQueuing) {
@@ -102,13 +102,14 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
             callers[i] = callBulkheadWithNewThreadAndWaitFor(waiter);
         }
         waitSome(100);
-        for (int i = 0; i < waiters.length; i++) {
-            waiters[i].complete(null);
+        for (CompletableFuture<Void> w : waiters) {
+            w.complete(null);
             waitSome(50);
         }
+        waitSome(100);
+        waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        Thread[] expectedExecutingCallers = Arrays.copyOf(callers, bulkheadCapacity);
-        assertCompletedExecutionLimitedTo(maxSimultaneousWorkers, expectedExecutingCallers);
-        return expectedExecutingCallers;
+        assertMaxConcurrentExecution(maxSimultaneousWorkers);
+        return Arrays.copyOf(callers, bulkheadCapacity);
     }
 }

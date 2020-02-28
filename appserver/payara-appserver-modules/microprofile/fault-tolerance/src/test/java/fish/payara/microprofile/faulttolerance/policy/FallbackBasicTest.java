@@ -166,7 +166,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     private Object proceedToResultValue(Object... methodArguments) throws Exception {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
-        return policy.proceed(new StaticAnalysisContext(this, annotatedMethod, methodArguments),
-                new FaultToleranceServiceStub());
+        StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod, methodArguments);
+        return policy.proceed(context, () -> new FaultToleranceServiceStub().getMethodContext(context));
     }
 }

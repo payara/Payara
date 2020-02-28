@@ -49,8 +49,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
 import org.junit.Before;
@@ -72,12 +70,7 @@ public class CircuitBreakerBasicTest {
     private final AtomicInteger circuitBreakerCallCounter = new AtomicInteger();
     final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     final CompletableFuture<Void> waitBeforeHalfOpenAgain = new CompletableFuture<>();
-    private final FaultToleranceService service = new FaultToleranceServiceStub() {
-
-        @Override
-        public CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context) {
-            return state.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
-        }
+    private final FaultToleranceService service = new FaultToleranceServiceStub(state, new AtomicReference<>(), new AtomicReference<>()) {
 
         @Override
         public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
@@ -188,7 +181,8 @@ public class CircuitBreakerBasicTest {
     private Integer proceedToResultValue(Object... methodArguments) throws Exception {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
-        return (Integer) policy.proceed(new StaticAnalysisContext(this, annotatedMethod, methodArguments), service);
+        StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod, methodArguments);
+        return (Integer) policy.proceed(context, () -> service.getMethodContext(context));
     }
 
     private int incrementAndFailingOnEveryOtherInvocationOnFirst6() {
