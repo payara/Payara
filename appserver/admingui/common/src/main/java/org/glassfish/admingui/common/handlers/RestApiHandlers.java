@@ -272,6 +272,7 @@ public class RestApiHandlers {
             return;
         }
 
+        parseResponse(response, handlerCtx, endpoint, attrs, false, true);
         handlerCtx.setOutputValue("result", endpoint);
     }
 
