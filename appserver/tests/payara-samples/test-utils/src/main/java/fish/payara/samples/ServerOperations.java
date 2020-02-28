@@ -747,8 +747,8 @@ public class ServerOperations {
             CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true");
 
             System.out.println("Stopping Server");
-            String domain = System.getProperty("payara.domain.name", "domain1");
-            if (domain != null) {
+            String domain = System.getProperty("payara.domain.name");
+            if (domain == null) {
                 domain = getPayaraDomainFromServer();
                 if (domain != null && !domain.equals("null")) {
                     logger.info("Using domain \"" + domain + "\" obtained from server. " +
@@ -756,14 +756,17 @@ public class ServerOperations {
                 } else {
                     // Default to domain1
                     domain = "domain1";
+                    logger.info("Using default domain \"" + domain + "\".");
                 }
+            } else {
+                logger.info("Using domain \"" + domain + "\" obtained from system property.");
             }
             CliCommands.payaraGlassFish("stop-domain", domain);
 
             System.out.println("Generating Encryption Key");
             CliCommands.payaraGlassFish("-W",
                     Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt",
-                    "generate-encryption-key");
+                    "generate-encryption-key", domain);
 
             System.out.println("Restarting Server");
             CliCommands.payaraGlassFish("start-domain", domain);
@@ -782,8 +785,8 @@ public class ServerOperations {
             System.out.println("Disabling Data Grid Encryption");
             CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false");
 
-            String domain = System.getProperty("payara.domain.name", "domain1");
-            if (domain != null) {
+            String domain = System.getProperty("payara.domain.name");
+            if (domain == null) {
                 domain = getPayaraDomainFromServer();
                 if (domain != null && !domain.equals("null")) {
                     logger.info("Using domain \"" + domain + "\" obtained from server. " +
@@ -791,7 +794,10 @@ public class ServerOperations {
                 } else {
                     // Default to domain1
                     domain = "domain1";
+                    logger.info("Using default domain \"" + domain + "\".");
                 }
+            } else {
+                logger.info("Using domain \"" + domain + "\" obtained from system property.");
             }
             restartContainer(domain);
         } else {
