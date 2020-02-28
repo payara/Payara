@@ -147,6 +147,10 @@ public abstract class AsadminTest {
         }
     }
 
+    protected static void assertWarning(CommandResult result) {
+        assertEquals(ExitStatus.WARNING, result.getExitStatus());
+    }
+
     protected static void assertContains(String expected, String actual) {
         assertThat(actual, CoreMatchers.containsString(expected));
     }

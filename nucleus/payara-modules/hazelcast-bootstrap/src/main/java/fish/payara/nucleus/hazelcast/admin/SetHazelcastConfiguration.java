@@ -393,7 +393,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 }
             }
 
-            if (encryptDatagrid && server.isDas()) {
+            if (encryptDatagrid != null && encryptDatagrid) {
                 checkForDatagridKey(actionReport);
             }
 
