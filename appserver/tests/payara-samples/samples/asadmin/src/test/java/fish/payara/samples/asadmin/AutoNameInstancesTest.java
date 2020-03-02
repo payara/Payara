@@ -39,6 +39,7 @@
  */
 package fish.payara.samples.asadmin;
 
+import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraVersion;
 import fish.payara.samples.ServerOperations;
@@ -51,16 +52,17 @@ import org.junit.Test;
 @NotMicroCompatible
 public class AutoNameInstancesTest extends AsadminTest {
 
-    private static String domainName = "domain1";
+    private static final String domainNameProperty = "payara.domain.name";
 
     @BeforeClass
     public static void setup() {
-        // Get domain name
-        domainName = ServerOperations.getPayaraDomainFromServer();
+        String domainName = ServerOperations.getPayaraDomainFromServer();
+        CliCommands.payaraGlassFish("create-system-properties", domainNameProperty + "=" + domainName);
     }
 
     @Test
     public void testInstanceNameConflict() {
+        String domainName = System.getProperty(domainNameProperty);
         String conflictInstanceName = "Scrumptious-Swordfish";
         // Create expected conflict if it doesn't already exist.
         CommandResult result = asadmin("list-instances", "-t", "--nostatus");
@@ -87,6 +89,7 @@ public class AutoNameInstancesTest extends AsadminTest {
 
     @Test
     public void testGenerateInstanceName() {
+        String domainName = System.getProperty(domainNameProperty);
         CommandResult result = asadmin("create-instance",
                 "-a",
                 "--node", "localhost-" + domainName,
