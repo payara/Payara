@@ -42,12 +42,17 @@ package fish.payara.microprofile.faulttolerance.policy;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.junit.Test;
 
 /**
@@ -81,8 +86,30 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     }
 
     @Bulkhead(value = 2)
-    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) throws Exception {
-        return bodyWaitThenReturnSuccess(waiter);
+    public String bulkheadWithoutQueue_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(waiter);
+    }
+
+    @Test(timeout = 3000)
+    public void bulkheadWithoutQueueNoWaiting() {
+        callWithConcurrentCallers(100, 4);
+    }
+
+    @Bulkhead(value = 4)
+    public String bulkheadWithoutQueueNoWaiting_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(waiter);
+    }
+
+    @Test(timeout = 3000)
+    public void bulkheadWithoutQueueNoWaitingWithRetry() {
+        callWithConcurrentCallers(100, 4);
+    }
+
+    @Bulkhead(value = 4)
+    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS, 
+            maxRetries = 3, maxDuration = 100)
+    public String bulkheadWithoutQueueNoWaitingWithRetry_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(waiter);
     }
 
     /**
@@ -262,5 +289,17 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         return bodyWaitThenReturn(waiter, () -> {
             throw SIMULATED_METHOD_ERROR;
         });
+    }
+
+    private void callWithConcurrentCallers(int numberOfCallers, int expectedMaxConcurrentCallers) {
+        for (int i = 0; i < numberOfCallers; i++) {
+            callBulkheadWithNewThreadAndWaitFor(null);
+        }
+        waitUnitAllCallersDone();
+        assertMaxConcurrentExecution(expectedMaxConcurrentCallers);
+        int success = countExecutionResults("Success");
+        int failedWithBulkheadException = countExecutionErrors(BulkheadException.class);
+        assertTrue(success > 0);
+        assertEquals(numberOfCallers, success + failedWithBulkheadException);
     }
 }

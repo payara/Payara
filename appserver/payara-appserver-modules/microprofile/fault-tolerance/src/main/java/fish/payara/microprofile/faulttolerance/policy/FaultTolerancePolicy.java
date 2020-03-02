@@ -44,7 +44,6 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -547,7 +546,7 @@ public final class FaultTolerancePolicy implements Serializable {
             invocation.metrics.linkBulkheadWaitingQueuePopulation(() -> Math.max(0, queuingOrRunning.get() - runCapacity));
         }
         while (true) {
-            int currentlyIn = queuingOrRunning.get();
+            final int currentlyIn = queuingOrRunning.get();
             if (currentlyIn >= runCapacity + queueCapacity) {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
                 throw new BulkheadException("No free work or queue space.");

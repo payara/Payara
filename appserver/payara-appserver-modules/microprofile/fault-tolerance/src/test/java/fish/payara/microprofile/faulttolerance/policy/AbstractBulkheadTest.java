@@ -12,10 +12,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -88,6 +90,8 @@ abstract class AbstractBulkheadTest {
 
     final List<InOut> threadsInOut = new CopyOnWriteArrayList<>();
 
+    final List<Thread> caller = new ArrayList<>();
+
     static class InOut {
         static final Object IN = new Object();
 
@@ -132,12 +136,15 @@ abstract class AbstractBulkheadTest {
                 Object res = proceedToResultValue(this, annotatedMethod, waiter);
                 recordCallerResult(res);
             } catch (Exception e) {
-                executionErrorsByThread.putIfAbsent(Thread.currentThread(), e);
+                Thread currentThread = Thread.currentThread();
+                setThreadResult(currentThread, e);
+                executionErrorsByThread.putIfAbsent(currentThread, e);
             }
         };
         Thread t = new Thread(task);
         t.setDaemon(true);
         t.setName(nextCallerThreadName.incrementAndGet() + "");
+        caller.add(t);
         t.start();
         return t;
     }
@@ -170,6 +177,30 @@ abstract class AbstractBulkheadTest {
                 return;
             }
         }
+    }
+
+    int countExecutionResults(String expected) {
+        int c = 0;
+        for (String result : executionResultsByThread.values()) {
+            if (Objects.equals(expected, result)) {
+                c++;
+            }
+        }
+        return c;
+    }
+
+    int countExecutionErrors(Class<? extends Exception> type) {
+        int c = 0;
+        for (Exception ex : executionErrorsByThread.values()) {
+            if (type.isAssignableFrom(ex.getClass())) {
+                c++;
+            } else if (ex instanceof ExecutionException) {
+                if (type.isAssignableFrom(ex.getCause().getClass())) {
+                    c++;
+                }
+            }
+        }
+        return c;
     }
 
     void assertExecutionResult(String expected, Thread... forThreads) {
@@ -260,7 +291,11 @@ abstract class AbstractBulkheadTest {
         return bodyWaitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 
-    CompletionStage<String> bodyWaitThenReturn(Future<Void> waiter, Supplier<CompletionStage<String>> result) throws Exception {
+    String bodyWaitThenReturnSuccessDirectly(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturn(waiter, () -> "Success");
+    }
+
+    <T> T bodyWaitThenReturn(Future<Void> waiter, Supplier<T> result) throws Exception {
         maxConcurrentExecutionsCount.accumulateAndGet(concurrentExecutionsCount.incrementAndGet(), Integer::max);
         bulkheadMethodCallCount.incrementAndGet();
         Thread currentThread = Thread.currentThread();
@@ -273,8 +308,7 @@ abstract class AbstractBulkheadTest {
             return result.get();
         } finally {
             threadsExited.add(currentThread);
-            threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), null));
-            concurrentExecutionsCount.decrementAndGet();
+            threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.getAndDecrement(), null));
         }
     }
 
@@ -302,6 +336,16 @@ abstract class AbstractBulkheadTest {
         } catch (ExecutionException ex) {
             assertEquals(BulkheadException.class, ex.getCause().getClass());
         }
+    }
+
+    void waitUnitAllCallersDone() {
+        waitSomeUnit(() -> {
+            for (Thread t : caller) {
+                if (t.isAlive())
+                    return false;
+            }
+            return true;
+        });
     }
 
     void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
