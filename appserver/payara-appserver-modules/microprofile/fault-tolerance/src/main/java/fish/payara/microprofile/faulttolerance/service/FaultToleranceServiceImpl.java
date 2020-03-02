@@ -127,7 +127,7 @@ public class FaultToleranceServiceImpl
     private static final class ApplicationState {
 
         final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
-        final Map<Object, Map<String, FaultToleranceMethodContextImpl>> methodByTargetObjectAndName = new ConcurrentHashMap<>();
+        final Map<Object, Map<Method, FaultToleranceMethodContextImpl>> methodByTargetObjectAndName = new ConcurrentHashMap<>();
 
     }
 
@@ -169,12 +169,10 @@ public class FaultToleranceServiceImpl
     }
 
     private static void collectMethodState(MonitoringDataCollector collector, String appName,
-            Map<Object, Map<String, FaultToleranceMethodContextImpl>> entries) {
-        for (Entry<Object, Map<String, FaultToleranceMethodContextImpl>> entry : entries.entrySet()) {
-            Object target = entry.getKey();
-            String targetValue = System.identityHashCode(target) + "@" + target.getClass().getSimpleName();
-            for (Entry<String, FaultToleranceMethodContextImpl> methodValue : entry.getValue().entrySet()) {
-                String group = appName + "-" + targetValue + "-" + methodValue.getKey();
+            Map<Object, Map<Method, FaultToleranceMethodContextImpl>> entries) {
+        for (Entry<Object, Map<Method, FaultToleranceMethodContextImpl>> entry : entries.entrySet()) {
+            for (Entry<Method, FaultToleranceMethodContextImpl> methodValue : entry.getValue().entrySet()) {
+                String group = methodValue.getKey().getName();
                 MonitoringDataCollector methodCollector = collector.group(group);
                 FaultToleranceMethodContext context = methodValue.getValue();
                 BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions(-1);
@@ -330,7 +328,7 @@ public class FaultToleranceServiceImpl
         ApplicationState appState = getApplicationState(getApplicationContext(context));
         FaultToleranceMethodContextImpl methodContext = appState.methodByTargetObjectAndName //
                 .computeIfAbsent(context.getTarget(), key -> new ConcurrentHashMap<>()) //
-                .computeIfAbsent(getFullMethodSignature(context.getMethod()), key -> {
+                .computeIfAbsent(context.getMethod(), key -> {
                     FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
                             FaultToleranceUtils.getCanonicalMethodName(context));
                     return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,

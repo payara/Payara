@@ -107,7 +107,7 @@ public final class FaultTolerancePolicy implements Serializable {
 
     public static FaultTolerancePolicy asAnnotated(Class<?> target, Method annotated) {
         return create(new StaticAnalysisContext(target, annotated), 
-                () -> FaultToleranceConfig.asAnnotated(target, annotated));
+                FaultToleranceConfig.asAnnotated(target, annotated));
     }
 
     /**
@@ -123,11 +123,10 @@ public final class FaultTolerancePolicy implements Serializable {
             throws FaultToleranceDefinitionException {
         return POLICY_BY_METHOD.computeIfAbsent(context.getTarget().getClass(), target -> new ConcurrentHashMap<>())
                 .compute(context.getMethod(), (method, policy) -> 
-                    policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
+                    policy != null && !policy.isExpired() ? policy : create(context, configSpplier.get()));
     }
 
-    private static FaultTolerancePolicy create(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier) {
-        FaultToleranceConfig config = configSpplier.get();
+    private static FaultTolerancePolicy create(InvocationContext context, FaultToleranceConfig config) {
         return new FaultTolerancePolicy(
                 config.isNonFallbackEnabled(),
                 config.isMetricsEnabled(),
