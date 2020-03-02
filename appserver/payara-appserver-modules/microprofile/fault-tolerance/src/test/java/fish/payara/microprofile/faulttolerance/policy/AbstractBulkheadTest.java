@@ -141,6 +141,10 @@ abstract class AbstractBulkheadTest {
                 executionErrorsByThread.putIfAbsent(currentThread, e);
             }
         };
+        return startDaemonThreadWith(task);
+    }
+
+    private Thread startDaemonThreadWith(Runnable task) {
         Thread t = new Thread(task);
         t.setDaemon(true);
         t.setName(nextCallerThreadName.incrementAndGet() + "");
@@ -282,6 +286,9 @@ abstract class AbstractBulkheadTest {
     }
 
     Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
+        if (Thread.currentThread().getName().endsWith(" test")) {
+            fail("wrong thread");
+        }
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
         StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod, argument);
         return policy.proceed(context, () -> service.getMethodContext(context));
@@ -313,34 +320,43 @@ abstract class AbstractBulkheadTest {
     }
 
     void assertFurtherThreadThrowsBulkheadException() {
+        int attemptCount = 10;
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        for (int i = 0; i < 10; i++) { // 10 attempts to be sure
-            try {
-                assertProceedingThrowsBulkheadException1(annotatedMethod);
-            } catch (Exception e) {
-                throw new AssertionError("Did not throw BulkheadException but: ", e);
-            }
+        List<Thread> attemptingCallers = new ArrayList<>();
+        Map<Thread, BulkheadException> bulkheadExceptions = new ConcurrentHashMap<>();
+        Map<Thread, Object> otherOutcomes = new ConcurrentHashMap<>();
+        for (int i = 0; i < attemptCount; i++) { // 10 attempts to be sure
+            attemptingCallers.add(startDaemonThreadWith(() -> {
+                Thread currentThread = Thread.currentThread();
+                try {
+                    Object resultValue = proceedToResultValue(this, annotatedMethod, null);
+                    if (resultValue instanceof Future) {
+                        otherOutcomes.put(currentThread, ((Future<?>) resultValue).get()); // should throw the exception
+                    } else {
+                        otherOutcomes.put(currentThread, resultValue);
+                    }
+                } catch (BulkheadException ex) {
+                    bulkheadExceptions.put(currentThread, ex);
+                } catch (ExecutionException ex) {
+                    if (ex.getCause() instanceof BulkheadException) {
+                        bulkheadExceptions.put(currentThread, (BulkheadException) ex.getCause());
+                    }
+                } catch (Exception e) {
+                    otherOutcomes.put(currentThread, e);
+                }
+            }));
         }
-    }
-
-    void assertProceedingThrowsBulkheadException1(Method annotatedMethod)
-            throws Exception, InterruptedException {
-        try {
-            Object resultValue = proceedToResultValue(this, annotatedMethod, null);
-            if (resultValue instanceof Future) {
-                ((Future<?>) resultValue).get(); // should throw the exception
-            }
-            fail("Expected to fail with a BulkheadException");
-        } catch (BulkheadException ex) {
-            // as expected for non asyncronous
-        } catch (ExecutionException ex) {
-            assertEquals(BulkheadException.class, ex.getCause().getClass());
-        }
+        waitUntilAllThreadsDone(attemptingCallers);
+        assertEquals(attemptCount, bulkheadExceptions.size());
     }
 
     void waitUnitAllCallersDone() {
+        waitUntilAllThreadsDone(caller);
+    }
+
+    private static void waitUntilAllThreadsDone(List<Thread> threads) {
         waitSomeUnit(() -> {
-            for (Thread t : caller) {
+            for (Thread t : threads) {
                 if (t.isAlive())
                     return false;
             }

@@ -45,6 +45,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -65,28 +67,30 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     private static final RuntimeException SIMULATED_METHOD_ERROR = new RuntimeException("Simulated Bulkhead method error");
 
     /**
-     * Makes 2 concurrent request that should succeed acquiring a bulkhead permit.
-     * The 3 attempt fails as no queue is in place without {@link Asynchronous}.
+     * Makes 2 concurrent request that should succeed acquiring a bulkhead permit. Further attempts fail. After
+     * completing the first request the 3 attempt succeeds. Any further attempt again fails after that.
      * 
      * Needs a timeout because incorrect implementation could otherwise lead to endless waiting.
      */
     @Test(timeout = 3000)
     public void bulkheadWithoutQueue() {
-        Thread exec1 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
-        Thread exec2 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
-        waitUntilPermitsAquired(2, 0);
-        assertEnteredAndExited(2, 0);
-        assertFurtherThreadThrowsBulkheadException(); 
-        commonWaiter.complete(null);
-        waitUntilPermitsAquired(0, 0);
-        assertEnteredAndExited(2, 2);
-        assertCompletedExecutionLimitedTo(2, exec1, exec2);
-        assertExecutionResult("Success", exec1, exec2);
-        assertExecutionError(null);
+        callAndWait(2);
     }
 
     @Bulkhead(value = 2)
     public String bulkheadWithoutQueue_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(waiter);
+    }
+
+    @Test(timeout = 3000)
+    public void bulkheadWithoutQueueWithRetry() {
+        callAndWait(4);
+    }
+
+    @Bulkhead(value = 4)
+    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS, 
+    maxRetries = 3, maxDuration = 100, jitter = 0)
+    public String bulkheadWithoutQueueWithRetry_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccessDirectly(waiter);
     }
 
@@ -107,7 +111,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Bulkhead(value = 4)
     @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS, 
-            maxRetries = 3, maxDuration = 100)
+            maxRetries = 3, maxDuration = 100, jitter = 0)
     public String bulkheadWithoutQueueNoWaitingWithRetry_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccessDirectly(waiter);
     }
@@ -289,6 +293,29 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         return bodyWaitThenReturn(waiter, () -> {
             throw SIMULATED_METHOD_ERROR;
         });
+    }
+
+    private void callAndWait(int expectedMaxConcurrentExecutions) {
+        CompletableFuture<Void> waiterExec1 = new CompletableFuture<>();
+        List<Thread> execs = new ArrayList<>();
+        execs.add(callBulkheadWithNewThreadAndWaitFor(waiterExec1));
+        for (int i = 1; i < expectedMaxConcurrentExecutions; i++) {
+            execs.add(callBulkheadWithNewThreadAndWaitFor(commonWaiter));
+        }
+        waitUntilPermitsAquired(expectedMaxConcurrentExecutions, 0);
+        assertEnteredAndExited(expectedMaxConcurrentExecutions, 0);
+        assertFurtherThreadThrowsBulkheadException();
+        waiterExec1.complete(null);
+        execs.add(callBulkheadWithNewThreadAndWaitFor(commonWaiter));
+        assertEnteredAndExited(expectedMaxConcurrentExecutions + 1, 1);
+        assertFurtherThreadThrowsBulkheadException();
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        assertEnteredAndExited(expectedMaxConcurrentExecutions + 1, expectedMaxConcurrentExecutions + 1);
+        Thread[] expectedSuccessful = execs.toArray(new Thread[0]);
+        assertCompletedExecutionLimitedTo(expectedMaxConcurrentExecutions, expectedSuccessful);
+        assertExecutionResult("Success", expectedSuccessful);
+        assertExecutionError(null);
     }
 
     private void callWithConcurrentCallers(int numberOfCallers, int expectedMaxConcurrentCallers) {

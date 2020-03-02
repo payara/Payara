@@ -68,7 +68,7 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
     @Retry(retryOn = { BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, 
-        maxRetries = 10, maxDuration = 999999)
+        maxRetries = 10, maxDuration = 1000, jitter = 0)
     public Future<?> testBulkheadClassAsynchronousPassiveRetry55_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
@@ -80,8 +80,8 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
 
     @Bulkhead(waitingTaskQueue = 5, value = 5)
     @Asynchronous
-    @Retry(retryOn = {
-            BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, maxRetries = 10, maxDuration = 999999)
+    @Retry(retryOn = { BulkheadException.class }, delay = 100, delayUnit = ChronoUnit.MILLIS, 
+        maxRetries = 10, maxDuration = 1000, jitter = 0)
     public Future<?> testBulkheadMethodAsynchronousRetry55_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
