@@ -44,12 +44,15 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +69,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
@@ -538,62 +540,54 @@ public final class FaultTolerancePolicy implements Serializable {
             return proceed(invocation);
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
-        BulkheadSemaphore concurrentExecutions = invocation.context.getConcurrentExecutions(bulkhead.value);
-        BulkheadSemaphore waitingQueuePopulation = !isAsynchronous() ? null
-                : invocation.context.getWaitingQueuePopulation(bulkhead.waitingTaskQueue);
+        final int runCapacity = bulkhead.value;
+        final int queueCapacity = isAsynchronous() ? bulkhead.waitingTaskQueue : 0;
+        AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
         if (isMetricsEnabled) {
-            invocation.metrics.linkBulkheadConcurrentExecutions(concurrentExecutions::acquiredPermits);
-            if (waitingQueuePopulation != null) {
-                invocation.metrics.linkBulkheadWaitingQueuePopulation(waitingQueuePopulation::acquiredPermits);
-            }
+            invocation.metrics.linkBulkheadWaitingQueuePopulation(() -> Math.max(0, queuingOrRunning.get() - runCapacity));
         }
-        logger.log(Level.FINER, "Attempting to acquire bulkhead execution permit.");
-        if (concurrentExecutions.tryAcquireFair()) {
-            logger.log(Level.FINE, "Acquired bulkhead execution permit.");
-            invocation.metrics.incrementBulkheadCallsAcceptedTotal();
-            if (isAsynchronous()) {
-                // we did not wait but need to factor in the invocation for histogram quartiles
-                invocation.metrics.addBulkheadWaitingDuration(1L); // using 1ns because 0 leads to flaky test
-            }
-            return processBulkheadExecution(invocation, concurrentExecutions);
-        }
-        if (waitingQueuePopulation == null) { // plain semaphore style, fail:
-            invocation.metrics.incrementBulkheadCallsRejectedTotal();
-            throw new BulkheadException("No free work permits.");
-        }
-        // from here: queueing style:
-        logger.log(Level.FINER, "Attempting to acquire bulkhead queue permit.");
-        if (waitingQueuePopulation.tryAcquireFair()) {
-            logger.log(Level.FINE, "Acquired bulkhead queue permit.");
-            invocation.metrics.incrementBulkheadCallsAcceptedTotal();
-            long waitingSince = System.nanoTime();
-            try {
-                invocation.trace("obtainBulkheadSemaphore");
-                concurrentExecutions.acquire(); // block until execution permit becomes available
-                waitingQueuePopulation.release();
-            } catch (InterruptedException ex) {
-                logger.log(Level.FINE, "Interrupted acquiring bulkhead permit", ex);
+        while (true) {
+            int currentlyIn = queuingOrRunning.get();
+            if (currentlyIn >= runCapacity + queueCapacity) {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
-                waitingQueuePopulation.release();
-                throw new BulkheadException(ex);
-            } finally {
-                invocation.endTrace();
-                invocation.metrics.addBulkheadWaitingDuration(System.nanoTime() - waitingSince);
+                throw new BulkheadException("No free work or queue space.");
             }
-            return processBulkheadExecution(invocation, concurrentExecutions);
-        }
-        invocation.metrics.incrementBulkheadCallsRejectedTotal();
-        throw new BulkheadException("No free work or queue permits.");
-    }
-
-    private static Object processBulkheadExecution(FaultToleranceInvocation invocation, BulkheadSemaphore concurrentExecutions)
-            throws Exception {
-        long executionSince = System.nanoTime();
-        try {
-            return proceed(invocation);
-        } finally {
-            invocation.metrics.addBulkheadExecutionDuration(System.nanoTime() - executionSince);
-            concurrentExecutions.release();
+            if (queueCapacity > 0) {
+                logger.log(Level.FINER, "Attempting to enter bulkhead queue.");
+            }
+            // did someone else get next in row in the meantime?
+            if (queuingOrRunning.compareAndSet(currentlyIn, currentlyIn + 1)) {
+                // we are in the queue, yeah
+                try {
+                    logger.log(Level.FINE, "Entered bulkhead queue.");
+                    BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions(runCapacity);
+                    if (isMetricsEnabled) {
+                        invocation.metrics.linkBulkheadConcurrentExecutions(running::size);
+                    }
+                    logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
+                    long waitingSince = System.nanoTime();
+                    try {
+                        // can we run now?
+                        running.put(Thread.currentThread());
+                    } finally {
+                        invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
+                    }
+                    // we are in!
+                    long executionSince = System.nanoTime();
+                    try {
+                        logger.log(Level.FINE, "Entered bulkhead execution.");
+                        // ok, lets run
+                        return proceed(invocation);
+                    } finally {
+                        invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
+                        // successful or not, we are out...
+                        running.remove(Thread.currentThread());
+                    }
+                } finally {
+                   // no we are leaving get out of queue area as well
+                    queuingOrRunning.decrementAndGet();
+                }
+            }
         }
     }
 

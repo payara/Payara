@@ -1,15 +1,16 @@
 package fish.payara.microprofile.faulttolerance;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 public interface FaultToleranceMethodContext {
@@ -27,9 +28,9 @@ public interface FaultToleranceMethodContext {
      */
     CircuitBreakerState getState(int requestVolumeThreshold);
 
-    BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads);
+    BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads);
 
-    BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity);
+    AtomicInteger getQueuingOrRunningPopulation();
 
     /*
      * Processing

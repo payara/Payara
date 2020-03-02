@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,26 +28,34 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 abstract class AbstractBulkheadTest {
 
-    final AtomicReference<BulkheadSemaphore> concurrentExecutions = new AtomicReference<>();
-    final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
-    protected final FaultToleranceService service = new FaultToleranceServiceStub(new AtomicReference<>(),
-            concurrentExecutions, waitingQueuePopulation) {
+    protected final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public void delay(long delayMillis) throws InterruptedException {
-            waitSome(delayMillis);
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
+
+                @Override
+                public void delay(long delayMillis) throws InterruptedException {
+                    waitSome(delayMillis);
+                }
+            };
         }
+
     };
-    protected final CompletableFuture<Void> waiter = new CompletableFuture<>();
+    final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = service.getConcurrentExecutionsReference();
+    final AtomicInteger waitingQueuePopulation = service.getWaitingQueuePopulationReference();
+    protected final CompletableFuture<Void> commonWaiter = new CompletableFuture<>();
 
     /*
      * For Verification:
@@ -82,7 +91,7 @@ abstract class AbstractBulkheadTest {
     static class InOut {
         static final Object IN = new Object();
 
-        final Object result;
+        Object result;
         final Thread t;
         final int inCount;
 
@@ -144,11 +153,22 @@ abstract class AbstractBulkheadTest {
             } 
             if (value != null) {
                 executionResultsByThread.put(currentThread, value.toString());
-                threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), value));
             }
+            setThreadResult(currentThread, value);
         } catch (Exception e) {
             executionErrorsByThread.put(currentThread, e);
-            threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), e));
+            setThreadResult(currentThread, e);
+        }
+    }
+
+    private void setThreadResult(Thread currentThread, Object result) {
+        int end = threadsInOut.size() - 1;
+        for (int i = end; i >= 0; i--) {
+            InOut inOut = threadsInOut.get(i);
+            if (inOut.t == currentThread && !inOut.isIn()) {
+                inOut.result = result;
+                return;
+            }
         }
     }
 
@@ -253,6 +273,7 @@ abstract class AbstractBulkheadTest {
             return result.get();
         } finally {
             threadsExited.add(currentThread);
+            threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.get(), null));
             concurrentExecutionsCount.decrementAndGet();
         }
     }
@@ -284,9 +305,12 @@ abstract class AbstractBulkheadTest {
     }
 
     void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
-        waitSomeUnit(() -> 
-            equalAcquiredPermits(concurrentExecutions, this.concurrentExecutions.get())
-            && equalAcquiredPermits(waitingQueuePopulation, this.waitingQueuePopulation.get()));
+        waitSomeUnit(() -> {
+            BlockingQueue<Thread> queue = this.concurrentExecutions.get();
+            int actualConcurrentExecutions = queue == null ? 0 : queue.size();
+            return concurrentExecutions == actualConcurrentExecutions
+                    && waitingQueuePopulation == this.waitingQueuePopulation.get() - actualConcurrentExecutions;
+        });
     }
 
     static void waitSomeUnit(BooleanSupplier test) {
@@ -308,12 +332,10 @@ abstract class AbstractBulkheadTest {
     }
 
     void assertPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
-        assertEquals(concurrentExecutions, this.concurrentExecutions.get().acquiredPermits());
-        assertEquals(waitingQueuePopulation, this.waitingQueuePopulation.get().acquiredPermits());
-    }
-
-    static boolean equalAcquiredPermits(int expected, BulkheadSemaphore actual) {
-        return actual == null ? expected == 0 : actual.acquiredPermits() == expected;
+        int actualConcurrentExecutions = this.concurrentExecutions.get().size();
+        assertEquals(concurrentExecutions, actualConcurrentExecutions);
+        int actualQueueLength = this.waitingQueuePopulation.get();
+        assertEquals(waitingQueuePopulation, actualQueueLength - actualConcurrentExecutions);
     }
 
     private static <E> void assertSameSets(String msg, Collection<E> expected, Collection<E> actual) {

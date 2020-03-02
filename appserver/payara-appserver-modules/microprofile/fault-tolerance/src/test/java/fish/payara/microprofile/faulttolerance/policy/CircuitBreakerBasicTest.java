@@ -49,12 +49,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
 import org.junit.Before;
 import org.junit.Test;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
@@ -68,27 +71,34 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 public class CircuitBreakerBasicTest {
 
     private final AtomicInteger circuitBreakerCallCounter = new AtomicInteger();
-    final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     final CompletableFuture<Void> waitBeforeHalfOpenAgain = new CompletableFuture<>();
-    private final FaultToleranceService service = new FaultToleranceServiceStub(state, new AtomicReference<>(), new AtomicReference<>()) {
+    private final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-            // test method completes the future when it is ready for execution to proceed and open the circuit (task)
-            if (waitBeforeHalfOpenAgain.isDone()) {
-                task.run();
-                return CompletableFuture.completedFuture(null);
-            }
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    waitBeforeHalfOpenAgain.get();
-                } catch (Exception e) {
-                    // continue
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) { 
+
+                @Override
+                public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
+                    // test method completes the future when it is ready for execution to proceed and open the circuit (task)
+                    if (waitBeforeHalfOpenAgain.isDone()) {
+                        task.run();
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    return CompletableFuture.runAsync(() -> {
+                        try {
+                            waitBeforeHalfOpenAgain.get();
+                        } catch (Exception e) {
+                            // continue
+                        }
+                        task.run();
+                    });
                 }
-                task.run();
-            });
+            };
         }
     };
+
+    final AtomicReference<CircuitBreakerState> state = service.getStateReference();
 
     @Before
     public void resetCounter() {

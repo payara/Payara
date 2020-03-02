@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,15 +45,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
@@ -63,45 +59,21 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 
-public final class FaultToleranceMethodContextImpl implements FaultToleranceMethodContext {
+public class FaultToleranceMethodContextStub implements FaultToleranceMethodContext {
 
-    private final FaultToleranceRequestTracing requestTracing;
-    private final FaultToleranceMetrics metrics;
-    private final ExecutorService asyncExecution;
-    private final ScheduledExecutorService delayedExecution;
-    private final AtomicReference<CircuitBreakerState> circuitBreakerState;
+    private final InvocationContext context;
+    private final AtomicReference<CircuitBreakerState> state;
     private final AtomicReference<BlockingQueue<Thread>> concurrentExecutions;
     private final AtomicInteger queuingOrRunningPopulation;
-    private final InvocationContext context;
 
-   public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
-           FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-           ScheduledExecutorService delayedExecution) {
-        this(requestTracing, metrics, asyncExecution, delayedExecution, new AtomicReference<>(),
-                new AtomicReference<>(), new AtomicInteger(), null);
-    }
-
-    private FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
-            FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-            ScheduledExecutorService delayedExecution, AtomicReference<CircuitBreakerState> circuitBreakerState,
+    public FaultToleranceMethodContextStub(InvocationContext context, AtomicReference<CircuitBreakerState> state,
             AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
-            AtomicInteger queuingOrRunningPopulation, InvocationContext context) {
-        super();
-        this.requestTracing = requestTracing;
-        this.metrics = metrics;
-        this.asyncExecution = asyncExecution;
-        this.delayedExecution = delayedExecution;
-        this.circuitBreakerState = circuitBreakerState;
+            AtomicInteger queuingOrRunningPopulation) {
+        this.context = context;
+        this.state = state;
         this.concurrentExecutions = concurrentExecutions;
         this.queuingOrRunningPopulation = queuingOrRunningPopulation;
-        this.context = context;
-    }
-
-    public FaultToleranceMethodContextImpl in(InvocationContext context) {
-        return new FaultToleranceMethodContextImpl(requestTracing, metrics, asyncExecution, delayedExecution,
-                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context);
     }
 
     @Override
@@ -111,81 +83,64 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return enabled ? metrics : FaultToleranceMetrics.DISABLED;
+        return FaultToleranceMetrics.DISABLED;
     }
-
-    /*
-     * Execution
-     */
 
     @Override
     public CircuitBreakerState getState(int requestVolumeThreshold) {
-        return requestVolumeThreshold < 0 
-                ? circuitBreakerState.get()
-                : circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+        if (state == null) {
+            throw new UnsupportedOperationException();
+        }
+        return requestVolumeThreshold < 0
+                ? state.get()
+                : state.updateAndGet(
+                    value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
     }
 
     @Override
     public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
-        return maxConcurrentThreads < 0
+        if (concurrentExecutions == null) {
+            throw new UnsupportedOperationException();
+        }
+        return maxConcurrentThreads < 0 
                 ? concurrentExecutions.get()
-                : concurrentExecutions.updateAndGet(value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
+                : concurrentExecutions.updateAndGet(
+                    value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
     }
 
     @Override
     public AtomicInteger getQueuingOrRunningPopulation() {
+        if (queuingOrRunningPopulation == null) {
+            throw new UnsupportedOperationException();
+        }
         return queuingOrRunningPopulation;
     }
 
     @Override
     public void delay(long delayMillis) throws InterruptedException {
-        if (delayMillis <= 0) {
-            return;
-        }
-        trace("delayRetry");
-        try {
-            Thread.sleep(delayMillis);
-        } finally {
-            endTrace();
-        }
+        throw new UnsupportedOperationException("delay: Override for test case");
+    }
+
+    @Override
+    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
+        throw new UnsupportedOperationException("runDelayed: Override for test case");
     }
 
     @Override
     public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
             throws RejectedExecutionException {
-        Runnable completionTask = () -> {
-            if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
-                try {
-                    trace("runAsynchronous");
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
-                    if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
-                        if (!asyncResult.isDone()) {
-                            asyncResult.complete(futureResult.get());
-                        }
-                    } else {
-                        futureResult.cancel(true);
-                    }
-                } catch (Exception ex) {
-                    // Note that even ExecutionException is not unpacked (intentionally)
-                    asyncResult.completeExceptionally(ex); 
-                } finally {
-                    endTrace();
-                }
-            }
-        };
-        asyncExecution.submit(completionTask);
-    }
-
-    @Override
-    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-        return delayedExecution.schedule(task, delayMillis, TimeUnit.MILLISECONDS);
+        try {
+            asyncResult.complete(AsynchronousPolicy.toFuture(task.call()).get());
+        } catch (Exception e) {
+            asyncResult.completeExceptionally(e);
+        }
     }
 
     @Override
     public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass,
             Exception ex) throws Exception {
-        return CDI.current().select(fallbackClass).get().handle(
-                new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
+        return fallbackClass.newInstance()
+                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }
 
     @Override
@@ -202,12 +157,11 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public void trace(String method) {
-        requestTracing.startSpan(new RequestTraceSpan(method), context);
+        //NOOP, tracing not supported
     }
 
     @Override
     public void endTrace() {
-        requestTracing.endSpan();
+        //NOOP, tracing not supported
     }
-
 }

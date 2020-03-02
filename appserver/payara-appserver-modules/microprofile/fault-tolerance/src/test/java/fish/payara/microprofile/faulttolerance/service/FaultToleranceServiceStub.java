@@ -39,26 +39,18 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.faulttolerance.FallbackHandler;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
-
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
@@ -72,128 +64,31 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
  * @author Jan Bernitt
  *
  */
-public class FaultToleranceServiceStub implements FaultToleranceService, FaultToleranceMethodContext {
+public class FaultToleranceServiceStub implements FaultToleranceService {
 
-    private final AtomicReference<CircuitBreakerState> state;
-    private final AtomicReference<BulkheadSemaphore> concurrentExecutions;
-    private final AtomicReference<BulkheadSemaphore> waitingQueuePopulation;
-
-    public FaultToleranceServiceStub() {
-        this(new AtomicReference<>(), new AtomicReference<>(), new AtomicReference<>());
-    }
-
-    public FaultToleranceServiceStub(
-            AtomicReference<CircuitBreakerState> state,
-            AtomicReference<BulkheadSemaphore> concurrentExecutions,
-            AtomicReference<BulkheadSemaphore> waitingQueuePopulation) {
-        this.state = state;
-        this.concurrentExecutions = concurrentExecutions;
-        this.waitingQueuePopulation = waitingQueuePopulation;
-    }
+    protected final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
+    protected final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
+    protected final AtomicInteger waitingQueuePopulation = new AtomicInteger();
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
         return FaultToleranceConfig.asAnnotated(context.getTarget().getClass(), context.getMethod());
     }
 
-    private InvocationContext context;
-
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
-        this.context = context;
-        return this;
+        return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation);
     }
 
-    @Override
-    public Object proceed() throws Exception {
-        return context.proceed();
+    public AtomicReference<CircuitBreakerState> getStateReference() {
+        return state;
     }
 
-    @Override
-    public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return FaultToleranceMetrics.DISABLED;
+    public AtomicReference<BlockingQueue<Thread>> getConcurrentExecutionsReference() {
+        return concurrentExecutions;
     }
 
-    @Override
-    public CircuitBreakerState getState(int requestVolumeThreshold) {
-        if (state == null) {
-            throw new UnsupportedOperationException();
-        }
-        return requestVolumeThreshold < 0
-                ? state.get()
-                : state.updateAndGet(
-                        value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+    public AtomicInteger getWaitingQueuePopulationReference() {
+        return waitingQueuePopulation;
     }
-
-    @Override
-    public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads) {
-        if (concurrentExecutions == null) {
-            throw new UnsupportedOperationException();
-        }
-        return maxConcurrentThreads < 0 
-                ? concurrentExecutions.get()
-                : concurrentExecutions.updateAndGet(
-                        value -> value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
-    }
-
-    @Override
-    public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity) {
-        if (waitingQueuePopulation == null) {
-            throw new UnsupportedOperationException();
-        }
-        return queueCapacity < 0 
-                ? waitingQueuePopulation.get()
-                : waitingQueuePopulation.updateAndGet(
-                        value -> value != null ? value : new BulkheadSemaphore(queueCapacity));
-    }
-
-    @Override
-    public void delay(long delayMillis) throws InterruptedException {
-        throw new UnsupportedOperationException("delay: Override for test case");
-    }
-
-    @Override
-    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-        throw new UnsupportedOperationException("runDelayed: Override for test case");
-    }
-
-    @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
-            throws RejectedExecutionException {
-        try {
-            asyncResult.complete(AsynchronousPolicy.toFuture(task.call()).get());
-        } catch (Exception e) {
-            asyncResult.completeExceptionally(e);
-        }
-    }
-
-    @Override
-    public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass,
-            Exception ex) throws Exception {
-        return fallbackClass.newInstance()
-                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
-    }
-
-    @Override
-    public Object fallbackInvoke(Method fallbackMethod) throws Exception {
-        try {
-            fallbackMethod.setAccessible(true);
-            return fallbackMethod.invoke(context.getTarget(), context.getParameters());
-        } catch (InvocationTargetException e) {
-            throw (Exception) e.getTargetException();
-        } catch (IllegalAccessException e) {
-            throw new FaultToleranceDefinitionException(e); // should not happen as we validated
-        }
-    }
-
-    @Override
-    public void trace(String method) {
-        //NOOP, tracing not supported
-    }
-
-    @Override
-    public void endTrace() {
-        //NOOP, tracing not supported
-    }
-
 }

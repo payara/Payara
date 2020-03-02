@@ -99,7 +99,7 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
         waitSome(100);
         assertPermitsAquired(maxSimultaneousWorkers, maxSimultaneursQueuing);
         for (int i = bulkheadCapacity; i < iterations; i++) {
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(waiter);
+            callers[i] = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         }
         waitSome(100);
         for (CompletableFuture<Void> w : waiters) {
@@ -107,7 +107,7 @@ public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
             waitSome(50);
         }
         waitSome(100);
-        waiter.complete(null);
+        commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertMaxConcurrentExecution(maxSimultaneousWorkers);
         return Arrays.copyOf(callers, bulkheadCapacity);

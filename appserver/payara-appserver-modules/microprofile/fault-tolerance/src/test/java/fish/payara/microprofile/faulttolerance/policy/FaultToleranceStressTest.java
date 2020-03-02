@@ -54,6 +54,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -65,6 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -75,9 +78,9 @@ import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceException;
 import org.junit.Test;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
-import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import fish.payara.microprofile.faulttolerance.test.TestUtils;
@@ -111,69 +114,72 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
     final AtomicInteger asyncCancelCount = new AtomicInteger();
 
     final AtomicInteger circuitStateAccessCount = new AtomicInteger();
-    final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
-
     final AtomicInteger concurrentExecutionsAccessCount = new AtomicInteger();
-    final AtomicReference<BulkheadSemaphore> concurrentExecutions = new AtomicReference<>();
-
     final AtomicInteger waitingQueuePopulationAccessCount = new AtomicInteger();
-    final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
 
     final ExecutorService executorService = Executors.newWorkStealingPool(NUMBER_OF_CALLERS / 2);
-    final FaultToleranceService service = new FaultToleranceServiceStub(state, concurrentExecutions, waitingQueuePopulation) {
+    final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public CircuitBreakerState getState(int requestVolumeThreshold) {
-            circuitStateAccessCount.incrementAndGet();
-            return super.getState(requestVolumeThreshold);
-        }
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
+                @Override
+                public CircuitBreakerState getState(int requestVolumeThreshold) {
+                    circuitStateAccessCount.incrementAndGet();
+                    return super.getState(requestVolumeThreshold);
+                }
 
-        @Override
-        public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads) {
-            concurrentExecutionsAccessCount.incrementAndGet();
-            return super.getConcurrentExecutions(maxConcurrentThreads);
-        }
+                @Override
+                public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
+                    concurrentExecutionsAccessCount.incrementAndGet();
+                    return super.getConcurrentExecutions(maxConcurrentThreads);
+                }
 
-        @Override
-        public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity) {
-            waitingQueuePopulationAccessCount.incrementAndGet();
-            return super.getWaitingQueuePopulation(queueCapacity);
-        }
+                @Override
+                public AtomicInteger getQueuingOrRunningPopulation() {
+                    waitingQueuePopulationAccessCount.incrementAndGet();
+                    return super.getQueuingOrRunningPopulation();
+                }
 
-        @Override
-        public void delay(long delayMillis) throws InterruptedException {
-            // we don't really wait in this test but we count waiting time
-            delayedExecutionCount.incrementAndGet();
-            maxDelayMillis.updateAndGet(value -> Math.max(value, delayMillis));
-            minDelayMillis.updateAndGet(value -> Math.min(value, delayMillis));
-            delayedMillis.addAndGet(delayMillis);
-        }
+                @Override
+                public void delay(long delayMillis) throws InterruptedException {
+                    // we don't really wait in this test but we count waiting time
+                    delayedExecutionCount.incrementAndGet();
+                    maxDelayMillis.updateAndGet(value -> Math.max(value, delayMillis));
+                    minDelayMillis.updateAndGet(value -> Math.min(value, delayMillis));
+                    delayedMillis.addAndGet(delayMillis);
+                }
 
-        @Override
-        public void runAsynchronous(CompletableFuture<Object> asyncResult,
-                Callable<Object> task) throws RejectedExecutionException {
-            Runnable completionTask = () -> {
-                if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
-                    try {
-                        Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
-                        if (!asyncResult.isCancelled()) {
-                            if (!asyncResult.isDone()) {
-                                asyncCompletedCount.incrementAndGet();
-                                asyncResult.complete(futureResult.get());
+                @Override
+                public void runAsynchronous(CompletableFuture<Object> asyncResult,
+                        Callable<Object> task) throws RejectedExecutionException {
+                    Runnable completionTask = () -> {
+                        if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                            try {
+                                Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
+                                if (!asyncResult.isCancelled()) {
+                                    if (!asyncResult.isDone()) {
+                                        asyncCompletedCount.incrementAndGet();
+                                        asyncResult.complete(futureResult.get());
+                                    }
+                                } else {
+                                    asyncCancelCount.incrementAndGet();
+                                    futureResult.cancel(true);
+                                }
+                            } catch (Exception ex) {
+                                asyncCompletedExceptionallyCount.incrementAndGet();
+                                asyncResult.completeExceptionally(ex); 
                             }
-                        } else {
-                            asyncCancelCount.incrementAndGet();
-                            futureResult.cancel(true);
                         }
-                    } catch (Exception ex) {
-                        asyncCompletedExceptionallyCount.incrementAndGet();
-                        asyncResult.completeExceptionally(ex); 
-                    }
+                    };
+                    executorService.execute(completionTask);
                 }
             };
-            executorService.execute(completionTask);
         }
     };
+    final AtomicReference<CircuitBreakerState> state = service.getStateReference();
+    final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = service.getConcurrentExecutionsReference();
+    final AtomicInteger waitingQueuePopulation = service.getWaitingQueuePopulationReference();
 
     @Test
     public void occasionallyFailingService() throws InterruptedException {
@@ -218,8 +224,8 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
                 maxDelayMillis.get(), lessThanOrEqualTo(200L));
 
         // now check that the state makes sense
-        assertEquals("No execution should ongo", 0, concurrentExecutions.get().acquiredPermits());
-        assertEquals("No queueing should ongo", 0, waitingQueuePopulation.get().acquiredPermits());
+        assertEquals("No execution should ongo", 0, concurrentExecutions.get().size());
+        assertEquals("No queueing should ongo", 0, waitingQueuePopulation.get());
         assertThat("Circuit should not be open (any more)", 
                 state.get().getCircuitState(), oneOf(CircuitState.HALF_OPEN, CircuitState.CLOSED));
     }
