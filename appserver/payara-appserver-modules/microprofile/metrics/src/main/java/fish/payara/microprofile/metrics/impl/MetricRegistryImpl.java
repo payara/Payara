@@ -353,7 +353,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         MetricID metricID = new MetricID(metadata.getName(), tags);
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
-            return register(metadata, null, tags);
+            return register(metadata, useExistingMetadata, null, tags);
         }
         Metric existing = family.get(metricID);
         if (existing == null) {
@@ -403,10 +403,11 @@ public class MetricRegistryImpl extends MetricRegistry {
         final T newMetric = metric != null ? metric : (T) createMetricInstance(newMetadata);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name, 
                 key -> new MetricFamily<>(newMetadata));
+        MetricID metricID = new MetricID(name, tags);
         if (family.metadata != newMetadata) {
-            checkReusableMetadata(name, newMetadata, family.metadata);
+            checkReusableMetadata(name, newMetadata, family.metadata, family.metrics.containsKey(metricID));
         }
-        T current = family.metrics.computeIfAbsent(new MetricID(name, tags), key -> newMetric);
+        T current = family.metrics.computeIfAbsent(metricID, key -> newMetric);
         if (current != newMetric) {
             checkNotAGauge(name, newMetadata);
         }
@@ -419,29 +420,35 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
     }
 
-    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata) {
-        //if existing metric declared not reusable
-        if (!existingMetadata.isReusable()) {
-            throw new IllegalArgumentException(String.format(
-                    "Metric ['%s'] already exists and declared not reusable", name
-            ));
-        }
-
-        //registration call itself declares the metric to not be reusable
-        if (!newMetadata.isReusable()) {
-            throw new IllegalArgumentException(String.format(
-                    "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
-            ));
+    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata, boolean checkReusable) {
+        if (checkReusable) {
+            checkIsReusable(name, newMetadata, existingMetadata);
+            checkNotAGauge(name, newMetadata);
         }
 
         checkSameType(name, newMetadata, existingMetadata);
-        checkNotAGauge(name, newMetadata);
 
         if (!existingMetadata.equals(newMetadata)) {
             throw new IllegalArgumentException(String.format(
                   "Metadata ['%s'] already registered, does not match provided ['%s']",
                   existingMetadata.toString(), newMetadata.toString()
           ));
+        }
+    }
+
+    private static void checkIsReusable(String name, Metadata newMetadata, Metadata existingMetadata) {
+        //if existing metric declared not reusable
+        if (!existingMetadata.isReusable()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] already exists and declared not reusable", name
+                    ));
+        }
+
+        //registration call itself declares the metric to not be reusable
+        if (!newMetadata.isReusable()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
+                    ));
         }
     }
 

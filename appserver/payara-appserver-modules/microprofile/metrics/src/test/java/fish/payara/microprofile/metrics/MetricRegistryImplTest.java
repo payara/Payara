@@ -54,6 +54,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeSet;
@@ -199,6 +200,36 @@ public class MetricRegistryImplTest {
         assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']", 
             name -> registry.register(withName(name), new CounterImpl(), SOME_TAG),
             name -> registry.register(name, new HistogramImpl()));
+    }
+
+    @Test
+    public void registerByMetadataAcceptsNonReusableInstancesWithSameNameButDifferentTags() {
+        EnumSet<MetricType> types = EnumSet.allOf(MetricType.class);
+        types.remove(MetricType.INVALID); // obviously
+        types.remove(MetricType.GAUGE); // gauges cannot be created
+        for (MetricType type : types) {
+            String name = nextName();
+            for (int i = 0; i < 10; i++) {
+                final int n = i;
+                MetadataBuilder metadata = withNameAnd(name).notReusable().withType(type);
+                Runnable register = () -> registry.register(metadata.build(), null, new Tag("a", "b" + n));
+                register.run(); // first time should work
+                try {
+                    assertException("Metric ['"+name+"'] already exists and declared not reusable", register);
+                } catch (AssertionError e) {
+                    fail(type + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void registerByMetadataAcceptsNonReusableGaugeWithSameNameButDifferentTags() {
+        String name = nextName();
+        Gauge<Long> gauge1 = () -> 1L;
+        registry.register(withNameAnd(name).notReusable().build(), gauge1, new Tag("a", "b"));
+        Gauge<Long> gauge2 = () -> 2L;
+        registry.register(withNameAnd(name).notReusable().build(), gauge2, new Tag("a", "c"));
     }
 
     @Test
@@ -360,7 +391,7 @@ public class MetricRegistryImplTest {
     private static void assertException(String expectedMsg, Runnable test) {
         try {
             test.run();
-            fail("Expected exception with message: " + expectedMsg);
+            fail("Expected exception did not occur, message should have been: " + expectedMsg);
         } catch (IllegalArgumentException ex) {
             if (expectedMsg.endsWith("...")) {
                 int startsWithLength = expectedMsg.length() - 3;
