@@ -53,31 +53,27 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
+import static java.lang.Integer.parseInt;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.interceptor.InvocationContext;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -88,7 +84,6 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -103,14 +98,8 @@ import org.jvnet.hk2.annotations.Service;
 public class FaultToleranceServiceImpl
         implements EventListener, FaultToleranceService, MonitoringDataSource, FaultToleranceRequestTracing {
 
-    private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
-
-    @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional
-    private FaultToleranceServiceConfiguration serviceConfig;
-
     private InvocationManager invocationManager;
+    private FaultToleranceServiceConfiguration config;
 
     @Inject
     private RequestTracingService requestTracingService;
@@ -132,23 +121,26 @@ public class FaultToleranceServiceImpl
     }
 
     private final Map<String, ApplicationState> stateByApplication = new ConcurrentHashMap<>();
-    private ManagedScheduledExecutorService defaultScheduledExecutorService;
-    private ManagedExecutorService defaultExecutorService;
-    private ExecutorService asyncExecutorService;
+    private ThreadPoolExecutor asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
     @PostConstruct
-    public void postConstruct() throws NamingException {
+    public void postConstruct() {
         events.register(this);
-        serviceConfig = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
         invocationManager = serviceLocator.getService(InvocationManager.class);
         requestTracingService = serviceLocator.getService(RequestTracingService.class);
-        InitialContext context = new InitialContext();
-        defaultExecutorService = (ManagedExecutorService) context.lookup("java:comp/DefaultManagedExecutorService");
-        defaultScheduledExecutorService = (ManagedScheduledExecutorService) context
-                .lookup("java:comp/DefaultManagedScheduledExecutorService");
-        asyncExecutorService = Executors.newCachedThreadPool();
-        delayExecutorService = Executors.newScheduledThreadPool(20);
+        config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
+        delayExecutorService = Executors.newScheduledThreadPool(getMaxDelayPoolSize());
+        asyncExecutorService = new ThreadPoolExecutor(0, getMaxAsyncPoolSize(), 60L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
+    }
+
+    private int getMaxDelayPoolSize() {
+        return config == null ? 20 : parseInt(config.getDelayMaxPoolSize());
+    }
+
+    private int getMaxAsyncPoolSize() {
+        return config == null ? 1000 : parseInt(config.getAsyncMaxPoolSize());
     }
 
     @Override
@@ -219,28 +211,6 @@ public class FaultToleranceServiceImpl
             return metricsService.getApplicationRegistry();
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private ManagedExecutorService getManagedExecutorService() {
-        return lookup(serviceConfig.getManagedExecutorService(), defaultExecutorService);
-    }
-
-    ManagedScheduledExecutorService getManagedScheduledExecutorService() {
-        return lookup(serviceConfig.getManagedScheduledExecutorService(), defaultScheduledExecutorService);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T lookup(String name, T defaultInstance) {
-        // If no name has been set, just get the default
-        if (name == null || name.isEmpty()) {
-            return defaultInstance; 
-        }
-        try {
-            return (T) new InitialContext().lookup(name);
-        } catch (Exception ex) {
-            logger.log(Level.INFO, "Could not find configured , " + name + ", so resorting to default", ex);
-            return defaultInstance;
         }
     }
 
@@ -316,9 +286,10 @@ public class FaultToleranceServiceImpl
 
     private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
             InvocationContext context) {
-        span.addSpanTag("App Name", invocationManager.getCurrentInvocation().getAppName());
-        span.addSpanTag("Component ID", invocationManager.getCurrentInvocation().getComponentId());
-        span.addSpanTag("Module Name", invocationManager.getCurrentInvocation().getModuleName());
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        span.addSpanTag("App Name", currentInvocation.getAppName());
+        span.addSpanTag("Component ID", currentInvocation.getComponentId());
+        span.addSpanTag("Module Name", currentInvocation.getModuleName());
         span.addSpanTag("Class Name", context.getMethod().getDeclaringClass().getName());
         span.addSpanTag("Method Name", context.getMethod().getName());
     }
@@ -331,6 +302,7 @@ public class FaultToleranceServiceImpl
                 .computeIfAbsent(context.getMethod(), key -> {
                     FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
                             FaultToleranceUtils.getCanonicalMethodName(context));
+                    asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
                     return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
                             delayExecutorService);
                 });

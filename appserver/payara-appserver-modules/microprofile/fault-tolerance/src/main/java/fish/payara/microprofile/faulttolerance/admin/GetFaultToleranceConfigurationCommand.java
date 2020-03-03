@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,8 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  *
- * @author Andrew Pielage
+ * @author Andrew Pielage (initial)
+ * @author Jan Bernitt (change to pool size)
  */
 @Service(name = "get-fault-tolerance-configuration")
 @PerLookup
@@ -77,43 +78,36 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetFaultToleranceConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Managed Executor Service Name", 
-            "Managed Scheduled Executor Service Name"};
-    
+    private final String OUTPUT_HEADERS[] = { "Async Max Pool Size", "Delay Max Pool Size" };
+
     @Inject
     private Target targetUtil;
-    
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
-    
+
     @Override
     public void execute(AdminCommandContext acc) {
         Config targetConfig = targetUtil.getConfig(target);
-        
+
         if (targetConfig == null) {
             acc.getActionReport().setMessage("No such config name: " + targetUtil);
             acc.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
-        FaultToleranceServiceConfiguration faultToleranceServiceConfiguration = targetConfig
+
+        FaultToleranceServiceConfiguration config = targetConfig
                 .getExtensionByType(FaultToleranceServiceConfiguration.class);
-        
+
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
-        Object[] outputValues = {
-            faultToleranceServiceConfiguration.getManagedExecutorService(),
-            faultToleranceServiceConfiguration.getManagedScheduledExecutorService()
-        };        
+        Object[] outputValues = { config.getAsyncMaxPoolSize(), config.getDelayMaxPoolSize() };
         columnFormatter.addRow(outputValues);
-        
+
         acc.getActionReport().appendMessage(columnFormatter.toString());
-        
+
         Map<String, Object> extraPropertiesMap = new HashMap<>();
-        extraPropertiesMap.put("managedExecutorServiceName", faultToleranceServiceConfiguration
-                .getManagedExecutorService());
-        extraPropertiesMap.put("managedScheduledExecutorServiceName", faultToleranceServiceConfiguration
-                .getManagedScheduledExecutorService());
-        
+        extraPropertiesMap.put("asyncMaxPoolSize", config.getAsyncMaxPoolSize());
+        extraPropertiesMap.put("delayMaxPoolSize", config.getDelayMaxPoolSize());
         Properties extraProperties = new Properties();
         extraProperties.put("faultToleranceConfiguration", extraPropertiesMap);
         acc.getActionReport().setExtraProperties(extraProperties);
