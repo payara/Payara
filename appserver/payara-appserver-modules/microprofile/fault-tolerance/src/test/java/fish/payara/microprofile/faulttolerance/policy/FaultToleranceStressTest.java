@@ -121,7 +121,7 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
     final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
             return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
                 @Override
                 public CircuitBreakerState getState(int requestVolumeThreshold) {
@@ -278,7 +278,7 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
                 StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod);
                 @SuppressWarnings("unchecked")
                 Future<String> resultValue = (Future<String>)
-                        policy.proceed(context, () -> service.getMethodContext(context));
+                        policy.proceed(context, () -> service.getMethodContext(context, policy));
                 assertEquals("Success", resultValue.get());
                 callerSuccessfulInvocationCount.incrementAndGet();
             } catch (ExecutionException ex) {

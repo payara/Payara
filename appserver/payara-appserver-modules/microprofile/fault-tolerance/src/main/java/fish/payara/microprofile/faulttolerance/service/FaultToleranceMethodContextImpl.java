@@ -52,6 +52,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.InvocationContext;
@@ -62,10 +64,27 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
+/**
+ * The execution context for a FT annotated method. Each {@link Method} for each individual target {@link Object}
+ * (instance of the {@link Class} defining the {@link Method}) has its corresponding instance of this
+ * {@link FaultToleranceMethodContext}.
+ * 
+ * When the annotated {@link Method} is invoked this implementation is bound to that context by
+ * {@link #in(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
+ * with other invocations for the same method except the {@link InvocationContext} and the {@link FaultTolerancePolicy}
+ * which are specific for each invocation. This way the full FT invocation state for each method invocation is
+ * determined at the beginning of applying FT semantics and cannot change during execution (except for those counters
+ * and queues that are meant to track the shared state changes of course).
+ * 
+ * @author Jan Bernitt
+ */
 public final class FaultToleranceMethodContextImpl implements FaultToleranceMethodContext {
+
+    private static final Logger logger = Logger.getLogger(FaultToleranceMethodContextImpl.class.getName());
 
     private final FaultToleranceRequestTracing requestTracing;
     private final FaultToleranceMetrics metrics;
@@ -75,19 +94,22 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     private final AtomicReference<BlockingQueue<Thread>> concurrentExecutions;
     private final AtomicInteger queuingOrRunningPopulation;
     private final InvocationContext context;
+    private final FaultTolerancePolicy policy;
+    private final AtomicInteger bulkheadDubugCounter;
 
-   public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
+    public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
            FaultToleranceMetrics metrics, ExecutorService asyncExecution,
            ScheduledExecutorService delayedExecution) {
         this(requestTracing, metrics, asyncExecution, delayedExecution, new AtomicReference<>(),
-                new AtomicReference<>(), new AtomicInteger(), null);
+                new AtomicReference<>(), new AtomicInteger(), null, null, new AtomicInteger());
     }
 
     private FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
             FaultToleranceMetrics metrics, ExecutorService asyncExecution,
             ScheduledExecutorService delayedExecution, AtomicReference<CircuitBreakerState> circuitBreakerState,
             AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
-            AtomicInteger queuingOrRunningPopulation, InvocationContext context) {
+            AtomicInteger queuingOrRunningPopulation, InvocationContext context, FaultTolerancePolicy policy, 
+            AtomicInteger bulkheadDubugCounter) {
         super();
         this.requestTracing = requestTracing;
         this.metrics = metrics;
@@ -97,16 +119,27 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         this.concurrentExecutions = concurrentExecutions;
         this.queuingOrRunningPopulation = queuingOrRunningPopulation;
         this.context = context;
+        this.policy = policy;
+        this.bulkheadDubugCounter = bulkheadDubugCounter;
     }
 
-    public FaultToleranceMethodContextImpl in(InvocationContext context) {
+    public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
         return new FaultToleranceMethodContextImpl(requestTracing, metrics, asyncExecution, delayedExecution,
-                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context);
+                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context, policy, bulkheadDubugCounter);
     }
 
     @Override
     public Object proceed() throws Exception {
-        return context.proceed();
+        try {
+            int in = bulkheadDubugCounter.incrementAndGet();
+            if (policy.isBulkheadPresent() && in > policy.bulkhead.value) {
+                logger.log(Level.WARNING, "Bulkhead appears to have been breeched, now executing {0} for method {1}",
+                        new Object[] { in, context.getMethod() });
+            }
+            return context.proceed();
+        } finally {
+            bulkheadDubugCounter.decrementAndGet();
+        }
     }
 
     @Override

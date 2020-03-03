@@ -167,6 +167,6 @@ public class FallbackBasicTest implements FallbackHandler<String> {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
         StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod, methodArguments);
-        return policy.proceed(context, () -> new FaultToleranceServiceStub().getMethodContext(context));
+        return policy.proceed(context, () -> new FaultToleranceServiceStub().getMethodContext(context, policy));
     }
 }

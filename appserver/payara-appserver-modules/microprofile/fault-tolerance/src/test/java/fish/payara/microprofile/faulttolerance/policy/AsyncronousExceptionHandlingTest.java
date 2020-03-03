@@ -173,7 +173,7 @@ public class AsyncronousExceptionHandlingTest {
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
         StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod);
         Future<?> result = AsynchronousPolicy.toFuture(
-                policy.proceed(context, () -> new FaultToleranceServiceStub().getMethodContext(context)));
+                policy.proceed(context, () -> new FaultToleranceServiceStub().getMethodContext(context, policy)));
         assertTrue(result.isDone());
         return result;
     }

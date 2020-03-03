@@ -41,6 +41,7 @@ package fish.payara.microprofile.faulttolerance;
 
 import javax.interceptor.InvocationContext;
 
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 
 /**
@@ -62,6 +63,15 @@ public interface FaultToleranceService {
      */
     FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes);
 
-    FaultToleranceMethodContext getMethodContext(InvocationContext context);
+    /**
+     * Get or create the context object for processing the annotated method represented by the given
+     * {@link InvocationContext}.
+     * 
+     * @param context represents the FT annotated method being called
+     * @param policy  the policy being used for this execution
+     * @return the {@link FaultToleranceMethodContext} to use to process the method invocation with FT semantics. This
+     *         is a context specific to the target object and called method.
+     */
+    FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy);
 
 }

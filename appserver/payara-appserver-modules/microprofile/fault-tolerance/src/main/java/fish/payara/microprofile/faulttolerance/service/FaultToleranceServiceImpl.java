@@ -68,6 +68,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
@@ -295,7 +296,7 @@ public class FaultToleranceServiceImpl
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
         ApplicationState appState = getApplicationState(getApplicationContext(context));
         FaultToleranceMethodContextImpl methodContext = appState.methodByTargetObjectAndName //
                 .computeIfAbsent(context.getTarget(), key -> new ConcurrentHashMap<>()) //
@@ -306,7 +307,7 @@ public class FaultToleranceServiceImpl
                     return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
                             delayExecutorService);
                 });
-        return methodContext.in(context);
+        return methodContext.in(context, policy);
     }
 
 }

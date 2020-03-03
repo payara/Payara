@@ -42,6 +42,8 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +57,7 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
@@ -74,9 +77,12 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
         try {
             FaultToleranceService env =
                     Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> env.getConfig(context, this));
+            AtomicReference<FaultToleranceConfig> lazyConfig = new AtomicReference<>();
+            Supplier<FaultToleranceConfig> configSupplier = () -> //
+                lazyConfig.updateAndGet(value -> value != null ? value : env.getConfig(context, this));
+            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, configSupplier);
             if (policy.isPresent) {
-                return policy.proceed(context, () -> env.getMethodContext(context));
+                return policy.proceed(context, () -> env.getMethodContext(context, policy));
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"

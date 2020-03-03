@@ -50,6 +50,7 @@ import javax.interceptor.InvocationContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
@@ -76,7 +77,7 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
         return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation);
     }
 

@@ -75,7 +75,7 @@ public class CircuitBreakerBasicTest {
     private final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
             return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) { 
 
                 @Override
@@ -192,7 +192,7 @@ public class CircuitBreakerBasicTest {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
         StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod, methodArguments);
-        return (Integer) policy.proceed(context, () -> service.getMethodContext(context));
+        return (Integer) policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
     private int incrementAndFailingOnEveryOtherInvocationOnFirst6() {

@@ -83,7 +83,7 @@ abstract class AbstractBulkheadTest {
     protected final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context) {
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
             return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
 
                 @Override
@@ -330,7 +330,7 @@ abstract class AbstractBulkheadTest {
         }
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
         StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod, argument);
-        return policy.proceed(context, () -> service.getMethodContext(context));
+        return policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
     CompletionStage<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
