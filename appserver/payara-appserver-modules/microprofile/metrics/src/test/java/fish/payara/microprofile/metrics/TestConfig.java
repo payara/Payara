@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 package fish.payara.microprofile.metrics;
 
 import org.eclipse.microprofile.config.Config;
@@ -30,7 +31,7 @@ import java.util.*;
  * After the unit test has run, one should remove the configuration parameters with the method {@link TestConfig#resetConfig()}.
  * 
  * @author Rudy De Busscher (original version https://github.com/atbashEE/atbash-config/blob/master/test/src/main/java/be/atbash/config/test/TestConfig.java)
- * @author Jan Bernitt (stripped converters)
+ * @author Jan Bernitt (stripped converters/hard coded converters only)
  */
 public class TestConfig implements Config {
 
