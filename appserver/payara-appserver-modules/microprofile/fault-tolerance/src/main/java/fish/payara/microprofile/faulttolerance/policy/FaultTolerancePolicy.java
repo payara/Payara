@@ -538,10 +538,11 @@ public final class FaultTolerancePolicy implements Serializable {
             return proceed(invocation);
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
+        final boolean async = isAsynchronous();
         final int runCapacity = bulkhead.value;
-        final int queueCapacity = isAsynchronous() ? bulkhead.waitingTaskQueue : 0;
+        final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
-        if (isMetricsEnabled) {
+        if (isMetricsEnabled && async) {
             invocation.metrics.linkBulkheadWaitingQueuePopulation(() -> Math.max(0, queuingOrRunning.get() - runCapacity));
         }
         while (true) {
@@ -560,6 +561,7 @@ public final class FaultTolerancePolicy implements Serializable {
                     logger.log(Level.FINE, "Entered bulkhead queue.");
                     BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions(runCapacity);
                     if (isMetricsEnabled) {
+                        invocation.metrics.incrementBulkheadCallsAcceptedTotal();
                         invocation.metrics.linkBulkheadConcurrentExecutions(running::size);
                     }
                     logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
@@ -568,7 +570,9 @@ public final class FaultTolerancePolicy implements Serializable {
                         // can we run now?
                         running.put(Thread.currentThread());
                     } finally {
-                        invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
+                        if (async) {
+                            invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
+                        }
                     }
                     // we are in!
                     long executionSince = System.nanoTime();
@@ -582,7 +586,7 @@ public final class FaultTolerancePolicy implements Serializable {
                         running.remove(Thread.currentThread());
                     }
                 } finally {
-                   // no we are leaving get out of queue area as well
+                    // no we are leaving get out of queue area as well
                     queuingOrRunning.decrementAndGet();
                 }
             }

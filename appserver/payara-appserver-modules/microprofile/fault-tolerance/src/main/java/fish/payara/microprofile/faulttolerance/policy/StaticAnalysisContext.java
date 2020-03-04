@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.microprofile.faulttolerance.policy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.interceptor.InvocationContext;
@@ -90,7 +91,7 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     @Override
     public Object getTimer() {
-        throw new UnsupportedOperationException();
+        return null; // no timer
     }
 
     @Override
@@ -100,7 +101,7 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     @Override
     public Constructor<?> getConstructor() {
-        throw new UnsupportedOperationException();
+        return null; // this is not an AroundConstruct interception context
     }
 
     @Override
@@ -115,7 +116,7 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     @Override
     public Map<String, Object> getContextData() {
-        throw new UnsupportedOperationException();
+        return Collections.emptyMap();
     }
 
     @Override

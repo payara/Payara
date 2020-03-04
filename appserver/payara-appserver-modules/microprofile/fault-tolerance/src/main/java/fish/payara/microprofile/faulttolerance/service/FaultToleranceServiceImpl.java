@@ -56,18 +56,19 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import static java.lang.Integer.parseInt;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -82,7 +83,6 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
@@ -99,6 +99,8 @@ import org.jvnet.hk2.annotations.Service;
 public class FaultToleranceServiceImpl
         implements EventListener, FaultToleranceService, MonitoringDataSource, FaultToleranceRequestTracing {
 
+    private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
+
     private InvocationManager invocationManager;
     private FaultToleranceServiceConfiguration config;
 
@@ -114,14 +116,8 @@ public class FaultToleranceServiceImpl
     @Inject
     private MetricsService metricsService;
 
-    private static final class ApplicationState {
-
-        final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
-        final Map<Object, Map<Method, FaultToleranceMethodContextImpl>> methodByTargetObjectAndName = new ConcurrentHashMap<>();
-
-    }
-
-    private final Map<String, ApplicationState> stateByApplication = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, FaultToleranceMethodContextImpl> methodByTargetObjectAndName = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, BindableFaultToleranceConfig> configByApplication = new ConcurrentHashMap<>();
     private ThreadPoolExecutor asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
@@ -134,6 +130,27 @@ public class FaultToleranceServiceImpl
         delayExecutorService = Executors.newScheduledThreadPool(getMaxDelayPoolSize());
         asyncExecutorService = new ThreadPoolExecutor(0, getMaxAsyncPoolSize(), 60L, TimeUnit.SECONDS,
                 new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
+        delayExecutorService.scheduleAtFixedRate(this::cleanMethodContexts, 1L, 1L, TimeUnit.MINUTES);
+    }
+
+    /**
+     * Since {@link Map#compute(Object, java.util.function.BiFunction)} locks the key entry for
+     * {@link ConcurrentHashMap} it is safe to remove the entry in case
+     * {@link FaultToleranceMethodContextImpl#isExpired(long)} as concurrent call to
+     * {@link Map#computeIfAbsent(Object, java.util.function.Function)} are going to wait for the completion of
+     * {@link Map#compute(Object, java.util.function.BiFunction)}.
+     */
+    private void cleanMethodContexts() {
+        final long ttl = TimeUnit.MINUTES.toMillis(1);
+        int size = methodByTargetObjectAndName.size();
+        for (String key : methodByTargetObjectAndName.keySet()) {
+            methodByTargetObjectAndName.compute(key, 
+                    (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
+        }
+        int sizeAfter = methodByTargetObjectAndName.size();
+        if (sizeAfter < size) {
+            logger.log(Level.INFO, "Cleaned {0} expired FT method contexts", size - sizeAfter);
+        }
     }
 
     private int getMaxDelayPoolSize() {
@@ -156,25 +173,16 @@ public class FaultToleranceServiceImpl
     @Override
     @MonitoringData(ns = "ft")
     public void collect(MonitoringDataCollector collector) {
-        for (Entry<String, ApplicationState> appStateEntry : stateByApplication.entrySet()) {
-            collectMethodState(collector, appStateEntry.getKey(), appStateEntry.getValue().methodByTargetObjectAndName);
-        }
-    }
-
-    private static void collectMethodState(MonitoringDataCollector collector, String appName,
-            Map<Object, Map<Method, FaultToleranceMethodContextImpl>> entries) {
-        for (Entry<Object, Map<Method, FaultToleranceMethodContextImpl>> entry : entries.entrySet()) {
-            for (Entry<Method, FaultToleranceMethodContextImpl> methodValue : entry.getValue().entrySet()) {
-                String group = methodValue.getKey().getName();
-                MonitoringDataCollector methodCollector = collector.group(group);
-                FaultToleranceMethodContext context = methodValue.getValue();
-                BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions(-1);
-                if (concurrentExecutions != null) {
-                    collectBulkheadSemaphores(methodCollector, concurrentExecutions);
-                    collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
-                }
-                collectCircuitBreakerState(methodCollector, context.getState(-1));
+        for (Entry<String, FaultToleranceMethodContextImpl> methodValue : methodByTargetObjectAndName.entrySet()) {
+            String group = methodValue.getKey();
+            MonitoringDataCollector methodCollector = collector.group(group);
+            FaultToleranceMethodContext context = methodValue.getValue();
+            BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions(-1);
+            if (concurrentExecutions != null) {
+                collectBulkheadSemaphores(methodCollector, concurrentExecutions);
+                collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
             }
+            collectCircuitBreakerState(methodCollector, context.getState(-1));
         }
     }
 
@@ -202,9 +210,8 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        ApplicationState appState = getApplicationState(getApplicationContext(context));
-        return appState.config.updateAndGet(
-                config -> config != null ? config : new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
+        return configByApplication.computeIfAbsent(getApplicationContext(context), 
+                key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
     private MetricRegistry getApplicationMetricRegistry() {
@@ -220,7 +227,7 @@ public class FaultToleranceServiceImpl
      * @param applicationName The name of the application to remove
      */
     private void deregisterApplication(String applicationName) {
-        stateByApplication.remove(applicationName);
+        configByApplication.remove(applicationName);
     }
 
     /**
@@ -233,41 +240,7 @@ public class FaultToleranceServiceImpl
     private String getApplicationContext(InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         String appName = currentInvocation.getAppName();
-        if (appName != null) {
-            return appName;
-        }
-        appName = currentInvocation.getModuleName();
-        if (appName != null) {
-            return appName;
-        }
-        appName = currentInvocation.getComponentId();
-        // If we've found a component name, check if there's an application registered with the same name
-        if (appName != null) {
-            // If it's not directly in the registry, it's possible due to how the componentId is constructed
-            if (serviceLocator.getService(ApplicationRegistry.class).get(appName) == null) {
-                // The application name should be the first component
-                return appName.split("_/")[0];
-            }
-        }
-        // If we still don't have a name - just construct it from the method signature
-        return getFullMethodSignature(context.getMethod());
-    }
-
-    private ApplicationState getApplicationState(String applicationName) {
-        return stateByApplication.computeIfAbsent(applicationName, key -> new ApplicationState());
-    }
-
-    /**
-     * Helper method to generate a full method signature consisting of canonical class name, method name, 
-     * parameter types, and return type.
-     * @param annotatedMethod The annotated Method to generate the signature for
-     * @return A String in the format of CanonicalClassName#MethodName({ParameterTypes})>ReturnType
-     */
-    private static String getFullMethodSignature(Method annotatedMethod) {
-        return annotatedMethod.getDeclaringClass().getCanonicalName() 
-                + "#" + annotatedMethod.getName() 
-                + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
-                + ">" + annotatedMethod.getReturnType().getSimpleName();
+        return appName != null ? appName : "common"; 
     }
 
     @Override
@@ -297,17 +270,39 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-        ApplicationState appState = getApplicationState(getApplicationContext(context));
-        FaultToleranceMethodContextImpl methodContext = appState.methodByTargetObjectAndName //
-                .computeIfAbsent(context.getTarget(), key -> new ConcurrentHashMap<>()) //
-                .computeIfAbsent(context.getMethod(), key -> {
-                    FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
-                            FaultToleranceUtils.getCanonicalMethodName(context));
-                    asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
-                    return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
-                            delayExecutorService);
-                });
+        FaultToleranceMethodContextImpl methodContext = methodByTargetObjectAndName //
+                .computeIfAbsent(getTargetMethodId(context), key -> createMethodContext(key, context));
         return methodContext.in(context, policy);
+    }
+
+    private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context) {
+        FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
+                FaultToleranceUtils.getCanonicalMethodName(context));
+        asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
+        logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
+        return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
+                delayExecutorService);
+    }
+
+    /**
+     * It is essential that the computed signature is referring to the {@link Method} as defined by the target
+     * {@link Object} class not its declaring {@link Class} as this could be different when called via an abstract
+     * {@link Method} implemented or overridden by the target {@link Class}.
+     */
+    private static String getTargetMethodId(InvocationContext context) {
+        Object target = context.getTarget();
+        Method method = context.getMethod();
+        StringBuilder methodId = new StringBuilder();
+        methodId.append(Integer.toHexString(System.identityHashCode(target))).append('@');
+        methodId.append(target.getClass().getName()).append('.').append(method.getName());
+        if (method.getParameterCount() > 0) {
+            methodId.append('(');
+            for (Class<?> param : method.getParameterTypes()) {
+                methodId.append(param.getName()).append(' ');
+            }
+            methodId.append(')');
+        }
+        return methodId.toString();
     }
 
 }

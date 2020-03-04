@@ -102,11 +102,11 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     }
 
     private static Config resolveConfig() {
-        logger.log(Level.INFO, "Resolving Fault Tolerance Config from Provider.");
+        logger.log(Level.FINE, "Resolving Fault Tolerance Config from Provider.");
         try {
             return ConfigProvider.getConfig();
         } catch (Exception ex) {
-            logger.log(Level.INFO, "No Config could be found, using annotation values only.", ex);
+            logger.log(Level.WARNING, "No Config could be found, using annotation values only.", ex);
             return null;
         }
     }

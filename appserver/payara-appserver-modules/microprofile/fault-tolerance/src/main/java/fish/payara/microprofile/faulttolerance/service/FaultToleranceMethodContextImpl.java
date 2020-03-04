@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
+import static java.lang.System.currentTimeMillis;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -51,6 +53,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,13 +98,15 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     private final AtomicInteger queuingOrRunningPopulation;
     private final InvocationContext context;
     private final FaultTolerancePolicy policy;
-    private final AtomicInteger bulkheadDubugCounter;
+    private final AtomicInteger executingThreadCount;
+    private final AtomicLong lastCalled;
 
     public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
            FaultToleranceMetrics metrics, ExecutorService asyncExecution,
            ScheduledExecutorService delayedExecution) {
         this(requestTracing, metrics, asyncExecution, delayedExecution, new AtomicReference<>(),
-                new AtomicReference<>(), new AtomicInteger(), null, null, new AtomicInteger());
+                new AtomicReference<>(), new AtomicInteger(), null, null, new AtomicInteger(),
+                new AtomicLong(currentTimeMillis()));
     }
 
     private FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
@@ -109,7 +114,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
             ScheduledExecutorService delayedExecution, AtomicReference<CircuitBreakerState> circuitBreakerState,
             AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
             AtomicInteger queuingOrRunningPopulation, InvocationContext context, FaultTolerancePolicy policy, 
-            AtomicInteger bulkheadDubugCounter) {
+            AtomicInteger executingThreadCount, AtomicLong lastCalled) {
         super();
         this.requestTracing = requestTracing;
         this.metrics = metrics;
@@ -120,25 +125,31 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         this.queuingOrRunningPopulation = queuingOrRunningPopulation;
         this.context = context;
         this.policy = policy;
-        this.bulkheadDubugCounter = bulkheadDubugCounter;
+        this.executingThreadCount = executingThreadCount;
+        this.lastCalled = lastCalled;
     }
 
     public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
         return new FaultToleranceMethodContextImpl(requestTracing, metrics, asyncExecution, delayedExecution,
-                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context, policy, bulkheadDubugCounter);
+                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context, policy,
+                executingThreadCount, lastCalled);
+    }
+
+    public boolean isExpired(long ttl) {
+        return executingThreadCount.get() == 0 && lastCalled.get() + ttl < System.currentTimeMillis();
     }
 
     @Override
     public Object proceed() throws Exception {
         try {
-            int in = bulkheadDubugCounter.incrementAndGet();
+            int in = executingThreadCount.incrementAndGet();
             if (policy.isBulkheadPresent() && in > policy.bulkhead.value) {
                 logger.log(Level.WARNING, "Bulkhead appears to have been breeched, now executing {0} for method {1}",
                         new Object[] { in, context.getMethod() });
             }
             return context.proceed();
         } finally {
-            bulkheadDubugCounter.decrementAndGet();
+            executingThreadCount.decrementAndGet();
         }
     }
 
