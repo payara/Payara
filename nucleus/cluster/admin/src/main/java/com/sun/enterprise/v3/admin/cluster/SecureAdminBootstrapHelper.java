@@ -308,8 +308,8 @@ public abstract class SecureAdminBootstrapHelper {
          * @param milliseconds normal Java time (in milliseconds)
          * @return
          */
-        Integer secondsSince_01_Jan_1970(final long milliseconds) {
-            return (int) (milliseconds) / 1000;
+        long secondsSince_01_Jan_1970(final long milliseconds) {
+            return milliseconds / 1000;
         }
     }
 

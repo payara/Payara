@@ -74,8 +74,8 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <!-- Export everything from the embedded jar 
-                             in the final bundle 
+                        <!-- Export everything from the embedded jar
+                             in the final bundle
                         -->
                         <_exportcontents>*</_exportcontents>
                         <Import-Package>*</Import-Package>
@@ -110,11 +110,19 @@
     </build>
     <dependencies>
         <!-- Mark them as optional so that GF distribution mechanism
-             won't package them. It is sufficient to package the wrapped jar. 
+             won't package them. It is sufficient to package the wrapped jar.
         -->
         <dependency>
-            <groupId>org.jvnet.hudson</groupId>
+            <groupId>org.jenkins-ci</groupId>
             <artifactId>trilead-ssh2</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>0.3.0</version>
+            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

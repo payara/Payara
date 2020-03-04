@@ -52,22 +52,23 @@ import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import com.trilead.ssh2.SFTPv3FileAttributes;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
 /**
- * Created by IntelliJ IDEA.
- * User: Naman Mehta
- * Date: 6 Aug, 2010
- * Time: 11:20:48 AM
- * To change this template use File | Settings | File Templates.
+ * @author Naman Mehta, 6 Aug, 2010
  */
 public class LogFilterForInstance {
 
@@ -135,8 +136,9 @@ public class LogFilterForInstance {
                     + loggingFile.substring(loggingFile.lastIndexOf(File.separator), loggingFile.length()));
 
             // getting size of the file on DAS
-            if (instanceLogFile.exists())
+            if (instanceLogFile.exists()) {
                 instanceLogFileSize = instanceLogFile.length();
+            }
 
             SFTPv3FileAttributes sftPv3FileAttributes = sftpClient._stat(loggingFile);
 
@@ -367,8 +369,8 @@ public class LogFilterForInstance {
                 WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir);
                 String[] allLogFileNames = wrf.list();
 
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = new File(allLogFileNames[i]);
+                for (String allLogFileName : allLogFileNames) {
+                    File file = new File(allLogFileName);
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (!fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
