@@ -48,6 +48,8 @@ import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.cluster.RemoteType;
+
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.HashMap;
@@ -69,8 +71,9 @@ import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
 
 /**
- * Remote AdminCommand to update a config node.  This command is run only on DAS.
- *  Update the config node on DAS
+ * Remote AdminCommand to update a config node. This command is run only on DAS.
+ * <p>
+ * Update the config node on DAS
  *
  * @author Carla Mott
  */
@@ -80,14 +83,16 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Node.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_update-node", 
+        opType=RestEndpoint.OpType.POST,
+        path="_update-node",
         description="Update Node",
         params={
             @RestParam(name="name", value="$parent")
         })
 })
 public class UpdateNodeCommand implements AdminCommand {
+
+    private static final Logger LOG = Logger.getLogger(UpdateNodeCommand.class.getName());
 
     @Inject
     Nodes nodes;
@@ -119,11 +124,11 @@ public class UpdateNodeCommand implements AdminCommand {
     @Param(name="sshkeyfile", optional=true)
     String sshkeyfile;
 
-    @Param(name = "sshpassword", optional = true, password=true)
-     String sshpassword;
+    @Param(name = "sshkeypassphrase", optional = true, password = true)
+    String sshkeypassphrase;
 
-    @Param(name = "sshkeypassphrase", optional = true, password=true)
-     String sshkeypassphrase;
+    @Param(name = "sshpassword", optional = true, password=true)
+    String sshpassword;
 
     @Param(name = "windowsdomain", optional = true)
     String windowsdomain;
@@ -140,11 +145,13 @@ public class UpdateNodeCommand implements AdminCommand {
     @Param(name = "useTls", optional = true)
     String useTls;
 
+    /** {@link RemoteType} name */
     @Param(name = "type", optional=true)
     String type;
 
     @Override
     public void execute(AdminCommandContext context) {
+        LOG.finest(() -> String.format("execute(context=%s)", context));
         ActionReport report = context.getActionReport();
         Logger logger= context.getLogger();
 
@@ -159,13 +166,11 @@ public class UpdateNodeCommand implements AdminCommand {
         }
         // Validate installdir if passed and running on localhost and not a Docker node
         if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)
-                && !node.getType().equals("DOCKER")){
-            TokenResolver resolver = null;
+            && !node.getType().equals(RemoteType.DOCKER.name())) {
 
             // Create a resolver that can replace system properties in strings
-            Map<String, String> systemPropsMap =
-                    new HashMap<String, String>((Map) (System.getProperties()));
-            resolver = new TokenResolver(systemPropsMap);
+            Map<String, String> systemPropsMap = new HashMap<String, String>((Map) (System.getProperties()));
+            TokenResolver resolver = new TokenResolver(systemPropsMap);
             String resolvedInstallDir = resolver.resolve(installdir);
             File actualInstallDir = new File(resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
 
@@ -208,62 +213,73 @@ public class UpdateNodeCommand implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
-
-
     }
 
 
     public void updateNodeElement(final String nodeName) throws TransactionFailure {
+        LOG.fine(() -> String.format("updateNodeElement(nodeName=%s)", nodeName));
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                // get the transaction
                 Transaction t = Transaction.getTransaction(param);
-                if (t!=null) {
+                if (t != null) {
                    Nodes nodes = ((Domain)param).getNodes();
                     Node node = nodes.getNode(nodeName);
                     Node writeableNode = t.enroll(node);
-                    if (windowsdomain != null)
+                    if (windowsdomain != null) {
                         writeableNode.setWindowsDomain(windowsdomain);
-                    if (nodedir != null)
+                    }
+                    if (nodedir != null) {
                         writeableNode.setNodeDir(nodedir);
-                    if (nodehost != null)
+                    }
+                    if (nodehost != null) {
                         writeableNode.setNodeHost(nodehost);
-                    if (installdir != null)
+                    }
+                    if (installdir != null) {
                         writeableNode.setInstallDir(installdir);
-                    if (type != null)
+                    }
+                    if (type != null) {
                         writeableNode.setType(type);
-                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null) {
-                        SshConnector sshC = writeableNode.getSshConnector();
-                        if (sshC == null)  {
-                            sshC =writeableNode.createChild(SshConnector.class);
-                        }else
-                            sshC = t.enroll(sshC);
-
-                        if (sshport != null)
-                            sshC.setSshPort(sshport);
-                        if(sshnodehost != null)
-                            sshC.setSshHost(sshnodehost);
-
-                        if (sshuser != null || sshkeyfile != null || sshpassword != null || sshkeypassphrase != null ) {
-                            SshAuth sshA = sshC.getSshAuth();
-                            if (sshA == null) {
-                               sshA = sshC.createChild(SshAuth.class);
-                            } else
-                                sshA = t.enroll(sshA);
-
-                            if (sshuser != null)
-                                sshA.setUserName(sshuser);
-                            if (sshkeyfile != null)
-                                sshA.setKeyfile(sshkeyfile);
-                            if(sshpassword != null)
-                                sshA.setPassword(sshpassword);
-                            if(sshkeypassphrase != null)
-                                sshA.setKeyPassphrase(sshkeypassphrase);
-                            sshC.setSshAuth(sshA);
+                    }
+                    if (RemoteType.SSH.name().equals(type) || RemoteType.DCOM.name().equals(type)) {
+                        SshConnector sshConnector = writeableNode.getSshConnector();
+                        if (sshConnector == null)  {
+                            sshConnector = writeableNode.createChild(SshConnector.class);
+                        } else {
+                            sshConnector = t.enroll(sshConnector);
                         }
-                        writeableNode.setSshConnector(sshC);
 
+                        if (sshport != null) {
+                            sshConnector.setSshPort(sshport);
+                        }
+                        if(sshnodehost != null) {
+                            sshConnector.setSshHost(sshnodehost);
+                        }
+
+                        if (sshuser != null || sshkeyfile != null || sshpassword != null) {
+                            SshAuth sshAuth = sshConnector.getSshAuth();
+                            if (sshAuth == null) {
+                               sshAuth = sshConnector.createChild(SshAuth.class);
+                            } else {
+                                sshAuth = t.enroll(sshAuth);
+                            }
+
+                            if (sshuser != null) {
+                                sshAuth.setUserName(sshuser);
+                            }
+                            if (sshkeyfile != null) {
+                                sshAuth.setKeyfile(sshkeyfile);
+                                sshAuth.setPassword(null);
+                            } else if (sshpassword != null) {
+                                sshAuth.setKeyfile(null);
+                                sshAuth.setPassword(sshpassword);
+                            }
+                            if(sshkeypassphrase != null) {
+                                sshAuth.setKeyPassphrase(sshkeypassphrase);
+                            }
+                            sshConnector.setSshAuth(sshAuth);
+                        }
+                        writeableNode.setSshConnector(sshConnector);
                     }
 
                     if (dockerImage != null) {
@@ -291,7 +307,8 @@ public class UpdateNodeCommand implements AdminCommand {
     /**
      * If the node is in use, is it OK to change currentvalue to newvalue?
      */
-    private static boolean allowableChange(String newvalue, String currentvalue) {
+    private static boolean allowableChange(final String newvalue, final String currentvalue) {
+        LOG.finest(() -> String.format("allowableChange(newvalue=%s, currentvalue=%s)", newvalue, currentvalue));
 
         // If the new value is not specified, then we aren't changing anything
         if (newvalue == null) {
@@ -319,9 +336,9 @@ public class UpdateNodeCommand implements AdminCommand {
             Map<String, String> systemPropsMap =
                         new HashMap<String, String>((Map)(System.getProperties()));
             TokenResolver resolver = new TokenResolver(systemPropsMap);
-            newvalue = resolver.resolve(newvalue);
-            currentvalue = resolver.resolve(currentvalue);
-            return newvalue.equals(currentvalue);
+            final String resolvedNewValue = resolver.resolve(newvalue);
+            final String resolvedCurrentValue = resolver.resolve(currentvalue);
+            return resolvedNewValue.equals(resolvedCurrentValue);
         }
 
         // Values don't match.
