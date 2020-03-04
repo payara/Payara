@@ -37,26 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cluster.ssh.util;
 
+import com.sun.enterprise.util.io.FileUtils;
 import com.trilead.ssh2.Connection;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import java.io.File;
-import java.io.IOException;
-
-import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.admin.CommandException;
+
 /**
  * @author Rajiv Mordani
  */
 public class SSHUtil {
-    private static final List<Connection> activeConnections = 
-                            new ArrayList<Connection>();
+
+    private static final List<Connection> activeConnections = new ArrayList<>();
     private static final String NL = System.getProperty("line.separator");
 
    /**
@@ -84,24 +85,25 @@ public class SSHUtil {
        * Convert empty string to null.
        */
       public static String checkString(String s) {
-          if(s==null || s.length()==0)    return null;
+          if(s==null || s.length()==0) {
+            return null;
+        }
           return s;
       }
 
-      public static String getExistingKeyFile() {
+
+    public static String getExistingKeyFile() {
         String key = null;
-        for (String keyName : Arrays.asList("id_rsa","id_dsa",
-                                                "identity"))
-        {
+        for (String keyName : Arrays.asList("id_rsa", "id_dsa", "identity")) {
             String h = System.getProperty("user.home") + File.separator;
-            File f = new File(h+".ssh"+File.separator+keyName);
+            File f = new File(h + ".ssh" + File.separator + keyName);
             if (f.exists()) {
-                key =  h  + ".ssh"+File.separator + keyName;
+                key = h + ".ssh" + File.separator + keyName;
                 break;
             }
         }
         return key;
-      }
+    }
 
       public static String getDefaultKeyFile() {
           String k = System.getProperty("user.home") + File.separator
@@ -129,8 +131,8 @@ public class SSHUtil {
         }
         return res;
     }
-    
-        
+
+
     /**
      * This method validates either private or public key file. In case of private
      * key, it parses the key file contents to verify if it indeed contains a key

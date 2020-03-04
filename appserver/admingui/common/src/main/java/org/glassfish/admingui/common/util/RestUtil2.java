@@ -38,10 +38,8 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admingui.common.util;
 
 import java.util.List;

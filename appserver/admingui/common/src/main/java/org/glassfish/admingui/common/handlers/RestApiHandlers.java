@@ -37,24 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 // Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.handlers;
-
-import java.util.*;
-import java.util.logging.Logger;
-
-import javax.json.JsonObject;
 
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
+
 import static org.glassfish.admingui.common.util.RestUtil.appendEncodedSegment;
 import static org.glassfish.admingui.common.util.RestUtil.buildChildEntityList;
 import static org.glassfish.admingui.common.util.RestUtil.buildDefaultValueMap;
@@ -65,9 +70,6 @@ import static org.glassfish.admingui.common.util.RestUtil.parseResponse;
 import static org.glassfish.admingui.common.util.RestUtil.sendCreateRequest;
 import static org.glassfish.admingui.common.util.RestUtil.sendUpdateRequest;
 
-/**
- *
- */
 public class RestApiHandlers {
     @Handler(id = "gf.getDefaultValues",
             input = {
