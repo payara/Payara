@@ -276,8 +276,10 @@ public class FaultToleranceServiceImpl
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context) {
-        FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(getApplicationMetricRegistry(),
-                FaultToleranceUtils.getCanonicalMethodName(context));
+        MetricRegistry metricRegistry = getApplicationMetricRegistry();
+        FaultToleranceMetrics metrics = metricRegistry == null 
+                ? FaultToleranceMetrics.DISABLED
+                : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
         asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
         logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
         return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
