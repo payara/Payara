@@ -731,11 +731,6 @@ Parent is ${project.parent}</echo>
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.stream</groupId>
-                <artifactId>sjsxp</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr.version}</version>
