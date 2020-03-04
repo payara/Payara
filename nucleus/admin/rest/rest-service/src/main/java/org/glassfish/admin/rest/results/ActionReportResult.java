@@ -55,8 +55,8 @@ import org.jvnet.hk2.config.ConfigBean;
  * @author Ludovic Champenois
  */
 public class ActionReportResult extends Result {
-    private RestActionReporter message;
-    private OptionsResult metaData;
+    private final RestActionReporter message;
+    private final OptionsResult metaData;
     private ConfigBean entity;
     private String commandDisplayName = null;
     private LeafResource.LeafContent leafContent = null;
@@ -88,7 +88,7 @@ public class ActionReportResult extends Result {
     }
 
     public ActionReportResult(String name, RestActionReporter r) {
-        this(name, r, new OptionsResult());    
+        this(name, r, new OptionsResult());
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData) {
@@ -116,7 +116,7 @@ public class ActionReportResult extends Result {
     public String getCommandDisplayName() {
         return commandDisplayName;
     }
-    
+
     /**
      * change display name for command associated with the command resource.
      */
@@ -132,5 +132,12 @@ public class ActionReportResult extends Result {
 
     public ConfigBean getEntity() {
         return entity;
+    }
+
+
+    @Override
+    public String toString() {
+        return super.toString() //
+            + "[actionReport: " + getActionReport() + "]";
     }
 }

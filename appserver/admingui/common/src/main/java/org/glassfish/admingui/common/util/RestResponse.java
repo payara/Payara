@@ -126,6 +126,7 @@ public abstract class RestResponse {
 
 
 class JerseyRestResponse extends RestResponse {
+    private static final Logger LOG = Logger.getLogger(JerseyRestResponse.class.getName());
     protected Response response;
     private String body = null;
 
@@ -152,13 +153,12 @@ class JerseyRestResponse extends RestResponse {
      */
     @Override
     public Map<String, Object> getResponse() {
+        LOG.finest("getResponse()");
         // Prepare the result object
         Map<String, Object> result = new HashMap<>(5);
 
         // Add the Response Code
         result.put("responseCode", getResponseCode());
-        // Add the Response Body
-// FIXME: Do not put responseBody into the Map... too big, not needed
         result.put("responseBody", getResponseBody());
 
         String contentType = response.getHeaderString("Content-type");
@@ -229,9 +229,7 @@ class JerseyRestResponse extends RestResponse {
                 JsonObject object = reader.readObject();
                 result.put("data", JsonUtil.jsonObjectToMap(object));
             } else {
-                // Unsupported Response Format!
-                System.out.println("Unsupported Response Format: '"
-		    + contentType + "'!");
+                LOG.severe("Unsupported Response Format: '" + contentType + "'!");
             }
         }
 
