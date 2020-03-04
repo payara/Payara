@@ -98,8 +98,8 @@ public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
         remotePort = "135";
         remoteUser = windowsuser;
         sshkeyfile = null;
-        remotepassword = windowspassword;
         sshkeypassphrase = null;
+        remotepassword = windowspassword;
         windowsdomain = windowsdomainInSubClass;
     }
 }

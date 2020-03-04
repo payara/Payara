@@ -60,8 +60,8 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Node.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="update-node-ssh", 
+        opType=RestEndpoint.OpType.POST,
+        path="update-node-ssh",
         description="Update Node",
         params={
             @RestParam(name="id", value="$parent")
@@ -74,10 +74,10 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
     private String sshuserInSubClass;
     @Param(name = "sshkeyfile", optional = true)
     private String sshkeyfileInSubClass;
-    @Param(name = "sshpassword", optional = true, password = true)
-    private String sshpasswordInSubClass;
     @Param(name = "sshkeypassphrase", optional = true, password = true)
     private String sshkeypassphraseInSubClass;
+    @Param(name = "sshpassword", optional = true, password = true)
+    private String sshpasswordInSubClass;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -89,8 +89,8 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
         remotePort = sshportInSubClass;
         remoteUser = sshuserInSubClass;
         sshkeyfile = sshkeyfileInSubClass;
-        remotepassword = sshpasswordInSubClass;
         sshkeypassphrase = sshkeypassphraseInSubClass;
+        remotepassword = sshpasswordInSubClass;
     }
 
     @Override

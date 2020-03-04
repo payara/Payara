@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -115,14 +115,16 @@ public class NodeUtils {
     }
 
     static boolean isSSHNode(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         return node.getType().equals("SSH");
     }
 
     public static boolean isDcomNode(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         return node.getType().equals("DCOM");
     }
 
@@ -132,10 +134,11 @@ public class NodeUtils {
      * @return version string
      */
     String getGlassFishVersionOnNode(Node node, AdminCommandContext context) throws CommandValidationException {
-        if (node == null)
+        if (node == null) {
             return "";
+        }
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         command.add("version");
         command.add("--local");
         command.add("--terse");
@@ -211,8 +214,9 @@ public class NodeUtils {
         }
 
         // BN says: Shouldn't this be a fatal error?!?  TODO
-        if (sshL == null)
+        if (sshL == null) {
             return;
+        }
 
         validateRemoteConnection(map);
     }
@@ -361,19 +365,22 @@ public class NodeUtils {
             SshAuth auth = connector.getSshAuth();
             String host = connector.getSshHost();
 
-            if (!StringUtils.ok(host))
+            if (!StringUtils.ok(host)) {
                 host = node.getNodeHost();
+            }
 
             String username = auth.getUserName();
             String password = resolvePassword(auth.getPassword());
             String installdir = node.getInstallDirUnixStyle();
             String domain = node.getWindowsDomain();
 
-            if (!StringUtils.ok(domain))
+            if (!StringUtils.ok(domain)) {
                 domain = host;
+            }
 
-            if (!StringUtils.ok(installdir))
+            if (!StringUtils.ok(installdir)) {
                 throw new CommandValidationException(Strings.get("dcom.no.installdir"));
+            }
 
             pingDcomConnection(host, domain, username, password, getInstallRoot(installdir));
         }
@@ -403,14 +410,16 @@ public class NodeUtils {
             String password, String installRoot) throws CommandValidationException {
         // don't bother trying to connect if we have no password!
 
-        if (!StringUtils.ok(password))
+        if (!StringUtils.ok(password)) {
             throw new CommandValidationException(Strings.get("dcom.nopassword"));
+        }
 
         // resolve password aliases
         password = DcomUtils.resolvePassword(resolver.resolve(password));
 
-        if (NetUtils.isThisHostLocal(host))
+        if (NetUtils.isThisHostLocal(host)) {
             throw new CommandValidationException(Strings.get("dcom.yes.local", host));
+        }
 
         try {
             installRoot = installRoot.replace('/', '\\');
@@ -424,8 +433,9 @@ public class NodeUtils {
                         host, installRoot));
             }
 
-            if (!WindowsRemotePinger.ping(installRoot, creds))
+            if (!WindowsRemotePinger.ping(installRoot, creds)) {
                 throw new CommandValidationException(Strings.get("dcom.no.connection", host));
+            }
         }
         catch (CommandValidationException cve) {
             throw cve;
@@ -441,10 +451,11 @@ public class NodeUtils {
         RemoteType type = parseType(map);
 
         // just too difficult to refactor now...
-        if (type == RemoteType.SSH)
+        if (type == RemoteType.SSH) {
             validateSSHConnection(map);
-        else if (type == RemoteType.DCOM)
+        } else if (type == RemoteType.DCOM) {
             validateDcomConnection(map);
+        }
     }
 
     private void validateDcomConnection(ParameterMap map) throws CommandValidationException {
@@ -476,8 +487,7 @@ public class NodeUtils {
 
         // We use the resolver to expand any system properties
         if (!NetUtils.isPortStringValid(resolver.resolve(sshport))) {
-            throw new CommandValidationException(Strings.get(
-                    "ssh.invalid.port", sshport));
+            throw new CommandValidationException(Strings.get("ssh.invalid.port", sshport));
         }
 
         int port = Integer.parseInt(resolver.resolve(sshport));
@@ -499,10 +509,9 @@ public class NodeUtils {
                     logger);
         } catch (FileNotFoundException ex) {
             if (!installFlag) {
-                    logger.warning(StringUtils.cat(": ", ex.getMessage(), "", sshL.toString()));
-                    throw new CommandValidationException(ex.getMessage());
-                }
-            
+                logger.warning(StringUtils.cat(": ", ex.getMessage(), "", sshL.toString()));
+                throw new CommandValidationException(ex.getMessage());
+            }
         } catch (IOException e) {
             String m1 = e.getMessage();
             String m2 = "";
@@ -510,7 +519,7 @@ public class NodeUtils {
             if (e2 != null) {
                 m2 = e2.getMessage();
             }
-            
+
             String msg = Strings.get("ssh.bad.connect", nodehost, "SSH");
             logger.warning(StringUtils.cat(": ", msg, m1, m2, sshL.toString()));
             throw new CommandValidationException(StringUtils.cat(NL, msg, m1, m2));
@@ -661,9 +670,10 @@ public class NodeUtils {
         char[] chars = installDir.toCharArray();
         char end = chars[chars.length - 1];
 
-        if (end != '/' && end != '\\')
+        if (end != '/' && end != '\\') {
             return installDir + "/glassfish";
-        else
+        } else {
             return installDir + "glassfish";
+        }
     }
 }
