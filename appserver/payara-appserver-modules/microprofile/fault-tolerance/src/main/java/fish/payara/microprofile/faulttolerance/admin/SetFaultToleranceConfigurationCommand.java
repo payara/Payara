@@ -81,11 +81,23 @@ public class SetFaultToleranceConfigurationCommand implements AdminCommand {
     @Inject
     private Target targetUtil;
 
+    @Param(optional = true, alias = "managedexecutorservicename", obsolete = true)
+    private String managedExecutorServiceName;
+
+    @Param(optional = true, alias = "managedscheduledexecutorservicename", obsolete = true)
+    private String managedScheduledExecutorServiceName;
+
     @Param(optional = true, alias = "async-max-pool-size")
     private Integer asyncMaxPoolSize;
 
     @Param(optional = true, alias = "delay-max-pool-size")
     private Integer delayMaxPoolSize;
+
+    @Param(optional = true, alias = "async-pool-keep-alive")
+    private Integer _asyncPoolKeepAliveInSeconds;
+
+    @Param(optional = true, alias = "cleanup-interval")
+    private Integer _cleanupIntervalInMinutes;
 
     @Param(optional = true, defaultValue = "server-config")
     private String target;
@@ -103,6 +115,12 @@ public class SetFaultToleranceConfigurationCommand implements AdminCommand {
                 }
                 if (delayMaxPoolSize != null) {
                     configProxy.setDelayMaxPoolSize(delayMaxPoolSize <= 0 ? null : delayMaxPoolSize.toString());
+                }
+                if (_asyncPoolKeepAliveInSeconds != null) {
+                    configProxy.setAsyncPoolKeepAliveInSeconds(_asyncPoolKeepAliveInSeconds.toString());
+                }
+                if (_cleanupIntervalInMinutes != null) {
+                    configProxy.setCleanupIntervalInMinutes(_cleanupIntervalInMinutes.toString());
                 }
                 return null;
             }, faultToleranceServiceConfiguration);

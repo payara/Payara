@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import org.glassfish.api.admin.config.ConfigExtension;
@@ -71,6 +72,26 @@ public interface FaultToleranceServiceConfiguration extends ConfigExtension {
      */
     @Attribute(defaultValue = "20", dataType = Integer.class)
     @Min(value = 1)
-    public String getDelayMaxPoolSize();
-    public void setDelayMaxPoolSize(String delayMaxPoolSize);
+    String getDelayMaxPoolSize();
+    void setDelayMaxPoolSize(String delayMaxPoolSize);
+
+    /**
+     * @return The number of seconds an idle worker in the async pool has to be out of work before it is disposed and
+     *         the pool scales down in size. Changes to this setting are dynamically applied and do not need a restart.
+     */
+    @Attribute(defaultValue = "60", dataType = Integer.class)
+    @Min(value = 20)
+    @Max(value = 60 * 60)
+    String getAsyncPoolKeepAliveInSeconds();
+    void setAsyncPoolKeepAliveInSeconds(String asyncPoolKeepAliveInSeconds);
+
+    /**
+     * @return The interval duration in minutes for the background job that cleans expired FT state. Changes do need a
+     *         restart of the server.
+     */
+    @Attribute(defaultValue = "1", dataType = Integer.class)
+    @Min(value = 1)
+    @Max(value = 60 * 24)
+    String getCleanupIntervalInMinutes();
+    void setCleanupIntervalInMinutes(String cleanupIntervalInMinutes);
 }

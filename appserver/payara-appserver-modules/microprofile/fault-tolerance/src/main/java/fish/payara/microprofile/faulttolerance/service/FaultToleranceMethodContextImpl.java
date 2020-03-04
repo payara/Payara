@@ -41,6 +41,7 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import static java.lang.System.currentTimeMillis;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -69,6 +70,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
@@ -89,73 +91,92 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     private static final Logger logger = Logger.getLogger(FaultToleranceMethodContextImpl.class.getName());
 
-    private final FaultToleranceRequestTracing requestTracing;
-    private final FaultToleranceMetrics metrics;
-    private final ExecutorService asyncExecution;
-    private final ScheduledExecutorService delayedExecution;
-    private final AtomicReference<CircuitBreakerState> circuitBreakerState;
-    private final AtomicReference<BlockingQueue<Thread>> concurrentExecutions;
-    private final AtomicInteger queuingOrRunningPopulation;
+    static final class FaultToleranceMethodState {
+
+        final FaultToleranceRequestTracing requestTracing;
+        final FaultToleranceMetrics metrics;
+        final ExecutorService asyncExecution;
+        final ScheduledExecutorService delayedExecution;
+        final WeakReference<Object> target;
+        final AtomicReference<CircuitBreakerState> circuitBreakerState = new AtomicReference<>();
+        final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
+        final AtomicInteger queuingOrRunningPopulation = new AtomicInteger();
+        final AtomicInteger executingThreadCount = new AtomicInteger();
+        final AtomicLong lastUsed = new AtomicLong(currentTimeMillis());
+
+        FaultToleranceMethodState(FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
+                ExecutorService asyncExecution, ScheduledExecutorService delayedExecution,
+                WeakReference<Object> target) {
+            this.requestTracing = requestTracing;
+            this.metrics = metrics;
+            this.asyncExecution = asyncExecution;
+            this.delayedExecution = delayedExecution;
+            this.target = target;
+        }
+
+        public boolean isExpired(long ttl) {
+            if (target.get() == null) {
+                return true; // target got GC'd - this is not useful any longer
+            }
+            return executingThreadCount.get() == 0 // 
+                    && queuingOrRunningPopulation.get() == 0 //
+                    && lastUsed.get() + ttl < currentTimeMillis() //
+                    && isStabilyClosedCuicuit();
+        }
+
+        private boolean isStabilyClosedCuicuit() {
+            CircuitBreakerState state = circuitBreakerState.get();
+            return state == null || state.getCircuitState() == CircuitState.CLOSED && state.isClosedOutcomeSuccessOnly();
+        }
+    }
+
+    /**
+     * This is the state shared by all invocations for the same target method. It is effectively immutable but creates
+     * bulkhead and circuit-breaker state lazily on first access.
+     */
+    private final FaultToleranceMethodState shared;
     private final InvocationContext context;
     private final FaultTolerancePolicy policy;
-    private final AtomicInteger executingThreadCount;
-    private final AtomicLong lastCalled;
 
-    public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
-           FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-           ScheduledExecutorService delayedExecution) {
-        this(requestTracing, metrics, asyncExecution, delayedExecution, new AtomicReference<>(),
-                new AtomicReference<>(), new AtomicInteger(), null, null, new AtomicInteger(),
-                new AtomicLong(currentTimeMillis()));
+    public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
+            ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, Object target) {
+        this(new FaultToleranceMethodState(requestTracing, metrics, asyncExecution, delayedExecution,
+                new WeakReference<>(target)), null, null);
     }
 
-    private FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing,
-            FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-            ScheduledExecutorService delayedExecution, AtomicReference<CircuitBreakerState> circuitBreakerState,
-            AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
-            AtomicInteger queuingOrRunningPopulation, InvocationContext context, FaultTolerancePolicy policy, 
-            AtomicInteger executingThreadCount, AtomicLong lastCalled) {
-        super();
-        this.requestTracing = requestTracing;
-        this.metrics = metrics;
-        this.asyncExecution = asyncExecution;
-        this.delayedExecution = delayedExecution;
-        this.circuitBreakerState = circuitBreakerState;
-        this.concurrentExecutions = concurrentExecutions;
-        this.queuingOrRunningPopulation = queuingOrRunningPopulation;
+    private FaultToleranceMethodContextImpl(FaultToleranceMethodState shared, InvocationContext context,
+            FaultTolerancePolicy policy) {
+        this.shared = shared;
         this.context = context;
         this.policy = policy;
-        this.executingThreadCount = executingThreadCount;
-        this.lastCalled = lastCalled;
-    }
-
-    public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
-        return new FaultToleranceMethodContextImpl(requestTracing, metrics, asyncExecution, delayedExecution,
-                circuitBreakerState, concurrentExecutions, queuingOrRunningPopulation, context, policy,
-                executingThreadCount, lastCalled);
+        shared.lastUsed.accumulateAndGet(currentTimeMillis(), Long::max);
     }
 
     public boolean isExpired(long ttl) {
-        return executingThreadCount.get() == 0 && lastCalled.get() + ttl < System.currentTimeMillis();
+        return shared.isExpired(ttl);
+    }
+
+    public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
+        return new FaultToleranceMethodContextImpl(shared, context, policy);
     }
 
     @Override
     public Object proceed() throws Exception {
         try {
-            int in = executingThreadCount.incrementAndGet();
+            int in = shared.executingThreadCount.incrementAndGet();
             if (policy.isBulkheadPresent() && in > policy.bulkhead.value) {
-                logger.log(Level.WARNING, "Bulkhead appears to have been breeched, now executing {0} for method {1}",
+                logger.log(Level.WARNING, "Bulkhead appears to have been breached, now executing {0} for method {1}",
                         new Object[] { in, context.getMethod() });
             }
             return context.proceed();
         } finally {
-            executingThreadCount.decrementAndGet();
+            shared.executingThreadCount.decrementAndGet();
         }
     }
 
     @Override
     public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return enabled ? metrics : FaultToleranceMetrics.DISABLED;
+        return enabled ? shared.metrics : FaultToleranceMetrics.DISABLED;
     }
 
     /*
@@ -165,20 +186,20 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     @Override
     public CircuitBreakerState getState(int requestVolumeThreshold) {
         return requestVolumeThreshold < 0 
-                ? circuitBreakerState.get()
-                : circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+                ? shared.circuitBreakerState.get()
+                : shared.circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
     }
 
     @Override
     public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
         return maxConcurrentThreads < 0
-                ? concurrentExecutions.get()
-                : concurrentExecutions.updateAndGet(value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
+                ? shared.concurrentExecutions.get()
+                : shared.concurrentExecutions.updateAndGet(value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
     }
 
     @Override
     public AtomicInteger getQueuingOrRunningPopulation() {
-        return queuingOrRunningPopulation;
+        return shared.queuingOrRunningPopulation;
     }
 
     @Override
@@ -217,12 +238,12 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                 }
             }
         };
-        asyncExecution.submit(completionTask);
+        shared.asyncExecution.submit(completionTask);
     }
 
     @Override
     public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-        return delayedExecution.schedule(task, delayMillis, TimeUnit.MILLISECONDS);
+        return shared.delayedExecution.schedule(task, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -246,12 +267,12 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public void trace(String method) {
-        requestTracing.startSpan(new RequestTraceSpan(method), context);
+        shared.requestTracing.startSpan(new RequestTraceSpan(method), context);
     }
 
     @Override
     public void endTrace() {
-        requestTracing.endSpan();
+        shared.requestTracing.endSpan();
     }
 
 }

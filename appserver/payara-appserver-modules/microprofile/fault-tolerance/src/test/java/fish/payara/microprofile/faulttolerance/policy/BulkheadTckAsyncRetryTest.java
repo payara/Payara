@@ -58,7 +58,7 @@ import org.junit.Test;
  * {@link FaultTolerancePolicy} level. For many identifiers the terminology of the TCK test is used to make them easier
  * to compare.
  */
-public class BulkheadTckAsynchRetryTest extends AbstractBulkheadTest {
+public class BulkheadTckAsyncRetryTest extends AbstractBulkheadTest {
 
     @Test(timeout = 60 * 1000)
     public void testBulkheadClassAsynchronousPassiveRetry55() {

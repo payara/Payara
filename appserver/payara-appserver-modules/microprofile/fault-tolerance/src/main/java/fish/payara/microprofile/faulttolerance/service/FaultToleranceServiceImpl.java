@@ -56,6 +56,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import static java.lang.Integer.parseInt;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
@@ -128,9 +129,10 @@ public class FaultToleranceServiceImpl
         requestTracingService = serviceLocator.getService(RequestTracingService.class);
         config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
         delayExecutorService = Executors.newScheduledThreadPool(getMaxDelayPoolSize());
-        asyncExecutorService = new ThreadPoolExecutor(0, getMaxAsyncPoolSize(), 60L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
-        delayExecutorService.scheduleAtFixedRate(this::cleanMethodContexts, 1L, 1L, TimeUnit.MINUTES);
+        asyncExecutorService = new ThreadPoolExecutor(0, getMaxAsyncPoolSize(), getAsyncPoolKeepAliveInSeconds(),
+                TimeUnit.SECONDS, new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
+        int interval = getCleanupIntervalInMinutes();
+        delayExecutorService.scheduleAtFixedRate(this::cleanMethodContexts, interval, interval, TimeUnit.MINUTES);
     }
 
     /**
@@ -142,14 +144,21 @@ public class FaultToleranceServiceImpl
      */
     private void cleanMethodContexts() {
         final long ttl = TimeUnit.MINUTES.toMillis(1);
-        int size = methodByTargetObjectAndName.size();
-        for (String key : methodByTargetObjectAndName.keySet()) {
-            methodByTargetObjectAndName.compute(key, 
-                    (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
+        int cleaned = 0;
+        for (String key : new HashSet<>(methodByTargetObjectAndName.keySet())) {
+            try {
+                Object newValue = methodByTargetObjectAndName.compute(key, 
+                        (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
+                if (newValue == null) {
+                    cleaned++;
+                }
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Failed to clean FT method context for " + key, e);
+            }
         }
-        int sizeAfter = methodByTargetObjectAndName.size();
-        if (sizeAfter < size) {
-            logger.log(Level.INFO, "Cleaned {0} expired FT method contexts", size - sizeAfter);
+        if (cleaned > 0) {
+            String allClean = methodByTargetObjectAndName.isEmpty() ? ".All clean." : ".";
+            logger.log(Level.INFO, "Cleaned {0} expired FT method contexts" + allClean, cleaned);
         }
     }
 
@@ -159,6 +168,14 @@ public class FaultToleranceServiceImpl
 
     private int getMaxAsyncPoolSize() {
         return config == null ? 1000 : parseInt(config.getAsyncMaxPoolSize());
+    }
+
+    private int getAsyncPoolKeepAliveInSeconds() {
+        return config == null ? 60 : parseInt(config.getAsyncPoolKeepAliveInSeconds());
+    }
+
+    private int getCleanupIntervalInMinutes() {
+        return config == null ? 1 : parseInt(config.getCleanupIntervalInMinutes());
     }
 
     @Override
@@ -204,7 +221,7 @@ public class FaultToleranceServiceImpl
             return;
         }
         collector
-            .collect("circuitBreakerHalfOpenSuccessFul", state.getHalfOpenSuccessFulResultCounter())
+            .collect("circuitBreakerHalfOpenSuccessful", state.getHalfOpenSuccessfulResultCounter())
             .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
     }
 
@@ -281,9 +298,10 @@ public class FaultToleranceServiceImpl
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
         asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
+        asyncExecutorService.setKeepAliveTime(getAsyncPoolKeepAliveInSeconds(), TimeUnit.SECONDS);
         logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
         return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
-                delayExecutorService);
+                delayExecutorService, context.getTarget());
     }
 
     /**
