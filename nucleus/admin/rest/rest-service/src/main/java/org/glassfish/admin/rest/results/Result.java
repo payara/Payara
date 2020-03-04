@@ -89,6 +89,13 @@ public class Result {
         this.errorMessage =  errorMessage;
     }
 
+
+    @Override
+    public String toString() {
+        return super.toString() //
+            + "[name: " + getName() + ", error: " + isError() + ", message: " + getErrorMessage() + "]";
+    }
+
     boolean isError;
     String errorMessage;
     String name;

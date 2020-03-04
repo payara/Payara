@@ -304,7 +304,6 @@ public final class CreateDomainCommand extends CLICommand {
             manager.validateDomain(config, false);
             verifyPortBase();
         } catch (DomainException e) {
-            logger.fine(e.getLocalizedMessage());
             throw new CommandException(STRINGS.get("CouldNotCreateDomain", domainName), e);
         }
 
@@ -359,7 +358,6 @@ public final class CreateDomainCommand extends CLICommand {
             // Saving the login information happens inside this method
             createTheDomain(domainDir, domainProperties);
         } catch (Exception e) {
-            logger.info(e.getLocalizedMessage());
             throw new CommandException(STRINGS.get("CouldNotCreateDomain", domainName), e);
         }
         
@@ -503,7 +501,7 @@ public final class CreateDomainCommand extends CLICommand {
                 domainBuilder.validateTemplate();
                 domainBuilder.run();
             } catch (Exception e) {
-                throw new DomainException(e.getMessage());
+                throw new DomainException(e.getMessage(), e);
             }
         } else {
             throw new DomainException(STRINGS.get("InvalidTemplateValue", template));
