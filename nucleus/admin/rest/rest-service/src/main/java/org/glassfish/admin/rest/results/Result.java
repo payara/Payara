@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.rest.results;
 
 /**
@@ -48,9 +50,18 @@ package org.glassfish.admin.rest.results;
  */
 public class Result {
 
+    private final String name;
+    private boolean isError;
+    private String errorMessage;
+
     public Result() {
         isError = false;
         errorMessage = null;
+        name = null;
+    }
+
+    public Result(final String name) {
+        this.name = name;
     }
 
     /**
@@ -95,8 +106,4 @@ public class Result {
         return super.toString() //
             + "[name: " + getName() + ", error: " + isError() + ", message: " + getErrorMessage() + "]";
     }
-
-    boolean isError;
-    String errorMessage;
-    String name;
 }
