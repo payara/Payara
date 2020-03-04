@@ -47,7 +47,7 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALL;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
-import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
@@ -208,7 +208,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         parameters.add(PARAM_NODEDIR, nodedir);
         parameters.add(PARAM_REMOTEPORT, remotePort);
         parameters.add(PARAM_REMOTEUSER, remoteUser);
-        parameters.add(PARAM_REMOTEPASSWORD, remotePassword);
+        parameters.add(PARAM_SSHPASSWORD, remotePassword);
         parameters.add(PARAM_TYPE, getType().toString());
         parameters.add(PARAM_INSTALL, Boolean.toString(install));
 

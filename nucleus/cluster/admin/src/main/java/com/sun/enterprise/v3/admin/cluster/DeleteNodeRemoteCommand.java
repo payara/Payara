@@ -42,7 +42,7 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
-import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
@@ -151,7 +151,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
             SshAuth sshAuth = sshC.getSshAuth();
 
             if (sshAuth.getPassword() != null)
-                info.add(PARAM_REMOTEPASSWORD, sshAuth.getPassword());
+                info.add(PARAM_SSHPASSWORD, sshAuth.getPassword());
 
             if (sshAuth.getKeyPassphrase() != null)
                 info.add(PARAM_SSHKEYPASSPHRASE, sshAuth.getKeyPassphrase());
@@ -191,7 +191,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private boolean uninstallNode(AdminCommandContext ctx, ParameterMap map, Node node) {
         boolean res = false;
 
-        remotepassword = map.getOne(PARAM_REMOTEPASSWORD);
+        remotepassword = map.getOne(PARAM_SSHPASSWORD);
         sshkeypassphrase = map.getOne(PARAM_SSHKEYPASSPHRASE);
 
         ArrayList<String> command = new ArrayList<String>();
