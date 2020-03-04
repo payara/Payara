@@ -157,8 +157,8 @@
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.26.0-GA</javassist.version>
 
-        <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
-        <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
+        <!-- A pure Java implementation of the SSH-2 protocol -->
+        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.0.2.payara-p1</pfl.version>
@@ -932,9 +932,10 @@ Parent is ${project.parent}</echo>
                 <version>1.0</version>
             </dependency>
             <dependency>
-                <groupId>org.jvnet.hudson</groupId>
+                <groupId>org.jenkins-ci</groupId>
                 <artifactId>trilead-ssh2</artifactId>
                 <version>${trilead-ssh2.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.ha</groupId>
