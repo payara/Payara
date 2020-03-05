@@ -133,6 +133,18 @@ public class FaultToleranceServiceImpl
                 TimeUnit.SECONDS, new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
         int interval = getCleanupIntervalInMinutes();
         delayExecutorService.scheduleAtFixedRate(this::cleanMethodContexts, interval, interval, TimeUnit.MINUTES);
+        if (config != null) {
+            if (!"concurrent/__defaultManagedExecutorService".equals(config.getManagedExecutorService())) {
+                logger.log(Level.WARNING,
+                        "Fault tolerance executor service was configured to managed executor service {0}. This option has been replaced by 'async-max-pool-size' to set the maximum size of the used pool.",
+                        config.getManagedExecutorService());
+            }
+            if (!"concurrent/__defaultManagedScheduledExecutorService".equals(config.getManagedScheduledExecutorService())) {
+                logger.log(Level.WARNING,
+                        "Fault tolerance scheduled executor service was configured to managed scheduled executor service {0}. This option has been replaced by 'delay-max-pool-size' to set the maximum size of the used pool.",
+                        config.getManagedScheduledExecutorService());
+            }
+        }
     }
 
     /**

@@ -55,6 +55,14 @@ import org.jvnet.hk2.config.Configured;
 @Configured(name = "microprofile-fault-tolerance-configuration")
 public interface FaultToleranceServiceConfiguration extends ConfigExtension {
 
+    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService", dataType = String.class)
+    public String getManagedExecutorService();
+    public void setManagedExecutorService(String managedExecutorServiceName);
+
+    @Attribute(defaultValue = "concurrent/__defaultManagedScheduledExecutorService", dataType = String.class)
+    public String getManagedScheduledExecutorService();
+    public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
+
     /**
      * @return The maximum number of threads used to run asynchronous methods concurrently. This is the upper limit. The
      *         executor will vary the actual pool size depending on demand up to this upper limit. If no demand exist
