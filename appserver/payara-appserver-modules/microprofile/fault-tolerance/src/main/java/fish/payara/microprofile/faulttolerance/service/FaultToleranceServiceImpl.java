@@ -136,12 +136,12 @@ public class FaultToleranceServiceImpl
         if (config != null) {
             if (!"concurrent/__defaultManagedExecutorService".equals(config.getManagedExecutorService())) {
                 logger.log(Level.WARNING,
-                        "Fault tolerance executor service was configured to managed executor service {0}. This option has been replaced by 'async-max-pool-size' to set the maximum size of the used pool.",
+                        "Fault tolerance executor service was configured to managed executor service {0}. This option has been replaced by 'async-max-pool-size' to set the maximum size of a fixed Fault Tolerance pool.",
                         config.getManagedExecutorService());
             }
             if (!"concurrent/__defaultManagedScheduledExecutorService".equals(config.getManagedScheduledExecutorService())) {
                 logger.log(Level.WARNING,
-                        "Fault tolerance scheduled executor service was configured to managed scheduled executor service {0}. This option has been replaced by 'delay-max-pool-size' to set the maximum size of the used pool.",
+                        "Fault tolerance scheduled executor service was configured to managed scheduled executor service {0}. This option has been replaced by 'delay-max-pool-size' to set the maximum size of a fixed Fault Tolerance pool.",
                         config.getManagedScheduledExecutorService());
             }
         }
