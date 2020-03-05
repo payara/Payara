@@ -85,31 +85,19 @@
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
     <sun:propertySheetSection id="faultToleranceProps">
-        <sun:property id="managedExecutorServiceNameProp" labelAlign="left" 
+        <sun:property id="asyncMaxPoolSizeProp" labelAlign="left" 
                       noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceName}"  
-                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceNameHelp}">
-            <sun:dropDown id="managedExecutorServiceName" selected="#{pageSession.valueMap['managedExecutorServiceName']}" 
-                          labels="$pageSession{managedExecutorServiceList}"  
-                          values="$pageSession{managedExecutorServiceList}"  >
-                <!beforeCreate
-                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-executor-services", 
-                            attrs="#{pageSession.attrsMap}" result="#{pageSession.managedExecutorServiceList}");
-                    />
-            </sun:dropDown>
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.asyncExecutorPoolMaxSize}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.asyncExecutorPoolMaxSizeHelp}">
+            <sun:textField id="asyncMaxPoolSize" columns="$int{20}" maxLength="5" 
+                      text="#{pageSession.valueMap['asyncMaxPoolSize']}"/>
         </sun:property>
-        <sun:property id="managedScheduledExecutorServiceNameProp" labelAlign="left" 
+        <sun:property id="delayMaxPoolSizeProp" labelAlign="left" 
                       noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceName}"  
-                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceNameHelp}">
-            <sun:dropDown id="managedExecutorServiceName" selected="#{pageSession.valueMap['managedScheduledExecutorServiceName']}" 
-                          labels="$pageSession{managedScheduledExecutorServiceList}"  
-                          values="$pageSession{managedScheduledExecutorServiceList}"  >
-                <!beforeCreate
-                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-scheduled-executor-services", 
-                            attrs="#{pageSession.attrsMap}" result="#{pageSession.managedScheduledExecutorServiceList}");
-                    />
-            </sun:dropDown>
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.delayExecutorMaxPoolSize}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.delayExecutorMaxPoolSizeHelp}">
+            <sun:textField id="delayMaxPoolSize" columns="$int{20}" maxLength="5" 
+                      text="#{pageSession.valueMap['delayMaxPoolSize']}"/>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>
