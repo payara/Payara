@@ -39,10 +39,11 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import org.eclipse.microprofile.config.spi.ConfigSource;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
  *
@@ -66,20 +67,21 @@ public class EnvironmentConfigSource implements ConfigSource {
         // search environment variables as defined in the spec
         // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc
 
-        //Done this way to resolve PAYARA-3064 instead of genenv(propertyname)
-        //as windows is case-insensitive but Java is not
-        String result = getEnv(propertyName);
+        // Done this way instead of System::genenv(propertyname) as windows is case-insensitive but Java is not
+        String result = getEnv(propertyName, true);
 
         if (result == null) {
             // replace all non-alphanumeric characters
             propertyName = propertyName.replaceAll("[^A-Za-z0-9]", "_");
-            result = getEnv(propertyName);
+            // No point attempting substitution since the property will no longer match the substitution pattern
+            result = getEnv(propertyName, false);
         }
 
         if (result == null) {
             propertyName = propertyName.toUpperCase();
         }
-        return getEnv(propertyName);
+        // No point attempting substitution since the property will no longer match the substitution pattern
+        return getEnv(propertyName, false);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class EnvironmentConfigSource implements ConfigSource {
         return AccessController.doPrivileged(action);
     }
 
-    private static String getEnv(final String propertyName) {
+    private static String getEnv(final String propertyName, boolean attemptSubstitution) {
         return getEnv().get(propertyName);
     }
 }

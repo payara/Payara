@@ -39,12 +39,13 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
