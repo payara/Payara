@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ public class MeteredInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricID metricID = resolver.metered(bean.getBeanClass(), element).metricID();
-        Meter meter = registry.getMeters().get(metricID);
+        Meter meter = getMetric(metricID, Meter.class);
         if (meter == null) {
             throw new IllegalStateException("No meter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }

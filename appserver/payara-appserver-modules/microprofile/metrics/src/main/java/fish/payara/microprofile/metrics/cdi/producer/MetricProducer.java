@@ -41,12 +41,10 @@
 package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
-import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
-import javax.interceptor.Interceptor;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;

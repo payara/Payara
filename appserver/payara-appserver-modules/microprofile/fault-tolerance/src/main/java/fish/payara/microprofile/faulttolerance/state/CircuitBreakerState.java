@@ -108,6 +108,14 @@ public class CircuitBreakerState {
         }
     }
 
+    public boolean isClosedOutcomeSuccessOnly() {
+        for (Boolean outcome : closedResultsQueue) {
+            if (!outcome)
+                return false;
+        }
+        return true;
+    }
+
     /**
      * Clears the results queue.
      */
@@ -133,7 +141,7 @@ public class CircuitBreakerState {
      * Gets the successful results counter for the half open state.
      * @return The number of consecutive successful results.
      */
-    public int getHalfOpenSuccessFulResultCounter() {
+    public int getHalfOpenSuccessfulResultCounter() {
         return this.halfOpenSuccessfulResultsCounter.get();
     }
 
@@ -205,7 +213,7 @@ public class CircuitBreakerState {
 
     public boolean halfOpenSuccessfulClosedCircuit(int successThreshold) {
         incrementHalfOpenSuccessfulResultCounter();
-        if (getHalfOpenSuccessFulResultCounter() == successThreshold) {
+        if (getHalfOpenSuccessfulResultCounter() == successThreshold) {
             close();
             return true;
         }

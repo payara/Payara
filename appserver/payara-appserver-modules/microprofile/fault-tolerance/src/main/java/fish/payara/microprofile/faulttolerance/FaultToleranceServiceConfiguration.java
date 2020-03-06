@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,18 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 /**
  * Configuration for the Fault Tolerance Service.
- * @author Andrew Pielage
+ *
+ * @author Andrew Pielage (initial)
+ * @author Jan Bernitt (change to pool size)
  */
 @Configured(name = "microprofile-fault-tolerance-configuration")
 public interface FaultToleranceServiceConfiguration extends ConfigExtension {
@@ -53,8 +58,48 @@ public interface FaultToleranceServiceConfiguration extends ConfigExtension {
     @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService", dataType = String.class)
     public String getManagedExecutorService();
     public void setManagedExecutorService(String managedExecutorServiceName);
-    
+
     @Attribute(defaultValue = "concurrent/__defaultManagedScheduledExecutorService", dataType = String.class)
     public String getManagedScheduledExecutorService();
     public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
+
+    /**
+     * @return The maximum number of threads used to run asynchronous methods concurrently. This is the upper limit. The
+     *         executor will vary the actual pool size depending on demand up to this upper limit. If no demand exist
+     *         the actual pool size is zero.
+     */
+    @Attribute(defaultValue = "1000", dataType = Integer.class)
+    @Min(value = 20)
+    String getAsyncMaxPoolSize();
+    void setAsyncMaxPoolSize(String asyncMaxPoolSize);
+
+    /**
+     * @return The maximum number of threads used to schedule delayed execution and detect timeouts processing FT
+     *         semantics. This should be understood as upper limit. The implementation might choose to keep up to this
+     *         number of threads alive or vary the actual pool size according to demands.
+     */
+    @Attribute(defaultValue = "20", dataType = Integer.class)
+    @Min(value = 1)
+    String getDelayMaxPoolSize();
+    void setDelayMaxPoolSize(String delayMaxPoolSize);
+
+    /**
+     * @return The number of seconds an idle worker in the async pool has to be out of work before it is disposed and
+     *         the pool scales down in size. Changes to this setting are dynamically applied and do not need a restart.
+     */
+    @Attribute(defaultValue = "60", dataType = Integer.class)
+    @Min(value = 20)
+    @Max(value = 60 * 60)
+    String getAsyncPoolKeepAliveInSeconds();
+    void setAsyncPoolKeepAliveInSeconds(String asyncPoolKeepAliveInSeconds);
+
+    /**
+     * @return The interval duration in minutes for the background job that cleans expired FT state. Changes do need a
+     *         restart of the server.
+     */
+    @Attribute(defaultValue = "1", dataType = Integer.class)
+    @Min(value = 1)
+    @Max(value = 60 * 24)
+    String getCleanupIntervalInMinutes();
+    void setCleanupIntervalInMinutes(String cleanupIntervalInMinutes);
 }

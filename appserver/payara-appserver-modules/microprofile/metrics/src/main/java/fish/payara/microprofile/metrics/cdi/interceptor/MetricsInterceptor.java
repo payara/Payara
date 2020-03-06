@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -146,9 +146,9 @@ public class MetricsInterceptor {
                 && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
             MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
             if (gauge.isPresent()) {
-                org.eclipse.microprofile.metrics.Gauge existingGuage = registry.getGauges().get(gauge.metricID());
+                org.eclipse.microprofile.metrics.Gauge<?> existingGuage = registry.getGauges().get(gauge.metricID());
                 if (existingGuage == null) {
-                    registry.register(gauge.metadata(), new GaugeImpl((Method) element, target), gauge.tags());
+                    registry.register(gauge.metadata(), new GaugeImpl<>((Method) element, target), gauge.tags());
                 }
             }
         }

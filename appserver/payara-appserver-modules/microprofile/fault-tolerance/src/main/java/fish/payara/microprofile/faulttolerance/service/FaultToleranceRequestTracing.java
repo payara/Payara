@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,41 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.faulttolerance.service;
 
 import javax.interceptor.InvocationContext;
 
-import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
-import fish.payara.microprofile.faulttolerance.service.Stereotypes;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
- * Essentially a list of all methods needed to process FT behaviour.
- * 
- * Decouples the FT processing facilities and state from any specific implementation to allow e.g. unit testing.
- *
- * @author Jan Bernitt
+ * A abstraction to decouple FT implementation from request tracing implementation as far as possible.
  */
-public interface FaultToleranceService {
+public interface FaultToleranceRequestTracing {
 
-    /**
-     * Creates an instance of a {@link FaultToleranceConfig} bound to the given {@link InvocationContext} and
-     * {@link Stereotypes} lookup.
-     * 
-     * @param context     currently processed context
-     * @param stereotypes way to lookup sterotype annotations
-     * @return a thread safe {@link FaultToleranceConfig} instance bound to the given context
-     */
-    FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes);
+    void startSpan(RequestTraceSpan span, InvocationContext context);
 
-    /**
-     * Get or create the context object for processing the annotated method represented by the given
-     * {@link InvocationContext}.
-     * 
-     * @param context represents the FT annotated method being called
-     * @param policy  the policy being used for this execution
-     * @return the {@link FaultToleranceMethodContext} to use to process the method invocation with FT semantics. This
-     *         is a context specific to the target object and called method.
-     */
-    FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy);
-
+    void endSpan();
 }

@@ -76,6 +76,11 @@
             <artifactId>microprofile-metrics-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>microprofile-metrics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
