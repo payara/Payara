@@ -333,7 +333,7 @@ abstract class AbstractBulkheadTest {
         return policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
-    CompletionStage<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
+    CompletableFuture<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 

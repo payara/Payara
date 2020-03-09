@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -585,9 +586,10 @@ public final class FaultTolerancePolicy implements Serializable {
                     }
                     logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
                     long waitingSince = System.nanoTime();
+                    final Thread currentThread = Thread.currentThread();
                     try {
                         // can we run now?
-                        running.put(Thread.currentThread());
+                        running.put(currentThread);
                     } finally {
                         if (async) {
                             invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
@@ -598,15 +600,28 @@ public final class FaultTolerancePolicy implements Serializable {
                     try {
                         logger.log(Level.FINE, "Entered bulkhead execution.");
                         // ok, lets run
-                        return proceed(invocation);
+                        Object res = proceed(invocation);
+                        if (!bulkhead.exitOnCompletion) {
+                            return res;
+                        }
+                        return ((CompletionStage<?>) res).whenComplete((value, excetion) -> {
+                            invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
+                            // successful or not, we are out...
+                            running.remove(currentThread);
+                            queuingOrRunning.decrementAndGet();
+                        });
                     } finally {
-                        invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
-                        // successful or not, we are out...
-                        running.remove(Thread.currentThread());
+                        if (!bulkhead.exitOnCompletion) {
+                            invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
+                            // successful or not, we are out...
+                            running.remove(currentThread);
+                        }
                     }
                 } finally {
                     // no we are leaving get out of queue area as well
-                    queuingOrRunning.decrementAndGet();
+                    if (!bulkhead.exitOnCompletion) {
+                        queuingOrRunning.decrementAndGet();
+                    }
                 }
             }
         }

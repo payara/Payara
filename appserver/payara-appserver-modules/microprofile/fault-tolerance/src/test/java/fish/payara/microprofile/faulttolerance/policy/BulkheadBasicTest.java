@@ -179,7 +179,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter);
     }
 
@@ -217,7 +217,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter);
     }
 
@@ -249,7 +249,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws Exception {
         if (waiter == this.commonWaiter)
             return bodyWaitThenReturnSuccess(waiter);
         return bodyWaitThenReturn(waiter, () -> {
@@ -287,7 +287,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws Exception {
         if (waiter == this.commonWaiter) {
             return bodyWaitThenReturnSuccess(waiter);
         }
