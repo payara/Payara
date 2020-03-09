@@ -172,7 +172,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
         }
 
         datagridEncryptionValue = Boolean.parseBoolean(configuration.getDatagridEncryptionEnabled());
-        Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Data grid encryption is enabled");
+        if (datagridEncryptionValue) {
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Data grid encryption is enabled");
+        }
     }
 
     /**
