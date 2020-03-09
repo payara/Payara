@@ -559,6 +559,7 @@ public final class FaultTolerancePolicy implements Serializable {
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
         final boolean async = isAsynchronous();
+        final boolean exitOnCompletion = async && bulkhead.exitOnCompletion;
         final int runCapacity = bulkhead.value;
         final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
@@ -601,7 +602,7 @@ public final class FaultTolerancePolicy implements Serializable {
                         logger.log(Level.FINE, "Entered bulkhead execution.");
                         // ok, lets run
                         Object res = proceed(invocation);
-                        if (!bulkhead.exitOnCompletion) {
+                        if (!exitOnCompletion) {
                             return res;
                         }
                         return ((CompletionStage<?>) res).whenComplete((value, excetion) -> {
@@ -611,7 +612,7 @@ public final class FaultTolerancePolicy implements Serializable {
                             queuingOrRunning.decrementAndGet();
                         });
                     } finally {
-                        if (!bulkhead.exitOnCompletion) {
+                        if (!exitOnCompletion) {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
                             running.remove(currentThread);
@@ -619,7 +620,7 @@ public final class FaultTolerancePolicy implements Serializable {
                     }
                 } finally {
                     // no we are leaving get out of queue area as well
-                    if (!bulkhead.exitOnCompletion) {
+                    if (!exitOnCompletion) {
                         queuingOrRunning.decrementAndGet();
                     }
                 }
