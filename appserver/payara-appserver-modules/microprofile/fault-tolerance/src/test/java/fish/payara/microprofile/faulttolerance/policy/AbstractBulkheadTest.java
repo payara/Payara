@@ -358,6 +358,27 @@ abstract class AbstractBulkheadTest {
         }
     }
 
+    CompletionStage<String> bodyReturnThenWaitOnCompletionWithSuccess(Future<Void> waiter) {
+        return bodyReturnThenWaitOnCompletion(waiter, () -> "Success");
+    }
+
+    <T> CompletionStage<T> bodyReturnThenWaitOnCompletion(Future<Void> waiter, Supplier<T> result) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            threadsEntered.add(currentThread);
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    waiter.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw null;
+                }
+                return result.get();
+            });
+        } finally {
+            threadsExited.add(currentThread);
+        }
+    }
+
     void assertFurtherThreadThrowsBulkheadException() {
         int attemptCount = 10;
         Method annotatedMethod = TestUtils.getAnnotatedMethod();

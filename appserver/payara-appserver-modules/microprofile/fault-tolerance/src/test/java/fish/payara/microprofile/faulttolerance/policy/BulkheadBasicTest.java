@@ -296,6 +296,50 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         });
     }
 
+    @Test
+    public void bulkheadWithoutQueueWithAsyncCompletionStageExitsOnCompletion() {
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        waitUntilPermitsAquired(2, 0);
+        assertFurtherThreadThrowsBulkheadException();
+        assertEquals(2, threadsEntered.size());
+        assertEquals(2, threadsExited.size());
+        waitSome(50);
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 0)
+    public CompletionStage<String> bulkheadWithoutQueueWithAsyncCompletionStageExitsOnCompletion_Method(
+            Future<Void> waiter) throws Exception {
+        return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
+    }
+
+    @Test
+    public void bulkheadWithQueueWithAsyncCompletionStageExitsOnCompletion() {
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        waitUntilPermitsAquired(2, 2);
+        assertFurtherThreadThrowsBulkheadException();
+        assertEquals(2, threadsEntered.size());
+        assertEquals(2, threadsExited.size());
+        waitSome(50);
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        assertEquals(4, threadsEntered.size());
+        assertEquals(4, threadsExited.size());
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 2)
+    public CompletionStage<String> bulkheadWithQueueWithAsyncCompletionStageExitsOnCompletion_Method(
+            Future<Void> waiter) throws Exception {
+        return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
+    }
+
     private void callAndWait(int expectedMaxConcurrentExecutions) {
         CompletableFuture<Void> waiterExec1 = new CompletableFuture<>();
         List<Thread> execs = new ArrayList<>();
