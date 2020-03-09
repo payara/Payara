@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import javax.enterprise.context.control.RequestContextController;
 import javax.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
@@ -69,9 +70,14 @@ public interface FaultToleranceService {
      * 
      * @param context represents the FT annotated method being called
      * @param policy  the policy being used for this execution
+     * @param requestContextController the controller to use or null
      * @return the {@link FaultToleranceMethodContext} to use to process the method invocation with FT semantics. This
      *         is a context specific to the target object and called method.
      */
-    FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy);
+    FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+            RequestContextController requestContextController);
 
+    default FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+        return getMethodContext(context, policy, null);
+    }
 }

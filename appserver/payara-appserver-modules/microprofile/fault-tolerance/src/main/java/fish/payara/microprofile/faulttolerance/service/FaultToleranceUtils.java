@@ -230,7 +230,7 @@ public class FaultToleranceUtils {
             // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
             for (String className : classNames.replaceAll("[\\{\\[ \\]\\}]", "").replaceAll("\\.class", "")
                     .split(",")) {
-                classList.add(Class.forName(className));
+                classList.add(Class.forName(className, false, Thread.currentThread().getContextClassLoader()));
             }
             return classList.toArray(defaultValue);
         } catch (ClassNotFoundException cnfe) {

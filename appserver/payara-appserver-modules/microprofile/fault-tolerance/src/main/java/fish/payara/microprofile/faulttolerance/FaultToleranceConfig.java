@@ -188,6 +188,10 @@ public interface FaultToleranceConfig {
         return annotation.failOn();
     }
 
+    default Class<? extends Throwable>[] skipOn(CircuitBreaker annotation) {
+        return annotation.skipOn();
+    }
+
     default long delay(CircuitBreaker annotation) {
         return annotation.delay();
     }
@@ -245,5 +249,13 @@ public interface FaultToleranceConfig {
 
     default String fallbackMethod(Fallback annotation) {
         return annotation.fallbackMethod();
+    }
+
+    default Class<? extends Throwable>[] applyOn(Fallback annotation) {
+        return annotation.applyOn();
+    }
+
+    default Class<? extends Throwable>[] skipOn(Fallback annotation) {
+        return annotation.skipOn();
     }
 }

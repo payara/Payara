@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
@@ -52,6 +53,8 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  * @author Jan Bernitt
  */
 public abstract class Policy implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(Policy.class.getName());
 
     public static void checkAtLeast(long minimum, Method annotatedMethod, Class<? extends Annotation> annotationType,
             String attribute, long value) {
@@ -114,7 +117,7 @@ public abstract class Policy implements Serializable {
         return "value".equals(attribute) ? "" : attribute + " ";
     }
 
-    public static boolean isCaught(Exception ex, Class<? extends Throwable>[] caught) {
+    public static boolean isCaught(Throwable ex, Class<? extends Throwable>[] caught) {
         if (caught.length == 0) {
             return false;
         }
@@ -122,13 +125,14 @@ public abstract class Policy implements Serializable {
             return true;
         }
         for (Class<? extends Throwable> caughtType : caught) {
-            if (ex.getClass() == caughtType) {
-                CircuitBreakerPolicy.logger.log(Level.FINER, "Exception {0} matches a Throwable", ex.getClass().getSimpleName());
+            Class<? extends Throwable> errorType = ex.getClass();
+            if (errorType == caughtType) {
+                logger.log(Level.FINER, "Exception {0} matches a Throwable", errorType.getSimpleName());
                 return true;
             }
-            if (caughtType.isAssignableFrom(ex.getClass())) {
-                CircuitBreakerPolicy.logger.log(Level.FINER, "Exception {0} is a child of a Throwable: {1}",
-                        new String[] { ex.getClass().getSimpleName(), caughtType.getSimpleName() });
+            if (caughtType.isAssignableFrom(errorType)) {
+                logger.log(Level.FINER, "Exception {0} is a child of a Throwable: {1}",
+                        new String[] { errorType.getSimpleName(), caughtType.getSimpleName() });
                 return true;
             }
         }

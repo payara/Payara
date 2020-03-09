@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.enterprise.context.control.RequestContextController;
 import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.InvocationContext;
 
@@ -93,6 +94,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     static final class FaultToleranceMethodState {
 
+        final RequestContextController requestContext;
         final FaultToleranceRequestTracing requestTracing;
         final FaultToleranceMetrics metrics;
         final ExecutorService asyncExecution;
@@ -104,9 +106,10 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         final AtomicInteger executingThreadCount = new AtomicInteger();
         final AtomicLong lastUsed = new AtomicLong(currentTimeMillis());
 
-        FaultToleranceMethodState(FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
-                ExecutorService asyncExecution, ScheduledExecutorService delayedExecution,
-                WeakReference<Object> target) {
+        FaultToleranceMethodState(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing,
+                FaultToleranceMetrics metrics, ExecutorService asyncExecution,
+                ScheduledExecutorService delayedExecution, WeakReference<Object> target) {
+            this.requestContext = requestContext;
             this.requestTracing = requestTracing;
             this.metrics = metrics;
             this.asyncExecution = asyncExecution;
@@ -138,9 +141,9 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     private final InvocationContext context;
     private final FaultTolerancePolicy policy;
 
-    public FaultToleranceMethodContextImpl(FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
+    public FaultToleranceMethodContextImpl(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
             ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, Object target) {
-        this(new FaultToleranceMethodState(requestTracing, metrics, asyncExecution, delayedExecution,
+        this(new FaultToleranceMethodState(requestContext, requestTracing, metrics, asyncExecution, delayedExecution,
                 new WeakReference<>(target)), null, null);
     }
 
@@ -222,6 +225,9 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
             if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
                 try {
                     trace("runAsynchronous");
+                    if (shared.requestContext != null) {
+                        shared.requestContext.activate();
+                    }
                     Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
@@ -230,10 +236,13 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                     } else {
                         futureResult.cancel(true);
                     }
-                } catch (Exception ex) {
+                } catch (Exception | Error ex) {
                     // Note that even ExecutionException is not unpacked (intentionally)
                     asyncResult.completeExceptionally(ex); 
                 } finally {
+                    if (shared.requestContext != null) {
+                        shared.requestContext.deactivate();
+                    }
                     endTrace();
                 }
             }
@@ -248,7 +257,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass,
-            Exception ex) throws Exception {
+            Throwable ex) throws Exception {
         return CDI.current().select(fallbackClass).get().handle(
                 new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }
