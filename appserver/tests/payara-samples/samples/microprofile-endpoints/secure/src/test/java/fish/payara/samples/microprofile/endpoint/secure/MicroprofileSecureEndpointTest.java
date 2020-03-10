@@ -132,7 +132,7 @@ public class MicroprofileSecureEndpointTest {
     }
 
     @Test
-    @Ignore("QACI-95. IGNORE UNTIL PROBLEM SOLVED")
+    @Ignore("QACI-134. Ignore until problem solved")
     public void testMetricsWithIncorrectCredentials() throws Exception {
         webClient.setCredentialsProvider(incorrectCreds);
 
@@ -148,7 +148,7 @@ public class MicroprofileSecureEndpointTest {
     }
 
     @Test
-    @Ignore("QACI-95. Ignore until problem solved")
+    @Ignore("QACI-134. Ignore until problem solved")
     public void testHealthCheckWithIncorrectCredentials() throws Exception {
         webClient.setCredentialsProvider(incorrectCreds);
 
@@ -164,7 +164,7 @@ public class MicroprofileSecureEndpointTest {
     }
 
     @Test
-    @Ignore("QACI-95. Ignore until problem solved")
+    @Ignore("QACI-134. Ignore until problem solved")
     public void testOpenAPIWithIncorrectCredentials() throws Exception {
         webClient.setCredentialsProvider(incorrectCreds);
 

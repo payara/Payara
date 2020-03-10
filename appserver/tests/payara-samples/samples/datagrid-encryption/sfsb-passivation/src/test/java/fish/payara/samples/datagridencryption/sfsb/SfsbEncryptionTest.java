@@ -84,7 +84,6 @@ public class SfsbEncryptionTest {
     }
 
     @Test
-    @Ignore("QACI-95. Ignore until problem solved")
     public void testStateRestoredAfterPassivation() {
         Client client = ClientBuilder.newClient();
         WebTarget endpoint1 = client.target(url + "TestEjb");
