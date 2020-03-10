@@ -140,7 +140,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
-    @Ignore("QACI-95. Ignore until problem solved")
+    @Ignore("QACI-136. Ignore until problem solved")
     public void callRemoteBeanWithCorrectCredentials() throws NamingException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
@@ -151,7 +151,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
-    @Ignore("QACI-95. Ignore until problem solved")
+    @Ignore("QACI-136. Ignore until problem solved")
     public void callRemoteBeanWithIncorrectCredentials() throws NamingException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");

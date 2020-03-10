@@ -99,7 +99,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     }
     
     @Test
-    @Ignore("QACI-95. Ignore until problem solved")
+    @Ignore("QACI-137. Ignore until problem solved")
     // Runs on Server
     public void test2ServerCheck() throws MalformedURLException {
         assertTrue(isTraceMonitorTriggered());

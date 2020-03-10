@@ -68,7 +68,7 @@ import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OP
  */
 @NotMicroCompatible
 @RunWith(PayaraArquillianTestRunner.class)
-@Ignore("QACI-95. Ignore until problem solved")
+@Ignore("QACI-135. Ignore until problem solved")
 public class UseCookiesTest {
 
     private WebClient webClient;

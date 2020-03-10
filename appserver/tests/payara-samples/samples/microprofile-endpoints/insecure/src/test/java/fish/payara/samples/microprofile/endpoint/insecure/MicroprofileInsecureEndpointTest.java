@@ -73,7 +73,7 @@ import static org.junit.Assert.assertThat;
  * @author Gaurav Gupta
  */
 @RunWith(PayaraArquillianTestRunner.class)
-@Ignore("QACI-95. Ignore until problem solved")
+@Ignore("QACI-134. Ignore until problem solved")
 public class MicroprofileInsecureEndpointTest {
 
     @ArquillianResource
