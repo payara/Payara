@@ -65,7 +65,7 @@ public class OpenIdContextImpl implements OpenIdContext {
     private AccessToken accessToken;
     private IdentityToken identityToken;
     private RefreshToken refreshToken;
-    private Integer expiresIn;
+    private Long expiresIn;
     private JsonObject claims;
     private JsonObject providerMetadata;
 
@@ -129,11 +129,11 @@ public class OpenIdContextImpl implements OpenIdContext {
     }
 
     @Override
-    public Optional<Integer> getExpiresIn() {
+    public Optional<Long> getExpiresIn() {
         return Optional.ofNullable(expiresIn);
     }
 
-    public void setExpiresIn(Integer expiresIn) {
+    public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
 

@@ -112,7 +112,7 @@ public interface OpenIdContext extends Serializable {
      *
      * @return
      */
-    Optional<Integer> getExpiresIn();
+    Optional<Long> getExpiresIn();
 
     /**
      * Gets the User Claims that was received from the userinfo endpoint
