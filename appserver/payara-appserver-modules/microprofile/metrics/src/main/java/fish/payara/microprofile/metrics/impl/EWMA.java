@@ -159,6 +159,6 @@ public class EWMA {
      * @return the rate
      */
     public double getRate(TimeUnit rateUnit) {
-        return rate * (double) rateUnit.toNanos(1);
+        return rate * rateUnit.toNanos(1);
     }
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -70,12 +70,13 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
 public class JsonMetricWriter extends JsonWriter {
-    
+
     // Dropwizard Histogram, Meter, Gauge or Timer Constants
     private static final String COUNT = "count";
     private static final String CURRENT = "current";
@@ -156,6 +157,10 @@ public class JsonMetricWriter extends JsonWriter {
                 Metadata metricMetaData = metadataMap.get(metricID.getName());
                 String unit = metricMetaData.getUnit().orElse(MetricUnits.NANOSECONDS);
                 payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getTimerNumbers((Timer) metric, getConversionFactor(unit)), tagsToStringSuffix(tagsSet));
+            } else if (SimpleTimer.class.isInstance(metric)) {
+                Metadata metricMetaData = metadataMap.get(metricID.getName());
+                String unit = metricMetaData.getUnit().orElse(MetricUnits.NANOSECONDS);
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getSimpleTimerNumbers((SimpleTimer) metric, getConversionFactor(unit)), tagsToStringSuffix(tagsSet));
             } else {
                 LOGGER.log(Level.WARNING, "Metric type {0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
             }
@@ -163,66 +168,63 @@ public class JsonMetricWriter extends JsonWriter {
         return payloadBuilder;
     }
 
-    private long getConversionFactor(String unit) {
-        long conversionFactor;
+    private static long getConversionFactor(String unit) {
         switch (unit) {
             case MetricUnits.NANOSECONDS:
-                conversionFactor = NANOSECOND_CONVERSION;
-                break;
+                return NANOSECOND_CONVERSION;
             case MetricUnits.MICROSECONDS:
-                conversionFactor = MICROSECOND_CONVERSION;
-                break;
+                return MICROSECOND_CONVERSION;
             case MetricUnits.MILLISECONDS:
-                conversionFactor = MILLISECOND_CONVERSION;
-                break;
+                return MILLISECOND_CONVERSION;
             case MetricUnits.SECONDS:
-                conversionFactor = SECOND_CONVERSION;
-                break;
+                return SECOND_CONVERSION;
             case MetricUnits.MINUTES:
-                conversionFactor = MINUTE_CONVERSION;
-                break;
+                return MINUTE_CONVERSION;
             case MetricUnits.HOURS:
-                conversionFactor = HOUR_CONVERSION;
-                break;
+                return HOUR_CONVERSION;
             case MetricUnits.DAYS:
-                conversionFactor = DAY_CONVERSION;
-                break;
+                return DAY_CONVERSION;
             default:
-                conversionFactor = NANOSECOND_CONVERSION;
-                break;
+                return NANOSECOND_CONVERSION;
         }
-        return conversionFactor;
     }
 
-    private Map<String, Number> getConcurrentGaugeNumbers(ConcurrentGauge gauge) {
+    private static Map<String, Number> getConcurrentGaugeNumbers(ConcurrentGauge gauge) {
         Map<String, Number> results = new HashMap<>();
         results.put(CURRENT, gauge.getCount());
         results.put(MIN, gauge.getMin());
         results.put(MAX, gauge.getMax());
         return results;
     }
-    
-    private Map<String, Number> getTimerNumbers(Timer timer, long conversionFactor) {
+
+    private static Map<String, Number> getTimerNumbers(Timer timer, long conversionFactor) {
         Map<String, Number> results = new HashMap<>();
         results.putAll(getMeteredNumbers(timer));
         results.putAll(getSnapshotNumbers(timer.getSnapshot(), conversionFactor));
         return results;
     }
 
-    private Map<String, Number> getHistogramNumbers(Histogram histogram, long conversionFactor) {
+    private static Map<String, Number> getSimpleTimerNumbers(SimpleTimer timer, long conversionFactor) {
+        Map<String, Number> results = new HashMap<>();
+        results.put(COUNT, timer.getCount());
+        results.put(CURRENT, timer.getElapsedTime().toNanos() / conversionFactor);
+        return results;
+    }
+
+    private static Map<String, Number> getHistogramNumbers(Histogram histogram, long conversionFactor) {
         Map<String, Number> results = new HashMap<>();
         results.put(COUNT, histogram.getCount());
         results.putAll(getSnapshotNumbers(histogram.getSnapshot(), conversionFactor));
         return results;
     }
 
-    private Map<String, Number> getMeterNumbers(Meter meter) {
+    private static Map<String, Number> getMeterNumbers(Meter meter) {
         Map<String, Number> results = new HashMap<>();
         results.putAll(getMeteredNumbers(meter));
         return results;
     }
 
-    private Map<String, Number> getMeteredNumbers(Metered metered) {
+    private static Map<String, Number> getMeteredNumbers(Metered metered) {
         Map<String, Number> results = new HashMap<>();
         results.put(COUNT, metered.getCount());
         results.put(MEAN_RATE, metered.getMeanRate());
@@ -232,7 +234,7 @@ public class JsonMetricWriter extends JsonWriter {
         return results;
     }
 
-    private Map<String, Number> getSnapshotNumbers(Snapshot snapshot, long conversionFactor) {
+    private static Map<String, Number> getSnapshotNumbers(Snapshot snapshot, long conversionFactor) {
         Map<String, Number> results = new HashMap<>();
         results.put(MAX, snapshot.getMax() / conversionFactor);
         results.put(MEAN, snapshot.getMean() / conversionFactor);
@@ -246,29 +248,29 @@ public class JsonMetricWriter extends JsonWriter {
         results.put(PERCENTILE_999TH, snapshot.get999thPercentile() / conversionFactor);
         return results;
     }
-    
+
     /**
      * Converts a {@link MetricID} into the format required by spec
      * @param metricID
      * @return
      * @see Section 3.1.1 of MP Metrics 2.0 Specification
      */
-    private String metricIDTranslation(MetricID metricID) {
+    private static String metricIDTranslation(MetricID metricID) {
         StringBuilder jsonKey = new StringBuilder(metricID.getName());
         jsonKey.append(tagsToStringSuffix(metricID.getTags().entrySet()));
         return jsonKey.toString();
     }
-    
-    private String tagsToStringSuffix(Set<Entry<String, String>> tagsSet) {
+
+    private static String tagsToStringSuffix(Set<Entry<String, String>> tagsSet) {
         StringBuilder tags = new StringBuilder();
         for (Entry<String,String> tag: tagsSet) {
             tags.append(';').append(tag.getKey());
             tags.append('=').append(tag.getValue().replace(';', '_'));
         }
-        
+
         return tags.toString();
     }
-    
+
     private JsonObjectBuilder addOrExtendMap(JsonObjectBuilder original, String key, Map<String, Number> values, String suffix) {
         JsonObject built = original.build();
         JsonObjectBuilder clone = Json.createObjectBuilder(built);
@@ -282,7 +284,7 @@ public class JsonMetricWriter extends JsonWriter {
         } else {
             clone.add(key, getJsonFromMap(values, suffix));
         }
-       
+
         return clone;
     }
 

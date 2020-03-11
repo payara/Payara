@@ -74,9 +74,7 @@ import org.eclipse.microprofile.metrics.Timer;
 public class TimerImpl implements Timer {
 
     private final Meter meter;
-
     private final Histogram histogram;
-
     private final Clock clock;
 
     /**
@@ -85,6 +83,16 @@ public class TimerImpl implements Timer {
      */
     public TimerImpl() {
         this(new ExponentiallyDecayingReservoir());
+    }
+
+    /**
+     * Creates a new {@link TimerImpl} using an
+     * {@link ExponentiallyDecayingReservoir} and the provided {@link Clock}.
+     * 
+     * @param clock the {@link Clock} implementation the created timer should use
+     */
+    public TimerImpl(Clock clock) {
+        this(new ExponentiallyDecayingReservoir(), clock);
     }
 
     /**
@@ -164,7 +172,7 @@ public class TimerImpl implements Timer {
      * @see Context
      */
     @Override
-    public Context time() {
+    public Timer.Context time() {
         return new Context(this, clock);
     }
 
@@ -210,13 +218,13 @@ public class TimerImpl implements Timer {
      *
      * @see TimerImpl#time()
      */
-    public static class Context implements Timer.Context {
+    private static class Context implements Timer.Context {
 
-        private final TimerImpl timer;
+        private final Timer timer;
         private final Clock clock;
         private final long startTime;
 
-        private Context(TimerImpl timer, Clock clock) {
+        Context(Timer timer, Clock clock) {
             this.timer = timer;
             this.clock = clock;
             this.startTime = clock.getTick();

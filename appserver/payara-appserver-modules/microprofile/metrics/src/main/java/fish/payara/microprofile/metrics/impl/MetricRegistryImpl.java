@@ -70,10 +70,13 @@ import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.HISTOGRAM;
 import static org.eclipse.microprofile.metrics.MetricType.METERED;
+import static org.eclipse.microprofile.metrics.MetricType.SIMPLE_TIMER;
 import static org.eclipse.microprofile.metrics.MetricType.TIMER;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
@@ -102,6 +105,15 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
+    private final Clock clock;
+
+    public MetricRegistryImpl() {
+        this(Clock.defaultClock());
+    }
+
+    public MetricRegistryImpl(Clock clock) {
+        this.clock = clock;
+    }
 
     @Override
     public Counter counter(String name) {
@@ -141,6 +153,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public Meter meter(Metadata metadata) {
          return findMetricOrCreate(metadata, METERED);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(String name) {
+        return findMetricOrCreate(name, SIMPLE_TIMER, new Tag[0]);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(Metadata metadata) {
+        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, new Tag[0]);
     }
 
     @Override
@@ -194,6 +216,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
+    public SimpleTimer simpleTimer(String name, Tag... tags) {
+        return findMetricOrCreate(name, SIMPLE_TIMER, tags);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, tags);
+    }
+
+    @Override
     public Timer timer(String name, Tag... tags) {
         return findMetricOrCreate(name, TIMER, tags);
     }
@@ -223,8 +255,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Gauge> getGauges(MetricFilter metricFilter) {
-        return findMetrics(Gauge.class, metricFilter);
+    public SortedMap<MetricID, Gauge> getGauges(MetricFilter filter) {
+        return findMetrics(Gauge.class, filter);
     }
 
     @Override
@@ -233,8 +265,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter metricFilter) {
-        return findMetrics(ConcurrentGauge.class, metricFilter);
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter filter) {
+        return findMetrics(ConcurrentGauge.class, filter);
     }
 
     @Override
@@ -243,8 +275,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Counter> getCounters(MetricFilter metricFilter) {
-        return findMetrics(Counter.class, metricFilter);
+    public SortedMap<MetricID, Counter> getCounters(MetricFilter filter) {
+        return findMetrics(Counter.class, filter);
     }
 
     @Override
@@ -253,8 +285,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Histogram> getHistograms(MetricFilter metricFilter) {
-        return findMetrics(Histogram.class, metricFilter);
+    public SortedMap<MetricID, Histogram> getHistograms(MetricFilter filter) {
+        return findMetrics(Histogram.class, filter);
     }
 
     @Override
@@ -263,8 +295,18 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Meter> getMeters(MetricFilter metricFilter) {
-        return findMetrics(Meter.class, metricFilter);
+    public SortedMap<MetricID, Meter> getMeters(MetricFilter filter) {
+        return findMetrics(Meter.class, filter);
+    }
+
+    @Override
+    public SortedMap<MetricID, SimpleTimer> getSimpleTimers() {
+        return getSimpleTimers(ALL);
+    }
+
+    @Override
+    public SortedMap<MetricID, SimpleTimer> getSimpleTimers(MetricFilter filter) {
+        return findMetrics(SimpleTimer.class, filter);
     }
 
     @Override
@@ -273,8 +315,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Timer> getTimers(MetricFilter metricFilter) {
-        return findMetrics(Timer.class, metricFilter);
+    public SortedMap<MetricID, Timer> getTimers(MetricFilter filter) {
+        return findMetrics(Timer.class, filter);
     }
 
     @Override
@@ -471,7 +513,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
     }
 
-    private static Metric createMetricInstance(Metadata metadata) {
+    private Metric createMetricInstance(Metadata metadata) {
         String name = metadata.getName();
         switch (metadata.getTypeRaw()) {
         case COUNTER:
@@ -485,7 +527,9 @@ public class MetricRegistryImpl extends MetricRegistry {
         case HISTOGRAM:
             return new HistogramImpl();
         case TIMER:
-            return new TimerImpl();
+            return new TimerImpl(clock);
+        case SIMPLE_TIMER:
+            return new SimpleTimerImpl(clock);
         case INVALID:
         default:
             throw new IllegalStateException("Invalid metric type : " + metadata.getTypeRaw());

@@ -60,9 +60,12 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.MetricID;
+
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.CONCURRENT_GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
+import static org.eclipse.microprofile.metrics.MetricType.SIMPLE_TIMER;
+
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import static org.eclipse.microprofile.metrics.MetricUnits.BITS;
@@ -86,6 +89,7 @@ import static org.eclipse.microprofile.metrics.MetricUnits.NONE;
 import static org.eclipse.microprofile.metrics.MetricUnits.PERCENT;
 import static org.eclipse.microprofile.metrics.MetricUnits.SECONDS;
 import org.eclipse.microprofile.metrics.Sampling;
+import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 
 public class PrometheusExporter {
@@ -152,7 +156,7 @@ public class PrometheusExporter {
     public void exportCounter(Counter counter, String name, String description, String tags) {
         writeTypeHelpValueLine(name, COUNTER.toString(), description, counter.getCount(), tags, TOTAL_SUFFIX);
     }
-    
+
     void exportConcurrentGuage(ConcurrentGauge concurrentGauge, String name, String description, String tags) {
          writeTypeHelpValueLine(name + CURRENT_SUFFIX, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getCount(), tags);
          writeTypeHelpValueLine(name + MIN_SUFFIX, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getMin(), tags);
@@ -192,6 +196,12 @@ public class PrometheusExporter {
     public void exportTimer(Timer timer, String name, String description, String tags, String unit) {
         exportMetered(timer, name, description, tags);
         exportSampling(timer, name, description, tags, NANOSECOND_CONVERSION, getAppendUnit(unit));
+    }
+
+    public void exportSimpleTimer(SimpleTimer timer, String name, String description, String tags, String unit) {
+        String type = SIMPLE_TIMER.toString();
+        writeTypeValueLine(name, type, timer.getElapsedTime().toNanos() * NANOSECOND_CONVERSION, tags, getAppendUnit(unit));
+        writeTypeHelpValueLine(name + COUNT_SUFFIX, type, description, timer.getCount(), tags);
     }
 
     private void exportCounting(Counting counting, String name, String description, String tags) {

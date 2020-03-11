@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,8 +40,6 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.MetricsConstants.EMPTY_STRING;
-import static fish.payara.microprofile.metrics.MetricsConstants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -51,6 +49,10 @@ import fish.payara.microprofile.metrics.writer.MetricsWriter;
 import fish.payara.microprofile.metrics.writer.PrometheusWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
+
+import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -66,12 +68,20 @@ import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
-    
+
     private static final String APPLICATION_WILDCARD = "application/*";
-    
+
+    private static final List<String> REGISTRY_NAMES = Arrays.asList(
+            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
+    );
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
      * methods.
@@ -117,7 +127,7 @@ public class MetricsResource extends HttpServlet {
                     String.format("[%s] metric not found", metricsRequest.getMetricName()));
         }
     }
-    
+
     private void setContentType(MetricsWriter outputWriter, HttpServletResponse response) {
         if (outputWriter instanceof JsonMetricWriter) {
             response.setContentType(APPLICATION_JSON);
@@ -217,12 +227,12 @@ public class MetricsResource extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-    
+
     private class MetricsRequest {
 
         private final String registryName;
         private final String metricName;
-        
+
         public MetricsRequest(HttpServletRequest request) {
                 String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
                 String[] pathInfos = pathInfo.split("/");
@@ -237,11 +247,11 @@ public class MetricsResource extends HttpServlet {
         public String getMetricName() {
             return metricName;
         }
-        
+
         public boolean isRegistryRequested(){
             return registryName != null && !registryName.isEmpty();
         }
-        
+
         public boolean isMetricRequested() {
             return metricName != null && !metricName.isEmpty();
         }

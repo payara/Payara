@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,7 +40,6 @@
 package fish.payara.microprofile.metrics;
 
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
-import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
@@ -52,10 +51,13 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 
+import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -79,7 +81,6 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.ToLongFunction;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.MetricID;
 
@@ -104,7 +105,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     @Inject
     MetricsServiceConfiguration configuration;
-    
+
     @Inject
     private ServerEnvironment serverEnv;
 
@@ -151,35 +152,41 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         if (!isEnabled())
             return;
         MonitoringDataCollector metricsCollector = rootCollector.in("metric");
-        for (Entry<String, ? extends MetricRegistry> registry : REGISTRIES.entrySet()) {
+        for (MetricRegistryImpl registry : REGISTRIES.values()) {
             collectRegistry(registry, metricsCollector);
         }
     }
 
-    private static void collectRegistry(Entry<String, ? extends MetricRegistry> registry, MonitoringDataCollector collector) {
-        for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
-            Object value = gauge.getValue().getValue();
-            if (value instanceof Number) {
-                tagCollector(gauge.getKey(), collector).collect(toName(gauge.getKey()), ((Number) value));
+    private static void collectRegistry(MetricRegistryImpl registry, MonitoringDataCollector collector) {
+        // OBS: this way of iterating the metrics in the registry is optimal because of its internal data organisation
+        for (String name : registry.getNames()) {
+            for (Entry<MetricID, Metric> entry : registry.getMetrics(name).entrySet()) {
+                MetricID metricID = entry.getKey();
+                Metric metric = entry.getValue();
+                MonitoringDataCollector metricCollector = tagCollector(metricID, collector);
+                if (metric instanceof Counting) {
+                    metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
+                }
+                if (metric instanceof SimpleTimer) {
+                    metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
+                }
+                if (metric instanceof Timer) {
+                    metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
+                }
+                if (metric instanceof Gauge) {
+                    Object value = ((Gauge<?>) metric).getValue();
+                    if (value instanceof Number) {
+                        metricCollector.collect(toName(metricID, ""), ((Number) value));
+                    }
+                }
             }
         }
-        collectMetrics(registry.getValue().getCounters(), counter -> counter.getCount(), collector);
-        collectMetrics(registry.getValue().getConcurrentGauges(), gauge -> gauge.getCount(), collector);
-        collectMetrics(registry.getValue().getHistograms(), histogram -> histogram.getCount(), collector);
-        collectMetrics(registry.getValue().getMeters(), meter -> meter.getCount(), collector);
-        collectMetrics(registry.getValue().getTimers(), timer -> timer.getCount(), collector);
     }
 
-    private static <T extends Metric> void collectMetrics(Map<MetricID, T> metrics, ToLongFunction<T> count, 
-            MonitoringDataCollector collector) {
-        for (Entry<MetricID, T> metric : metrics.entrySet()) {
-            tagCollector(metric.getKey(), collector).collect(toName(metric.getKey()), count.applyAsLong(metric.getValue()));
-        }
-    }
-
-    private static CharSequence toName(MetricID metric) {
+    private static String toName(MetricID metric, String suffix) {
         String name = metric.getName();
-        return name.indexOf(' ') < 0 ? name : name.replace(' ', '.'); // trying to avoid replace
+        name = name.indexOf(' ') < 0 ? name : name.replace(' ', '.'); // trying to avoid replace
+        return name.endsWith(suffix) || suffix.isEmpty() ? name : name + suffix;
     }
 
     private static MonitoringDataCollector tagCollector(MetricID metric, MonitoringDataCollector collector) {
@@ -264,10 +271,10 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         }
     }
 
-    private MBeanMetadataConfig getConfig() {   
-        InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
+    private MBeanMetadataConfig getConfig() {
+        InputStream defaultConfig = MetricsService.class.getResourceAsStream("/metrics.xml");
         MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
-          
+
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
@@ -275,7 +282,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 MBeanMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MBeanMetadataConfig.class);
                 config.addBaseMetadata(extraConfig.getBaseMetadata());
                 config.addVendorMetadata(extraConfig.getVendorMetadata());
-                
+
             } catch (FileNotFoundException ex) {
                 //ignore
             }
@@ -309,8 +316,8 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return Boolean.parseBoolean(metricsServiceConfiguration.getSecurityEnabled());
     }
 
-    public <T extends Metric> T getApplicationMetric(MetricID metricID, Class<T> type) throws NoSuchRegistryException {
-        return getRegistryInternal(getApplicationName()).getMetric(metricID, type);
+    public <T extends Metric> T getApplicationMetric(MetricID metricID, Class<T> type) {
+        return getOrAddRegistryInternal(getApplicationName()).getMetric(metricID, type);
     }
 
     public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
@@ -339,11 +346,11 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     /**
      * Returns the Metrics registry based on respective registry name
-     * 
+     *
      * @param registryName
-     * @return 
-     * @throws fish.payara.microprofile.metrics.exception.NoSuchRegistryException 
-     */ 
+     * @return
+     * @throws fish.payara.microprofile.metrics.exception.NoSuchRegistryException
+     */
     public MetricRegistry getRegistry(String registryName) throws NoSuchRegistryException {
         return getRegistryInternal(registryName);
     }
@@ -362,36 +369,40 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         applicationRegistries.remove(VENDOR.getName());
         return applicationRegistries;
     }
-    
+
     public Set<String> getAllRegistryNames() {
         return REGISTRIES.keySet();
     }
-        
+
     /**
-     * Returns the Metrics registry based on respective registry name, 
+     * Returns the Metrics registry based on respective registry name,
      * if not available then add the new MetricRegistry instance
-     * 
+     *
      * @param registryName
-     * @return 
-     */    
+     * @return
+     */
     public MetricRegistry getOrAddRegistry(String registryName) {
+        return getOrAddRegistryInternal(registryName);
+    }
+
+    private MetricRegistryImpl getOrAddRegistryInternal(String registryName) {
         return REGISTRIES.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryImpl());
     }
-    
+
     public MetricRegistry getApplicationRegistry() {
         return getOrAddRegistry(getApplicationName());
     }
 
     /**
      * Remove the Metrics registry
-     * 
+     *
      * @param registryName
-     * @return 
+     * @return
      */
     public MetricRegistry removeRegistry(String registryName) {
         return REGISTRIES.remove(registryName.toLowerCase());
     }
-    
+
     /**
      * Adds an application to the enabled map
      *
