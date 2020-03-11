@@ -40,7 +40,7 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.microprofile.metrics;
+package fish.payara.microprofile.metrics.impl;
 
 import static java.util.Arrays.asList;
 import static org.eclipse.microprofile.metrics.Metadata.builder;
@@ -76,6 +76,7 @@ import org.eclipse.microprofile.metrics.Tag;
 import org.junit.Before;
 import org.junit.Test;
 
+import fish.payara.microprofile.metrics.TestConfig;
 import fish.payara.microprofile.metrics.impl.CounterImpl;
 import fish.payara.microprofile.metrics.impl.GaugeImpl;
 import fish.payara.microprofile.metrics.impl.HistogramImpl;

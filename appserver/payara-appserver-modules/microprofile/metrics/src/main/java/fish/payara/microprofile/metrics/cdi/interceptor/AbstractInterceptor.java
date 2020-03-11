@@ -101,6 +101,10 @@ import org.glassfish.internal.api.Globals;
     private <E extends Member & AnnotatedElement> Object preInterceptor(InvocationContext context, E element) throws Exception {
         initService();
         if (metricsService.isEnabled()) {
+            //FIXME there is an issue here: the element does not correctly reflect the updated annotations
+            // to be fully correct this would need to be wrapped and based on
+            // Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
+            // to provide AnnotatedElement implementation
             return applyInterceptor(context, element);
         }
         return context.proceed();
