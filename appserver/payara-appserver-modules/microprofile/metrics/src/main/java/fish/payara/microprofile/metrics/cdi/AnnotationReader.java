@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
+import static java.util.Arrays.asList;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -71,10 +73,24 @@ import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
 /**
- * Utility that allows reading the different MP metrics annotations from different sources through a common interface to
- * allow generic handling without doing {@code instanceof} checks all the time.
+ * Utility that allows reading the different MP metrics {@link Annotation}s from different annotated abstractions
+ * providing a common interface to allow generic handling and a common logic independent of the source of the
+ * {@link Annotation}.
  *
- * It also encodes the naming conventions for metric names that are derived from the annotated element.
+ * Supported are:
+ * <ul>
+ * <li>{@link AnnotatedElement}</li>
+ * <li>{@link Annotated}</li>
+ * <li>{@link InjectionPoint}</li>
+ * </ul>
+ *
+ * It is important to realise that {@link Annotated} and {@link InjectionPoint} have to be used as a source when
+ * available as they allow to add or remove {@link Annotation} effectively acting as a runtime override of the compiled
+ * information provided by {@link AnnotatedElement}.
+ *
+ * This utility also encodes most of the logic as defined by the MP Metrics specification. This includes the logic of
+ * which annotation applied and how the metrics effective name if computed from annotation values and the annotated
+ * element. For this reason the methods are documented in great detail.
  *
  * @author Jan Bernitt
  * @since 5.202
@@ -83,17 +99,27 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
  */
 public final class AnnotationReader<T extends Annotation> {
 
+    /**
+     * Get {@link AnnotationReader} for a provided {@link Annotation}.
+     *
+     * @param annotationType
+     * @return The {@link AnnotationReader} for the provided {@link Annotation} type
+     * @throws IllegalAccessException In case no such reader exists
+     */
     @SuppressWarnings("unchecked")
     public static <T extends Annotation> AnnotationReader<T> reading(Class<T> annotationType) {
-        AnnotationReader<?> reader = READERS.get(annotationType);
+        AnnotationReader<?> reader = READERS_BY_ANNOTATION.get(annotationType);
         if (reader == null) {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotationType.getName() + "]");
         }
         return (AnnotationReader<T>) reader;
     }
 
+    /**
+     * @return all available {@link AnnotationReader}s
+     */
     public static Iterable<AnnotationReader<?>> readers() {
-        return READERS.values();
+        return READERS_BY_ANNOTATION.values();
     }
 
     public static final AnnotationReader<ConcurrentGauge> CONCURRENT_GAUGE = new AnnotationReader<>(
@@ -166,7 +192,7 @@ public final class AnnotationReader<T extends Annotation> {
             SimplyTimed::unit,
             SimplyTimed::reusable);
 
-    private static final Map<Class<? extends Annotation>, AnnotationReader<?>> READERS = new HashMap<>();
+    private static final Map<Class<? extends Annotation>, AnnotationReader<?>> READERS_BY_ANNOTATION = new HashMap<>();
 
     private final Class<T> annotationType;
     private final MetricType type;
@@ -195,9 +221,19 @@ public final class AnnotationReader<T extends Annotation> {
         this.type = type;
         this.unit = unit;
         this.reusable = reusable;
-        READERS.put(annotationType, this);
+        READERS_BY_ANNOTATION.put(annotationType, this);
     }
 
+    /**
+     * If this {@link AnnotationReader} reads {@link Metric} {@link Annotation} it can be associated with different
+     * {@link MetricType} so that the provided type is used when creating {@link Metadata} using the
+     * {@link AnnotationReader}.
+     *
+     * @param type any {@link MetricType}
+     * @return A new {@link AnnotationReader} using the provided {@link MetricType}
+     * @throws IllegalStateException In case this method is called on {@link AnnotationReader} that is not reading
+     *                               {@link Metric} {@link Annotation}.
+     */
     public AnnotationReader<T> asType(MetricType type) {
         if (this.annotationType != Metric.class) {
             throw new IllegalStateException("Only Metric reader can be typed!");
@@ -205,6 +241,14 @@ public final class AnnotationReader<T extends Annotation> {
         return new AnnotationReader<>(annotationType, type, name, tags, displayName, description, absolute, unit, reusable);
     }
 
+    /**
+     * Infers the {@link MetricType} from the provided {@link org.eclipse.microprofile.metrics.Metric} {@link Class}. If
+     * this fails {@link MetricType#INVALID} is used.
+     *
+     * @param type a {@link Class} that implements {@link org.eclipse.microprofile.metrics.Metric} or is a MP
+     *             {@link org.eclipse.microprofile.metrics.Metric} interface
+     * @return A new {@link AnnotationReader} which uses the inferred {@link MetricType}
+     */
     public AnnotationReader<T> asType(Class<? extends org.eclipse.microprofile.metrics.Metric> type) {
         if (org.eclipse.microprofile.metrics.Gauge.class.isAssignableFrom(type)) {
             return asType(MetricType.GAUGE);
@@ -230,13 +274,20 @@ public final class AnnotationReader<T extends Annotation> {
         return asType(MetricType.INVALID);
     }
 
-
+    /**
+     * @return the {@link MetricType} used by this {@link AnnotationReader} when generating a {@link Metadata} object
+     *         any of the variants of the {@link #metadata(Annotation)} methods. Usually each {@link Annotation} is
+     *         associated with a particular {@link MetricType} but for {@link Metric} {@link Annotation} the type can be
+     *         changed using {@link #asType(Class)} methods.
+     */
     public MetricType type() {
         return type;
     }
 
     /**
-     * @param annotation annotation to evaluate
+     * Checks if an {@link Annotation} does not provide any information beyond the required name and tags.
+     *
+     * @param annotation source annotation to read, not {@code null}
      * @return true, of no property is set to a value that would require using {@link Metadata} when registering, else
      *         false.
      */
@@ -247,6 +298,15 @@ public final class AnnotationReader<T extends Annotation> {
                && displayName(annotation).isEmpty();
     }
 
+    /**
+     * Returns the effective annotation for the provided bean and element.
+     *
+     * @param bean    type of the bean that declared the provided element
+     * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
+     *                {@link #annotationType}
+     * @return the effective {@link Annotation}, or {@code null}. The element's annotations take precedence over the
+     *         bean's annotations.
+     */
     public <E extends Member & AnnotatedElement> T annotation(Class<?> bean, E element) {
         try {
             return compute(bean, element, Function.identity(), Function.identity());
@@ -255,28 +315,85 @@ public final class AnnotationReader<T extends Annotation> {
         }
     }
 
+    /**
+     * Reads the effective {@link Annotation} for the provided {@link InjectionPoint}.
+     *
+     * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return the effective annotation for the provided {@link InjectionPoint}, never {@code null}
+     * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public T annotation(InjectionPoint point) {
         return compute(point, (annotation, name) -> annotation);
     }
 
+    /**
+     * Checks if this {@link AnnotationReader}'s {@link #annotationType} is present either at the provided
+     * {@link AnnotatedElement} or the provided bean {@link Class}.
+     *
+     * @param bean    type of the bean that declared the provided element
+     * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
+     *                {@link #annotationType}
+     * @return true, if provided element or bean are annotated with this {@link AnnotationReader}'s
+     *         {@link #annotationType}, else false.
+     */
     public <E extends Member & AnnotatedElement> boolean isPresent(Class<?> bean, E element) {
         return type == MetricType.GAUGE
                 ? element instanceof Method && element.isAnnotationPresent(annotationType)
                 : annotation(bean, element) != null;
     }
 
+    /**
+     * Returns the metric name as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return name value of the provided source annotation
+     */
     public String name(T annotation) {
         return name.apply(annotation);
     }
 
+    /**
+     * Returns the metric name as defined by the MP specification for the annotation situation at hand for the provided
+     * {@link InjectionPoint}. This does take into account that annotations might have been added or removed at runtime.
+     *
+     * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public String name(InjectionPoint point) {
         return compute(point, this::name);
     }
 
+    /**
+     * Returns the metric name as defined by the MP specification for the annotation situation at hand for the provided
+     * {@link AnnotatedMember}. This does take into account that annotations might have been added or removed at runtime.
+     *
+     * @param member source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public String name(AnnotatedMember<?> member) {
         return compute(member, this::name);
     }
 
+    /**
+     * Reads the effective name for the provided bean {@link Class} and {@link AnnotatedElement}. Either bean or element
+     * must have this {@link AnnotationReader}'s {@link Annotation}.
+     *
+     * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
+     *                {@link AnnotationReader}'s {@link #annotationType}
+     * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
+     *                {@link #annotationType}
+     * @return full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
+     *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public <E extends Member & AnnotatedElement> String name(Class<?> bean, E element) {
         return compute(bean, element, this::name);
     }
@@ -285,22 +402,68 @@ public final class AnnotationReader<T extends Annotation> {
         return name; // used as method-ref-lambda
     }
 
+    /**
+     * Returns the metric tags as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return tags value of the provided source annotation
+     */
     public Tag[] tags(T annotation) {
         return tagsFromString(tags.apply(annotation));
     }
 
+    /**
+     * Returns the {@link MetricID} as defined by the provided {@link Annotation}'s name and tags attributes.
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return {@link MetricID} value of the provided source annotation
+     */
     public MetricID metricID(T annotation) {
         return new MetricID(name(annotation), tags(annotation));
     }
 
+    /**
+     * Returns the metric {@link MetricID} as defined by the MP specification for the annotation situation at hand for
+     * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
+     * removed at runtime.
+     *
+     * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return {@link MetricID} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public MetricID metricID(InjectionPoint point) {
         return compute(point, this::metricID);
     }
 
+    /**
+     * Returns the metric {@link MetricID} as defined by the MP specification for the annotation situation at hand for
+     * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
+     * removed at runtime.
+     *
+     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return {@link MetricID} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public MetricID metricID(AnnotatedMember<?> member) {
         return compute(member, this::metricID);
     }
 
+    /**
+     * Reads the effective {@link MetricID} for the provided bean {@link Class} and {@link AnnotatedElement}. Either
+     * bean or element must have this {@link AnnotationReader}'s {@link Annotation}.
+     *
+     * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
+     *                {@link AnnotationReader}'s {@link #annotationType}
+     * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
+     *                {@link #annotationType}
+     * @return {@link MetricID} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
+     *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public <E extends Member & AnnotatedElement> MetricID metricID(Class<?> bean, E element) {
         return compute(bean, element, this::metricID);
     }
@@ -309,43 +472,113 @@ public final class AnnotationReader<T extends Annotation> {
         return new MetricID(name, tags(annotation));
     }
 
+    /**
+     * Returns the metric display name as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return display name value of the provided source annotation
+     */
     public String displayName(T annotation) {
         return displayName.apply(annotation);
     }
 
+    /**
+     * Returns the metric description as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return description of the provided source annotation
+     */
     public String description(T annotation) {
         return description.apply(annotation);
     }
 
+    /**
+     * Returns the metric unit as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return unit of the provided source annotation
+     */
     public String unit(T annotation) {
         return unit.apply(annotation);
     }
 
+    /**
+     * Returns the metric reusable flag as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return reusable flag of the provided source annotation
+     */
     public boolean reusable(T annotation) {
         return reusable.test(annotation);
     }
 
+    /**
+     * Returns the metric absolute flag as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return absolute flag of the provided source annotation
+     */
     public boolean absolute(T annotation) {
         return absolute.test(annotation);
     }
 
+    /**
+     * Returns the full {@link Metadata} as defined by the provided {@link Annotation}
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return {@link Metadata} of the provided source annotation
+     */
     public Metadata metadata(T annotation) {
         return metadata(annotation, name(annotation));
     }
 
+    /**
+     * Returns the metric {@link Metadata} as defined by the MP specification for the annotation situation at hand for
+     * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
+     * removed at runtime.
+     *
+     * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return {@link Metadata} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public Metadata metadata(InjectionPoint point) {
         return compute(point, this::metadata);
     }
 
+    /**
+     * Returns the metric {@link Metadata} as defined by the MP specification for the annotation situation at hand for
+     * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
+     * removed at runtime.
+     *
+     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     *              {@link #annotationType}, not {@code null}
+     * @return {@link Metadata} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
+     *                                  this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public Metadata metadata(AnnotatedMember<?> member) {
         return compute(member, this::metadata);
     }
 
+    /**
+     * Reads the effective {@link Metadata} for the provided bean {@link Class} and {@link AnnotatedElement}. Either
+     * bean or element must have this {@link AnnotationReader}'s {@link Annotation}.
+     *
+     * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
+     *                {@link AnnotationReader}'s {@link #annotationType}
+     * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
+     *                {@link #annotationType}
+     * @return {@link Metadata} with full metric name as required by the MP specification
+     * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
+     *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
+     */
     public <E extends Member & AnnotatedElement> Metadata metadata(Class<?> bean, E element) {
         return compute(bean, element, this::metadata);
     }
 
-    public Metadata metadata(T annotation, String name) {
+    private Metadata metadata(T annotation, String name) {
         return Metadata.builder()
                 .withName(name)
                 .withDisplayName(displayName(annotation))
@@ -371,6 +604,21 @@ public final class AnnotationReader<T extends Annotation> {
         return annotationType.toString();
     }
 
+    /**
+     * Resolves the {@link org.eclipse.microprofile.metrics.Metric} referred to by the provided {@link InjectionPoint}.
+     * If it does not exist, the metric is created. Lookup and creation are one atomic operation. Depending on the
+     * provided information in the effective {@link Annotation} for the provided {@link InjectionPoint} the metric is
+     * resolved or registered using {@link Metadata}, name and {@link Tag}s or just its name.
+     *
+     * A {@link org.eclipse.microprofile.metrics.Gauge} can only be resolved, not created.
+     *
+     * @param point    source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
+     *                 {@link #annotationType}, not {@code null}
+     * @param metric   type of the {@link org.eclipse.microprofile.metrics.Metric} to find or create, not {@code null}
+     * @param registry {@link MetricRegistry} to use, not {@code null}
+     * @return the resolved or registered metric, or {@code null} if a {@link org.eclipse.microprofile.metrics.Gauge}
+     *         did not exist
+     */
     public <M extends org.eclipse.microprofile.metrics.Metric> M getOrRegister(InjectionPoint point, Class<M> metric, MetricRegistry registry) {
         T annotation = annotation(point);
         if (annotation != null) {
@@ -382,8 +630,7 @@ public final class AnnotationReader<T extends Annotation> {
         return MetricGetOrRegister.getOrRegisterByName(registry, metric, name(point));
     }
 
-
-    public <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {
+    private <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {
         Annotated annotated = point.getAnnotated();
         if (annotated instanceof AnnotatedMember) {
             return compute((AnnotatedMember<?>) annotated, func);
@@ -391,7 +638,8 @@ public final class AnnotationReader<T extends Annotation> {
         if (annotated instanceof AnnotatedParameter) {
             return compute((AnnotatedParameter<?>) annotated, func);
         }
-        throw new IllegalArgumentException("Unable to retrieve data for injection point [" + point + "], only members and parameters are supported");
+        throw new IllegalArgumentException("Unable to retrieve data for injection point [" + point
+                + "], only members and parameters are supported");
     }
 
     private <R> R compute(AnnotatedParameter<?> parameter, BiFunction<T, String, R> func) {
@@ -501,19 +749,18 @@ public final class AnnotationReader<T extends Annotation> {
         }
     }
 
-    public static Tag[] tagsFromString(String[] stringtags) {
-        if (stringtags == null || stringtags.length == 0) {
+    public static Tag[] tagsFromString(String[] tags) {
+        if (tags == null || tags.length == 0) {
             return new Tag[0];
         }
-        Tag[] tags = new Tag[stringtags.length];
-        for (int i = 0; i < stringtags.length; i++) {
-            int splitIndex = stringtags[i].indexOf('=');
-            if (splitIndex == -1) {
-                throw new IllegalArgumentException(
-                        "invalid tag: " + stringtags[i] + ", tags must be in the form key=value");
-            }
-            tags[i] = new Tag(stringtags[i].substring(0, splitIndex), stringtags[i].substring(splitIndex + 1));
+        return asList(tags).stream().map(AnnotationReader::tagFromString).toArray(Tag[]::new);
+    }
+
+    private static Tag tagFromString(String tag) {
+        int splitIndex = tag.indexOf('=');
+        if (splitIndex == -1) {
+            throw new IllegalArgumentException("invalid tag: " + tag + ", tags must be in the form key=value");
         }
-        return tags;
+        return new Tag(tag.substring(0, splitIndex), tag.substring(splitIndex + 1));
     }
 }
