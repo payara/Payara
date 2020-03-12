@@ -69,7 +69,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -242,23 +241,13 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         MetricRegistry registry = metricsService.getOrAddRegistry(metricsService.getApplicationName());
         for (Map.Entry<Producer<?>, AnnotatedMember<?>> entry : producerMetrics.entrySet()) {
             AnnotatedMember<?> annotatedMember = entry.getValue();
-            Producer<?> prod = entry.getKey();
             if (hasInjectionPoints(annotatedMember)) {
                 continue;
             }
-            Metadata metadata = AnnotationReader.METRIC.asType(classTypeOf(annotatedMember.getBaseType())).metadata(annotatedMember);
-
-            registry.register(metadata, (Metric) prod.produce(manager.createCreationalContext(null)));
+            Metadata metadata = AnnotationReader.METRIC.metadata(annotatedMember);
+            registry.register(metadata, (Metric) entry.getKey().produce(manager.createCreationalContext(null)));
         }
         producerMetrics.clear();
-    }
-
-    private static Class<? extends Metric> classTypeOf(Type baseType) {
-        @SuppressWarnings("unchecked")
-        Class<? extends Metric> type = (Class<? extends Metric>)(baseType instanceof Class
-                ? baseType
-                : ((ParameterizedType) baseType).getRawType());
-        return type;
     }
 
     private static <T extends Annotation> void addInterceptorBinding(Class<T> annotation, BeanManager manager, BeforeBeanDiscovery beforeBeanDiscovery) {

@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
@@ -67,28 +66,36 @@ import org.eclipse.microprofile.metrics.Timer;
 public final class MetricGetOrRegister<T extends Metric> {
 
     @FunctionalInterface
-    private interface TriFunction<A, B, C, R> {
+    private interface By<A, B, R> {
 
-        R apply(A a, B b, C c);
+        R apply(MetricRegistry registry, A a, B b);
+    }
+
+    @FunctionalInterface
+    private interface ByJust<A, R> {
+
+        R apply(MetricRegistry registry, A a);
     }
 
     private static final Map<Class<? extends Metric>, MetricGetOrRegister<?>> TYPES = new HashMap<>();
 
-    private final BiFunction<MetricRegistry, String, T> byName;
-    private final TriFunction<MetricRegistry, String, Tag[], T> byNameAndTags;
-    private final TriFunction<MetricRegistry, Metadata, Tag[], T> byMetadataAndTags;
+    private final ByJust<String, T> byName;
+    private final By<String, Tag[], T> byNameAndTags;
+    private final By<Metadata, Tag[], T> byMetadataAndTags;
 
-    private MetricGetOrRegister(BiFunction<MetricRegistry, String, T> byName,
-            TriFunction<MetricRegistry, String, Tag[], T> byNameAndTags,
-            TriFunction<MetricRegistry, Metadata, Tag[], T> byMetadataAndTags) {
+    private MetricGetOrRegister(
+            ByJust<String, T> byName,
+            By<String, Tag[], T> byNameAndTags,
+            By<Metadata, Tag[], T> byMetadataAndTags) {
         this.byName = byName;
         this.byNameAndTags = byNameAndTags;
         this.byMetadataAndTags = byMetadataAndTags;
     }
 
-    static <T extends Metric> void register(Class<T> type, BiFunction<MetricRegistry, String, T> byName,
-            TriFunction<MetricRegistry, String, Tag[], T> byNameAndTags,
-            TriFunction<MetricRegistry, Metadata, Tag[], T> byMetadataAndTags) {
+    static <T extends Metric> void register(
+            Class<T> type, ByJust<String, T> byName,
+            By<String, Tag[], T> byNameAndTags,
+            By<Metadata, Tag[], T> byMetadataAndTags) {
         TYPES.put(type, new MetricGetOrRegister<>(byName, byNameAndTags, byMetadataAndTags));
     }
 

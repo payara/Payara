@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -23,6 +24,7 @@ import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
@@ -41,10 +43,9 @@ import fish.payara.microprofile.metrics.test.TestUtils;
  * Unlike in real world usage the tests often stack multiple FT annotations to test all of them in one go. They all
  * should show a identical behaviour with respect to the property tested.
  *
- * Which source is picked up as origin of annotations is based on conventions. If no bean is passed explicitly the test
+ * Which annotated element is picked up is based on conventions. If no bean is passed explicitly the test
  * itself is the bean and the test method is the annotated element. If a bean is passed it is expected to only have one
  * field or method or constructor. Either the bean class or that element (or one of its parameters) is annotated.
- *
  *
  * The {@link Metric} annotation however is special and needs dedicated test coverage.
  *
@@ -111,14 +112,14 @@ public class AnnotationReaderTest {
     @Metered
     @Timed
     @SimplyTimed
-    private static class RelativeInferredContextNameMethod {
+    private static class BeanA {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void relativeInferredContextNameMethod() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeInferredContextNameMethod.name", RelativeInferredContextNameMethod.class);
+        assertNamed("<this>.BeanA.name", BeanA.class);
     }
 
     @ConcurrentGauge(absolute = true)
@@ -126,13 +127,13 @@ public class AnnotationReaderTest {
     @Metered(absolute = true)
     @Timed(absolute = true)
     @SimplyTimed(absolute = true)
-    private static class AbsoluteInferredContextNameMethod {
+    private static class BeanB {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void absoluteInferredContextNameMethod() {
-        assertNamed("name", AbsoluteInferredContextNameMethod.class);
+        assertNamed("name", BeanB.class);
     }
 
     @ConcurrentGauge(name = "contextMethod")
@@ -140,13 +141,13 @@ public class AnnotationReaderTest {
     @Metered(name = "contextMethod")
     @Timed(name = "contextMethod")
     @SimplyTimed(name = "contextMethod")
-    private static class RelativeGivenContextNameMethod {
+    private static class BeanC {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void relativeGivenContextNameMethod() {
-        assertNamed("contextMethod.name", RelativeGivenContextNameMethod.class);
+        assertNamed("contextMethod.name", BeanC.class);
     }
 
     @ConcurrentGauge(name = "ignoredContextMethod", absolute = true)
@@ -154,73 +155,71 @@ public class AnnotationReaderTest {
     @Metered(name = "ignoredContextMethod", absolute = true)
     @Timed(name = "ignoredContextMethod", absolute = true)
     @SimplyTimed(name = "ignoredContextMethod", absolute = true)
-    private static class AbsoluteGivenContextNameMethod {
+    private static class BeanD {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenContextNameMethod() {
-        assertNamed("name", AbsoluteGivenContextNameMethod.class);
+        assertNamed("name", BeanD.class);
     }
 
     /*
      * Test metric names for constructors
      */
 
-    private static class RelativeInferredNameConstructor {
+    private static class BeanE {
         @ConcurrentGauge
         @Counted
         @Metered
         @Timed
         @SimplyTimed
-        RelativeInferredNameConstructor() { /* parameters not important here */ }
+        BeanE() { /* parameters not important here */ }
     }
     @Test
     public void relativeInferredNameConstructor() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeInferredNameConstructor.RelativeInferredNameConstructor",
-                RelativeInferredNameConstructor.class);
+        assertNamed("<this>.BeanE.BeanE", BeanE.class);
     }
 
-    private static class RelativeGivenLocalNameConstructor {
+    private static class BeanF {
         @ConcurrentGauge(name = "localConstructor")
         @Counted(name = "localConstructor")
         @Metered(name = "localConstructor")
         @Timed(name = "localConstructor")
         @SimplyTimed(name = "localConstructor")
-        RelativeGivenLocalNameConstructor() { /* parameters not important here */ }
+        BeanF() { /* parameters not important here */ }
     }
     @Test
     public void relativeGivenLocalNameConstructor() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeGivenLocalNameConstructor.localConstructor",
-                RelativeGivenLocalNameConstructor.class);
+        assertNamed("<this>.BeanF.localConstructor", BeanF.class);
     }
 
-    private static class AbsoluteInferredNameConstructor {
+    private static class BeanG {
         @ConcurrentGauge(absolute = true)
         @Counted(absolute = true)
         @Metered(absolute = true)
         @Timed(absolute = true)
         @SimplyTimed(absolute = true)
-        AbsoluteInferredNameConstructor() { /* parameters not important here */ }
+        BeanG() { /* parameters not important here */ }
     }
     @Test
     public void absoluteInferredNameConstructor() {
-        assertNamed("AbsoluteInferredNameConstructor", AbsoluteInferredNameConstructor.class);
+        assertNamed("BeanG", BeanG.class);
     }
 
-    private static class AbsoluteGivenLocalNameConstructor {
+    private static class BeanH {
         @ConcurrentGauge(name = "localConstructor", absolute = true)
         @Counted(name = "localConstructor", absolute = true)
         @Metered(name = "localConstructor", absolute = true)
         @Timed(name = "localConstructor", absolute = true)
         @SimplyTimed(name = "localConstructor", absolute = true)
-        AbsoluteGivenLocalNameConstructor() { /* parameters not important here */ }
+        BeanH() { /* parameters not important here */ }
     }
     @Test
     public void absoluteGivenLocalNameConstructor() {
-        assertNamed("localConstructor", AbsoluteGivenLocalNameConstructor.class);
+        assertNamed("localConstructor", BeanH.class);
     }
 
     @ConcurrentGauge
@@ -228,15 +227,14 @@ public class AnnotationReaderTest {
     @Metered
     @Timed
     @SimplyTimed
-    private static class RelativeInferredContextNameConstructor {
+    private static class BeanI {
         @SuppressWarnings("unused")
-        RelativeInferredContextNameConstructor() { /* signature not important here */ }
+        BeanI() { /* signature not important here */ }
     }
     @Test
     public void relativeInferredContextNameConstructor() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeInferredContextNameConstructor.RelativeInferredContextNameConstructor",
-                RelativeInferredContextNameConstructor.class);
+        assertNamed("<this>.BeanI.BeanI", BeanI.class);
     }
 
     @ConcurrentGauge(absolute = true)
@@ -244,13 +242,13 @@ public class AnnotationReaderTest {
     @Metered(absolute = true)
     @Timed(absolute = true)
     @SimplyTimed(absolute = true)
-    private static class AbsoluteInferredContextNameConstructor {
+    private static class BeanJ {
         @SuppressWarnings("unused")
-        AbsoluteInferredContextNameConstructor() { /* signature not important here */ }
+        BeanJ() { /* signature not important here */ }
     }
     @Test
     public void absoluteInferredContextNameConstructor() {
-        assertNamed("AbsoluteInferredContextNameConstructor", AbsoluteInferredContextNameConstructor.class);
+        assertNamed("BeanJ", BeanJ.class);
     }
 
     @ConcurrentGauge(name = "contextConstructor")
@@ -258,13 +256,13 @@ public class AnnotationReaderTest {
     @Metered(name = "contextConstructor")
     @Timed(name = "contextConstructor")
     @SimplyTimed(name = "contextConstructor")
-    private static class RelativeGivenContextNameConstructor {
+    private static class BeanK {
         @SuppressWarnings("unused")
-        RelativeGivenContextNameConstructor() { /* signature not important here */ }
+        BeanK() { /* signature not important here */ }
     }
     @Test
     public void relativeGivenContextNameConstructor() {
-        assertNamed("contextConstructor.RelativeGivenContextNameConstructor", RelativeGivenContextNameConstructor.class);
+        assertNamed("contextConstructor.BeanK", BeanK.class);
     }
 
     @ConcurrentGauge(name = "ignoredContextConstructor", absolute = true)
@@ -272,13 +270,13 @@ public class AnnotationReaderTest {
     @Metered(name = "ignoredContextConstructor", absolute = true)
     @Timed(name = "ignoredContextConstructor", absolute = true)
     @SimplyTimed(name = "ignoredContextConstructor", absolute = true)
-    private static class AbsoluteGivenContextNameConstructor {
+    private static class BeanL {
         @SuppressWarnings("unused")
-        AbsoluteGivenContextNameConstructor() { /* signature not important here */ }
+        BeanL() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenContextNameConstructor() {
-        assertNamed("AbsoluteGivenContextNameConstructor", AbsoluteGivenContextNameConstructor.class);
+        assertNamed("BeanL", BeanL.class);
     }
 
 
@@ -291,16 +289,15 @@ public class AnnotationReaderTest {
     @Metered
     @Timed
     @SimplyTimed
-    private static class RelativeInferredSuperContextNameMethodBase { /* not important here */ }
-    private static class RelativeInferredSuperContextNameMethod extends RelativeInferredSuperContextNameMethodBase {
+    private static class BeanMx { /* not important here */ }
+    private static class BeanM extends BeanMx {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void relativeInferredSuperContextNameMethod() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeInferredSuperContextNameMethod.name",
-                RelativeInferredSuperContextNameMethod.class);
+        assertNamed("<this>.BeanM.name", BeanM.class);
     }
 
     @ConcurrentGauge(absolute = true)
@@ -308,14 +305,14 @@ public class AnnotationReaderTest {
     @Metered(absolute = true)
     @Timed(absolute = true)
     @SimplyTimed(absolute = true)
-    private static class AbsoluteInferredSuperContextNameMethodBase { /* not important here */ }
-    private static class AbsoluteInferredSuperContextNameMethod extends AbsoluteInferredSuperContextNameMethodBase {
+    private static class BeanNx { /* not important here */ }
+    private static class BeanN extends BeanNx {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void absoluteInferredSuperContextNameMethod() {
-        assertNamed("name", AbsoluteInferredSuperContextNameMethod.class);
+        assertNamed("name", BeanN.class);
     }
 
     @ConcurrentGauge(name = "contextMethod")
@@ -323,14 +320,14 @@ public class AnnotationReaderTest {
     @Metered(name = "contextMethod")
     @Timed(name = "contextMethod")
     @SimplyTimed(name = "contextMethod")
-    private static class RelativeGivenSuperContextNameMethodBase { /* not important here */ }
-    private static class RelativeGivenSuperContextNameMethod extends RelativeGivenSuperContextNameMethodBase {
+    private static class BeanOx { /* not important here */ }
+    private static class BeanO extends BeanOx {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void relativeGivenSuperContextNameMethod() {
-        assertNamed("contextMethod.name", RelativeGivenSuperContextNameMethod.class);
+        assertNamed("contextMethod.name", BeanO.class);
     }
 
     @ConcurrentGauge(name = "ignoredContextMethod", absolute = true)
@@ -338,14 +335,14 @@ public class AnnotationReaderTest {
     @Metered(name = "ignoredContextMethod", absolute = true)
     @Timed(name = "ignoredContextMethod", absolute = true)
     @SimplyTimed(name = "ignoredContextMethod", absolute = true)
-    private static class AbsoluteGivenSuperContextNameMethodBase { /* not important here */ }
-    private static class AbsoluteGivenSuperContextNameMethod extends AbsoluteGivenSuperContextNameMethodBase {
+    private static class BeanPX { /* not important here */ }
+    private static class BeanP extends BeanPX {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenSuperContextNameMethod() {
-        assertNamed("name", AbsoluteGivenSuperContextNameMethod.class);
+        assertNamed("name", BeanP.class);
     }
 
     /*
@@ -357,16 +354,15 @@ public class AnnotationReaderTest {
     @Metered
     @Timed
     @SimplyTimed
-    private static class RelativeInferredSuperContextNameConstructorBase { /* not important here */ }
-    private static class RelativeInferredSuperContextNameConstructor extends RelativeInferredSuperContextNameConstructorBase {
+    private static class BeanQx { /* not important here */ }
+    private static class BeanQ extends BeanQx {
         @SuppressWarnings("unused")
-        RelativeInferredSuperContextNameConstructor() { /* signature not important here */ }
+        BeanQ() { /* signature not important here */ }
     }
     @Test
     public void relativeInferredSuperContextNameConstructor() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
-        assertNamed("<this>.RelativeInferredSuperContextNameConstructor.RelativeInferredSuperContextNameConstructor",
-                RelativeInferredSuperContextNameConstructor.class);
+        assertNamed("<this>.BeanQ.BeanQ", BeanQ.class);
     }
 
     @ConcurrentGauge(absolute = true)
@@ -374,14 +370,14 @@ public class AnnotationReaderTest {
     @Metered(absolute = true)
     @Timed(absolute = true)
     @SimplyTimed(absolute = true)
-    private static class AbsoluteInferredSuperContextNameConstructorBase { /* not important here */ }
-    private static class AbsoluteInferredSuperContextNameConstructor extends AbsoluteInferredSuperContextNameConstructorBase {
+    private static class BeanRx { /* not important here */ }
+    private static class BeanR extends BeanRx {
         @SuppressWarnings("unused")
-        AbsoluteInferredSuperContextNameConstructor() { /* signature not important here */ }
+        BeanR() { /* signature not important here */ }
     }
     @Test
     public void absoluteInferredSuperContextNameConstructor() {
-        assertNamed("AbsoluteInferredSuperContextNameConstructor", AbsoluteInferredSuperContextNameConstructor.class);
+        assertNamed("BeanR", BeanR.class);
     }
 
     @ConcurrentGauge(name = "contextConstructor")
@@ -389,14 +385,14 @@ public class AnnotationReaderTest {
     @Metered(name = "contextConstructor")
     @Timed(name = "contextConstructor")
     @SimplyTimed(name = "contextConstructor")
-    private static class RelativeGivenSuperContextNameConstructorBase { /* not important here */ }
-    private static class RelativeGivenSuperContextNameConstructor extends RelativeGivenSuperContextNameConstructorBase {
+    private static class BeanSx { /* not important here */ }
+    private static class BeanS extends BeanSx {
         @SuppressWarnings("unused")
-        RelativeGivenSuperContextNameConstructor() { /* signature not important here */ }
+        BeanS() { /* signature not important here */ }
     }
     @Test
     public void relativeGivenSuperContextNameConstructor() {
-        assertNamed("contextConstructor.RelativeGivenSuperContextNameConstructor", RelativeGivenSuperContextNameConstructor.class);
+        assertNamed("contextConstructor.BeanS", BeanS.class);
     }
 
     @ConcurrentGauge(name = "ignoredContextConstructor", absolute = true)
@@ -404,14 +400,14 @@ public class AnnotationReaderTest {
     @Metered(name = "ignoredContextConstructor", absolute = true)
     @Timed(name = "ignoredContextConstructor", absolute = true)
     @SimplyTimed(name = "ignoredContextConstructor", absolute = true)
-    private static class AbsoluteGivenSuperContextNameConstructorBase { /* not important here */ }
-    private static class AbsoluteGivenSuperContextNameConstructor extends AbsoluteGivenSuperContextNameConstructorBase {
+    private static class BeanTx { /* not important here */ }
+    private static class BeanT extends BeanTx {
         @SuppressWarnings("unused")
-        AbsoluteGivenSuperContextNameConstructor() { /* signature not important here */ }
+        BeanT() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenSuperContextNameConstructor() {
-        assertNamed("AbsoluteGivenSuperContextNameConstructor", AbsoluteGivenSuperContextNameConstructor.class);
+        assertNamed("BeanT", BeanT.class);
     }
 
 
@@ -419,7 +415,7 @@ public class AnnotationReaderTest {
      * Metric names when using @Metric on Fields and Methods
      */
 
-    private static class RelativeInferredLocalNameMetricMethod {
+    private static class BeanU {
 
         @Produces
         @Metric
@@ -427,19 +423,19 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeInferredLocalNameMetricMethod() {
-        assertNamed("<this>.RelativeInferredLocalNameMetricMethod.method", RelativeInferredLocalNameMetricMethod.class);
+        assertNamed("<this>.BeanU.method", BeanU.class);
     }
 
-    private static class RelativeInferredLocalNameMetricField {
+    private static class BeanV {
         @Metric
         Counter field;
     }
     @Test
     public void relativeInferredLocalNameMetricField() {
-        assertNamed("<this>.RelativeInferredLocalNameMetricField.field", RelativeInferredLocalNameMetricField.class);
+        assertNamed("<this>.BeanV.field", BeanV.class);
     }
 
-    private static class RelativeGivenLocalNameMetricMethod {
+    private static class BeanW {
 
         @Produces
         @Metric(name = "producer")
@@ -447,19 +443,19 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeGivenLocalNameMetricMethod() {
-        assertNamed("<this>.RelativeGivenLocalNameMetricMethod.producer", RelativeGivenLocalNameMetricMethod.class);
+        assertNamed("<this>.BeanW.producer", BeanW.class);
     }
 
-    private static class RelativeGivenLocalNameMetricField {
+    private static class BeanX {
         @Metric(name = "counter")
         Counter field;
     }
     @Test
     public void relativeGivenLocalNameMetricField() {
-        assertNamed("<this>.RelativeGivenLocalNameMetricField.counter", RelativeGivenLocalNameMetricField.class);
+        assertNamed("<this>.BeanX.counter", BeanX.class);
     }
 
-    private static class AbsoluteGivenLocalNameMetricMethod {
+    private static class BeanY {
 
         @Produces
         @Metric(name = "producer", absolute = true)
@@ -467,19 +463,19 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteGivenLocalNameMetricMethod() {
-        assertNamed("producer", AbsoluteGivenLocalNameMetricMethod.class);
+        assertNamed("producer", BeanY.class);
     }
 
-    private static class AbsoluteGivenLocalNameMetricField {
+    private static class BeanZ {
         @Metric(name = "counter", absolute = true)
         Counter field;
     }
     @Test
     public void absoluteGivenLocalNameMetricField() {
-        assertNamed("counter", AbsoluteGivenLocalNameMetricField.class);
+        assertNamed("counter", BeanZ.class);
     }
 
-    private static class AbsoluteInferredLocalNameMetricMethod {
+    private static class BeanAA {
 
         @Produces
         @Metric
@@ -487,109 +483,109 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteInferredLocalNameMetricMethod() {
-        assertNamed("<this>.AbsoluteInferredLocalNameMetricMethod.method", AbsoluteInferredLocalNameMetricMethod.class);
+        assertNamed("<this>.BeanAA.method", BeanAA.class);
     }
 
-    private static class AbsoluteInferredLocalNameMetricField {
+    private static class BeanAB {
         @Metric
         Counter field;
     }
     @Test
     public void absoluteInferredLocalNameMetricField() {
-        assertNamed("<this>.AbsoluteInferredLocalNameMetricField.field", AbsoluteInferredLocalNameMetricField.class);
+        assertNamed("<this>.BeanAB.field", BeanAB.class);
     }
 
     /*
      * Metric on Parameters
      */
 
-    private static class RelativeGivenLocalNameMetricMethodParameter {
+    private static class BeanAC {
         @SuppressWarnings("unused")
        void  method(@Metric(name = "c1") Counter counter) { /* ... */ }
     }
     @Test
     public void relativeGivenLocalNameMetricMethodParameter() {
-        assertNamedParamter("<this>.RelativeGivenLocalNameMetricMethodParameter.c1", RelativeGivenLocalNameMetricMethodParameter.class);
+        assertNamedParamter("<this>.BeanAC.c1", BeanAC.class);
     }
 
-    private static class AbsoluteGivenLocalNameMetricMethodParameter {
+    private static class BeanAD {
         @SuppressWarnings("unused")
         void method(@Metric(name = "c1", absolute = true) Counter counter) { /* ... */ }
     }
     @Test
     public void absoluteGivenLocalNameMetricMethodParameter() {
-        assertNamedParamter("c1", AbsoluteGivenLocalNameMetricMethodParameter.class);
+        assertNamedParamter("c1", BeanAD.class);
     }
 
-    private static class RelativeInferredLocalNameMethodParameter {
+    private static class BeanAE {
         @SuppressWarnings("unused")
         void method(@Metric Counter arg0) {
             /* naming it arg0 is somewhat of a hack to make this work on older and newer JREs */ }
     }
     @Test
     public void relativeInferredLocalNameMethodParameter() {
-        assertNamedParamter("<this>.RelativeInferredLocalNameMethodParameter.arg0", RelativeInferredLocalNameMethodParameter.class);
+        assertNamedParamter("<this>.BeanAE.arg0", BeanAE.class);
     }
 
-    private static class AbsoluteInferredLocalNameMethodParameter {
+    private static class BeanAF {
         @SuppressWarnings("unused")
         void method(@Metric(absolute = true) Counter arg0) {
             /* naming it arg0 is somewhat of a hack to make this work on older and newer JREs */ }
     }
     @Test
     public void absoluteInferredLocalNameMethodParameter() {
-        assertNamedParamter("arg0", AbsoluteInferredLocalNameMethodParameter.class);
+        assertNamedParamter("arg0", BeanAF.class);
     }
 
-    private static class RelativeGivenLocalNameMetricConstructorParameter {
+    private static class BeanAG {
         @SuppressWarnings("unused")
-        RelativeGivenLocalNameMetricConstructorParameter(@Metric(name = "c1") Counter counter) { /* ... */ }
+        BeanAG(@Metric(name = "c1") Counter counter) { /* ... */ }
     }
     @Test
     public void relativeGivenLocalNameMetricConstructorParameter() {
-        assertNamedParamter("<this>.RelativeGivenLocalNameMetricConstructorParameter.c1", RelativeGivenLocalNameMetricConstructorParameter.class);
+        assertNamedParamter("<this>.BeanAG.c1", BeanAG.class);
     }
 
-    private static class AbsoluteGivenLocalNameMetricConstructorParameter {
+    private static class BeanAH {
         @SuppressWarnings("unused")
-        AbsoluteGivenLocalNameMetricConstructorParameter(@Metric(name = "c1", absolute = true) Counter counter) { /* ... */ }
+        BeanAH(@Metric(name = "c1", absolute = true) Counter counter) { /* ... */ }
     }
     @Test
     public void absoluteGivenLocalNameMetricConstructorParameter() {
-        assertNamedParamter("c1", AbsoluteGivenLocalNameMetricConstructorParameter.class);
+        assertNamedParamter("c1", BeanAH.class);
     }
 
-    private static class RelativeInferredLocalNameConstructorParameter {
+    private static class BeanAI {
         @SuppressWarnings("unused")
-        RelativeInferredLocalNameConstructorParameter(@Metric Counter arg0) {
+        BeanAI(@Metric Counter arg0) {
             /* naming it arg0 is somewhat of a hack to make this work on older and newer JREs */ }
     }
     @Test
     public void relativeInferredLocalNameConstructorParameter() {
-        assertNamedParamter("<this>.RelativeInferredLocalNameConstructorParameter.arg0", RelativeInferredLocalNameConstructorParameter.class);
+        assertNamedParamter("<this>.BeanAI.arg0", BeanAI.class);
     }
 
-    private static class AbsoluteInferredLocalNameConstructorParameter {
+    private static class BeanAJ {
         @SuppressWarnings("unused")
-        AbsoluteInferredLocalNameConstructorParameter(@Metric(absolute = true) Counter arg0) {
+        BeanAJ(@Metric(absolute = true) Counter arg0) {
             /* naming it arg0 is somewhat of a hack to make this work on older and newer JREs */ }
     }
     @Test
     public void absoluteInferredLocalNameConstructorParameter() {
-        assertNamedParamter("arg0", AbsoluteInferredLocalNameConstructorParameter.class);
+        assertNamedParamter("arg0", BeanAJ.class);
     }
-
-    /*
-     * Gauges...
-     */
 
     /*
      * Test Metadata is correct (name is not tested again)
      */
 
+    //TODO
+
     /*
      * Test annotated element annotations replace class level annotations
      */
+
+    //TODO
 
     /*
      * Helpers...
@@ -687,6 +683,11 @@ public class AnnotationReaderTest {
         assertEquals(msg, expected, reader.name(annotated));
         assertEquals(msg, expected, reader.metricID(annotated).getName());
         assertEquals(msg, expected, reader.metadata(annotated).getName());
+
+        // additional test that any setup never leaves the Metadata with invalid type
+        assertNotEquals(MetricType.INVALID, reader.metadata(point).getTypeRaw());
+        assertNotEquals(MetricType.INVALID, reader.metadata(annotated).getTypeRaw());
+        assertNotEquals(MetricType.INVALID, reader.metadata(bean, element).getTypeRaw());
     }
 
 }

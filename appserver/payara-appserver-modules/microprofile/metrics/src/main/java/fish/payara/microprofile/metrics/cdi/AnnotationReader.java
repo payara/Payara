@@ -44,9 +44,11 @@ import static java.util.Arrays.asList;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -249,11 +251,14 @@ public final class AnnotationReader<T extends Annotation> {
      * Infers the {@link MetricType} from the provided {@link org.eclipse.microprofile.metrics.Metric} {@link Class}. If
      * this fails {@link MetricType#INVALID} is used.
      *
-     * @param type a {@link Class} that implements {@link org.eclipse.microprofile.metrics.Metric} or is a MP
-     *             {@link org.eclipse.microprofile.metrics.Metric} interface
+     * @param genericType the actual type of the {@link org.eclipse.microprofile.metrics.Metric} as declared by a
+     *                    {@link Member} or {@link Parameter}.
      * @return A new {@link AnnotationReader} which uses the inferred {@link MetricType}
      */
-    public AnnotationReader<T> asType(Class<? extends org.eclipse.microprofile.metrics.Metric> type) {
+    private AnnotationReader<T> asType(Type genericType) {
+        Class<?> type = (Class<?>) (genericType instanceof Class
+                ? genericType
+                : ((java.lang.reflect.ParameterizedType) genericType).getRawType());
         if (org.eclipse.microprofile.metrics.Gauge.class.isAssignableFrom(type)) {
             return asType(MetricType.GAUGE);
         }
@@ -276,6 +281,10 @@ public final class AnnotationReader<T extends Annotation> {
             return asType(MetricType.TIMER);
         }
         return asType(MetricType.INVALID);
+    }
+
+    private AnnotationReader<T> asAutoType(Type genericType) {
+        return annotationType == Metric.class && type == MetricType.INVALID ? asType(genericType) : this;
     }
 
     /**
@@ -548,7 +557,8 @@ public final class AnnotationReader<T extends Annotation> {
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
      */
     public Metadata metadata(InjectionPoint point) {
-        return compute(point, this::metadata);
+        AnnotationReader<T> reader = asAutoType(point.getType());
+        return reader.compute(point, reader::metadata);
     }
 
     /**
@@ -563,7 +573,8 @@ public final class AnnotationReader<T extends Annotation> {
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
      */
     public Metadata metadata(AnnotatedMember<?> member) {
-        return compute(member, this::metadata);
+        AnnotationReader<T> reader = asAutoType(member.getBaseType());
+        return reader.compute(member, reader::metadata);
     }
 
     /**
@@ -579,7 +590,13 @@ public final class AnnotationReader<T extends Annotation> {
      *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
      */
     public <E extends Member & AnnotatedElement> Metadata metadata(Class<?> bean, E element) {
-        return compute(bean, element, this::metadata);
+        AnnotationReader<T> reader = this;
+        if (element instanceof Method) {
+            reader = asAutoType(((Method) element).getGenericReturnType());
+        } else if (element instanceof Field) {
+            reader = asAutoType(((Field) element).getGenericType());
+        }
+        return reader.compute(bean, element, reader::metadata);
     }
 
     private Metadata metadata(T annotation, String name) {
