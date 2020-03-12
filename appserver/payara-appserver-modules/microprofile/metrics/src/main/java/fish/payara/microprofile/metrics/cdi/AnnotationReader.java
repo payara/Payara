@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,6 +122,8 @@ public final class AnnotationReader<T extends Annotation> {
         return READERS_BY_ANNOTATION.values();
     }
 
+    private static final Map<Class<? extends Annotation>, AnnotationReader<?>> READERS_BY_ANNOTATION = new HashMap<>();
+
     public static final AnnotationReader<ConcurrentGauge> CONCURRENT_GAUGE = new AnnotationReader<>(
             ConcurrentGauge.class, MetricType.CONCURRENT_GAUGE,
             ConcurrentGauge::name,
@@ -192,8 +194,6 @@ public final class AnnotationReader<T extends Annotation> {
             SimplyTimed::unit,
             SimplyTimed::reusable);
 
-    private static final Map<Class<? extends Annotation>, AnnotationReader<?>> READERS_BY_ANNOTATION = new HashMap<>();
-
     private final Class<T> annotationType;
     private final MetricType type;
     private final Function<T, String> name;
@@ -222,6 +222,10 @@ public final class AnnotationReader<T extends Annotation> {
         this.unit = unit;
         this.reusable = reusable;
         READERS_BY_ANNOTATION.put(annotationType, this);
+    }
+
+    public Class<T> annotationType() {
+        return annotationType;
     }
 
     /**
@@ -303,7 +307,7 @@ public final class AnnotationReader<T extends Annotation> {
      *
      * @param bean    type of the bean that declared the provided element
      * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
-     *                {@link #annotationType}
+     *                {@link #annotationType()}
      * @return the effective {@link Annotation}, or {@code null}. The element's annotations take precedence over the
      *         bean's annotations.
      */
@@ -319,7 +323,7 @@ public final class AnnotationReader<T extends Annotation> {
      * Reads the effective {@link Annotation} for the provided {@link InjectionPoint}.
      *
      * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return the effective annotation for the provided {@link InjectionPoint}, never {@code null}
      * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -329,14 +333,14 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     /**
-     * Checks if this {@link AnnotationReader}'s {@link #annotationType} is present either at the provided
+     * Checks if this {@link AnnotationReader}'s {@link #annotationType()} is present either at the provided
      * {@link AnnotatedElement} or the provided bean {@link Class}.
      *
      * @param bean    type of the bean that declared the provided element
      * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
-     *                {@link #annotationType}
+     *                {@link #annotationType()}
      * @return true, if provided element or bean are annotated with this {@link AnnotationReader}'s
-     *         {@link #annotationType}, else false.
+     *         {@link #annotationType()}, else false.
      */
     public <E extends Member & AnnotatedElement> boolean isPresent(Class<?> bean, E element) {
         return type == MetricType.GAUGE
@@ -359,7 +363,7 @@ public final class AnnotationReader<T extends Annotation> {
      * {@link InjectionPoint}. This does take into account that annotations might have been added or removed at runtime.
      *
      * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -373,7 +377,7 @@ public final class AnnotationReader<T extends Annotation> {
      * {@link AnnotatedMember}. This does take into account that annotations might have been added or removed at runtime.
      *
      * @param member source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -387,9 +391,9 @@ public final class AnnotationReader<T extends Annotation> {
      * must have this {@link AnnotationReader}'s {@link Annotation}.
      *
      * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
-     *                {@link AnnotationReader}'s {@link #annotationType}
+     *                {@link AnnotationReader}'s {@link #annotationType()}
      * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
-     *                {@link #annotationType}
+     *                {@link #annotationType()}
      * @return full metric name as required by the MP specification
      * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
      *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
@@ -428,7 +432,7 @@ public final class AnnotationReader<T extends Annotation> {
      * removed at runtime.
      *
      * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return {@link MetricID} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -443,7 +447,7 @@ public final class AnnotationReader<T extends Annotation> {
      * removed at runtime.
      *
      * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return {@link MetricID} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -457,9 +461,9 @@ public final class AnnotationReader<T extends Annotation> {
      * bean or element must have this {@link AnnotationReader}'s {@link Annotation}.
      *
      * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
-     *                {@link AnnotationReader}'s {@link #annotationType}
+     *                {@link AnnotationReader}'s {@link #annotationType()}
      * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
-     *                {@link #annotationType}
+     *                {@link #annotationType()}
      * @return {@link MetricID} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
      *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
@@ -538,7 +542,7 @@ public final class AnnotationReader<T extends Annotation> {
      * removed at runtime.
      *
      * @param point source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return {@link Metadata} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link InjectionPoint} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -553,7 +557,7 @@ public final class AnnotationReader<T extends Annotation> {
      * removed at runtime.
      *
      * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
-     *              {@link #annotationType}, not {@code null}
+     *              {@link #annotationType()}, not {@code null}
      * @return {@link Metadata} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
      *                                  this {@link AnnotationReader}'s {@link Annotation}.
@@ -567,9 +571,9 @@ public final class AnnotationReader<T extends Annotation> {
      * bean or element must have this {@link AnnotationReader}'s {@link Annotation}.
      *
      * @param bean    type of the bean that declared the provided element <b>possibly</b> annotated with this
-     *                {@link AnnotationReader}'s {@link #annotationType}
+     *                {@link AnnotationReader}'s {@link #annotationType()}
      * @param element a {@link AnnotatedElement} <b>possibly</b> annotated with this {@link AnnotationReader}'s
-     *                {@link #annotationType}
+     *                {@link #annotationType()}
      * @return {@link Metadata} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case neither the {@link AnnotatedElement} or the {@link Class} isn't
      *                                  annotated with this {@link AnnotationReader}'s {@link Annotation}.
@@ -613,7 +617,7 @@ public final class AnnotationReader<T extends Annotation> {
      * A {@link org.eclipse.microprofile.metrics.Gauge} can only be resolved, not created.
      *
      * @param point    source {@link InjectionPoint} for an annotated element having this {@link AnnotationReader}'s
-     *                 {@link #annotationType}, not {@code null}
+     *                 {@link #annotationType()}, not {@code null}
      * @param metric   type of the {@link org.eclipse.microprofile.metrics.Metric} to find or create, not {@code null}
      * @param registry {@link MetricRegistry} to use, not {@code null}
      * @return the resolved or registered metric, or {@code null} if a {@link org.eclipse.microprofile.metrics.Gauge}
@@ -652,7 +656,7 @@ public final class AnnotationReader<T extends Annotation> {
         return compute(jmember.getDeclaringClass(), jmember, member::getAnnotation, func);
     }
 
-    private <E extends Member & AnnotatedElement, R> R compute(Class<?> bean, E element, BiFunction<T, String, R> func) {
+    private <E extends AnnotatedElement & Member, R> R compute(Class<?> bean, E element, BiFunction<T, String, R> func) {
         return compute(bean, element, element::getAnnotation, func);
     }
 
@@ -662,7 +666,7 @@ public final class AnnotationReader<T extends Annotation> {
                 annotation -> func.apply(annotation, namedOnClassLevel(annotation, bean, member)));
     }
 
-    private <E extends Member & AnnotatedElement, R> R compute(Class<?> bean, E element, Function<T, R> onElement,
+    private <E extends AnnotatedElement & Member, R> R compute(Class<?> bean, E element, Function<T, R> onElement,
             Function<T, R> onClass) {
         return compute(bean, element, element::getAnnotation, onElement, onClass);
     }
