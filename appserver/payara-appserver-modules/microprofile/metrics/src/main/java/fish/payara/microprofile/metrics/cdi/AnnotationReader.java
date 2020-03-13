@@ -196,6 +196,20 @@ public final class AnnotationReader<T extends Annotation> {
             SimplyTimed::unit,
             SimplyTimed::reusable);
 
+    private static void register(AnnotationReader<?> reader) {
+        READERS_BY_ANNOTATION.put(reader.annotationType(), reader);
+    }
+
+    static {
+        register(CONCURRENT_GAUGE);
+        register(COUNTED);
+        register(GAUGE);
+        register(METERED);
+        register(METRIC);
+        register(SIMPLY_TIMED);
+        register(TIMED);
+    }
+
     private final Class<T> annotationType;
     private final MetricType type;
     private final Function<T, String> name;
@@ -223,7 +237,6 @@ public final class AnnotationReader<T extends Annotation> {
         this.type = type;
         this.unit = unit;
         this.reusable = reusable;
-        READERS_BY_ANNOTATION.put(annotationType, this);
     }
 
     public Class<T> annotationType() {

@@ -15,19 +15,26 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
@@ -37,6 +44,13 @@ import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
+import fish.payara.microprofile.metrics.impl.ConcurrentGaugeImpl;
+import fish.payara.microprofile.metrics.impl.CounterImpl;
+import fish.payara.microprofile.metrics.impl.GaugeImpl;
+import fish.payara.microprofile.metrics.impl.HistogramImpl;
+import fish.payara.microprofile.metrics.impl.MeterImpl;
+import fish.payara.microprofile.metrics.impl.SimpleTimerImpl;
+import fish.payara.microprofile.metrics.impl.TimerImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
 /**
@@ -633,8 +647,138 @@ public class AnnotationReaderTest {
     }
 
     /*
+     * @Metric is inferred to correct MetricType in Metadata
+     */
+
+    private static Map<Class<?>, MetricType> getMetricInterfaceExpectedMapping() {
+        Map<Class<?>, MetricType> expected = new HashMap<>();
+        expected.put(Counter.class, MetricType.COUNTER);
+        expected.put(org.eclipse.microprofile.metrics.ConcurrentGauge.class, MetricType.CONCURRENT_GAUGE);
+        expected.put(Meter.class, MetricType.METERED);
+        expected.put(Timer.class, MetricType.TIMER);
+        expected.put(SimpleTimer.class, MetricType.SIMPLE_TIMER);
+        expected.put(Histogram.class, MetricType.HISTOGRAM);
+        expected.put(org.eclipse.microprofile.metrics.Gauge.class, MetricType.GAUGE);
+        return expected;
+    }
+
+    private static Map<Class<?>, MetricType> getMetricImplementationExpectedMapping() {
+        Map<Class<?>, MetricType> expected = new HashMap<>();
+        expected.put(CounterImpl.class, MetricType.COUNTER);
+        expected.put(ConcurrentGaugeImpl.class, MetricType.CONCURRENT_GAUGE);
+        expected.put(MeterImpl.class, MetricType.METERED);
+        expected.put(TimerImpl.class, MetricType.TIMER);
+        expected.put(SimpleTimerImpl.class, MetricType.SIMPLE_TIMER);
+        expected.put(HistogramImpl.class, MetricType.HISTOGRAM);
+        expected.put(GaugeImpl.class, MetricType.GAUGE);
+        return expected;
+    }
+
+    private static class BeanAM {
+
+        @Metric
+        Counter counter() { return null; }
+        @Metric
+        org.eclipse.microprofile.metrics.ConcurrentGauge concurrentGauge() { return null; }
+        @Metric
+        Meter meter() { return null; }
+        @Metric
+        Timer timer() { return null; }
+        @Metric
+        SimpleTimer simpleTimer() { return null; }
+        @Metric
+        Histogram histogram() { return null; }
+        @Metric
+        org.eclipse.microprofile.metrics.Gauge<Long> gauge() { return null; }
+    }
+    @Test
+    public void metricOnMethodReturningInterfaceType() {
+        assertMetricType(getMetricInterfaceExpectedMapping(), BeanAM.class.getDeclaredMethods(), Method::getReturnType);
+    }
+
+    private static class BeanAN {
+
+        @Metric
+        CounterImpl counter() { return null; }
+        @Metric
+        ConcurrentGaugeImpl concurrentGauge() { return null; }
+        @Metric
+        MeterImpl meter() { return null; }
+        @Metric
+        TimerImpl timer() { return null; }
+        @Metric
+        SimpleTimerImpl simpleTimer() { return null; }
+        @Metric
+        HistogramImpl histogram() { return null; }
+        @Metric
+        GaugeImpl<?> gauge() { return null; }
+    }
+    @Test
+    public void metricOnMethodReturningImplementationType() {
+        assertMetricType(getMetricImplementationExpectedMapping(), BeanAN.class.getDeclaredMethods(), Method::getReturnType);
+    }
+
+    private static class BeanAO {
+
+        @Metric
+        Counter counter;
+        @Metric
+        org.eclipse.microprofile.metrics.ConcurrentGauge concurrentGauge;
+        @Metric
+        Meter meter;
+        @Metric
+        Timer timer;
+        @Metric
+        SimpleTimer simpleTimer;
+        @Metric
+        Histogram histogram;
+        @Metric
+        org.eclipse.microprofile.metrics.Gauge<Long> gauge;
+    }
+    @Test
+    public void metricOFieldReturningInterfaceType() {
+        assertMetricType(getMetricInterfaceExpectedMapping(), BeanAO.class.getDeclaredFields(), Field::getType);
+    }
+
+    private static class BeanAP {
+
+        @Metric
+        CounterImpl counter;
+        @Metric
+        ConcurrentGaugeImpl concurrentGauge;
+        @Metric
+        MeterImpl meter;
+        @Metric
+        TimerImpl timer;
+        @Metric
+        SimpleTimerImpl simpleTimer;
+        @Metric
+        HistogramImpl histogram;
+        @Metric
+        GaugeImpl<?> gauge;
+    }
+    @Test
+    public void metricOnFidleReturningImplementationType() {
+        assertMetricType(getMetricImplementationExpectedMapping(), BeanAP.class.getDeclaredFields(), Field::getType);
+    }
+
+    /*
      * Helpers...
      */
+
+    private static <E extends AnnotatedElement & Member> void assertMetricType(Map<Class<?>, MetricType> expected,
+            E[] elements, Function<E, Class<?>> actualType) {
+        AnnotationReader<Metric> reader = AnnotationReader.METRIC;
+        for (E element : elements) {
+            if (!element.isSynthetic()) {
+                MetricType expectedType = expected.get(actualType.apply(element));
+                Class<?> bean = element.getDeclaringClass();
+                assertEquals(expectedType, reader.metadata(bean, element).getTypeRaw());
+                assertEquals(expectedType, reader.metadata(TestUtils.fakeInjectionPointFor(element, element)).getTypeRaw());
+                assertEquals(expectedType, reader.metadata(TestUtils.fakeMemberOf(element, element)).getTypeRaw());
+            }
+        }
+    }
 
     private void assertMetadata() {
         assertMetadata(getClass(), TestUtils.getTestMethod());
@@ -721,7 +865,7 @@ public class AnnotationReaderTest {
                 actualReads.add(reader.annotationType());
             }
         }
-        assertEquals("At least one annotation was not processed for bean class " + bean, expectedReads, actualReads);
+        assertEquals("At least one annotation was not processed for " + element, expectedReads, actualReads);
     }
 
     private static <E extends AnnotatedElement & Member> Set<Class<?>> getExpectedReadAnnotations(Class<?> bean, E element) {
