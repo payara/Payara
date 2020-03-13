@@ -3,9 +3,9 @@ package fish.payara.microprofile.metrics.cdi;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
@@ -24,8 +24,10 @@ import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
@@ -579,43 +581,132 @@ public class AnnotationReaderTest {
      * Test Metadata is correct (name is not tested again)
      */
 
-    //TODO
+
+    @Test
+    @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
+        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+    @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
+        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+    @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
+        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+    @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
+        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+    @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
+        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+    @Gauge(name = "name", absolute = true, description = "description", displayName = "displayName",
+        unit = "unit", tags = { "a=b", "c=d" })
+    public void metadataFromMethod() {
+        assertMetadata();
+    }
+
+    private static class BeanAK {
+        @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
+                reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
+            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
+            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
+            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
+            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        BeanAK() { /* not important */ }
+    }
+    @Test
+    public void metadataFromConstructor() {
+        assertMetadata(BeanAK.class);
+    }
 
     /*
      * Test annotated element annotations replace class level annotations
      */
 
-    //TODO
+    @Counted(name = "not used")
+    private static class BeanAL {
+
+        @Counted(name = "used", absolute = true)
+        void method() { /* not important */ }
+    }
+    @Test
+    public void elementLevelOverridesClassLevelAnnotations() {
+        assertNamed("used", BeanAL.class);
+    }
 
     /*
      * Helpers...
      */
+
+    private void assertMetadata() {
+        assertMetadata(getClass(), TestUtils.getTestMethod());
+    }
+
+    private static void assertMetadata(Class<?> bean) {
+        Method method = TestUtils.firstDeclaredMethod(bean);
+        if (method != null) {
+            assertMetadata(bean, method);
+            return;
+        }
+        Constructor<?> constructor = TestUtils.firstDeclaredConstructor(bean);
+        if (constructor != null) {
+            assertMetadata(bean, constructor);
+            return;
+        }
+        fail("No method or constructor found to test");
+    }
+
+    private static <E extends AnnotatedElement & Member> void assertMetadata(Class<?> bean, E element) {
+        final Set<Class<?>> expectedReads = getExpectedReadAnnotations(bean, element);
+        final Set<Class<?>> actualReads = new HashSet<>();
+        for (AnnotationReader<?> reader : AnnotationReader.readers()) {
+            if (reader.isPresent(bean, element)) {
+                assertData(reader.type(), bean, element, reader);
+                actualReads.add(reader.annotationType());
+            }
+        }
+        assertEquals("At least one annotation was not processed for bean class " + bean, expectedReads, actualReads);
+    }
+
+    private static final Tag[] expectedTags = new Tag[] { new Tag("a", "b"), new Tag("c", "d") };
+
+    private static <E extends AnnotatedElement & Member, A extends Annotation> void assertData(MetricType expected,
+            Class<?> bean, E element, AnnotationReader<A> reader) {
+        assertMetadataOverride(expected, reader.metadata(bean, element));
+        assertMetadataOverride(expected, reader.metadata(TestUtils.fakeMemberOf(element, element)));
+        InjectionPoint point = TestUtils.fakeInjectionPointFor(element, element);
+        assertMetadataOverride(expected, reader.metadata(point));
+        assertArrayEquals(expectedTags, reader.tags(reader.annotation(point)));
+    }
+
+    private static void assertMetadataOverride(MetricType expected, Metadata metadata) {
+        assertEquals(expected, metadata.getTypeRaw());
+        assertEquals("name", metadata.getName());
+        assertEquals("description", metadata.getDescription().get());
+        assertEquals("displayName", metadata.getDisplayName());
+        assertEquals("unit", metadata.getUnit().get());
+        assertEquals("reuasable", expected != MetricType.GAUGE, metadata.isReusable());
+    }
 
     private void assertNamed(String expected) {
         assertNamed(expected, getClass(), TestUtils.getTestMethod());
     }
 
     private void assertNamed(String expected, Class<?> bean) {
-        // its a convention in this test that for a bean the first declared method is the annotated one
-        int tested = 0;
         Method method = TestUtils.firstDeclaredMethod(bean);
         if (method != null) {
             assertNamed(expected, bean, method);
-            tested++;
+            return;
         }
         Field field = TestUtils.firstDeclaredField(bean);
         if (field != null) {
             assertNamed(expected, bean, field);
-            tested++;
+            return;
         }
-        if (tested == 0) {
-            Constructor<?> constructor = TestUtils.firstDeclaredConstructor(bean);
-            if (constructor != null) {
-                assertNamed(expected, bean, constructor);
-                tested++;
-            }
+        Constructor<?> constructor = TestUtils.firstDeclaredConstructor(bean);
+        if (constructor != null) {
+            assertNamed(expected, bean, constructor);
+            return;
         }
-        assertTrue("No members found to test", tested > 0);
+        fail("No method, field or constructor found to test");
     }
 
     private static final List<Class<? extends Annotation>> IGNORED_ANNOTATIONS = asList(Test.class, Produces.class, SuppressWarnings.class);
