@@ -55,8 +55,8 @@ import java.lang.reflect.Method;
 
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
@@ -65,114 +65,114 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
 /**
- * Tests the {@link MeteredInterceptor} business logic.
+ * Tests the business logic of {@link SimplyTimedInterceptor}.
  *
  * @author Jan Bernitt
  * @since 5.202
  */
-public class MeterdInterceptorTest {
+public class SimplyTimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
     private final MetricRegistryImpl registry = new MetricRegistryImpl();
 
     @Test
-    @Metered
-    public void meterNoAttributes() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed
+    public void simpleTimerNoAttributes() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(absolute = true)
-    public void meterAbsolute() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(absolute = true)
+    public void simpleTimerAbsolute() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(reusable = true)
-    public void meterReusable() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(reusable = true)
+    public void simpleTimerReusable() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(name = "name")
-    public void meterWithName() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(name = "name")
+    public void simpleTimerWithName() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(displayName = "displayName")
-    public void meterWithDisplayName() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(displayName = "displayName")
+    public void simpleTimerWithDisplayName() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(description = "description")
-    public void meterWithDescription() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(description = "description")
+    public void simpleTimerWithDescription() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(unit = "unit")
-    public void meterWithUnit() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(unit = "unit")
+    public void simpleTimerWithUnit() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(tags = "a=b")
-    public void meterWithTag() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(tags = "a=b")
+    public void simpleTimerWithTag() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(tags = {"a=b", "b=c"})
-    public void meterWithTags() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(tags = {"a=b", "b=c"})
+    public void simpleTimerWithTags() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(name= "name", tags = {"a=b", "b=c"})
-    public void meterWithNameAndTags() throws Exception {
-        assertMeterMarks(0);
+    @SimplyTimed(name= "name", tags = {"a=b", "b=c"})
+    public void simpleTimerWithNameAndTags() throws Exception {
+        assertTimed(0);
     }
 
     @Test
-    @Metered(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
-    public void meterWithAbsoluteNameAndTagsReusable() throws Exception {
-        assertMeterMarks(0);
-        assertMeterMarks(3); // this tries to register the meter again, but it gets reused so we start at 2
+    @SimplyTimed(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
+    public void simpleTimerWithAbsoluteNameAndTagsReusable() throws Exception {
+        assertTimed(0);
+        assertTimed(3); // this tries to register the timer again, but it gets reused so we start at 2
     }
 
-    private void assertMeterMarks(int expectedStartCount) throws Exception {
+    private void assertTimed(int expectedStartCount) throws Exception {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
-        AnnotationReader<Metered> reader = AnnotationReader.METERED;
-        Meter meter = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, Meter.class,
+        AnnotationReader<SimplyTimed> reader = AnnotationReader.SIMPLY_TIMED;
+        SimpleTimer timer = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, SimpleTimer.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
-        MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
-        assertEquals(expectedStartCount + 1, meter.getCount());
-        MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
-        assertEquals(expectedStartCount + 2, meter.getCount());
+        SimplyTimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
+        assertEquals(expectedStartCount + 1, timer.getCount());
+        SimplyTimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
+        assertEquals(expectedStartCount + 2, timer.getCount());
         verify(context, times(2)).proceed();
         // now test error when it does not exist
         try {
-            MeteredInterceptor.proceedMetered(context, element, bean, (metricId, type) -> null);
+            SimplyTimedInterceptor.proceedTimed(context, element, bean, (metricId, type) -> null);
             fail("Expected a IllegalStateException because the metric does not exist");
         } catch (IllegalStateException ex) {
-            assertEquals("No Meter with ID [" + reader.metricID(bean, element)
+            assertEquals("No SimpleTimer with ID [" + reader.metricID(bean, element)
                     + "] found in application registry", ex.getMessage());
         }
         verify(context, times(2)).proceed();
         // test a annotated method that throws an exception
         when(context.proceed()).thenThrow(new RuntimeException("Error in method"));
         try {
-            MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
+            SimplyTimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
             fail("Expected a RuntimeException");
         } catch (RuntimeException ex) {
             assertEquals("Error in method", ex.getMessage());
         }
         verify(context, times(3)).proceed();
         reset(context); //need to remove the 'thenThrow' behaviour
-        assertEquals(expectedStartCount + 3, meter.getCount());
-        assertTrue(meter.getMeanRate() > 3d); // test should run in < 1 sec
+        assertEquals(expectedStartCount + 3, timer.getCount());
+        assertTrue(timer.getElapsedTime().toNanos() > 0);
     }
 }

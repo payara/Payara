@@ -55,9 +55,6 @@
 
 package fish.payara.microprofile.metrics.impl;
 
-import static java.math.RoundingMode.HALF_UP;
-
-import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.enterprise.inject.Vetoed;
