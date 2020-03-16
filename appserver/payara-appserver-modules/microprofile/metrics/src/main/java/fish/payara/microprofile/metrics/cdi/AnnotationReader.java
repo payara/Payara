@@ -267,33 +267,13 @@ public final class AnnotationReader<T extends Annotation> {
      * @param genericType the actual type of the {@link org.eclipse.microprofile.metrics.Metric} as declared by a
      *                    {@link Member} or {@link Parameter}.
      * @return A new {@link AnnotationReader} which uses the inferred {@link MetricType}
+     * @throws IllegalArgumentException in case the given type does not implement any of the known metric types.
      */
     private AnnotationReader<T> asType(Type genericType) {
         Class<?> type = (Class<?>) (genericType instanceof Class
                 ? genericType
                 : ((java.lang.reflect.ParameterizedType) genericType).getRawType());
-        if (org.eclipse.microprofile.metrics.Gauge.class.isAssignableFrom(type)) {
-            return asType(MetricType.GAUGE);
-        }
-        if (org.eclipse.microprofile.metrics.ConcurrentGauge.class.isAssignableFrom(type)) {
-            return asType(MetricType.CONCURRENT_GAUGE);
-        }
-        if (org.eclipse.microprofile.metrics.Counter.class.isAssignableFrom(type)) {
-            return asType(MetricType.COUNTER);
-        }
-        if (org.eclipse.microprofile.metrics.Meter.class.isAssignableFrom(type)) {
-            return asType(MetricType.METERED);
-        }
-        if (org.eclipse.microprofile.metrics.Histogram.class.isAssignableFrom(type)) {
-            return asType(MetricType.HISTOGRAM);
-        }
-        if (org.eclipse.microprofile.metrics.SimpleTimer.class.isAssignableFrom(type)) {
-            return asType(MetricType.SIMPLE_TIMER);
-        }
-        if (org.eclipse.microprofile.metrics.Timer.class.isAssignableFrom(type)) {
-            return asType(MetricType.TIMER);
-        }
-        return asType(MetricType.INVALID);
+        return asType(MetricType.from(type));
     }
 
     private AnnotationReader<T> asAutoType(Type genericType) {
@@ -319,7 +299,7 @@ public final class AnnotationReader<T extends Annotation> {
      */
     public boolean isBare(T annotation) {
         return unit(annotation).equals(MetricUnits.NONE)
-               && absolute(annotation)
+               && reusable(annotation)
                && description(annotation).isEmpty()
                && displayName(annotation).isEmpty();
     }
@@ -615,12 +595,16 @@ public final class AnnotationReader<T extends Annotation> {
     private Metadata metadata(T annotation, String name) {
         return Metadata.builder()
                 .withName(name)
-                .withDisplayName(displayName(annotation))
-                .withDescription(description(annotation))
+                .withOptionalDisplayName(asNull("", displayName(annotation)))
+                .withOptionalDescription(asNull("", description(annotation)))
                 .withType(type)
-                .withUnit(unit(annotation))
+                .withOptionalUnit(asNull(MetricUnits.NONE,unit(annotation)))
                 .reusable(reusable(annotation))
                 .build();
+    }
+
+    private static String asNull(String nullToken, String actual) {
+        return nullToken.equals(actual) ? null : actual;
     }
 
     @Override
@@ -654,14 +638,18 @@ public final class AnnotationReader<T extends Annotation> {
      *         did not exist
      */
     public <M extends org.eclipse.microprofile.metrics.Metric> M getOrRegister(InjectionPoint point, Class<M> metric, MetricRegistry registry) {
-        T annotation = annotation(point);
-        if (annotation != null) {
-            if (isBare(annotation)) {
-                return MetricGetOrRegister.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
-            }
-            return MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
+        T annotation = null;
+        try {
+            annotation = annotation(point);
+        } catch (IllegalArgumentException ex) {
+            // there was no annotation
+            String name = MetricRegistry.name(point.getMember().getDeclaringClass().getCanonicalName(), localName(point.getMember()));
+            return MetricGetOrRegister.getOrRegisterByName(registry, metric, name);
         }
-        return MetricGetOrRegister.getOrRegisterByName(registry, metric, name(point));
+        if (isBare(annotation)) {
+            return MetricGetOrRegister.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
+        }
+        return MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
     }
 
     private <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {
