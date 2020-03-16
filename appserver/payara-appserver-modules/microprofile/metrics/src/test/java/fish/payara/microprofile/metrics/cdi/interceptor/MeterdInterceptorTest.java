@@ -43,17 +43,20 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.lang.reflect.Method;
 
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
@@ -62,106 +65,114 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
 /**
- * Tests the {@link CountedInterceptor} business logic
+ * Tests the {@link MeteredInterceptor} business logic.
  *
  * @author Jan Bernitt
  * @since 5.202
  */
-public class CountedInterceptorTest {
+public class MeterdInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
     private final MetricRegistryImpl registry = new MetricRegistryImpl();
 
     @Test
-    @Counted
-    public void counterNoAttributes() throws Exception {
-        assertCounterIncrements();
+    @Metered
+    public void meterNoAttributes() throws Exception {
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(absolute = true)
+    @Metered(absolute = true)
     public void counterAbsolute() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(reusable = true)
+    @Metered(reusable = true)
     public void counterReusable() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(name = "name")
+    @Metered(name = "name")
     public void counterWithName() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(displayName = "displayName")
+    @Metered(displayName = "displayName")
     public void counterWithDisplayName() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(description = "description")
+    @Metered(description = "description")
     public void counterWithDescription() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(unit = "unit")
+    @Metered(unit = "unit")
     public void counterWithUnit() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(tags = "a=b")
+    @Metered(tags = "a=b")
     public void counterWithTag() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(tags = {"a=b", "b=c"})
+    @Metered(tags = {"a=b", "b=c"})
     public void counterWithTags() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(name= "name", tags = {"a=b", "b=c"})
+    @Metered(name= "name", tags = {"a=b", "b=c"})
     public void counterWithNameAndTags() throws Exception {
-        assertCounterIncrements();
+        assertMeterMarks(0);
     }
 
     @Test
-    @Counted(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
+    @Metered(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
     public void counterWithAbsoluteNameAndTagsReusable() throws Exception {
-        assertCounterIncrements(0);
-        assertCounterIncrements(2); // this tries to register the counter again, but it gets reused so we start at 2
+        assertMeterMarks(0);
+        assertMeterMarks(3); // this tries to register the counter again, but it gets reused so we start at 2
     }
 
-    private void assertCounterIncrements() throws Exception {
-        assertCounterIncrements(0);
-    }
-
-    private void assertCounterIncrements(int expectedStartCount) throws Exception {
+    private void assertMeterMarks(int expectedStartCount) throws Exception {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
-        AnnotationReader<Counted> reader = AnnotationReader.COUNTED;
-        Counter counter = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, Counter.class,
+        AnnotationReader<Metered> reader = AnnotationReader.METERED;
+        Meter meter = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, Meter.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
-        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetric);
-        assertEquals(expectedStartCount + 1, counter.getCount());
-        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetric);
-        assertEquals(expectedStartCount + 2, counter.getCount());
-        verify(context, times(expectedStartCount + 2)).proceed();
+        MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
+        assertEquals(expectedStartCount + 1, meter.getCount());
+        MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
+        assertEquals(expectedStartCount + 2, meter.getCount());
+        verify(context, times(2)).proceed();
         // now test error when it does not exist
         try {
-            CountedInterceptor.proceedCounted(context, element, bean, (metricId, type) -> null);
+            MeteredInterceptor.proceedMetered(context, element, bean, (metricId, type) -> null);
             fail("Expected a IllegalStateException because the metric does not exist");
         } catch (IllegalStateException ex) {
-            assertEquals("No Counter with ID [" + reader.metricID(bean, element)
+            assertEquals("No Meter with ID [" + reader.metricID(bean, element)
                     + "] found in application registry", ex.getMessage());
         }
-        verify(context, times(expectedStartCount + 2)).proceed();
+        verify(context, times(2)).proceed();
+        // test a annotated method that throws an exception
+        when(context.proceed()).thenThrow(new RuntimeException("Error in method"));
+        try {
+            MeteredInterceptor.proceedMetered(context, element, bean, registry::getMetric);
+            fail("Expected a RuntimeException");
+        } catch (RuntimeException ex) {
+            assertEquals("Error in method", ex.getMessage());
+        }
+        verify(context, times(3)).proceed();
+        reset(context); //need to remove the 'thenThrow' behaviour
+        assertEquals(expectedStartCount + 3, meter.getCount());
+        assertTrue(meter.getMeanRate() > 3d); // test should run in < 1 sec
     }
 }

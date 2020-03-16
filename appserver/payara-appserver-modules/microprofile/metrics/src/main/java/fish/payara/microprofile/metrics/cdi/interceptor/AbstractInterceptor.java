@@ -72,8 +72,8 @@ import org.glassfish.internal.api.Globals;
         MetricID metricID = reader.metricID(bean, element);
         M metric = loader.apply(metricID, metricType);
         if (metric == null) {
-            throw new IllegalStateException("No " + metricType.getSimpleName() + " with name [" + metricID.getName()
-                    + "] found in application registry");
+            throw new IllegalStateException(
+                    "No " + metricType.getSimpleName() + " with ID [" + metricID + "] found in application registry");
         }
         return metric;
     }

@@ -70,11 +70,7 @@ public class CountedInterceptor extends AbstractInterceptor {
      */
     static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element,
             Class<?> bean, BiFunction<MetricID, Class<Counter>, Counter> loader) throws Exception {
-        MetricID metricID = AnnotationReader.COUNTED.metricID(bean, element);
-        Counter counter = loader.apply(metricID, Counter.class);
-        if (counter == null) {
-            throw new IllegalStateException("No counter with name [" + metricID.getName() + "] found in application registry");
-        }
+        Counter counter = apply(element, bean, AnnotationReader.COUNTED, Counter.class, loader);
         counter.inc();
         return context.proceed();
     }
