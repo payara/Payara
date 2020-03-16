@@ -116,13 +116,13 @@ public final class MetricGetOrRegister<T extends Metric> {
 
     @SuppressWarnings("unchecked")
     public static <T extends Metric> T getOrRegisterByNameAndTags(MetricRegistry registry, Class<T> metric, String name,
-            Tag[] tags) {
+            Tag... tags) {
         return (T) getOrRegister(metric).byNameAndTags.apply(registry, name, tags);
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Metric> T getOrRegisterByMetadataAndTags(MetricRegistry registry, Class<T> metric,
-            Metadata metadata, Tag[] tags) {
+            Metadata metadata, Tag... tags) {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
