@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -326,7 +326,7 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<String, Metadata> getMetadata() {
-        return metricsFamiliesByName.entrySet().stream().collect(toMap(Entry::getKey, 
+        return metricsFamiliesByName.entrySet().stream().collect(toMap(Entry::getKey,
                 e -> e.getValue().metadata));
     }
 
@@ -356,7 +356,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         while (familyIter.hasNext()) {
             MetricFamily<?> family = familyIter.next();
             Iterator<? extends Entry<MetricID, ? extends Metric>> metricIter = family.metrics.entrySet().iterator();
-            while (metricIter.hasNext()) { 
+            while (metricIter.hasNext()) {
                 Entry<MetricID, ? extends Metric> entry = metricIter.next();
                 if (filter.matches(entry.getKey(), entry.getValue())) {
                     remove(entry.getKey()); // OBS! it is important to not use the iterator.remove() so that the family is removed "atomically" when empty
@@ -402,7 +402,7 @@ public class MetricRegistryImpl extends MetricRegistry {
             checkSameType(metricID.getName(), metadata, family.metadata);
             return register(metadata, useExistingMetadata, null, tags);
         }
-        if (useExistingMetadata && metadata.getType() != family.metadata.getType() 
+        if (useExistingMetadata && metadata.getType() != family.metadata.getType()
                 || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
                     String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
@@ -443,7 +443,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         final Metadata newMetadata = metadata;
         final T newMetric = metric != null ? metric : (T) createMetricInstance(newMetadata);
-        MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name, 
+        MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
         if (family.metadata != newMetadata) {
@@ -519,7 +519,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         case COUNTER:
             return new CounterImpl();
         case CONCURRENT_GAUGE:
-            return new ConcurrentGaugeImpl();
+            return new ConcurrentGaugeImpl(clock);
         case GAUGE:
             throw new IllegalArgumentException(String.format("Unsupported operation for Gauge ['%s']", name));
         case METERED:
@@ -555,12 +555,12 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     public Set<MetricID> getMetricsIDs(String name) {
         MetricFamily<?> family = metricsFamiliesByName.get(name);
-        return family == null ? emptySet() : unmodifiableSet(family.metrics.keySet()); 
+        return family == null ? emptySet() : unmodifiableSet(family.metrics.keySet());
     }
 
     public Map<MetricID, Metric> getMetrics(String name) {
         MetricFamily<?> family = metricsFamiliesByName.get(name);
-        return family == null 
+        return family == null
                 ? emptyMap()
                 : unmodifiableMap(family.metrics);
     }
