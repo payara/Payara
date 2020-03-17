@@ -137,6 +137,12 @@
         <module>monitoring-console</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -515,6 +521,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>fish.payara.server.internal.common</groupId>
+                <artifactId>payara-jul-extensions</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- shared by admingui packager and admingui modules -->
             <dependency>
                 <groupId>com.sun.jsftemplating</groupId>
@@ -681,7 +694,7 @@
                 <version>${jboss.logging.version}</version>
                 <optional>true</optional>
             </dependency>
-            
+
             <dependency>
                 <groupId>fish.payara.monitoring-console</groupId>
                 <artifactId>monitoring-console-api</artifactId>

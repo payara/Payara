@@ -40,37 +40,40 @@
 
 package org.glassfish.tests.kernel.deployment;
 
-import org.junit.*;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.UndeployCommandParameters;
+import com.sun.enterprise.config.serverbeans.Server;
+
+import fish.payara.nucleus.executorservice.PayaraExecutorServiceConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.logging.Logger;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.config.support.GlassFishDocument;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.config.support.GlassFishDocument;
+import org.glassfish.tests.utils.ConfigApiTest;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.jvnet.hk2.config.DomDocument;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import fish.payara.nucleus.executorservice.PayaraExecutorServiceConfiguration;
 
 /**
  * Created by IntelliJ IDEA.
@@ -83,14 +86,16 @@ public class EventsTest extends ConfigApiTest {
 
     static ServiceLocator habitat;
     static File application;
-    static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
+    static List<EventListener.Event> allEvents = new ArrayList<>();
     static private EventListener listener = new EventListener() {
+        @Override
         public void event(Event event) {
             //System.out.println("Received event " + event.name());
             allEvents.add(event);
         }
     };
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -101,6 +106,7 @@ public class EventsTest extends ConfigApiTest {
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 
+                        @Override
                         public Thread newThread(Runnable r) {
                             Thread t = Executors.defaultThreadFactory().newThread(r);
                             t.setDaemon(true);
@@ -120,12 +126,12 @@ public class EventsTest extends ConfigApiTest {
             return;
         }
         habitat  = super.getHabitat();
-        
+
         Server server = habitat.getService(Server.class, "server");
         ActiveDescriptor<Server> descriptor = BuilderHelper.createConstantDescriptor(server,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
         ServiceLocatorUtilities.addOneDescriptor(habitat, descriptor);
-        
+
         PayaraExecutorServiceConfiguration executor = habitat.getService(PayaraExecutorServiceConfiguration.class);
         ActiveDescriptor<PayaraExecutorServiceConfiguration> descriptor2 = BuilderHelper.createConstantDescriptor(executor,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME, PayaraExecutorServiceConfiguration.class);
@@ -154,7 +160,7 @@ public class EventsTest extends ConfigApiTest {
     }
 
     public static List<EventTypes> getSingletonModuleSuccessfullDeploymentEvents() {
-        ArrayList<EventTypes> events = new ArrayList<EventTypes>();
+        ArrayList<EventTypes> events = new ArrayList<>();
         events.add(Deployment.MODULE_PREPARED);
         events.add(Deployment.MODULE_LOADED);
         events.add(Deployment.MODULE_STARTED);
@@ -165,7 +171,7 @@ public class EventsTest extends ConfigApiTest {
     }
 
     public static List<EventTypes> getSingletonModuleSuccessfullUndeploymentEvents() {
-        ArrayList<EventTypes> events = new ArrayList<EventTypes>();
+        ArrayList<EventTypes> events = new ArrayList<>();
         events.add(Deployment.MODULE_STOPPED);
         events.add(Deployment.MODULE_UNLOADED);
         events.add(Deployment.MODULE_CLEANED);
@@ -176,9 +182,9 @@ public class EventsTest extends ConfigApiTest {
     }
 
     public static List<EventTypes> asynchonousEvents() {
-        ArrayList<EventTypes> events = new ArrayList<EventTypes>();
+        ArrayList<EventTypes> events = new ArrayList<>();
         events.add(Deployment.DEPLOYMENT_START);
-        events.add(Deployment.DEPLOYMENT_SUCCESS);        
+        events.add(Deployment.DEPLOYMENT_SUCCESS);
         events.add(Deployment.UNDEPLOYMENT_START);
         events.add(Deployment.UNDEPLOYMENT_SUCCESS);
         events.add(Deployment.UNDEPLOYMENT_FAILURE);
@@ -191,6 +197,7 @@ public class EventsTest extends ConfigApiTest {
         final List<EventTypes> myTestEvents = getSingletonModuleSuccessfullDeploymentEvents();
         Events events = habitat.getService(Events.class);
         EventListener listener = new EventListener() {
+            @Override
             public void event(Event event) {
                 if (myTestEvents.contains(event.type())) {
                     myTestEvents.remove(event.type());
@@ -213,6 +220,7 @@ public class EventsTest extends ConfigApiTest {
         try {
         final List<EventTypes> myTestEvents2 = getSingletonModuleSuccessfullUndeploymentEvents();
         EventListener listener2 = new EventListener() {
+            @Override
             public void event(Event event) {
                 if (myTestEvents2.contains(event.type())) {
                     myTestEvents2.remove(event.type());
@@ -260,8 +268,8 @@ public class EventsTest extends ConfigApiTest {
             }
         }
         for (EventTypes et : asyncEvents) {
-            System.out.println("Asynchronous event " + et.type() + " was not received");    
+            System.out.println("Asynchronous event " + et.type() + " was not received");
         }
-        Assert.assertTrue(asyncEvents.size()==0);        
+        Assert.assertTrue(asyncEvents.size()==0);
     }
 }

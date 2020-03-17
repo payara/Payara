@@ -76,8 +76,11 @@ public class LoggingConfigurationHelper {
 
     private static final Function<String, ?> STR_TO_CLASS = v -> {
         try {
-            Class<?> clz = LogManager.getLogManager().getClass().getClassLoader().loadClass(v);
-            return clz.newInstance();
+            final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
+            if (logManagerCL == null) {
+                return Thread.currentThread().getContextClassLoader().loadClass(v).newInstance();
+            }
+            return logManagerCL.loadClass(v).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new IllegalStateException("Formatter instantiation failed!", e);
         }

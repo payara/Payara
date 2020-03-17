@@ -121,7 +121,7 @@ public class AppServerStartupTest {
      * services during progression to the start up run level.
      */
     private static List<TestFuture> listFutures = null;
-    
+
     private ServiceLocator testLocator;
 
 
@@ -132,7 +132,7 @@ public class AppServerStartupTest {
         DynamicConfiguration config = dcs.createDynamicConfiguration();
 
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(new TestSystemTasks()));
-        
+
         // These are services that would normally be started by hk2 core
         config.addActiveDescriptor(AppServerStartup.AppInstanceListener.class);
 
@@ -153,7 +153,7 @@ public class AppServerStartupTest {
 
         config.addUnbindFilter(BuilderHelper.createContractFilter(RunLevelContext.class.getName()));
         config.bind(BuilderHelper.link(RunLevelContext.class).to(Context.class).in(Singleton.class).build());
-        
+
         config.addUnbindFilter(BuilderHelper.createContractFilter(AsyncRunLevelContext.class.getName()));
         config.bind(BuilderHelper.link(AsyncRunLevelContext.class).in(Singleton.class).build());
 
@@ -189,8 +189,8 @@ public class AppServerStartupTest {
         Class clazz = service;
         while (clazz != null) {
             Class<?>[] interfaces = clazz.getInterfaces();
-            for (int j = 0; j < interfaces.length; j++) {
-                descriptorBuilder.to(interfaces[j]);
+            for (Class<?> interface1 : interfaces) {
+                descriptorBuilder.to(interface1);
             }
             clazz = clazz.getSuperclass();
         }
@@ -215,8 +215,8 @@ public class AppServerStartupTest {
         as = testLocator.getService(AppServerStartup.class);
         Assert.assertNotNull(as);
 
-        mapPostConstructExceptions = new HashMap<Class, RuntimeException>();
-        listFutures = new LinkedList<TestFuture>();
+        mapPostConstructExceptions = new HashMap<>();
+        listFutures = new LinkedList<>();
         results = new Results(as.runLevelController);
 
         as.events.register(results);
@@ -239,7 +239,7 @@ public class AppServerStartupTest {
         results = null;
         listFutures = null;
         mapPostConstructExceptions = null;
-        
+
         ServiceLocatorFactory.getInstance().destroy(testLocator);
         testLocator = null;
     }
@@ -423,22 +423,22 @@ public class AppServerStartupTest {
         /**
          * Map of constructed run level services to run levels.
          */
-        private Map<Class, Integer> mapConstructedLevels = new HashMap<Class, Integer>();
+        private final Map<Class, Integer> mapConstructedLevels = new HashMap<>();
 
         /**
          * Map of destroyed run level services to run levels.
          */
-        private Map<Class, Integer> mapDestroyedLevels = new HashMap<Class, Integer>();
+        private final Map<Class, Integer> mapDestroyedLevels = new HashMap<>();
 
         /**
          * List of server events.
          */
-        private List<EventTypes> listEvents = new LinkedList<EventTypes>();
+        private final List<EventTypes> listEvents = new LinkedList<>();
 
         /**
          * The run level service.
          */
-        private RunLevelController rls;
+        private final RunLevelController rls;
 
         public Results(RunLevelController rls) {
             this.rls = rls;
@@ -615,8 +615,8 @@ public class AppServerStartupTest {
         public Result<Thread> get() throws InterruptedException, ExecutionException {
 
             Result<Thread> result = resultException == null ?
-                    new Result<Thread>(Thread.currentThread()) :
-                    new Result<Thread>(resultException);
+                    new Result<>(Thread.currentThread()) :
+                    new Result<>(resultException);
             done = true;
 
             return result;

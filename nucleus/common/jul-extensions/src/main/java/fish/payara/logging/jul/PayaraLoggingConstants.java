@@ -38,34 +38,16 @@
  *  holder.
  */
 
-package com.sun.enterprise.server.logging.test;
+package fish.payara.logging.jul;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
-
-import java.util.Properties;
 
 /**
  * @author David Matejcek
  */
-public class GlobalStatus {
+public class PayaraLoggingConstants {
 
-    private static final PayaraLogManager LOG_MANAGER;
-
-    static {
-        // this causes initialization of JUL LogManager including configuration.
-        PayaraLogManagerInitializer.tryToSetAsDefault(new Properties());
-        LOG_MANAGER = PayaraLogManager.getLogManager();
-    }
-
-
-    /**
-     * This call is rather psychological thing. First access to this class
-     * starts JUL LogManager initialization and configuration.
-     */
-    public static void initialize() {
-        // nothing
-    }
-
+    public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
+    public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
+    public static final String CLASS_LOG_MANAGER = "fish.payara.logging.jul.PayaraLogManager";
 
 }

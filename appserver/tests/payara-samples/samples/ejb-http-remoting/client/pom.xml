@@ -169,7 +169,6 @@
                             <value>${servlet.port}</value>
                         </property>
                     </systemProperties>
-                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
         </plugins>

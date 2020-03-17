@@ -218,6 +218,7 @@
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
+        <test.logManager>java.util.logging.LogManager</test.logManager>
     </properties>
 
     <modules>
@@ -274,7 +275,11 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
+                        <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
+                        <systemProperties>
+                            <java.util.logging.manager>${test.logManager}</java.util.logging.manager>
+                        </systemProperties>
                     </configuration>
                 </plugin>
 
@@ -578,13 +583,6 @@
                 <configuration>
                     <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>true</useSystemClassLoader>
                 </configuration>
             </plugin>
 

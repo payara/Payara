@@ -40,8 +40,6 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.server.logging.test.GlobalStatus;
-
 import fish.payara.logging.jul.PayaraLogHandler;
 
 import java.io.BufferedInputStream;
@@ -85,7 +83,7 @@ public class LoggingPropertiesTest {
 
     @Rule
     public TemporaryFolder tempLoggingfolder = new TemporaryFolder();
-    private File loggingFile;
+    private File loggingPropertiesFile;
 
     @Mock
     private FileMonitoring fileMonitoring;
@@ -93,9 +91,8 @@ public class LoggingPropertiesTest {
 
     @Before
     public void initialise() throws IOException, NoSuchFieldException {
-        GlobalStatus.initialize();
-        loggingFile = tempLoggingfolder.newFile("logging.properties");
-        loggingConfigImpl = new LoggingConfigImpl(loggingFile.getParentFile(), loggingFile.getParentFile());
+        loggingPropertiesFile = tempLoggingfolder.newFile("logging.properties");
+        loggingConfigImpl = new LoggingConfigImpl(tempLoggingfolder.getRoot(), tempLoggingfolder.getRoot());
         FieldSetter.setField(loggingConfigImpl, loggingConfigImpl.getClass().getDeclaredField("fileMonitoring"),
             fileMonitoring);
     }
@@ -106,12 +103,25 @@ public class LoggingPropertiesTest {
         properties.put(LOG_STANDARD_STREAMS_PROPERTY, "false");
         loggingConfigImpl.setLoggingProperties(properties);
 
-        Map<String, String> newProperties = new HashMap<>();
         properties.put("hello", "world");
-        loggingConfigImpl.setLoggingProperties(newProperties);
+        loggingConfigImpl.setLoggingProperties(new HashMap<>());
         loadProperties();
 
         assertEquals("Logging property doesn't match", props.get(LOG_STANDARD_STREAMS_PROPERTY), "false");
+    }
+
+    private void loadProperties() throws FileNotFoundException, IOException {
+        props.clear();
+        try (InputStream fis = new BufferedInputStream(new FileInputStream(loggingPropertiesFile))) {
+            props.load(fis);
+        }
+    }
+
+    private void closePropFile() throws FileNotFoundException, IOException {
+        try (OutputStream os = new BufferedOutputStream(new FileOutputStream(loggingPropertiesFile))) {
+            props.store(os, "GlassFish logging.properties list");
+            os.flush();
+        }
     }
 
     @Test
@@ -142,19 +152,5 @@ public class LoggingPropertiesTest {
         loadProperties();
 
         assertNotNull("Logging property failed to set", props.get("test.set.property"));
-    }
-
-    private void loadProperties() throws FileNotFoundException, IOException {
-        props.clear();
-        try (InputStream fis = new BufferedInputStream(new FileInputStream(loggingFile))) {
-            props.load(fis);
-        }
-    }
-
-    private void closePropFile() throws FileNotFoundException, IOException {
-        try (OutputStream os = new BufferedOutputStream(new FileOutputStream(loggingFile))) {
-            props.store(os, "GlassFish logging.properties list");
-            os.flush();
-        }
     }
 }

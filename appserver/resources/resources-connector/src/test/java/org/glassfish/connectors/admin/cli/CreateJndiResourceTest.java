@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -77,11 +77,13 @@ public class CreateJndiResourceTest extends ConfigApiTest {
     private ParameterMap parameters;
     private AdminCommandContext context;
     private CommandRunner cr;
-    private Server server;
+
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -90,7 +92,6 @@ public class CreateJndiResourceTest extends ConfigApiTest {
     public void setUp() {
         habitat = getHabitat();
         resources = habitat.<Domain>getService(Domain.class).getResources();
-        server = habitat.getService(Server.class);
         parameters = new ParameterMap();
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateJndiResourceTest.class, LogDomains.ADMIN_LOGGER),

@@ -90,6 +90,13 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+            <scope>provided</scope>
+            <version>${parent.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
