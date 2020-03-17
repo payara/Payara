@@ -259,7 +259,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     /**
      * Gets the cluster group
      *
-     * @return The Multicast Group that will beused for the Hazelcast clustering
+     * @return The Multicast Group that will be used for the Hazelcast clustering
      */
     @Override
     public String getClusterMulticastGroup() {
