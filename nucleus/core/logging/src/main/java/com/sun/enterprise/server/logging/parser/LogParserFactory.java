@@ -37,39 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.parser;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import fish.payara.logging.jul.LogFormatHelper;
+
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.sun.enterprise.server.logging.LogFormatHelper;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
 public class LogParserFactory {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = 
-            new LocalStringManagerImpl(LogParserFactory.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(LogParserFactory.class);
 
     static final String NEWLINE = System.getProperty("line.separator");
-    
-    private static enum LogFormat {
+
+    private enum LogFormat {
         UNIFORM_LOG_FORMAT,
         ODL_LOG_FORMAT,
         UNKNOWN_LOG_FORMAT
-    };
-    
-    private static final String ODL_LINE_HEADER_REGEX = 
+    }
+
+    private static final String ODL_LINE_HEADER_REGEX =
         "\\[(\\d){4}\\-(\\d){2}\\-(\\d){2}T(\\d){2}\\:(\\d){2}\\:(\\d){2}\\.(\\d){3}[\\+|\\-](\\d){4}\\].*";
-    
     private static final boolean DEBUG = false;
     
     private static class SingletonHolder {

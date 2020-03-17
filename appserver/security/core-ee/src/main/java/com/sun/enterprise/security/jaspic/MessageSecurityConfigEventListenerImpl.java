@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package com.sun.enterprise.security.jaspic;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -67,7 +68,7 @@ import com.sun.logging.LogDomains;
 
 /**
  * Listener class to handle admin message-security-config element events.
- * 
+ *
  * @author Nithya Subramanian
  */
 
@@ -75,7 +76,8 @@ import com.sun.logging.LogDomains;
 @RunLevel(StartupRunLevel.VAL)
 public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
-    private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class, SECURITY_LOGGER, false);
+    private static final Logger LOG = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,
+        SECURITY_LOGGER, false);
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -86,9 +88,9 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
      * @throws AdminEventListenerException when the listener is unable to process the event.
      */
     public <T extends ConfigBeanProxy> NotProcessed handleUpdate(T instance) {
+        LOG.finest(() -> String.format("handleUpdate(instance=%s)", instance));
         NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleUpdate called");
-        
+
         // Handle only the MessageSecurityConfig.
         if (instance instanceof MessageSecurityConfig) {
             GFServerConfigProvider.loadConfigContext(service);
@@ -104,8 +106,8 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
      * @throws AdminEventListenerException when the listener is unable to process the event.
      */
     public <T extends ConfigBeanProxy> NotProcessed handleDelete(T instance) {
+        LOG.finest(() -> String.format("handleDelete(instance=%s)", instance));
         NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleDelete called");
 
         if (instance instanceof MessageSecurityConfig) {
             GFServerConfigProvider.loadConfigContext(service);
@@ -121,8 +123,8 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
      * @throws AdminEventListenerException when the listener is unable to process the event.
      */
     public <T extends ConfigBeanProxy> NotProcessed handleCreate(T instance) {
+        LOG.finest(() -> String.format("handleCreate(instance=%s)", instance));
         NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleCreate called");
 
         if (instance instanceof MessageSecurityConfig) {
             GFServerConfigProvider.loadConfigContext(service);
@@ -135,11 +137,13 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        LOG.finest(() -> String.format("changed(events=%s)", Arrays.toString(events)));
+
         ConfigSupport.sortAndDispatch(events, new Changed() {
 
             /**
              * Notification of a change on a configuration object
-             * 
+             *
              * @param type type of change : ADD mean the changedInstance was added to the parent REMOVE means the changedInstance
              * was removed from the parent, CHANGE means the changedInstance has mutated.
              * @param changedType type of the configuration object
@@ -147,25 +151,24 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
              */
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+                LOG.finest(() -> String.format("changed(type=%s, changedType=%s, changedInstance=%s)", type,
+                    changedType, changedInstance));
                 NotProcessed notProcessed = null;
                 switch (type) {
                 case ADD:
-                    logger.fine("A new " + changedType.getName() + " was added : " + " " + changedInstance);
                     notProcessed = handleCreate(changedInstance);
                     break;
                 case CHANGE:
-                    logger.fine("A " + changedType.getName() + " was changed : " + changedInstance);
                     notProcessed = handleUpdate(changedInstance);
                     break;
                 case REMOVE:
-                    logger.fine("A " + changedType.getName() + " was removed : " + changedInstance);
                     notProcessed = handleDelete(changedInstance);
                     break;
                 }
-                
+
                 return notProcessed;
             }
-        }, logger);
+        }, LOG);
 
         return null;
     }

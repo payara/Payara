@@ -38,11 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -56,15 +57,14 @@ import org.jvnet.hk2.annotations.Contract;
 public interface LoggingConfig {
 
     /**
-     * Initializes the configuration for a given target.
-     * @param target the target to fetch the logs from.
-     * @throws IOException if an error occurred while reading from the managed file.
+     * Sets the target.
+     * @param target instance/config/...) name
      */
-    void initialize(String target) throws IOException;
+    void setTarget(String target);
 
     /**
      * Gets a given property from the managed file.
-     * 
+     *
      * @param propertyName the name of the property to get.
      * @return the value of the property, or null if it doesn't exist.
      * @throws IOException if an error occurred while reading from the managed file.
@@ -73,24 +73,28 @@ public interface LoggingConfig {
 
     /**
      * Get all properties from the managed file.
-     * 
-     * @return all properties contained within the managed file.
+     *
+     * @return map of all the properties and corresponding values in the logging configuration file.
      * @throws IOException if an error occurred while reading from the managed file.
      */
-    Map<String, String> getLoggingProperties() throws IOException;
+    default Map<String, String> getLoggingProperties() throws IOException {
+        return getLoggingProperties(true);
+    }
+
 
     /**
      * Get all properties from the managed file.
-     * 
-     * @param usePlaceHolderReplacement whether to 
-     * @return all properties contained within the managed file.
+     *
+     * @param usePlaceholderReplacement true for placeholder replacement, false to return original
+     *            property value
+     * @return map of all the properties and corresponding values in the logging configuration file.
      * @throws IOException if an error occurred while reading from the managed file.
      */
     Map<String, String> getLoggingProperties(boolean usePlaceholderReplacement) throws IOException;
 
     /**
      * Sets the given property within the managed file.
-     * 
+     *
      * @param propertyName  the name of the property to set.
      * @param propertyValue the value of the property to set.
      * @return the property value in the file.
@@ -100,7 +104,7 @@ public interface LoggingConfig {
 
     /**
      * Sets all properties within the managed file.
-     * 
+     *
      * @return all properties to set within the managed file.
      * @throws IOException if an error occurred while writing to the managed file.
      */
@@ -108,12 +112,12 @@ public interface LoggingConfig {
 
     /**
      * Deletes all properties from the provided list.
-     * 
-     * @param props all properties to delete within the managed file.
-     * @return the list of deleted properties.
+     *
+     * @param property keys to delete within the managed file.
+     * @return new properties, may contain defaults instead of deleted properties
      * @throws IOException if an error occurred while writing to the managed file.
      */
-    Map<String, String> deleteLoggingProperties(Map<String, String> props) throws IOException;
+    Map<String, String> deleteLoggingProperties(Collection<String> keys) throws IOException;
 
     /**
      * @return the file for the GFHandler to log to.
@@ -123,7 +127,7 @@ public interface LoggingConfig {
 
     /**
      * Creates a ZIP file from a given directory.
-     * 
+     *
      * @param sourceDir the directory to ZIP.
      * @throws IOException if an error occurred while creating the ZIP.
      */

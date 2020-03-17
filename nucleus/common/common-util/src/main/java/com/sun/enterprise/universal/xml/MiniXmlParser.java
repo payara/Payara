@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -220,7 +220,7 @@ public class MiniXmlParser {
         String logFilename = null;
 
         try {
-            loggingConfig.initialize(configRef);
+            loggingConfig.setTarget(configRef);
             Map<String, String> map = loggingConfig.getLoggingProperties();
             String logFileContains = "${com.sun.aas.instanceName}";
             logFilename = map.get(LoggingPropertyNames.file);

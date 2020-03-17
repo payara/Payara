@@ -70,10 +70,11 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
-import com.sun.enterprise.server.logging.UniformLogFormatter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
 
 /*
  * Set log file format command.

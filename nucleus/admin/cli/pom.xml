@@ -101,6 +101,7 @@
                     <include>**/*.1m</include>
                     <include>**/*.5asc</include>
                     <include>*command-names</include>
+                    <include>logging.properties</include>
                 </includes>
             </resource>
             <resource>
@@ -119,6 +120,10 @@
                         <manifest>
                             <mainClass>com.sun.enterprise.admin.cli.AdminMain</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <!-- relative to admin-cli.jar -->
+                            <Class-Path>../lib/payara-jul-extensions.jar</Class-Path>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
@@ -126,6 +131,13 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>

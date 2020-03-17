@@ -60,7 +60,7 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.properties</include>
                 </includes>
@@ -78,11 +78,18 @@
             <artifactId>logging</artifactId>
             <version>${project.version}</version>
         </dependency>
-       <dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

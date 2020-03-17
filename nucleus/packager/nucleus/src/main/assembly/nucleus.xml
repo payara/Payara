@@ -62,6 +62,13 @@
         <fileSet>
             <directory>${temp.dir}/modules</directory>
             <includes>
+                <include>payara-jul-extensions*.jar</include>
+            </includes>
+            <outputDirectory>${install.dir.name}/lib</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/modules</directory>
+            <includes>
                 <include>server-mgmt*.jar</include>
             </includes>
             <outputDirectory>${install.dir.name}/lib/asadmin</outputDirectory>
@@ -83,12 +90,13 @@
         <fileSet>
             <directory>${temp.dir}</directory>
             <excludes>
-                <exclude>modules/server-mgmt*.jar</exclude>
+                <exclude>bin/**</exclude>
                 <exclude>glassfish/**</exclude>
+                <exclude>META-INF/**</exclude>
                 <exclude>modules/flashlight-agent*.jar</exclude>
                 <exclude>modules/nucleus-domain*.jar</exclude>
-                <exclude>META-INF/**</exclude>
-                <exclude>bin/**</exclude>
+                <exclude>modules/payara-jul-extensions*.jar</exclude>
+                <exclude>modules/server-mgmt*.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>

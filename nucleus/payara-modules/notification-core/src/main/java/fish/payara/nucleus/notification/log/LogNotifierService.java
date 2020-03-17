@@ -43,18 +43,17 @@ import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import java.text.MessageFormat;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+
+import javax.annotation.PreDestroy;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
@@ -64,12 +63,10 @@ import org.glassfish.hk2.api.messaging.SubscribeTo;
 @MessageReceiver
 public class LogNotifierService extends BaseNotifierService<LogNotificationEvent, LogNotifier, LogNotifierConfiguration> {
 
-    @Inject
-    private ServiceLocator habitat;
+    private static final Logger logger = Logger.getLogger(LogNotifierService.class.getName());
 
-    PayaraNotificationFileHandler handler;
+    private PayaraNotificationFileHandler handler;
 
-    private Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
     LogNotifierConfigurationExecutionOptions execOptions;
 
     @Override
@@ -80,13 +77,12 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
 
         if (execOptions.getUseSeparateLogFile()) {
             Handler[] existingHandlers = logger.getHandlers();
-            for (Handler handler : existingHandlers) {
-                logger.removeHandler(handler);
+            for (Handler handlerToRemove : existingHandlers) {
+                logger.removeHandler(handlerToRemove);
             }
             logger.addHandler(getHandler());
             logger.setUseParentHandlers(false);
-        }
-        else {
+        } else {
             if (handler != null) {
                 logger.removeHandler(getHandler());
             }
@@ -94,9 +90,9 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
         }
     }
 
-    private Handler getHandler() {
+    private PayaraNotificationFileHandler getHandler() {
         if (handler == null) {
-            handler = habitat.createAndInitialize(PayaraNotificationFileHandler.class);
+            handler = new PayaraNotificationFileHandler();
         }
         return handler;
     }

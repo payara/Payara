@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -51,7 +51,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,10 +62,17 @@ import java.util.regex.Pattern;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class MainHelper {
-    
-    private static Logger logger = LogFacade.BOOTSTRAP_LOGGER;
-    
-    /*protected*/
+
+    static void log(Level level, String message, Object... args) {
+        if (!LogFacade.BOOTSTRAP_LOGGER.isLoggable(level)) {
+            return;
+        }
+        if (args == null || args.length == 0) {
+            LogFacade.BOOTSTRAP_LOGGER.log(level, message);
+            return;
+        }
+        LogFacade.BOOTSTRAP_LOGGER.log(level, message, args);
+    }
 
     static void checkJdkVersion() {
         int major = JDK.getMajor();
@@ -76,7 +82,7 @@ public class MainHelper {
         // of JDK9 major version is 9.So in that case checking the major version only
         if (major < 9) {
           if (minor < 8) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
+            log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, 8, minor);
             System.exit(1);
           }
         }
@@ -108,9 +114,7 @@ public class MainHelper {
         File asenv = getAsEnvConf(configDir);
 
         if (!asenv.exists()) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine(asenv.getAbsolutePath() + " not found, ignoring");
-            }
+            log(Level.FINE, "{0} not found, ignoring", asenv.getAbsolutePath());
             return asenvProps;
         }
         LineNumberReader lnReader = null;
@@ -141,8 +145,9 @@ public class MainHelper {
             throw new RuntimeException("Error opening asenv.conf : ", ioe);
         } finally {
             try {
-                if (lnReader != null)
+                if (lnReader != null) {
                     lnReader.close();
+                }
             } catch (IOException ioe) {
                 // ignore
             }
@@ -156,8 +161,9 @@ public class MainHelper {
             for (File f : jars) {
                 for (String prefix : jarPrefixes) {
                     String name = f.getName();
-                    if (name.startsWith(prefix) && name.endsWith(".jar"))
+                    if (name.startsWith(prefix) && name.endsWith(".jar")) {
                         urls.add(f.toURI().toURL());
+                    }
                 }
             }
         }
@@ -178,13 +184,14 @@ public class MainHelper {
     /**
      * Determines the root directory of the domain that we'll start.
      */
-    /*package*/ static File getDomainRoot(Properties args, Properties asEnv) {
+    static File getDomainRoot(Properties args, Properties asEnv) {
         // first see if it is specified directly
 
         String domainDir = getParam(args, "domaindir");
 
-        if (ok(domainDir))
+        if (ok(domainDir)) {
             return new File(domainDir);
+        }
 
         // now see if they specified the domain name -- we will look in the
         // default domains-dir
@@ -192,8 +199,9 @@ public class MainHelper {
         File defDomainsRoot = getDefaultDomainsDir(asEnv);
         String domainName = getParam(args, "domain");
 
-        if (ok(domainName))
+        if (ok(domainName)) {
             return new File(defDomainsRoot, domainName);
+        }
 
         // OK -- they specified nothing.  Get the one-and-only domain in the
         // domains-dir
@@ -204,7 +212,7 @@ public class MainHelper {
      * Verifies correctness of the root directory of the domain that we'll start and
      * sets the system property called {@link com.sun.enterprise.glassfish.bootstrap.Constants#INSTANCE_ROOT_PROP_NAME}.
      */
-    /*package*/ void verifyAndSetDomainRoot(File domainRoot) {
+    void verifyAndSetDomainRoot(File domainRoot) {
         verifyDomainRoot(domainRoot);
 
         domainRoot = absolutize(domainRoot);
@@ -216,23 +224,24 @@ public class MainHelper {
      *
      * @param domainRoot
      */
-    /*package*/
     static void verifyDomainRoot(File domainRoot) {
         String msg = null;
 
-        if (domainRoot == null)
+        if (domainRoot == null) {
             msg = "Internal Error: The domain dir is null.";
-        else if (!domainRoot.exists())
+        } else if (!domainRoot.exists()) {
             msg = "the domain directory does not exist";
-        else if (!domainRoot.isDirectory())
+        } else if (!domainRoot.isDirectory()) {
             msg = "the domain directory is not a directory.";
-        else if (!domainRoot.canWrite())
+        } else if (!domainRoot.canWrite()) {
             msg = "the domain directory is not writable.";
-        else if (!new File(domainRoot, "config").isDirectory())
+        } else if (!new File(domainRoot, "config").isDirectory()) {
             msg = "the domain directory is corrupt - there is no config subdirectory.";
+        }
 
-        if (msg != null)
+        if (msg != null) {
             throw new RuntimeException(msg);
+        }
     }
 
     private static File getDefaultDomainsDir(Properties asEnv) {
@@ -240,15 +249,17 @@ public class MainHelper {
 
         String dirname = asEnv.getProperty(Constants.DEFAULT_DOMAINS_DIR_PROPNAME);
 
-        if (!ok(dirname))
+        if (!ok(dirname)) {
             throw new RuntimeException(Constants.DEFAULT_DOMAINS_DIR_PROPNAME + " is not set.");
+        }
 
         File domainsDir = absolutize(new File(dirname));
 
-        if (!domainsDir.isDirectory())
+        if (!domainsDir.isDirectory()) {
             throw new RuntimeException(Constants.DEFAULT_DOMAINS_DIR_PROPNAME +
                     "[" + dirname + "]" +
                     " is specifying a file that is NOT a directory.");
+        }
 
         return domainsDir;
     }
@@ -256,33 +267,37 @@ public class MainHelper {
 
     private static File getDefaultDomain(File domainsDir) {
         File[] domains = domainsDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File f) { return f.isDirectory(); }
         });
 
         // By default we will start an unspecified domain iff it is the only
         // domain in the default domains dir
 
-        if (domains == null || domains.length == 0)
+        if (domains == null || domains.length == 0) {
             throw new RuntimeException("no domain directories found under " + domainsDir);
+        }
 
-        if (domains.length > 1)
+        if (domains.length > 1) {
             throw new RuntimeException("Multiple domains[" + domains.length + "] found under "
                     + domainsDir + " -- you must specify a domain name as -domain <name>");
+        }
 
         return domains[0];
     }
 
 
     private static boolean ok(String s) {
-        return s != null && s.length() > 0;
+        return s != null && !s.isEmpty();
     }
 
     private static String getParam(Properties map, String name) {
         // allow both "-" and "--"
         String val = map.getProperty("-" + name);
 
-        if (val == null)
+        if (val == null) {
             val = map.getProperty("--" + name);
+        }
 
         return val;
     }
@@ -290,8 +305,7 @@ public class MainHelper {
     private static File absolutize(File f) {
         try {
             return f.getCanonicalFile();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return f.getAbsoluteFile();
         }
     }
@@ -305,23 +319,17 @@ public class MainHelper {
      * @return
      */
     static File getInstanceRoot(Properties args, Properties asEnv) {
-
         String instanceDir = getParam(args, "instancedir");
-
-        if (ok(instanceDir))
+        if (ok(instanceDir)) {
             return new File(instanceDir);
-
+        }
         return null;
     }
-
-    /* package */
 
     static File findInstallRoot() {
         File bootstrapFile = findBootstrapFile(); // glassfish/modules/glassfish.jar
         return bootstrapFile.getParentFile().getParentFile(); // glassfish/
     }
-
-    /* package */
 
     static File findInstanceRoot(File installRoot, Properties args) {
         Properties asEnv = parseAsEnv(installRoot);
@@ -457,8 +465,9 @@ public class MainHelper {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < args.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(Constants.ARG_SEP);
+            }
 
             sb.append(args[i]);
         }
@@ -501,13 +510,15 @@ public class MainHelper {
      * glassfish issue 13287 for the kinds of problems it can create.
      *
      * @see #createOSGiFrameworkLauncherCL(java.util.Properties, ClassLoader)
-     * @param delegate: Parent class loader for the launcher class loader.
+     * @param delegate Parent class loader for the launcher class loader.
      */
     static ClassLoader createLauncherCL(Properties ctx, ClassLoader delegate) {
         try {
             ClassLoader osgiFWLauncherCL = createOSGiFrameworkLauncherCL(ctx, delegate);
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, osgiFWLauncherCL);
-            clb.addLauncherJar(); // glassfish.jar
+            // glassfish.jar - it must be here, because GlassfishRuntime uses this classloader
+            // to detect osgi.
+            clb.addLauncherJar();
             return clb.build();
         } catch (IOException e) {
             throw new Error(e);
@@ -546,17 +557,7 @@ public class MainHelper {
         }
     }
 
-    /**
-     * Store relevant information in system properties.
-     *
-     * @param ctx
-     */
-    static void setSystemProperties(Properties ctx) {
-        // Set the system property if downstream code wants to know about it
-        System.setProperty(Constants.PLATFORM_PROPERTY_KEY, ctx.getProperty(Constants.PLATFORM_PROPERTY_KEY));
-    }
-
-    static void mergePlatformConfiguration(Properties ctx) {
+    private static void mergePlatformConfiguration(Properties ctx) {
         Properties platformConf = null;
         try {
             platformConf = PlatformHelper.getPlatformHelper(ctx).readPlatformConfiguration();
@@ -586,13 +587,11 @@ public class MainHelper {
         return false;
     }
 
-    static class ClassLoaderBuilder {
+    private static class ClassLoaderBuilder {
 
-        protected ClassPathBuilder cpb;
-
-        protected File glassfishDir;
-
-        protected Properties ctx;
+        private final ClassPathBuilder cpb;
+        private final File glassfishDir;
+        private final Properties ctx;
 
         ClassLoaderBuilder(Properties ctx, ClassLoader delegate) {
             this.ctx = ctx;
@@ -613,9 +612,7 @@ public class MainHelper {
                 cpb.addJar(jdkToolsJar);
             } catch (IOException ioe) {
                 // on the mac, it happens all the time
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("JDK tools.jar does not exist at " + jdkToolsJar);
-                }
+                log(Level.FINE, "JDK tools.jar does not exist at {0}", jdkToolsJar);
             }
         }
 
@@ -623,16 +620,34 @@ public class MainHelper {
             return cpb.create();
         }
 
+        /**
+         * modules/glassfish.jar
+         */
         public void addLauncherJar() throws IOException {
             cpb.addJar(new File(glassfishDir, "modules/glassfish.jar"));
+            cpb.addJar(new File(glassfishDir, "lib/payara-jul-extensions.jar"));
         }
 
+        /**
+         * modules/simple-glassfish-api.jar
+         */
         public void addBootstrapApiJar() throws IOException {
             cpb.addJar(new File(glassfishDir, "modules/simple-glassfish-api.jar"));
+            cpb.addJar(new File(glassfishDir, "lib/payara-jul-extensions.jar"));
         }
     }
 
-    static abstract class PlatformHelper {
+    private static abstract class PlatformHelper {
+
+        /**
+         * Location of the unified config properties file relative to the domain directory
+         */
+        public static final String CONFIG_PROPERTIES = "config/osgi.properties";
+
+        protected Properties properties;
+        protected File glassfishDir;
+        protected File domainDir;
+        protected File fwDir;
 
         static synchronized PlatformHelper getPlatformHelper(Properties properties) {
             Constants.Platform platform =
@@ -658,20 +673,10 @@ public class MainHelper {
             return platformHelper;
         }
 
-        protected Properties properties;
-        protected File glassfishDir;
-        protected File domainDir;
-        protected File fwDir;
-
-        /**
-         * Location of the unified config properties file relative to the domain directory
-         */
-        public static final String CONFIG_PROPERTIES = "config/osgi.properties";
-
         /**
          * @param properties Initial properties
          */
-        void init(Properties properties) {
+        private void init(Properties properties) {
             this.properties = properties;
             glassfishDir = StartupContextUtil.getInstallRoot(properties);
             domainDir = StartupContextUtil.getInstanceRoot(properties);
@@ -691,7 +696,9 @@ public class MainHelper {
         protected Properties readPlatformConfiguration() throws IOException {
             Properties platformConfig = new Properties();
             final File configFile = getFrameworkConfigFile();
-            if (configFile == null) return platformConfig;
+            if (configFile == null) {
+                return platformConfig;
+            }
             InputStream in = new FileInputStream(configFile);
             try {
                 platformConfig.load(in);
@@ -705,16 +712,16 @@ public class MainHelper {
             String fileName = CONFIG_PROPERTIES;
             // First we search in domainDir. If it's not found there, we fall back on installDir
             File f = new File(domainDir, fileName);
-            if (!f.exists()) {
-                f = new File(glassfishDir, fileName);
+            if (f.exists()) {
+                log(Level.INFO, LogFacade.BOOTSTRAP_FMWCONF, f.getAbsolutePath());
             } else {
-                logger.log(Level.INFO, LogFacade.BOOTSTRAP_FMWCONF, f.getAbsolutePath());
+                f = new File(glassfishDir, fileName);
             }
             return f;
         }
     }
 
-    static class FelixHelper extends PlatformHelper {
+    private static class FelixHelper extends PlatformHelper {
         private static final String FELIX_HOME = "FELIX_HOME";
 
         /**
@@ -745,21 +752,20 @@ public class MainHelper {
         protected void addFrameworkJars(ClassPathBuilder cpb) throws IOException {
             cpb.addJar(new File(fwDir, "bin/felix.jar"));
         }
-      
+
         @Override
         protected Properties readPlatformConfiguration() throws IOException {
             // GlassFish filesystem layout does not recommend use of upper case char in file names.
             // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
             // Hence, we set it here.
             Properties platformConfig = super.readPlatformConfiguration();
-            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE,
                                        new File(domainDir, "osgi-cache/felix/").getAbsolutePath());
             return platformConfig;
         }
-            
     }
 
-    static class EquinoxHelper extends PlatformHelper {
+    private static class EquinoxHelper extends PlatformHelper {
 
         /* if equinox is installed under glassfish/eclipse this would be the
          *  glassfish/eclipse/plugins dir that contains the equinox jars
@@ -767,6 +773,7 @@ public class MainHelper {
          * */
         private static File pluginsDir = null;
 
+        @Override
         protected void setFwDir() {
             String fwPath = System.getenv("EQUINOX_HOME");
             if (fwPath == null) {
@@ -795,13 +802,13 @@ public class MainHelper {
             // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
             // Hence, we set it here.
             Properties platformConfig = super.readPlatformConfiguration();
-            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE,
                                        new File(domainDir, "osgi-cache/equinox/").getAbsolutePath());
             return platformConfig;
         }
     }
 
-    static class KnopflerfishHelper extends PlatformHelper {
+    private static class KnopflerfishHelper extends PlatformHelper {
 
         private static final String KF_HOME = "KNOPFLERFISH_HOME";
 
@@ -810,6 +817,7 @@ public class MainHelper {
          */
         public static final String GF_KF_HOME = "osgi/knopflerfish.org/osgi/";
 
+        @Override
         protected void setFwDir() {
             String fwPath = System.getenv(KF_HOME);
             if (fwPath == null) {
@@ -832,13 +840,13 @@ public class MainHelper {
             // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
             // Hence, we set it here.
             Properties platformConfig = super.readPlatformConfiguration();
-            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE,
                                        new File(domainDir, "osgi-cache/knopflerfish/").getAbsolutePath());
             return platformConfig;
         }
     }
 
-    static class StaticHelper extends PlatformHelper {
+    private static class StaticHelper extends PlatformHelper {
         @Override
         protected void setFwDir() {
             // nothing to do

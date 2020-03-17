@@ -76,5 +76,7 @@ Bundle-Activator: org.glassfish.common.util.CommonUtilsActivator
                         org.glassfish.common.util.timer; \
                         org.glassfish.security.common; \
                         com.sun.logging.enterprise.system.core; \
+                        !fish.payara.logging.jul.*; \
                         org.glassfish.server; version=${project.osgi.version}
 
+Import-Package: fish.payara.logging.jul.*; resolution:=optional, *

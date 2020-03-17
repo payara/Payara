@@ -1,6 +1,6 @@
 <!--
 
-Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -94,12 +94,12 @@ Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
                     foreach(var="attrName" list="#{requestScope.attrKeys}") {
                         mapGet(Map="#{pageSession.defaultLoggingProperties}" Key="#{attrName}"  Value="#{requestScope.temp}");
                         if("!(#{requestScope.temp}=#{null})"){
-                            mapPut(map="#{pageSession.logAttributes}", key="#{attrName}", value="#{requestScope.temp}"); 
+                            mapPut(map="#{pageSession.logAttributes}", key="#{attrName}", value="#{requestScope.temp}");
                         }
                     }
                   />
         </sun:button>
-      
+
 </sun:title>
 
 <sun:propertySheet id="payaraNotificationLogger">
@@ -110,7 +110,7 @@ Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
         <sun:property id="PayaraNotificationLogtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile']}"  selectedValue="true" />
         </sun:property>
-        
+
         <sun:property id="PayaraNotificationRotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange']}"  selectedValue="true" />
         </sun:property>
@@ -118,9 +118,9 @@ Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
         <sun:property id="PayaraNotificationLogfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FilePayaraNotificationLogFormatHelp}">
             <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter']}"
                           labels={ "ULF","ODL","JSON"}
-                          values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
+                          values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
         </sun:property>
-        
+
         <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
             <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes']}" />
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
@@ -138,7 +138,7 @@ Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
         <sun:property id="PayaraNotificationlogFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
             <sun:textField id="PayaraNotificationLogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file']}"/>
         </sun:property>
-        
+
         <sun:property id="PayaraNotificationCompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
             <sun:checkbox id="PayaraNotificationCompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation']}"  selectedValue="true" />
         </sun:property>

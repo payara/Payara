@@ -49,7 +49,6 @@ public class ASMain {
      * Most of the code in this file has been moved to MainHelper
      *and  ASMainOSGi
      */
-
     public static void main(final String args[]) throws Exception {
         GlassFishMain.main(args);
     }

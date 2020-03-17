@@ -49,6 +49,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.enterprise.server.logging.test.GlobalStatus;
+
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -62,6 +67,10 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class LoggingAnnotationsTest {
+
+    static {
+        GlobalStatus.initialize();
+    }
 
     private static final String CANNOT_READ_TEST_CONFIGURATION_FILE_MSG = "Cannot read test configuration file ";
 

@@ -44,10 +44,12 @@
 -exportcontents: com.sun.enterprise.server.logging.logviewer.backend, com.sun.enterprise.server.logging.diagnostics, com.sun.enterprise.server.logging
 
 DynamicImport-Package: \
-					org.glassfish.cluster.ssh.launcher, \
-                    org.glassfish.cluster.ssh.sftp, \
-					com.trilead.ssh2, \
-					com.sun.enterprise.util.cluster.windows.io, \
-					com.sun.enterprise.util.cluster.windows.process, \
-					org.glassfish.cluster.ssh.util
+          org.glassfish.cluster.ssh.launcher, \
+          org.glassfish.cluster.ssh.sftp, \
+          com.trilead.ssh2, \
+          com.sun.enterprise.util.cluster.windows.io, \
+          com.sun.enterprise.util.cluster.windows.process, \
+          org.glassfish.cluster.ssh.util, \
+          !fish.payara.logging.jul.*
 
+Import-Package: fish.payara.logging.jul.*; resolution:=optional, *

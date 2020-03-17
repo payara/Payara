@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -143,13 +143,13 @@ public class BundleProvisioner {
 
     private BundleContext bundleContext;
     private boolean systemBundleUpdationRequired;
-    private Map<URI, Jar> currentManagedBundles = new HashMap<URI, Jar>();
+    private final Map<URI, Jar> currentManagedBundles = new HashMap<>();
     private int noOfUninstalledBundles;
     private int noOfUpdatedBundles;
     private int noOfInstalledBundles;
-    private Customizer customizer;
+    private final Customizer customizer;
 
-    private StartLevel sl;
+    private final StartLevel sl;
     private PackageAdmin pa;
 
     public BundleProvisioner(BundleContext bundleContext, Properties config) {
@@ -159,10 +159,8 @@ public class BundleProvisioner {
     public BundleProvisioner(BundleContext bundleContext, Customizer customizer) {
         this.bundleContext = bundleContext;
         this.customizer = customizer;
-        final ServiceReference reference =
-                getBundleContext().getServiceReference(StartLevel.class.getName());
-        sl = StartLevel.class.cast(
-                getBundleContext().getService(reference));
+        final ServiceReference reference = getBundleContext().getServiceReference(StartLevel.class.getName());
+        sl = StartLevel.class.cast(getBundleContext().getService(reference));
     }
 
     public BundleContext getBundleContext() {
@@ -187,15 +185,15 @@ public class BundleProvisioner {
 
         // Find out all the new, deleted and common bundles.
         // new = discovered - current
-        List<Jar> newBundles = new ArrayList<Jar>(discovered);
+        List<Jar> newBundles = new ArrayList<>(discovered);
         newBundles.removeAll(current);
 
         // deleted = current - discovered
-        List<Jar> deletedBundles = new ArrayList<Jar>(current);
+        List<Jar> deletedBundles = new ArrayList<>(current);
         deletedBundles.removeAll(discovered);
 
         // existing = intersection of current & discovered
-        List<Jar> existingBundles = new ArrayList<Jar>(discovered);
+        List<Jar> existingBundles = new ArrayList<>(discovered);
         // We remove discovered ones from current, so that we are left
         // with a collection of Jars made from files so that we can compare
         // them with bundles.
@@ -206,7 +204,7 @@ public class BundleProvisioner {
         uninstall(deletedBundles);
         update(existingBundles);
         install(newBundles);
-        List<Long> ids = new ArrayList<Long>();
+        List<Long> ids = new ArrayList<>();
         for (Jar j : currentManagedBundles.values()) {
             ids.add(j.getBundleId());
         }
@@ -301,7 +299,7 @@ public class BundleProvisioner {
      * @return
      */
     private List<Jar> discoverJars() {
-        List<Jar> jars = new ArrayList<Jar>();
+        List<Jar> jars = new ArrayList<>();
         for (URI uri : getAutoInstallLocations()) {
             jars.add(new Jar(uri));
         }
@@ -409,7 +407,7 @@ public class BundleProvisioner {
         if (isFragment(bundle)) {
             // Since Fragment-Host can use a framework specific symbolic name of the system bundle, we can't
             // assume that user has used "system.bundle." So, we check for the directive "extension:=framework"
-            final String fragmentHost = (String) bundle.getHeaders().get(org.osgi.framework.Constants.FRAGMENT_HOST);
+            final String fragmentHost = bundle.getHeaders().get(org.osgi.framework.Constants.FRAGMENT_HOST);
             final String separator = ";";
             for (String s : fragmentHost.split(separator)) {
                 int idx = s.indexOf(":=");
@@ -567,12 +565,12 @@ public class BundleProvisioner {
      */
     public static class DefaultCustomizer implements Customizer {
 
-        private Properties config;
+        private final Properties config;
 
         /**
          * Maps URI to start level
          */
-        private final Map<URI, Integer> startLevels = new HashMap<URI, Integer>();
+        private final Map<URI, Integer> startLevels = new HashMap<>();
         private List<URI> autoInstallLocations;
         private List<URI> autoStartLocations;
         private List<URI> configuredAutoInstallLocations;
@@ -638,7 +636,7 @@ public class BundleProvisioner {
             if (list == null || list.isEmpty()) {
                 return Collections.emptyList();
             }
-            List<URI> uris = new ArrayList<URI>();
+            List<URI> uris = new ArrayList<>();
             for (String s : list.split("\\s")) {
                 try {
                     URI uri = new URI(s);
@@ -696,7 +694,7 @@ public class BundleProvisioner {
             // currently we only support file type directory URI. In future, we should be able to handle
             // directories inside jar files as well.
             assert (Constants.FILE_SCHEME.equalsIgnoreCase(aDirectoryURI.getScheme()));
-            final List<URI> jarURIs = new ArrayList<URI>();
+            final List<URI> jarURIs = new ArrayList<>();
 //            File dir = new File(aDirectoryURI);
             new File(aDirectoryURI).listFiles(new FileFilter() {
                 @Override

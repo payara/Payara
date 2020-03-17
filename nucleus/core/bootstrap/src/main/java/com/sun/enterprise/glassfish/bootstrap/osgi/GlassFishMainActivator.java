@@ -42,14 +42,18 @@
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
 import com.sun.enterprise.glassfish.bootstrap.Constants;
-import org.glassfish.embeddable.*;
-import org.osgi.framework.*;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Enumeration;
 import java.util.Properties;
-import java.util.Set;
+
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_INSTALL_PROP;
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_PROP;
@@ -117,6 +121,7 @@ public class GlassFishMainActivator implements BundleActivator {
      */
     private boolean nonEmbedded;
 
+    @Override
     public void start(BundleContext context) throws Exception {
         nonEmbedded = context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
         if (nonEmbedded) {
@@ -244,6 +249,7 @@ public class GlassFishMainActivator implements BundleActivator {
         return provisioningOptions;
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception {
         if (nonEmbedded) {
             System.out.println("We are in non-embedded mode, so " + context.getBundle() + " has nothing to do.");

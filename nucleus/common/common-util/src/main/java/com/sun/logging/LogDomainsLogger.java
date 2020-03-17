@@ -13,19 +13,35 @@
  */
 package com.sun.logging;
 
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import fish.payara.logging.jul.PayaraLogger;
 
-class LogDomainsLogger extends Logger {
+import java.util.ResourceBundle;
+
+
+/**
+ * Reason for {@link ResourceBundle} management here - the Logger resource bundle resolution
+ * is sensitive to caller's classloader. We also never change it.
+ */
+class LogDomainsLogger extends PayaraLogger {
     private final ResourceBundle resourceBundle;
 
     LogDomainsLogger(final String loggerName, final ResourceBundle resourceBundle) {
-        super(loggerName, null);
+        super(loggerName);
+        if (resourceBundle != null) {
+            super.setResourceBundle(resourceBundle);
+        }
         this.resourceBundle = resourceBundle;
     }
+
 
     @Override
     public ResourceBundle getResourceBundle() {
         return resourceBundle;
+    }
+
+
+    @Override
+    public void setResourceBundle(ResourceBundle bundle) {
+        // noop
     }
 }

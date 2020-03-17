@@ -73,7 +73,7 @@ public abstract class GlassFishRuntime {
     protected GlassFishRuntime() {
         // Empty protected constructor so that it does not show up in the javadoc.
     }
-    
+
     /**
      * Bootstrap a GlassFishRuntime with default {@link BootstrapProperties}.
      *
@@ -128,6 +128,10 @@ public abstract class GlassFishRuntime {
         return newGlassFish(new GlassFishProperties());
     }
 
+    protected final Logger getLogger() {
+        return Logger.getLogger(getClass().getName());
+    }
+
     /**
      * Creates a new instance of GlassFish.
      *
@@ -158,38 +162,34 @@ public abstract class GlassFishRuntime {
         return me;
     }
 
-    protected synchronized static void shutdownInternal() throws GlassFishException {
-        if (me == null) {
-            throw new GlassFishException("Already shutdown", null);
+    protected void shutdownInternal() throws GlassFishException {
+        synchronized (GlassFishRuntime.class) {
+            if (me == null) {
+                throw new GlassFishException("Already shutdown", null);
+            }
+            me = null;
+            getLogger().info("Completed shutdown of GlassFish runtime");
         }
-        me = null;
     }
 
-    private static RuntimeBuilder getRuntimeBuilder(BootstrapProperties bootstrapProperties, ClassLoader cl) throws GlassFishException {
-//        StringBuilder sb = new StringBuilder("Launcher Class Loader = " + cl);
-//        if (cl instanceof URLClassLoader) {
-//            sb.append("has following Class Path: ");
-//            for (URL url : URLClassLoader.class.cast(cl).getURLs()) {
-//                sb.append(url).append(", ");
-//            }
-//        }
-//        System.out.println(sb);
-        Iterator<RuntimeBuilder> runtimeBuilders = ServiceLoader.load(RuntimeBuilder.class, cl).iterator();
+    private static RuntimeBuilder getRuntimeBuilder(BootstrapProperties bootstrapProperties, ClassLoader classLoader) throws GlassFishException {
+        logger.logp(Level.FINE, "GlassFishRuntime", "getRuntimeBuilder", "classloader={0}", classLoader);
+        Iterator<RuntimeBuilder> runtimeBuilders = ServiceLoader.load(RuntimeBuilder.class, classLoader).iterator();
         while (runtimeBuilders.hasNext()) {
             try {
                 RuntimeBuilder builder = runtimeBuilders.next();
-                logger.logp(Level.FINE, "GlassFishRuntime", "getRuntimeBuilder", "builder = {0}", new Object[]{builder});
+                logger.logp(Level.FINEST, "GlassFishRuntime", "getRuntimeBuilder", "builder = {0}", builder);
                 if (builder.handles(bootstrapProperties)) {
                     return builder;
                 }
             } catch (ServiceConfigurationError sce) {
                 // Ignore the exception and move ahead to the next builder.
-                logger.logp(Level.FINE, "GlassFishRuntime", "getRuntimeBuilder", "Ignoring", sce);
+                logger.logp(Level.WARNING, "GlassFishRuntime", "getRuntimeBuilder", "Ignoring", sce);
             } catch (NoClassDefFoundError ncdfe) {
                 // On IBM JDK, we seem to be getting NoClassDefFoundError instead of ServiceConfigurationError
                 // when OSgiRuntimeBuilder is not able to be loaded in non-OSGi mode because of absence of
                 // OSGi classes in classpath. So, we need to catch it and ignore.
-                logger.logp(Level.FINE, "GlassFishRuntime", "getRuntimeBuilder", "Ignoring", ncdfe);
+                logger.logp(Level.WARNING, "GlassFishRuntime", "getRuntimeBuilder", "Ignoring", ncdfe);
             }
         }
         throw new GlassFishException("No runtime builder available for this configuration: " + bootstrapProperties.getProperties(), null);

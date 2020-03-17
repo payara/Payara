@@ -37,16 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.util.JDK;
+import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import java.io.File;
 import java.io.PrintStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -60,21 +72,23 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
 
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.File;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * The admin main program (nadmin).
  */
 public class AdminMain {
+
+    static {
+        final Properties cfg = new Properties();
+        cfg.setProperty("handlers", ConsoleHandler.class.getName());
+        cfg.setProperty(ConsoleHandler.class.getName() + ".level", Level.INFO.getName());
+        cfg.setProperty(ConsoleHandler.class.getName() + ".formatter", SimpleFormatter.class.getName());
+        cfg.setProperty(SimpleFormatter.class.getName() + ".format", "%5$s%6$s%n");
+        cfg.setProperty(".level", Level.INFO.getName());
+
+        // The PayaraLogManager must be set before the first usage of any JUL component,
+        // otherwise it cannot be done.
+        PayaraLogManagerInitializer.tryToSetAsDefault(cfg);
+    }
 
     private String classPath;
     private String className;
@@ -82,7 +96,7 @@ public class AdminMain {
     private ProgramOptions po;
     private CLIContainer cliContainer;
     private final Environment env = new Environment();
-    protected Logger logger;
+    private Logger logger;
     private final static int SUCCESS = 0;
     private final static int ERROR = 1;
     private final static int CONNECTION_ERROR = 2;
@@ -95,8 +109,7 @@ public class AdminMain {
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,
         SystemPropertyConstants.PRODUCT_ROOT_PROPERTY
     };
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(AdminMain.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(AdminMain.class);
 
     static {
         Map<String, String> systemProps = new ASenvPropertyReader().getProps();

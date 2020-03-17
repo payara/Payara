@@ -43,27 +43,24 @@ package com.sun.enterprise.v3.logging;
 
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.admin.monitor.callflow.ThreadLocalData;
-import com.sun.enterprise.server.logging.FormatterDelegate;
 
+import fish.payara.logging.jul.formatter.FormatterDelegate;
+
+import java.util.Objects;
 import java.util.logging.Level;
 
-import static com.sun.enterprise.server.logging.UniformLogFormatter.NVPAIR_SEPARATOR;
-import static com.sun.enterprise.server.logging.UniformLogFormatter.NV_SEPARATOR;
+import static fish.payara.logging.jul.formatter.UniformLogFormatter.NVPAIR_SEPARATOR;
+import static fish.payara.logging.jul.formatter.UniformLogFormatter.NV_SEPARATOR;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: May 29, 2007
- * Time: 4:13:03 PM
- * To change this template use File | Settings | File Templates.
+ * @author dochez, May 29, 2007
  */
-
 public class AgentFormatterDelegate implements FormatterDelegate {
 
-    Agent agent;
+    private final Agent agent;
 
     public AgentFormatterDelegate(Agent agent) {
-        this.agent = agent;
+        this.agent = Objects.requireNonNull(agent, "agent");
     }
 
     @Override

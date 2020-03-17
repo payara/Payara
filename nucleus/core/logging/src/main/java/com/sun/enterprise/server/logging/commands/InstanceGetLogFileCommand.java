@@ -42,6 +42,7 @@ package com.sun.enterprise.server.logging.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.server.logging.GFFileHandler;
+import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -70,8 +71,8 @@ import java.util.Properties;
 @I18n("get.log.file")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-log-file", 
+        opType=RestEndpoint.OpType.GET,
+        path="_get-log-file",
         description="_get-log-file")
 })
 public class InstanceGetLogFileCommand implements AdminCommand {
@@ -82,14 +83,14 @@ public class InstanceGetLogFileCommand implements AdminCommand {
     private ServerEnvironment env;
 
     @Inject
-    GFFileHandler gf;
+    LogManagerService logManagerService;
 
 
     @Override
     public void execute(AdminCommandContext context) {
         try {
 
-            File logFile = gf.getCurrentLogFile();
+            File logFile = logManagerService.getCurrentLogFile();
 
             Payload.Outbound outboundPayload = context.getOutboundPayload();
             Properties props = new Properties();

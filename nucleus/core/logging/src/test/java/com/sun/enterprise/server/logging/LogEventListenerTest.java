@@ -41,6 +41,14 @@
 
 package com.sun.enterprise.server.logging;
 
+import com.sun.enterprise.server.logging.test.GlobalStatus;
+
+import fish.payara.logging.jul.PayaraLogHandler;
+import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.event.LogEvent;
+import fish.payara.logging.jul.event.LogEventListener;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -62,38 +70,42 @@ import static org.junit.Assert.assertNotNull;
 public class LogEventListenerTest {
 
     private static final String LOGGER_NAME = "javax.enterprise.test.logging.events";
-    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 
-    private static GFFileHandler gfFileHandler;
+    private static Logger logger;
+    private static PayaraLogHandler handler;
     private static TestLogEventListener logEventListener;
 
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
+        GlobalStatus.initialize();
+        logger = Logger.getLogger(LOGGER_NAME);
         final File tempDir = Files.createTempDirectory("LogEventListenerTest_").toFile();
         final File logFile = new File(tempDir, "test-events.log");
         System.out.println("Using temporary file: " + logFile);
 
         // Add a file handler with UniformLogFormatter
-        gfFileHandler = new GFFileHandler();
+        final PayaraLogHandlerConfiguration cfg = new PayaraLogHandlerConfiguration();
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setLogEventBroadcaster(gfFileHandler);
-        gfFileHandler.setFormatter(formatter );
-        gfFileHandler.setLogFile(logFile.getAbsolutePath());
-        gfFileHandler.setLogToFile(true);
+        formatter.setLogEventBroadcaster(handler);
+
+        cfg.setFormatterConfiguration(formatter);
+        cfg.setLogFile(logFile);
+        cfg.setLogToFile(true);
+        handler = new PayaraLogHandler(cfg);
 
         logEventListener = new TestLogEventListener();
-        gfFileHandler.addLogEventListener(logEventListener);
+        handler.addLogEventListener(logEventListener);
 
-        LOGGER.addHandler(gfFileHandler);
-        LOGGER.setLevel(Level.ALL);
-        LOGGER.setUseParentHandlers(false);
+        logger.addHandler(handler);
+        logger.setLevel(Level.ALL);
+        logger.setUseParentHandlers(false);
     }
 
 
     @Test
     public void testLogEventListenerNotifications() throws Exception {
         String msg = "Test message for testLogEventListenerNotifications";
-        LOGGER.info(msg);
+        logger.info(msg);
         LogEvent event = logEventListener.logEvents.poll(1L, TimeUnit.SECONDS);
         assertNotNull("Waiting on the event timed out", event);
         assertEquals(msg, event.getMessage());
@@ -102,11 +114,10 @@ public class LogEventListenerTest {
     @AfterClass
     public static void cleanupLoggingAnnotationsTest() throws Exception {
         logEventListener.logEvents.clear();
-        LOGGER.removeHandler(gfFileHandler);
+        logger.removeHandler(handler);
         // Flush and Close the handler
-        gfFileHandler.flush();
-        gfFileHandler.close();
-        gfFileHandler.preDestroy();
+        handler.flush();
+        handler.close();
     }
 
     private static class TestLogEventListener implements LogEventListener {

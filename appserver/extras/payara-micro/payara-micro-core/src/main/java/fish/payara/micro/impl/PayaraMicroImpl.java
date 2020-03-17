@@ -42,11 +42,14 @@ package fish.payara.micro.impl;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
+
 import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
 import fish.payara.boot.runtime.BootCommand;
 import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
@@ -55,7 +58,6 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -87,6 +89,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -200,6 +203,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * @throws BootstrapException If there is a problem booting the server
      */
     public static void main(String args[]) throws Exception {
+        PayaraLogManagerInitializer.tryToSetAsDefault();
         create(args);
     }
 
@@ -1721,8 +1725,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
-                LogManager.getLogManager().readConfiguration(is);
+            try {
+                resetAndReloadLoggingConfiguration();
 
                 // go through all root handlers and set formatters based on properties
                 Logger rootLogger = LogManager.getLogManager().getLogger("");
@@ -1766,8 +1770,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
             }
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
-                LogManager.getLogManager().readConfiguration(is);
+            try {
+                resetAndReloadLoggingConfiguration();
 
                 // reset the formatters on the two handlers
                 //Logger rootLogger = Logger.getLogger("");
@@ -1786,7 +1790,16 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
             }
         }
+    }
 
+    private void resetAndReloadLoggingConfiguration() throws IOException {
+        if (PayaraLogManager.isPayaraLogManager()) {
+            PayaraLogManager.getLogManager().resetAndReadConfiguration(runtimeDir.getLoggingProperties());
+        } else {
+            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
+                LogManager.getLogManager().readConfiguration(is);
+            }
+        }
     }
 
     private void configureCommandFiles() throws IOException {

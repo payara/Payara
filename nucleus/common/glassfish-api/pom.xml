@@ -44,18 +44,18 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.202-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
-    </parent>  
-    
+    </parent>
+
     <groupId>fish.payara.server.internal.common</groupId>
     <artifactId>glassfish-api</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Public APIs of Glassfish</name>
 
     <developers>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>scattered-archive-api</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -90,7 +90,7 @@
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>management-api</artifactId>
@@ -104,8 +104,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-            <optional>true</optional>
-      </dependency>        
+      </dependency>
     </dependencies>
 </project>
 

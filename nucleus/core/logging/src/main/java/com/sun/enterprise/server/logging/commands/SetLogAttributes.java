@@ -140,16 +140,16 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
         "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
         "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams",
-        "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
-        "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
-        "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
-        "com.sun.enterprise.server.logging.UniformLogFormatter.severeColor",
-        "com.sun.enterprise.server.logging.UniformLogFormatter.loggerColor",
-        "com.sun.enterprise.server.logging.ODLLogFormatter.ansiColor",
-        "com.sun.enterprise.server.logging.ODLLogFormatter.loggerColor",
-        "com.sun.enterprise.server.logging.ODLLogFormatter.infoColor",
-        "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
-        "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor",
+        "fish.payara.logging.jul.formatter.UniformLogFormatter.ansiColor",
+        "fish.payara.logging.jul.formatter.UniformLogFormatter.infoColor",
+        "fish.payara.logging.jul.formatter.UniformLogFormatter.warnColor",
+        "fish.payara.logging.jul.formatter.UniformLogFormatter.severeColor",
+        "fish.payara.logging.jul.formatter.UniformLogFormatter.loggerColor",
+        "fish.payara.logging.jul.formatter.ODLLogFormatter.ansiColor",
+        "fish.payara.logging.jul.formatter.ODLLogFormatter.loggerColor",
+        "fish.payara.logging.jul.formatter.ODLLogFormatter.infoColor",
+        "fish.payara.logging.jul.formatter.ODLLogFormatter.warnColor",
+        "fish.payara.logging.jul.formatter.ODLLogFormatter.severeColor",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter",
@@ -170,7 +170,7 @@ public class SetLogAttributes implements AdminCommand {
         boolean success = false;
         boolean invalidAttribute = false;
 
-        Map<String, String> m = new HashMap<String, String>();
+        Map<String, String> m = new HashMap<>();
         try {
             for (final Object key : properties.keySet()) {
                 final String att_name = (String) key;

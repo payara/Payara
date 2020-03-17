@@ -38,17 +38,14 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or affiliates]
+
 package com.sun.enterprise.glassfish.bootstrap;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.Main;
 import com.sun.enterprise.module.bootstrap.Which;
 import com.sun.enterprise.module.common_impl.AbstractFactory;
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.spi.RuntimeBuilder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -62,6 +59,11 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.embeddable.spi.RuntimeBuilder;
+
 /**
  * @author bhavanishankar@dev.java.net
  */
@@ -72,6 +74,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
     private static final String JAR_EXT = ".jar";
     final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar", "gf-client-module.jar");
 
+    @Override
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         /* Step 1. Build the classloader. */
         // The classloader should contain installRoot/modules/**/*.jar files.
@@ -100,6 +103,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         return glassFishRuntime;
     }
 
+    @Override
     public boolean handles(BootstrapProperties bsProps) {
         // See GLASSFISH-16743 for the reason behind additional check
         final String builderName = bsProps.getProperty(Constants.BUILDER_NAME_PROPERTY);
@@ -149,16 +153,16 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
                 }
             }
         }
-        
+
         File modulesDir = new File(installRoot, "modules/");
         final File autostartModulesDir = new File(modulesDir, "autostart/");
-        final List<URL> moduleJarURLs = new ArrayList<URL>();
+        final List<URL> moduleJarURLs = new ArrayList<>();
         modulesDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 if (pathname.isDirectory() && !pathname.equals(autostartModulesDir)) {
                     pathname.listFiles(this);
-                } else if (pathname.getName().endsWith(JAR_EXT) &&
-                        !moduleExcludes.contains(pathname.getName())) {
+                } else if (pathname.getName().endsWith(JAR_EXT) && !moduleExcludes.contains(pathname.getName())) {
                     try {
                         moduleJarURLs.add(pathname.toURI().toURL());
                     } catch (Exception ex) {
@@ -183,7 +187,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
         return true;
     }
-    
+
     private static class StaticClassLoader extends URLClassLoader {
         public StaticClassLoader(ClassLoader parent, List<URL> moduleJarURLs) {
             super(moduleJarURLs.toArray(new URL[moduleJarURLs.size()]), parent);

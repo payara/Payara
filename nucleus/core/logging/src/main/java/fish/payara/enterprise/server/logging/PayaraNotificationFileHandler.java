@@ -39,20 +39,24 @@
  */
 package fish.payara.enterprise.server.logging;
 
-import com.sun.enterprise.server.logging.GFFileHandler;
+import fish.payara.logging.jul.JulConfigurationFactory;
+import fish.payara.logging.jul.PayaraLogHandler;
+import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
 
 /**
- * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
- * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
+ * Handler which is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
  *
  * @author mertcaliskan
  */
-public class PayaraNotificationFileHandler extends GFFileHandler {
+public class PayaraNotificationFileHandler extends PayaraLogHandler {
 
-    private static final String NOTIFICATION_FILENAME = "notification.log";
+    public PayaraNotificationFileHandler() {
+        super(createConfiguration());
+    }
 
-    @Override
-    protected String getDefaultFileName() {
-        return NOTIFICATION_FILENAME;
+
+    private static PayaraLogHandlerConfiguration createConfiguration() {
+        return new JulConfigurationFactory().createPayaraLogHandlerConfiguration(PayaraNotificationFileHandler.class,
+            "notification.log");
     }
 }
