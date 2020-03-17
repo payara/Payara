@@ -175,14 +175,17 @@ public class ConcurrentGuageInterceptorTest implements Clock {
                 throw new RuntimeException(ex);
             }
         };
-        new Thread(proceed).start();
+        Thread async1 = new Thread(proceed);
+        async1.start();
         Thread.sleep(50);
         assertEquals(expectedStartCount + 1, gauge.getCount());
-        new Thread(proceed).start();
+        Thread async2 = new Thread(proceed);
+        async2.start();
         Thread.sleep(50);
         assertEquals(expectedStartCount + 2, gauge.getCount());
         waiter.complete(null);
-        Thread.sleep(50);
+        async1.join();
+        async2.join();
         assertEquals(0, thrown.size());
         assertEquals(0, gauge.getCount());
         // now test error when it does not exist

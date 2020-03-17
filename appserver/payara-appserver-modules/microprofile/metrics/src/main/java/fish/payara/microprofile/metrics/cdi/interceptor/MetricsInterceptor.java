@@ -140,9 +140,9 @@ public class MetricsInterceptor {
 
     private static <E extends Member & AnnotatedElement, T extends Annotation> void register(Class<?> bean, E element,
             AnnotationReader<T> reader, BiConsumer<Metadata, Tag[]> register) {
-            if (reader.isPresent(bean, element)) {
-                register.accept(reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
-            }
+        if (reader.isPresent(bean, element)) {
+            register.accept(reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
+        }
     }
 
 }

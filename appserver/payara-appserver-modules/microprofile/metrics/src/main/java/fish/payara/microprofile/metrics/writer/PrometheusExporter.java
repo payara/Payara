@@ -59,7 +59,6 @@ import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
-import org.eclipse.microprofile.metrics.MetricID;
 
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.CONCURRENT_GAUGE;
@@ -146,11 +145,9 @@ public class PrometheusExporter {
     private static final Logger LOGGER = Logger.getLogger(PrometheusExporter.class.getName());
 
     private final StringBuilder builder;
-    private final MetricID metricID;
 
-    public PrometheusExporter(StringBuilder builder, MetricID metricID){
+    public PrometheusExporter(StringBuilder builder){
         this.builder = builder;
-        this.metricID = metricID;
     }
 
     public void exportCounter(Counter counter, String name, String description, String tags) {
@@ -326,7 +323,7 @@ public class PrometheusExporter {
         builder.append(LF);
     }
 
-    private String sanitizeMetricName(String name) {
+    private static String sanitizeMetricName(String name) {
         //Translation rules :
         //All characters not in the range a-z A-Z or 0-9 are translated to underscore (_)
         //Double underscore is translated to single underscore
@@ -336,7 +333,7 @@ public class PrometheusExporter {
         return out;
     }
 
-    private double getConversionFactor(String unit) {
+    private static double getConversionFactor(String unit) {
         double conversionFactor;
         if (unit == null || unit.trim().isEmpty() || unit.equals(NONE)) {
             conversionFactor = Double.NaN;
@@ -407,7 +404,7 @@ public class PrometheusExporter {
         return conversionFactor;
     }
 
-    private String getAppendUnit(String unit) {
+    private static String getAppendUnit(String unit) {
         String appendUnit;
         if (unit == null || unit.trim().isEmpty() || unit.equals(NONE)) {
             appendUnit = null;

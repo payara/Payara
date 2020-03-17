@@ -167,29 +167,35 @@ public class PrometheusWriter implements MetricsWriter {
             Metric metric = entry.getValue();
             Metadata metricMetadata = metricMetadataMap.get(metricId.getName());
 
-            String description = metricMetadata.getDescription().orElse(EMPTY_STRING);
+            writeMetric(builder, metricId, name, metric, metricMetadata);
+        }
+    }
 
-            String unit = metricMetadata.getUnit().orElse(EMPTY_STRING);
+    public static void writeMetric(StringBuilder builder, MetricID metricId, String name, Metric metric,
+            Metadata metricMetadata) {
+        String description = metricMetadata.getDescription().orElse(EMPTY_STRING);
 
-            PrometheusExporter exporter = new PrometheusExporter(builder, metricId);
+        String unit = metricMetadata.getUnit().orElse(EMPTY_STRING);
 
-            if (Counter.class.isInstance(metric)) {
-                exporter.exportCounter((Counter) metric, name, description, metricId.getTagsAsString());
-            } else if (ConcurrentGauge.class.isInstance(metric)) {
-                exporter.exportConcurrentGuage((ConcurrentGauge) metric, name, description, metricId.getTagsAsString());
-            } else if (Gauge.class.isInstance(metric)) {
-                exporter.exportGauge((Gauge) metric, name, description, metricId.getTagsAsString(), unit);
-            } else if (Histogram.class.isInstance(metric)) {
-                exporter.exportHistogram((Histogram) metric, name, description, metricId.getTagsAsString(), unit);
-            } else if (Meter.class.isInstance(metric)) {
-                exporter.exportMeter((Meter) metric, name, description, metricId.getTagsAsString());
-            } else if (Timer.class.isInstance(metric)) {
-                exporter.exportTimer((Timer) metric, name, description, metricId.getTagsAsString(), unit);
-            } else if (SimpleTimer.class.isInstance(metric)) {
-                exporter.exportSimpleTimer((SimpleTimer) metric, name, description, metricId.getTagsAsString(), unit);
-            } else {
-                LOGGER.log(Level.WARNING, "Metric type {0} for {1} is invalid", new Object[]{metric.getClass(), metricId});
-            }
+        PrometheusExporter exporter = new PrometheusExporter(builder);
+
+        String tags = metricId.getTagsAsString();
+        if (Counter.class.isInstance(metric)) {
+            exporter.exportCounter((Counter) metric, name, description, tags);
+        } else if (ConcurrentGauge.class.isInstance(metric)) {
+            exporter.exportConcurrentGuage((ConcurrentGauge) metric, name, description, tags);
+        } else if (Gauge.class.isInstance(metric)) {
+            exporter.exportGauge((Gauge<?>) metric, name, description, tags, unit);
+        } else if (Histogram.class.isInstance(metric)) {
+            exporter.exportHistogram((Histogram) metric, name, description, tags, unit);
+        } else if (Meter.class.isInstance(metric)) {
+            exporter.exportMeter((Meter) metric, name, description, tags);
+        } else if (Timer.class.isInstance(metric)) {
+            exporter.exportTimer((Timer) metric, name, description, tags, unit);
+        } else if (SimpleTimer.class.isInstance(metric)) {
+            exporter.exportSimpleTimer((SimpleTimer) metric, name, description, tags, unit);
+        } else {
+            LOGGER.log(Level.WARNING, "Metric type {0} for {1} is invalid", new Object[]{metric.getClass(), metricId});
         }
     }
 
