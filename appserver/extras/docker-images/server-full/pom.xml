@@ -7,7 +7,7 @@
         <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>server-full-docker-image</artifactId>
-    <packaging>pom</packaging>
+    <packaging>docker-build</packaging>
     <name>Payara Docker Images - Server Full</name>
 
     <properties>
@@ -19,6 +19,7 @@
             <groupId>fish.payara.distributions</groupId>
             <artifactId>payara</artifactId>
             <type>zip</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

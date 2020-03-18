@@ -1,4 +1,4 @@
-FROM "${docker.basicJdkImage}"
+FROM @docker.basicJdkImage@
 
 # Default payara ports to expose
 # 4848: admin console
@@ -8,16 +8,16 @@ FROM "${docker.basicJdkImage}"
 EXPOSE 4848 9009 8080 8181
 
 # Initialize the configurable environment variables
-ENV HOME_DIR=/opt/payara \
+ENV HOME_DIR=/opt/payara\
+    PAYARA_DIR=/opt/payara/appserver\
+    SCRIPT_DIR=/opt/payara/scripts\
+    CONFIG_DIR=/opt/payara/config\
+    DEPLOY_DIR=/opt/payara/deployments\
+    PASSWORD_FILE=/opt/payara/passwordFile\
     # Payara Server Domain options
-    DOMAIN_NAME=${docker.payara.domainName} \
+    DOMAIN_NAME=@docker.payara.domainName@\
     ADMIN_USER=admin\
-    ADMIN_PASSWORD=admin
-ENV PAYARA_DIR=${HOME_DIR}/appserver\
-    SCRIPT_DIR=${HOME_DIR}/scripts\
-    CONFIG_DIR=${HOME_DIR}/config\
-    DEPLOY_DIR=${HOME_DIR}/deployments\
-    PASSWORD_FILE=${HOME_DIR}/passwordFile \
+    ADMIN_PASSWORD=admin \
     # Utility environment variables
     JVM_ARGS=\
     PAYARA_ARGS=\
@@ -26,15 +26,18 @@ ENV PAYARA_DIR=${HOME_DIR}/appserver\
     PREBOOT_COMMANDS=/opt/payara/config/pre-boot-commands.asadmin
 ENV PATH="${PATH}:${PAYARA_DIR}/bin"
 
-ARG PAYARA_UNPACKED
-ARG ADDITIONAL_SCRIPTS
 ARG TINI_VERSION=v0.18.0
 
-# Create and set the Payara user and working directory owned by the new user
+# Download tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
+    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /
+
 RUN true \
+    # Install dependencies
     && apt-get update \
-    && apt-get install -y wget unzip coreutils gpg \
+    && apt-get install -y unzip coreutils gpg \
     && rm -rf /var/lib/apt/lists/* \
+    # Create and set the Payara user and working directory owned by the new user
     && groupadd --gid 1000 payara \
     && useradd -u 1000 -M -s /bin/bash -d ${HOME_DIR} payara -g payara \
     && echo payara:payara | chpasswd \
@@ -42,10 +45,8 @@ RUN true \
     && mkdir -p ${CONFIG_DIR} \
     && mkdir -p ${SCRIPT_DIR} \
     && chown -R payara: ${HOME_DIR} \
-    && wget --no-verbose -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
-    && wget --no-verbose -O /tini.asc https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc \
-    && mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \
-    && gpg --batch --keyserver "hkp://p80.pool.sks-keyservers.net:80" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
+    # Verify tini
+    && gpg --batch --keyserver "hkp://ipv4.pool.sks-keyservers.net" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
     && gpg --batch --verify /tini.asc /tini \
     && chmod +x /tini \
     && true
@@ -53,12 +54,10 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-# Download and unzip the Payara distribution
-COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
-COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${SCRIPT_DIR}/
+COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}/
+COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 
 RUN true \
-    && chmod +x ${SCRIPT_DIR}/* \
     # Configure the password file for configuring Payara
     && echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/tmpfile \
     && echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE} \

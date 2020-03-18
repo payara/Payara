@@ -21,88 +21,15 @@
         <dockerBaseDir>${project.build.directory}/docker-work-dir</dockerBaseDir>
         <dockerRepositoryName>payara/${project.artifactId}</dockerRepositoryName>
         <!-- use false for faster testing, but you depend on cached results then -->
-        <dockerfile.build.noCache>true</dockerfile.build.noCache>
+        <docker.noCache>true</docker.noCache>
         <dockerfile.tag>${payara.version}</dockerfile.tag>
         <docker.basicJdkImage>azul/zulu-openjdk:8u232</docker.basicJdkImage>
         <docker.payara.domainName>production</docker.payara.domainName>
-        <docker.payara.excludeFromZip>payara5/glassfish/domains/domain1/**</docker.payara.excludeFromZip>
-        <docker.payara.unpackedDirName>payara-unpacked</docker.payara.unpackedDirName>
     </properties>
 
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>unpack-payara-zip-for-docker-images</id>
-                            <phase>generate-resources</phase>
-                            <goals>
-                                <goal>unpack-dependencies</goal>
-                            </goals>
-                            <inherited>true</inherited>
-                            <configuration>
-                                <outputDirectory>${dockerBaseDir}/${docker.payara.unpackedDirName}</outputDirectory>
-                                <includeScope>compile</includeScope>
-                                <includeGroupIds>fish.payara.distributions</includeGroupIds>
-                                <excludes>${docker.payara.excludeFromZip}</excludes>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>copy-docker-resources</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>copy-resources</goal>
-                            </goals>
-                            <inherited>true</inherited>
-                            <configuration>
-                                <outputDirectory>${dockerBaseDir}</outputDirectory>
-                                <resources>
-                                    <resource>
-                                        <directory>src/main/docker</directory>
-                                        <!-- docker uses only uppercase names, so it can be used -->
-                                        <filtering>true</filtering>
-                                        <includes>
-                                            <include>**/*</include>
-                                        </includes>
-                                    </resource>
-                                </resources>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>dockerfile-maven-plugin</artifactId>
-                    <configuration>
-                        <buildArgs>
-                            <PAYARA_UNPACKED>${docker.payara.unpackedDirName}</PAYARA_UNPACKED>
-                            <ADDITIONAL_SCRIPTS>bin</ADDITIONAL_SCRIPTS>
-                        </buildArgs>
-                        <contextDirectory>${dockerBaseDir}</contextDirectory>
-                        <connectTimeoutMillis>10000</connectTimeoutMillis>
-                        <readTimeoutMillis>900000</readTimeoutMillis>
-                        <retryCount>0</retryCount>
-                        <skipDockerInfo>true</skipDockerInfo>
-                        <verbose>true</verbose>
-                        <repository>${dockerRepositoryName}</repository>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>build-docker-image</id>
-                            <goals>
-                                <goal>build</goal>
-                            </goals>
-                            <phase>package</phase>
-                        </execution>
-                    </executions>
-                </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
                     <configuration>
@@ -114,6 +41,12 @@
                     <configuration>
                         <skip>true</skip>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.33.0</version>
+                    <extensions>true</extensions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -130,30 +63,29 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>unpack-payara-zip-for-docker-images</id>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-docker-resources</id>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
-                        <inherited>true</inherited>
-                        <executions>
-                            <execution>
-                                <id>build-docker-image</id>
-                            </execution>
-                        </executions>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${dockerRepositoryName}</name>
+
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${dockerfile.tag}</tag>
+                                        </tags>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
