@@ -1,4 +1,4 @@
-FROM "${docker.basicJdkImage}"
+FROM @docker.basicJdkImage@
 
 ENV HOME_DIR=/opt/payara
 ENV PAYARA_DIR=${HOME_DIR}/payara5 \
@@ -26,13 +26,8 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-# Install Payara Server
-ARG PAYARA_UNPACKED
-ARG ADDITIONAL_SCRIPTS
-
-COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
-COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${HOME_DIR}
-RUN chmod +x ${HOME_DIR}/*.sh
+COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}
+COPY --chown=payara:payara  maven/bin/* ${HOME_DIR}
 
 # Start the instance
 ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"
