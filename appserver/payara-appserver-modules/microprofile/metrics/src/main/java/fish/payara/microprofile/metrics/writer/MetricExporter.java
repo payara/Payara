@@ -58,6 +58,9 @@ import org.eclipse.microprofile.metrics.Timer;
 /**
  * The {@link MetricExporter} is an abstraction for writing individual {@link Metric}s to an output.
  *
+ * The {@link MetricExporter} will expect that metrics of same name are exported together before metrics of a different
+ * name are exported.
+ *
  * @author Jan Bernitt
  * @since 5.202
  */
@@ -105,4 +108,5 @@ public interface MetricExporter {
         }
     }
 
+    void exportComplete();
 }
