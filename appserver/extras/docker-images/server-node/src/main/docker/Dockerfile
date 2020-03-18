@@ -32,8 +32,7 @@ ARG ADDITIONAL_SCRIPTS
 
 COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
 COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${HOME_DIR}
-# Fixes executable permissions in builds on windows machines
-RUN find ${HOME_DIR} -type f -regextype sed -regex ".*/\(.*\.sh\|asadmin\)" -print -exec chmod +x {} \;
+RUN chmod +x ${HOME_DIR}/*.sh
 
 # Start the instance
 ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"
