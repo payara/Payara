@@ -13,6 +13,7 @@
     <modules>
         <module>server-full</module>
         <module>server-node</module>
+        <module>micro</module>
         <module>tests</module>
     </modules>
 
@@ -30,12 +31,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <configuration>
@@ -65,6 +60,15 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
                         <configuration>
                             <images>
                                 <image>

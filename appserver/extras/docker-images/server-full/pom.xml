@@ -7,7 +7,7 @@
         <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>server-full-docker-image</artifactId>
-    <packaging>docker-build</packaging>
+    <packaging>pom</packaging>
     <name>Payara Docker Images - Server Full</name>
 
     <properties>
