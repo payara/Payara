@@ -2,7 +2,9 @@ package fish.payara.microprofile.metrics.writer;
 
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.LongSupplier;
 import java.util.logging.Level;
 
@@ -41,19 +43,24 @@ public class OpenMetricsExporter implements MetricExporter {
 
     private final String scope;
     private final PrintWriter out;
+    private final Set<String> typeWrittenByGlobalName;
+    private final Set<String> helpWrittenByGlobalName;
 
     public OpenMetricsExporter(Writer out) {
-        this(null, new PrintWriter(out));
+        this(null, new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    private OpenMetricsExporter(String scope, PrintWriter out) {
+    private OpenMetricsExporter(String scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+            Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
+        this.typeWrittenByGlobalName = typeWrittenByGlobalName;
+        this.helpWrittenByGlobalName = helpWrittenByGlobalName;
     }
 
     @Override
     public MetricExporter in(String scope) {
-        return new OpenMetricsExporter(scope, out);
+        return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 
     @Override
@@ -176,10 +183,18 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     private void appendTYPE(String globalName, OpenMetricsType type) {
+        if (typeWrittenByGlobalName.contains(globalName)) {
+            return;
+        }
+        typeWrittenByGlobalName.add(globalName);
         out.append("# TYPE ").append(globalName).append(' ').append(type.name()).append('\n');
     }
 
     private void appendHELP(String globalName, Metadata metadata) {
+        if (helpWrittenByGlobalName.contains(globalName)) {
+            return;
+        }
+        helpWrittenByGlobalName.add(globalName);
         Optional<String> description = metadata.getDescription();
         if (!description.isPresent()) {
             return;
