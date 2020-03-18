@@ -237,7 +237,7 @@ public class DockerNodesITest {
             stringContainsInOrder("Nothing to list."));
 
         final Set<DockerContainerId> currentDockerIds = getDockerIds();
-        assertThat("currentDockerIds", currentDockerIds, hasSize(containersToPreserve.size()));
+        assertThat("currentDockerIds: " + currentDockerIds, currentDockerIds, hasSize(containersToPreserve.size()));
         final DockerContainerId[] expectedIds = containersToPreserve
             .toArray(new DockerContainerId[currentDockerIds.size()]);
         assertThat("currentDockerIds", currentDockerIds, hasItems(expectedIds));

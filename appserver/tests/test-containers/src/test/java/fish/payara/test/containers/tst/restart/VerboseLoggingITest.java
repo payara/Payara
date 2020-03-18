@@ -93,8 +93,10 @@ public class VerboseLoggingITest {
         environment.getPayaraContainer().execInContainer("killall", "-v", "-SIGKILL", "java");
         final PayaraServerContainer das = environment.getPayaraContainer();
         assertNotNull(das, "Payara Container is null");
-        das.execInContainer("cp", "-v", backupLoggingProperties.getAbsolutePath(),
-            cfg.getPayaraLoggingPropertiesInDocker().getAbsolutePath());
+        if (backupLoggingProperties != null) {
+            das.execInContainer("cp", "-v", //
+                backupLoggingProperties.getAbsolutePath(), cfg.getPayaraLoggingPropertiesInDocker().getAbsolutePath());
+        }
         environment.getPayaraContainer().asLocalAdmin("start-domain");
         logger.setLevel(originalLevel);
     }
@@ -113,6 +115,9 @@ public class VerboseLoggingITest {
         das.execInContainer("cp", "-v", "/logging-everything.properties", loggingPropertiesPath);
 
         assertTimeoutPreemptively(TIMEOUT, () -> das.asLocalAdmin("start-domain"));
+
+        // file system buffering - we are watching from different OS, so we don't have control over this.
+        waitWhileServerLogChages(getServerLog(cfg));
         // if the domain started, then it should be able to stop too
         assertTimeoutPreemptively(TIMEOUT, () -> das.asLocalAdmin("stop-domain"));
         // file system buffering - we are watching from different OS, so we don't have control over this.
