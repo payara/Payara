@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>test-containers</artifactId>
     <name>Payara Test Containers Suite</name>
@@ -16,7 +16,7 @@
         <docker.port>2376</docker.port>
         <docker.images.timeoutInSeconds>900</docker.images.timeoutInSeconds>
         <docker.payara.directory.shared>${project.build.directory}/shared</docker.payara.directory.shared>
-        <docker.payara.image.base>ubuntu:18.10</docker.payara.image.base>
+        <docker.payara.image.base>ubuntu:19.10</docker.payara.image.base>
 <!--         <docker.payara.image.base>debian:10.1-slim</docker.payara.image.base> -->
         <docker.payara.image.forceNew>false</docker.payara.image.forceNew>
         <docker.payara.jdkPackageId>openjdk-8-jdk-headless</docker.payara.jdkPackageId>
