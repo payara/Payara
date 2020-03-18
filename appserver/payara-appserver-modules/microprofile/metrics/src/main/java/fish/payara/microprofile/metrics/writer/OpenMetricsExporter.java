@@ -3,7 +3,6 @@ package fish.payara.microprofile.metrics.writer;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 import java.util.logging.Level;
 
@@ -197,13 +196,13 @@ public class OpenMetricsExporter implements MetricExporter {
         appendTags(tags);
         String valString = value.toString();
         if (valString.endsWith(".0")) {
-            valString = valString.substring(0, valString.length() - 2);
+            valString = valString.substring(0, valString.length() - 2); // avoid decimal NNN.0 => NNN
         }
         if (valString.endsWith("000000001")) {
-            valString = valString.substring(0, valString.length() - 9);
+            valString = valString.substring(0, valString.length() - 9); // cut off double representation error
         }
         if (valString.contains("000000001E")) {
-            valString = valString.replace("000000001E", "E");
+            valString = valString.replace("000000001E", "E"); // cut off double representation error for exponential form
         }
         out.append(' ').append(valString).append('\n');
     }
@@ -273,6 +272,8 @@ public class OpenMetricsExporter implements MetricExporter {
             return globalName(metricID, infix + "_ratio" + suffix);
         case MetricUnits.PER_SECOND:
             return globalName(metricID, infix + "_per_second" + suffix);
+        case MetricUnits.NONE:
+            return globalName(metricID, infix + suffix);
         default:
             return globalName(metricID, infix + "_" + unit + suffix);
         }
@@ -287,10 +288,14 @@ public class OpenMetricsExporter implements MetricExporter {
         StringBuilder str = new StringBuilder(name.length());
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (c == '\\' || c == '"' || c == '\n') {
-                str.append('\\');
+            if (c == '\n') {
+                str.append("\\n");
+            } else {
+                if (c == '\\' || c == '"') {
+                    str.append('\\');
+                }
+                str.append(c);
             }
-            str.append(c);
         }
         return str;
     }
@@ -316,8 +321,8 @@ public class OpenMetricsExporter implements MetricExporter {
         // bytes from bits
         case MetricUnits.BITS: return value.longValue() / 8d;
         case MetricUnits.KILOBITS: return value.doubleValue() * 1000d / 8d;
-        case MetricUnits.MEGABITS: return value.doubleValue() * 1000d * 1024d / 8d;
-        case MetricUnits.GIGABITS: return value.doubleValue() * 1000d * 1000d * 1024d / 8d;
+        case MetricUnits.MEGABITS: return value.doubleValue() * 1000d * 1000d / 8d;
+        case MetricUnits.GIGABITS: return value.doubleValue() * 1000d * 1000d * 1000d / 8d;
         case MetricUnits.KIBIBITS: return value.doubleValue() * 1024d / 8d;
         case MetricUnits.MEBIBITS: return value.doubleValue() * 1024d * 1024d / 8d;
         case MetricUnits.GIBIBITS: return value.doubleValue() * 1024d * 1024d * 1024d / 8d;
@@ -350,7 +355,7 @@ public class OpenMetricsExporter implements MetricExporter {
         if (rest.length == 0) {
             return new Tag[] { tag };
         }
-        Tag[] res = new Tag[rest.length];
+        Tag[] res = new Tag[rest.length + 1];
         res[0] = tag;
         System.arraycopy(rest, 0, res, 1, rest.length);
         return res;
