@@ -65,7 +65,7 @@ import org.junit.Test;
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
 
 /**
- * Tests the correct output generation of {@link JsonExporter} as specified in
+ * Tests the correct output generation of {@link JsonExporter} for HTTP GET requests as specified in
  * https://download.eclipse.org/microprofile/microprofile-metrics-2.3/microprofile-metrics-spec-2.3.pdf.
  *
  * Note however, that the specification contains a handful of errors where examples contradict the rules given. For

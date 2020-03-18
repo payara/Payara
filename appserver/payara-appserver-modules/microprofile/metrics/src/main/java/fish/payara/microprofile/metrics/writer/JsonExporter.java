@@ -40,17 +40,18 @@
 package fish.payara.microprofile.metrics.writer;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import javax.json.stream.JsonGenerator;
@@ -64,6 +65,7 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
@@ -79,7 +81,7 @@ import org.eclipse.microprofile.metrics.Timer;
  */
 public class JsonExporter implements MetricExporter {
 
-    public enum Mode { GET, OPTION }
+    public enum Mode { GET, OPTIONS }
 
     private final String scope;
     private final JsonWriter out;
@@ -87,7 +89,9 @@ public class JsonExporter implements MetricExporter {
     private final JsonObjectBuilder documentObj;
     private final JsonObjectBuilder scopeObj;
     private JsonObjectBuilder groupObj;
+    private JsonArrayBuilder tagsArray;
     private MetricID exportedBefore;
+    private Metadata exportedBeforeMetadata;
 
     public JsonExporter(Writer out, Mode mode, boolean prettyPrint) {
         this(null, writer(out, prettyPrint), mode, Json.createObjectBuilder(), null);
@@ -114,13 +118,13 @@ public class JsonExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Counter counter, Metadata metadata) {
-        completeGroup(metricID);
+        completeGroup(metricID, metadata);
         appendMember(metricID, counter.getCount());
     }
 
     @Override
     public void export(MetricID metricID, ConcurrentGauge gauge, Metadata metadata) {
-        completeOrUpdateGroup(metricID);
+        completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "current", gauge.getCount());
         appendMember(metricID, "min", gauge.getMin());
         appendMember(metricID, "max", gauge.getMax());
@@ -128,7 +132,7 @@ public class JsonExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Gauge<?> gauge, Metadata metadata) {
-        completeGroup(metricID);
+        completeGroup(metricID, metadata);
         Object value = null;
         try {
             value = gauge.getValue();
@@ -146,7 +150,7 @@ public class JsonExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Histogram histogram, Metadata metadata) {
-        completeOrUpdateGroup(metricID);
+        completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", histogram.getCount());
         exportSampling(metricID, histogram);
     }
@@ -167,7 +171,7 @@ public class JsonExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Meter meter, Metadata metadata) {
-        completeOrUpdateGroup(metricID);
+        completeOrUpdateGroup(metricID, metadata);
         exportMetered(metricID, meter);
     }
 
@@ -181,47 +185,101 @@ public class JsonExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, SimpleTimer timer, Metadata metadata) {
-        completeOrUpdateGroup(metricID);
+        completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", timer.getCount());
         appendMember(metricID, "elapsedTime", timer.getElapsedTime().toMillis());
     }
 
     @Override
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
-        completeOrUpdateGroup(metricID);
+        completeOrUpdateGroup(metricID, metadata);
         exportMetered(metricID, timer);
         exportSampling(metricID, timer);
     }
 
     @Override
     public void exportComplete() {
-        completeGroup(null);
+        completeGroup(null, null);
         completeScope();
         out.write(documentObj.build());
     }
 
+    private void exportMetadata() {
+        if (exportedBefore == null) {
+            return;
+        }
+        JsonObjectBuilder target = scopeObj != null ? scopeObj : documentObj;
+        JsonObjectBuilder metadataObj = Json.createObjectBuilder();
+        Metadata metadata = exportedBeforeMetadata;
+        if (metadata.getUnit().isPresent()) {
+            String unit = metadata.getUnit().get();
+            if (!unit.isEmpty() && !MetricUnits.NONE.equals(unit)) {
+                metadataObj.add("unit", unit);
+            }
+        }
+        metadataObj.add("type", metadata.getTypeRaw().name().toLowerCase());
+        if (metadata.getDescription().isPresent()) {
+            String desc = metadata.getDescription().get();
+            if (!desc.isEmpty()) {
+                metadataObj.add("description", desc);
+            }
+        }
+        String displayName = metadata.getDisplayName();
+        String name = exportedBefore.getName();
+        if (!displayName.isEmpty() && !displayName.equals(name)) {
+            metadataObj.add("displayName", displayName);
+        }
+        if (tagsArray != null) {
+            metadataObj.add("tags", tagsArray.build());
+            tagsArray = null;
+        }
+        target.add(name, metadataObj.build());
+    }
+
     private void completeScope() {
+        completeGroup(null, null);
         if (scopeObj != null) {
             documentObj.add(scope, scopeObj.build());
         }
     }
 
-    private void completeGroup(MetricID current) {
-        if (groupObj != null) {
+    private void completeGroup(MetricID current, Metadata metadata) {
+        if (mode == Mode.GET && groupObj != null) {
             JsonObjectBuilder target = scopeObj != null ? scopeObj : documentObj;
             target.add(exportedBefore.getName(), groupObj);
-        }
-        exportedBefore = current;
-    }
-
-    private void completeOrUpdateGroup(MetricID current) {
-        if (exportedBefore == null || !exportedBefore.getName().equals(current.getName())) {
-            completeGroup(current);
             groupObj = null;
         }
-        if (groupObj == null) {
+        if (mode == Mode.OPTIONS) {
+            if (isNameChange(current)) {
+                exportMetadata();
+            }
+            List<Tag> tags = tagsAlphabeticallySorted(current);
+            if (!tags.isEmpty()) {
+                JsonArrayBuilder currentTags = Json.createArrayBuilder();
+                for (Tag tag : tags) {
+                    currentTags.add(tagAsString(tag));
+                }
+                if (tagsArray == null) {
+                    tagsArray = Json.createArrayBuilder();
+                }
+                tagsArray.add(currentTags.build());
+            }
+        }
+        exportedBefore = current;
+        exportedBeforeMetadata = metadata;
+    }
+
+    private void completeOrUpdateGroup(MetricID current, Metadata metadata) {
+        if (mode == Mode.OPTIONS || isNameChange(current)) {
+            completeGroup(current, metadata);
+        }
+        if (mode == Mode.GET && groupObj == null) {
             groupObj = Json.createObjectBuilder();
         }
+    }
+
+    private boolean isNameChange(MetricID current) {
+        return current == null || exportedBefore == null || !exportedBefore.getName().equals(current.getName());
     }
 
     private void appendMember(MetricID metricID, Number value) {
@@ -229,25 +287,15 @@ public class JsonExporter implements MetricExporter {
     }
 
     private void appendMember(MetricID metricID, String field, Number value) {
-        switch(mode) {
-        default:
-        case GET: appendMemberGET(metricID, field, value); break;
-        case OPTION: appendMemberOPTIONS(metricID, field, value);
+        if (mode == Mode.OPTIONS) {
+            return; // nothing to do, metadata written in connection with group update
         }
-    }
-
-    private void appendMemberOPTIONS(MetricID metricID, String field, Number value) {
-
-    }
-
-    private void appendMemberGET(MetricID metricID, String field, Number value) {
         JsonObjectBuilder target = groupObj != null ? groupObj : documentObj;
         String name = field != null ? field : metricID.getName();
-        List<Tag> tags = new ArrayList<>(asList(metricID.getTagsAsArray()));
+        List<Tag> tags = tagsAlphabeticallySorted(metricID);
         if (!tags.isEmpty()) {
-            Collections.sort(tags, (a, b) -> a.getTagName().compareTo(b.getTagName()));
             for (Tag tag : tags) {
-                name += ';' + tag.getTagName() + '=' + tag.getTagValue().replace(';', '_');
+                name += ';' + tagAsString(tag);
             }
         }
         if (value instanceof Float || value instanceof Double) {
@@ -259,5 +307,21 @@ public class JsonExporter implements MetricExporter {
         } else {
             target.add(name, value.longValue());
         }
+    }
+
+    private static String tagAsString(Tag tag) {
+        return tag.getTagName() + '=' + tag.getTagValue().replace(';', '_');
+    }
+
+    private static List<Tag> tagsAlphabeticallySorted(MetricID metricID) {
+        if (metricID == null) {
+            return emptyList();
+        }
+        Tag[] tags = metricID.getTagsAsArray();
+        if(tags.length == 0) {
+            return emptyList();
+        }
+        Arrays.sort(tags, (a, b) -> a.getTagName().compareTo(b.getTagName()));
+        return asList(tags);
     }
 }
