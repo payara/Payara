@@ -58,8 +58,7 @@ COPY --chown=payara:payara ${PAYARA_UNPACKED}/payara5 ${PAYARA_DIR}
 COPY --chown=payara:payara ${ADDITIONAL_SCRIPTS} ${SCRIPT_DIR}/
 
 RUN true \
-    # Fixes executable permissions in builds on windows machines
-    && find ${HOME_DIR} -type f -regextype sed -regex ".*/\(.*\.sh\|asadmin\)" -print -exec chmod +x {} \; \
+    && chmod +x ${SCRIPT_DIR}/* \
     # Configure the password file for configuring Payara
     && echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/tmpfile \
     && echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE} \
