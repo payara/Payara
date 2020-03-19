@@ -56,10 +56,13 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
@@ -81,7 +84,7 @@ import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
 public class JsonExporterGetTest {
 
     private final StringWriter actual = new StringWriter();
-    private final MetricExporter exporter = new JsonExporter(actual, Mode.GET, true);
+    private MetricExporter exporter = new JsonExporter(actual, Mode.GET, true);
 
     @Test
     public void exportCounter() {
@@ -222,12 +225,35 @@ public class JsonExporterGetTest {
         assertOutputEquals("\n{\n}", metricID, gauge, metadata);
     }
 
+    @Test
+    public void multipeRepositoriesAreGroupedByNameMetricOption() {
+        exporter = exporter.in(Type.BASE);
+        Gauge<Long> fooVal = () -> 1L;
+        MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
+        export(fooValID, fooVal);
+        exporter = exporter.in(Type.APPLICATION);
+        export(fooValID, fooVal);
+        assertOutputEquals("\n" +
+                "{\n" +
+                "    \"base\": {\n" +
+                "        \"fooVal;store=webshop\": 1\n" +
+                "    },\n" +
+                "    \"application\": {\n" +
+                "        \"fooVal;store=webshop\": 1\n" +
+                "    }\n" +
+                "}");
+    }
+
     private void export(MetricID metricID, Metric metric) {
         exporter.export(metricID, metric, Metadata.builder().withName(metricID.getName()).build());
     }
 
     private void assertOutputEquals(String expected, MetricID metricID, Metric metric, Metadata metadata) {
         exporter.export(metricID, metric, metadata);
+        assertOutputEquals(expected);
+    }
+
+    private void assertOutputEquals(String expected) {
         exporter.exportComplete();
         assertEquals(expected, actual.getBuffer().toString());
     }

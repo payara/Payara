@@ -65,12 +65,14 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 /**
  * Writes {@link Metric}s according to the MicroPrfile Metrics 2.3 standard for JSON format as defined in <a href=
@@ -83,7 +85,7 @@ public class JsonExporter implements MetricExporter {
 
     public enum Mode { GET, OPTIONS }
 
-    private final String scope;
+    private final MetricRegistry.Type scope;
     private final JsonWriter out;
     private final Mode mode;
     private final JsonObjectBuilder documentObj;
@@ -101,7 +103,7 @@ public class JsonExporter implements MetricExporter {
         return Json.createWriterFactory(singletonMap(JsonGenerator.PRETTY_PRINTING, prettyPrint)).createWriter(out);
     }
 
-    private JsonExporter(String scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
+    private JsonExporter(MetricRegistry.Type scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
             JsonObjectBuilder scopeObj) {
         this.scope = scope;
         this.out = out;
@@ -111,9 +113,9 @@ public class JsonExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(String scope) {
+    public MetricExporter in(Type scope, boolean asNode) {
         completeScope();
-        return new JsonExporter(scope, out, mode, documentObj, Json.createObjectBuilder());
+        return new JsonExporter(scope, out, mode, documentObj, asNode ? Json.createObjectBuilder() : null);
     }
 
     @Override
@@ -242,7 +244,7 @@ public class JsonExporter implements MetricExporter {
     private void completeScope() {
         completeGroup(null, null);
         if (scopeObj != null) {
-            documentObj.add(scope, scopeObj.build());
+            documentObj.add(scope.getName(), scopeObj.build());
         }
     }
 
@@ -293,7 +295,7 @@ public class JsonExporter implements MetricExporter {
         if (mode == Mode.OPTIONS) {
             return; // nothing to do, metadata written in connection with group update
         }
-        JsonObjectBuilder target = groupObj != null ? groupObj : documentObj;
+        JsonObjectBuilder target = groupObj != null ? groupObj : scopeObj != null ? scopeObj : documentObj;
         String name = field != null ? field : metricID.getName();
         List<Tag> tags = tagsAlphabeticallySorted(metricID);
         if (!tags.isEmpty()) {

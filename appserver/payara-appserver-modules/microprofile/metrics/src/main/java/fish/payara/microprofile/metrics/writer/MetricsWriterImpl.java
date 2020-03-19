@@ -20,6 +20,8 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+
 import org.eclipse.microprofile.metrics.Tag;
 
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
@@ -27,10 +29,6 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 
 public class MetricsWriterImpl implements MetricsWriter {
-
-    private static final String VENDOR_NAME = MetricRegistry.Type.VENDOR.getName();
-    private static final String BASE_NAME = MetricRegistry.Type.BASE.getName();
-    private static final String APPLICATION_NAME = MetricRegistry.Type.APPLICATION.getName();
 
     private final MetricExporter exporter;
     private final Supplier<Set<String>> registryNames;
@@ -44,21 +42,25 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(String registryName, String metricName)
+    public void write(Type scope, String metricName)
             throws NoSuchRegistryException, NoSuchMetricException {
-        if (registryName.equals(APPLICATION_NAME)) {
+        MetricExporter exporter = this.exporter.in(scope, false);
+        if (scope == Type.APPLICATION) {
             writeApplicationRegistries(exporter, registryNames.get(), metricName);
         } else {
+            String registryName = scope.getName();
             writeMetricFamily(exporter, registryName, metricName, getMetricsRegistry(registryName), false);
         }
         exporter.exportComplete();
     }
 
     @Override
-    public void write(String registryName) throws NoSuchRegistryException {
-        if (registryName.equals(APPLICATION_NAME)) {
+    public void write(Type scope) throws NoSuchRegistryException {
+        MetricExporter exporter = this.exporter.in(scope, false);
+        if (scope == Type.APPLICATION) {
             writeApplicationRegistries(exporter, registryNames.get());
         } else {
+            String registryName = scope.getName();
             writeRegistry(exporter, registryName, getMetricsRegistry(registryName), false);
         }
         exporter.exportComplete();
@@ -67,19 +69,14 @@ public class MetricsWriterImpl implements MetricsWriter {
     @Override
     public void write() throws IOException {
         Set<String> allNames = registryNames.get();
-        if (allNames.contains(BASE_NAME)) {
-            MetricExporter baseExporter = exporter.in(BASE_NAME);
-            writeRegistry(baseExporter, BASE_NAME, getMetricsRegistry(BASE_NAME), false);
-            baseExporter.exportComplete();
-        }
-        if (allNames.contains(VENDOR_NAME)) {
-            MetricExporter vendorExporter = exporter.in(VENDOR_NAME);
-            writeRegistry(vendorExporter, VENDOR_NAME, getMetricsRegistry(VENDOR_NAME), false);
-            vendorExporter.exportComplete();
-        }
-        MetricExporter appExporter = exporter.in(APPLICATION_NAME);
-        writeApplicationRegistries(appExporter, allNames);
-        appExporter.exportComplete();
+        MetricExporter exporter = this.exporter;
+        exporter = exporter.in(Type.BASE);
+        writeRegistry(exporter, Type.BASE.getName(), getMetricsRegistry(Type.BASE.getName()), false);
+        exporter = exporter.in(Type.VENDOR);
+        writeRegistry(exporter, Type.VENDOR.getName(), getMetricsRegistry(Type.VENDOR.getName()), false);
+        exporter = exporter.in(Type.APPLICATION);
+        writeApplicationRegistries(exporter, allNames);
+        exporter.exportComplete();
     }
 
     private void writeApplicationRegistries(MetricExporter exporter, Set<String> allNames, String... metricNames) {
@@ -137,8 +134,8 @@ public class MetricsWriterImpl implements MetricsWriter {
 
     private static Set<String> getApplicationRegistryNames(Set<String> names) {
         Set<String> appNames = new TreeSet<>(names);
-        appNames.remove(BASE_NAME);
-        appNames.remove(VENDOR_NAME);
+        appNames.remove(Type.BASE.getName());
+        appNames.remove(Type.VENDOR.getName());
         return appNames;
     }
 

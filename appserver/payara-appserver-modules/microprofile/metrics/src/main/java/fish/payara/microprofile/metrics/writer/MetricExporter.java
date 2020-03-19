@@ -76,7 +76,11 @@ public interface MetricExporter {
      *         unchanged and will continue to use its current scope. Both, this {@link MetricExporter} and the returned
      *         one will however share other internal state that is related to the output written so far.
      */
-    MetricExporter in(String scope);
+    MetricExporter in(MetricRegistry.Type scope, boolean asNode);
+
+    default MetricExporter in(MetricRegistry.Type scope) {
+        return in(scope, true);
+    }
 
     void export(MetricID metricID, Counter counter, Metadata metadata);
 

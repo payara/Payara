@@ -50,8 +50,6 @@ import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.List;
 
 import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -69,19 +67,13 @@ import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
 
     private static final String APPLICATION_WILDCARD = "application/*";
-
-    private static final List<String> REGISTRY_NAMES = Arrays.asList(
-            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
-    );
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
@@ -101,39 +93,46 @@ public class MetricsResource extends HttpServlet {
             return;
         }
         metricsService.reregisterMetadataConfig();
-        MetricsRequest metricsRequest = new MetricsRequest(request);
+
+        String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
+        String[] pathInfos = pathInfo.split("/");
+        String registryName = pathInfos.length > 0 ? pathInfos[0] : null;
+        String metricName = pathInfos.length > 1 ? pathInfos[1] : null;
+
         try {
-            if (metricsRequest.isRegistryRequested()
-                    && !REGISTRY_NAMES.contains(metricsRequest.getRegistryName())) {
-                throw new NoSuchRegistryException(metricsRequest.getRegistryName());
-            }
             String contentType = getContentType(request, response);
             if (contentType != null) {
+                response.setContentType(contentType);
+                response.setCharacterEncoding(UTF_8.name());
                 MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
                 if (outputWriter != null) {
-                    response.setContentType(contentType);
-                    response.setCharacterEncoding(UTF_8.name());
-                    if (metricsRequest.isRegistryRequested() && metricsRequest.isMetricRequested()) {
-                        outputWriter.write(metricsRequest.getRegistryName(), metricsRequest.getMetricName());
-                    } else if (metricsRequest.isRegistryRequested()) {
-                        outputWriter.write(metricsRequest.getRegistryName());
+                    if (registryName != null && !registryName.isEmpty()) {
+                        Type scope;
+                        try {
+                            scope = Type.valueOf(registryName.toUpperCase());
+                        } catch (RuntimeException ex) {
+                            throw new NoSuchRegistryException(registryName);
+                        }
+                        if (metricName != null && !metricName.isEmpty()) {
+                            outputWriter.write(scope, metricName);
+                        } else {
+                            outputWriter.write(scope);
+                        }
                     } else {
                         outputWriter.write();
                     }
                 }
             }
         } catch (NoSuchRegistryException ex) {
-            response.sendError(SC_NOT_FOUND,
-                    String.format("[%s] registry not found", metricsRequest.getRegistryName()));
+            response.sendError(SC_NOT_FOUND, String.format("[%s] registry not found", registryName));
         } catch (NoSuchMetricException ex) {
-            response.sendError(SC_NOT_FOUND,
-                    String.format("[%s] metric not found", metricsRequest.getMetricName()));
+            response.sendError(SC_NOT_FOUND, String.format("[%s] metric not found", metricName));
         }
     }
 
     @SuppressWarnings("resource")
-    private static MetricsWriter getOutputWriter(HttpServletRequest request, HttpServletResponse response,
-            MetricsService service, String contentType) throws IOException {
+    private static MetricsWriter getOutputWriter(HttpServletRequest request,
+            HttpServletResponse response, MetricsService service, String contentType) throws IOException {
         Writer writer = response.getWriter();
         String method = request.getMethod();
         if (GET.equalsIgnoreCase(method)) {
@@ -233,36 +232,6 @@ public class MetricsResource extends HttpServlet {
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
-    }
-
-    private static class MetricsRequest {
-
-        private final String registryName;
-        private final String metricName;
-
-        public MetricsRequest(HttpServletRequest request) {
-                String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
-                String[] pathInfos = pathInfo.split("/");
-                registryName = pathInfos.length > 0 ? pathInfos[0] : null;
-                metricName = pathInfos.length > 1 ? pathInfos[1] : null;
-        }
-
-        public String getRegistryName() {
-            return registryName;
-        }
-
-        public String getMetricName() {
-            return metricName;
-        }
-
-        public boolean isRegistryRequested(){
-            return registryName != null && !registryName.isEmpty();
-        }
-
-        public boolean isMetricRequested() {
-            return metricName != null && !metricName.isEmpty();
-        }
-
     }
 
 }

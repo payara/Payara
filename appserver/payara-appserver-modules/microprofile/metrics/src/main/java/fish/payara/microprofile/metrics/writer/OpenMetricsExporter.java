@@ -62,6 +62,7 @@ import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 /**
  * Writes {@link Metric}s according to the OpenMetrics standard as defined in <a href=
@@ -80,7 +81,7 @@ public class OpenMetricsExporter implements MetricExporter {
         counter, gauge, summary
     }
 
-    private final String scope;
+    private final Type scope;
     private final PrintWriter out;
     private final Set<String> typeWrittenByGlobalName;
     private final Set<String> helpWrittenByGlobalName;
@@ -89,7 +90,7 @@ public class OpenMetricsExporter implements MetricExporter {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    private OpenMetricsExporter(String scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+    private OpenMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
             Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
@@ -98,7 +99,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(String scope) {
+    public MetricExporter in(Type scope, boolean asNode) {
         return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 
@@ -340,7 +341,9 @@ public class OpenMetricsExporter implements MetricExporter {
 
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
-        return !suffix.isEmpty() && name.endsWith(suffix) ? scope + '_' + name : scope + '_' + name + suffix;
+        return !suffix.isEmpty() && name.endsWith(suffix)
+                ? scope.getName() + '_' + name
+                : scope.getName() + '_' + name + suffix;
     }
 
     private static CharSequence escapeTagValue(String name) {

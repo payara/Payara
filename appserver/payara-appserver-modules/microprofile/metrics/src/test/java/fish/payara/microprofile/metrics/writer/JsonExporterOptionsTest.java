@@ -49,6 +49,7 @@ import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
@@ -116,7 +117,7 @@ public class JsonExporterOptionsTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in("base");
+        exporter = exporter.in(Type.BASE);
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         Metadata fooValMeta = Metadata.builder()
@@ -127,7 +128,7 @@ public class JsonExporterOptionsTest {
                 .withType(MetricType.GAUGE)
                 .build();
         export(fooValID, fooVal, fooValMeta);
-        exporter = exporter.in("application");
+        exporter = exporter.in(Type.APPLICATION);
         export(fooValID, fooVal, fooValMeta);
         assertOutputEqualsFile("Options3.json");
     }
