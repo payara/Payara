@@ -149,7 +149,7 @@
                         pswdText="#{pageSession.pswdText}"
                         pswdAlias="#{pageSession.pswdAlias}"
                         defaultValue="1"
-                        authTypeSelected="#{pageSession.psSelected}");
+                        sshAuthTypeSelected="#{pageSession.psSelected}");
                 }
                 if ("#{pageSession.attrMap['type']}=DCOM") {
                     mapPut(map="#{pageSession.valueMap}"  key="windowsuser",  value="#{pageSession.attrMap['userName']}");
@@ -159,7 +159,7 @@
                         pswdText="#{pageSession.winPswdText}"
                         pswdAlias="#{pageSession.winPswdAlias}"
                         defaultValue="2"
-                        authTypeSelected="#{pageSession.winPsSelected}");
+                        sshAuthTypeSelected="#{pageSession.winPsSelected}");
                 }
             }
         }
