@@ -42,6 +42,7 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.cluster.SshAuthType;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -93,6 +94,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     // we can't set them as parameters in this class bacause of the names
     protected String remotePort;
     protected String remoteUser;
+    protected String sshAuthType;
     protected String sshkeyfile;
     protected String sshkeypassphrase;
     protected String remotepassword;
@@ -135,24 +137,6 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         // Ah the problems caused by hard-coding ssh into parameter names!
         populateParameters();
 
-        // First create a map that holds the parameters and reflects what
-        // the user passed on the command line.
-        ParameterMap commandParameters = new ParameterMap();
-        commandParameters.add("DEFAULT", name);
-        commandParameters.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        commandParameters.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        commandParameters.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        commandParameters.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
-        commandParameters.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
-        if (sshkeyfile == null || sshkeyfile.isEmpty()) {
-            commandParameters.add(NodeUtils.PARAM_SSHPASSWORD, remotepassword);
-        } else {
-            commandParameters.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-            commandParameters.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-        }
-        commandParameters.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
-        commandParameters.add(NodeUtils.PARAM_TYPE, getType().toString());
-
         // Validate the settings
         try {
             NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
@@ -170,6 +154,22 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
                 return;
             }
         }
+
+        // First create a map that holds the parameters and reflects what
+        // the user passed on the command line.
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", name);
+        commandParameters.add(NodeUtils.PARAM_INSTALLDIR, installdir);
+        commandParameters.add(NodeUtils.PARAM_NODEHOST, nodehost);
+        commandParameters.add(NodeUtils.PARAM_NODEDIR, nodedir);
+        commandParameters.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
+        commandParameters.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
+        commandParameters.add(NodeUtils.PARAM_SSHPASSWORD, remotepassword);
+        commandParameters.add(NodeUtils.PARAM_SSHAUTHTYPE, sshAuthType);
+        commandParameters.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
+        commandParameters.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
+        commandParameters.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
+        commandParameters.add(NodeUtils.PARAM_TYPE, getType().toString());
         // Settings are valid. Now use the generic update-node command to
         // update the node.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
@@ -203,21 +203,28 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
 
         final SshAuth ssha = sshc.getSshAuth();
         parameters.insert(NodeUtils.PARAM_REMOTEUSER, remoteUser, getSupplier(ssha, ssha::getUserName));
+        parameters.insert(NodeUtils.PARAM_SSHAUTHTYPE, sshAuthType, getSupplier(ssha, () -> null));
 
-        if (sshkeyfile == null && remotepassword == null) {
-            // use previous values if they are set
-            parameters.insert(NodeUtils.PARAM_SSHPASSWORD, null, getSupplier(ssha, ssha::getPassword));
-            parameters.insert(NodeUtils.PARAM_SSHKEYFILE, null, getSupplier(ssha, ssha::getKeyfile));
-            parameters.insert(NodeUtils.PARAM_SSHKEYPASSPHRASE, null, getSupplier(ssha, ssha::getKeyPassphrase));
-        } else if (sshkeyfile == null) {
-            // keyfile is preferred over password.
-            // if keyfile is not set, configure password.
-            parameters.insert(NodeUtils.PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
+        if (sshAuthType == null) {
+            if (sshkeyfile == null && remotepassword == null) {
+                parameters.insert(NodeUtils.PARAM_SSHPASSWORD, null, getSupplier(ssha, ssha::getPassword));
+                parameters.insert(NodeUtils.PARAM_SSHKEYFILE, null, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(NodeUtils.PARAM_SSHKEYPASSPHRASE, null, getSupplier(ssha, ssha::getKeyPassphrase));
+            } else if (remotepassword != null) {
+                parameters.insert(NodeUtils.PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
+            } else {
+                parameters.insert(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(NodeUtils.PARAM_SSHKEYPASSPHRASE, //
+                    sshkeypassphrase, getSupplier(ssha, ssha::getKeyPassphrase));
+            }
         } else {
-            // if keyfile is set, don't configure password.
-            parameters.insert(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile, getSupplier(ssha, ssha::getKeyfile));
-            parameters.insert(NodeUtils.PARAM_SSHKEYPASSPHRASE, //
-                sshkeypassphrase, getSupplier(ssha, ssha::getKeyPassphrase));
+            if (SshAuthType.KEY.name().equals(sshAuthType)) {
+                parameters.insert(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(NodeUtils.PARAM_SSHKEYPASSPHRASE, //
+                    sshkeypassphrase, getSupplier(ssha, ssha::getKeyPassphrase));
+            } else if (SshAuthType.PASSWORD.name().equals(sshAuthType)) {
+                parameters.insert(NodeUtils.PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
+            }
         }
         return parameters;
     }
