@@ -605,7 +605,7 @@ public final class FaultTolerancePolicy implements Serializable {
                         if (!exitOnCompletion) {
                             return res;
                         }
-                        return ((CompletionStage<?>) res).whenComplete((value, excetion) -> {
+                        return ((CompletionStage<?>) res).whenComplete((value, exception) -> {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
                             running.remove(currentThread);
