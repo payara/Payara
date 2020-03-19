@@ -662,21 +662,21 @@ public class ClusterHandler {
             @HandlerInput(name = "pswdAlias", type = String.class, required = false),
             @HandlerInput(name = "defaultValue", type = String.class, required = false) //
         }, //
-        output = {@HandlerOutput(name = "authTypeSelected", type = String.class),} //
+        output = {@HandlerOutput(name = "sshAuthTypeSelected", type = String.class),} //
     )
     public static void presetNodeAuthSelectBox(HandlerContext handlerCtx) {
-        if (setIfSet(handlerCtx, "keyfile", "authTypeSelected", "1")) {
+        if (setIfSet(handlerCtx, "keyfile", "sshAuthTypeSelected", "1")) {
             return;
         }
-        if (setIfSet(handlerCtx, "pswdAlias", "authTypeSelected", "3")) {
+        if (setIfSet(handlerCtx, "pswdAlias", "sshAuthTypeSelected", "3")) {
             return;
         }
-        if (setIfSet(handlerCtx, "pswdText", "authTypeSelected", "2")) {
+        if (setIfSet(handlerCtx, "pswdText", "sshAuthTypeSelected", "2")) {
             return;
         }
         final Object defaultValue = handlerCtx.getInputValue("defaultValue");
         if (defaultValue != null) {
-            handlerCtx.setOutputValue("authTypeSelected", defaultValue);
+            handlerCtx.setOutputValue("sshAuthTypeSelected", defaultValue);
         }
     }
 
