@@ -302,7 +302,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 sources.add(new PropertiesConfigSource(props, appName));
             }
             for (Properties props : getDeployedApplicationAliasProperties(appName)) {
-                sources.add(new AliasPropertiesConfigSource(props, appName));
+                sources.add(new AliasPropertiesConfigSource(props));
             }
         }
         return sources;
