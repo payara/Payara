@@ -35,7 +35,7 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
 RUN true \
     # Install dependencies
     && apt-get update \
-    && apt-get install -y unzip coreutils gpg \
+    && apt-get install -y coreutils gpg \
     && rm -rf /var/lib/apt/lists/* \
     # Create and set the Payara user and working directory owned by the new user
     && groupadd --gid 1000 payara \
