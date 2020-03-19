@@ -133,6 +133,9 @@ public class JsonExporter implements MetricExporter {
     @Override
     public void export(MetricID metricID, Gauge<?> gauge, Metadata metadata) {
         completeGroup(metricID, metadata);
+        if (mode == Mode.OPTIONS) {
+            return;
+        }
         Object value = null;
         try {
             value = gauge.getValue();

@@ -43,10 +43,11 @@ package fish.payara.microprofile.metrics.rest;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
-import fish.payara.microprofile.metrics.writer.JsonMetadataWriter;
-import fish.payara.microprofile.metrics.writer.JsonMetricWriter;
+import fish.payara.microprofile.metrics.writer.JsonExporter;
+import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
 import fish.payara.microprofile.metrics.writer.MetricsWriter;
-import fish.payara.microprofile.metrics.writer.PrometheusWriter;
+import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
+import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -106,98 +107,104 @@ public class MetricsResource extends HttpServlet {
                     && !REGISTRY_NAMES.contains(metricsRequest.getRegistryName())) {
                 throw new NoSuchRegistryException(metricsRequest.getRegistryName());
             }
-            MetricsWriter outputWriter = getOutputWriter(request, response);
-            if (outputWriter != null) {
-                setContentType(outputWriter, response);
-                if (metricsRequest.isRegistryRequested() && metricsRequest.isMetricRequested()) {
-                    outputWriter.write(metricsRequest.getRegistryName(), metricsRequest.getMetricName());
-                } else if (metricsRequest.isRegistryRequested()) {
-                    outputWriter.write(metricsRequest.getRegistryName());
-                } else {
-                    outputWriter.write();
+            String contentType = getContentType(request, response);
+            if (contentType != null) {
+                MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
+                if (outputWriter != null) {
+                    response.setContentType(contentType);
+                    response.setCharacterEncoding(UTF_8.name());
+                    if (metricsRequest.isRegistryRequested() && metricsRequest.isMetricRequested()) {
+                        outputWriter.write(metricsRequest.getRegistryName(), metricsRequest.getMetricName());
+                    } else if (metricsRequest.isRegistryRequested()) {
+                        outputWriter.write(metricsRequest.getRegistryName());
+                    } else {
+                        outputWriter.write();
+                    }
                 }
             }
         } catch (NoSuchRegistryException ex) {
-            response.sendError(
-                    SC_NOT_FOUND,
+            response.sendError(SC_NOT_FOUND,
                     String.format("[%s] registry not found", metricsRequest.getRegistryName()));
         } catch (NoSuchMetricException ex) {
-            response.sendError(
-                    SC_NOT_FOUND,
+            response.sendError(SC_NOT_FOUND,
                     String.format("[%s] metric not found", metricsRequest.getMetricName()));
         }
     }
 
-    private void setContentType(MetricsWriter outputWriter, HttpServletResponse response) {
-        if (outputWriter instanceof JsonMetricWriter) {
-            response.setContentType(APPLICATION_JSON);
-        } else if (outputWriter instanceof JsonMetadataWriter) {
-            response.setContentType(APPLICATION_JSON);
-        } else {
-            response.setContentType(TEXT_PLAIN);
+    @SuppressWarnings("resource")
+    private static MetricsWriter getOutputWriter(HttpServletRequest request, HttpServletResponse response,
+            MetricsService service, String contentType) throws IOException {
+        Writer writer = response.getWriter();
+        String method = request.getMethod();
+        if (GET.equalsIgnoreCase(method)) {
+            if (APPLICATION_JSON.equals(contentType)) {
+                return new MetricsWriterImpl(new JsonExporter(writer, Mode.GET, true),
+                    service::getAllRegistryNames, service::getRegistry);
+            }
+            if (TEXT_PLAIN.equals(contentType)) {
+                return new MetricsWriterImpl(new OpenMetricsExporter(writer),
+                    service::getAllRegistryNames, service::getRegistry);
+            }
         }
-        response.setCharacterEncoding(UTF_8.name());
+        if (OPTIONS.equalsIgnoreCase(method)) {
+            if (APPLICATION_JSON.equals(contentType)) {
+                return new MetricsWriterImpl(new JsonExporter(writer, Mode.OPTIONS, true),
+                        service::getAllRegistryNames, service::getRegistry);
+            }
+        }
+        return null;
     }
 
-    private MetricsWriter getOutputWriter(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        MetricsWriter outputWriter = null;
+    private static String getContentType(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String method = request.getMethod();
-        Writer writer = response.getWriter();
-
         String accept = request.getHeader(ACCEPT);
         if (accept == null) {
             accept = TEXT_PLAIN;
         }
-
         switch (method) {
-            case GET:
-                //application/json;q=0.1,text/plain;q=0.9
+        case GET:
+            //application/json;q=0.1,text/plain;q=0.9
 
-                String[] acceptFormats = accept.split(",");
-                float qJsonValue = 0;
-                float qTextFormat = 0;
-                for (String format : acceptFormats) {
-                    if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
-                        String[] splitTextFormat = format.split(";");
-                        if (splitTextFormat.length == 2) {
-                            qTextFormat = Float.parseFloat(splitTextFormat[1].substring(2));
-                        } else {
-                            qTextFormat = 1;
-                        }
-                    } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
-                        String[] splitJsonFormat = format.split(";");
-                        if (splitJsonFormat.length == 2) {
-                            qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
-                        } else {
-                            qJsonValue = 1;
-                        }
-                    } // else { no other formats supported by Payara, ignored }
-                }
+            String[] acceptFormats = accept.split(",");
+            float qJsonValue = 0;
+            float qTextFormat = 0;
+            for (String format : acceptFormats) {
+                if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
+                    String[] splitTextFormat = format.split(";");
+                    if (splitTextFormat.length == 2) {
+                        qTextFormat = Float.parseFloat(splitTextFormat[1].substring(2));
+                    } else {
+                        qTextFormat = 1;
+                    }
+                } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
+                    String[] splitJsonFormat = format.split(";");
+                    if (splitJsonFormat.length == 2) {
+                        qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
+                    } else {
+                        qJsonValue = 1;
+                    }
+                } // else { no other formats supported by Payara, ignored }
+            }
 
-                //if neither JSON or plain text are supported
-                if (qJsonValue == 0 && qTextFormat == 0) {
-                    response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
-                } else if (qJsonValue > qTextFormat) {
-                    outputWriter = new JsonMetricWriter(writer);
-                } else {
-                    outputWriter = new PrometheusWriter(writer);
-                }
-                break;
-            case OPTIONS:
-                if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
-                    outputWriter = new JsonMetadataWriter(writer);
-                } else {
-                    response.sendError(
-                            SC_NOT_ACCEPTABLE,
-                            String.format("[%s] not acceptable", accept));
-                }   break;
-            default:
-                response.sendError(
-                        SC_METHOD_NOT_ALLOWED,
-                        String.format("HTTP method [%s] not allowed", method));
-                break;
+            //if neither JSON or plain text are supported
+            if (qJsonValue == 0 && qTextFormat == 0) {
+                response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
+                return null;
+            }
+            if (qJsonValue > qTextFormat) {
+                return MediaType.APPLICATION_JSON;
+            }
+            return MediaType.TEXT_PLAIN;
+        case OPTIONS:
+            if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
+                return APPLICATION_JSON;
+            }
+            response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
+            return null;
+        default:
+            response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
         }
-        return outputWriter;
+        return null;
     }
 
     /**
@@ -228,7 +235,7 @@ public class MetricsResource extends HttpServlet {
         processRequest(request, response);
     }
 
-    private class MetricsRequest {
+    private static class MetricsRequest {
 
         private final String registryName;
         private final String metricName;

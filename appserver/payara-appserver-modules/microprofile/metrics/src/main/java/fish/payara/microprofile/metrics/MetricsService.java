@@ -40,7 +40,6 @@
 package fish.payara.microprofile.metrics;
 
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
-import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
@@ -53,7 +52,6 @@ import java.beans.PropertyChangeEvent;
 
 import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.SimpleTimer;
@@ -126,10 +124,6 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     private List<MBeanMetadata> unresolvedVendorMetadataList;
 
     private final Map<String, MetricRegistryImpl> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
-
-    public MetricsService() {
-
-    }
 
     @PostConstruct
     public void init() {
@@ -320,28 +314,8 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return getOrAddRegistryInternal(getApplicationName()).getMetric(metricID, type);
     }
 
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
-        return getRegistry(registryName).getMetrics();
-    }
-
-    public Map<String, Metadata> getMetadataAsMap(String registryName) throws NoSuchRegistryException {
-        return getRegistry(registryName).getMetadata();
-    }
-
     public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException {
         return getRegistryInternal(registryName).getMetricsIDs(metricName);
-    }
-
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException {
-        return getRegistryInternal(registryName).getMetrics(metricName);
-    }
-
-    public Map<String, Metadata> getMetadataAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
-        Metadata metadata = getRegistryInternal(registryName).getMetadata(metricName);
-        if (metadata != null) {
-            return Collections.singletonMap(metricName, metadata);
-        }
-        throw new NoSuchMetricException(metricName);
     }
 
     /**
@@ -361,13 +335,6 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
             throw new NoSuchRegistryException(registryName);
         }
         return registry;
-    }
-
-    public Set<String> getApplicationRegistryNames() {
-        Set<String> applicationRegistries = new HashSet<>(REGISTRIES.keySet());
-        applicationRegistries.remove(BASE.getName());
-        applicationRegistries.remove(VENDOR.getName());
-        return applicationRegistries;
     }
 
     public Set<String> getAllRegistryNames() {

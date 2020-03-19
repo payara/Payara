@@ -110,6 +110,10 @@ public class JsonExporterOptionsTest {
         assertOutputEqualsFile("Options2.json");
     }
 
+    /*
+     * Below tests are no examples from the specification
+     */
+
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
         exporter = exporter.in("base");
@@ -128,8 +132,46 @@ public class JsonExporterOptionsTest {
         assertOutputEqualsFile("Options3.json");
     }
 
+    @Test
+    public void gaugesWithNonNumberValuesDoExportMetadata() {
+        Gauge<String> gauge = () -> "hello world";
+        MetricID metricID = new MetricID("test3");
+        Metadata metadata = Metadata.builder()
+                .withName(metricID.getName())
+                .withType(MetricType.GAUGE)
+                .build();
+        assertOutputEquals("\n" +
+                "{\n" +
+                "    \"test3\": {\n" +
+                "        \"type\": \"gauge\"\n" +
+                "    }\n" +
+                "}", metricID, gauge, metadata);
+    }
+
+    @Test
+    public void gaugesThatThrowIllegalStateExceptionWhenReadDoExportMetadata() {
+        Gauge<Long> gauge = () -> { throw new IllegalStateException("test"); };
+        MetricID metricID = new MetricID("test4");
+        Metadata metadata = Metadata.builder()
+                .withName(metricID.getName())
+                .withType(MetricType.GAUGE)
+                .build();
+        assertOutputEquals("\n" +
+                "{\n" +
+                "    \"test4\": {\n" +
+                "        \"type\": \"gauge\"\n" +
+                "    }\n" +
+                "}", metricID, gauge, metadata);
+    }
+
     private void export(MetricID metricID, Metric metric, Metadata metadata) {
         exporter.export(metricID, metric, metadata);
+    }
+
+    private void assertOutputEquals(String expected, MetricID metricID, Metric metric, Metadata metadata) {
+        exporter.export(metricID, metric, metadata);
+        exporter.exportComplete();
+        assertEquals(expected, actual.getBuffer().toString());
     }
 
     private void assertOutputEqualsFile(String expectedFile) {
