@@ -42,6 +42,7 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -56,6 +57,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,17 +129,17 @@ public class TranslatedConfigView implements ConfigView {
                 return expandedValue;
             }
 
-            expandedValue = expandMicroProfileConfigProperty(stringValue);
+            expandedValue = matchPatternAndExpand(stringValue, mpConfigP);
             if (expandedValue != null) {
                 return expandedValue;
             }
 
-            expandedValue = expandEnvironmentProperty(stringValue);
+            expandedValue = matchPatternAndExpand(stringValue, envP);
             if (expandedValue != null) {
                 return expandedValue;
             }
 
-            expandedValue = expandSystemProperty(stringValue);
+            expandedValue = matchPatternAndExpand(stringValue, p);
             if (expandedValue != null) {
                 return expandedValue;
             }
@@ -266,18 +268,6 @@ public class TranslatedConfigView implements ConfigView {
         return null;
     }
 
-    private static String expandMicroProfileConfigProperty(String property) {
-        return matchPatternAndExpand(property, mpConfigP);
-    }
-
-    private static String expandEnvironmentProperty(String property) {
-        return matchPatternAndExpand(property, envP);
-    }
-
-    private static String expandSystemProperty(String property) {
-        return matchPatternAndExpand(property, p);
-    }
-
     private static String matchPatternAndExpand(String property, Pattern pattern) {
         String expandedValue = null;
         Matcher m = pattern.matcher(property);
@@ -287,7 +277,20 @@ public class TranslatedConfigView implements ConfigView {
         int i = 0;
         while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
             String matchValue = m.group(2).trim();
-            String newValue = System.getProperty(matchValue);
+            String newValue = null;
+
+            if (pattern.equals(p)) {
+                newValue = System.getProperty(matchValue);
+            } else if (pattern.equals(envP)) {
+                newValue = System.getenv(matchValue);
+            } else if (pattern.equals(mpConfigP)) {
+                Config config = configResolver().getConfig();
+                Optional<String> optional = config.getOptionalValue(matchValue,String.class);
+                if (optional != null) {
+                    newValue = optional.orElse(null);
+                }
+            }
+
             if (newValue != null) {
                 expandedValue = m.replaceFirst(
                         Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));

@@ -11,7 +11,8 @@ public class AliasPropertiesConfigSource extends PayaraConfigSource implements C
 
     private final Properties properties;
 
-    public AliasPropertiesConfigSource(Properties properties, String applicationName) {
+    public AliasPropertiesConfigSource(Properties properties) {
+        super();
         this.properties = properties;
     }
 
@@ -41,7 +42,7 @@ public class AliasPropertiesConfigSource extends PayaraConfigSource implements C
         String value = TranslatedConfigView.expandValue(alias);
 
         // If returned value is null, or is the same as the pre-expanded alias, this means no match was found
-        if (value == null && value.equals(alias)) {
+        if (value == null || value.equals(alias)) {
             return null;
         }
 
@@ -51,5 +52,10 @@ public class AliasPropertiesConfigSource extends PayaraConfigSource implements C
     @Override
     public String getName() {
         return "Alias Properties";
+    }
+
+    AliasPropertiesConfigSource(boolean test, Properties properties) {
+        super(test);
+        this.properties = properties;
     }
 }

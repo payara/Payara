@@ -93,5 +93,5 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
 
     @Attribute(defaultValue = "170", dataType = Integer.class)
     String getAliasPropertiesOrdinality();
-    void setExpandedPropertiesOrdinality(String message);
+    void setAliasPropertiesOrdinality(String message);
 }
