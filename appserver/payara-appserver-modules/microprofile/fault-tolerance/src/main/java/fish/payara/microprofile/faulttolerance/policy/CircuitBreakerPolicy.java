@@ -110,7 +110,7 @@ public final class CircuitBreakerPolicy extends Policy {
      * </blockquote>
      * 
      * @param ex The exception to check
-     * @return True if the exception is considered a failure, false if it is considered a success (anyway).
+     * @return True if the exception is considered a failure, false if it is considered a success.
      */
     public boolean isFailure(Throwable ex) {
         return !Policy.isCaught(ex, skipOn) && Policy.isCaught(ex, failOn);
