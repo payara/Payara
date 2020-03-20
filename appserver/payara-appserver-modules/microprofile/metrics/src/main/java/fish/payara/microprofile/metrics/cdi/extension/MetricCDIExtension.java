@@ -125,13 +125,13 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private final List<String> validationMessages = new ArrayList<>();
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
-        beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
+//        beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
         addInterceptorBinding(Counted.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(ConcurrentGauge.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Metered.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Timed.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(SimplyTimed.class, manager, beforeBeanDiscovery);
-
+//
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(ConcurrentGuageInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MeteredInterceptor.class, manager, beforeBeanDiscovery);
@@ -251,9 +251,8 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     }
 
     private static <T extends Annotation> void addInterceptorBinding(Class<T> annotation, BeanManager manager, BeforeBeanDiscovery beforeBeanDiscovery) {
-        beforeBeanDiscovery.addInterceptorBinding(manager.createAnnotatedType(annotation));
+        //beforeBeanDiscovery.addInterceptorBinding(annotation);
         beforeBeanDiscovery.configureInterceptorBinding(annotation)
-                .add(INTERCEPTOR_BINDING)
                 .filterMethods(method -> !method.isAnnotationPresent(Nonbinding.class))
                 .forEach(method -> method.add(NON_BINDING));
     }

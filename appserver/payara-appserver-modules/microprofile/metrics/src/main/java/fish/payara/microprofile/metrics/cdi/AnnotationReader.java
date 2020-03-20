@@ -291,20 +291,6 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     /**
-     * Checks if an {@link Annotation} does not provide any information beyond the required name and tags.
-     *
-     * @param annotation source annotation to read, not {@code null}
-     * @return true, of no property is set to a value that would require using {@link Metadata} when registering, else
-     *         false.
-     */
-    public boolean isBare(T annotation) {
-        return unit(annotation).equals(MetricUnits.NONE)
-               && reusable(annotation)
-               && description(annotation).isEmpty()
-               && displayName(annotation).isEmpty();
-    }
-
-    /**
      * Returns the effective annotation for the provided bean and element.
      *
      * @param bean    type of the bean that declared the provided element
@@ -623,6 +609,20 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     /**
+     * Checks if an {@link Annotation} does not provide any information beyond the required name and tags.
+     *
+     * @param annotation source annotation to read, not {@code null}
+     * @return true, of no property is set to a value that would require using {@link Metadata} when registering, else
+     *         false.
+     */
+    public boolean isReference(T annotation) {
+        return unit(annotation).equals(MetricUnits.NONE)
+               && absolute(annotation)
+               && description(annotation).isEmpty()
+               && displayName(annotation).isEmpty();
+    }
+
+    /**
      * Resolves the {@link org.eclipse.microprofile.metrics.Metric} referred to by the provided {@link InjectionPoint}.
      * If it does not exist, the metric is created. Lookup and creation are one atomic operation. Depending on the
      * provided information in the effective {@link Annotation} for the provided {@link InjectionPoint} the metric is
@@ -646,7 +646,7 @@ public final class AnnotationReader<T extends Annotation> {
             String name = MetricRegistry.name(point.getMember().getDeclaringClass().getCanonicalName(), localName(point.getMember()));
             return MetricGetOrRegister.getOrRegisterByName(registry, metric, name);
         }
-        if (isBare(annotation)) {
+        if (isReference(annotation)) {
             return MetricGetOrRegister.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
         }
         return MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
@@ -709,19 +709,19 @@ public final class AnnotationReader<T extends Annotation> {
         if (localName.isEmpty()) {
             localName = localName(member);
         }
-        return named(annotation, member.getDeclaringClass().getCanonicalName(), localName);
+        return absolute(annotation)
+                ? localName
+                : MetricRegistry.name(member.getDeclaringClass().getCanonicalName(), localName);
     }
 
     private String namedOnClassLevel(T annotation, Class<?> bean, Member member) {
         String context = name(annotation);
         if (context.isEmpty()) {
-            context = bean.getCanonicalName();
+            context = absolute(annotation) ? bean.getSimpleName() : bean.getCanonicalName();
+        } else if (!absolute(annotation)) {
+            context = MetricRegistry.name(bean.getPackage().getName(), context);
         }
-        return named(annotation, context, localName(member));
-    }
-
-    private String named(T annotation, String context, String localName) {
-        return absolute(annotation) ? localName : MetricRegistry.name(context, localName);
+        return MetricRegistry.name(context, localName(member));
     }
 
     private static String localName(Member member) {

@@ -191,7 +191,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteInferredContextNameMethod() {
-        assertNamed("name", BeanB.class);
+        assertNamed("BeanB.name", BeanB.class);
     }
 
     @ConcurrentGauge(name = "contextMethod")
@@ -205,21 +205,21 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeGivenContextNameMethod() {
-        assertNamed("contextMethod.name", BeanC.class);
+        assertNamed(BeanC.class.getPackage().getName() + ".contextMethod.name", BeanC.class);
     }
 
-    @ConcurrentGauge(name = "ignoredContextMethod", absolute = true)
-    @Counted(name = "ignoredContextMethod", absolute = true)
-    @Metered(name = "ignoredContextMethod", absolute = true)
-    @Timed(name = "ignoredContextMethod", absolute = true)
-    @SimplyTimed(name = "ignoredContextMethod", absolute = true)
+    @ConcurrentGauge(name = "contextMethod", absolute = true)
+    @Counted(name = "contextMethod", absolute = true)
+    @Metered(name = "contextMethod", absolute = true)
+    @Timed(name = "contextMethod", absolute = true)
+    @SimplyTimed(name = "contextMethod", absolute = true)
     private static class BeanD {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenContextNameMethod() {
-        assertNamed("name", BeanD.class);
+        assertNamed("contextMethod.name", BeanD.class);
     }
 
     /*
@@ -306,7 +306,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteInferredContextNameConstructor() {
-        assertNamed("BeanJ", BeanJ.class);
+        assertNamed("BeanJ.BeanJ", BeanJ.class);
     }
 
     @ConcurrentGauge(name = "contextConstructor")
@@ -320,21 +320,21 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeGivenContextNameConstructor() {
-        assertNamed("contextConstructor.BeanK", BeanK.class);
+        assertNamed(BeanK.class.getPackage().getName() + ".contextConstructor.BeanK", BeanK.class);
     }
 
-    @ConcurrentGauge(name = "ignoredContextConstructor", absolute = true)
-    @Counted(name = "ignoredContextConstructor", absolute = true)
-    @Metered(name = "ignoredContextConstructor", absolute = true)
-    @Timed(name = "ignoredContextConstructor", absolute = true)
-    @SimplyTimed(name = "ignoredContextConstructor", absolute = true)
+    @ConcurrentGauge(name = "contextConstructor", absolute = true)
+    @Counted(name = "contextConstructor", absolute = true)
+    @Metered(name = "contextConstructor", absolute = true)
+    @Timed(name = "contextConstructor", absolute = true)
+    @SimplyTimed(name = "contextConstructor", absolute = true)
     private static class BeanL {
         @SuppressWarnings("unused")
         BeanL() { /* signature not important here */ }
     }
     @Test
     public void absoluteGivenContextNameConstructor() {
-        assertNamed("BeanL", BeanL.class);
+        assertNamed("contextConstructor.BeanL", BeanL.class);
     }
 
 
@@ -370,7 +370,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteInferredSuperContextNameMethod() {
-        assertNamed("name", BeanN.class);
+        assertNamed("BeanN.name", BeanN.class);
     }
 
     @ConcurrentGauge(name = "contextMethod")
@@ -385,14 +385,14 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeGivenSuperContextNameMethod() {
-        assertNamed("contextMethod.name", BeanO.class);
+        assertNamed(BeanO.class.getPackage().getName() + ".contextMethod.name", BeanO.class);
     }
 
-    @ConcurrentGauge(name = "ignoredContextMethod", absolute = true)
-    @Counted(name = "ignoredContextMethod", absolute = true)
-    @Metered(name = "ignoredContextMethod", absolute = true)
-    @Timed(name = "ignoredContextMethod", absolute = true)
-    @SimplyTimed(name = "ignoredContextMethod", absolute = true)
+    @ConcurrentGauge(name = "contextMethod", absolute = true)
+    @Counted(name = "contextMethod", absolute = true)
+    @Metered(name = "contextMethod", absolute = true)
+    @Timed(name = "contextMethod", absolute = true)
+    @SimplyTimed(name = "contextMethod", absolute = true)
     private static class BeanPX { /* not important here */ }
     private static class BeanP extends BeanPX {
         @SuppressWarnings("unused")
@@ -400,7 +400,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteGivenSuperContextNameMethod() {
-        assertNamed("name", BeanP.class);
+        assertNamed("contextMethod.name", BeanP.class);
     }
 
     /*
@@ -435,7 +435,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteInferredSuperContextNameConstructor() {
-        assertNamed("BeanR", BeanR.class);
+        assertNamed("BeanR.BeanR", BeanR.class);
     }
 
     @ConcurrentGauge(name = "contextConstructor")
@@ -450,14 +450,14 @@ public class AnnotationReaderTest {
     }
     @Test
     public void relativeGivenSuperContextNameConstructor() {
-        assertNamed("contextConstructor.BeanS", BeanS.class);
+        assertNamed(BeanS.class.getPackage().getName() + ".contextConstructor.BeanS", BeanS.class);
     }
 
-    @ConcurrentGauge(name = "ignoredContextConstructor", absolute = true)
-    @Counted(name = "ignoredContextConstructor", absolute = true)
-    @Metered(name = "ignoredContextConstructor", absolute = true)
-    @Timed(name = "ignoredContextConstructor", absolute = true)
-    @SimplyTimed(name = "ignoredContextConstructor", absolute = true)
+    @ConcurrentGauge(name = "contextConstructor", absolute = true)
+    @Counted(name = "contextConstructor", absolute = true)
+    @Metered(name = "contextConstructor", absolute = true)
+    @Timed(name = "contextConstructor", absolute = true)
+    @SimplyTimed(name = "contextConstructor", absolute = true)
     private static class BeanTx { /* not important here */ }
     private static class BeanT extends BeanTx {
         @SuppressWarnings("unused")
@@ -465,7 +465,7 @@ public class AnnotationReaderTest {
     }
     @Test
     public void absoluteGivenSuperContextNameConstructor() {
-        assertNamed("BeanT", BeanT.class);
+        assertNamed("contextConstructor.BeanT", BeanT.class);
     }
 
 
@@ -536,21 +536,21 @@ public class AnnotationReaderTest {
     private static class BeanAA {
 
         @Produces
-        @Metric
+        @Metric(absolute = true)
         Counter method() { return null; }
     }
     @Test
     public void absoluteInferredLocalNameMetricMethod() {
-        assertNamed("<this>.BeanAA.method", BeanAA.class);
+        assertNamed("method", BeanAA.class);
     }
 
     private static class BeanAB {
-        @Metric
+        @Metric(absolute = true)
         Counter field;
     }
     @Test
     public void absoluteInferredLocalNameMetricField() {
-        assertNamed("<this>.BeanAB.field", BeanAB.class);
+        assertNamed("field", BeanAB.class);
     }
 
     /*
