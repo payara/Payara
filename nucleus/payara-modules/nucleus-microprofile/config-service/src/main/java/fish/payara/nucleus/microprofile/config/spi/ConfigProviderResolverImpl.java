@@ -454,8 +454,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         info.addTransientAppMetaData(APP_ALIAS_METADATA_KEY, appAliasConfigProperties);
         try {
             // Read application defined alias properties and add as transient metadata
-            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config-alias.properties"));
-            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config-alias.properties"));
+            appAliasConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config-alias.properties"));
+            appAliasConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config-alias.properties"));
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
