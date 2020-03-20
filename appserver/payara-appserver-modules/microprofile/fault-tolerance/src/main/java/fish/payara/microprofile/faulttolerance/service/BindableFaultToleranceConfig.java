@@ -241,6 +241,11 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     }
 
     @Override
+    public Class<? extends Throwable>[] skipOn(CircuitBreaker annotation) {
+        return getClassArrayValue(CircuitBreaker.class, "skipOn", annotation.skipOn());
+    }
+
+    @Override
     public long delay(CircuitBreaker annotation) {
         return longValue(CircuitBreaker.class, "delay", annotation.delay());
     }
@@ -319,6 +324,16 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     @Override
     public String fallbackMethod(Fallback annotation) {
         return value(Fallback.class, "fallbackMethod", String.class, annotation.fallbackMethod());
+    }
+
+    @Override
+    public Class<? extends Throwable>[] applyOn(Fallback annotation) {
+        return getClassArrayValue(Fallback.class, "applyOn", annotation.applyOn());
+    }
+
+    @Override
+    public Class<? extends Throwable>[] skipOn(Fallback annotation) {
+        return getClassArrayValue(Fallback.class, "skipOn", annotation.skipOn());
     }
 
 

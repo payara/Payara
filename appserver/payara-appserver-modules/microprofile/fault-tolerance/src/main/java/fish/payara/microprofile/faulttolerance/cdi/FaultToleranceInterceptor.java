@@ -48,6 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Priority;
+import javax.enterprise.context.control.RequestContextController;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
@@ -72,6 +74,9 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
     @Inject
     private BeanManager beanManager;
 
+    @Inject
+    private Instance<RequestContextController> requestContextControllerInstance;
+
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
@@ -82,7 +87,7 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
                 lazyConfig.updateAndGet(value -> value != null ? value : env.getConfig(context, this));
             FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, configSupplier);
             if (policy.isPresent) {
-                return policy.proceed(context, () -> env.getMethodContext(context, policy));
+                return policy.proceed(context, () -> env.getMethodContext(context, policy, getRequestContextController()));
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"
@@ -90,6 +95,10 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
             // fall-through to normal proceed
         }
         return context.proceed();
+    }
+
+    private RequestContextController getRequestContextController() {
+        return requestContextControllerInstance.isResolvable() ? requestContextControllerInstance.get() : null;
     }
 
     @Override

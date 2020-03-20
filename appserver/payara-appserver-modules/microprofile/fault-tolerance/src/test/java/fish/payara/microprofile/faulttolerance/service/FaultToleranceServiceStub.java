@@ -45,6 +45,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.enterprise.context.control.RequestContextController;
 import javax.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
@@ -77,7 +78,8 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+            RequestContextController requestContextController) {
         return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation);
     }
 
