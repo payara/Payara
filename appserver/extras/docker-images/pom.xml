@@ -73,7 +73,6 @@
                             <images>
                                 <image>
                                     <name>${dockerRepositoryName}</name>
-
                                     <build>
                                         <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                         <filter>@</filter>
@@ -85,6 +84,7 @@
                                         <assembly>
                                             <mode>tar</mode>
                                             <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
                                         </assembly>
                                     </build>
                                 </image>
