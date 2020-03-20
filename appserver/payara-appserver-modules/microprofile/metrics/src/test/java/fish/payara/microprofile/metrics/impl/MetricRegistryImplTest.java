@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,23 +11,23 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -87,7 +87,7 @@ import fish.payara.microprofile.metrics.impl.TimerImpl;
 /**
  * Tests the basic correctness of the {@link MetricRegistryImpl}.
  * This does not include and form of thread-safety testing.
- * 
+ *
  * @author Jan Bernitt
  */
 public class MetricRegistryImplTest {
@@ -119,7 +119,7 @@ public class MetricRegistryImplTest {
     @Test
     public void counterByNameUsesExistingMetadataForSameName() {
         assertExistingMetadataIsUsed(
-            name -> registry.counter(withName(name)), 
+            name -> registry.counter(withName(name)),
             name -> registry.counter(name));
     }
 
@@ -165,14 +165,14 @@ public class MetricRegistryImplTest {
 
     @Test
     public void counterByMetaThrowsExceptionWhenMetadataIsDifferent() {
-        assertException("Tried to retrieve metric with conflicting metadata, looking for ...", 
+        assertException("Tried to lookup a metric with conflicting metadata, looup is ...",
             name -> registry.counter(withName(name)),
             name -> registry.counter(withNameAnd(name).withDisplayName("other").build()));
     }
 
     @Test
     public void findOrCreateThrowsExceptionWhenExistingMetadataIsNotSameType() {
-        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']", 
+        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']",
             name -> registry.counter(withName(name)),
             name -> registry.histogram(withName(name), SOME_TAG));
     }
@@ -186,19 +186,19 @@ public class MetricRegistryImplTest {
 
     @Test
     public void registerByNameThrowsExceptionWhenNameIsEmpty() {
-        assertException("Metric name must not be null or empty", 
+        assertException("Metric name must not be null or empty",
             () -> registry.register("", new CounterImpl()));
     }
 
     @Test
     public void registerByNameThrowsExceptionWhenNameIsNull() {
-        assertException("Metric name must not be null or empty", 
+        assertException("Metric name must not be null or empty",
             () -> registry.register((String) null, new CounterImpl()));
     }
 
     @Test
     public void registerByNameThrowsExceptionWhenTypeIsDifferent() {
-        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']", 
+        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']",
             name -> registry.register(withName(name), new CounterImpl(), SOME_TAG),
             name -> registry.register(name, new HistogramImpl()));
     }
@@ -256,37 +256,37 @@ public class MetricRegistryImplTest {
     public void registerByMetadataAllowsToReuseAsLongAsMetadataIsSame() {
         Histogram h1 = new HistogramImpl();
         assertExistingMetadataIsUsed(
-            name -> registry.register(withName(name), h1), 
+            name -> registry.register(withName(name), h1),
             name -> registry.register(withName(name), new HistogramImpl()));
         assertSame(h1, registry.getHistograms().values().iterator().next());
     }
 
     @Test
     public void registerByMetadataThrowsExceptionWhenNameIsEmpty() {
-        assertException("Metric name must not be null or empty", 
+        assertException("Metric name must not be null or empty",
             () -> registry.register(withName(""), new MeterImpl()));
     }
 
     @Test
     public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotReuableExisting() {
-        assertException("Metric ['%s'] already exists and declared not reusable", 
+        assertException("Metric ['%s'] already exists and declared not reusable",
             name -> registry.register(withNameAnd(name).notReusable().build(), new HistogramImpl()),
             name -> registry.register(withName(name), new HistogramImpl()));
     }
 
     @Test
     public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotReuableRegistered() {
-        assertException("Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", 
+        assertException("Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable",
             name -> registry.register(withName(name), new HistogramImpl()),
             name -> registry.register(withNameAnd(name).notReusable().build(), new HistogramImpl()));
     }
 
     @Test
     public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotSameType() {
-        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']", 
+        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']",
             name -> registry.register(withName(name), new CounterImpl()),
             name -> registry.register(withName(name), new HistogramImpl()));
-        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']", 
+        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']",
             name -> registry.register(withName(name), new CounterImpl()),
             name -> registry.register(withNameAnd(name).withType(HISTOGRAM).build(), new CounterImpl()));
     }
@@ -296,17 +296,17 @@ public class MetricRegistryImplTest {
         Method dummy = getClass().getMethods()[0];
         Gauge<?> gauge1 = new GaugeImpl<>(dummy, this);
         Gauge<?> gauge2 = new GaugeImpl<>(dummy, this);
-        assertException("Gauge type metric['%s'] is not reusable", 
+        assertException("Gauge type metric['%s'] is not reusable",
             name -> registry.register(withName(name), gauge1),
             name -> registry.register(withName(name), gauge2));
-        assertException("Gauge type metric['%s'] is not reusable", 
+        assertException("Gauge type metric['%s'] is not reusable",
             name -> registry.register(name, gauge1),
             name -> registry.register(name, gauge2));
     }
 
     @Test
     public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotSameMetadata() {
-        assertException("Metadata ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='display'}'] already registered, does not match provided ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='other'}']", 
+        assertException("Metadata ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='display'}'] already registered, does not match provided ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='other'}']",
             name -> registry.register(withName(name), new CounterImpl()),
             name -> registry.register(withNameAnd(name).withDisplayName("other").build(), new CounterImpl()));
     }
@@ -385,7 +385,7 @@ public class MetricRegistryImplTest {
     public void getMetricByIdThrowsExceptionWhenWrongTypeIsRequested() {
         String name = nextName();
         registry.counter(name);
-        assertException("Invalid metric type : interface org.eclipse.microprofile.metrics.Histogram", 
+        assertException("Invalid metric type : interface org.eclipse.microprofile.metrics.Histogram",
                 () -> registry.getMetric(new MetricID(name), Histogram.class));
     }
 

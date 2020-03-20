@@ -383,11 +383,16 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
-        return findMetricOrCreate(Metadata.builder().withName(name).withType(metricType).build(), true, tags);
+        Metadata metadata = Metadata.builder()
+                .withName(name)
+                .withType(metricType)
+                .withOptionalDisplayName(null)
+                .build();
+        return findMetricOrCreate(metadata, true, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, Tag... tags) {
-        return findMetricOrCreate(Metadata.builder(metadata).withType(metricType).build(), false, tags);
+        return findMetricOrCreate(withType(metadata, metricType), false, tags);
     }
 
     @SuppressWarnings("unchecked")
@@ -405,7 +410,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         if (useExistingMetadata && metadata.getType() != family.metadata.getType()
                 || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
-                    String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
+                    String.format("Tried to lookup a metric with conflicting metadata, looup is %s, existing is %s",
                             metadata.toString(), family.metadata.toString()));
         }
         return (T) existing;
@@ -430,7 +435,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     @SuppressWarnings("unchecked")
     private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
         if (metadata.getTypeRaw() == MetricType.INVALID) {
-            metadata = Metadata.builder(metadata).withType(MetricType.from(metric.getClass())).build();
+            metadata = withType(metadata, MetricType.from(metric.getClass()));
         }
         String name = metadata.getName();
         checkNameIsNotNullOrEmpty(name);
@@ -580,5 +585,18 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
         }
         return str.toString();
+    }
+
+    /**
+     * This is a workaround to prevent setting display name field as side effect of using
+     * {@link Metadata#builder(Metadata)}. It does not prevent the issue in case the type needs setting but it can if it
+     * does not need to be set. There is no API way to make the resulting {@link Metadata} identical in case the type is
+     * set.
+     */
+    private static Metadata withType(Metadata metadata, MetricType type) {
+        if (type == metadata.getTypeRaw()) {
+            return metadata; // already set
+        }
+        return Metadata.builder(metadata).withType(type).build();
     }
 }

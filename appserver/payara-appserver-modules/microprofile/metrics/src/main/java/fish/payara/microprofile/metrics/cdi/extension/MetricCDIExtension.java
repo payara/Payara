@@ -125,13 +125,14 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private final List<String> validationMessages = new ArrayList<>();
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
-//        beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
         addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
         addNonbindingAnnotation(ConcurrentGauge.class, beforeBeanDiscovery);
         addNonbindingAnnotation(Metered.class, beforeBeanDiscovery);
         addNonbindingAnnotation(Timed.class, beforeBeanDiscovery);
         addNonbindingAnnotation(SimplyTimed.class, beforeBeanDiscovery);
         addNonbindingAnnotation(Gauge.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(org.eclipse.microprofile.metrics.annotation.Metric.class, beforeBeanDiscovery);
+        beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
 //
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(ConcurrentGuageInterceptor.class, manager, beforeBeanDiscovery);

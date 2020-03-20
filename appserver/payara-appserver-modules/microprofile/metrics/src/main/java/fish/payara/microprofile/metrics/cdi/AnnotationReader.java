@@ -617,7 +617,6 @@ public final class AnnotationReader<T extends Annotation> {
      */
     public boolean isReference(T annotation) {
         return unit(annotation).equals(MetricUnits.NONE)
-               && absolute(annotation)
                && description(annotation).isEmpty()
                && displayName(annotation).isEmpty();
     }
