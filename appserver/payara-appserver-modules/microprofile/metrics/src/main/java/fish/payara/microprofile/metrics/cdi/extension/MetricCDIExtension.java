@@ -126,11 +126,12 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
 //        beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
-        addInterceptorBinding(Counted.class, manager, beforeBeanDiscovery);
-        addInterceptorBinding(ConcurrentGauge.class, manager, beforeBeanDiscovery);
-        addInterceptorBinding(Metered.class, manager, beforeBeanDiscovery);
-        addInterceptorBinding(Timed.class, manager, beforeBeanDiscovery);
-        addInterceptorBinding(SimplyTimed.class, manager, beforeBeanDiscovery);
+        addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(ConcurrentGauge.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(Metered.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(Timed.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(SimplyTimed.class, beforeBeanDiscovery);
+        addNonbindingAnnotation(Gauge.class, beforeBeanDiscovery);
 //
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(ConcurrentGuageInterceptor.class, manager, beforeBeanDiscovery);
@@ -250,8 +251,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         producerMetrics.clear();
     }
 
-    private static <T extends Annotation> void addInterceptorBinding(Class<T> annotation, BeanManager manager, BeforeBeanDiscovery beforeBeanDiscovery) {
-        //beforeBeanDiscovery.addInterceptorBinding(annotation);
+    private static <T extends Annotation> void addNonbindingAnnotation(Class<T> annotation, BeforeBeanDiscovery beforeBeanDiscovery) {
         beforeBeanDiscovery.configureInterceptorBinding(annotation)
                 .filterMethods(method -> !method.isAnnotationPresent(Nonbinding.class))
                 .forEach(method -> method.add(NON_BINDING));

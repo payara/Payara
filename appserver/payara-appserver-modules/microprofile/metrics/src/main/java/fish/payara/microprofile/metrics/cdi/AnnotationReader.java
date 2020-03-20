@@ -581,16 +581,16 @@ public final class AnnotationReader<T extends Annotation> {
     private Metadata metadata(T annotation, String name) {
         return Metadata.builder()
                 .withName(name)
-                .withOptionalDisplayName(asNull("", displayName(annotation)))
-                .withOptionalDescription(asNull("", description(annotation)))
+                .withOptionalDisplayName(emptyAsNull(displayName(annotation)))
+                .withOptionalDescription(emptyAsNull(description(annotation)))
                 .withType(type)
-                .withOptionalUnit(asNull(MetricUnits.NONE,unit(annotation)))
+                .withOptionalUnit(emptyAsNull(unit(annotation)))
                 .reusable(reusable(annotation))
                 .build();
     }
 
-    private static String asNull(String nullToken, String actual) {
-        return nullToken.equals(actual) ? null : actual;
+    private static String emptyAsNull(String actual) {
+        return actual.isEmpty() ? null : actual;
     }
 
     @Override
