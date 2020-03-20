@@ -39,20 +39,19 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ServerContext;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
 public class SystemPropertyConfigSource extends PayaraConfigSource implements ConfigSource {
-    
+
     // Provides access to information on the server including;
     // command line, initial context, service locator, installation
     // Classloaders, config root for the server
@@ -64,13 +63,13 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
 
     /**
      * Only use in unit tests
-     * @param test 
+     * @param test
      */
     SystemPropertyConfigSource(boolean test) {
         super(test);
     }
-    
-    
+
+
 
     @Override
     public Map<String, String> getProperties() {
@@ -104,5 +103,5 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
     public String getName() {
         return "SystemProperty";
     }
-    
+
 }

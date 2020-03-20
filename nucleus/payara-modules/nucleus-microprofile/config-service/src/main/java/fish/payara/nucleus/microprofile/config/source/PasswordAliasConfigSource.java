@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,17 +96,21 @@ public class PasswordAliasConfigSource extends PayaraConfigSource implements Con
 
         String value = null;
 
+        // Attempt to match literally against password store
         if (store.containsKey(name)) {
             value = new String(store.get(name));
-        } else if (TranslatedConfigView.getAlias(name, ALIAS_TOKEN) != null) {
-            try {
-                value = TranslatedConfigView.getRealPasswordFromAlias(name);
-            } catch (IllegalArgumentException iae) {
-                Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINEST, iae.getMessage());
-            } catch (IOException | CertificateException | NoSuchAlgorithmException |
-                    UnrecoverableKeyException | KeyStoreException exception) {
-                Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINE,
-                        "Exception caught reading from Password Alias store", exception);
+        } else {
+            // Check if the property being asked for is in the format ${ALIAS=xxx} and get the password associated with the alias if so
+            if (TranslatedConfigView.getAlias(name, ALIAS_TOKEN) != null) {
+                try {
+                    value = TranslatedConfigView.getRealPasswordFromAlias(name);
+                } catch (IllegalArgumentException iae) {
+                    Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINEST, iae.getMessage());
+                } catch (IOException | CertificateException | NoSuchAlgorithmException |
+                        UnrecoverableKeyException | KeyStoreException exception) {
+                    Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINE,
+                            "Exception caught reading from Password Alias store", exception);
+                }
             }
         }
 
