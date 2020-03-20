@@ -12,6 +12,7 @@
 
     <properties>
         <dockerRepositoryName>payara/micro</dockerRepositoryName>
+        <docker.java.repository>azul/zulu-openjdk-alpine</docker.java.repository>
     </properties>
 
     <dependencies>

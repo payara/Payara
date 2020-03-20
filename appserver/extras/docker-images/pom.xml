@@ -24,7 +24,9 @@
         <!-- use false for faster testing, but you depend on cached results then -->
         <docker.noCache>true</docker.noCache>
         <dockerfile.tag>${payara.version}</dockerfile.tag>
-        <docker.basicJdkImage>azul/zulu-openjdk:8u232</docker.basicJdkImage>
+        <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
+        <docker.java.tag>8u232</docker.java.tag>
+        <docker.java.image>${docker.java.repository}:${docker.java.tag}</docker.java.image>
         <docker.payara.domainName>production</docker.payara.domainName>
     </properties>
 

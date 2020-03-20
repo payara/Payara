@@ -1,4 +1,4 @@
-FROM @docker.basicJdkImage@
+FROM @docker.java.image@
 
 # Default payara ports to expose
 EXPOSE 6900 8080
@@ -9,8 +9,8 @@ ENV PAYARA_HOME=/opt/payara\
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
-    && groupadd -g 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${PAYARA_HOME} payara -g payara \
+    && addgroup payara \
+    && adduser -D -h ${PAYARA_HOME} -H -s /bin/bash payara -G payara \
     && echo payara:payara | chpasswd \
     && mkdir -p ${DEPLOY_DIR}  \
     && chown -R payara:payara ${PAYARA_HOME} \
