@@ -1,4 +1,4 @@
-FROM @docker.basicJdkImage@
+FROM @docker.java.image@
 
 ENV HOME_DIR=/opt/payara
 ENV PAYARA_DIR=${HOME_DIR}/payara5 \

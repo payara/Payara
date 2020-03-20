@@ -1,4 +1,4 @@
-FROM @docker.basicJdkImage@
+FROM @docker.java.image@
 
 # Default payara ports to expose
 # 4848: admin console
