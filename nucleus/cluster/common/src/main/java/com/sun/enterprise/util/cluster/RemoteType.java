@@ -43,8 +43,6 @@
 package com.sun.enterprise.util.cluster;
 
 /**
- * Type of the remote node. Relates to a way how DAS will communicate with it.
- *
  * @author Byron Nevins
  */
 public enum RemoteType {

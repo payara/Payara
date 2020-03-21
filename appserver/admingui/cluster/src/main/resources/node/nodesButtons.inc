@@ -59,16 +59,13 @@
         if ("#{pageSession.valueMap['type']}=SSH"){
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-ssh");
             if ("#{pageSession.psSelected}=1"){
-                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="KEY");
                 mapPut(map="#{pageSession.valueMap}" key="sshpassword" value="");
             }
             if ("#{pageSession.psSelected}=2"){
-                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="PASSWORD");
                 mapPut(map="#{pageSession.valueMap}" key="sshkeyfile" value="");
                 gfr.fixPswd();
             }
             if ("#{pageSession.psSelected}=3"){
-                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="PASSWORD");
                 mapPut(map="#{pageSession.valueMap}" key="sshkeyfile" value="")
                 gfr.fixPswd();
             }
@@ -76,8 +73,7 @@
                 mapPut(map="#{pageSession.valueMap}" key="force" value="false");
             }
             // filters valueMap to attrsMap
-            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir",
-                "sshauthtype", "sshport", "sshuser", "sshpassword" "sshkeyfile", "force"});
+            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir", "sshport", "sshuser", "sshpassword" "sshkeyfile", "force"});
             gfr.prepareNodeCmd();
 
             //Run setup-ssh; sMap is special map with parameters for this call

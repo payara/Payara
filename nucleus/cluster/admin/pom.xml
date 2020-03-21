@@ -108,11 +108,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>trilead-ssh2-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>

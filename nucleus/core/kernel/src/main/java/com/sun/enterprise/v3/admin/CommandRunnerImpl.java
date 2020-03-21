@@ -1001,7 +1001,6 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     static void validateParameters(final CommandModel model,
             final ParameterMap parameters) throws MultiException {
-        logger.fine(() -> String.format("validateParameters(model=%s, parameters=%s)", model, parameters));
 
         ParameterMap adds = null; // renamed password parameters
         boolean autoname = false;
