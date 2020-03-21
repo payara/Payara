@@ -113,7 +113,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
     private static final String CONTEXT_PROPS_FILE = "MICRO-INF/deploy/contexts.properties";
 
-    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
+    private static final Logger LOGGER;
+
+    static {
+        PayaraLogManagerInitializer.tryToSetAsDefault(createDefaultLoggingProperties());
+        LOGGER = Logger.getLogger("PayaraMicro");
+    }
+
     private static PayaraMicroImpl instance;
 
     private String hzMulticastGroup;
@@ -158,13 +164,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private File copyDirectory;
     private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
-    private List<String> repositoryURLs;
+    private final List<String> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
-    private BootCommands preBootCommands;
-    private BootCommands postBootCommands;
-    private BootCommands postDeployCommands;
+    private final BootCommands preBootCommands;
+    private final BootCommands postBootCommands;
+    private final BootCommands postDeployCommands;
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -202,12 +208,27 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
-    public static void main(String args[]) throws Exception {
-        PayaraLogManagerInitializer.tryToSetAsDefault();
+    public static void main(String args[]) throws BootstrapException {
         create(args);
     }
 
-    public static PayaraMicroBoot create(String[] args) throws Exception {
+    static void initializeLoggingSystem() {
+        // no body required, the trick is that before any method of this class
+        // will be called, static class initialization will be done.
+    }
+
+    private static Properties createDefaultLoggingProperties() {
+        final Properties cfg = new Properties();
+        cfg.setProperty("handlers", "java.util.logging.ConsoleHandler");
+        cfg.setProperty("systemRootLoggerLevel", Level.INFO.getName());
+        cfg.setProperty(".level", Level.INFO.getName());
+        // useful to track any startup race conditions etc. Logging is always in game.
+        cfg.setProperty("fish.payara.logging.jul.tracingEnabled", "false");
+        return cfg;
+    }
+
+
+    public static PayaraMicroBoot create(String[] args) throws BootstrapException {
         // configure boot system properties
         setBootProperties();
         PayaraMicroImpl main = getInstance();
