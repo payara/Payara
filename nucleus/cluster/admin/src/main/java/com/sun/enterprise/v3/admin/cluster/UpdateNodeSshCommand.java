@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.SshAuthType;
+
 import com.sun.enterprise.config.serverbeans.Node;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -75,7 +76,7 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
     @Param(name = "sshuser", optional = true)
     private String sshuserInSubClass;
     /** {@link SshAuthType} name */
-    @Param(name = "sshauthtype", optional = true)
+    @Param(name = "sshauthtype", optional = true, acceptableValues = "KEY,PASSWORD")
     private String sshAuthTypeInSubClass;
     @Param(name = "sshkeyfile", optional = true)
     private String sshkeyfileInSubClass;
