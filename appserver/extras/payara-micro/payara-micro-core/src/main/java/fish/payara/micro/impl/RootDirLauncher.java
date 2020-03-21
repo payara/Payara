@@ -41,6 +41,7 @@
 package fish.payara.micro.impl;
 
 import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.PayaraMicroLoggingInitializer;
 
 import java.io.File;
 import java.net.URI;
@@ -54,7 +55,13 @@ import java.util.logging.Logger;
 public class RootDirLauncher {
     static final String BOOT_JAR_URL = "fish.payara.micro.BootJar";
     static final String ROOT_DIR_PATH = "fish.payara.micro.UnpackDir";
-    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
+
+    private static final Logger LOGGER;
+
+    static {
+        PayaraMicroLoggingInitializer.initialize();
+        LOGGER = Logger.getLogger("PayaraMicro");
+    }
 
     public static void main(String[] args) throws Exception {
         File bootJar = determineBootJar();
@@ -63,6 +70,7 @@ public class RootDirLauncher {
         System.setProperty(ROOT_DIR_PATH, rootDir);
         PayaraMicroImpl.main(prepareArgs(args, rootDir));
     }
+
 
     private static String[] prepareArgs(String[] args, String rootDir) {
         String[] result = args;

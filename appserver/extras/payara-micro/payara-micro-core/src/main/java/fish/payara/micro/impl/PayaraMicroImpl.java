@@ -47,10 +47,11 @@ import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsComman
 import fish.payara.boot.runtime.BootCommand;
 import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.PayaraLogManagerConfigurationParser;
 import fish.payara.micro.BootstrapException;
+import fish.payara.micro.PayaraMicroLoggingInitializer;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.AdminCommandRunner;
 import fish.payara.micro.boot.PayaraMicroBoot;
@@ -117,7 +118,11 @@ import org.glassfish.embeddable.GlassFishRuntime;
  */
 public class PayaraMicroImpl implements PayaraMicroBoot {
 
-    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
+    private static final Logger LOGGER;
+    static {
+        PayaraMicroLoggingInitializer.initialize();
+        LOGGER = Logger.getLogger("PayaraMicro");
+    }
 
     private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
     private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
@@ -213,12 +218,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
-    public static void main(String args[]) throws Exception {
-        PayaraLogManagerInitializer.tryToSetAsDefault();
+    public static void main(String args[]) throws BootstrapException {
         create(args);
     }
 
-    public static PayaraMicroBoot create(String[] args) throws Exception {
+
+    public static PayaraMicroBoot create(String[] args) throws BootstrapException {
         // configure boot system properties
         setBootProperties();
         PayaraMicroImpl main = getInstance();
@@ -1823,7 +1828,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void resetAndReloadLoggingConfiguration() throws IOException {
         if (PayaraLogManager.isPayaraLogManager()) {
-            PayaraLogManager.getLogManager().resetAndReadConfiguration(runtimeDir.getLoggingProperties());
+            PayaraLogManager.getLogManager()
+                .reconfigure(new PayaraLogManagerConfigurationParser().parse(runtimeDir.getLoggingProperties()));
         } else {
             try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
                 LogManager.getLogManager().readConfiguration(is);

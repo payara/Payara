@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,7 @@
  */
 package fish.payara.micro.boot;
 
-import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.PayaraMicroLoggingInitializer;
 import fish.payara.micro.boot.loader.ExecutableArchiveLauncher;
 import fish.payara.micro.boot.loader.archive.Archive;
 import java.lang.reflect.Method;
@@ -66,7 +66,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     /**
      * Boot method via java -jar
      * @param args
-     * @throws Exception 
+     * @throws Exception
      */
     public static void main(String args[]) throws Exception {
         create("main", args);
@@ -77,6 +77,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     }
 
     private static PayaraMicroBoot create(String method, String args[]) throws Exception {
+        PayaraMicroLoggingInitializer.initialize();
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
         // set system property for our jar file
         ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
@@ -102,17 +103,16 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
      * @throws InstantiationException
      * @throws IllegalAccessException
      * @throws ClassNotFoundException
-     * @throws Exception 
+     * @throws Exception
      */
     public static PayaraMicroBoot getBootClass() throws InstantiationException, IllegalAccessException, ClassNotFoundException, Exception {
-        
+
         if (bootInstance == null) {
-            
             if (mainBoot) {
                 Class<?> mainClass = Thread.currentThread().getContextClassLoader()
                                         .loadClass("fish.payara.micro.impl.PayaraMicroImpl");
                 Method instanceMethod = mainClass.getDeclaredMethod("getInstance");
-                bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);                
+                bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);
             } else {
                 PayaraMicroLauncher launcher = new PayaraMicroLauncher();
 

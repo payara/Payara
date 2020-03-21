@@ -112,6 +112,7 @@ public class PayaraLogManager extends LogManager {
         // - creates final root and global loggers,
         // - calls also addLogger.
         // - calls setLevel if the level was not set in addLogger.
+        // OR something already configured another log manager implementation
         // Therefore status is now moved directly to UNCONFIGURED
         status = PayaraLoggingStatus.UNCONFIGURED;
         final PayaraLogManager logManager = getLogManager();

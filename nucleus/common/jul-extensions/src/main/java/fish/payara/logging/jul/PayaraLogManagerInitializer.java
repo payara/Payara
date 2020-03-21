@@ -77,7 +77,8 @@ public class PayaraLogManagerInitializer {
             // until everything is set.
             System.setProperty(JVM_OPT_LOGGING_MANAGER, CLASS_LOG_MANAGER);
             final Class<?> logManagerClass = newClassLoader.loadClass(CLASS_LOG_MANAGER);
-            PayaraLoggingTracer.trace(PayaraLogManagerInitializer.class, () -> "Using log manager " + logManagerClass);
+            PayaraLoggingTracer.trace(PayaraLogManagerInitializer.class,
+                () -> "Will initialize log manager " + logManagerClass);
 
             return PayaraLogManager.initialize(configuration);
         } catch (IOException | ClassNotFoundException e) {
