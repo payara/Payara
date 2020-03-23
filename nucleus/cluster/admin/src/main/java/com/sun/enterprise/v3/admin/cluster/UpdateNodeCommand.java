@@ -261,7 +261,7 @@ public class UpdateNodeCommand implements AdminCommand {
                         if(sshnodehost != null) {
                             sshConnector.setSshHost(sshnodehost);
                         }
-
+                        writeableNode.setSshConnector(sshConnector);
                         if (sshAuthType != null || sshuser != null //
                             || sshkeyfile != null || sshpassword != null || sshkeypassphrase != null) {
                             SshAuth sshAuth = sshConnector.getSshAuth();
@@ -303,7 +303,6 @@ public class UpdateNodeCommand implements AdminCommand {
                             }
                             sshConnector.setSshAuth(sshAuth);
                         }
-                        writeableNode.setSshConnector(sshConnector);
                     }
 
                     if (dockerImage != null) {
