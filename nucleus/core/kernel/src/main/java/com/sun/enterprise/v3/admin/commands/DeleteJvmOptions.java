@@ -164,9 +164,10 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
             List<String> jvmopts = new ArrayList<>(bag1.getJvmRawOptions());
             int orig = jvmopts.size();
             boolean removed = false;
-            Iterator<String> iter = jvmopts.iterator();
+            Iterator<String> iter;  
             for (String toRemoveOption : toRemoveOptions) {
                 String option = new JvmOption(toRemoveOption).option;
+                iter = jvmopts.iterator();
                 while (iter.hasNext()) {
                     if (new JvmOption(iter.next()).option.equals(option)) {
                         iter.remove();
