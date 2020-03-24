@@ -38,50 +38,35 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.micro;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import fish.payara.logging.jul.PayaraLogManagerInitializer;
 import java.util.Properties;
+import java.util.logging.Level;
 
 /**
+ * Preinitializes logging of Payara Micro with default configuration.
+ * If the logging system was already configured, it does nothing.
+ *
  * @author David Matejcek
  */
-public class PayaraLogManagerConfigurationParser {
+public class PayaraMicroLoggingInitializer {
 
-    public PayaraLogManagerConfiguration parse(final File file) throws IOException {
-        return new PayaraLogManagerConfiguration(load(file));
+    private static final Properties CFG;
+    static {
+        CFG = new Properties();
+        CFG.setProperty("handlers", "java.util.logging.ConsoleHandler");
+        CFG.setProperty("systemRootLoggerLevel", Level.INFO.getName());
+        CFG.setProperty(".level", Level.INFO.getName());
+        // useful to track any startup race conditions etc. Logging is always in game.
+//        CFG.setProperty("fish.payara.logging.jul.tracingEnabled", "true");
     }
 
 
-    public PayaraLogManagerConfiguration parse(final InputStream stream) throws IOException {
-        final Properties properties = new Properties();
-        properties.load(stream);
-        PayaraLoggingTracer.trace(PayaraLogManagerConfigurationParser.class, "Creating PayaraLogManagerConfiguration with properties: \n" + properties);
-        return new PayaraLogManagerConfiguration(properties);
-    }
-
-
-    public InputStream toInputStream(final Properties properties) throws IOException {
-        final ByteArrayOutputStream outputstream = new ByteArrayOutputStream(32768);
-        properties.store(outputstream, null);
-        return new ByteArrayInputStream(outputstream.toByteArray());
-    }
-
-    public Properties load(final File file) throws IOException {
-        if (!file.canRead()) {
-            return null;
-        }
-        try (InputStream input = new FileInputStream(file)) {
-            final Properties properties = new Properties();
-            properties.load(input);
-            return properties;
-        }
+    /**
+     * If it wasn't done yet, preinitializes the logging system of the Payara Micro.
+     */
+    public static void initialize() {
+        PayaraLogManagerInitializer.tryToSetAsDefault(CFG);
     }
 }

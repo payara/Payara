@@ -89,20 +89,19 @@
         </developer>
     </developers>
     <build>
-     <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-  </build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 
 
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>payara-jul-extensions</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.core</groupId>

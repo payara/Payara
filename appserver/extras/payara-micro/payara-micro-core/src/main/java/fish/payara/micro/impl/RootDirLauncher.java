@@ -41,6 +41,7 @@
 package fish.payara.micro.impl;
 
 import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.PayaraMicroLoggingInitializer;
 
 import java.io.File;
 import java.net.URI;
@@ -58,7 +59,7 @@ public class RootDirLauncher {
     private static final Logger LOGGER;
 
     static {
-        PayaraMicroImpl.initializeLoggingSystem();
+        PayaraMicroLoggingInitializer.initialize();
         LOGGER = Logger.getLogger("PayaraMicro");
     }
 

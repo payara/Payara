@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,15 +52,15 @@ import java.util.logging.Logger;
  * @author steve
  */
 public class PayaraMicro implements PayaraMicroBoot {
-    
-    
+
+
     private PayaraMicroBoot wrappee;
     private ClassLoader nestedLoader;
-    
+
     private static PayaraMicro instance;
     private static boolean explodedJars;
     private static File explodedDir;
-    
+
     /**
      * Tells the runtime to unpack the jars before booting
      * This must be called before getInstance
@@ -69,12 +69,12 @@ public class PayaraMicro implements PayaraMicroBoot {
     public static void unpackJars() {
         explodedJars = true;
     }
-    
+
     /**
      * Sets the directory where unpacked jars should live
      * And tells the runtime to unpack the jars
      * This must be called before getInstance
-     * @param file 
+     * @param file
      */
     public static void setUpackedJarDir(File file) {
         explodedDir = file;
@@ -114,28 +114,33 @@ public class PayaraMicro implements PayaraMicroBoot {
             instance = new PayaraMicro();
         }
         return instance;
-    }  
+    }
 
+    @Override
     public PayaraMicro addDeployFromGAV(String GAV) {
         wrappee.addDeployFromGAV(GAV);
         return this;
     }
 
+    @Override
     public PayaraMicro addDeployment(String pathToWar) {
         wrappee.addDeployment(pathToWar);
         return this;
     }
 
+    @Override
     public PayaraMicro addDeploymentFile(File file) {
         wrappee.addDeploymentFile(file);
         return this;
     }
 
+    @Override
     public PayaraMicro addRepoUrl(String... URLs) {
         wrappee.addRepoUrl(URLs);
         return this;
     }
 
+    @Override
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
         if (wrappee == null) {
             throw new BootstrapException("Could not create Runtime instance");
@@ -143,160 +148,195 @@ public class PayaraMicro implements PayaraMicroBoot {
         return wrappee.bootStrap();
     }
 
+    @Override
     public File getAlternateDomainXML() {
         return wrappee.getAlternateDomainXML();
     }
 
+    @Override
     public int getAutoBindRange() {
         return wrappee.getAutoBindRange();
     }
 
+    @Override
     public String getClusterMulticastGroup() {
         return wrappee.getClusterMulticastGroup();
     }
 
+    @Override
     public int getClusterPort() {
         return wrappee.getClusterPort();
     }
 
+    @Override
     public int getClusterStartPort() {
         return wrappee.getClusterStartPort();
     }
 
+    @Override
     public File getDeploymentDir() {
         return wrappee.getDeploymentDir();
     }
 
+    @Override
     public boolean getHttpAutoBind() {
         return wrappee.getHttpAutoBind();
     }
 
+    @Override
     public int getHttpPort() {
         return wrappee.getHttpPort();
     }
 
+    @Override
     public String getHzClusterName() {
         return wrappee.getHzClusterName();
     }
 
+    @Override
     public String getHzClusterPassword() {
         return wrappee.getHzClusterPassword();
     }
 
+    @Override
     public String getInstanceName() {
         return wrappee.getInstanceName();
     }
 
+    @Override
     public int getMaxHttpThreads() {
         return wrappee.getMaxHttpThreads();
     }
 
+    @Override
     public int getMinHttpThreads() {
         return wrappee.getMinHttpThreads();
     }
 
+    @Override
     public File getRootDir() {
         return wrappee.getRootDir();
     }
 
+    @Override
     public PayaraMicroRuntime getRuntime() throws IllegalStateException {
         return wrappee.getRuntime();
     }
 
+    @Override
     public boolean getSslAutoBind() {
         return wrappee.getSslAutoBind();
     }
 
+    @Override
     public int getSslPort() {
         return wrappee.getSslPort();
     }
-    
+
+    @Override
     public String getSslCert() {
         return wrappee.getSslCert();
     }
 
+    @Override
     public File getUberJar() {
         return wrappee.getUberJar();
     }
 
+    @Override
     public boolean isLite() {
         return wrappee.isLite();
     }
 
+    @Override
     public boolean isNoCluster() {
         return wrappee.isNoCluster();
     }
 
+    @Override
     public PayaraMicro setAccessLogDir(String filePath) {
         wrappee.setAccessLogDir(filePath);
         return this;
     }
 
+    @Override
     public PayaraMicro setAccessLogFormat(String format) {
         wrappee.setAccessLogFormat(format);
         return this;
     }
 
+    @Override
     public PayaraMicro setAlternateDomainXML(File alternateDomainXML) {
         wrappee.setAlternateDomainXML(alternateDomainXML);
         return this;
     }
 
+    @Override
     public PayaraMicro setApplicationDomainXML(String domainXml) {
         wrappee.setApplicationDomainXML(domainXml);
         return this;
     }
 
+    @Override
     public PayaraMicro setAutoBindRange(int autoBindRange) {
         wrappee.setAutoBindRange(autoBindRange);
         return this;
     }
 
+    @Override
     public PayaraMicro setClusterMulticastGroup(String hzMulticastGroup) {
         wrappee.setClusterMulticastGroup(hzMulticastGroup);
         return this;
     }
 
+    @Override
     public PayaraMicro setClusterPort(int hzPort) {
         wrappee.setClusterPort(hzPort);
         return this;
     }
 
+    @Override
     public PayaraMicro setClusterStartPort(int hzStartPort) {
         wrappee.setClusterStartPort(hzStartPort);
         return this;
     }
 
+    @Override
     public PayaraMicro setDeploymentDir(File deploymentRoot) {
         wrappee.setDeploymentDir(deploymentRoot);
         return this;
     }
 
+    @Override
     public PayaraMicro setHttpAutoBind(boolean httpAutoBind) {
         wrappee.setHttpAutoBind(httpAutoBind);
         return this;
     }
 
+    @Override
     public PayaraMicro setHttpPort(int httpPort) {
         wrappee.setHttpPort(httpPort);
         return this;
     }
 
+    @Override
     public PayaraMicro setHzClusterName(String hzClusterName) {
         wrappee.setHzClusterName(hzClusterName);
         return this;
     }
 
+    @Override
     public PayaraMicro setHzClusterPassword(String hzClusterPassword) {
         wrappee.setHzClusterPassword(hzClusterPassword);
         return this;
     }
-    
+
     /**
      * Gets the name of the instance group
      *
      * @return The name of the instance group
      */
+    @Override
     public String getInstanceGroup() {
         return wrappee.getInstanceGroup();
     }
@@ -307,91 +347,107 @@ public class PayaraMicro implements PayaraMicroBoot {
      * @param instanceGroup The instance group name
      * @return
      */
+    @Override
     public PayaraMicro setInstanceGroup(String instanceGroup) {
         wrappee.setInstanceGroup(instanceGroup);
         return this;
     }
 
+    @Override
     public PayaraMicro setInstanceName(String instanceName) {
         wrappee.setInstanceName(instanceName);
         return this;
     }
 
+    @Override
     public PayaraMicro setLite(boolean liteMember) {
         wrappee.setLite(liteMember);
         return this;
     }
 
+    @Override
     public PayaraMicro setLogPropertiesFile(File fileName) {
         wrappee.setLogPropertiesFile(fileName);
         return this;
     }
 
+    @Override
     public PayaraMicro setLogoFile(String filePath) {
         wrappee.setLogoFile(filePath);
         return this;
     }
 
+    @Override
     public PayaraMicro setMaxHttpThreads(int maxHttpThreads) {
         wrappee.setMaxHttpThreads(maxHttpThreads);
         return this;
     }
 
+    @Override
     public PayaraMicro setMinHttpThreads(int minHttpThreads) {
         wrappee.setMinHttpThreads(minHttpThreads);
         return this;
     }
 
+    @Override
     public PayaraMicro setNoCluster(boolean noCluster) {
         wrappee.setNoCluster(noCluster);
-        return this;        
+        return this;
     }
 
+    @Override
     public PayaraMicro setPrintLogo(boolean generate) {
         wrappee.setPrintLogo(generate);
         return this;
     }
 
+    @Override
     public PayaraMicro setRootDir(File rootDir) {
         wrappee.setRootDir(rootDir);
         return this;
     }
 
+    @Override
     public PayaraMicro setSslAutoBind(boolean sslAutoBind) {
         wrappee.setSslAutoBind(sslAutoBind);
         return this;
     }
 
+    @Override
     public PayaraMicro setSslPort(int sslPort) {
         wrappee.setSslPort(sslPort);
         return this;
     }
-    
+
+    @Override
     public PayaraMicro setSslCert(String alias) {
         wrappee.setSslCert(alias);
         return this;
     }
 
+    @Override
     public PayaraMicro setUserLogFile(String fileName) {
         wrappee.setUserLogFile(fileName);
         return this;
     }
-    
+
+    @Override
     public PayaraMicro setSniEnabled(boolean value) {
         wrappee.setSniEnabled(value);
         return this;
     }
 
+    @Override
     public void shutdown() throws BootstrapException {
         wrappee.shutdown();
     }
-    
+
     public ClassLoader setThreadBootstrapLoader() {
         ClassLoader result = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(nestedLoader);
         return result;
     }
-    
+
     public static void main(String ... args) {
         try {
             PayaraMicroLauncher.main(args);
@@ -399,7 +455,7 @@ public class PayaraMicro implements PayaraMicroBoot {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private PayaraMicro() {
         try {
             if (explodedJars) {
@@ -409,10 +465,11 @@ public class PayaraMicro implements PayaraMicroBoot {
                     nestedLoader = new ExplodedURLClassloader();
                 }
                 setThreadBootstrapLoader();
+                PayaraMicroLoggingInitializer.initialize();
                 Class<?> mainClass = Thread.currentThread().getContextClassLoader()
                         .loadClass("fish.payara.micro.impl.PayaraMicroImpl");
                 Method instanceMethod = mainClass.getDeclaredMethod("getInstance");
-                wrappee = (PayaraMicroBoot) instanceMethod.invoke(null); 
+                wrappee = (PayaraMicroBoot) instanceMethod.invoke(null);
             } else {
                 wrappee = PayaraMicroLauncher.getBootClass();
                 nestedLoader = wrappee.getClass().getClassLoader();
@@ -421,17 +478,18 @@ public class PayaraMicro implements PayaraMicroBoot {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, "Unable to create implementation class", ex);
         }
     }
-    
+
     /**
      * Adds the library to the classloader and loads it
-     * 
+     *
      * @param lib The URL or filepath of the library to add
-     * @return 
+     * @return
      * @since 4.1.2.173
      */
-    public PayaraMicro addLibrary(File lib){  
+    @Override
+    public PayaraMicro addLibrary(File lib){
         wrappee.addLibrary(lib);
         return this;
     }
-    
+
 }
