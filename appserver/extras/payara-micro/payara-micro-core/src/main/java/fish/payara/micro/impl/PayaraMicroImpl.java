@@ -158,9 +158,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
-    private BootCommands preBootCommands;
-    private BootCommands postBootCommands;
-    private BootCommands postDeployCommands;
+    private final BootCommands preBootCommands;
+    private final BootCommands postBootCommands;
+    private final BootCommands postDeployCommands;
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -1284,7 +1284,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 // If the first entry is a number
                                 if (requestTracing[0].matches("\\d+")) {
                                     requestTracingThresholdValue = parseArgument(requestTracing[0],
-                                            "request tracing threshold value", Long::parseLong).longValue();
+                                            "request tracing threshold value", Long::parseLong);
                                     // If there is a second entry, and it's a String
                                     if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
                                         requestTracingThresholdUnit = parseTimeUnit(requestTracing[1],
@@ -1312,7 +1312,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case requesttracingthresholdvalue:
                         requestTracingThresholdValue = parseArgument(value, "value for --requestTracingThresholdValue",
-                                Long::parseLong).longValue();
+                                Long::parseLong);
                         break;
                     case enablerequesttracingadaptivesampling:
                         enableRequestTracingAdaptiveSampling = true;
@@ -1320,12 +1320,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case requesttracingadaptivesamplingtargetcount:
                         enableRequestTracingAdaptiveSampling = true;
                         requestTracingAdaptiveSamplingTargetCount = parseArgument(value,
-                                "value for --requestTracingAdaptiveSamplingTargetCount", Integer::parseInt).intValue();
+                                "value for --requestTracingAdaptiveSamplingTargetCount", Integer::parseInt);
                         break;
                     case requesttracingadaptivesamplingtimevalue:
                         enableRequestTracingAdaptiveSampling = true;
                         requestTracingAdaptiveSamplingTimeValue = parseArgument(value,
-                                "value for --requestTracingAdaptiveSamplingTimeValue", Integer::parseInt).intValue();
+                                "value for --requestTracingAdaptiveSamplingTimeValue", Integer::parseInt);
                         break;
                     case requesttracingadaptivesamplingtimeunit:
                         enableRequestTracingAdaptiveSampling = true;
@@ -2636,10 +2636,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     endpoints = null;
                 }
                 if (endpoints != null) {
-                    sb.append("\n'" + app.getName() + "' REST Endpoints:\n");
+                    sb.append("\n'").append(app.getName()).append("' REST Endpoints:\n");
                     endpoints.forEach((path, methods) -> {
                         methods.forEach(method -> {
-                            sb.append(method + "\t" + path + "\n");
+                            sb.append(method).append("\t").append(path).append("\n");
                         });
                     });
                 }
@@ -2709,7 +2709,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (property == null) {
             return defaultValue;
         }
-        return Integer.decode(property).intValue();
+        return Integer.decode(property);
     }
 
     private static long getLongProperty(String value, long defaultValue) {
@@ -2721,7 +2721,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (property == null) {
             return defaultValue;
         }
-        return Long.decode(property).longValue();
+        return Long.decode(property);
     }
 
     /**
