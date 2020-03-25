@@ -39,6 +39,7 @@
  */
 package fish.payara.micro;
 
+import fish.payara.boot.runtime.BootCommand;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
 import fish.payara.micro.boot.loader.ExplodedURLClassloader;
@@ -429,9 +430,25 @@ public class PayaraMicro implements PayaraMicroBoot {
      * @return 
      * @since 4.1.2.173
      */
+    @Override
     public PayaraMicro addLibrary(File lib){  
         wrappee.addLibrary(lib);
         return this;
+    }
+
+    @Override
+    public void addPreBootCommand(BootCommand command) {
+        wrappee.addPreBootCommand(command);
+    }
+
+    @Override
+    public void addPostBootCommand(BootCommand command) {
+        wrappee.addPostBootCommand(command);
+    }
+
+    @Override
+    public void addPostDeployCommand(BootCommand command) {
+        wrappee.addPostDeployCommand(command);
     }
     
 }

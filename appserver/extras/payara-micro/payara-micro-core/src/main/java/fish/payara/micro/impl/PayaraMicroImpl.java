@@ -55,7 +55,6 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -2760,6 +2759,21 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (secretsDir != null) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));
         }
+    }
+
+    @Override
+    public void addPreBootCommand(BootCommand command) {
+        preBootCommands.add(command);
+    }
+
+    @Override
+    public void addPostBootCommand(BootCommand command) {
+        postBootCommands.add(command);
+    }
+
+    @Override
+    public void addPostDeployCommand(BootCommand command) {
+        postDeployCommands.add(command);
     }
 
 }

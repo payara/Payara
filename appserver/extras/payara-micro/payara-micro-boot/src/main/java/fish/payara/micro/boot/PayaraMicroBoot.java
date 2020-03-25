@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.boot;
 
+import fish.payara.boot.runtime.BootCommand;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import java.io.File;
@@ -86,6 +87,25 @@ public interface PayaraMicroBoot {
      * @return
      */
     PayaraMicroBoot addRepoUrl(String... URLs);
+    
+    /**
+     * Adds a command to run before booting Payaa Micro.
+     * Not that only a limited set of commands will run here i.e. {@code set}.
+     * @param command Command to add
+     */
+    public void addPreBootCommand(BootCommand command);
+    
+    /**
+     * Adds a command to run after Payara Micro has booted
+     * @param command Command to add
+     */
+    public void addPostBootCommand(BootCommand command);
+    
+    /**
+     * Adds a command to be run after the application is deployed
+     * @param command Command to add
+     */
+    public void addPostDeployCommand(BootCommand command);
 
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
