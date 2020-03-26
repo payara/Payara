@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2020] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -40,19 +40,27 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
-import fish.payara.cdi.auth.roles.CallerAccessException;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
-import fish.payara.cdi.auth.roles.RolesPermitted;
+import static java.util.Arrays.asList;
+import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+
 import javax.annotation.Priority;
 import javax.el.ELProcessor;
 import javax.enterprise.inject.Intercepted;
@@ -65,20 +73,15 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.security.enterprise.AuthenticationStatus;
-import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
-import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import javax.security.enterprise.SecurityContext;
-import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+import fish.payara.cdi.auth.roles.CallerAccessException;
+import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
  * The RolesPermitted Interceptor authenticates requests to methods and classes
@@ -94,7 +97,9 @@ import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 @Interceptor
 @RolesPermitted
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 1000)
-public class RolesPermittedInterceptor {
+public class RolesPermittedInterceptor implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final SecurityContext securityContext;
 
