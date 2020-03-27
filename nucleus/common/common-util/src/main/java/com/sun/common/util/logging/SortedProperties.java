@@ -69,7 +69,16 @@ class SortedProperties extends Properties {
 
     @Override
     public synchronized Set<Map.Entry<Object, Object>> entrySet() {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final Comparator<Map.Entry<Object, Object>> comparator = (x, z) -> {
+            if (x.getKey() instanceof Comparable && z.getKey() instanceof Comparable) {
+                final Comparable key1 = (Comparable) x.getKey();
+                final Comparable key2 = (Comparable) z.getKey();
+                return key1.compareTo(key2);
+            }
+            return Integer.compare(x.getKey().hashCode(), z.getKey().hashCode());
+        };
         return Collections.synchronizedSet(//
-            super.entrySet().stream().sorted().collect(Collectors.toCollection(LinkedHashSet::new)));
+            super.entrySet().stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new)));
     }
 }
