@@ -9,8 +9,8 @@ ENV PAYARA_HOME=/opt/payara\
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
-    && addgroup payara \
-    && adduser -D -h ${PAYARA_HOME} -H -s /bin/bash payara -G payara \
+    && groupadd --gid 1000 payara \
+    && useradd -u 1000 -M -s /bin/bash -d ${PAYARA_HOME} payara -g payara \
     && echo payara:payara | chpasswd \
     && mkdir -p ${DEPLOY_DIR}  \
     && chown -R payara:payara ${PAYARA_HOME} \
