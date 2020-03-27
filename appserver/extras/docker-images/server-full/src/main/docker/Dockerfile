@@ -29,8 +29,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin"
 ARG TINI_VERSION=v0.18.0
 
 # Download tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
-    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
 
 RUN true \
     # Install dependencies
@@ -46,8 +46,8 @@ RUN true \
     && mkdir -p ${SCRIPT_DIR} \
     && chown -R payara: ${HOME_DIR} \
     # Verify tini
-    && gpg --batch --keyserver "hkp://ipv4.pool.sks-keyservers.net" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
-    && gpg --batch --verify /tini.asc /tini \
+    && gpg --verbose --keyserver @docker.keyserver.url@ --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
+    && gpg --verify /tini.asc \
     && chmod +x /tini \
     && true
 
