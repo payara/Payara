@@ -70,10 +70,8 @@ RUN true \
        do\
          ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options $MEMORY_JVM_OPTION;\
        done \
-    # FIXME: when upgrading this container to Java 10+, this needs to be changed to
-    #        '-XX:+UseContainerSupport' and '-XX:MaxRAMPercentage'
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options \
-      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:MaxRAMFraction=1' \
+      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=90.0' \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
       set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} \
