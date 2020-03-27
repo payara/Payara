@@ -152,7 +152,7 @@
         <tyrus.version>1.15</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>1.0.2</json.bind-api.version>
-        <yasson.version>1.0.4.payara-p2</yasson.version>
+        <yasson.version>1.0.6</yasson.version>
         <jakarta-persistence-api.version>2.2.3</jakarta-persistence-api.version>
         <eclipselink.version>2.7.4.payara-p2</eclipselink.version>
         <jakarta.transaction-api.version>1.3.3</jakarta.transaction-api.version>
