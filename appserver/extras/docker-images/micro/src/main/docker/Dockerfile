@@ -4,20 +4,21 @@ FROM @docker.java.image@
 EXPOSE 6900 8080
 
 # Configure environment variables
-ENV PAYARA_HOME=/opt/payara\
+ENV HOME_DIR=/opt/payara
+ENV PAYARA_DIR=${HOME_DIR} \
     DEPLOY_DIR=/opt/payara/deployments
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
-    && groupadd --gid 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${PAYARA_HOME} payara -g payara \
+    && addgroup --gid 1000 payara \
+    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
     && echo payara:payara | chpasswd \
     && mkdir -p ${DEPLOY_DIR}  \
-    && chown -R payara:payara ${PAYARA_HOME} \
+    && chown -R payara:payara ${HOME_DIR} \
     && true
 
 USER payara
-WORKDIR ${PAYARA_HOME}
+WORKDIR ${HOME_DIR}
 
 COPY maven/artifacts/payara-micro.jar .
 

@@ -35,11 +35,11 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /
 RUN true \
     # Install dependencies
     && apt-get update \
-    && apt-get install -y coreutils gpg \
+    && apt-get install -y gpg \
     && rm -rf /var/lib/apt/lists/* \
     # Create and set the Payara user and working directory owned by the new user
-    && groupadd --gid 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${HOME_DIR} payara -g payara \
+    && addgroup --gid 1000 payara \
+    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
     && echo payara:payara | chpasswd \
     && mkdir -p ${DEPLOY_DIR} \
     && mkdir -p ${CONFIG_DIR} \

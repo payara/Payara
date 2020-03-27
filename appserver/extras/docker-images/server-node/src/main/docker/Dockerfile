@@ -17,8 +17,8 @@ RUN true \
     && mkdir ${HOME_DIR} \
     && mkdir ${PAYARA_DIR} \
     && mkdir ${PAYARA_PASSWORD_FILE_DIR} \
-    && groupadd -g 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${HOME_DIR} payara -g payara \
+    && addgroup --gid 1000 payara \
+    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
     && echo payara:payara | chpasswd \
     && chown -R payara:payara ${HOME_DIR} \
     && true
@@ -27,7 +27,7 @@ USER payara
 WORKDIR ${HOME_DIR}
 
 COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}
-COPY --chown=payara:payara  maven/bin/* ${HOME_DIR}
+COPY --chown=payara:payara maven/bin/* ${HOME_DIR}
 
 # Start the instance
 ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"
