@@ -12,6 +12,7 @@
 
     <properties>
         <dockerRepositoryName>payara/server-full</dockerRepositoryName>
+        <docker.keyserver.url>hkp://ipv4.pool.sks-keyservers.net</docker.keyserver.url>
     </properties>
 
     <dependencies>
