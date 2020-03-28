@@ -275,14 +275,21 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the application
      */
     public static Application createVirtualApplication(String name, ModuleDescriptor<BundleDescriptor> newModule) {
-
+                
         // create a new empty application
         Application application = createApplication();
+        String webBundleRealmName = null;
 
         application.setVirtual(true);
         if (name == null && newModule != null && newModule.getDescriptor() != null) {
             name = newModule.getDescriptor().getDisplayName();
 
+        }
+        if (newModule.getDescriptor() instanceof WebBundleDescriptor) {
+            WebBundleDescriptor webBundleDesc = (WebBundleDescriptor) newModule.getDescriptor();
+            if (webBundleDesc.getLoginConfiguration() != null) {
+                webBundleRealmName = webBundleDesc.getLoginConfiguration().getRealmName();
+            }
         }
         String untaggedName = VersioningUtils.getUntaggedName(name);
         if (name != null) {
@@ -300,6 +307,10 @@ public class Application extends CommonResourceBundleDescriptor
 			}
 			application.addModule(newModule);
 		}
+
+        if (application.getRealm() == null && webBundleRealmName != null) {
+            application.setRealm(webBundleRealmName);
+        }
 
         return application;
     }
