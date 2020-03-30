@@ -66,7 +66,6 @@ import javax.el.ELProcessor;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.interceptor.AroundInvoke;
@@ -101,23 +100,20 @@ public class RolesPermittedInterceptor implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final SecurityContext securityContext;
+    private final Bean<?> interceptedBean;
 
-    private BeanManager beanManager;
-
-    private Bean<?> interceptedBean;
+    private final NonSerializableProperties lazyProperties;
 
     @Context
-    private HttpServletRequest request;
+    private transient HttpServletRequest request;
 
     @Context
-    private HttpServletResponse response;
+    private transient HttpServletResponse response;
 
     @Inject
-    public RolesPermittedInterceptor(@Intercepted Bean<?> interceptedBean, BeanManager beanManager) {
-        this.securityContext = CDI.current().select(SecurityContext.class).get();
+    public RolesPermittedInterceptor(@Intercepted Bean<?> interceptedBean) {
         this.interceptedBean = interceptedBean;
-        this.beanManager = beanManager;
+        this.lazyProperties = new NonSerializableProperties();
     }
 
     /**
@@ -160,6 +156,8 @@ public class RolesPermittedInterceptor implements Serializable {
 
         List<String> permittedRoles = asList(roles.value());
 
+        final SecurityContext securityContext = lazyProperties.getSecurityContext();
+
         if (OR.equals(roles.semantics())) {
             for (String role : permittedRoles) {
                 if (eLProcessor != null && hasAnyELExpression(role)) {
@@ -201,6 +199,8 @@ public class RolesPermittedInterceptor implements Serializable {
                 return optionalRolesPermitted.get();
             }
         }
+
+        final BeanManager beanManager = lazyProperties.getBeanManager();
 
         // Failing the Weld binding, check the method first
         optionalRolesPermitted = getAnnotationFromMethod(beanManager, invocationContext.getMethod(), RolesPermitted.class);
@@ -247,6 +247,8 @@ public class RolesPermittedInterceptor implements Serializable {
     }
 
     private ELProcessor getElProcessor(InvocationContext invocationContext) {
+        final BeanManager beanManager = lazyProperties.getBeanManager();
+
         ELProcessor elProcessor = new ELProcessor();
         elProcessor.getELManager().addELResolver(beanManager.getELResolver());
         elProcessor.defineBean("self", invocationContext.getTarget());
@@ -271,8 +273,10 @@ public class RolesPermittedInterceptor implements Serializable {
     }
 
     private void authenticate(String[] roles) {
+        final SecurityContext securityContext = lazyProperties.getSecurityContext();
+
         if (request != null && response != null
-                && roles.length > 0 && !isAuthenticated()) {
+                && roles.length > 0 && !isAuthenticated(securityContext)) {
             AuthenticationStatus status = securityContext.authenticate(request, response, withParams());
 
             // Authentication was not done at all (i.e. no credentials present) or
@@ -285,7 +289,7 @@ public class RolesPermittedInterceptor implements Serializable {
             }
 
             // compensate for possible Soteria bug, need to investigate
-            if (status == SUCCESS && !isAuthenticated()) {
+            if (status == SUCCESS && !isAuthenticated(securityContext)) {
                 throw new NotAuthorizedException(
                     "Authentication not done (i.e. no credential found)",
                     Response.status(Response.Status.UNAUTHORIZED).build()
@@ -294,7 +298,7 @@ public class RolesPermittedInterceptor implements Serializable {
         }
     }
 
-    private boolean isAuthenticated() {
+    private static boolean isAuthenticated(SecurityContext securityContext) {
         return securityContext.getCallerPrincipal() != null;
     }
 }
