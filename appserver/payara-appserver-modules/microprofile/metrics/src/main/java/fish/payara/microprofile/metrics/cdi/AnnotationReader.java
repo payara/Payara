@@ -44,6 +44,7 @@ import static java.util.Arrays.asList;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -657,14 +658,16 @@ public final class AnnotationReader<T extends Annotation> {
             return compute((AnnotatedMember<?>) annotated, func);
         }
         if (annotated instanceof AnnotatedParameter) {
-            return compute((AnnotatedParameter<?>) annotated, func);
+            return compute(point, (AnnotatedParameter<?>) annotated, func);
         }
         throw new IllegalArgumentException("Unable to retrieve data for injection point [" + point
                 + "], only members and parameters are supported");
     }
 
-    private <R> R compute(AnnotatedParameter<?> parameter, BiFunction<T, String, R> func) {
-        Member member = new MemberParameter(((AnnotatedParameter<?>) parameter).getJavaParameter());
+    private <R> R compute(InjectionPoint point, AnnotatedParameter<?> parameter, BiFunction<T, String, R> func) {
+        //NB: This is a workaround as arquillians InjectionPoint implementation for parameters does return null for getJavaParameter
+        Executable annotated = (Executable) point.getMember();
+        Member member = new MemberParameter(annotated.getParameters()[parameter.getPosition()]);
         return compute(member.getDeclaringClass(), member, parameter::getAnnotation, func);
     }
 

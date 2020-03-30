@@ -129,6 +129,7 @@ public class TestUtils {
         initAnnotated(param, parameter);
         when(fake.getAnnotated()).thenReturn(param);
         when(fake.getType()).thenReturn(parameter.getParameterizedType());
+        when(fake.getMember()).thenReturn(parameter.getDeclaringExecutable());
         return fake;
     }
 

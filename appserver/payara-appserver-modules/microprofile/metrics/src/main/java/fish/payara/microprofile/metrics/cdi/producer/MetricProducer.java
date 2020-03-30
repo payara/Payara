@@ -41,6 +41,7 @@
 package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
