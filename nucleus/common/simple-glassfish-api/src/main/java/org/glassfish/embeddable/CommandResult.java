@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable;
 
@@ -45,32 +45,11 @@ package org.glassfish.embeddable;
  * Encapsulates the result of a command invoked using {@link CommandRunner#run}.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
+ * @deprecated Moved to {@link fish.payara.asadmin.CommandResult}
  */
-public interface CommandResult {
-    /**
-     * A command can have following types of exit status.
-     */
-    enum ExitStatus {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    }
-
-    /**
-     * @return exit status of the command
-     */
-    ExitStatus getExitStatus();
-
-    /**
-     * @return command output
-     */
-    String getOutput();
-
-    /**
-     * This method returns any exception raised during command invocation, If the command's exit status
-     * is {@link ExitStatus#SUCCESS}, then this method will return null.
-     *
-     * @return any exception that occurred during this command execution.
-     */
-    Throwable getFailureCause();
+@Deprecated
+public interface CommandResult extends fish.payara.asadmin.CommandResult {
+    
+    //All functionality within this class has been moved to the payara-api package
+    
 }

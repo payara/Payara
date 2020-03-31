@@ -65,7 +65,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -80,7 +79,8 @@ import fish.payara.appserver.micro.services.command.AsAdminCallable;
 import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
 import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
-import fish.payara.micro.ClusterCommandResult;
+import fish.payara.asadmin.CommandRunner;
+import fish.payara.asadmin.CommandResult;
 import fish.payara.micro.PayaraInstance;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
@@ -182,21 +182,21 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     }
 
     @Override
-    public ClusterCommandResult executeLocalAsAdmin(String command, String... parameters) {
+    public CommandResult executeLocalAsAdmin(String command, String... parameters) {
         return new ClusterCommandResultImpl(commandRunner.run(command, parameters));
     }
 
     @Override
-    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
+    public Map<String, Future<CommandResult>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallableAllMembers(callable);
+        Map<String, Future<CommandResult>> result = cluster.getExecService().runCallableAllMembers(callable);
         return result;
     }
 
     @Override
-    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
+    public Map<String, Future<CommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
+        Map<String, Future<CommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
         return result;
     }
 

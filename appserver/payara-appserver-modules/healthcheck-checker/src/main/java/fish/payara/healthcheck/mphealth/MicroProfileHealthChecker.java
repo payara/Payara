@@ -57,7 +57,7 @@ import javax.validation.constraints.Pattern;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.appserver.micro.services.PayaraInstanceImpl;
-import fish.payara.micro.ClusterCommandResult;
+import fish.payara.asadmin.CommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
@@ -221,7 +221,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
      */
     private Map<String, Future<Integer>> pingAllInstances(long timeoutMillis) {
         Map<String, Future<Integer>> tasks = new ConcurrentHashMap<>();
-        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
+        Map<String, Future<CommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
 
         for (Server server : domain.getServers().getServer()) {
 
@@ -244,7 +244,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
                 continue;
             }
             tasks.put(instanceName, payaraExecutorService.submit(() -> {
-                ClusterCommandResult mpHealthConfigResult = configs.get(instance.getMemberUUID()) //
+                CommandResult mpHealthConfigResult = configs.get(instance.getMemberUUID()) //
                         .get(timeoutMillis, MILLISECONDS);
                 String values = mpHealthConfigResult.getOutput().split("\n")[1];
                 Boolean enabled = Boolean.parseBoolean(values.split(" ")[0]);

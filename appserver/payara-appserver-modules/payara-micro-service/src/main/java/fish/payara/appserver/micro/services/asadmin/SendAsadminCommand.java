@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@ package fish.payara.appserver.micro.services.asadmin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.micro.services.PayaraInstanceImpl;
-import fish.payara.micro.ClusterCommandResult;
+import fish.payara.asadmin.CommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,7 +137,7 @@ public class SendAsadminCommand implements AdminCommand
             }
             
             // Run the asadmin command against the targets (or all instances if no targets given)          
-            Map<String, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(
+            Map<String, Future<CommandResult>> results = payaraMicro.executeClusteredASAdmin(
                     targetInstanceDescriptors.keySet(), command, parameters);
             
             // Check the command results for any failures
@@ -146,10 +146,10 @@ public class SendAsadminCommand implements AdminCommand
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
                 
-                for (Map.Entry<String, Future<ClusterCommandResult>> result : results.entrySet()) {
+                for (Map.Entry<String, Future<CommandResult>> result : results.entrySet()) {
                     try
                     {
-                        ClusterCommandResult commandResult = result.getValue().get();
+                        CommandResult commandResult = result.getValue().get();
                         switch (commandResult.getExitStatus())
                         {
                             case SUCCESS:
@@ -292,7 +292,7 @@ public class SendAsadminCommand implements AdminCommand
      * @param commandResult input
      * @return readable error message from command result
      */
-    private String processException(ClusterCommandResult commandResult) {
+    private String processException(CommandResult commandResult) {
         String msg = commandResult.getOutput();
         String[] msgs = msg.split(commandResult.getExitStatus().name());
         return msgs.length > 1? msgs[1] : commandResult.getFailureCause().getMessage();

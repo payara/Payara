@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -52,5 +53,13 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Simple Public APIs of Glassfish</name>
+    
+    
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>
 

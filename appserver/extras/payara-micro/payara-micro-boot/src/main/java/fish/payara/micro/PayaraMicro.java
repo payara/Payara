@@ -485,6 +485,7 @@ public class PayaraMicro implements PayaraMicroBoot {
      * @return 
      * @since 4.1.2.173
      */
+    @Override
     public PayaraMicro addLibrary(File lib){  
         wrappee.addLibrary(lib);
         return this;

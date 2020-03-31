@@ -34,39 +34,47 @@
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
  * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
  */
-package fish.payara.appserver.micro.services.command;
+package fish.payara.asadmin;
 
-import fish.payara.appserver.micro.services.PayaraInstanceImpl;
-import fish.payara.asadmin.CommandResult;
 import java.io.Serializable;
-import java.util.concurrent.Callable;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 /**
  *
  * @author steve
+ * @since 5.202
  */
-public class AsAdminCallable implements Callable<CommandResult>, Serializable {
-    private static final long serialVersionUID = 1L;
+public interface CommandResult extends Serializable {
+
+    /**
+     * A command can have following types of exit status.
+     */
+    public enum ExitStatus {
+        SUCCESS,
+        WARNING,
+        FAILURE
+    }
     
-    private final String command;
-    private final String args[];
+    /**
+     * Gets the resulting status of the command
+     * @return exit status of the command
+     */
+    public ExitStatus getExitStatus();
 
-    public AsAdminCallable(String command, String... args) {
-        this.command = command;
-        this.args = args;
-    }
+    /**
+     * This method returns any exception raised during command invocation.
+     * 
+     * If the command succeeded, then this method will return {@code null}.
+     * If the command had a warning occur this will probably return an exception,
+     * but may return {@code null}.
+     * @return any exception that occurred during this command execution.
+     */
+    public Throwable getFailureCause();
 
-
-    @Override
-    public CommandResult call() throws Exception {
-        ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
-        PayaraInstanceImpl instance = locator.getService(PayaraInstanceImpl.class, "payara-instance");
-        return instance.executeLocalAsAdmin(command, args);
-    }
+    /**
+     * The output of the command
+     * @return command output
+     */
+    public String getOutput();
     
 }

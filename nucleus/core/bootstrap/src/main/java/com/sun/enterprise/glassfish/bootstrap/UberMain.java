@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
+import fish.payara.asadmin.CommandResult;
+import fish.payara.asadmin.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
@@ -52,9 +53,9 @@ import java.io.InputStreamReader;
 /**
  * This is main class for the uber jars viz., glassfish-embedded-all.jar and
  * glassfish-embedded-web.jar, to be able to do:
- * <p/>
- * <p/>java -jar glassfish-embedded-all.jar
- * <p/>java -jar glassfish-embedded-web.jar
+ * <p>
+ * <p>java -jar glassfish-embedded-all.jar
+ * </p>java -jar glassfish-embedded-web.jar
  *
  * @author bhavanishankar@dev.java.net
  */

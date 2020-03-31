@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.micro;
 
+import fish.payara.asadmin.CommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.event.CDIEventListener;
 import fish.payara.micro.event.PayaraClusterListener;
@@ -65,11 +66,11 @@ public interface PayaraInstance {
 
     void addCDIListener(CDIEventListener listener);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters);
+    Map<String, Future<CommandResult>> executeClusteredASAdmin(String command, String... parameters);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters);
+    Map<String, Future<CommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters);
 
-    ClusterCommandResult executeLocalAsAdmin(String command, String... parameters);
+    CommandResult executeLocalAsAdmin(String command, String... parameters);
 
     Set<InstanceDescriptor> getClusteredPayaras();
 

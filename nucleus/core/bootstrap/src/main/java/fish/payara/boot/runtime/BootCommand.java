@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,9 @@
  */
 package fish.payara.boot.runtime;
 
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandResult.ExitStatus;
-import org.glassfish.embeddable.CommandRunner;
+import fish.payara.asadmin.CommandResult;
+import fish.payara.asadmin.CommandResult.ExitStatus;
+import fish.payara.asadmin.CommandRunner;
 
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;

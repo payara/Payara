@@ -42,6 +42,8 @@ package fish.payara.micro.boot;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import java.io.File;
+import java.util.function.Consumer;
+import fish.payara.asadmin.CommandRunner;
 
 /**
  *
@@ -525,5 +527,7 @@ public interface PayaraMicroBoot {
      * @since 4.1.2.182 5.1.2.182
      */
     public PayaraMicroBoot setSniEnabled(boolean value);
+    
+    default PayaraMicroBoot addPreBootCommand(Consumer<CommandRunner> command) { return this; }
     
 }

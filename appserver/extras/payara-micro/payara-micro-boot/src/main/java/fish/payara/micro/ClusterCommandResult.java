@@ -34,32 +34,18 @@
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
  * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
  */
 package fish.payara.micro;
 
-import java.io.Serializable;
+import fish.payara.asadmin.CommandResult;
 
 /**
  *
  * @author steve
+ * @deprecated Moved to {@link fish.payara.asadmin.CommandResult}
  */
-public interface ClusterCommandResult extends Serializable {
-
-    /**
-     * A command can have following types of exit status.
-     */
-    public enum ExitStatus {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    }
+@Deprecated
+public interface ClusterCommandResult extends CommandResult {
     
-    public ExitStatus getExitStatus();
-
-    public Throwable getFailureCause();
-
-    public String getOutput();
-    
+    //All functionality within this class has been moved to the payara-api package
 }

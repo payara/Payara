@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.embeddable.CommandRunner;
+import fish.payara.asadmin.CommandRunner;
 
 /**
  * Class to hold a list of Boot Commands for execution
