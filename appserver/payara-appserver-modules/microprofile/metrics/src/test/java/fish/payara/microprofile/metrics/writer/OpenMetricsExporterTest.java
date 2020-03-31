@@ -257,7 +257,7 @@ public class OpenMetricsExporterTest {
     }
 
     @Test
-    public void quantilesAreAlwaysPrepandedOtherTags() {
+    public void quantilesAreAppendedOtherTags() {
         Histogram histogram = mock(Histogram.class);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
@@ -268,7 +268,7 @@ public class OpenMetricsExporterTest {
                 .build();
         exporter.export(metricID, histogram, metadata);
         String actualOutput = actual.getBuffer().toString();
-        assertTrue(actualOutput.contains("application_test6_seconds{quantile=\"0.5\", custom=\"tag-value\"} 0"));
+        assertTrue(actualOutput.contains("application_test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
     }
 
     @Test

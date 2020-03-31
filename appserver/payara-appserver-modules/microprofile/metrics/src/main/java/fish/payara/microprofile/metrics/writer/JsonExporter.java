@@ -216,13 +216,8 @@ public class JsonExporter implements MetricExporter {
         JsonObjectBuilder target = scopeObj != null ? scopeObj : documentObj;
         JsonObjectBuilder metadataObj = Json.createObjectBuilder();
         Metadata metadata = exportedBeforeMetadata;
-        if (metadata.getUnit().isPresent()) {
-            String unit = metadata.getUnit().get();
-            if (!unit.isEmpty() && !MetricUnits.NONE.equals(unit)) {
-                metadataObj.add("unit", unit);
-            }
-        }
-        metadataObj.add("type", metadata.getTypeRaw().name().toLowerCase());
+        metadataObj.add("unit", metadata.getUnit().orElse(MetricUnits.NONE));
+        metadataObj.add("type", metadata.getTypeRaw().toString());
         if (metadata.getDescription().isPresent()) {
             String desc = metadata.getDescription().get();
             if (!desc.isEmpty()) {

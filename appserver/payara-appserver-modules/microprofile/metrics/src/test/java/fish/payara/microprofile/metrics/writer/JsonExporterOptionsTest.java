@@ -144,6 +144,7 @@ public class JsonExporterOptionsTest {
         assertOutputEquals("\n" +
                 "{\n" +
                 "    \"test3\": {\n" +
+                "        \"unit\": \"none\",\n" +
                 "        \"type\": \"gauge\"\n" +
                 "    }\n" +
                 "}", metricID, gauge, metadata);
@@ -160,6 +161,7 @@ public class JsonExporterOptionsTest {
         assertOutputEquals("\n" +
                 "{\n" +
                 "    \"test4\": {\n" +
+                "        \"unit\": \"none\",\n" +
                 "        \"type\": \"gauge\"\n" +
                 "    }\n" +
                 "}", metricID, gauge, metadata);

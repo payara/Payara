@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.writer;
 
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -282,7 +283,7 @@ public class OpenMetricsExporter implements MetricExporter {
         out.append('{');
         for (int i = 0; i < tags.length; i++) {
             if (i > 0) {
-                out.append(", ");
+                out.append(",");
             }
             out.append(sanitizeMetricName(tags[i].getTagName())).append("=\"")
                 .append(escapeTagValue(tags[i].getTagValue())).append('"');
@@ -341,9 +342,9 @@ public class OpenMetricsExporter implements MetricExporter {
 
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
-        return !suffix.isEmpty() && name.endsWith(suffix)
+        return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
                 ? scope.getName() + '_' + name
-                : scope.getName() + '_' + name + suffix;
+                : scope.getName() + '_' + name + suffix);
     }
 
     private static CharSequence escapeTagValue(String name) {
@@ -417,9 +418,8 @@ public class OpenMetricsExporter implements MetricExporter {
         if (rest.length == 0) {
             return new Tag[] { tag };
         }
-        Tag[] res = new Tag[rest.length + 1];
-        res[0] = tag;
-        System.arraycopy(rest, 0, res, 1, rest.length);
+        Tag[] res = Arrays.copyOf(rest, rest.length + 1);
+        res[rest.length] = tag;
         return res;
     }
 }
