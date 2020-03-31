@@ -142,7 +142,7 @@ public interface FaultToleranceMethodContext {
      * @return the result returned by the invoked {@link FallbackHandler}
      * @throws Exception in case resolving, instantiating or invoking the handler method fails
      */
-    Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, Exception ex)
+    Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, Throwable ex)
             throws Exception;
 
     /**

@@ -333,7 +333,7 @@ abstract class AbstractBulkheadTest {
         return policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
-    CompletionStage<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
+    CompletableFuture<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 
@@ -355,6 +355,27 @@ abstract class AbstractBulkheadTest {
         } finally {
             threadsExited.add(currentThread);
             threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.getAndDecrement(), null));
+        }
+    }
+
+    CompletionStage<String> bodyReturnThenWaitOnCompletionWithSuccess(Future<Void> waiter) {
+        return bodyReturnThenWaitOnCompletion(waiter, () -> "Success");
+    }
+
+    <T> CompletionStage<T> bodyReturnThenWaitOnCompletion(Future<Void> waiter, Supplier<T> result) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            threadsEntered.add(currentThread);
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    waiter.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw null;
+                }
+                return result.get();
+            });
+        } finally {
+            threadsExited.add(currentThread);
         }
     }
 

@@ -61,7 +61,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.logging.Logger;
 
 /**
  * Asadmin command for updating the settings of a Docker Node.
@@ -83,8 +82,6 @@ import java.util.logging.Logger;
         })
 })
 public class UpdateNodeDockerCommand implements AdminCommand {
-
-    private static Logger logger = Logger.getLogger(UpdateNodeDockerCommand.class.getName());
 
     @Param(name = "name", primary = true)
     String name;

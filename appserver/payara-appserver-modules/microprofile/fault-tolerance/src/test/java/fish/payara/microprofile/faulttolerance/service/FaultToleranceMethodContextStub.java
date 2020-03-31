@@ -137,8 +137,7 @@ public class FaultToleranceMethodContextStub implements FaultToleranceMethodCont
     }
 
     @Override
-    public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass,
-            Exception ex) throws Exception {
+    public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, Throwable ex) throws Exception {
         return fallbackClass.newInstance()
                 .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }

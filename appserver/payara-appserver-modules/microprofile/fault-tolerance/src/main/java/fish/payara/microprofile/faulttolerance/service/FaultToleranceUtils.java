@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -230,7 +230,7 @@ public class FaultToleranceUtils {
             // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
             for (String className : classNames.replaceAll("[\\{\\[ \\]\\}]", "").replaceAll("\\.class", "")
                     .split(",")) {
-                classList.add(Class.forName(className));
+                classList.add(Class.forName(className, false, Thread.currentThread().getContextClassLoader()));
             }
             return classList.toArray(defaultValue);
         } catch (ClassNotFoundException cnfe) {

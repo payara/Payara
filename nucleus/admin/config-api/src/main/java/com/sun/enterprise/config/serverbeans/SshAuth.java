@@ -53,10 +53,10 @@ import java.beans.PropertyVetoException;
  */
 @Configured
 public interface SshAuth  extends ConfigBeanProxy {
- 
-    
+
+
     /**
-     * points to a named host. 
+     * points to a named host.
      *
      * @return a named host name
      */
@@ -74,23 +74,21 @@ public interface SshAuth  extends ConfigBeanProxy {
     void setUserName(String value) throws PropertyVetoException;
 
     /**
-     * points to a named host.
-     *
-     * @return a named host name
+     * @return the private identity keyfile
      */
-
     @Attribute
     String getKeyfile();
 
+
     /**
-     * Sets the value of the name property.
+     * Sets the private identity keyfile
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String}
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="sshkeyfile", optional=true)
+    @Param(name = "sshkeyfile", optional = true)
     void setKeyfile(String value) throws PropertyVetoException;
+
 
     /**
      * SSH Password

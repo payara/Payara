@@ -45,6 +45,7 @@ import com.ibm.jbatch.spi.services.IBatchConfig;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -239,6 +240,16 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
         return result;
     }
+
+	@Override
+	protected void setSchemaOnConnection(Connection connection) throws SQLException {
+		logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
+		try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
+			preparedStatement.executeUpdate();
+		} finally {
+			logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+		}
+	}
 
     /**
 	 * Method invoked to insert the MySql create table strings into a hashmap

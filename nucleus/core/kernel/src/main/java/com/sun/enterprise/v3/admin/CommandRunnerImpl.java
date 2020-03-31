@@ -149,8 +149,6 @@ public class CommandRunnerImpl implements CommandRunner {
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
 
-    private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
-
     @Inject
     private CommandSecurityChecker commandSecurityChecker;
 
@@ -297,7 +295,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
             report.setMessage(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            KernelLoggerInfo.getLogger().fine(msg);
+            logger.fine(msg);
             return null;
         }
 
@@ -308,7 +306,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     + "system,\nbut it has no @Scoped annotation", commandName);
             report.setMessage(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            KernelLoggerInfo.getLogger().fine(msg);
+            logger.fine(msg);
             command = null;
         } else if (Singleton.class.equals(myScope)) {
             // check that there are no parameters for this command
@@ -321,7 +319,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         + "parameters", commandName);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                KernelLoggerInfo.getLogger().fine(msg);
+                logger.fine(msg);
                 command = null;
             }
         }
@@ -1003,6 +1001,7 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     static void validateParameters(final CommandModel model,
             final ParameterMap parameters) throws MultiException {
+        logger.fine(() -> String.format("validateParameters(model=%s, parameters=%s)", model, parameters));
 
         ParameterMap adds = null; // renamed password parameters
         boolean autoname = false;
@@ -1026,7 +1025,9 @@ public class CommandRunnerImpl implements CommandRunner {
                 // This is an old prefixed password parameter being passed in.
                 // Strip the prefix and lowercase the name
                 key = key.substring(OLD_PASSWORD_PARAM_PREFIX.length()).toLowerCase(Locale.ENGLISH);
-                if (adds == null) adds = new ParameterMap();
+                if (adds == null) {
+                    adds = new ParameterMap();
+                }
                 adds.add(key, entry.getValue().get(0));
             }
 
@@ -1156,9 +1157,9 @@ public class CommandRunnerImpl implements CommandRunner {
                 job.getEventBroker(),
                 job.getId());
         context.setSubject(subject);
-        List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
+        List<RuntimeType> runtimeTypes = new ArrayList<>();
         FailurePolicy fp = null;
-        Set<CommandTarget> targetTypesAllowed = new HashSet<CommandTarget>();
+        Set<CommandTarget> targetTypesAllowed = new HashSet<>();
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         CommandRunnerProgressHelper progressHelper =
@@ -1649,7 +1650,7 @@ public class CommandRunnerImpl implements CommandRunner {
     }
 
     private Map<String,Object> buildEnvMap(final ParameterMap params) {
-        final Map<String,Object> result = new HashMap<String,Object>();
+        final Map<String,Object> result = new HashMap<>();
         for (Map.Entry<String,List<String>> entry : params.entrySet()) {
             final List<String> values = entry.getValue();
             if (values != null && values.size() > 0) {
@@ -1676,8 +1677,8 @@ public class CommandRunnerImpl implements CommandRunner {
 
         private class NameListerPair {
 
-            private String nameRegexp;
-            private AdminCommandEventBroker.AdminCommandListener listener;
+            private final String nameRegexp;
+            private final AdminCommandEventBroker.AdminCommandListener listener;
 
             public NameListerPair(String nameRegexp, AdminCommandListener listener) {
                 this.nameRegexp = nameRegexp;
@@ -1697,7 +1698,7 @@ public class CommandRunnerImpl implements CommandRunner {
         protected ProgressStatus progressStatusChild;
         protected boolean isManagedJob;
         protected boolean isNotify;
-        private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>();
+        private final List<NameListerPair> nameListerPairs = new ArrayList<>();
 
         private ExecutionContext(String scope, String name, ActionReport report, Subject subject, boolean isNotify) {
             this.scope = scope;
@@ -2009,8 +2010,8 @@ public class CommandRunnerImpl implements CommandRunner {
     /** Works as a key in ETag cache map
      */
     private static class NameCommandClassPair {
-        private String name;
-        private Class<? extends AdminCommand> clazz;
+        private final String name;
+        private final Class<? extends AdminCommand> clazz;
         private int hash; //immutable, we can cache it
 
         public NameCommandClassPair(String name, Class<? extends AdminCommand> clazz) {
@@ -2110,7 +2111,7 @@ public class CommandRunnerImpl implements CommandRunner {
              * Prepare the map of command options names to corresponding
              * uploaded files.
              */
-            optionNameToFileMap = new MultiMap<String, File>();
+            optionNameToFileMap = new MultiMap<>();
             for (Map.Entry<File, Properties> e : payloadFiles.entrySet()) {
                 final String optionName = e.getValue().getProperty("data-request-name");
                 if (optionName != null) {

@@ -72,6 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.control.RequestContextController;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
 
@@ -298,13 +299,16 @@ public class FaultToleranceServiceImpl
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+            RequestContextController requestContextController) {
         FaultToleranceMethodContextImpl methodContext = methodByTargetObjectAndName //
-                .computeIfAbsent(getTargetMethodId(context), key -> createMethodContext(key, context));
+                .computeIfAbsent(getTargetMethodId(context),
+                        key -> createMethodContext(key, context, requestContextController));
         return methodContext.in(context, policy);
     }
 
-    private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context) {
+    private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
+            RequestContextController requestContextController) {
         MetricRegistry metricRegistry = getApplicationMetricRegistry();
         FaultToleranceMetrics metrics = metricRegistry == null 
                 ? FaultToleranceMetrics.DISABLED
@@ -312,7 +316,7 @@ public class FaultToleranceServiceImpl
         asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
         asyncExecutorService.setKeepAliveTime(getAsyncPoolKeepAliveInSeconds(), TimeUnit.SECONDS);
         logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
-        return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
+        return new FaultToleranceMethodContextImpl(requestContextController, this, metrics, asyncExecutorService,
                 delayExecutorService, context.getTarget());
     }
 

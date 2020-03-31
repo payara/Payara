@@ -36,34 +36,40 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api;
 
-import org.jvnet.hk2.annotations.Contract;
-
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  * An action report is an abstract class allowing any type of server side action
  * like a service execution, a command execution to report on its execution
- * to the originator of the action. 
- * 
- * Implementations of this interface should provide a good reporting 
- * experience based on the user's interface like a browser or a command line 
- * shell. 
+ * to the originator of the action.
+ *
+ * Implementations of this interface should provide a good reporting
+ * experience based on the user's interface like a browser or a command line
+ * shell.
  *
  * @author Jerome Dochez
  */
 @Contract
 public abstract class ActionReport implements Serializable {
-    
+
     private static final long serialVersionUID = -238144192513668688L;
 
     public enum ExitCode { SUCCESS, WARNING, FAILURE ;
@@ -71,15 +77,15 @@ public abstract class ActionReport implements Serializable {
         /**
          * SUCCESS > WARNING > FAILURE
          * @param other
-         * @return 
+         * @return
          */
         public boolean isWorse(final ExitCode other) {
             return (compareTo(other) > 0);
         }
     }
-    
+
     public abstract void setActionDescription(String message);
-    
+
     public abstract void setFailureCause(Throwable t);
 
     public abstract Throwable getFailureCause();
@@ -87,30 +93,30 @@ public abstract class ActionReport implements Serializable {
     public abstract void setMessage(String message);
 
     public abstract void appendMessage(String message);
-    
+
     /**
      * Outputs the formatted information
      * @param os The OutputStream to which the information is sent to
-     * @throws IOException 
+     * @throws IOException
      */
     public abstract void writeReport(OutputStream os) throws IOException;
 
     public abstract void setMessage(InputStream in);
 
     public abstract String getMessage();
-    
+
     public abstract MessagePart getTopMessagePart();
-    
+
     public abstract ActionReport addSubActionsReport();
-    
+
     /**
      * Sets the exit code for the report. Note that subreports may have a different exitcode.
-     * @param exitCode 
+     * @param exitCode
      */
     public abstract void setActionExitCode(ExitCode exitCode);
 
     public abstract ExitCode getActionExitCode();
-    
+
     public abstract String getContentType();
 
     public abstract void setContentType(String s);
@@ -142,7 +148,7 @@ public abstract class ActionReport implements Serializable {
 
     /**
      * Short for {@code failure(logger,message,null)}
-     * @see #failure(Logger, String, Throwable) 
+     * @see #failure(Logger, String, Throwable)
      * @param logger
      * @param message
      */
@@ -152,19 +158,19 @@ public abstract class ActionReport implements Serializable {
 
     /**
      * return true if the action report or a subaction report has ExitCode.SUCCESS.
-     * @return 
+     * @return
      */
     public abstract boolean hasSuccesses();
 
     /**
      * return true if the action report or a subaction report has ExitCode.WARNING.
-     * @return 
+     * @return
      */
     public abstract boolean hasWarnings();
 
     /**
      * return true if the action report or a subaction report has ExitCode.FAILURE.
-     * @return 
+     * @return
      */
     public abstract boolean hasFailures();
 
@@ -176,7 +182,7 @@ public abstract class ActionReport implements Serializable {
         String message;
         String childrenType;
 
-        List<MessagePart> children = new ArrayList<MessagePart>();
+        List<MessagePart> children = new ArrayList<>();
 
         public MessagePart addChild() {
             MessagePart newPart = new MessagePart();
@@ -195,9 +201,9 @@ public abstract class ActionReport implements Serializable {
         public void appendMessage(String message) {
             // overkill Engineering seemingly but the strings might be HUGE
             // let the optimized JDK class handle it.
-            if(this.message == null)
+            if(this.message == null) {
                 this.message = message;
-            else {
+            } else {
                 StringBuilder sb = new StringBuilder(this.message);
                 sb.append(message);
                 this.message = sb.toString();
@@ -223,7 +229,7 @@ public abstract class ActionReport implements Serializable {
         public List<MessagePart> getChildren() {
             return children;
         }
-        
+
         protected String findPropertyImpl(final String key) {
             String value = props.getProperty(key);
             if (value != null) {
@@ -237,11 +243,11 @@ public abstract class ActionReport implements Serializable {
             }
             return null;
         }
-        
+
         /** Search in message parts properties then in extra properties and then
          * in sub reports. Returns first occurrence of the key.
          * @param key
-         * @return 
+         * @return
          */
         public String findProperty(String key) {
             if (key == null) {
@@ -252,7 +258,7 @@ public abstract class ActionReport implements Serializable {
             }
             return findPropertyImpl(key);
         }
-        
+
         protected String toString(int indent) {
             StringBuilder result = new StringBuilder();
             if (message != null && !message.isEmpty()) {
@@ -272,12 +278,12 @@ public abstract class ActionReport implements Serializable {
             }
             return result.toString();
         }
-        
+
         @Override
         public String toString() {
             return toString(0);
         }
-        
+
     }
 
     Properties extraProperties;
@@ -290,7 +296,7 @@ public abstract class ActionReport implements Serializable {
         extraProperties = properties;
     }
 
-    private Map resultTypes = new ConcurrentHashMap();
+    private final Map resultTypes = new ConcurrentHashMap();
 
     /**
      * Gets a type that was set by the command implementation
@@ -306,18 +312,18 @@ public abstract class ActionReport implements Serializable {
      * to pass information between Supplemental command(s) and the main command. For example, the Supplemental
      * command for DeployCommand requires information on pay load, generated directories etc. In this case, the
      * DeployCommand will be expected to set this information in, for example DeployResult, and set it in the
-     * ActionReport. The Supplemental Command will then retrieve the DeployResult for its use. 
+     * ActionReport. The Supplemental Command will then retrieve the DeployResult for its use.
      * @param resultType the type
      * @param resultTypeInstance the actual instance
      */
     public <T> void setResultType(Class<T> resultType, T resultTypeInstance) {
         resultTypes.put(resultType, resultTypeInstance);
     }
-    
+
     /** Search in message parts properties then in extra properties and then
      * in sub reports. Returns first occurrence of the key.
      * @param key
-     * @return 
+     * @return
      */
     public String findProperty(String key) {
         MessagePart topMessagePart = getTopMessagePart();
@@ -342,5 +348,11 @@ public abstract class ActionReport implements Serializable {
             }
         }
         return null;
+    }
+
+
+    @Override
+    public String toString() {
+        return super.toString() + "[actionExitCode: " + getActionExitCode() + ", message" + getMessage() + "]";
     }
 }

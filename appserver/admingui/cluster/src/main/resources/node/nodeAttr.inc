@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 #include "/cluster/shared/handlers.inc"
@@ -265,18 +266,18 @@
                 </sun:dropDown>
             </sun:property>
 
-            <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.enterPassword}" helpText="$resource{i18ncs.node.enterPasswordHelp}" >
+            <sun:property id="sshPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.enterPassword}" helpText="$resource{i18ncs.node.enterPasswordHelp}" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.ps1PropId}");
                 />
-                <sun:passwordField id="NewPassword" name="password" text="#{pageSession.pswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
+                <sun:passwordField id="sshPassword" name="sshPassword" text="#{pageSession.pswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
                  <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.ps1Id}");
                 />
             </sun:passwordField>
             </sun:property>
 
-            
+
             <sun:property id="pswdAlias" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.passwordAlias}" helpText="$resource{i18ncs.node.passwordAliasHelp}">
                 <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.pswdAliasPropId}");
@@ -376,8 +377,8 @@
                 <sun:textField id="winUser" text="#{pageSession.valueMap['windowsuser']}" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.windowUser']}"  />
             </sun:property>
 
-            <sun:property id="psSelected" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.selectWinPasswordSelect}" helpText="$resource{i18ncs.node.selectWinPasswordSelectHelp}">
-                <sun:dropDown id="psSelected" labels={"$resource{i18ncs.node.textPassword}", "$resource{i18ncs.node.usePasswordAlias}" } values={"2", "3"}
+            <sun:property id="winPsSelected" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.selectWinPasswordSelect}" helpText="$resource{i18ncs.node.selectWinPasswordSelectHelp}">
+                <sun:dropDown id="winPsSelected" labels={"$resource{i18ncs.node.textPassword}", "$resource{i18ncs.node.usePasswordAlias}" } values={"2", "3"}
                       selected="#{pageSession.winPsSelected}"
                       onChange="showPswdSection(this.value, '#{pageSession.winPs1PropId}', '#{pageSession.winPswdAliasPropId}');"
                  >
@@ -387,11 +388,11 @@
                 </sun:dropDown>
             </sun:property>
 
-            <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.winUserPassword}" helpText="$resource{i18ncs.node.winUserPasswordHelp}" >
+            <sun:property id="winPswdTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.winUserPassword}" helpText="$resource{i18ncs.node.winUserPasswordHelp}" >
                 <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.winPs1PropId}");
                     />
-                <sun:passwordField id="NewPassword" name="password" text="#{pageSession.winPswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
+                <sun:passwordField id="winPswdText" name="winPassword" text="#{pageSession.winPswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
                      <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.winPs1Id}");
                     />
@@ -399,11 +400,11 @@
             </sun:property>
 
 
-            <sun:property id="pswdAlias" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.passwordAlias}" helpText="$resource{i18ncs.node.passwordAliasHelp}">
+            <sun:property id="winPswdAlias" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.passwordAlias}" helpText="$resource{i18ncs.node.passwordAliasHelp}">
                 <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.winPswdAliasPropId}");
                 />
-                <sun:dropDown id="pswdAlias" labels="#{pageSession.listOfAliases}" selected="#{pageSession.winPswdAlias}" >
+                <sun:dropDown id="winPswdAlias" labels="#{pageSession.listOfAliases}" selected="#{pageSession.winPswdAlias}" >
                     <!beforeCreate
                         setAttribute(key="doEscape" value="true");
                         gfr.getPswdAliases();
