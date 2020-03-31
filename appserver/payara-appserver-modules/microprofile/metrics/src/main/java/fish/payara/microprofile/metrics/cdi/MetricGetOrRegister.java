@@ -41,6 +41,8 @@ package fish.payara.microprofile.metrics.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
@@ -146,7 +148,26 @@ public final class MetricGetOrRegister<T extends Metric> {
         return getGauge(registry, metadata.getName(), tags);
     }
 
+    @SuppressWarnings("unchecked")
     private static Gauge<?> getGauge(MetricRegistry registry, String name, Tag[] tags) {
-        return registry.getGauges().get(new MetricID(name, tags));
+        MetricID metricID = new MetricID(name, tags);
+        Gauge<?> gauge = registry.getGauges().get(metricID);
+        return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(metricID));
+    }
+
+    private static final class LazyGauge<T> implements Gauge<T> {
+
+        private final AtomicReference<Gauge<T>> gauge = new AtomicReference<>();
+        private final Supplier<Gauge<T>> lookup;
+        LazyGauge(Supplier<Gauge<T>> lookup) {
+            this.lookup = lookup;
+        }
+        @Override
+        public T getValue() {
+            Gauge<T> lazy = gauge.updateAndGet(instance -> instance != null ? instance : lookup.get());
+            return lazy == null ? null : lazy.getValue();
+        }
+
+
     }
 }
