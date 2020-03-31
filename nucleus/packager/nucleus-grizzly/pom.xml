@@ -103,6 +103,11 @@
                                     <destFileName>grizzly-npn-bootstrap.jar</destFileName>
                                 </artifactItem>
                                 <!-- Other versioned NPN Bootstrap Jars referenced in new domain.xml (since 5.184) -->
+                                  <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.9.payara-p1</version>
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.glassfish.grizzly</groupId>
                                     <artifactId>grizzly-npn-bootstrap</artifactId>
