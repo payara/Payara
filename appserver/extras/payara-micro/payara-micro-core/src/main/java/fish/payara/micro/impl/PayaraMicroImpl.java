@@ -261,8 +261,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     
     @Override
     public PayaraMicroImpl addPreBootCommand(Consumer<CommandRunner> command) {
-        
-        
+        preBootCommands.addFunction(command);
         return this;
     }
 

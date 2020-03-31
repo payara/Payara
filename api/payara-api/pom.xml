@@ -105,6 +105,7 @@
                                     javax.json
                                 </Import-Package>
                                 <Export-Package>
+                                    fish.payara.asadmin,
                                     fish.payara.cdi.auth.roles,
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,

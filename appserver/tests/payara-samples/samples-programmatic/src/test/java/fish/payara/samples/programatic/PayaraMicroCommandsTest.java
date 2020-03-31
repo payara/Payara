@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,53 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.programatic;
 
-package fish.payara.docker.node;
-
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import fish.payara.asadmin.CommandRunner;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import fish.payara.asadmin.CommandResult;
+import fish.payara.micro.BootstrapException;
+import fish.payara.micro.boot.PayaraMicroBoot;
+import fish.payara.micro.boot.PayaraMicroLauncher;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Service that runs the _delete-temp-nodes command on server shutdown.
  *
- * @author AndrewPielage <andrew.pielage@payara.fish>
+ * @author jonathan coustick
  */
-@Service(name = "temp-node-cleanup-service")
-@RunLevel(StartupRunLevel.VAL)
-public class TempNodeShutdownCleanupService implements EventListener {
-
-    @Inject
-    private Events events;
-
-    @Inject
-    private ServerEnvironment serverEnvironment;
-
-    @PostConstruct
-    void postConstruct() {
-        events.register(this);
-    }
-
-    @Override
-    public void event(Event<?> event) {
-        if (event.is(EventTypes.PREPARE_SHUTDOWN) && serverEnvironment.isDas()) {
-            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-            if (serviceLocator != null) {
-                CommandRunner commandRunner = serviceLocator.getService(CommandRunner.class);
-                if (commandRunner != null) {
-                    commandRunner.run("_delete-temp-nodes");
-                }
-            }
+public class PayaraMicroCommandsTest {
+    
+    @Test
+    public void preBootCommandtest() throws Exception {
+        PayaraMicroBoot microBoot = PayaraMicroLauncher.getBootClass();
+        microBoot.addPreBootCommand((t) -> {
+            CommandResult result = t.run("version");
+            Assert.assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
+            Assert.assertNull(result.getFailureCause());
+            System.out.println(result.getOutput());
+        });
+        System.out.println("Starting Payara Micro");
+        try {
+            microBoot.bootStrap();
+        } catch (BootstrapException ex) {
+            Logger.getLogger(PayaraMicroCommandsTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.out.println("Shutting down Payara Micro");
+        microBoot.shutdown();
     }
+    
 }

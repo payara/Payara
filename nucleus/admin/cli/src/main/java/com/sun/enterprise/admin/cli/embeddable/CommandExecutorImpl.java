@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -49,12 +49,12 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import fish.payara.asadmin.CommandResult;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.embeddable.CommandResult;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -72,10 +72,10 @@ import org.glassfish.internal.api.EmbeddedSystemAdministrator;
  */
 @Service()
 @PerLookup // this is a PerLookup service
-@ContractsProvided({org.glassfish.embeddable.CommandRunner.class, CommandExecutorImpl.class})
+@ContractsProvided({fish.payara.asadmin.CommandRunner.class, CommandExecutorImpl.class})
 // bcos CommandRunner interface can't depend on HK2, we need ContractProvided here.
 
-public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunner {
+public class CommandExecutorImpl implements fish.payara.asadmin.CommandRunner {
 
     @Inject
     CommandRunner commandRunner;
