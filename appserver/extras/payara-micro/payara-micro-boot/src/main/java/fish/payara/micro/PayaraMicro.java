@@ -39,11 +39,13 @@
  */
 package fish.payara.micro;
 
+import fish.payara.asadmin.CommandRunner;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
 import fish.payara.micro.boot.loader.ExplodedURLClassloader;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -488,6 +490,12 @@ public class PayaraMicro implements PayaraMicroBoot {
     @Override
     public PayaraMicro addLibrary(File lib){  
         wrappee.addLibrary(lib);
+        return this;
+    }
+    
+    @Override
+    public PayaraMicro addPreBootCommand(Consumer<CommandRunner> command) {
+        wrappee.addPreBootCommand(command);
         return this;
     }
     

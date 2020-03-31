@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.glassfish.config.support.TranslatedConfigView;
 import fish.payara.asadmin.CommandRunner;
+import java.util.function.Consumer;
 
 /**
  * Class to hold a list of Boot Commands for execution
@@ -73,15 +74,26 @@ public class BootCommands {
      */
     private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'].+?[\"']|[^\"']\\S*|[\"'].+?[\"'])\\s*");
     private final List<BootCommand> commands;
+    private final List<Consumer<CommandRunner>> commandFunctions;
 
     private static final Logger LOGGER = Logger.getLogger(BootCommands.class.getName());
 
     public BootCommands() {
         commands = new LinkedList<>();
+        commandFunctions = new ArrayList<>();
     }
     
     public void add(BootCommand command) {
         commands.add(command);
+    }
+    
+    /**
+     * Adds a function that includes commands.
+     * @param command A function that will use the CommandRunner to execute one
+     * or more commands
+     */
+    public void addFunction(Consumer<CommandRunner> command) {
+        commandFunctions.add(command);
     }
 
     public List<BootCommand> getCommands() {
@@ -126,10 +138,23 @@ public class BootCommands {
         }
     }
 
+    /**
+     * Executes all stored commands.
+     * This is equivalent to {@code executeCommands(CommandRunner, false).
+     * @param runner CommandRunner to use
+     * @return If all commands executed successfully
+     * @see #executeCommands(fish.payara.asadmin.CommandRunner, boolean) 
+     */
     public boolean executeCommands(CommandRunner runner) {
         return executeCommands(runner, false);
     }
     
+    /**
+     * Execute all stored commands
+     * @param runner CommandRunner to use
+     * @param stopOnFailure
+     * @return If all commands executed successfully
+     */
     public boolean executeCommands(CommandRunner runner, boolean stopOnFailure) {
         boolean result = true;
         for (BootCommand command : commands) {
@@ -138,6 +163,9 @@ public class BootCommands {
                 return commandResult;
             }
             result = commandResult && result;
+        }
+        for (Consumer<CommandRunner> commandFunction : commandFunctions) {
+            commandFunction.accept(runner);
         }
         return result;
     }

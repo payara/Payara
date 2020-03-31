@@ -44,6 +44,8 @@ import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
+import fish.payara.asadmin.CommandResult;
+import fish.payara.asadmin.CommandRunner;
 import fish.payara.boot.runtime.BootCommand;
 import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
@@ -55,7 +57,6 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -79,6 +80,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -254,6 +256,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             instance = new PayaraMicroImpl();
         }
         return instance;
+    }
+    
+    
+    @Override
+    public PayaraMicroImpl addPreBootCommand(Consumer<CommandRunner> command) {
+        
+        
+        return this;
     }
 
     /**
