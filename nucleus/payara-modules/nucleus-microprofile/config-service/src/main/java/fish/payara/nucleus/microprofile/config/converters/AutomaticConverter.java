@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,8 +73,8 @@ public class AutomaticConverter implements Converter<Object> {
         return Stream.<Supplier<Converter<T>>>of(
                 () -> forMethod(type, "of", String.class),
                 () -> forMethod(type, "valueOf", String.class),
-                () -> forConstructor(type, String.class),
-                () -> forMethod(type, "parse", CharSequence.class))
+                () -> forMethod(type, "parse", CharSequence.class),
+                () -> forConstructor(type, String.class))
                 .map(Supplier::get)
                 .filter(converter -> converter != null)
                 .findFirst();
