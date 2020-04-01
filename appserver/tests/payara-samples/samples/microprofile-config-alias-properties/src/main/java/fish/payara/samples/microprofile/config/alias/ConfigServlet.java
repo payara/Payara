@@ -68,11 +68,15 @@ public class ConfigServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Config config = ConfigProvider.getConfig();
         System.setProperty("fish.payara.examples.config.sources", "Tiddles!");
+        System.setProperty("Dabbles", "Dobbles");
+        System.setProperty("Bobbly", "Bobbles");
 
         response.getWriter().println("Normal Notation: " + config.getOptionalValue("wibbles", String.class).orElse(null) +
                 "\n" + "Substitution Notation: " + config.getOptionalValue("${ALIAS=wibbles}", String.class).orElse(null) +
                 "\n" + "Password Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.password", String.class).orElse(null) +
-                "\n" + "System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.system", String.class).orElse(null));
+                "\n" + "System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.system", String.class).orElse(null) +
+                "\n" + "Environment Variable Alias referencing System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.recurse", String.class).orElse(null) +
+                "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.alias.multiple", String.class).orElse(null));
     }
 
 }

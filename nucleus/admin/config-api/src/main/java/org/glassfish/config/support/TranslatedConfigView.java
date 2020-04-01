@@ -123,25 +123,70 @@ public class TranslatedConfigView implements ConfigView {
             if(!doSubstitution.get()) {
                 return value;
             }
-            
-            String expandedValue = expandPasswordAlias(stringValue);
-            if (expandedValue != null) {
-                return expandedValue;
+
+            if (domainPasswordAliasStore() != null) {
+                if (getAlias(stringValue, ALIAS_TOKEN) != null) {
+                    try {
+                        return getRealPasswordFromAlias(stringValue);
+                    } catch (Exception e) {
+                        Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.aliaserror", stringValue, e.getLocalizedMessage()));
+                        return stringValue;
+                    }
+                }
             }
 
-            expandedValue = matchPatternAndExpand(stringValue, mpConfigP);
-            if (expandedValue != null) {
-                return expandedValue;
+            String origValue = stringValue;
+
+            int i = 0;            // Perform Environment variable substitution
+            Matcher m3 = mpConfigP.matcher(stringValue);
+
+            while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m3.group(2).trim();
+                Config config = configResolver().getConfig();
+                Optional<String> newValue = config.getOptionalValue(matchValue, String.class);
+                if (newValue != null && newValue.isPresent()) {
+                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
+                    m3.reset(stringValue);
+                }
+                i++;
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
             }
 
-            expandedValue = matchPatternAndExpand(stringValue, envP);
-            if (expandedValue != null) {
-                return expandedValue;
+            i = 0;            // Perform Environment variable substitution
+            Matcher m2 = envP.matcher(stringValue);
+
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(stringValue);
+                }
+                i++;
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
             }
 
-            expandedValue = matchPatternAndExpand(stringValue, p);
-            if (expandedValue != null) {
-                return expandedValue;
+            // Perform system property substitution in the value
+            // The loop limit is imposed to prevent infinite looping to values
+            // such as a=${a} or a=foo ${b} and b=bar {$a}
+            Matcher m = p.matcher(stringValue);
+            i = 0;
+            while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m.group(2).trim();
+                String newValue = System.getProperty(matchValue);
+                if (newValue != null) {
+                    stringValue = m.replaceFirst(
+                            Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
+                    m.reset(stringValue);
+                }
+                i++;
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
             }
 
             return stringValue;
@@ -266,43 +311,5 @@ public class TranslatedConfigView implements ConfigView {
         }
 
         return null;
-    }
-
-    private static String matchPatternAndExpand(String property, Pattern pattern) {
-        String expandedValue = null;
-        Matcher m = pattern.matcher(property);
-
-        // The loop limit is imposed to prevent infinite looping to values
-        // such as a=${a} or a=foo ${b} and b=bar {$a}
-        int i = 0;
-        while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
-            String matchValue = m.group(2).trim();
-            String newValue = null;
-
-            if (pattern.equals(p)) {
-                newValue = System.getProperty(matchValue);
-            } else if (pattern.equals(envP)) {
-                newValue = System.getenv(matchValue);
-            } else if (pattern.equals(mpConfigP)) {
-                Config config = configResolver().getConfig();
-                Optional<String> optional = config.getOptionalValue(matchValue,String.class);
-                if (optional != null) {
-                    newValue = optional.orElse(null);
-                }
-            }
-
-            if (newValue != null) {
-                expandedValue = m.replaceFirst(
-                        Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
-                m.reset(expandedValue);
-            }
-            i++;
-        }
-
-        if (i >= MAX_SUBSTITUTION_DEPTH) {
-            Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, property));
-        }
-
-        return expandedValue;
     }
 }
