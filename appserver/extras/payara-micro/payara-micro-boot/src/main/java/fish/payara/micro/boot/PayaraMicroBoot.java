@@ -528,6 +528,21 @@ public interface PayaraMicroBoot {
      */
     public PayaraMicroBoot setSniEnabled(boolean value);
     
+    /**
+     * Adds a callback that will execute a command pre-boot
+     * @param command Function that will execute a command
+     * @return this
+     * @throws IllegalStateException If Payara Micro has already booted
+     * @since 5.202
+     */
     PayaraMicroBoot addPreBootCommand(Consumer<CommandRunner> command);
+    
+    /**
+     * Adds a callback that will execute a command post boot but before deployment.
+     * @param command Function that will execute a command
+     * @return this
+     * @since 5.202
+     */
+    PayaraMicroBoot addPostBootCommand(Consumer<CommandRunner> command);
     
 }

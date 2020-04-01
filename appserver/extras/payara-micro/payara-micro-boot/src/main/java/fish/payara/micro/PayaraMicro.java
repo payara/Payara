@@ -499,4 +499,10 @@ public class PayaraMicro implements PayaraMicroBoot {
         return this;
     }
     
+    @Override
+    public PayaraMicro addPostBootCommand(Consumer<CommandRunner> command) {
+        wrappee.addPostBootCommand(command);
+        return this;
+    }
+    
 }

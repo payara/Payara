@@ -261,7 +261,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     
     @Override
     public PayaraMicroImpl addPreBootCommand(Consumer<CommandRunner> command) {
+        try {
+            if (gf != null && !Status.INIT.equals(gf.getStatus())) {
+                throw new IllegalStateException("Payara Micro has already started");
+            }
+        } catch (GlassFishException ex) {
+            throw new IllegalStateException(ex);
+        }
         preBootCommands.addFunction(command);
+        return this;
+    }
+    
+    @Override
+    public PayaraMicroImpl addPostBootCommand(Consumer<CommandRunner> command) {
+        postBootCommands.addFunction(command);
         return this;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,8 @@
 package fish.payara.samples.programatic;
 
 import fish.payara.asadmin.CommandResult;
-import fish.payara.micro.BootstrapException;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -55,19 +52,31 @@ import org.junit.Test;
 public class PayaraMicroCommandsTest {
     
     @Test
-    public void preBootCommandtest() throws Exception {
+    public void bootCommandtest() throws Exception {
         PayaraMicroBoot microBoot = PayaraMicroLauncher.getBootClass();
         microBoot.addPreBootCommand((t) -> {
-            CommandResult result = t.run("version");
+            CommandResult result = t.run("set", "configs.config.server-config.health-check-service-configuration.enabled=true");
             Assert.assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
             Assert.assertNull(result.getFailureCause());
             System.out.println(result.getOutput());
         });
+        microBoot.addPostBootCommand((t) -> {
+            CommandResult result = t.run("get-healthcheck-configuration");
+            Assert.assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
+            Assert.assertNull(result.getFailureCause());
+            Assert.assertTrue(result.getOutput().contains("Health Check Service Configuration is enabled?: true"));
+            
+        });
         System.out.println("Starting Payara Micro");
+        microBoot.bootStrap();
+        
         try {
-            microBoot.bootStrap();
-        } catch (BootstrapException ex) {
-            Logger.getLogger(PayaraMicroCommandsTest.class.getName()).log(Level.SEVERE, null, ex);
+            microBoot.addPreBootCommand((t) -> {
+                t.run("set-healthcheck-configuration", "--enabled", "false");
+            });
+            Assert.fail("Should not be able to add preboot comand postboot");
+        } catch (IllegalStateException ex) {
+            // Expected
         }
         System.out.println("Shutting down Payara Micro");
         microBoot.shutdown();
