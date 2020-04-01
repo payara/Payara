@@ -61,6 +61,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.source.AliasPropertiesConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
@@ -419,6 +420,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(Class.class, new ClassConverter());
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
+        result.put(Short.class, new ShortConverter());
         return result;
 
     }

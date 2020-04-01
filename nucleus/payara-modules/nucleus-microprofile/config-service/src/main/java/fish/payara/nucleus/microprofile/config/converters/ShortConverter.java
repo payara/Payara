@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,35 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.cluster.ssh.util;
 
-import java.util.ArrayList;
-import java.util.List;
+package fish.payara.nucleus.microprofile.config.converters;
 
-import org.glassfish.internal.api.RelativePathResolver;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.Converter;
 
-/**
- * I hate to copy&paste identical code into more than one class.
- * Hence this class!
- * @author Byron Nevins
- */
-public final class DcomUtils {
-    private DcomUtils() {
-        // no instances allowed!
-    }
+import javax.annotation.Priority;
 
-    public static String resolvePassword(String raw) {
+@Priority(1)
+public class ShortConverter implements Converter<Short> {
+
+    @Override
+    public Short convert(String value) {
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
-            return RelativePathResolver.getRealPasswordFromAlias(raw);
-        } catch (Exception e) {
-            return raw;
+            return Short.parseShort(value);
+        }catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(nfe);
         }
-    }
-
-    public static List<String> resolvePasswordToList(String raw) {
-        List tokens = new ArrayList<String>(1);
-        String password = resolvePassword(raw);
-        tokens.add("AS_ADMIN_WINDOWSPASSWORD=" + password);
-        return tokens;
     }
 }

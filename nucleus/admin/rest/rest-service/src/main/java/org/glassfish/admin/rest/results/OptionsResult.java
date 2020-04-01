@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.results;
 
@@ -55,6 +55,8 @@ import org.glassfish.admin.rest.provider.MethodMetaData;
  */
 public class OptionsResult extends Result {
 
+    private final Map<String, MethodMetaData> metaData;
+
     /**
      * Default Constructor
      */
@@ -64,8 +66,8 @@ public class OptionsResult extends Result {
 
 
     public OptionsResult(String name) {
-        this.name = name;
-        metaData = new HashMap<String, MethodMetaData>();
+        super(name);
+        metaData = new HashMap<>();
     }
 
 
@@ -98,6 +100,4 @@ public class OptionsResult extends Result {
     public Set<String> methods() {
         return metaData.keySet();
     }
-
-    Map<String, MethodMetaData> metaData;
 }

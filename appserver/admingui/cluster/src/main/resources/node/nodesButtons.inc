@@ -38,11 +38,12 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save} "
-    onClick="if (checkSSHPswd('#{pageSession.typeId}','#{pageSession.nodeHostId}',
-        '#{pageSession.psSelectId}', '#{pageSession.ps1Id}', 
+    onClick="if (checkSSHPswd('#{pageSession.typeId}', '#{pageSession.nodeHostId}',
+        '#{pageSession.psSelectId}', '#{pageSession.ps1Id}',
         '#{pageSession.setupSshId}', '#{pageSession.setupPswdId}',
         '#{pageSession.winPsSelectId}', '#{pageSession.winPs1Id}' ))
     {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;"
@@ -50,20 +51,36 @@
     <!command
         setAttribute(key="includeInstallDir" value="false");
         if ("#{pageSession.valueMap['type']}=CONFIG"){
-            setAttribute(key="attrsList" value={"nodehost", "nodedir" });
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-config");
+            setAttribute(key="attrsList" value={"nodehost", "nodedir" });
             gfr.prepareNodeCmd();
             mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirConfig']}");
         }
         if ("#{pageSession.valueMap['type']}=SSH"){
-            gfr.fixPswd();
-            if (!#{pageSession.valueMap['force']}){
-                mapPut(map="#{pageSession.valueMap}"  key="force" value="false");
-            }
-            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir", "sshport", "sshuser", "sshpassword" "sshkeyfile", "force"});
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-ssh");
+            if ("#{pageSession.psSelected}=1"){
+                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="KEY");
+                mapPut(map="#{pageSession.valueMap}" key="sshpassword" value="");
+            }
+            if ("#{pageSession.psSelected}=2"){
+                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="PASSWORD");
+                mapPut(map="#{pageSession.valueMap}" key="sshkeyfile" value="");
+                gfr.fixPswd();
+            }
+            if ("#{pageSession.psSelected}=3"){
+                mapPut(map="#{pageSession.valueMap}" key="sshauthtype" value="PASSWORD");
+                mapPut(map="#{pageSession.valueMap}" key="sshkeyfile" value="")
+                gfr.fixPswd();
+            }
+            if (!#{pageSession.valueMap['force']}){
+                mapPut(map="#{pageSession.valueMap}" key="force" value="false");
+            }
+            // filters valueMap to attrsMap
+            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir",
+                "sshauthtype", "sshport", "sshuser", "sshpassword" "sshkeyfile", "force"});
             gfr.prepareNodeCmd();
-            //Run setup-ssh
+
+            //Run setup-ssh; sMap is special map with parameters for this call
             if ("#{pageSession.valueMap['setupSsh']}=true"){
                 createMap(result="#{pageSession.sMap}");
                 if ("#{pageSession.valueMap['generatekey']}"){
@@ -83,19 +100,20 @@
             }
         }
         if ("#{pageSession.valueMap['type']}=DCOM"){
-            gfr.fixWinPswd();
-            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir", "windowsdomain", "windowsuser", "windowspassword"});
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-dcom");
+            gfr.fixWinPswd();
             if (!#{pageSession.valueMap['winForce']}){
                 mapPut(map="#{pageSession.valueMap}"  key="winForce" value="false");
             }
+            // filters valueMap to attrsMap
+            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir", "windowsdomain", "windowsuser", "windowspassword"});
             gfr.prepareNodeCmd();
             mapPut(map="#{pageSession.attrsMap}"  key="force" value="#{pageSession.valueMap['winForce']}");
 
         }
         if ("#{pageSession.valueMap['type']}=DOCKER"){
-            setAttribute(key="attrsList" value={"nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-docker");
+            setAttribute(key="attrsList" value={"nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});
             gfr.prepareNodeCmd();
             mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirDocker']}");
             mapPut(map="#{pageSession.attrsMap}", key="usetls" value="#{pageSession.usetlsSelected}");

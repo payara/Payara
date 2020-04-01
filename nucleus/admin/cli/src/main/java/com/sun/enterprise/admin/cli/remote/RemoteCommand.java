@@ -133,7 +133,7 @@ public class RemoteCommand extends CLICommand {
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
         }
-        
+
         @Override
         public void fetchCommandModel() throws CommandException {
             super.fetchCommandModel();
@@ -175,8 +175,9 @@ public class RemoteCommand extends CLICommand {
                     if (programOpts.getUser() == null) {
                         user = lineReader.readLine(strings.get("AdminUserPrompt"));
 
-                        if (user == null)
+                        if (user == null) {
                             return false;
+                        }
                     }
                     char[] password;
                     String puser = ok(user) ? user : programOpts.getUser();
@@ -243,7 +244,7 @@ public class RemoteCommand extends CLICommand {
             PasswordLocation pwloc = programOpts.getPasswordLocation();
             if (pwloc == PasswordLocation.PASSWORD_FILE) {
                 msg = strings.get("InvalidCredentialsFromFile", programOpts.getUser(), programOpts.getPasswordFile());
-                
+
             } else if (pwloc == PasswordLocation.LOGIN_FILE) {
                 try {
                     LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
@@ -253,13 +254,14 @@ public class RemoteCommand extends CLICommand {
                 }
             }
 
-            if (msg == null)
+            if (msg == null) {
                 msg = strings.get("InvalidCredentials", programOpts.getUser());
+            }
             return msg;
         }
 
         /**
-         * Adds cookies to the header to support session based client 
+         * Adds cookies to the header to support session based client
          * routing.
          *
          * @param urlConnection
@@ -287,11 +289,11 @@ public class RemoteCommand extends CLICommand {
 
             cookieManager = new CookieManager(
                                 new ClientCookieStore(
-                                        new CookieManager().getCookieStore(), 
+                                        new CookieManager().getCookieStore(),
                                         sessionCache),
                                 CookiePolicy.ACCEPT_ALL);
 
-            // XXX: If this is an interactive command we don't want to 
+            // XXX: If this is an interactive command we don't want to
             // keep reloading the cookie store.
             try {
                 ((ClientCookieStore) cookieManager.getCookieStore()).load();
@@ -316,11 +318,11 @@ public class RemoteCommand extends CLICommand {
             }
             if (hasCookies) {
                 urlConnection.setRequestProperty(COOKIE_HEADER, sb.toString());
-            } 
+            }
         }
 
         /**
-         * Looks for the SESSIONID cookie in the cookie store and 
+         * Looks for the SESSIONID cookie in the cookie store and
          * determines if the cookie has expired (based on the
          * Max-Age and the time in which the file was last modified.)
          * The assumption, based on how we write cookies, is that
@@ -331,7 +333,7 @@ public class RemoteCommand extends CLICommand {
          * If we can't find the JSESSIONID cookie then we return true.
          */
         private boolean isSessionCookieExpired(CookieManager manager, long creationTime) {
-            
+
             for (URI uri: manager.getCookieStore().getURIs()) {
                 for (HttpCookie cookie: manager.getCookieStore().get(uri)) {
                     if (cookie.getName().equals(JSESSIONID)) {
@@ -343,7 +345,7 @@ public class RemoteCommand extends CLICommand {
         }
 
         /**
-         * Processes the headers to support session based client 
+         * Processes the headers to support session based client
          * routing.
          *
          * @param urlConnection
@@ -355,7 +357,7 @@ public class RemoteCommand extends CLICommand {
 
         private void processCookieHeaders(final URLConnection urlConnection) {
 
-            CookieManager systemCookieManager = (CookieManager)CookieManager.getDefault();
+            CookieManager systemCookieManager = (CookieManager)CookieHandler.getDefault();
 
             if (systemCookieManager == null) {
                 logger.finer("Assertion failed: null system CookieManager");
@@ -378,7 +380,7 @@ public class RemoteCommand extends CLICommand {
                 if (cookieManager == null) {
                     cookieManager = new CookieManager(
                             new ClientCookieStore(
-                                    new CookieManager().getCookieStore(), 
+                                    new CookieManager().getCookieStore(),
                                     sessionCache),
                             CookiePolicy.ACCEPT_ALL);
                 }
@@ -401,7 +403,7 @@ public class RemoteCommand extends CLICommand {
             if (cookieManager == null) {
                 cookieManager = new CookieManager(
                                     new ClientCookieStore(
-                                        new CookieManager().getCookieStore(), 
+                                        new CookieManager().getCookieStore(),
                                         sessionCache),
                                     CookiePolicy.ACCEPT_ALL);
                 try {
@@ -424,7 +426,7 @@ public class RemoteCommand extends CLICommand {
                     newCookieFound = true;
                     break;
                 } else {
-                    HttpCookie c1 = cookieManager.getCookieStore().getCookies().get(cookieIndex); 
+                    HttpCookie c1 = cookieManager.getCookieStore().getCookies().get(cookieIndex);
 
                     if (!c1.getValue().equals(cookie.getValue())) {
                         newCookieFound = true;
@@ -488,7 +490,7 @@ public class RemoteCommand extends CLICommand {
      * @param po
      * @param env
      * @throws CommandException
-     * @see RemoteCLICommand#RemoteCLICommand(String, ProgramOptions, Environment) 
+     * @see RemoteCLICommand#RemoteCLICommand(String, ProgramOptions, Environment)
      */
     public RemoteCommand(String name, ProgramOptions po, Environment env) throws CommandException {
         super(name, po, env);
@@ -512,7 +514,7 @@ public class RemoteCommand extends CLICommand {
         this.responseFormatType = responseFormatType;
         this.userOut = userOut;
     }
-    
+
     /** Helper for situation, where {@code CommandModel} is from cache and
      * something shows, that server side signature of command was changed
      */
@@ -544,7 +546,7 @@ public class RemoteCommand extends CLICommand {
         int result = execute(argv);
         throw new ReExecuted(result);
     }
-    
+
     @Override
     public int execute(String... argv) throws CommandException {
         try {
@@ -612,7 +614,7 @@ public class RemoteCommand extends CLICommand {
                 commandModel.add(new ParamModelData("notify", boolean.class, true, "false"));
 
             }
-            
+
         } catch (CommandException cex) {
                 logger.log(Level.FINER, "RemoteCommand.prepare throws {0}", cex);
             throw cex;
@@ -621,7 +623,7 @@ public class RemoteCommand extends CLICommand {
             throw new CommandException(e.getMessage());
         }
     }
-    
+
     @Override
     protected void prevalidate() throws CommandException {
         try {
@@ -644,7 +646,7 @@ public class RemoteCommand extends CLICommand {
             throw ex;
         }
     }
-    
+
     @Override
     protected void inject() throws CommandException {
         try {
@@ -654,7 +656,7 @@ public class RemoteCommand extends CLICommand {
             throw ex;
         }
     }
-    
+
     /**
      * We do all our help processing in executeCommand.
      */
@@ -669,9 +671,9 @@ public class RemoteCommand extends CLICommand {
         try {
             options.set("DEFAULT", operands);
             output = rac.executeCommand(options);
-            if (returnAttributes)
+            if (returnAttributes) {
                 attrs = rac.getAttributes();
-            else if (!returnOutput) {
+            } else if (!returnOutput) {
                 if (output.length() > 0) {
                     logger.info(output);
                 }
@@ -690,8 +692,9 @@ public class RemoteCommand extends CLICommand {
                         PrintWriter pw = new PrintWriter(System.out);
                         char[] buf = new char[8192];
                         int cnt;
-                        while ((cnt = br.read(buf)) > 0)
+                        while ((cnt = br.read(buf)) > 0) {
                             pw.write(buf, 0, cnt);
+                        }
                         pw.flush();
                         return SUCCESS;
                     }
@@ -699,8 +702,9 @@ public class RemoteCommand extends CLICommand {
                     // ignore it and throw original exception
                 } finally {
                     try {
-                        if (br != null)
+                        if (br != null) {
                             br.close();
+                        }
                     } catch (IOException ioex3) {
                         // ignore it
                     }
@@ -723,8 +727,8 @@ public class RemoteCommand extends CLICommand {
     /**
      * Execute the command and return the output as a string
      * instead of writing it out.
-     * @param args 
-     * @return 
+     * @param args
+     * @return
      * @throws CommandValidationException
      */
     public String executeAndReturnOutput(String... args) throws CommandException, CommandValidationException {
@@ -742,7 +746,7 @@ public class RemoteCommand extends CLICommand {
      * Execute the command and return the main attributes from the manifest
      * instead of writing out the output.
      * @param args
-     * @return 
+     * @return
      * @throws CommandException
      * @throws CommandValidationException
      */
@@ -778,8 +782,9 @@ public class RemoteCommand extends CLICommand {
             }
             usage = rac.getUsage();
         }
-        if (usage == null)
+        if (usage == null) {
             return super.getUsage();
+        }
 
         StringBuilder usageText = new StringBuilder();
         usageText.append(strings.get("Usage", getBriefCommandUsage()));
@@ -792,7 +797,7 @@ public class RemoteCommand extends CLICommand {
      * Get the man page from the server.  If the man page isn't
      * available, e.g., because the server is down, try to find
      * it locally by looking in the modules directory.
-     * @return 
+     * @return
      */
     @Override
     public BufferedReader getManPage() {
@@ -854,8 +859,9 @@ public class RemoteCommand extends CLICommand {
         try {
             LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
             li = store.read(programOpts.getHost(), programOpts.getPort());
-            if (li == null)
+            if (li == null) {
                 return;
+            }
         } catch (StoreException se) {
             logger.finer("Login info could not be read from ~/.asadminpass file");
             return;
@@ -872,12 +878,12 @@ public class RemoteCommand extends CLICommand {
          */
         if (programOpts.getUser() == null) {
             // not on command line and in .asadminpass
-            
+
             logger.log(Level.FINER, "Getting user name from ~/.asadminpass: {0}", li.getUser());
             programOpts.setUser(li.getUser());
             if (programOpts.getPassword() == null) {
                 // not in passwordfile and in .asadminpass
-                
+
                 logger.log(Level.FINER, "Getting password from ~/.asadminpass");
                 programOpts.setPassword(li.getPassword(), ProgramOptions.PasswordLocation.LOGIN_FILE);
             }
@@ -914,7 +920,7 @@ public class RemoteCommand extends CLICommand {
                 return ad.getImplementation();
             }
         }
-        
+
         return null;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,39 @@
  */
 package fish.payara.samples.rolespermitted;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
+import static fish.payara.samples.rolespermitted.IdentityStoreTest.ADMIN_USER;
+import static fish.payara.samples.rolespermitted.IdentityStoreTest.PASSWORD;
+import static fish.payara.samples.rolespermitted.IdentityStoreTest.STANDARD_USER;
+import static java.lang.String.format;
+import static javax.json.JsonValue.NULL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URL;
+import java.util.logging.Level;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-import fish.payara.samples.PayaraArquillianTestRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
 /**
  *
@@ -73,15 +81,13 @@ import static org.junit.Assert.assertTrue;
 public class RolesPermittedTest {
 
     private static final String WEBAPP_SOURCE = "src/main/webapp";
-    private static final String USERNAME = "payara";
-    private static final String PASSWORD_ADMIN = "fish";
 
-    private WebClient webClient;
+    private static WebClient WEB_CLIENT;
 
     @ArquillianResource
     private URL url;
 
-    @Deployment(testable = false)
+    @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "rolesPermitted.war")
                 .addPackage("fish.payara.samples.rolespermitted")
@@ -89,52 +95,77 @@ public class RolesPermittedTest {
                 .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"));
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        webClient = new WebClient();
+    @BeforeClass
+    public static void setUp() throws InterruptedException {
+        WEB_CLIENT = new WebClient();
         //prevent spurious 404 errors
-        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WEB_CLIENT.getOptions().setThrowExceptionOnFailingStatusCode(false);
         java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
     }
 
     @Test
     @RunAsClient
-    public void testAuthenticationWithIncorrectUser() {
-        WebResponse webResponse = getResponse("/testServlet?username=" + "wrongUser" + "&password=" + PASSWORD_ADMIN);
-        assertEquals(401, webResponse.getStatusCode());
+    public void testAuthenticationWithInvalidUser() {
+        WebResponse result = getResponse("wrongUser", PASSWORD);
+        assertEquals(401, result.getStatusCode());
     }
 
     @Test
     @RunAsClient
-    public void testAuthenticationWithCorrectUser() {
-        WebResponse webResponse = getResponse("/testServlet?username=" + USERNAME + "&password=" + PASSWORD_ADMIN);
-        assertEquals(200, webResponse.getStatusCode());
-        assertTrue("User doesn't have the corrrect role", webResponse.getContentAsString().contains("Does User belong to role \"payaraAdmin\" : true"));
+    @InSequence(1)
+    public void testAuthenticationWithAdminUser() {
+        JsonObject result = getJsonResponse(ADMIN_USER, PASSWORD);
+        assertNotNull("Invalid response", result);
+        assertTrue("User doesn't have the correct role", result.getBoolean("payaraAdmin"));
+        assertEquals(1, result.getInt("counter"));
     }
 
-    private WebResponse getResponse(String url) {
-        WebResponse webResponse = getHtmlpage(url).getWebResponse();
-        return webResponse;
+    @Test
+    @RunAsClient
+    @InSequence(2)
+    public void testAdminUserSession() {
+        JsonObject result = getJsonResponse(ADMIN_USER, PASSWORD);
+        assertNotNull("Invalid response", result);
+        assertTrue("User doesn't have the correct role", result.getBoolean("payaraAdmin"));
+        assertEquals(2, result.getInt("counter"));
     }
 
-    private Page getHtmlpage(String path) {
-        if (url.toString().endsWith("/") && path.startsWith("/")) {
-            path = path.substring(1);
+    @Test
+    @RunAsClient
+    public void testAuthenticationWithStandardUser() {
+        JsonObject result = getJsonResponse(STANDARD_USER, PASSWORD);
+        assertNotNull("Invalid response", result);
+        assertFalse("User doesn't have the correct role", result.getBoolean("payaraAdmin"));
+        assertEquals(NULL, result.get("counter"));
+    }
+
+    private JsonObject getJsonResponse(String username, String password) {
+        WebResponse response = getResponse(username, password);
+        if (response != null) {
+            try (JsonReader reader = Json.createReader(response.getContentAsStream())) {
+                JsonObject result = reader.readObject();
+                System.out.println(result);
+                return result;
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(response.getContentAsString());
+            }
         }
+        return null;
+    }
 
-        Page page = null;
+    private WebResponse getResponse(String username, String password) {
         try {
-            page = webClient.getPage(url + path);
-        } catch (IOException | FailingHttpStatusCodeException ex) {
-            Logger.getLogger(RolesPermittedTest.class.getName()).log(Level.SEVERE, null, ex);
+            return WEB_CLIENT.getPage(format("%s/testServlet?username=%s&password=%s", this.url, username, password)).getWebResponse();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        return page;
+        return null;
     }
 
-    @After
-    public void cleanUp() {
-        webClient.getCookieManager().clearCookies();
-        webClient.close();
+    @AfterClass
+    public static void cleanUp() {
+        WEB_CLIENT.getCookieManager().clearCookies();
+        WEB_CLIENT.close();
     }
 }

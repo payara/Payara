@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -47,7 +47,7 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALL;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
-import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
@@ -84,44 +84,44 @@ import com.sun.enterprise.util.cluster.RemoteType;
 /**
  * Refactored from CreateNodeSshCommand.java on 9/10/11 Note the use of "protected" visibility is one of those rare
  * times when it is actually necessary. This class is sub-classed in a different package so protected is needed...
- * 
+ *
  * @author Carla Mott
  * @author Byron Nevins
  */
 public abstract class CreateRemoteNodeCommand implements AdminCommand {
     static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     static final String NL = System.lineSeparator();
-    
+
     @Param(name = "name", primary = true)
     private String name;
-    
+
     @Param(name = "nodehost")
     protected String nodehost;
-    
+
     @Param(name = "installdir", optional = true, defaultValue = NODE_DEFAULT_INSTALLDIR)
     private String installdir;
-    
+
     @Param(name = "nodedir", optional = true)
     private String nodedir;
-    
+
     @Param(name = "force", optional = true, defaultValue = "false")
     private boolean force;
-    
+
     @Param(optional = true, defaultValue = "false")
     boolean install;
-    
+
     @Param(optional = true)
     String archive;
-    
+
     @Inject
     private CommandRunner commandRunner;
-    
+
     @Inject
     ServiceLocator serviceLocator;
-    
+
     @Inject
     Nodes nodes;
-    
+
     Logger logger;
     NodeUtils nodeUtils;
     protected String remotePort;
@@ -148,13 +148,13 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         StringBuilder msg = new StringBuilder();
         logger = context.getLogger();
-        
+
         initialize();
         populateBaseClass();
         checkDefaults();
         ParameterMap commandParameters = new ParameterMap();
         populateParametersInternal(commandParameters);
-        
+
         try {
             validate();
         } catch (CommandValidationException ex) {
@@ -208,7 +208,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         parameters.add(PARAM_NODEDIR, nodedir);
         parameters.add(PARAM_REMOTEPORT, remotePort);
         parameters.add(PARAM_REMOTEUSER, remoteUser);
-        parameters.add(PARAM_REMOTEPASSWORD, remotePassword);
+        parameters.add(PARAM_SSHPASSWORD, remotePassword);
         parameters.add(PARAM_TYPE, getType().toString());
         parameters.add(PARAM_INSTALL, Boolean.toString(install));
 
@@ -218,7 +218,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     /**
      * Prepares for invoking install-node on DAS
-     * 
+     *
      * @param ctx command context
      * @return true if install-node succeeds, false otherwise
      */
@@ -258,7 +258,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         } else {
             report.setMessage(out.toString().trim());
         }
-        
+
         return res;
     }
 
@@ -269,7 +269,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         if (!StringUtils.ok(installdir)) {
             installdir = NODE_DEFAULT_INSTALLDIR;
         }
-        
+
         if (!StringUtils.ok(remoteUser)) {
             remoteUser = NODE_DEFAULT_REMOTE_USER;
         }
@@ -277,7 +277,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     /**
      * Invokes install-node using ProcessManager and returns the exit message/status.
-     * 
+     *
      * @param cmdLine list of args
      * @param output contains output message
      * @return exit status of install-node
@@ -286,7 +286,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
      */
     final int execCommand(List<String> cmdLine, StringBuilder output) {
         int exit = -1;
-        List<String> fullcommand = new ArrayList<String>();
+        List<String> fullcommand = new ArrayList<>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
 
         if (!StringUtils.ok(installDir)) {
@@ -298,7 +298,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
         // if password auth is used for creating node, use the same auth mechanism for
         // install-node as well. The passwords are passed directly through input stream
-        List<String> passwords = new ArrayList<String>();
+        List<String> passwords = new ArrayList<>();
         if (remotePassword != null) {
             fullcommand.add("--passwordfile");
             fullcommand.add("-");
@@ -309,13 +309,14 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         fullcommand.addAll(cmdLine);
 
         ProcessManager processManager = new ProcessManager(fullcommand);
-        if (!passwords.isEmpty())
+        if (!passwords.isEmpty()) {
             processManager.setStdinLines(passwords);
+        }
 
         if (logger.isLoggable(INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));
         }
-        
+
         processManager.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
 
         if (logger.isLoggable(FINER)) {
@@ -348,7 +349,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
                 output.append(stderr);
             }
         }
-        
+
         return exit;
     }
 

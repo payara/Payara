@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,39 @@
  */
 package fish.payara.samples.rolespermitted;
 
-import fish.payara.cdi.auth.roles.RolesPermitted;
+import java.io.Serializable;
 import java.security.Principal;
-import javax.enterprise.context.RequestScoped;
+
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+
+import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
  *
  * @author Susan Rai
  */
-@RequestScoped
-public class TestRolesPermitted {
+@SessionScoped
+public class TestRolesPermitted implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private int counter;
 
     @Inject
-    Principal principal;
+    private Principal principal;
 
-    @RolesPermitted({"payaraAdmin"})
     public String getUserName() {
         return principal.getName();
+    }
+
+    /**
+     * Increment the counter and then return it's value.
+     * 
+     * @return the counter value after incrementing it.
+     */
+    @RolesPermitted({ "payaraAdmin"})
+    public int incrementCounter() {
+        return ++counter;
     }
 }
