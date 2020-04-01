@@ -42,6 +42,7 @@ package fish.payara.samples.microprofile.config.alias;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -61,6 +62,7 @@ import java.nio.file.Paths;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @RunWith(Arquillian.class)
+@NotMicroCompatible
 public class MicroProfileConfigAliasTest {
 
     @ArquillianResource
@@ -96,5 +98,8 @@ public class MicroProfileConfigAliasTest {
         Assert.assertTrue(page.getContent().contains("Substitution Notation: wobbles"));
         Assert.assertTrue(page.getContent().contains("Password Alias from File: wobbles"));
         Assert.assertTrue(page.getContent().contains("System Property Alias from File: Tiddles!"));
+        Assert.assertTrue(page.getContent().contains("System Property Alias from File: Tiddles!"));
+        Assert.assertTrue(page.getContent().contains("Environment Variable Alias referencing System Property Alias from File: Dobbles"));
+        Assert.assertTrue(page.getContent().contains("Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
     }
 }

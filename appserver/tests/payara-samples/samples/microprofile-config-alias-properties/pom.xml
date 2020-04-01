@@ -72,4 +72,37 @@
             <artifactId>test-utils</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-environment-variable-is-set</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireEnvironmentVariable>
+                                    <variableName>Dibbles</variableName>
+                                    <message>Missing environment variable Dibbles - it should be set to ${Dabbles} (literal). Make sure you set it globally and restart the server.
+                                    </message>
+                                </requireEnvironmentVariable>
+                                <requireEnvironmentVariable>
+                                    <variableName>Bibbly</variableName>
+                                    <message>Missing environment variable Bibbly - it should be set to Bibbles. Make sure you set it globally and restart the server.
+                                    </message>
+                                </requireEnvironmentVariable>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
