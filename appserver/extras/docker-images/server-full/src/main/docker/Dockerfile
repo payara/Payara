@@ -54,7 +54,7 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}/
+COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}/
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 
 RUN true \

@@ -29,6 +29,7 @@
         <docker.java.tag>8u232</docker.java.tag>
         <docker.java.image>${docker.java.repository}:${docker.java.tag}</docker.java.image>
         <docker.payara.domainName>production</docker.payara.domainName>
+        <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
     </properties>
 
     <build>
