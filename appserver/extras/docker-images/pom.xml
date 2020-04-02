@@ -46,6 +46,9 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.33.0</version>
                     <extensions>true</extensions>
+                    <configuration>
+                        <verbose>true</verbose>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
