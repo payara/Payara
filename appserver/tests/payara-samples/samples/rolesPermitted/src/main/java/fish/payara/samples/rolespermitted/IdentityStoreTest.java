@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,15 +56,19 @@ import javax.security.enterprise.identitystore.IdentityStore;
 @ApplicationScoped
 public class IdentityStoreTest implements IdentityStore {
 
+    static final String ADMIN_USER = "payara";
+    static final String STANDARD_USER = "payara2";
+    static final String PASSWORD = "fish";
+
     public CredentialValidationResult validate(UsernamePasswordCredential userLoginCredential) {
 
-        if (userLoginCredential.getCaller().equals("payara")
-                && userLoginCredential.getPasswordAsString().equals("fish")) {
+        if (userLoginCredential.getCaller().equals(ADMIN_USER)
+                && userLoginCredential.getPasswordAsString().equals(PASSWORD)) {
             return new CredentialValidationResult("payara", new HashSet<>(asList("payaraAdmin", "payaraUser")));
         }
         
-        if (userLoginCredential.getCaller().equals("payara")
-                && userLoginCredential.getPasswordAsString().equals("user")) {
+        if (userLoginCredential.getCaller().equals(STANDARD_USER)
+                && userLoginCredential.getPasswordAsString().equals(PASSWORD)) {
             return new CredentialValidationResult("payara", new HashSet<>(asList("payaraUser")));
         }
         

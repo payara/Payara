@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2020] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -40,45 +40,47 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
-import fish.payara.cdi.auth.roles.CallerAccessException;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
-import fish.payara.cdi.auth.roles.RolesPermitted;
+import static java.util.Arrays.asList;
+import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+
 import javax.annotation.Priority;
 import javax.el.ELProcessor;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.security.enterprise.AuthenticationStatus;
-import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
-import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import javax.security.enterprise.SecurityContext;
-import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+import fish.payara.cdi.auth.roles.CallerAccessException;
+import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
  * The RolesPermitted Interceptor authenticates requests to methods and classes
@@ -94,25 +96,24 @@ import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 @Interceptor
 @RolesPermitted
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 1000)
-public class RolesPermittedInterceptor {
+public class RolesPermittedInterceptor implements Serializable {
 
-    private final SecurityContext securityContext;
+    private static final long serialVersionUID = 1L;
 
-    private BeanManager beanManager;
+    private final Bean<?> interceptedBean;
 
-    private Bean<?> interceptedBean;
-
-    @Context
-    private HttpServletRequest request;
+    private final NonSerializableProperties lazyProperties;
 
     @Context
-    private HttpServletResponse response;
+    private transient HttpServletRequest request;
+
+    @Context
+    private transient HttpServletResponse response;
 
     @Inject
-    public RolesPermittedInterceptor(@Intercepted Bean<?> interceptedBean, BeanManager beanManager) {
-        this.securityContext = CDI.current().select(SecurityContext.class).get();
+    public RolesPermittedInterceptor(@Intercepted Bean<?> interceptedBean) {
         this.interceptedBean = interceptedBean;
-        this.beanManager = beanManager;
+        this.lazyProperties = new NonSerializableProperties();
     }
 
     /**
@@ -155,6 +156,8 @@ public class RolesPermittedInterceptor {
 
         List<String> permittedRoles = asList(roles.value());
 
+        final SecurityContext securityContext = lazyProperties.getSecurityContext();
+
         if (OR.equals(roles.semantics())) {
             for (String role : permittedRoles) {
                 if (eLProcessor != null && hasAnyELExpression(role)) {
@@ -196,6 +199,8 @@ public class RolesPermittedInterceptor {
                 return optionalRolesPermitted.get();
             }
         }
+
+        final BeanManager beanManager = lazyProperties.getBeanManager();
 
         // Failing the Weld binding, check the method first
         optionalRolesPermitted = getAnnotationFromMethod(beanManager, invocationContext.getMethod(), RolesPermitted.class);
@@ -242,6 +247,8 @@ public class RolesPermittedInterceptor {
     }
 
     private ELProcessor getElProcessor(InvocationContext invocationContext) {
+        final BeanManager beanManager = lazyProperties.getBeanManager();
+
         ELProcessor elProcessor = new ELProcessor();
         elProcessor.getELManager().addELResolver(beanManager.getELResolver());
         elProcessor.defineBean("self", invocationContext.getTarget());
@@ -266,8 +273,10 @@ public class RolesPermittedInterceptor {
     }
 
     private void authenticate(String[] roles) {
+        final SecurityContext securityContext = lazyProperties.getSecurityContext();
+
         if (request != null && response != null
-                && roles.length > 0 && !isAuthenticated()) {
+                && roles.length > 0 && !isAuthenticated(securityContext)) {
             AuthenticationStatus status = securityContext.authenticate(request, response, withParams());
 
             // Authentication was not done at all (i.e. no credentials present) or
@@ -280,7 +289,7 @@ public class RolesPermittedInterceptor {
             }
 
             // compensate for possible Soteria bug, need to investigate
-            if (status == SUCCESS && !isAuthenticated()) {
+            if (status == SUCCESS && !isAuthenticated(securityContext)) {
                 throw new NotAuthorizedException(
                     "Authentication not done (i.e. no credential found)",
                     Response.status(Response.Status.UNAUTHORIZED).build()
@@ -289,7 +298,7 @@ public class RolesPermittedInterceptor {
         }
     }
 
-    private boolean isAuthenticated() {
+    private static boolean isAuthenticated(SecurityContext securityContext) {
         return securityContext.getCallerPrincipal() != null;
     }
 }
