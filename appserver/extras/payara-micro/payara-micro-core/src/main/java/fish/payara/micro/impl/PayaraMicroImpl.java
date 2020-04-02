@@ -49,6 +49,7 @@ import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.AdminCommandRunner;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
@@ -79,6 +80,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -88,6 +90,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFish.Status;
@@ -162,6 +165,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private final BootCommands preBootCommands;
     private final BootCommands postBootCommands;
     private final BootCommands postDeployCommands;
+    private Consumer<AdminCommandRunner> preBootHandler;
+    private Consumer<AdminCommandRunner> postBootHandler;
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -277,9 +282,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setClusterMulticastGroup(String hzMulticastGroup) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.hzMulticastGroup = hzMulticastGroup;
         return this;
     }
@@ -403,9 +406,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setClusterPort(int hzPort) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.hzPort = hzPort;
         return this;
     }
@@ -432,9 +433,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setClusterStartPort(int hzStartPort) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.hzStartPort = hzStartPort;
         return this;
     }
@@ -458,9 +457,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setHttpPort(int httpPort) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.httpPort = httpPort;
         return this;
     }
@@ -495,9 +492,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setSslPort(int sslPort) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.sslPort = sslPort;
         return this;
     }
@@ -546,9 +541,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setInstanceName(String instanceName) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.instanceName = instanceName;
         return this;
     }
@@ -574,9 +567,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setDeploymentDir(File deploymentRoot) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.deploymentRoot = deploymentRoot;
         return this;
     }
@@ -615,11 +606,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setAlternateDomainXML(File alternateDomainXML) {
         //if (runtime != null) {
+        checkNotRunning();
+        this.alternateDomainXML = alternateDomainXML;
+        return this;
+    }
+
+    private void checkNotRunning() {
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
-        this.alternateDomainXML = alternateDomainXML;
-        return this;
     }
 
     /**
@@ -633,9 +628,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl addDeployment(String pathToWar) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         File file = new File(pathToWar);
         return addDeploymentFile(file);
     }
@@ -651,9 +644,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl addDeploymentFile(File file) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         if (deployments == null) {
             deployments = new LinkedList<>();
         }
@@ -671,9 +662,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl addDeployFromGAV(String GAV) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         if (GAVs == null) {
             GAVs = new LinkedList<>();
         }
@@ -699,9 +688,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl addRepoUrl(String... URLs) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         repositoryURLs.addAll(Arrays.asList(URLs));
         return this;
     }
@@ -725,9 +712,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setNoCluster(boolean noCluster) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.noCluster = noCluster;
         return this;
     }
@@ -754,9 +739,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setLite(boolean liteMember) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.liteMember = liteMember;
         return this;
     }
@@ -785,9 +768,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setMaxHttpThreads(int maxHttpThreads) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.maxHttpThreads = maxHttpThreads;
         return this;
     }
@@ -813,9 +794,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setMinHttpThreads(int minHttpThreads) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.minHttpThreads = minHttpThreads;
         return this;
     }
@@ -844,9 +823,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public PayaraMicroImpl setRootDir(File rootDir) {
         //if (runtime != null) {
-        if (isRunning()) {
-            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
-        }
+        checkNotRunning();
         this.rootDir = rootDir;
         return this;
     }
@@ -1051,10 +1028,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
+            callHandler(preBootHandler);
             gf.start();
 
             // Execute post boot commands
             postBootCommands.executeCommands(gf.getCommandRunner());
+            callHandler(postBootHandler);
             this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
             // deploy all applications and then initialize them
@@ -1074,6 +1053,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, null, ex1);
             }
             throw new BootstrapException(ex.getMessage(), ex);
+        }
+    }
+
+    private void callHandler(Consumer<AdminCommandRunner> handler) throws GlassFishException {
+        CommandRunner runner = gf.getCommandRunner();
+        if (handler != null) {
+            handler.accept((cmd, args) -> new CommandResultWrapper(runner.run(cmd, args)));
         }
     }
 
@@ -2762,4 +2748,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
+    @Override
+    public PayaraMicroBoot setPreBootHandler(Consumer<AdminCommandRunner> handler) {
+        checkNotRunning();
+        preBootHandler = handler;
+        return this;
+    }
+
+    @Override
+    public PayaraMicroBoot setPostBootHandler(Consumer<AdminCommandRunner> handler) {
+        checkNotRunning();
+        postBootHandler = handler;
+        return this;
+    }
 }

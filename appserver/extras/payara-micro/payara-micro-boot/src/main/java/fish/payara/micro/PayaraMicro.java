@@ -39,11 +39,13 @@
  */
 package fish.payara.micro;
 
+import fish.payara.micro.boot.AdminCommandRunner;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
 import fish.payara.micro.boot.loader.ExplodedURLClassloader;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -274,6 +276,18 @@ public class PayaraMicro implements PayaraMicroBoot {
     @Override
     public PayaraMicro setApplicationDomainXML(String domainXml) {
         wrappee.setApplicationDomainXML(domainXml);
+        return this;
+    }
+
+    @Override
+    public PayaraMicroBoot setPreBootHandler(Consumer<AdminCommandRunner> handler) {
+        wrappee.setPreBootHandler(handler);
+        return this;
+    }
+
+    @Override
+    public PayaraMicroBoot setPostBootHandler(Consumer<AdminCommandRunner> handler) {
+        wrappee.setPostBootHandler(handler);
         return this;
     }
 
