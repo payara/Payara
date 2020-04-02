@@ -201,7 +201,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
-    
+
     @Inject
     private PayaraExecutorService executorService;
 
@@ -298,7 +298,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
-            
+
             ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
             deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
 
@@ -318,7 +318,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setBeanIndexOptimization(!deployParams.isAvailabilityEnabled());
         externalConfiguration.setNonPortableMode(false);
         configureConcurrentDeployment(context, externalConfiguration);
-        
+
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
@@ -499,7 +499,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Get current TCL
             ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
 
-            invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+            invocationManager.pushAppEnvironment(applicationInfo::getName);
 
             ComponentInvocation componentInvocation = createComponentInvocation(applicationInfo);
 
@@ -553,7 +553,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         try {
             WeldBootstrap bootstrap = applicationInfo.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
             if (bootstrap != null) {
-                invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+                invocationManager.pushAppEnvironment(applicationInfo::getName);
 
                 try {
                     doBootstrapShutdown(applicationInfo);
@@ -868,7 +868,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
         deploymentImpl.addDynamicExtension(createProbeExtension());
     }
-    
+
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
