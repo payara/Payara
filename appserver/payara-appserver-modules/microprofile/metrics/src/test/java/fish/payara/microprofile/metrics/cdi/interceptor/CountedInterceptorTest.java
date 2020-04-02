@@ -57,7 +57,7 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.MetricGetOrRegister;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
@@ -147,7 +147,7 @@ public class CountedInterceptorTest {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
         AnnotationReader<Counted> reader = AnnotationReader.COUNTED;
-        Counter counter = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, Counter.class,
+        Counter counter = MetricUtils.getOrRegisterByMetadataAndTags(registry, Counter.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
         CountedInterceptor.proceedCounted(context, element, bean, registry::getMetric);
         assertEquals(expectedStartCount + 1, counter.getCount());

@@ -69,7 +69,7 @@ import java.util.concurrent.atomic.LongAdder;
  * @see
  * <a href="http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">EMA</a>
  */
-public class EWMA {
+public class ExponentiallyWeightedMovingAverage {
 
     private static final int INTERVAL = 5;
     private static final double SECONDS_PER_MINUTE = 60.0;
@@ -92,8 +92,8 @@ public class EWMA {
      *
      * @return a one-minute EWMA
      */
-    public static EWMA oneMinuteEWMA() {
-        return new EWMA(M1_ALPHA, INTERVAL, TimeUnit.SECONDS);
+    public static ExponentiallyWeightedMovingAverage oneMinuteEWMA() {
+        return new ExponentiallyWeightedMovingAverage(M1_ALPHA, INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
@@ -102,8 +102,8 @@ public class EWMA {
      *
      * @return a five-minute EWMA
      */
-    public static EWMA fiveMinuteEWMA() {
-        return new EWMA(M5_ALPHA, INTERVAL, TimeUnit.SECONDS);
+    public static ExponentiallyWeightedMovingAverage fiveMinuteEWMA() {
+        return new ExponentiallyWeightedMovingAverage(M5_ALPHA, INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
@@ -112,8 +112,8 @@ public class EWMA {
      *
      * @return a fifteen-minute EWMA
      */
-    public static EWMA fifteenMinuteEWMA() {
-        return new EWMA(M15_ALPHA, INTERVAL, TimeUnit.SECONDS);
+    public static ExponentiallyWeightedMovingAverage fifteenMinuteEWMA() {
+        return new ExponentiallyWeightedMovingAverage(M15_ALPHA, INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
@@ -123,7 +123,7 @@ public class EWMA {
      * @param interval     the expected tick interval
      * @param intervalUnit the time unit of the tick interval
      */
-    public EWMA(double alpha, long interval, TimeUnit intervalUnit) {
+    public ExponentiallyWeightedMovingAverage(double alpha, long interval, TimeUnit intervalUnit) {
         this.interval = intervalUnit.toNanos(interval);
         this.alpha = alpha;
     }

@@ -110,7 +110,7 @@ public final class AnnotationReader<T extends Annotation> {
      * @throws IllegalAccessException In case no such reader exists
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Annotation> AnnotationReader<T> reading(Class<T> annotationType) {
+    public static <T extends Annotation> AnnotationReader<T> forAnnotation(Class<T> annotationType) {
         AnnotationReader<?> reader = READERS_BY_ANNOTATION.get(annotationType);
         if (reader == null) {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotationType.getName() + "]");
@@ -644,12 +644,12 @@ public final class AnnotationReader<T extends Annotation> {
         } catch (IllegalArgumentException ex) {
             // there was no annotation
             String name = MetricRegistry.name(point.getMember().getDeclaringClass().getCanonicalName(), localName(point.getMember()));
-            return MetricGetOrRegister.getOrRegisterByName(registry, metric, name);
+            return MetricUtils.getOrRegisterByName(registry, metric, name);
         }
         if (isReference(annotation)) {
-            return MetricGetOrRegister.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
+            return MetricUtils.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
         }
-        return MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
+        return MetricUtils.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
     }
 
     private <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {

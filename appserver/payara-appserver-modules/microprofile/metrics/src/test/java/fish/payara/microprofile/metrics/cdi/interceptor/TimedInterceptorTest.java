@@ -60,7 +60,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.MetricGetOrRegister;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
@@ -146,7 +146,7 @@ public class TimedInterceptorTest {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
         AnnotationReader<Timed> reader = AnnotationReader.TIMED;
-        Timer timer = MetricGetOrRegister.getOrRegisterByMetadataAndTags(registry, Timer.class,
+        Timer timer = MetricUtils.getOrRegisterByMetadataAndTags(registry, Timer.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
         TimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
         assertEquals(expectedStartCount + 1, timer.getCount());

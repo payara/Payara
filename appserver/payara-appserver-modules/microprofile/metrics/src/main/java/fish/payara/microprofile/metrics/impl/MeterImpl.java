@@ -64,7 +64,7 @@ import org.eclipse.microprofile.metrics.Meter;
  * A meter metric which measures mean throughput and one-, five-, and
  * fifteen-minute exponentially-weighted moving average throughputs.
  *
- * @see EWMA
+ * @see ExponentiallyWeightedMovingAverage
  */
 @Vetoed
 public class MeterImpl implements Meter {
@@ -73,9 +73,9 @@ public class MeterImpl implements Meter {
 
     private static final long TICK_INTERVAL = TimeUnit.SECONDS.toNanos(5);
 
-    private final EWMA m1Rate = EWMA.oneMinuteEWMA();
-    private final EWMA m5Rate = EWMA.fiveMinuteEWMA();
-    private final EWMA m15Rate = EWMA.fifteenMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m1Rate = ExponentiallyWeightedMovingAverage.oneMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m5Rate = ExponentiallyWeightedMovingAverage.fiveMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m15Rate = ExponentiallyWeightedMovingAverage.fifteenMinuteEWMA();
 
     private final AtomicLong count = new AtomicLong();
     private final long startTime;

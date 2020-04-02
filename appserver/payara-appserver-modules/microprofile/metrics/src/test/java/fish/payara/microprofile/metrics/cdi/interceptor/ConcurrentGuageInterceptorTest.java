@@ -60,7 +60,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.MetricGetOrRegister;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import fish.payara.microprofile.metrics.impl.Clock;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
@@ -158,7 +158,7 @@ public class ConcurrentGuageInterceptorTest implements Clock {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
         AnnotationReader<ConcurrentGauge> reader = AnnotationReader.CONCURRENT_GAUGE;
-        org.eclipse.microprofile.metrics.ConcurrentGauge gauge = MetricGetOrRegister.getOrRegisterByMetadataAndTags(
+        org.eclipse.microprofile.metrics.ConcurrentGauge gauge = MetricUtils.getOrRegisterByMetadataAndTags(
                 registry, org.eclipse.microprofile.metrics.ConcurrentGauge.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
         CompletableFuture<Void> waiter = new CompletableFuture<>();

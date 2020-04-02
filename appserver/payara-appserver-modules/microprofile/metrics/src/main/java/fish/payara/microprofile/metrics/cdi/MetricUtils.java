@@ -65,7 +65,7 @@ import org.eclipse.microprofile.metrics.Timer;
  * @author Jan Bernitt
  * @since 5.202
  */
-public final class MetricGetOrRegister<T extends Metric> {
+public final class MetricUtils<T extends Metric> {
 
     @FunctionalInterface
     private interface By<A, B, R> {
@@ -79,13 +79,13 @@ public final class MetricGetOrRegister<T extends Metric> {
         R apply(MetricRegistry registry, A a);
     }
 
-    private static final Map<Class<? extends Metric>, MetricGetOrRegister<?>> TYPES = new HashMap<>();
+    private static final Map<Class<? extends Metric>, MetricUtils<?>> TYPES = new HashMap<>();
 
     private final ByJust<String, T> byName;
     private final By<String, Tag[], T> byNameAndTags;
     private final By<Metadata, Tag[], T> byMetadataAndTags;
 
-    private MetricGetOrRegister(
+    private MetricUtils(
             ByJust<String, T> byName,
             By<String, Tag[], T> byNameAndTags,
             By<Metadata, Tag[], T> byMetadataAndTags) {
@@ -98,7 +98,7 @@ public final class MetricGetOrRegister<T extends Metric> {
             Class<T> type, ByJust<String, T> byName,
             By<String, Tag[], T> byNameAndTags,
             By<Metadata, Tag[], T> byMetadataAndTags) {
-        TYPES.put(type, new MetricGetOrRegister<>(byName, byNameAndTags, byMetadataAndTags));
+        TYPES.put(type, new MetricUtils<>(byName, byNameAndTags, byMetadataAndTags));
     }
 
     static {
@@ -108,7 +108,7 @@ public final class MetricGetOrRegister<T extends Metric> {
         register(Meter.class, MetricRegistry::meter, MetricRegistry::meter, MetricRegistry::meter);
         register(Timer.class, MetricRegistry::timer, MetricRegistry::timer, MetricRegistry::timer);
         register(SimpleTimer.class, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer);
-        register(Gauge.class, MetricGetOrRegister::getGauge, MetricGetOrRegister::getGauge, MetricGetOrRegister::getGauge);
+        register(Gauge.class, MetricUtils::getGauge, MetricUtils::getGauge, MetricUtils::getGauge);
     }
 
     @SuppressWarnings("unchecked")
@@ -128,8 +128,8 @@ public final class MetricGetOrRegister<T extends Metric> {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
-    private static <T extends Metric> MetricGetOrRegister<?> getOrRegister(Class<T> metric) {
-        MetricGetOrRegister<?> getOrRegister = TYPES.get(metric);
+    private static <T extends Metric> MetricUtils<?> getOrRegister(Class<T> metric) {
+        MetricUtils<?> getOrRegister = TYPES.get(metric);
         if (getOrRegister == null) {
             throw new IllegalArgumentException("Cannot get or register metrics of type " + metric);
         }
