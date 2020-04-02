@@ -83,6 +83,7 @@
                                         <tags>
                                             <tag>${dockerfile.tag}</tag>
                                         </tags>
+                                        <cleanup>none</cleanup>
                                         <noCache>${docker.noCache}</noCache>
                                         <dockerFile>Dockerfile</dockerFile>
                                         <assembly>
