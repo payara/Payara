@@ -42,10 +42,9 @@
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import fish.payara.asadmin.CommandResult;
-import fish.payara.asadmin.CommandRunner;
-
 import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
@@ -299,7 +298,7 @@ public class GlassFishMain {
                 BootCommands bootCommands = new BootCommands();
                 System.out.println("Reading in commandments from " + file);
                 bootCommands.parseCommandScript(new File(file));
-                bootCommands.executeCommands(gf.getCommandRunner());
+                bootCommands.executeCommands(gf.getCommandRunner().asPayaraApi());
             } catch (IOException ex) {
                 LOGGER.log(SEVERE, "Error reading from file");
             } catch (Throwable ex) {

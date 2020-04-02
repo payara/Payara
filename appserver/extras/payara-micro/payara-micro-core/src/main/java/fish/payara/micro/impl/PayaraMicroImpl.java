@@ -1072,11 +1072,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             addLibraries();
 
             // boot the server
-            preBootCommands.executeCommands(gf.getCommandRunner());
+            preBootCommands.executeCommands(gf.getCommandRunner().asPayaraApi());
             gf.start();
 
             // Execute post boot commands
-            postBootCommands.executeCommands(gf.getCommandRunner());
+            postBootCommands.executeCommands(gf.getCommandRunner().asPayaraApi());
             this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
             // deploy all applications and then initialize them
@@ -1084,7 +1084,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             // These steps are separated in case any steps need to be done in between
             gf.getCommandRunner().run("initialize-all-applications");
 
-            postDeployCommands.executeCommands(gf.getCommandRunner());
+            postDeployCommands.executeCommands(gf.getCommandRunner().asPayaraApi());
 
             long end = System.currentTimeMillis();
             dumpFinalStatus(end - start);

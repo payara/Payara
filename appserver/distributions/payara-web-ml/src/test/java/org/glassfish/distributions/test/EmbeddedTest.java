@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.distributions.test;
 
 import org.glassfish.distributions.test.ejb.SampleEjb;
-import fish.payara.asadmin.CommandResult;
-import fish.payara.asadmin.CommandRunner;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;

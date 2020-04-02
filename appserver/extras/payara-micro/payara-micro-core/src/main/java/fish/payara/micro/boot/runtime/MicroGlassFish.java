@@ -42,7 +42,8 @@ package fish.payara.micro.boot.runtime;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import java.util.Properties;
-import fish.payara.asadmin.CommandRunner;
+
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
