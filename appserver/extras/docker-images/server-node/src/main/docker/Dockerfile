@@ -1,7 +1,7 @@
 FROM @docker.java.image@
 
 ENV HOME_DIR=/opt/payara
-ENV PAYARA_DIR=${HOME_DIR}/payara5 \
+ENV PAYARA_DIR=${HOME_DIR}/@docker.payara.rootDirectoryName@ \
     SCRIPT_DIR=/opt/payara\
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
@@ -26,7 +26,7 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}
+COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}
 COPY --chown=payara:payara maven/bin/* ${HOME_DIR}
 
 # Start the instance
