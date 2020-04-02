@@ -134,7 +134,7 @@ abstract class AbstractBulkheadTest {
     static class InOut {
         static final Object IN = new Object();
 
-        Object result;
+        volatile Object result;
         final Thread t;
         final int inCount;
 
@@ -250,7 +250,8 @@ abstract class AbstractBulkheadTest {
         for (Thread t : forThreads) {
             String actual = executionResultsByThread.get(t);
             if (!expected.equals(actual)) {
-                assertEquals("Unexpected result for thread " + t.getName() + ", processing was " + threadsInOut,
+                assertEquals("Unexpected result for thread " + t.getName() + ", processing was " + threadsInOut
+                                + ", thead exception " + executionErrorsByThread.get(t),
                         expected, actual);
             }
         }
