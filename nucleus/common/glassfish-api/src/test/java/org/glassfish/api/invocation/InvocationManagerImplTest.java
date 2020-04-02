@@ -60,6 +60,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -277,6 +278,60 @@ public class InvocationManagerImplTest {
         runInChildThread(() -> assertEquals(emptyList(), manager.getAllInvocations()));
         manager.postInvoke(cur); // startup is over, should init now
         runInChildThread(() -> assertEquals(1, manager.getAllInvocations().size()));
+    }
+
+    @Test
+    public void peekEmptyAppEnvironmentReturnsNull() {
+        InvocationManager manager = new InvocationManagerImpl();
+        assertNull(manager.peekAppEnvironment());
+    }
+
+    @Test
+    public void popEmptyAppEnvironmentDoesNotCauseError() {
+        InvocationManager manager = new InvocationManagerImpl();
+        manager.popAppEnvironment();
+    }
+
+    @Test
+    public void pushAddsAppEnvironmentToStack() {
+        InvocationManager manager = new InvocationManagerImpl();
+        ApplicationEnvironment env = () -> "Name";
+        manager.pushAppEnvironment(env);
+        assertSame(env, manager.peekAppEnvironment());
+        ApplicationEnvironment env2 = () -> "Name2";
+        manager.pushAppEnvironment(env2);
+        assertSame(env2, manager.peekAppEnvironment());
+        manager.popAppEnvironment();
+        assertSame(env, manager.peekAppEnvironment());
+        manager.popAppEnvironment();
+        assertNull(manager.peekAppEnvironment());
+    }
+
+    @Test
+    public void peekEmptyWebServiceMethodReturnsNull() {
+        InvocationManager manager = new InvocationManagerImpl();
+        assertNull(manager.peekWebServiceMethod());
+    }
+
+    @Test
+    public void popEmptyWebServiceMethodDoesNotCauseError() {
+        InvocationManager manager = new InvocationManagerImpl();
+        manager.popWebServiceMethod();
+    }
+
+    @Test
+    public void pushAddsWebServiceMethodToStack() throws Exception {
+        InvocationManager manager = new InvocationManagerImpl();
+        Method method = String.class.getMethod("length"); // does not matter which
+        manager.pushWebServiceMethod(method);
+        assertSame(method, manager.peekWebServiceMethod());
+        Method env2 = String.class.getMethod("toCharArray"); // does not matter which
+        manager.pushWebServiceMethod(env2);
+        assertSame(env2, manager.peekWebServiceMethod());
+        manager.popWebServiceMethod();
+        assertSame(method, manager.peekWebServiceMethod());
+        manager.popWebServiceMethod();
+        assertNull(manager.peekWebServiceMethod());
     }
 
     private static void runInChildThread(Runnable test) throws InterruptedException {
