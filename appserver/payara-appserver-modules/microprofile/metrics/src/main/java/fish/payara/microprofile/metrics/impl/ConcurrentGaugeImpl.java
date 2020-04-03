@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -42,9 +42,10 @@ package fish.payara.microprofile.metrics.impl;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
 
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -58,32 +59,47 @@ import org.eclipse.microprofile.metrics.ConcurrentGauge;
 @Vetoed
 public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
-    private final LongAdder count = new LongAdder();
+    /**
+     * The number of threads currently executing the annotated method.
+     */
+    private final AtomicInteger threads = new AtomicInteger();
 
     /**
      * Minimum and maximum of current minute
      */
-    private AtomicReference<MinMax> openStats = new AtomicReference<>(new MinMax(0));
+    private AtomicReference<MinMax> openStats;
 
     /**
      * Minimum and maximum during previously completed minute
      */
-    private volatile MinMax closedStats = new MinMax(0);
+    private volatile MinMax closedStats;
+
+    private final Clock clock;
+
+    public ConcurrentGaugeImpl() {
+        this(Clock.DEFAULT);
+    }
+
+    public ConcurrentGaugeImpl(Clock clock) {
+        this.clock = clock;
+        // must run with clock initialised:
+        this.openStats = new AtomicReference<>(new MinMax(0, getCurrentMinute()));
+        this.closedStats = new MinMax(0, getCurrentMinute());
+    }
 
     /**
      * Increment the counter by one.
      */
     @Override
     public void inc() {
-        // adder does not have atomic increment, but has better throughput
-        count.increment();
-        currentStats().updateMax(count.longValue());
+        threads.incrementAndGet();
+        currentStats().updateMax(threads.longValue());
     }
 
     @Override
     public void dec() {
-        count.decrement();
-        currentStats().updateMin(count.longValue());
+        threads.decrementAndGet();
+        currentStats().updateMin(threads.longValue());
     }
 
     /**
@@ -93,7 +109,7 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
      */
     @Override
     public long getCount() {
-        return count.sum();
+        return threads.get();
     }
 
     @Override
@@ -108,61 +124,48 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
         return closedStats.min.get();
     }
 
-    private static Instant getCurrentMinute() {
-        return Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    private Instant getCurrentMinute() {
+        return Instant.ofEpochMilli(clock.getTime()).truncatedTo(ChronoUnit.MINUTES);
     }
 
     private MinMax currentStats() {
-        MinMax possiblyOutdated = openStats.getAndUpdate(MinMax::replaceIfOld);
-        if (possiblyOutdated.finished) {
+        Instant now = getCurrentMinute();
+        MinMax possiblyOutdated = openStats.getAndUpdate(
+                value -> value.markIfOld(now) ? new MinMax(threads.longValue(), now) : value);
+        if (possiblyOutdated.finished.get()) {
             // we got previous MinMax instance, that has set finished=true just before it was replaced
             closedStats = possiblyOutdated;
             // if value was not updated for longer than one minute, this is still correct answer,
             // as the gauge doesn't reset by itself.
             return openStats.get();
-        } else {
-            return possiblyOutdated;
         }
+        return possiblyOutdated;
     }
 
     /**
      * Stats captured by the gauge. Note that even if it is stored in
      * AtomicReference, the class itself may be accessed concurrently.
      */
-    private class MinMax {
+    private static class MinMax {
 
         final AtomicLong min;
         final AtomicLong max;
         final Instant minute;
-        boolean finished;
+        final AtomicBoolean finished = new AtomicBoolean(false);
 
-        private MinMax(long initialValue) {
-            this(initialValue, getCurrentMinute());
-        }
-
-        private MinMax(long initialValue, Instant minute) {
+        MinMax(long initialValue, Instant minute) {
             this.min = new AtomicLong(initialValue);
             this.max = new AtomicLong(initialValue);
             this.minute = minute;
         }
 
         /**
-         * The root of the trick is to call
-         * ref.getAndUpdate(MinMax::replaceIfOld). If minute is over, this
-         * instance is marked as finished, and new one is created for current
-         * minute. Since client gets this instance, it can check for finished
-         * flag, and in such case store this as closed stats.
+         * Ensures each instance will only return true a single time even when called concurrently.
          *
-         * @return
+         * @return true, if this {@link MinMax} was identified and marked as old, else false
          */
-        MinMax replaceIfOld() {
-            Instant now = getCurrentMinute();
-            if (!now.equals(minute)) {
-                this.finished = true;
-                return new MinMax(count.longValue(), now);
-            } else {
-                return this;
-            }
+        boolean markIfOld(Instant now) {
+            return !now.equals(minute) && finished.compareAndSet(false, true);
         }
 
         void updateMin(long value) {

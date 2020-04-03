@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -42,11 +42,16 @@ package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
+import java.util.function.BiFunction;
+
 import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
+
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
 @ConcurrentGauge
 @Interceptor
@@ -56,12 +61,18 @@ public class ConcurrentGuageInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        MetricID metricID = resolver.concurrentGauge(bean.getBeanClass(), element).metricID();
-        org.eclipse.microprofile.metrics.ConcurrentGauge gauge = getMetric(metricID, org.eclipse.microprofile.metrics.ConcurrentGauge.class);
-        if (gauge == null) {
-            throw new IllegalStateException("No concurrent gauge with name [" + metricID.getName() + "] found in registry [" + registry + "]");
-        }
+        return proceedProbed(context, element, bean.getBeanClass(), this::getMetric);
+    }
 
+    /**
+     * Make the actual logic unit testable...
+     */
+    static <E extends Member & AnnotatedElement> Object proceedProbed(InvocationContext context, E element,
+            Class<?> bean,
+            BiFunction<MetricID, Class<org.eclipse.microprofile.metrics.ConcurrentGauge>, org.eclipse.microprofile.metrics.ConcurrentGauge> loader)
+            throws Exception {
+        org.eclipse.microprofile.metrics.ConcurrentGauge gauge = apply(element, bean, AnnotationReader.CONCURRENT_GAUGE,
+                org.eclipse.microprofile.metrics.ConcurrentGauge.class, loader);
         gauge.inc();
         try {
             return context.proceed();
@@ -69,5 +80,4 @@ public class ConcurrentGuageInterceptor extends AbstractInterceptor {
             gauge.dec();
         }
     }
-
 }

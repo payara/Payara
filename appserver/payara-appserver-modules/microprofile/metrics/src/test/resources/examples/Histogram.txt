@@ -1,0 +1,17 @@
+# TYPE application_file_sizes_mean_bytes gauge
+application_file_sizes_mean_bytes 4738.231
+# TYPE application_file_sizes_max_bytes gauge
+application_file_sizes_max_bytes 31716
+# TYPE application_file_sizes_min_bytes gauge
+application_file_sizes_min_bytes 180
+# TYPE application_file_sizes_stddev_bytes gauge
+application_file_sizes_stddev_bytes 1054.7343037063602
+# TYPE application_file_sizes_bytes summary
+# HELP application_file_sizes_bytes Users file size
+application_file_sizes_bytes_count 2037
+application_file_sizes_bytes{quantile="0.5"} 4201
+application_file_sizes_bytes{quantile="0.75"} 6175
+application_file_sizes_bytes{quantile="0.95"} 13560
+application_file_sizes_bytes{quantile="0.98"} 29643
+application_file_sizes_bytes{quantile="0.99"} 31716
+application_file_sizes_bytes{quantile="0.999"} 31716

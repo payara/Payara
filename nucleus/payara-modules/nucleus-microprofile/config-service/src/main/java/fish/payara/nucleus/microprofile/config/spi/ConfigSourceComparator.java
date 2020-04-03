@@ -50,7 +50,10 @@ public class ConfigSourceComparator implements Comparator<ConfigSource>{
 
     @Override
     public int compare(ConfigSource o1, ConfigSource o2) {
-        return -1*(o1.getOrdinal() - o2.getOrdinal());
+        int res = -1*(o1.getOrdinal() - o2.getOrdinal());
+        if (res != 0)
+            return res;
+        return o1.getName().compareTo(o2.getName());
     }
-    
+
 }

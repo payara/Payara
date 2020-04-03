@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,65 +56,47 @@
 package fish.payara.microprofile.metrics.impl;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 
 /**
  * An abstraction for how time passes. It is passed to {@link Timer} to track
  * timing.
  */
-public abstract class Clock {
+@FunctionalInterface
+public interface Clock {
 
     /**
      * Returns the current time tick.
      *
      * @return time tick in nanoseconds
      */
-    public abstract long getTick();
+    long getTick();
 
     /**
      * Returns the current time in milliseconds.
      *
      * @return time in milliseconds
      */
-    public long getTime() {
+    default long getTime() {
         return System.currentTimeMillis();
-    }
-
-    private static final Clock DEFAULT = new UserTimeClock();
-
-    /**
-     * The default clock to use.
-     *
-     * @return the default {@link Clock} instance
-     *
-     * @see Clock.UserTimeClock
-     */
-    public static Clock defaultClock() {
-        return DEFAULT;
     }
 
     /**
      * A clock implementation which returns the current time in epoch
      * nanoseconds.
      */
-    public static class UserTimeClock extends Clock {
+    Clock DEFAULT = () -> System.nanoTime();
 
-        @Override
-        public long getTick() {
-            return System.nanoTime();
-        }
+    /**
+     * The default clock to use.
+     *
+     * @return the {@link #DEFAULT} {@link Clock} instance
+     */
+    public static Clock defaultClock() {
+        return DEFAULT;
     }
 
     /**
      * A clock implementation which returns the current thread's CPU time.
      */
-    public static class CpuTimeClock extends Clock {
-
-        private static final ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
-
-        @Override
-        public long getTick() {
-            return THREAD_MX_BEAN.getCurrentThreadCpuTime();
-        }
-    }
+    Clock THREAD_CPU_TIME = () -> ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 }

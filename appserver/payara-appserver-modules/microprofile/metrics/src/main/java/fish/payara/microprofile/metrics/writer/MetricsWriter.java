@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -44,27 +44,29 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+
 public interface MetricsWriter {
 
     /**
      * Write the metrics that matches the metricName for the respective registryName.
      *
-     * @param registryName
+     * @param scope
      * @param metricName
      * @throws NoSuchRegistryException
      * @throws NoSuchMetricException
      * @throws IOException
      */
-    public void write(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
+    public void write(Type scope, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
 
     /**
      * Write the metrics that registered for the respective registryName.
      *
-     * @param registryName
+     * @param scope
      * @throws NoSuchRegistryException
      * @throws IOException
      */
-    public void write(String registryName) throws NoSuchRegistryException, IOException;
+    public void write(Type scope) throws NoSuchRegistryException, IOException;
 
     /**
      * Write all the registered metrics

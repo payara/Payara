@@ -1,0 +1,25 @@
+# TYPE application_response_time_rate_per_second gauge
+application_response_time_rate_per_second 0.004292520715985437
+# TYPE application_response_time_one_min_rate_per_second gauge
+application_response_time_one_min_rate_per_second 2.794076465421066E-14
+# TYPE application_response_time_five_min_rate_per_second gauge
+application_response_time_five_min_rate_per_second 4.800392614619373E-4
+# TYPE application_response_time_fifteen_min_rate_per_second gauge
+application_response_time_fifteen_min_rate_per_second 0.01063191047532505
+# TYPE application_response_time_mean_seconds gauge
+application_response_time_mean_seconds 4.15041E-4
+# TYPE application_response_time_max_seconds gauge
+application_response_time_max_seconds 5.608690E-4
+# TYPE application_response_time_min_seconds gauge
+application_response_time_min_seconds 1.69916E-4
+# TYPE application_response_time_stddev_seconds gauge
+application_response_time_stddev_seconds 6.52907E-4
+# TYPE application_response_time_seconds summary
+# HELP application_response_time_seconds Server response time for /index.html
+application_response_time_seconds_count 80
+application_response_time_seconds{quantile="0.5"} 2.93324E-4
+application_response_time_seconds{quantile="0.75"} 3.44914E-4
+application_response_time_seconds{quantile="0.95"} 5.436470E-4
+application_response_time_seconds{quantile="0.98"} 0.002706543
+application_response_time_seconds{quantile="0.99"} 0.005608694
+application_response_time_seconds{quantile="0.999"} 0.005608694
