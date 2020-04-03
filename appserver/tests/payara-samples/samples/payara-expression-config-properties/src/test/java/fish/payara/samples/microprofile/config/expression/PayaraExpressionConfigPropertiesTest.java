@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.microprofile.config.alias;
+package fish.payara.samples.microprofile.config.expression;
 
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -63,25 +63,27 @@ import java.nio.file.Paths;
  */
 @RunWith(Arquillian.class)
 @NotMicroCompatible
-public class MicroProfileConfigAliasTest {
+public class PayaraExpressionConfigPropertiesTest {
 
     @ArquillianResource
     private URL url;
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "microprofile-config-alias.war")
-                .addPackage("fish.payara.samples.microprofile.config.alias")
-                .addAsManifestResource(new File("src/main/resources/META-INF/microprofile-config-alias.properties"));
+        return ShrinkWrap.create(WebArchive.class, "microprofile-config-expression.war")
+                .addPackage("fish.payara.samples.microprofile.config.expression")
+                .addAsManifestResource(new File("src/main/resources/META-INF/payara-expression-config.properties"));
     }
 
     @BeforeClass
     public static void createPasswordAlias() {
-        CliCommands.payaraGlassFish("create-password-alias", "-W", Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt", "wibbles");
+        CliCommands.payaraGlassFish("create-password-alias", "-W",
+                Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt", "wibbles");
 
-        // Deployment actually happens before @BeforeClass, and the PasswordAlias config source requires an application refresh to update, so disable and enable it
-        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-alias.enabled=false");
-        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-alias.enabled=true");
+        // Deployment actually happens before @BeforeClass, and the PasswordAlias config source requires an application
+        // refresh to update, so disable and enable it
+        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-expression.enabled=false");
+        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-expression.enabled=true");
     }
 
     @AfterClass
@@ -94,12 +96,17 @@ public class MicroProfileConfigAliasTest {
         TextPage page = new WebClient().getPage(url + "ConfigServlet");
         System.out.println(page.getContent());
 
-        Assert.assertTrue(page.getContent().contains("Normal Notation: wobbles"));
-        Assert.assertTrue(page.getContent().contains("Substitution Notation: wobbles"));
-        Assert.assertTrue(page.getContent().contains("Password Alias from File: wobbles"));
-        Assert.assertTrue(page.getContent().contains("System Property Alias from File: Tiddles!"));
-        Assert.assertTrue(page.getContent().contains("System Property Alias from File: Tiddles!"));
-        Assert.assertTrue(page.getContent().contains("Environment Variable Alias referencing System Property Alias from File: Dobbles"));
-        Assert.assertTrue(page.getContent().contains("Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
+        Assert.assertTrue("Expected \"Normal Notation\" to give wobbles",
+                page.getContent().contains("Normal Notation: wobbles"));
+        Assert.assertTrue("Expected \"Substitution Notation\" to give wobbles",
+                page.getContent().contains("Substitution Notation: wobbles"));
+        Assert.assertTrue("Expected \"Password Alias from File\" to give wobbles",
+                page.getContent().contains("Password Alias from File: wobbles"));
+        Assert.assertTrue("Expected \"System Property Alias from File\" to give Tiddles!",
+                page.getContent().contains("System Property Alias from File: Tiddles!"));
+        Assert.assertTrue("Expected \"Environment Variable Alias referencing System Property Alias from File\" to give Dobbles",
+                page.getContent().contains("Environment Variable Alias referencing System Property Alias from File: Dobbles"));
+        Assert.assertTrue("Expected \"Environment Variable Alias and System Property Alias from File (same property)\" to give Bibbles and Bobbles",
+                page.getContent().contains("Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
     }
 }

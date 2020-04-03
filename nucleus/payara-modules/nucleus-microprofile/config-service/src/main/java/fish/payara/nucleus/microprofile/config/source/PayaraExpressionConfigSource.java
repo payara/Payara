@@ -43,52 +43,45 @@ package fish.payara.nucleus.microprofile.config.source;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.config.support.TranslatedConfigView;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
- * Config source for the microprofile-config-alias.properties file. This config source runs properties through the
+ * Config source for the payara-expression-config.properties file. This config source runs properties through the
  * TranslatedConfigView class to perform substitutions on aliases, system properties, and environment variables.
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class AliasPropertiesConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PayaraExpressionConfigSource extends PayaraConfigSource implements ConfigSource {
 
     private final Properties properties;
 
-    public AliasPropertiesConfigSource(Properties properties) {
+    public PayaraExpressionConfigSource(Properties properties) {
         super();
         this.properties = properties;
     }
 
     @Override
     public int getOrdinal() {
-        return Integer.parseInt(configService.getMPConfig().getAliasPropertiesOrdinality());
+        return Integer.parseInt(configService.getMPConfig().getPayaraExpressionPropertiesOrdinality());
     }
 
     @Override
     public Map<String, String> getProperties() {
-        HashMap<String,String> result = new HashMap<>(properties.size());
-
-        for (Object key : properties.keySet()) {
-            String alias = properties.getProperty((String) key);
-            String value = getValue((String) key);
-            result.put(alias, value);
-        }
-
-        return result;
+        return properties.entrySet().stream().collect(
+                Collectors.toMap(e -> e.getKey().toString(), e -> getValue(e.getValue().toString())));
     }
 
     @Override
     public String getValue(String property) {
-        String alias = properties.getProperty(property);
+        String payaraExpression = properties.getProperty(property);
 
-        // Null check for alias done in TranslatedConfigView.expandValue(alias)
-        String value = TranslatedConfigView.expandValue(alias);
+        // Null check for payaraExpression done in TranslatedConfigView.expandValue(payaraExpression)
+        String value = TranslatedConfigView.expandValue(payaraExpression);
 
-        // If returned value is null, or is the same as the pre-expanded alias, this means no match was found
-        if (value == null || value.equals(alias)) {
+        // If returned value is null, or is the same as the pre-expanded payaraExpression, this means no match was found
+        if (value == null || value.equals(payaraExpression)) {
             return null;
         }
 
@@ -97,10 +90,10 @@ public class AliasPropertiesConfigSource extends PayaraConfigSource implements C
 
     @Override
     public String getName() {
-        return "Alias Properties";
+        return "Payara Expression Properties";
     }
 
-    AliasPropertiesConfigSource(boolean test, Properties properties) {
+    PayaraExpressionConfigSource(boolean test, Properties properties) {
         super(test);
         this.properties = properties;
     }

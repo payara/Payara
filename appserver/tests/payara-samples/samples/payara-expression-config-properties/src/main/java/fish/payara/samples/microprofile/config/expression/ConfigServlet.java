@@ -38,7 +38,7 @@
  * holder.
  */
 
-package fish.payara.samples.microprofile.config.alias;
+package fish.payara.samples.microprofile.config.expression;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -73,10 +73,10 @@ public class ConfigServlet extends HttpServlet {
 
         response.getWriter().println("Normal Notation: " + config.getOptionalValue("wibbles", String.class).orElse(null) +
                 "\n" + "Substitution Notation: " + config.getOptionalValue("${ALIAS=wibbles}", String.class).orElse(null) +
-                "\n" + "Password Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.password", String.class).orElse(null) +
-                "\n" + "System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.system", String.class).orElse(null) +
-                "\n" + "Environment Variable Alias referencing System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.alias.recurse", String.class).orElse(null) +
-                "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.alias.multiple", String.class).orElse(null));
+                "\n" + "Password Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.password", String.class).orElse(null) +
+                "\n" + "System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.system", String.class).orElse(null) +
+                "\n" + "Environment Variable Alias referencing System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.recurse", String.class).orElse(null) +
+                "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.expression.multiple", String.class).orElse(null));
     }
 
 }

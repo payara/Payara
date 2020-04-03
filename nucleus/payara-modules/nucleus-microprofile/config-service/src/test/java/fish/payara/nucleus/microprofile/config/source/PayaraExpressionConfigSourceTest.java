@@ -45,29 +45,29 @@ import org.junit.Test;
 
 import java.util.Properties;
 
-public class AliasPropertiesConfigSourceTest {
+public class PayaraExpressionConfigSourceTest {
 
     @Test
-    public void testGetAliasedSystemProperty() {
+    public void testTranslateSystemProperty() {
         Properties properties = new Properties();
-        properties.put("fish.payara.alias.system", "${java.home}");
-        AliasPropertiesConfigSource config = new AliasPropertiesConfigSource(true, properties);
+        properties.put("fish.payara.expression.system", "${java.home}");
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
 
-        Assert.assertEquals(System.getProperty("java.home"), config.getValue("fish.payara.alias.system"));
+        Assert.assertEquals(System.getProperty("java.home"), config.getValue("fish.payara.expression.system"));
     }
 
     @Test
-    public void testGetAliasedEnvironmentProperty() {
+    public void testTranslateEnvironmentProperty() {
         Properties properties = new Properties();
-        properties.put("fish.payara.alias.env", "${ENV=PATH}");
-        AliasPropertiesConfigSource config = new AliasPropertiesConfigSource(true, properties);
+        properties.put("fish.payara.expression.env", "${ENV=PATH}");
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
 
-        Assert.assertEquals(System.getenv().get("PATH"), config.getValue("fish.payara.alias.env"));
+        Assert.assertEquals(System.getenv().get("PATH"), config.getValue("fish.payara.expression.env"));
     }
 
     @Test
     public void testGetUndefinedProperty() {
-        AliasPropertiesConfigSource config = new AliasPropertiesConfigSource(true, new Properties());
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, new Properties());
 
         Assert.assertNull(config.getValue("${java.home}"));
         Assert.assertNull(config.getValue("java.home"));
@@ -83,7 +83,7 @@ public class AliasPropertiesConfigSourceTest {
         properties.put("fish.payara.alias.incorrect", "java.home");
         properties.put("fish.payara.alias.incorrect.system", "{wibbly.wobbly.timey.wimey}");
         properties.put("fish.payara.alias.incorrect.env", "${ENV=wibbly.wobbly.timey.wimey}");
-        AliasPropertiesConfigSource config = new AliasPropertiesConfigSource(true, properties);
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
 
         Assert.assertNull(config.getValue("fish.payara.alias.incorrect"));
         Assert.assertNull(config.getValue("fish.payara.alias.incorrect.system"));

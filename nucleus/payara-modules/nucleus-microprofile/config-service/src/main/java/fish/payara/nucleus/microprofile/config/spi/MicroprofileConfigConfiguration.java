@@ -92,6 +92,6 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
     void setPasswordOrdinality(String message);
 
     @Attribute(defaultValue = "170", dataType = Integer.class)
-    String getAliasPropertiesOrdinality();
-    void setAliasPropertiesOrdinality(String message);
+    String getPayaraExpressionPropertiesOrdinality();
+    void setPayaraExpressionPropertiesOrdinality(String message);
 }
