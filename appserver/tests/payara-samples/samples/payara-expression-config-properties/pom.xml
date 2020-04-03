@@ -50,11 +50,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>microprofile-config-alias-properties</artifactId>
+    <artifactId>payara-expression-config-properties</artifactId>
     <packaging>war</packaging>
 
-    <name>Payara Samples - MicroProfile Config Alias Properties</name>
-    <description>Sample that demonstrates translation of aliases</description>
+    <name>Payara Samples - Payara Expression MicroProfile Config Properties</name>
+    <description>Sample that demonstrates translation of expressions and variables</description>
 
     <dependencies>
         <dependency>
@@ -98,7 +98,7 @@
                                     </message>
                                 </requireEnvironmentVariable>
                             </rules>
-                            <fail>true</fail>
+                            <fail>false</fail>
                         </configuration>
                     </execution>
                 </executions>

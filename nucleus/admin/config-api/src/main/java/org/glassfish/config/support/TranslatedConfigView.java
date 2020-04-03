@@ -296,20 +296,4 @@ public class TranslatedConfigView implements ConfigView {
         }
         return new String(domainPasswordAliasStore.get(an));
     }
-
-    private static String expandPasswordAlias(String alias) {
-        if (domainPasswordAliasStore() != null) {
-            if (getAlias(alias, ALIAS_TOKEN) != null) {
-                try {
-                    return getRealPasswordFromAlias(alias);
-                } catch (Exception e) {
-                    Logger.getAnonymousLogger().severe(Strings.get(
-                            "TranslatedConfigView.aliaserror", alias, e.getLocalizedMessage()));
-                    return alias;
-                }
-            }
-        }
-
-        return null;
-    }
 }
