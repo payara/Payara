@@ -91,7 +91,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * Base Service for MicroProfile Fault Tolerance.
- * 
+ *
  * @author Andrew Pielage
  * @author Jan Bernitt (2.0)
  */
@@ -160,7 +160,7 @@ public class FaultToleranceServiceImpl
         int cleaned = 0;
         for (String key : new HashSet<>(methodByTargetObjectAndName.keySet())) {
             try {
-                Object newValue = methodByTargetObjectAndName.compute(key, 
+                Object newValue = methodByTargetObjectAndName.compute(key,
                         (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
                 if (newValue == null) {
                     cleaned++;
@@ -180,7 +180,7 @@ public class FaultToleranceServiceImpl
     }
 
     private int getMaxAsyncPoolSize() {
-        return config == null ? 1000 : parseInt(config.getAsyncMaxPoolSize());
+        return config == null ? 2000 : parseInt(config.getAsyncMaxPoolSize());
     }
 
     private int getAsyncPoolKeepAliveInSeconds() {
@@ -240,7 +240,7 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        return configByApplication.computeIfAbsent(getApplicationContext(context), 
+        return configByApplication.computeIfAbsent(getApplicationContext(context),
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
@@ -270,7 +270,7 @@ public class FaultToleranceServiceImpl
     private String getApplicationContext(InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         String appName = currentInvocation.getAppName();
-        return appName != null ? appName : "common"; 
+        return appName != null ? appName : "common";
     }
 
     @Override
@@ -288,7 +288,7 @@ public class FaultToleranceServiceImpl
         }
     }
 
-    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
+    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
             InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         span.addSpanTag("App Name", currentInvocation.getAppName());
@@ -310,7 +310,7 @@ public class FaultToleranceServiceImpl
     private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
             RequestContextController requestContextController) {
         MetricRegistry metricRegistry = getApplicationMetricRegistry();
-        FaultToleranceMetrics metrics = metricRegistry == null 
+        FaultToleranceMetrics metrics = metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
         asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
