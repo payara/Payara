@@ -1,0 +1,11 @@
+# TYPE application_requests_total counter
+# HELP application_requests_total Tracks the number of requests to the server
+application_requests_total 29382
+# TYPE application_requests_rate_per_second gauge
+application_requests_rate_per_second 12.223
+# TYPE application_requests_one_min_rate_per_second gauge
+application_requests_one_min_rate_per_second 12.563
+# TYPE application_requests_five_min_rate_per_second gauge
+application_requests_five_min_rate_per_second 12.364
+# TYPE application_requests_fifteen_min_rate_per_second gauge
+application_requests_fifteen_min_rate_per_second 12.126

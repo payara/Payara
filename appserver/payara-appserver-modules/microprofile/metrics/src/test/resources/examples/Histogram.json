@@ -1,0 +1,27 @@
+
+{
+    "daily_value_changes": {
+        "count": 2,
+        "min": -1624,
+        "max": 26,
+        "mean": -799.0,
+        "stddev": 825.0,
+        "p50": 26.0,
+        "p75": 26.0,
+        "p95": 26.0,
+        "p98": 26.0,
+        "p99": 26.0,
+        "p999": 26.0,
+        "count;servlet=two": 2,
+        "min;servlet=two": -1624,
+        "max;servlet=two": 26,
+        "mean;servlet=two": -799.0,
+        "stddev;servlet=two": 825.0,
+        "p50;servlet=two": 26.0,
+        "p75;servlet=two": 26.0,
+        "p95;servlet=two": 26.0,
+        "p98;servlet=two": 26.0,
+        "p99;servlet=two": 26.0,
+        "p999;servlet=two": 26.0
+    }
+}

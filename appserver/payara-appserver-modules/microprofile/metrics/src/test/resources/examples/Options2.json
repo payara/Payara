@@ -1,0 +1,28 @@
+
+{
+    "fooVal": {
+        "unit": "milliseconds",
+        "type": "gauge",
+        "description": "The average duration of foo requests during last 5 minutes",
+        "displayName": "Duration of foo",
+        "tags": [
+            [
+                "store=webshop"
+            ]
+        ]
+    },
+    "barVal": {
+        "unit": "megabytes",
+        "type": "gauge",
+        "tags": [
+            [
+                "component=backend",
+                "store=webshop"
+            ],
+            [
+                "component=frontend",
+                "store=webshop"
+            ]
+        ]
+    }
+}
