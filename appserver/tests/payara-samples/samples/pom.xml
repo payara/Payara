@@ -27,7 +27,7 @@
         <module>rolesPermitted</module>
         <module>oauth2</module>
         <module>realm-identity-stores</module>
-        <module>microprofile-config-alias-properties</module>
+        <module>payara-expression-config-properties</module>
     </modules>
 
     <dependencyManagement>

@@ -98,7 +98,7 @@
                                     </message>
                                 </requireEnvironmentVariable>
                             </rules>
-                            <fail>false</fail>
+                            <fail>true</fail>
                         </configuration>
                     </execution>
                 </executions>
