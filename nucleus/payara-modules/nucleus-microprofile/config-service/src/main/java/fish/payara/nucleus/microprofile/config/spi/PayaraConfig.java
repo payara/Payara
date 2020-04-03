@@ -67,8 +67,7 @@ public class PayaraConfig implements Config {
 
     public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter<?>> convertersMap) {
         this.configSources = configSources;
-        this.converters = new ConcurrentHashMap<>();
-        this.converters.putAll(convertersMap);
+        this.converters = new ConcurrentHashMap<>(convertersMap);
         Collections.sort(configSources, new ConfigSourceComparator());
     }
 

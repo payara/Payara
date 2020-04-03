@@ -40,7 +40,6 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import static fish.payara.nucleus.microprofile.config.source.PayaraConfigSource.PROPERTY_PREFIX;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
