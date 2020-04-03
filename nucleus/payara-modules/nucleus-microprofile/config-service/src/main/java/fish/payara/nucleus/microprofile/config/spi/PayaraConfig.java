@@ -49,7 +49,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -62,11 +61,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Steve Millidge (Payara Foundation)
  */
 public class PayaraConfig implements Config {
-    
-    private final List<ConfigSource> configSources;
-    private final Map<Type, Converter> converters;
 
-    public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter> convertersMap) {
+    private final List<ConfigSource> configSources;
+    private final Map<Type, Converter<?>> converters;
+
+    public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter<?>> convertersMap) {
         this.configSources = configSources;
         this.converters = new ConcurrentHashMap<>();
         this.converters.putAll(convertersMap);
@@ -75,32 +74,32 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        String result = getValue(propertyName);
-        
-        if (result == null) {
+        String strValue = getValue(propertyName);
+
+        if (strValue == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        return convertString(result, propertyType);
+        return convertString(strValue, propertyType);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
         String strValue = getValue(propertyName);
-        
-        if(String.class.equals(propertyType)) {
+
+        if(String.class == propertyType) {
             return (Optional<T>) Optional.ofNullable(strValue);
         }
 
         if (strValue == null) {
             return Optional.empty();
-        } else {
-            return Optional.ofNullable(convertString(strValue, propertyType));
         }
+        return Optional.ofNullable(convertString(strValue, propertyType));
     }
 
     @Override
     public Iterable<String> getPropertyNames() {
-        LinkedList<String> result = new LinkedList<>();
+        List<String> result = new ArrayList<>();
         for (ConfigSource configSource : configSources) {
             result.addAll(configSource.getProperties().keySet());
         }
@@ -111,11 +110,11 @@ public class PayaraConfig implements Config {
     public Iterable<ConfigSource> getConfigSources() {
         return configSources;
     }
-    
+
     public Set<Type> getConverterTypes() {
         return converters.keySet();
-    }  
-        
+    }
+
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
         String value = getValue(propertyName);
         if (value == null) {
@@ -131,7 +130,7 @@ public class PayaraConfig implements Config {
         }
         return result;
     }
-    
+
     public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
         String value = getValue(propertyName);
         if (value == null) {
@@ -148,7 +147,7 @@ public class PayaraConfig implements Config {
         return result;
     }
 
-    
+
     public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
         String result = getValue(propertyName);
         if (result == null) {
@@ -170,14 +169,15 @@ public class PayaraConfig implements Config {
         }
         return result;
     }
-    
+
+    @SuppressWarnings("unchecked")
     private <T> Converter<T> getConverter(Type propertyType) {
         Type type = boxedTypeOf(propertyType);
 
-        Converter<T> converter = converters.get(type);
+        Converter<?> converter = converters.get(type);
 
         if (converter != null) {
-            return converter;
+            return (Converter<T>) converter;
         }
 
         // see if a common sense converter can be created
@@ -193,18 +193,18 @@ public class PayaraConfig implements Config {
 
 
     private static Type boxedTypeOf(Type type) {
-        if (type instanceof Class && !((Class) type).isPrimitive()) {
+        if (type instanceof Class && !((Class<?>) type).isPrimitive()) {
             return type;
         }
         if (type == int.class) {
             return Integer.class;
-        } 
+        }
         if (type == boolean.class) {
             return Boolean.class;
         }
         if (type == long.class) {
             return Long.class;
-        } 
+        }
         if (type == double.class) {
             return Double.class;
         }
@@ -224,13 +224,16 @@ public class PayaraConfig implements Config {
         return Void.class;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T convertString(String value, Class<T> propertyType) {
-
+        if (propertyType == String.class) {
+            return (T) value;
+        }
         // if it is an array convert arrays
         if (propertyType.isArray()) {
             // find converter for the array type
-            Class componentClazz = propertyType.getComponentType();
-            Converter converter = getConverter(componentClazz);
+            Class<?> componentClazz = propertyType.getComponentType();
+            Converter<?> converter = getConverter(componentClazz);
 
             // array convert
             String keys[] = splitValue(value);
@@ -239,23 +242,21 @@ public class PayaraConfig implements Config {
                 Array.set(arrayResult, i, converter.convert(keys[i]));
             }
             return (T) arrayResult;
-        } else {
-
-            // find a converter
-            Converter<T> converter = getConverter(propertyType);
-            if (converter == null) {
-                throw new IllegalArgumentException("No converter for class " + propertyType);
-            }
-            return converter.convert(value);
         }
+        // find a converter
+        Converter<T> converter = getConverter(propertyType);
+        if (converter == null) {
+            throw new IllegalArgumentException("No converter for class " + propertyType);
+        }
+        return converter.convert(value);
     }
-    
-    private String[] splitValue(String value) {
+
+    private static String[] splitValue(String value) {
         String keys[] = value.split("(?<!\\\\),");
         for (int i=0; i < keys.length; i++) {
             keys[i] = keys[i].replaceAll("\\\\,", ",");
         }
         return keys;
     }
-    
+
 }

@@ -58,18 +58,16 @@ import org.eclipse.microprofile.config.spi.Converter;
  */
 public class PayaraConfigBuilder implements ConfigBuilder {
 
-    LinkedList<ConfigSource> sources;
-    Map<Type, Converter> converters;
-    ConfigProviderResolverImpl resolver;
-    ClassLoader loader;
+    private final LinkedList<ConfigSource> sources = new LinkedList<>();
+    private final Map<Type, Converter<?>> converters = new HashMap<>();
+    private final ConfigProviderResolverImpl resolver;
+    private ClassLoader loader;
 
     public PayaraConfigBuilder(ConfigProviderResolverImpl resolver, ClassLoader loader) {
         this.resolver = resolver;
-        sources = new LinkedList<>();
-        converters = new HashMap<>();
         this.loader = loader;
     }
-    
+
     public PayaraConfigBuilder(ConfigProviderResolverImpl resolver) {
         this(resolver,Thread.currentThread().getContextClassLoader());
     }
@@ -88,7 +86,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder addDiscoveredConverters() {
-        Map<Type, Converter> discoveredConverters = resolver.getDiscoveredConverters(resolver.getAppInfo(loader));
+        Map<Type, Converter<?>> discoveredConverters = resolver.getDiscoveredConverters(resolver.getAppInfo(loader));
         converters.putAll(discoveredConverters);
         return this;
     }
@@ -119,7 +117,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public <T> ConfigBuilder withConverter(Class<T> type, int i, Converter<T> cnvrtr) {
-        Converter old = converters.get(type);
+        Converter<?> old = converters.get(type);
         if (old != null) {
             if (i > getPriority(old)) {
                 this.converters.put(type, cnvrtr);
@@ -130,7 +128,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         return this;
     }
 
-    public static Type getTypeForConverter(Converter converter) {
+    public static Type getTypeForConverter(Converter<?> converter) {
         // add each converter to the map for later lookup
         Type types[] = converter.getClass().getGenericInterfaces();
         for (Type type : types) {
@@ -144,9 +142,9 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         }
         return null;
     }
-    
-        
-    private int getPriority(Converter converter) {
+
+
+    private static int getPriority(Converter<?> converter) {
         int result = 100;
         Priority annotation = converter.getClass().getAnnotation(Priority.class);
         if (annotation != null) {
@@ -154,20 +152,20 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         }
         return result;
     }
-    
-        
-    private void addConvertersToMap(List<Converter> convertersList) {
-        for (Converter converter : convertersList) {
+
+
+    private void addConvertersToMap(List<Converter<?>> convertersList) {
+        for (Converter<?> converter : convertersList) {
             Type cType = getTypeForConverter(converter);
-            if (cType != null) { 
-                Converter old = converters.get(cType);
+            if (cType != null) {
+                Converter<?> old = converters.get(cType);
                 if (old != null) {
                     if (getPriority(converter) > getPriority(old)) {
                         this.converters.put(cType, converter);
                     }
                 }else {
                     this.converters.put(cType, converter);
-                } 
+                }
             }
         }
     }

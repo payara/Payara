@@ -233,7 +233,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Type, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
                 converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters);
@@ -245,7 +245,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Type, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
@@ -303,11 +303,12 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         }
         return sources;
     }
+
     List<ConfigSource> getDefaultSources() {
         return getDefaultSources(null);
     }
 
-    List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
+    private List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
         String appName = null;
         String moduleName = null;
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
@@ -341,7 +342,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = Collections.EMPTY_LIST;
+        List<Properties> result = Collections.emptyList();
         if (info != null) {
             List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_METADATA_KEY, LinkedList.class);
             if (transientAppMetaData != null) {
@@ -392,8 +393,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    Map<Type,Converter> getDefaultConverters() {
-        Map<Type,Converter> result = new HashMap<>();
+    Map<Type,Converter<?>> getDefaultConverters() {
+        Map<Type,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
@@ -408,13 +409,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     }
 
-    Map<Type, Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
-        Map<Type, Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
+    Map<Type, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Type, Converter<?>> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
             converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
-            for (Converter converter : serviceLoader) {
+            for (Converter<?> converter : serviceLoader) {
                 Type type = PayaraConfigBuilder.getTypeForConverter(converter);
                 if (type != null) {
                     converters.put(type,converter);
@@ -425,7 +426,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return converters;
     }
 
-    private void initialiseApplicationConfig(ApplicationInfo info) {
+    private static void initialiseApplicationConfig(ApplicationInfo info) {
         LinkedList<Properties> appConfigProperties = new LinkedList<>();
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
@@ -437,7 +438,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         }
     }
 
-    private List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+    private static List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
         List<Properties> props = new ArrayList<>();
         // Read application defined properties and add as transient metadata
         Enumeration<URL> resources = appClassLoader.getResources(fileName);
