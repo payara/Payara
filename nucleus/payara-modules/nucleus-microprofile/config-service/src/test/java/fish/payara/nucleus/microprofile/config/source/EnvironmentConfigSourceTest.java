@@ -52,39 +52,19 @@ import static org.junit.Assert.*;
  * @author steve
  */
 public class EnvironmentConfigSourceTest {
-    
-    public EnvironmentConfigSourceTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
+
+    private final EnvironmentConfigSource source = new EnvironmentConfigSource();
 
     /**
      * Test of getProperties method, of class EnvironmentConfigSource.
      */
     @Test
     public void testGetProperties() {
-        System.out.println("getProperties");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        Map<String, String> result = instance.getProperties();
-        Map<String,String> environment = System.getenv();
-        for (String string : environment.keySet()) {
-            assertEquals(environment.get(string), instance.getValue(string));
+        Map<String,String> env = System.getenv();
+        assertEquals(env, source.getProperties());
+        for (String string : env.keySet()) {
+            assertEquals(env.get(string), source.getValue(string));
         }
-
     }
 
     /**
@@ -92,11 +72,7 @@ public class EnvironmentConfigSourceTest {
      */
     @Test
     public void testGetOrdinal() {
-        System.out.println("getOrdinal");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        int expResult = 300;
-        int result = instance.getOrdinal();
-        assertEquals(expResult, result);
+        assertEquals(300, source.getOrdinal());
     }
 
     /**
@@ -104,11 +80,7 @@ public class EnvironmentConfigSourceTest {
      */
     @Test
     public void testGetName() {
-        System.out.println("getName");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        String expResult = "Environment";
-        String result = instance.getName();
-        assertEquals(expResult, result);
+        assertEquals("Environment", source.getName());
     }
-    
+
 }

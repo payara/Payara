@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.getTypeForConverter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -54,6 +56,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -168,6 +171,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return configuration;
     }
 
+    int getCacheDurationSeconds() {
+        return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
+    }
+
     @Override
     public Config getConfig() {
         return getConfig(Thread.currentThread().getContextClassLoader());
@@ -233,10 +240,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter<?>> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
                 converters.putAll(getDefaultConverters());
-                serverLevelConfig = new PayaraConfig(sources, converters);
+                serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
             }
         } else { // look for an application specific one
@@ -245,12 +252,12 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter<?>> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters);
+                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -393,8 +400,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    Map<Type,Converter<?>> getDefaultConverters() {
-        Map<Type,Converter<?>> result = new HashMap<>();
+    Map<Class<?>,Converter<?>> getDefaultConverters() {
+        Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
@@ -409,14 +416,14 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     }
 
-    Map<Type, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {
-        Map<Type, Converter<?>> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
+    Map<Class<?>, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Class<?>, Converter<?>> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
             converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
             for (Converter<?> converter : serviceLoader) {
-                Type type = PayaraConfigBuilder.getTypeForConverter(converter);
+                Class<?> type = getTypeForConverter(converter);
                 if (type != null) {
                     converters.put(type,converter);
                 }

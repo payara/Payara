@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,53 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.nucleus.microprofile.config.spi;
 
-import java.util.Properties;
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.getTypeForConverter;
+import static org.junit.Assert.assertEquals;
+
+import java.math.BigInteger;
+import java.util.function.Supplier;
+
+import org.eclipse.microprofile.config.spi.Converter;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
+ * Tests the {@link PayaraConfigBuilder} helpers.
  *
- * @author steve
+ * @author Jan Bernitt
  */
-public class SystemPropertyConfigSourceTest {
+@SuppressWarnings("synthetic-access")
+public class PayaraConfigBuilderTest {
 
-    private final SystemPropertyConfigSource source = new SystemPropertyConfigSource(true);
+    private static class SimpleTypeConverter implements Converter<BigInteger> {
 
-    /**
-     * Test of getProperties method, of class SystemPropertyConfigSource.
-     */
-    @Test
-    public void testGetProperties() {
-        Properties expected = System.getProperties();
-        assertEquals(expected, source.getProperties());
-        for (String stringPropertyName : expected.stringPropertyNames()) {
-            assertEquals(expected.getProperty(stringPropertyName), source.getValue(stringPropertyName));
+        @Override
+        public BigInteger convert(String value) {
+            return new BigInteger(value);
         }
     }
 
-    /**
-     * Test of getOrdinal method, of class SystemPropertyConfigSource.
-     */
     @Test
-    public void testGetOrdinal() {
-        assertEquals(400, source.getOrdinal());
+    public void convertersCanReturnSimpleTypes() {
+        assertEquals(BigInteger.class, getTypeForConverter(new SimpleTypeConverter()));
     }
 
-    /**
-     * Test of getName method, of class SystemPropertyConfigSource.
-     */
-    @Test
-    public void testGetName() {
-        assertEquals("SystemProperty", source.getName());
+    private static class SupplierTypeConverter implements Converter<Supplier<String>> {
+
+        @Override
+        public Supplier<String> convert(String value) {
+            return () -> value;
+        }
     }
 
     @Test
-    public void testAddProperty() {
-        assertNull(source.getValue("NoProperty"));
-        System.setProperty("NoProperty", "test");
-        assertEquals("test", source.getValue("NoProperty"));
+    public void convertersCanReturnParameterizedTypes() {
+        assertEquals(Supplier.class, getTypeForConverter(new SupplierTypeConverter()));
     }
-
 }

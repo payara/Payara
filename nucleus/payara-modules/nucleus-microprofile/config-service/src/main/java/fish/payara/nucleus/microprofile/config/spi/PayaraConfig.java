@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,8 +44,9 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
+import static java.lang.System.currentTimeMillis;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,51 +56,88 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
+ * @author Jan Bernitt (caching part)
  */
 public class PayaraConfig implements Config {
 
-    private final List<ConfigSource> configSources;
-    private final Map<Type, Converter<?>> converters;
+    private static final class CacheEntry {
+        final Object value;
+        final long expires;
 
-    public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter<?>> convertersMap) {
-        this.configSources = configSources;
-        this.converters = new ConcurrentHashMap<>(convertersMap);
-        Collections.sort(configSources, new ConfigSourceComparator());
+        CacheEntry(Object value, long expires) {
+            this.value = value;
+            this.expires = expires;
+        }
+    }
+
+    /**
+     * Duration a {@link CacheEntry} is valid, when it becomes invalid the entry is updated with value from
+     * {@link ConfigSource} on next request.
+     */
+    private static final int DEFAULT_TTL = 60;
+
+    private final List<ConfigSource> sources;
+    private final Map<Class<?>, Converter<?>> converters;
+    private final long ttl;
+    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
+
+    public PayaraConfig(List<ConfigSource> configSources, Map<Class<?>,Converter<?>> convertersMap) {
+        this(configSources, convertersMap, TimeUnit.SECONDS.toMillis(DEFAULT_TTL));
+    }
+
+    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>,Converter<?>> converters, long ttl) {
+        this.sources = sources;
+        this.converters = new ConcurrentHashMap<>(converters);
+        this.ttl = ttl;
+        Collections.sort(sources, new ConfigSourceComparator());
+    }
+
+    public long getTTL() {
+        return ttl;
+    }
+
+    private static String getCacheKey(String propertyName, Class<?> propertyType) {
+        return propertyType.getName() + ":" + propertyName;
+    }
+
+    private <T> T getValueUncached(String propertyName, Class<T> propertyType) {
+        return convertString(getStringValue(propertyName), propertyType);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getValueCached(String propertyName, Class<T> propertyType, BiFunction<String, Class<T>, T> getUncached) {
+        return ttl > 0
+                ? (T) cachedValuesByProperty.compute(getCacheKey(propertyName, propertyType),
+                    (key, entry) -> entry != null && currentTimeMillis() < entry.expires
+                        ? entry
+                        : new CacheEntry(getUncached.apply(propertyName, propertyType), currentTimeMillis() + ttl)).value
+                : getUncached.apply(propertyName, propertyType);
     }
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        String strValue = getValue(propertyName);
-
-        if (strValue == null) {
+        T value = getValueCached(propertyName, propertyType, this::getValueUncached);
+        if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        return convertString(strValue, propertyType);
+        return value;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        String strValue = getValue(propertyName);
-
-        if(String.class == propertyType) {
-            return (Optional<T>) Optional.ofNullable(strValue);
-        }
-
-        if (strValue == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(convertString(strValue, propertyType));
+        return Optional.ofNullable(getValueCached(propertyName, propertyType, this::getValueUncached));
     }
 
     @Override
     public Iterable<String> getPropertyNames() {
         List<String> result = new ArrayList<>();
-        for (ConfigSource configSource : configSources) {
+        for (ConfigSource configSource : sources) {
             result.addAll(configSource.getProperties().keySet());
         }
         return result;
@@ -107,22 +145,30 @@ public class PayaraConfig implements Config {
 
     @Override
     public Iterable<ConfigSource> getConfigSources() {
-        return configSources;
+        return sources;
     }
 
-    public Set<Type> getConverterTypes() {
+    public Set<Class<?>> getConverterTypes() {
         return converters.keySet();
     }
 
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
-        String value = getValue(propertyName);
-        if (value == null) {
-            value = defaultValue;
-        }
+        @SuppressWarnings("unchecked")
+        List<T> value = getValueCached(propertyName, List.class, (property, type) -> {
+            String stringValue = getValueUncached(property, String.class);
+            if (stringValue == null) {
+                stringValue = defaultValue;
+            }
+            return convertToList(stringValue, elementType);
+        });
         if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        String keys[] = splitValue(value);
+        return value;
+    }
+
+    private <T> List<T> convertToList(String stringValue, Class<T> elementType) {
+        String keys[] = splitValue(stringValue);
         List<T> result = new ArrayList<>(keys.length);
         for (String key : keys) {
             result.add(convertString(key, elementType));
@@ -131,14 +177,22 @@ public class PayaraConfig implements Config {
     }
 
     public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
-        String value = getValue(propertyName);
-        if (value == null) {
-            value = defaultValue;
-        }
+        @SuppressWarnings("unchecked")
+        Set<T> value = getValueCached(propertyName, Set.class, (property, type) ->  {
+            String stringValue = getValueUncached(property, String.class);
+            if (stringValue == null) {
+                stringValue = defaultValue;
+            }
+            return convertToSet(stringValue, elementType);
+        });
         if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        String keys[] = splitValue(value);
+        return value;
+    }
+
+    private <T> Set<T> convertToSet(String stringValue, Class<T> elementType) {
+        String keys[] = splitValue(stringValue);
         Set<T> result = new HashSet<>(keys.length);
         for (String key : keys) {
             result.add(convertString(key, elementType));
@@ -146,21 +200,20 @@ public class PayaraConfig implements Config {
         return result;
     }
 
-
     public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
-        String result = getValue(propertyName);
-        if (result == null) {
-            result = defaultValue;
+        T value = getValueCached(propertyName, propertyType, this::getValueUncached);
+        if (value == null) {
+            value = convertString(defaultValue, propertyType);
         }
-        if (result == null) {
+        if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        return convertString(result, propertyType);
+        return value;
     }
 
-    private String getValue(String propertyName) {
+    private String getStringValue(String propertyName) {
         String result = null;
-        for (ConfigSource configSource : configSources) {
+        for (ConfigSource configSource : sources) {
             result = configSource.getValue(propertyName);
             if (result != null) {
                 break;
@@ -170,8 +223,8 @@ public class PayaraConfig implements Config {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Converter<T> getConverter(Type propertyType) {
-        Type type = boxedTypeOf(propertyType);
+    private <T> Converter<T> getConverter(Class<?> propertyType) {
+        Class<?> type = boxedTypeOf(propertyType);
 
         Converter<?> converter = converters.get(type);
 
@@ -180,19 +233,19 @@ public class PayaraConfig implements Config {
         }
 
         // see if a common sense converter can be created
-        Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(propertyType);
+        Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(type);
         if (automaticConverter.isPresent()) {
-            converters.put(propertyType, automaticConverter.get());
+            converters.put(type, automaticConverter.get());
             return automaticConverter.get();
         }
 
-        throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getTypeName());
+        throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
     }
 
 
 
-    private static Type boxedTypeOf(Type type) {
-        if (type instanceof Class && !((Class<?>) type).isPrimitive()) {
+    private static Class<?> boxedTypeOf(Class<?> type) {
+        if (!type.isPrimitive()) {
             return type;
         }
         if (type == int.class) {
