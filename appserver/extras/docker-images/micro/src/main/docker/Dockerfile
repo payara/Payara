@@ -4,7 +4,9 @@ FROM @docker.java.image@
 EXPOSE 6900 8080
 
 # Configure environment variables
-ENV HOME_DIR=/opt/payara
+# PAYARA_HOME is deprecated - it is here for backward compatibility
+ENV PAYARA_HOME=/opt/payara
+ENV HOME_DIR=${PAYARA_HOME}
 ENV PAYARA_DIR=${HOME_DIR} \
     DEPLOY_DIR=/opt/payara/deployments
 
