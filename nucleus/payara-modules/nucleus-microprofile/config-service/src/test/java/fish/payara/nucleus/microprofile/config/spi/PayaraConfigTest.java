@@ -49,7 +49,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -97,6 +99,20 @@ public class PayaraConfigTest {
     public void primitiveValuesAreCached() throws InterruptedException {
         assertCachedValue(source1, "int1", int.class, 1, 3);
         assertCachedValue(source2, "int2", int.class, 2, 4);
+    }
+
+    @Test
+    public void enumValuesAreCached() throws InterruptedException {
+        // tests automatic method converter
+        source1.getProperties().put("enum", ElementType.FIELD.toString());
+        assertCachedValue(source1, "enum", ElementType.class, ElementType.FIELD, ElementType.METHOD);
+    }
+
+    @Test
+    public void automaticConversionValuesAreCached() throws InterruptedException {
+        // tests automatic constructor converter
+        source1.getProperties().put("bigInt", "42");
+        assertCachedValue(source1, "bigInt", BigInteger.class, BigInteger.valueOf(42L), BigInteger.valueOf(13L));
     }
 
     @Test

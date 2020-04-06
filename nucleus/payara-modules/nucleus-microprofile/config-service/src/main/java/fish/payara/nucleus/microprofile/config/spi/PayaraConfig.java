@@ -60,6 +60,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 /**
+ * Standard implementation for MP {@link Config}.
+ *
+ * This implementation usually caches values for 1 min to avoid resolving and converting values each time
+ * {@link #getValue(String, Class)} is called. This cache can be bypassed by constructing the {@link PayaraConfig} with
+ * a TTL of zero (or negative).
  *
  * @author Steve Millidge (Payara Foundation)
  * @author Jan Bernitt (caching part)
@@ -87,8 +92,8 @@ public class PayaraConfig implements Config {
     private final long ttl;
     private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    public PayaraConfig(List<ConfigSource> configSources, Map<Class<?>,Converter<?>> convertersMap) {
-        this(configSources, convertersMap, TimeUnit.SECONDS.toMillis(DEFAULT_TTL));
+    public PayaraConfig(List<ConfigSource> configSources, Map<Class<?>,Converter<?>> converters) {
+        this(configSources, converters, TimeUnit.SECONDS.toMillis(DEFAULT_TTL));
     }
 
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>,Converter<?>> converters, long ttl) {
@@ -155,7 +160,7 @@ public class PayaraConfig implements Config {
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
         @SuppressWarnings("unchecked")
         List<T> value = getValueCached(propertyName, List.class, (property, type) -> {
-            String stringValue = getValueUncached(property, String.class);
+            String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
             }
@@ -179,7 +184,7 @@ public class PayaraConfig implements Config {
     public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
         @SuppressWarnings("unchecked")
         Set<T> value = getValueCached(propertyName, Set.class, (property, type) ->  {
-            String stringValue = getValueUncached(property, String.class);
+            String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
             }
@@ -201,10 +206,13 @@ public class PayaraConfig implements Config {
     }
 
     public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
-        T value = getValueCached(propertyName, propertyType, this::getValueUncached);
-        if (value == null) {
-            value = convertString(defaultValue, propertyType);
-        }
+        T value = getValueCached(propertyName, propertyType, (property, type) -> {
+            String stringValue = getStringValue(property);
+            if (stringValue == null) {
+                stringValue = defaultValue;
+            }
+            return convertString(stringValue, type);
+        });
         if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
@@ -212,19 +220,18 @@ public class PayaraConfig implements Config {
     }
 
     private String getStringValue(String propertyName) {
-        String result = null;
         for (ConfigSource configSource : sources) {
-            result = configSource.getValue(propertyName);
-            if (result != null) {
-                break;
+            String value = configSource.getValue(propertyName);
+            if (value != null) {
+                return value;
             }
         }
-        return result;
+        return null;
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Converter<T> getConverter(Class<?> propertyType) {
-        Class<?> type = boxedTypeOf(propertyType);
+    private <T> Converter<T> getConverter(Class<T> propertyType) {
+        Class<T> type = (Class<T>) boxedTypeOf(propertyType);
 
         Converter<?> converter = converters.get(type);
 
@@ -278,9 +285,6 @@ public class PayaraConfig implements Config {
 
     @SuppressWarnings("unchecked")
     private <T> T convertString(String value, Class<T> propertyType) {
-        if (propertyType == String.class) {
-            return (T) value;
-        }
         // if it is an array convert arrays
         if (propertyType.isArray()) {
             // find converter for the array type
