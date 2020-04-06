@@ -107,8 +107,12 @@ public class PayaraConfig implements Config {
         return ttl;
     }
 
-    private static String getCacheKey(String propertyName, Class<?> propertyType) {
-        return propertyType.getName() + ":" + propertyName;
+    private static String getCacheKey(String propertyName, Class<?> propertyType, Class<?> elementType) {
+        String key = propertyType.getName();
+        if (elementType != null) {
+            key += ":" + elementType.getName();
+        }
+        return key + ":" + propertyName;
     }
 
     private <T> T getValueUncached(String propertyName, Class<T> propertyType) {
@@ -116,9 +120,9 @@ public class PayaraConfig implements Config {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T getValueCached(String propertyName, Class<T> propertyType, BiFunction<String, Class<T>, T> getUncached) {
+    private <T> T getValueCached(String propertyName, Class<T> propertyType, Class<?> elementType, BiFunction<String, Class<T>, T> getUncached) {
         return ttl > 0
-                ? (T) cachedValuesByProperty.compute(getCacheKey(propertyName, propertyType),
+                ? (T) cachedValuesByProperty.compute(getCacheKey(propertyName, propertyType, elementType),
                     (key, entry) -> entry != null && currentTimeMillis() < entry.expires
                         ? entry
                         : new CacheEntry(getUncached.apply(propertyName, propertyType), currentTimeMillis() + ttl)).value
@@ -127,7 +131,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        T value = getValueCached(propertyName, propertyType, this::getValueUncached);
+        T value = getValueCached(propertyName, propertyType, null, this::getValueUncached);
         if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
@@ -136,7 +140,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        return Optional.ofNullable(getValueCached(propertyName, propertyType, this::getValueUncached));
+        return Optional.ofNullable(getValueCached(propertyName, propertyType, null, this::getValueUncached));
     }
 
     @Override
@@ -159,7 +163,7 @@ public class PayaraConfig implements Config {
 
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
         @SuppressWarnings("unchecked")
-        List<T> value = getValueCached(propertyName, List.class, (property, type) -> {
+        List<T> value = getValueCached(propertyName, List.class, elementType, (property, type) -> {
             String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
@@ -183,7 +187,7 @@ public class PayaraConfig implements Config {
 
     public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
         @SuppressWarnings("unchecked")
-        Set<T> value = getValueCached(propertyName, Set.class, (property, type) ->  {
+        Set<T> value = getValueCached(propertyName, Set.class, elementType, (property, type) ->  {
             String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
@@ -206,7 +210,7 @@ public class PayaraConfig implements Config {
     }
 
     public <T> T getValue(String propertyName, String defaultValue, Class<T> propertyType) {
-        return getValueCached(propertyName, propertyType, (property, type) -> {
+        return getValueCached(propertyName, propertyType, null, (property, type) -> {
             String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
