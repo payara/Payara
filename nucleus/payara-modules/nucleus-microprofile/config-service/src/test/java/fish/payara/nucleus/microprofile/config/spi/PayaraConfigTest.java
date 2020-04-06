@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -189,6 +190,11 @@ public class PayaraConfigTest {
         source1.getProperties().put("int1", "1,2");
         assertEquals(new HashSet<>(asList("value1", "value2")), config.getSetValues("key1", "default", String.class));
         assertEquals(new HashSet<>(asList(1, 2)), config.getSetValues("int1", "42", Integer.class));
+    }
+
+    @Test
+    public void nonExistingPropertyReturnsEmptyOptional() {
+        assertEquals(Optional.empty(), config.getOptionalValue("nonExisting", String.class));
     }
 
     @Test

@@ -40,6 +40,7 @@
 package fish.payara.nucleus.microprofile.config.spi;
 
 import java.util.Comparator;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
@@ -53,7 +54,9 @@ public class ConfigSourceComparator implements Comparator<ConfigSource>{
         int res = -1*(o1.getOrdinal() - o2.getOrdinal());
         if (res != 0)
             return res;
-        return o1.getName().compareTo(o2.getName());
+        String name1 = o1.getName();
+        String name2 = o2.getName();
+        return name1 == null ? -1 : name2 == null ? 1 : name1.compareTo(name2);
     }
 
 }

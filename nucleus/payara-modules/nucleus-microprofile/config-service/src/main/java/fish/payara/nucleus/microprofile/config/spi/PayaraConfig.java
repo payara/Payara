@@ -205,18 +205,14 @@ public class PayaraConfig implements Config {
         return result;
     }
 
-    public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
-        T value = getValueCached(propertyName, propertyType, (property, type) -> {
+    public <T> T getValue(String propertyName, String defaultValue, Class<T> propertyType) {
+        return getValueCached(propertyName, propertyType, (property, type) -> {
             String stringValue = getStringValue(property);
             if (stringValue == null) {
                 stringValue = defaultValue;
             }
             return convertString(stringValue, type);
         });
-        if (value == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
-        }
-        return value;
     }
 
     private String getStringValue(String propertyName) {
