@@ -42,6 +42,23 @@ package fish.payara.micro.boot;
 
 import fish.payara.micro.ClusterCommandResult;
 
+import java.util.function.Consumer;
+
+/**
+ * Payara Micro interface for running admin commands.
+ * Runner allows to use arbitrary commands as if they were run via {@code asadmin} utility.
+ * <p>While similar to {@code CommandRunner} from API of embedded server, these two runners are kept separate due
+ * to backward compatibility reasons.</p>
+ * @see PayaraMicroBoot#setPreBootHandler(Consumer)
+ * @see PayaraMicroBoot#setPostBootHandler(Consumer)
+ */
 public interface AdminCommandRunner {
+    /**
+     * Run an admin command.
+     * @param command the name of the command
+     * @param args optional arguments to the command. The arguments need to respect escaping rules of {@code asadmin} utility,
+     *             chiefly escaping colons (:) and equal signs (=) in property lists.
+     * @return
+     */
     ClusterCommandResult run(String command, String... args);
 }

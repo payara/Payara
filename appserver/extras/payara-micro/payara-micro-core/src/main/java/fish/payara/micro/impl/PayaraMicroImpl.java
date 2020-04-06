@@ -56,7 +56,7 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -1059,7 +1059,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void callHandler(Consumer<AdminCommandRunner> handler) throws GlassFishException {
         CommandRunner runner = gf.getCommandRunner();
         if (handler != null) {
-            handler.accept((cmd, args) -> new CommandResultWrapper(runner.run(cmd, args)));
+            handler.accept((cmd, args) -> new CommandResultAdapter(runner.run(cmd, args)));
         }
     }
 

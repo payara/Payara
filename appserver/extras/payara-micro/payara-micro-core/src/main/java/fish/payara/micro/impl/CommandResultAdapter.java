@@ -43,10 +43,10 @@ package fish.payara.micro.impl;
 import fish.payara.micro.ClusterCommandResult;
 import org.glassfish.embeddable.CommandResult;
 
-class CommandResultWrapper implements ClusterCommandResult {
+class CommandResultAdapter implements ClusterCommandResult {
     private final CommandResult result;
 
-    CommandResultWrapper(CommandResult result) {
+    CommandResultAdapter(CommandResult result) {
         this.result = result;
     }
 
