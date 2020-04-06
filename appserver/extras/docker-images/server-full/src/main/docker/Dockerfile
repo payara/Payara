@@ -29,8 +29,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin"
 ARG TINI_VERSION=v0.18.0
 
 # Download tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
+    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /
 
 RUN true \
     # Install dependencies
