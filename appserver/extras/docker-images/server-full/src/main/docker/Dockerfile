@@ -20,6 +20,8 @@ ENV HOME_DIR=/opt/payara\
     ADMIN_PASSWORD=admin \
     # Utility environment variables
     JVM_ARGS=\
+    MEM_MAX_RAM_PERCENTAGE=70.0 \
+    MEM_XSS=512k \
     PAYARA_ARGS=\
     DEPLOY_PROPS=\
     POSTBOOT_COMMANDS=/opt/payara/config/post-boot-commands.asadmin\
@@ -66,12 +68,13 @@ RUN true \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain ${DOMAIN_NAME} \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} enable-secure-admin \
     && for MEMORY_JVM_OPTION in \
-       $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]"); \
+       $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]\|Xss"); \
        do\
          ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options $MEMORY_JVM_OPTION;\
        done \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options \
-      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=90.0' \
+      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}' \
+
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
       set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} \

@@ -8,7 +8,10 @@ EXPOSE 6900 8080
 ENV PAYARA_HOME=/opt/payara
 ENV HOME_DIR=${PAYARA_HOME}
 ENV PAYARA_DIR=${HOME_DIR} \
-    DEPLOY_DIR=/opt/payara/deployments
+    DEPLOY_DIR=/opt/payara/deployments \
+    JVM_ARGS="" \
+    MEM_MAX_RAM_PERCENTAGE=70.0 \
+    MEM_XSS=512k
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
@@ -25,5 +28,5 @@ WORKDIR ${HOME_DIR}
 COPY maven/artifacts/payara-micro.jar .
 
 # Default command to run
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=90.0", "-jar", "payara-micro.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar"]
 CMD ["--deploymentDir", "/opt/payara/deployments"]
