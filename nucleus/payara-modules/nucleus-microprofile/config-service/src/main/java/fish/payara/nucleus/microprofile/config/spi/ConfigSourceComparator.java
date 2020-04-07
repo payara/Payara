@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,9 +54,7 @@ public class ConfigSourceComparator implements Comparator<ConfigSource>{
         int res = -1*(o1.getOrdinal() - o2.getOrdinal());
         if (res != 0)
             return res;
-        String name1 = o1.getName();
-        String name2 = o2.getName();
-        return name1 == null ? -1 : name2 == null ? 1 : name1.compareTo(name2);
+        return Comparator.nullsLast(String::compareTo).compare(o1.getName(), o2.getName());
     }
 
 }
