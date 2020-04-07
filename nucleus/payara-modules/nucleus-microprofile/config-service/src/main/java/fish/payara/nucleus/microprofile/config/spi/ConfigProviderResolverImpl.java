@@ -43,7 +43,6 @@ import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.ge
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
@@ -117,6 +116,8 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
 @RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
+    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
@@ -172,6 +173,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     }
 
     int getCacheDurationSeconds() {
+        if (serverLevelConfig != null) {
+            java.util.Optional<Integer> cacheDuration = serverLevelConfig.getOptionalValue(MP_CONFIG_CACHE_DURATION,
+                    Integer.class);
+            if (cacheDuration.isPresent()) {
+                return cacheDuration.get();
+            }
+        }
         return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
     }
 
