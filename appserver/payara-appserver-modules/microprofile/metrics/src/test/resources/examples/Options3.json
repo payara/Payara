@@ -1,0 +1,29 @@
+
+{
+    "base": {
+        "fooVal": {
+            "unit": "milliseconds",
+            "type": "gauge",
+            "description": "The size of foo after each request",
+            "displayName": "Size of foo",
+            "tags": [
+                [
+                    "store=webshop"
+                ]
+            ]
+        }
+    },
+    "application": {
+        "fooVal": {
+            "unit": "milliseconds",
+            "type": "gauge",
+            "description": "The size of foo after each request",
+            "displayName": "Size of foo",
+            "tags": [
+                [
+                    "store=webshop"
+                ]
+            ]
+        }
+    }
+}

@@ -102,11 +102,11 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     }
 
     private static Config resolveConfig() {
-        logger.log(Level.INFO, "Resolving Fault Tolerance Config from Provider.");
+        logger.log(Level.FINE, "Resolving Fault Tolerance Config from Provider.");
         try {
             return ConfigProvider.getConfig();
         } catch (Exception ex) {
-            logger.log(Level.INFO, "No Config could be found, using annotation values only.", ex);
+            logger.log(Level.WARNING, "No Config could be found, using annotation values only.", ex);
             return null;
         }
     }
@@ -241,6 +241,11 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     }
 
     @Override
+    public Class<? extends Throwable>[] skipOn(CircuitBreaker annotation) {
+        return getClassArrayValue(CircuitBreaker.class, "skipOn", annotation.skipOn());
+    }
+
+    @Override
     public long delay(CircuitBreaker annotation) {
         return longValue(CircuitBreaker.class, "delay", annotation.delay());
     }
@@ -319,6 +324,16 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     @Override
     public String fallbackMethod(Fallback annotation) {
         return value(Fallback.class, "fallbackMethod", String.class, annotation.fallbackMethod());
+    }
+
+    @Override
+    public Class<? extends Throwable>[] applyOn(Fallback annotation) {
+        return getClassArrayValue(Fallback.class, "applyOn", annotation.applyOn());
+    }
+
+    @Override
+    public Class<? extends Throwable>[] skipOn(Fallback annotation) {
+        return getClassArrayValue(Fallback.class, "skipOn", annotation.skipOn());
     }
 
 

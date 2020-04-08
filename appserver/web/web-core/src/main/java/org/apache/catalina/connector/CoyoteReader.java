@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -72,8 +73,7 @@ import java.util.logging.Logger;
  * 
  * @author Remy Maucherat
  */
-public class CoyoteReader
-    extends BufferedReader {
+public class CoyoteReader extends BufferedReader {
 
 
     // -------------------------------------------------------------- Constants
@@ -106,7 +106,10 @@ public class CoyoteReader
 
     /**
     * Prevent cloning the facade.
+     * @return never
+     * @throws CloneNotSupportedException always
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -127,8 +130,8 @@ public class CoyoteReader
     // --------------------------------------------------------- Reader Methods
 
 
-    public void close()
-        throws IOException {
+    @Override
+    public void close() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -136,9 +139,8 @@ public class CoyoteReader
         ib.close();
     }
 
-
-    public int read()
-        throws IOException {
+    @Override
+    public int read() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -146,9 +148,8 @@ public class CoyoteReader
         return ib.read();
     }
 
-
-    public int read(char[] cbuf)
-        throws IOException {
+    @Override
+    public int read(char[] cbuf) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -156,9 +157,8 @@ public class CoyoteReader
         return ib.read(cbuf, 0, cbuf.length);
     }
 
-
-    public int read(char[] cbuf, int off, int len)
-        throws IOException {
+    @Override
+    public int read(char[] cbuf, int off, int len) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -166,9 +166,8 @@ public class CoyoteReader
         return ib.read(cbuf, off, len);
     }
 
-
-    public long skip(long n)
-        throws IOException {
+    @Override
+    public long skip(long n) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -176,9 +175,8 @@ public class CoyoteReader
         return ib.skip(n);
     }
 
-
-    public boolean ready()
-        throws IOException {
+    @Override
+    public boolean ready() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -186,7 +184,7 @@ public class CoyoteReader
         return ib.ready();
     }
 
-
+    @Override
     public boolean markSupported() {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -195,9 +193,8 @@ public class CoyoteReader
         return true;
     }
 
-
-    public void mark(int readAheadLimit)
-        throws IOException {
+    @Override
+    public void mark(int readAheadLimit) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -206,8 +203,8 @@ public class CoyoteReader
     }
 
 
-    public void reset()
-        throws IOException {
+    @Override
+    public void reset() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -215,7 +212,7 @@ public class CoyoteReader
         ib.reset();
     }
 
-
+    @Override
     public String readLine()
         throws IOException {
 

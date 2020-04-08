@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 package org.glassfish.api;
 
 import static java.lang.annotation.ElementType.TYPE;
@@ -60,4 +61,10 @@ import org.glassfish.hk2.runlevel.RunLevel;
 @RunLevel(10)
 public @interface StartupRunLevel {
     public static final int VAL = 10;
+
+    /**
+     * Services in this runlevel might be needed by other services, but there's no explicit HK2 dependency.
+     * Therefore these services just need to start sooner.
+     */
+    int IMPLICITLY_RELIED_ON = VAL - 1;
 }

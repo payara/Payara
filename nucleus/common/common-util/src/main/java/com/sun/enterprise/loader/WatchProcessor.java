@@ -60,6 +60,7 @@ class WatchProcessor {
     protected boolean registered;
     protected boolean overflowed;
     protected boolean cancelled;
+    private int subscribers = 1;
 
     public WatchProcessor(Path root, WatchService watchService) {
         this.root = root;
@@ -103,5 +104,18 @@ class WatchProcessor {
 
     protected boolean isCancelled() {
         return this.cancelled;
+    }
+
+    /**
+     * Register additional subscriber to path.
+     * @return
+     */
+    WatchProcessor subscribe() {
+        subscribers++;
+        return this;
+    }
+
+    boolean unsubscribe() {
+        return --subscribers == 0;
     }
 }

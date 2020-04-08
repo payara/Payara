@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi;
 
@@ -50,20 +50,6 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-import fish.payara.jdbc.SlowSQLLogger;
-import org.glassfish.api.jdbc.ConnectionValidation;
-import org.glassfish.api.jdbc.SQLTraceListener;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAdapterAssociation;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
-import javax.sql.PooledConnection;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -72,9 +58,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.ResourceException;
+import javax.resource.spi.ConfigProperty;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ResourceAdapterAssociation;
+import javax.resource.spi.ResourceAllocationException;
+import javax.resource.spi.security.PasswordCredential;
+import javax.sql.PooledConnection;
+import org.glassfish.api.jdbc.ConnectionValidation;
+import org.glassfish.api.jdbc.SQLTraceListener;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -770,7 +767,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *
      * @param className <code>String</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "org.apache.derby.jdbc.ClientConnectionPoolDataSource")
+    @ConfigProperty(type = String.class, defaultValue = "org.h2.jdbcx.JdbcDataSource")
     public void setClassName(String className) {
         spec.setDetail(DataSourceSpec.CLASSNAME, className);
     }
@@ -1199,7 +1196,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             detectSqlTraceListeners();
         }
     }
-    
+
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
         double threshold = Double.parseDouble(seconds);
@@ -1207,14 +1204,13 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long)(threshold * 1000), TimeUnit.MILLISECONDS));
         }
     }
-    
+
     public String getSlowQueryThresholdInSeconds() {
-         return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);       
+        return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);
     }
-    
+
     public void setLogJdbcCalls(String enabled) {
         spec.setDetail(DataSourceSpec.LOGJDBCCALLS, enabled);
         if (Boolean.valueOf(enabled)) {
@@ -1235,7 +1231,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @param desc <code>String</code>
      * @see <code>getDescription</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "Derby driver for datasource")
+    @ConfigProperty(type = String.class, defaultValue = "H2 driver for datasource")
     public void setDescription(String desc) {
         spec.setDetail(DataSourceSpec.DESCRIPTION, desc);
     }

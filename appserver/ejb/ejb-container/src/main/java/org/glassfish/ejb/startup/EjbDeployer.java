@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -238,7 +238,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
         super.load(containerStarter, dc);
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "EjbDeployer Loading app from: " + dc.getSourceDir());
+            _logger.log(Level.FINE, "EjbDeployer Loading app from: {0}", dc.getSourceDir());
         }
         // Register the EjbSecurityComponentInvocationHandler
 
@@ -473,7 +473,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             boolean isDeployment = opsparams.origin.isDeploy() || opsparams.origin.isCreateAppRef();
             boolean isDirectTarget = env.getInstanceName().equals(dcp.target);
             // Create timers on DAS only if this condition is not met
-            if (!isDeployment || isDirectTarget || isDeploymentGroup) {
+            if (!isDeployment || isDirectTarget) {
                 // Create them on deploy for a cluster or create-application-ref (the latter will
                 // check if it's the 1st ref being added or a subsequent one (timers with this unique id are present
                 // or not)
@@ -483,6 +483,10 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                 }
                 // But is-timed-app needs to be set in AppInfo in any case
                 createTimers = false;
+            }
+            if (isDeploymentGroup) {
+                _logger.log(Level.WARNING, "Deployment targets deployment group {0}, it is assumed that timer "+
+                        "service configuration is consistent accross all members of the group", dcp.target);
             }
 
             String target = dcp.target;

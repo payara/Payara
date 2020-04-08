@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -174,6 +175,7 @@ public class ProcessEnvironment {
      * easy-to-read HTML table
      * @return  HTML string containing process environment info
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("<TABLE border=2>");

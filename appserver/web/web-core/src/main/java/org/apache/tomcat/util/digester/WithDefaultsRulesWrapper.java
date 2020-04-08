@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -94,9 +95,9 @@ public class WithDefaultsRulesWrapper implements Rules {
     /** The Rules implementation that this class wraps. */
     private Rules wrappedRules;
     /** Rules to be fired when the wrapped implementations returns none. */
-    private List<Rule> defaultRules = new ArrayList<Rule>();
+    private final List<Rule> defaultRules = new ArrayList<Rule>();
     /** All rules (preserves order in which they were originally added) */
-    private List<Rule> allRules = new ArrayList<Rule>();
+    private final List<Rule> allRules = new ArrayList<Rule>();
     
     // --------------------------------------------------------- Constructor
     
@@ -116,11 +117,13 @@ public class WithDefaultsRulesWrapper implements Rules {
     // --------------------------------------------------------- Properties
     
     /** Gets digester using these Rules */
+    @Override
     public Digester getDigester() {
         return wrappedRules.getDigester();
     }
     
     /** Sets digeseter using these Rules */
+    @Override
     public void setDigester(Digester digester) {
         wrappedRules.setDigester(digester);
         Iterator<Rule> it = defaultRules.iterator();
@@ -130,12 +133,14 @@ public class WithDefaultsRulesWrapper implements Rules {
         }
     }
     
-    /** Gets namespace to apply to Rule's added */
+    /** Gets namespace to apply to Rules added */
+    @Override
     public String getNamespaceURI() {
         return wrappedRules.getNamespaceURI();
     }
     
-    /** Sets namespace to apply to Rule's added subsequently */
+    /** Sets namespace to apply to Rules added subsequently */
+    @Override
     public void setNamespaceURI(String namespaceURI) {
         wrappedRules.setNamespaceURI(namespaceURI);
     }
@@ -152,6 +157,7 @@ public class WithDefaultsRulesWrapper implements Rules {
      * If wrapped implementation returns any matches return those.
      * Otherwise, return default matches.
      */
+    @Override
     public List<Rule> match(String namespaceURI, String pattern) {
         List<Rule> matches = wrappedRules.match(namespaceURI, pattern);
         if (matches ==  null || matches.isEmpty()) {	
@@ -178,11 +184,13 @@ public class WithDefaultsRulesWrapper implements Rules {
     }
     
     /** Gets all rules */
+    @Override
     public List<Rule> rules() {
         return allRules;
     }
     
-    /** Clears all Rule's */
+    /** Clears all Rules */
+    @Override
     public void clear() {
         wrappedRules.clear();
         allRules.clear();
@@ -193,6 +201,7 @@ public class WithDefaultsRulesWrapper implements Rules {
      * Adds a Rule to be fired on given pattern.
      * Pattern matching is delegated to wrapped implementation.
      */
+    @Override
     public void add(String pattern, Rule rule) {
         wrappedRules.add(pattern, rule);
         allRules.add(rule);

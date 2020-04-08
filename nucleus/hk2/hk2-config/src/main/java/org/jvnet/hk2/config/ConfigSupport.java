@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
@@ -98,11 +99,13 @@ import org.jvnet.tiger_types.Types;
 @Service
 public class ConfigSupport implements ConfigurationUtilities {
 
+    private static final Logger LOG = Logger.getLogger(ConfigSupport.class.getName());
+    public static int lockTimeOutInSeconds = Integer.getInteger("org.glassfish.hk2.config.locktimeout", 3);
+
     @Inject
     ServiceLocator habitat;
 
-    public static int lockTimeOutInSeconds=Integer.getInteger("org.glassfish.hk2.config.locktimeout", 3);
- 
+
     /**
      * Execute some logic on one config bean of type T protected by a transaction
      *
@@ -113,16 +116,17 @@ public class ConfigSupport implements ConfigurationUtilities {
      */
     public static <T extends ConfigBeanProxy> Object apply(final SingleConfigCode<T> code, T param)
         throws TransactionFailure {
-        
+
         //ConfigBeanProxy[] objects = { param };
         return apply((new ConfigCode() {
+            @Override
             @SuppressWarnings("unchecked")
             public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
                 return code.run((T) objects[0]);
             }
         }), param);
     }
-    
+
     /**
      * Executes some logic on some config beans protected by a transaction.
      *
@@ -135,7 +139,7 @@ public class ConfigSupport implements ConfigurationUtilities {
     public static Object apply(ConfigCode code, ConfigBeanProxy... objects)
             throws TransactionFailure {
 
-        ConfigBean source = (ConfigBean) ConfigBean.unwrap(objects[0]);
+        ConfigBean source = (ConfigBean) Dom.unwrap(objects[0]);
         return source.getHabitat().<ConfigSupport>getService(ConfigSupport.class)._apply(code, objects);
     }
 
@@ -147,9 +151,9 @@ public class ConfigSupport implements ConfigurationUtilities {
      * @return list of property change events
      * @throws TransactionFailure when the code did run successfully due to a
      * transaction exception
-     */    
-    public Object _apply(ConfigCode code, ConfigBeanProxy... objects)
-                throws TransactionFailure {
+     */
+    public Object _apply(ConfigCode code, ConfigBeanProxy... objects) throws TransactionFailure {
+        LOG.finest(() -> String.format("_apply(code=%s, objects=%s)", code, objects));
 
         // the fools think they operate on the "real" object while I am
         // feeding them with writeable view. Only if the transaction succeed
@@ -175,7 +179,7 @@ public class ConfigSupport implements ConfigurationUtilities {
                     + " in transaction", null);
             }
         }
-        
+
         try {
             final Object toReturn = code.run(proxies);
             try {
@@ -186,7 +190,7 @@ public class ConfigSupport implements ConfigurationUtilities {
                     return toReturn;
                 }
             } catch (RetryableException e) {
-                System.out.println("Retryable...");
+                LOG.log(Level.WARNING, "Retryable...", e);
                 // TODO : do something meaninful here
                 t.rollback();
                 return null;
@@ -198,7 +202,9 @@ public class ConfigSupport implements ConfigurationUtilities {
         } catch (java.lang.reflect.UndeclaredThrowableException e) {
             t.rollback();
             Throwable throwable = e.getCause();
-            if (throwable instanceof PropertyVetoException) throw new TransactionFailure(throwable.toString(), throwable);
+            if (throwable instanceof PropertyVetoException) {
+                throw new TransactionFailure(throwable.toString(), throwable);
+            }
             throw new TransactionFailure(e.toString(), e);
 
         } catch(TransactionFailure e) {
@@ -254,7 +260,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         } else {
             return (ConfigBean) bean;
         }
-        
+
     }
 
     /**
@@ -277,11 +283,13 @@ public class ConfigSupport implements ConfigurationUtilities {
      * @param logger to log any issues.
      */
     public static UnprocessedChangeEvents sortAndDispatch(PropertyChangeEvent[] events, Changed target, Logger logger) {
-        if ( logger == null ) throw new IllegalArgumentException();
-        
-        List<UnprocessedChangeEvent> unprocessed = new ArrayList<UnprocessedChangeEvent>();
-        List<Dom> added = new ArrayList<Dom>();
-        List<Dom> changed = new ArrayList<Dom>();
+        if (logger == null) {
+            throw new IllegalArgumentException();
+        }
+
+        List<UnprocessedChangeEvent> unprocessed = new ArrayList<>();
+        List<Dom> added = new ArrayList<>();
+        List<Dom> changed = new ArrayList<>();
 
         for (PropertyChangeEvent event : events) {
 
@@ -342,7 +350,7 @@ public class ConfigSupport implements ConfigurationUtilities {
                 logger.log(Level.SEVERE, "Exception while processing config bean changes : ", e);
             }
         }
-        
+
         return new UnprocessedChangeEvents( unprocessed );
     }
 
@@ -394,12 +402,12 @@ public class ConfigSupport implements ConfigurationUtilities {
         try {
             t.commit();
         } catch (RetryableException e) {
-            System.out.println("Retryable...");
+            LOG.log(Level.WARNING, "Retryable...", e);
             // TODO : do something meaninful here
             t.rollback();
             throw new TransactionFailure(e.getMessage(), e);
         } catch (TransactionFailure e) {
-            System.out.println("failure, not retryable...");
+            LOG.log(Level.SEVERE, "failure, not retryable...");
             t.rollback();
             throw e;
         }
@@ -414,7 +422,7 @@ public class ConfigSupport implements ConfigurationUtilities {
     public static Class<?>[] getSubElementsTypes(ConfigBean bean)
         throws ClassNotFoundException {
 
-        List<Class<?>> subTypes = new ArrayList<Class<?>>();
+        List<Class<?>> subTypes = new ArrayList<>();
         for (ConfigModel.Property element : bean.model.elements.values()) {
             if (!element.isLeaf()) {
                 ConfigModel elementModel =  ((ConfigModel.Node) element).model;
@@ -448,7 +456,7 @@ public class ConfigSupport implements ConfigurationUtilities {
 
     private String[] xmlNames(Collection<? extends ConfigModel.Property> properties) {
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (ConfigModel.Property attribute : properties) {
             names.add(attribute.xmlName());
         }
@@ -486,7 +494,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         throws TransactionFailure {
 
         return createAndSet(parent, childType, convertMapToAttributeChanges(attributes), runnable);
-        
+
     }
     /**
      * Creates a new child of the passed child and add it to the parent's live
@@ -528,10 +536,11 @@ public class ConfigSupport implements ConfigurationUtilities {
                     final List<AttributeChanges> attributes,
                     final TransactionCallBack<WriteableView> runnable)
             throws TransactionFailure {
-
+        LOG.finest(() -> String.format("_createAndSet(parent=%s, childType=%s, attributes=%s, runnable=%s)",
+            parent, childType, attributes, runnable));
         ConfigBeanProxy readableView = parent.getProxy(parent.getProxyType());
-        ConfigBeanProxy readableChild = (ConfigBeanProxy)
-                apply(new SingleConfigCode<ConfigBeanProxy>() {
+        ConfigBeanProxy readableChild = (ConfigBeanProxy) apply(new SingleConfigCode<ConfigBeanProxy>() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 return addChildWithAttributes(param, parent, childType, attributes, runnable);
             }
@@ -566,7 +575,7 @@ public class ConfigSupport implements ConfigurationUtilities {
                 final Map<String, String> attributes)
             throws TransactionFailure {
 
-        return createAndSet(parent, childType, attributes, null);        
+        return createAndSet(parent, childType, attributes, null);
     }
 
     public ConfigBean createAndSet(
@@ -577,7 +586,7 @@ public class ConfigSupport implements ConfigurationUtilities {
 
         return createAndSet(parent, childType, attributes, null);
     }
-    
+
     public static void deleteChild(
                 final ConfigBean parent,
                 final ConfigBean child)
@@ -587,6 +596,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         ConfigBeanProxy readableView = parent.getProxy(parent.getProxyType());
         apply(new SingleConfigCode<ConfigBeanProxy>() {
 
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
 
 
@@ -613,10 +623,10 @@ public class ConfigSupport implements ConfigurationUtilities {
                 final WriteableView writeableParent,
                 final ConfigBean child)
         throws TransactionFailure {
-
+        LOG.finest(() -> String.format("_deleteChild(parent=%s, writeableParent=%s, child=%s)",
+            parent, writeableParent, child));
 
         final Class<? extends ConfigBeanProxy> childType = child.getProxyType();
-
 
                 // get the child
                 ConfigBeanProxy childProxy = child.getProxy(childType);
@@ -653,8 +663,9 @@ public class ConfigSupport implements ConfigurationUtilities {
                             final Class returnType = m.getReturnType();
                             if (Collection.class.isAssignableFrom(returnType)  && (m.getParameterTypes().length == 0)) {
                                 // this could be it...
-                                if (!(m.getGenericReturnType() instanceof ParameterizedType))
+                                if (!(m.getGenericReturnType() instanceof ParameterizedType)) {
                                     throw new IllegalArgumentException("List needs to be parameterized");
+                                }
                                 final Class itemType = Types.erasure(Types.getTypeArgument(m.getGenericReturnType(), 0));
                                 if (itemType.isAssignableFrom(childType)) {
                                     List list = null;
@@ -680,26 +691,27 @@ public class ConfigSupport implements ConfigurationUtilities {
                     throw new TransactionFailure("Parent " + parent.getProxyType() + " does not have a child of type " + childType);
                 }
     }
-    
+
     public static List<AttributeChanges> convertMapToAttributeChanges(Map<String, String> values) {
         if (values==null) {
             return null;
         }
-        List<AttributeChanges> changes = new ArrayList<AttributeChanges>();
+        List<AttributeChanges> changes = new ArrayList<>();
         for(Map.Entry<String, String> entry : values.entrySet()) {
             changes.add(new SingleAttributeChange(entry.getKey(), entry.getValue()));
         }
         return changes;
     }
-    
+
     public static class SingleAttributeChange extends AttributeChanges {
         final String[] values = new String[1];
-        
+
         public SingleAttributeChange(String name, String value) {
             super(name);
             values[0] = value;
         }
 
+        @Override
         String[] values() {
             return values;
         }
@@ -713,6 +725,7 @@ public class ConfigSupport implements ConfigurationUtilities {
             this.values = values;
         }
 
+        @Override
         String[] values() {
             return values;
         }
@@ -758,14 +771,16 @@ public class ConfigSupport implements ConfigurationUtilities {
         }
         return proxy;
     }
-    
+
     @Override
     public Object addChildWithAttributes(ConfigBeanProxy param,
             ConfigBean parent,
             Class<? extends ConfigBeanProxy> childType,
             List<AttributeChanges> attributes,
             TransactionCallBack<WriteableView> runnable) throws TransactionFailure {
-
+        LOG.finest(
+            () -> String.format("addChildWithAttributes(param=%s, parent=%s, childType=%s, attributes=%s, runnable=%s)",
+                param, parent, childType, attributes, runnable));
         // create the child
         ConfigBeanProxy child = param.createChild(childType);
         Dom dom = Dom.unwrap(child);
@@ -782,11 +797,9 @@ public class ConfigSupport implements ConfigurationUtilities {
             }
             ConfigModel elementModel =  ((ConfigModel.Node) e).model;
 
-            if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
-                Logger.getAnonymousLogger().fine( "elementModel.targetTypeName = " + elementModel.targetTypeName +
-                    ", collection: " + e.isCollection() + ", childType.getName() = " + childType.getName() );
-            }
-                    
+            LOG.fine(() -> "elementModel.targetTypeName = " + elementModel.targetTypeName +
+                ", collection: " + e.isCollection() + ", childType.getName() = " + childType.getName());
+
             if (elementModel.targetTypeName.equals(childType.getName())) {
                 element = e;
                 break;
@@ -798,12 +811,12 @@ public class ConfigSupport implements ConfigurationUtilities {
                         element = e;
                         break;
                     }
-                } catch (Exception ex ) { 
+                } catch (Exception ex ) {
                     throw new TransactionFailure("EXCEPTION getting class for " + elementModel.targetTypeName, ex);
                 }
             }
         }
-        
+
         // now depending whether this is a collection or a single leaf,
         // we need to process this setting differently
         if (element != null) {
@@ -815,8 +828,9 @@ public class ConfigSupport implements ConfigurationUtilities {
                     final Class returnType = m.getReturnType();
                     if (Collection.class.isAssignableFrom(returnType) && (m.getParameterTypes().length == 0)) {
                         // this could be it...
-                        if (!(m.getGenericReturnType() instanceof ParameterizedType))
+                        if (!(m.getGenericReturnType() instanceof ParameterizedType)) {
                             throw new IllegalArgumentException("List needs to be parameterized");
+                        }
                         final Class itemType = Types.erasure(Types.getTypeArgument(m.getGenericReturnType(), 0));
                         if (itemType.isAssignableFrom(childType)) {
                             List list = null;
@@ -847,14 +861,14 @@ public class ConfigSupport implements ConfigurationUtilities {
 
         dom.addDefaultChildren();
         dom.register();
-        
+
         if (runnable!=null) {
             runnable.performOn(writeableChild);
         }
 
         return child;
     }
-    
+
     private static void applyProperties(WriteableView target, List<? extends AttributeChanges> changes)
             throws TransactionFailure {
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -50,13 +50,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
-    public EjbThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
-            long keepAliveTime, BlockingQueue<Runnable> workQueue, String threadPoolName) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, workQueue, 
-                new ThreadFactoryImpl(threadPoolName));
+
+    public EjbThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
+        BlockingQueue<Runnable> workQueue, String threadPoolName) {
+        super(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, workQueue,
+            new ThreadFactoryImpl(threadPoolName));
     }
 
     /**
@@ -86,35 +88,35 @@ public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
+        final Logger logger = EjbContainerUtilImpl.getLogger();
         try {
-            JavaEETransactionManager tm = EjbContainerUtilImpl.getInstance().getTransactionManager();
+            final JavaEETransactionManager tm = EjbContainerUtilImpl.getInstance().getTransactionManager();
             if (tm.getTransaction() != null) {
-                int st = tm.getStatus();
-                Logger logger = EjbContainerUtilImpl.getLogger();
-                logger.warning("NON-NULL TX IN AFTER_EXECUTE. TX STATUS: " + st);
-                if (st == Status.STATUS_ROLLEDBACK || st == Status.STATUS_COMMITTED ||
-                        st == Status.STATUS_UNKNOWN) {
+                final int st = tm.getStatus();
+                logger.warning(() -> "NON-NULL TX IN AFTER_EXECUTE. TX STATUS: " + st);
+                if (st == Status.STATUS_ROLLEDBACK || st == Status.STATUS_COMMITTED || st == Status.STATUS_UNKNOWN) {
                     tm.clearThreadTx();
                 } else {
                     tm.rollback();
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Transaction management error.", e);
         } finally {
             // clear our Context Classloader
             Thread.currentThread().setContextClassLoader(null);
         }
     }
-    
+
     private static class ThreadFactoryImpl implements ThreadFactory {
-        private AtomicInteger threadId = new AtomicInteger(0);
-        private String threadPoolName;
+        private final AtomicInteger threadId = new AtomicInteger(0);
+        private final String threadPoolName;
 
         public ThreadFactoryImpl(String threadPoolName) {
             this.threadPoolName = threadPoolName;
         }
 
+        @Override
         public Thread newThread(Runnable r) {
             Thread th = new Thread(r, threadPoolName + threadId.incrementAndGet());
             th.setDaemon(true);

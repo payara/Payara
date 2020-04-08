@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 /**
  *
@@ -147,7 +147,7 @@ public class ClusterHandler {
             handlerCtx.setOutputValue("exists",  true);
         }
     }
-    
+
     @Handler(id = "gf.isClusterName",
         input = {
             @HandlerInput(name = "clusterName", type = String.class, required = true)
@@ -227,8 +227,8 @@ public class ClusterHandler {
             GuiUtil.handleError(handlerCtx, details);
         }
      }
-    
-    
+
+
     @Handler(id="gf.removeFromDG",
             input= {
                 @HandlerInput(name = "selectedRows", type = List.class, required = true),
@@ -250,7 +250,7 @@ public class ClusterHandler {
                 return;
             }
         }
-        
+
     }
 
         @Handler(id = "gf.dgAction",
@@ -529,8 +529,8 @@ public class ClusterHandler {
             return ex.getMessage();
         }
     }
-    
-    
+
+
     @Handler(id = "gf.listDeploymentGroups",
             output = {
                     @HandlerOutput(name = "deploymentgroups", type = List.class)
@@ -577,7 +577,7 @@ public class ClusterHandler {
         Map uptimeMap = new HashMap();
         List<String> keys = (List<String>) handlerCtx.getInputValue("optionKeys");
         List values = (List) handlerCtx.getInputValue("optionValues");
-        Map<String, Object> attrs = new HashMap<String, Object>();
+        Map<String, Object> attrs = new HashMap<>();
         if (keys != null && values != null) {
             for (int i = 0; i < keys.size(); i++) {
                 attrs.put(keys.get(i), values.get(i));
@@ -637,27 +637,60 @@ public class ClusterHandler {
 
     @Handler(id = "gf.convertNodePswd",
         input = {
-            @HandlerInput(name="pswd", type=String.class, required=true)},
+            @HandlerInput(name = "pswd", type=String.class, required=true)},
         output = {
             @HandlerOutput(name = "pswdText", type = String.class),
-            @HandlerOutput(name = "pswdAlias", type = String.class),
-            @HandlerOutput(name = "psSelected", type = String.class)})
+            @HandlerOutput(name = "pswdAlias", type = String.class)})
     public static void convertNodePswd(HandlerContext handlerCtx) {
-
         String pswd = (String) handlerCtx.getInputValue("pswd");
         if (GuiUtil.isEmpty(pswd)){
-            handlerCtx.setOutputValue("psSelected", 1);
             return;
         }
         if (pswd.startsWith("${ALIAS=") && pswd.endsWith("}")){
             String pswdAlias = pswd.substring(8, pswd.length()-1);
             handlerCtx.setOutputValue("pswdAlias", pswdAlias);
-            handlerCtx.setOutputValue("psSelected", 3);
             return;
         }
-        handlerCtx.setOutputValue("psSelected", 2);
         handlerCtx.setOutputValue("pswdText", pswd);
     }
+
+
+    @Handler(id = "gf.presetNodeAuthSelectBox", //
+        input = {//
+            @HandlerInput(name = "keyfile", type = String.class, required = false),
+            @HandlerInput(name = "pswdText", type = String.class, required = false),
+            @HandlerInput(name = "pswdAlias", type = String.class, required = false),
+            @HandlerInput(name = "defaultValue", type = String.class, required = false) //
+        }, //
+        output = {@HandlerOutput(name = "sshAuthTypeSelected", type = String.class),} //
+    )
+    public static void presetNodeAuthSelectBox(HandlerContext handlerCtx) {
+        if (setIfSet(handlerCtx, "keyfile", "sshAuthTypeSelected", "1")) {
+            return;
+        }
+        if (setIfSet(handlerCtx, "pswdAlias", "sshAuthTypeSelected", "3")) {
+            return;
+        }
+        if (setIfSet(handlerCtx, "pswdText", "sshAuthTypeSelected", "2")) {
+            return;
+        }
+        final Object defaultValue = handlerCtx.getInputValue("defaultValue");
+        if (defaultValue != null) {
+            handlerCtx.setOutputValue("sshAuthTypeSelected", defaultValue);
+        }
+    }
+
+
+    private static boolean setIfSet(final HandlerContext handlerCtx, final String inputKey, final String outputKey,
+        final String outputValue) {
+        final Object value = handlerCtx.getInputValue(inputKey);
+        if (value == null || value.toString().isEmpty()) {
+            return false;
+        }
+        handlerCtx.setOutputValue(outputKey, outputValue);
+        return true;
+    }
+
 
 //gf.convertToAlias(in="#{pageSession.pswdAlias}" out="#{requestScope.tmpv}");
     @Handler(id = "gf.convertToAlias",
@@ -698,7 +731,7 @@ public class ClusterHandler {
             }
         }
      }
-    
+
     @Handler(id="gf.getClusterForConfig",
             input={
                 @HandlerInput(name="configName", type=String.class, required=true)
@@ -710,14 +743,14 @@ public class ClusterHandler {
         String configName = (String)handlerCtx.getInputValue("configName");
         String clusterName = null;
         Domain domain = GuiUtil.getHabitat().getService(Domain.class);
-        
+
         for (Cluster cluster: domain.getClusters().getCluster()) {
             if (cluster.getConfigRef().equals(configName)) {
                 clusterName = cluster.getName();
                 break;
             }
         }
-        
+
         if (clusterName != null) {
             handlerCtx.setOutputValue("cluster", clusterName);
         } else {

@@ -40,7 +40,7 @@
 # Portions Copyright (c) 2019 Payara Foundation and/or its affiliates
 
 -exportcontents: \
-                        fish.payara.monitoring.collect; \
+                        fish.payara.nucleus.hotdeploy; \
                         org.glassfish.internal.api; \
                         org.glassfish.internal.data; \
                         org.glassfish.internal.config; \
@@ -53,4 +53,3 @@
                         org.glassfish.internal.embedded.admin; \
                         org.glassfish.internal.logging; \
                         org.glassfish.flashlight; version=${project.osgi.version}
-

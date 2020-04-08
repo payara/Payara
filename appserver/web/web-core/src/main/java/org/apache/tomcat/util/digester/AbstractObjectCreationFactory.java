@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -90,6 +91,7 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      *
      * @throws Exception any exception thrown will be propagated upwards
      */
+    @Override
     public abstract Object createObject(Attributes attributes) throws Exception;
 
 
@@ -97,10 +99,9 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      * <p>Returns the {@link Digester} that was set by the
      * {@link FactoryCreateRule} upon initialization.
      */
+    @Override
     public Digester getDigester() {
-
         return (this.digester);
-
     }
 
 
@@ -110,10 +111,9 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      *
      * @param digester parent Digester object
      */
+    @Override
     public void setDigester(Digester digester) {
-
         this.digester = digester;
-
     }
 
 

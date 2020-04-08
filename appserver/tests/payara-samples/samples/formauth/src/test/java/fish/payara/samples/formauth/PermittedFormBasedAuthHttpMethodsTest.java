@@ -40,7 +40,8 @@
 package fish.payara.samples.formauth;
 
 
-import static org.junit.Assert.assertEquals;
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +52,6 @@ import java.net.URL;
 import java.util.Arrays;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -60,12 +60,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fish.payara.samples.CliCommands;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Verifies that the {@code fish.payara.permittedFormBasedAuthHttpMethods} system property has an effect.
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 public class PermittedFormBasedAuthHttpMethodsTest {
 
     @ArquillianResource

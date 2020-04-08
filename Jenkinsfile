@@ -27,10 +27,12 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -PQuickBuild \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                -Dsurefire.rerunFailingTestsCount=2"""
+                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
+                    sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
+                    -Dsurefire.rerunFailingTestsCount=2"""
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post{
@@ -42,7 +44,7 @@ pipeline {
         }
         stage('Setup for Quicklook Tests') {
             steps {
-                sh "rm *.zip"
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }
@@ -166,12 +168,12 @@ void setupDomain() {
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} start-database --dbtype derby || true"
+    sh "${ASADMIN} start-database || true"
 }
 
 void teardownDomain() {
     echo 'tidying up after tests:'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} stop-database --dbtype derby || true"
+    sh "${ASADMIN} stop-database || true"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }

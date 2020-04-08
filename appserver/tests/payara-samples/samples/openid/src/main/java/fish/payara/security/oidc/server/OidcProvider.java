@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -41,6 +41,29 @@ package fish.payara.security.oidc.server;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+
 import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
@@ -56,30 +79,10 @@ import static fish.payara.security.openid.api.OpenIdConstant.SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import static java.util.Arrays.asList;
-import java.util.Date;
-import java.util.UUID;
 import static java.util.logging.Level.SEVERE;
-import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 /**
  *
@@ -88,9 +91,9 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 @Path("/oidc-provider")
 public class OidcProvider {
 
-        private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_TYPE = "Bearer";
-    
+
     private static final String AUTH_CODE_VALUE = "sample_auth_code";
     private static final String ACCESS_TOKEN_VALUE = "sample_access_token";
     public static final String CLIENT_ID_VALUE = "sample_client_id";
@@ -132,7 +135,7 @@ public class OidcProvider {
         returnURL.append("?&" + STATE + "=").append(state);
         returnURL.append("&" + CODE + "=" + AUTH_CODE_VALUE);
 
-        this.nonce = nonce;
+        OidcProvider.nonce = nonce;
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         if (!CODE.equals(responseType)) {
             jsonBuilder.add(ERROR_PARAM, "invalid_response_type");
@@ -181,7 +184,7 @@ public class OidcProvider {
                     .issueTime(now)
                     .jwtID(UUID.randomUUID().toString())
                     .claim(NONCE, nonce)
-                    
+
                     .build();
             PlainJWT idToken = new PlainJWT(jwtClaims);
             jsonBuilder.add(IDENTITY_TOKEN, idToken.serialize());
@@ -192,13 +195,13 @@ public class OidcProvider {
 
         return builder.entity(jsonBuilder.build()).build();
     }
-    
+
     @Path("/userinfo")
     @Produces(APPLICATION_JSON)
     @GET
     public Response userinfoEndpoint(@HeaderParam(AUTHORIZATION_HEADER) String authorizationHeader) {
         String accessToken = authorizationHeader.substring(BEARER_TYPE.length() + 1);
-        
+
         ResponseBuilder builder;
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         if (ACCESS_TOKEN_VALUE.equals(accessToken)) {

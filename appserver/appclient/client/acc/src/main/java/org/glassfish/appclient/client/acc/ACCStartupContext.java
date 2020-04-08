@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
 
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
-
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
+import org.jvnet.hk2.annotations.Service;
+
+import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 
 /**
  * Start-up context for the ACC.  Note that this context is used also for
@@ -61,8 +61,6 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class ACCStartupContext extends StartupContext {
-
-    private static final String DERBY_ROOT_PROPERTY = "AS_DERBY_INSTALL";
     
     private static final String H2_ROOT_PROPERTY = "AS_H2_INSTALL";
 
@@ -79,10 +77,6 @@ public class ACCStartupContext extends StartupContext {
     private static Properties accEnvironment() {
         final Properties result = MainHelper.parseAsEnv(getRootDirectory());
         result.setProperty(INSTALL_ROOT_PROPERTY, getRootDirectory().getAbsolutePath());
-        final File javadbDir = new File(getRootDirectory().getParentFile(), "javadb");
-        if (javadbDir.isDirectory()) {
-            result.setProperty(DERBY_ROOT_PROPERTY, javadbDir.getAbsolutePath());
-        }
         final File h2dbDir = new File(getRootDirectory().getParentFile(), "h2db");
         if (h2dbDir.isDirectory()) {
             result.setProperty(H2_ROOT_PROPERTY, h2dbDir.getAbsolutePath());

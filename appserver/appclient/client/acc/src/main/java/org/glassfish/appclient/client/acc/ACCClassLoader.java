@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.acc;
 
@@ -60,9 +61,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.security.cert.Certificate;
 
 import org.glassfish.appclient.common.ClientClassLoaderDelegate;
 
@@ -79,16 +77,12 @@ public class ACCClassLoader extends URLClassLoader {
     private ACCClassLoader shadow = null;
 
     private boolean shouldTransform = false;
-    
-    private final List<ClassFileTransformer> transformers =
-            Collections.synchronizedList(
-                new ArrayList<ClassFileTransformer>());
 
-    
+    private final List<ClassFileTransformer> transformers = Collections.synchronizedList(new ArrayList<>());
+
     private ClientClassLoaderDelegate clientCLDelegate;
-    
-    public static synchronized ACCClassLoader newInstance(ClassLoader parent,
-            final boolean shouldTransform) {
+
+    public static synchronized ACCClassLoader newInstance(ClassLoader parent, final boolean shouldTransform) {
         if (instance != null) {
             throw new IllegalStateException("already set");
         }
@@ -96,16 +90,10 @@ public class ACCClassLoader extends URLClassLoader {
         final boolean currentCLWasAgentCL = currentCL.getClass().getName().equals(
                     AGENT_LOADER_CLASS_NAME);
         final ClassLoader parentForACCCL = currentCLWasAgentCL ? currentCL.getParent() : currentCL;
-        
-        instance = AccessController.doPrivileged(new PrivilegedAction<ACCClassLoader>() {
+        PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(userClassPath(), parentForACCCL,
+                shouldTransform);
+        instance = AccessController.doPrivileged(action);
 
-            @Override
-            public ACCClassLoader run() {
-                return new ACCClassLoader(userClassPath(), parentForACCCL, shouldTransform);
-            }
-            
-        });
-        
         if (currentCLWasAgentCL) {
             try {
                 adjustACCAgentClassLoaderParent(instance);
@@ -129,10 +117,9 @@ public class ACCClassLoader extends URLClassLoader {
             jwsLoaderParentField.setAccessible(true);
             jwsLoaderParentField.set(systemClassLoader, instance);
             System.setProperty("org.glassfish.appclient.acc.agentLoaderDone", "true");
-        
         }
     }
-    
+
     private static URL[] userClassPath() {
         final URI GFSystemURI = GFSystemURI();
         final List<URL> result = classPathToURLs(System.getProperty("java.class.path"));
@@ -154,7 +141,7 @@ public class ACCClassLoader extends URLClassLoader {
 
     private static URI GFSystemURI() {
         try {
-            Class agentClass = Class.forName("org.glassfish.appclient.client.acc.agent.AppClientContainerAgent");
+            Class<?> agentClass = Class.forName("org.glassfish.appclient.client.acc.agent.AppClientContainerAgent");
             return agentClass.getProtectionDomain().getCodeSource().getLocation().toURI().normalize();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -165,7 +152,7 @@ public class ACCClassLoader extends URLClassLoader {
         if (classPath == null) {
             return Collections.emptyList();
         }
-        final List<URL> result = new ArrayList<URL>();
+        final List<URL> result = new ArrayList<>();
         try {
             for (String classPathElement : classPath.split(File.pathSeparator)) {
                 result.add(new File(classPathElement).toURI().normalize().toURL());
@@ -179,29 +166,21 @@ public class ACCClassLoader extends URLClassLoader {
     public ACCClassLoader(ClassLoader parent, final boolean shouldTransform) {
         super(new URL[0], parent);
         this.shouldTransform = shouldTransform;
-        
+
         clientCLDelegate = new ClientClassLoaderDelegate(this);
     }
-//
-//    public ACCClassLoader(URL[] urls) {
-//        super(urls);
-//    }
 
     public ACCClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
-        
+
         clientCLDelegate = new ClientClassLoaderDelegate(this);
     }
-
-//    public ACCClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
-//        super(urls, parent, factory);
-//    }
 
     private ACCClassLoader(URL[] urls, ClassLoader parent, boolean shouldTransform) {
         this(urls, parent);
         this.shouldTransform = shouldTransform;
     }
-    
+
     public synchronized void appendURL(final URL url) {
         addURL(url);
         if (shadow != null) {
@@ -219,14 +198,8 @@ public class ACCClassLoader extends URLClassLoader {
 
     synchronized ACCClassLoader shadow() {
         if (shadow == null) {
-            shadow = AccessController.doPrivileged(new PrivilegedAction<ACCClassLoader>() {
-
-                @Override
-                public ACCClassLoader run() {
-                    return new ACCClassLoader(getURLs(), getParent());
-                }
-                
-            });
+            PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(getURLs(), getParent());
+            shadow = AccessController.doPrivileged(action);
         }
         return shadow;
     }
@@ -237,11 +210,10 @@ public class ACCClassLoader extends URLClassLoader {
             return super.findClass(name);
         }
         final ACCClassLoader s = shadow();
-        final Class<?> c = s.findClassUnshadowed(name);
-        return copyClass(c);
+        return copyClass(s.findClassUnshadowed(name));
     }
 
-    private Class<?> copyClass(final Class c) throws ClassNotFoundException {
+    private Class<?> copyClass(final Class<?> c) throws ClassNotFoundException {
         final String name = c.getName();
         final ProtectionDomain pd = c.getProtectionDomain();
         byte[] bytecode = readByteCode(name);
@@ -262,36 +234,28 @@ public class ACCClassLoader extends URLClassLoader {
 
     private byte[] readByteCode(final String className) throws ClassNotFoundException {
         final String resourceName = className.replace('.', '/') + ".class";
-        InputStream is = getResourceAsStream(resourceName);
-        if (is == null) {
-            throw new ClassNotFoundException(className);
-        }
-        try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (InputStream is = getResourceAsStream(resourceName);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            if (is == null) {
+                throw new ClassNotFoundException(className);
+            }
             final byte[] buffer = new byte[8196];
             int bytesRead;
             while ( (bytesRead = is.read(buffer)) != -1) {
                 baos.write(buffer, 0, bytesRead);
             }
             return baos.toByteArray();
-        } catch (IOException e) {
-            throw new ClassNotFoundException(className, e);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw new ClassNotFoundException(className, e);
-            }
+        } catch (IOException ex) {
+            throw new ClassNotFoundException(className, ex);
         }
-    }    
+    }
 
-    
     @Override
     protected PermissionCollection getPermissions(CodeSource codesource) {
 
         if (System.getSecurityManager() == null)
             return super.getPermissions(codesource);
-        
+
         //when security manager is enabled, find the declared permissions        
         if (clientCLDelegate.getCachedPerms(codesource) != null)
             return clientCLDelegate.getCachedPerms(codesource);
@@ -299,12 +263,11 @@ public class ACCClassLoader extends URLClassLoader {
         return clientCLDelegate.getPermissions(codesource, 
                 super.getPermissions(codesource));
     }
-    
-    
-    public void processDeclaredPermissions() throws IOException  {
 
+
+    public void processDeclaredPermissions() {
         if (clientCLDelegate == null)
             clientCLDelegate = new ClientClassLoaderDelegate(this);
-    }    
-    
+    }
+
 }

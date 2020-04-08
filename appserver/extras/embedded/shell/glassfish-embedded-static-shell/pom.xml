@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
@@ -65,7 +65,7 @@
         <plugins>
             <!--
                 Create a text file containing the generated class path.  This
-                file is used in the ant tasks when the original Class-Path is 
+                file is used in the ant tasks when the original Class-Path is
                 augmented.  Note: we force the path separator to be a colon
                 because the plug-in will use the platform-specific separator
                 otherwise.  The ant logic replaces colons with spaces to
@@ -88,7 +88,6 @@
                           <fileSeparator>/</fileSeparator>
                           <prefix>../../modules</prefix>
                           <stripVersion>true</stripVersion>
-                          <excludeArtifactIds>jsftemplating</excludeArtifactIds>
                       </configuration>
                   </execution>
               </executions>
@@ -125,7 +124,7 @@
                                   <property name="output.dir" value="${project.build.directory}" />
                                   <property name="stage.dir" value="${project.build.directory}/stage" />
                                   <property name="classpath.file" value="${classpath.file}" />
-                                  <property name="bundlename" value="org.glassfish.embedded.static-shell" />                                  
+                                  <property name="bundlename" value="org.glassfish.embedded.static-shell" />
                               </ant>
                           </target>
                       </configuration>
@@ -304,7 +303,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>javadb</artifactId>
+            <artifactId>h2db</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

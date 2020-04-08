@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -166,7 +167,7 @@ public abstract class Rule {
      */
     public void begin(Attributes attributes) throws Exception {
 
-        ;	// The default implementation does nothing
+        // The default implementation does nothing
 
     }
 
@@ -206,7 +207,7 @@ public abstract class Rule {
      */
     public void body(String text) throws Exception {
 
-        ;	// The default implementation does nothing
+        // The default implementation does nothing
 
     }
 
@@ -243,7 +244,7 @@ public abstract class Rule {
      */
     public void end() throws Exception {
 
-        ;	// The default implementation does nothing
+        // The default implementation does nothing
 
     }
 
@@ -276,7 +277,7 @@ public abstract class Rule {
      */
     public void finish() throws Exception {
 
-        ;	// The default implementation does nothing
+        // The default implementation does nothing
 
     }
 

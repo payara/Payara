@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 5.193!
+Thank you for downloading Payara Server 5.201!
 
 Here are a few short steps to get you started...
 
@@ -8,15 +8,16 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Oracle JDK8 (u231+), Oracle JDK 11 (11.0.5+)
-* Azul Zulu JDK8 (u232+), Azul Zulu JDK 11 (11.0.5u10+)
-* OpenJDK JDK8 (u232+), OpenJDK 11 (11.0.5+)
+* Oracle JDK8 (u162+), Oracle JDK 11 (11.0.5+)
+* Azul Zulu JDK8 (u162+), Azul Zulu JDK 11 (11.0.5u10+)
+* OpenJDK JDK8 (u162+), OpenJDK 11 (11.0.5+)
 
+TLS 1.3 is supported on JDK 8 with Azul Zulu 1.8.222+ only and all JDK 11 versions.
 
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.193.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.201.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -49,13 +50,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 5.193 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-193.html
+Make sure to also check the Payara Server 5.201 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-201.html
 
 
 5. Documentation
 ================
 
-Payara Server 5.193 Release Notes: https://docs.payara.fish/release-notes/release-notes-193.html
+Payara Server 5.201 Release Notes: https://docs.payara.fish/release-notes/release-notes-201.html
 
 Payara Server Documentation: https://docs.payara.fish/
 

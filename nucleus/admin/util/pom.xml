@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     
     <artifactId>admin-util</artifactId>
@@ -159,12 +159,10 @@
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>${jline.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -46,13 +46,12 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.grizzly</groupId>
     <artifactId>nucleus-grizzly</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Grizzly modules</name>  
+    <name>GlassFish Nucleus Grizzly modules</name>
     <modules>
         <module>config</module>
         <module>nucleus-grizzly-all</module>

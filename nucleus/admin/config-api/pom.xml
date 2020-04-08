@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     
     <artifactId>config-api</artifactId>
@@ -142,11 +142,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.xml.stream</groupId>
-            <artifactId>sjsxp</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
             <scope>test</scope>
@@ -159,8 +154,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     

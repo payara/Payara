@@ -1,0 +1,3 @@
+# TYPE application_visitors_total counter
+# HELP application_visitors_total The number of unique visitors
+application_visitors_total 80

@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,32 +44,31 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class was created to resolve race condition, caused by independent parallel initialization
+ * of the server components, where some may init undesired automatical service lookup.
+ * That lookup should lead to this class, which will block all requests until
+ * this global resolver instance provided by the {@link ConfigProviderResolver#instance()} would
+ * be replaced by the HK2 service.
+ * <p>
+ * The problem cannot be resolved by any other way, because Microprofile components use the global
+ * service mechanism, which is not capable to inject HK2 dependencies.
+ *
+ * @author Patrik Dudits
+ * @author David Matejcek
+ */
 public class ConfigProviderResolverSync extends ConfigProviderResolver {
-    private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
 
-    private ConfigProviderResolver await() {
-        IllegalStateException exception = new IllegalStateException("Payara Microprofile Config needs running server environment to work. " +
-                "Either it's not running, or you're experiencing a race condition");
-        LOG.log(Level.FINE, "Premature call to MP Config", exception);
-        try {
-            if (ConfigProviderResolverImpl.initialized.await(5, TimeUnit.SECONDS)) {
-                // the real resolver initialized, and have set the right instance already
-                // but it might have done it at unfortunate moment where it was overwritten by this instance
-                ConfigProviderResolver.setInstance(ConfigProviderResolverImpl.instance);
-                return ConfigProviderResolverImpl.instance;
-            } else {
-                // we log and throw, as these exceptions might get swallowed as
-                // java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.microprofile.config.ConfigProvider
-                LOG.log(Level.WARNING, "Timeout out waiting for Microprofile Config startup", exception);
-            }
-        } catch (InterruptedException e) {
-            LOG.log(Level.WARNING, "Interrupted while waiting for Microprofile Config to initialize", e);
-        }
-        throw exception;
+    private static final Logger LOG = Logger.getLogger(ConfigProviderResolverSync.class.getName());
+
+    /**
+     * Logs the creation of this class on finest level.
+     */
+    public ConfigProviderResolverSync() {
+        LOG.finest("ConfigProviderResolverSync()");
     }
 
     @Override
@@ -95,5 +94,18 @@ public class ConfigProviderResolverSync extends ConfigProviderResolver {
     @Override
     public void releaseConfig(Config config) {
         await().releaseConfig(config);
+    }
+
+
+    private ConfigProviderResolver await() {
+        LOG.log(Level.WARNING, "Payara Microprofile Config requested too early, the HK2 service is not initialized yet."
+            + " Waiting until it will be active.");
+        while (true) {
+            final ConfigProviderResolver resolver = instance();
+            if (resolver != null && resolver != this) {
+                return resolver;
+            }
+            Thread.yield();
+        }
     }
 }

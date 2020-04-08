@@ -160,9 +160,9 @@
 
     }
     function checkSSHPswd(typeId, nodeHostId, psSelectId, ps1Id, setupSshId, setupPswdId, winPsSelectId, winPs1Id){
-        if (! guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')){
-	    return false;
-	}
+        if (!guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')){
+            return false;
+        }
         var atype=document.getElementById(typeId).value;
         if ( atype == 'CONFIG'){
             return true;
@@ -175,7 +175,7 @@
             if ( document.getElementById(psSelectId).value == '2'){
                 if (!checkRequired(ps1Id, '#{reqMsg}')){
                     return false;
-                }else{
+                } else {
                     //ensure don't call setup-ssh'
                     document.getElementById(setupSshId).checked=false;
                     return true;
@@ -186,7 +186,7 @@
                 var alcomp = document.getElementById('#{pageSession.pswdAliasId}');
                 if (alcomp.value=='') {
                     return showAlert('$resource{i18ncs.msg.JS.noPasswordAlias}');
-                }else{
+                } else {
                     //ensure don't call setup-ssh'
                     document.getElementById(setupSshId).checked=false;
                     return true;
@@ -226,14 +226,14 @@ function confirmEmptyPswd(ps1Id, emptyMsg) {
         psComp.focus();
         if ( getConfirm(this, emptyMsg) ){
             return true;
-        }else{
+        } else{
             return false;
         }
     }
     return true;
 }
 
-    
+
     function disableTextComponent(textId) {
         var comp = document.getElementById(textId);
         if (comp != null){
@@ -243,7 +243,7 @@ function confirmEmptyPswd(ps1Id, emptyMsg) {
         }
     }
 
-    function  showTestDir(validateId, testdirId ){
+    function showTestDir(validateId, testdirId ){
         var ss = document.getElementById(validateId).checked;
         if (ss){
              webui.suntheme.common.setVisible(testdirId, true);

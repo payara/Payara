@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -443,8 +444,8 @@ final class StandardWrapperValve extends ValveBase {
 
     // Don't register in JMX
 
-    public ObjectName createObjectName(String domain, ObjectName parent)
-            throws MalformedObjectNameException {
+    @Override
+    public ObjectName createObjectName(String domain, ObjectName parent) throws MalformedObjectNameException {
         return null;
     }
 }

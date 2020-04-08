@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.appserv.server.util.Version;
@@ -80,10 +81,10 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     @Inject
     Domain domain;
-    
+
     @Inject
     private ProcessEnvironment processEnv;
-    
+
     private ManagedJobConfig managedJobConfig;
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
@@ -94,27 +95,27 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobCleanUpService.class);
 
-
+    private boolean micro;
 
     @Override
     public void postConstruct() {
+        micro = Version.getFullVersion().contains("Micro");
+        if (micro) {
+            //if Micro we don't have any jobs to cleanup
+            return;
+        }
+
         logger.log(Level.FINE,KernelLoggerInfo.initializingJobCleanup);
-
-
 
         scheduler = Executors.newScheduledThreadPool(10, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread result = new Thread(r);
                 result.setDaemon(true);
+                result.setName("Job Cleanup Service");
                 return result;
             }
         });
-        
-        if (Version.getFullVersion().contains("Micro")) {
-            //if Micro we don't have any jobs to cleanup
-            return;
-        }
 
         managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
@@ -131,6 +132,9 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      * This will schedule a cleanup of expired jobs based on configurable values
      */
     private void scheduleCleanUp() {
+        if (micro) {
+            return;
+        }
 
         if (managedJobConfig == null) {
             managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);

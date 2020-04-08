@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation] 
+// Portions Copyright [2016-2019] [Payara Foundation] 
 package org.apache.catalina.authenticator;
 
 import java.security.Principal;
@@ -118,7 +118,7 @@ public class SingleSignOnEntry {
 
     public synchronized void removeSession(Session session) {
         final Session removed = sessions.remove(session.getId());
-        log.warning("session " + session.getId() + "found (and removed): " + removed);
+        log.log(Level.WARNING, "session {0} found (and removed): {1}", new Object[]{session.getId(), removed});
     }
 
     /**

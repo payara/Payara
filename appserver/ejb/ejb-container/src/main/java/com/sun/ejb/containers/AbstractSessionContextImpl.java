@@ -37,41 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
+import com.sun.ejb.EJBUtils;
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
+
 import javax.ejb.SessionContext;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 import javax.xml.rpc.handler.MessageContext;
-import com.sun.ejb.EJBUtils;
+
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 
 /**
  * Implementation of EJBContext for SessionBeans
  *
  * @author Mahesh Kannan
  */
+public abstract class AbstractSessionContextImpl extends EJBContextImpl implements SessionContext {
 
-public abstract class AbstractSessionContextImpl
-        extends EJBContextImpl
-        implements SessionContext {
-    
-    protected Object instanceKey;
-
-    protected String ejbName;
+    private final String ejbName;
+    private Object instanceKey;
 
 
     protected AbstractSessionContextImpl(Object ejb, BaseContainer container) {
         super(ejb, container);
-        EjbSessionDescriptor sessionDesc =
-                (EjbSessionDescriptor) getContainer().getEjbDescriptor();
-
+        EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) getContainer().getEjbDescriptor();
         this.ejbName = sessionDesc.getName();
     }
 
@@ -85,7 +81,7 @@ public abstract class AbstractSessionContextImpl
 
     @Override
     public String toString() {
-        return ejbName + "; id: " + instanceKey;
+        return ejbName + "; id: " + getInstanceKey();
     }
 
     @Override
@@ -93,7 +89,7 @@ public abstract class AbstractSessionContextImpl
 
         // Instance key is first set between after setSessionContext and
         // before ejbCreate
-        if (instanceKey == null) {
+        if (getInstanceKey() == null) {
             throw new IllegalStateException("Operation not allowed");
         }
 
@@ -107,8 +103,9 @@ public abstract class AbstractSessionContextImpl
         // was called from setSession/EntityContext. The instance key check
         // ensures that an exception is not thrown if this was called
         // from a stateless SessionBean's ejbCreate.
-        if ((state == BeanState.CREATED) && (instanceKey == null))
+        if (state == BeanState.CREATED && getInstanceKey() == null) {
             throw new IllegalStateException("Operation not allowed");
+        }
 
         return ((BaseContainer) getContainer()).getUserTransaction();
     }
@@ -118,18 +115,13 @@ public abstract class AbstractSessionContextImpl
         InvocationManager invManager = EjbContainerUtilImpl.getInstance().getInvocationManager();
         try {
             ComponentInvocation inv = invManager.getCurrentInvocation();
-
-            if ((inv != null) && isWebServiceInvocation(inv)) {
+            if (inv != null && isWebServiceInvocation(inv)) {
                 return ((EjbInvocation) inv).messageContext;
-            } else {
-                throw new IllegalStateException("Attempt to access " +
-                        "MessageContext outside of a web service invocation");
             }
         } catch (Exception e) {
-            IllegalStateException ise = new IllegalStateException();
-            ise.initCause(e);
-            throw ise;
+            throw new IllegalStateException("Could not get a message context.", e);
         }
+        throw new IllegalStateException("Attempt to access MessageContext outside of a web service invocation");
     }
 
     @Override
@@ -141,7 +133,7 @@ public abstract class AbstractSessionContextImpl
 
         // getBusinessObject not allowed for Stateless/Stateful beans
         // until after dependency injection
-        if (instanceKey == null) {
+        if (getInstanceKey() == null) {
             throw new IllegalStateException("Operation not allowed");
         }
 
@@ -152,80 +144,64 @@ public abstract class AbstractSessionContextImpl
         if (businessInterface != null) {
             String intfName = businessInterface.getName();
 
-            if ((ejbLocalBusinessObjectImpl != null) &&
-                    ejbDesc.getLocalBusinessClassNames().contains(intfName)) {
+            if (ejbLocalBusinessObjectImpl != null //
+                && ejbDesc.getLocalBusinessClassNames().contains(intfName)) {
 
                 // Get proxy corresponding to this business interface.
-                businessObject = (T) ejbLocalBusinessObjectImpl
-                        .getClientObject(intfName);
+                businessObject = (T) ejbLocalBusinessObjectImpl.getClientObject(intfName);
 
-            } else if ((ejbRemoteBusinessObjectImpl != null) &&
-                    ejbDesc.getRemoteBusinessClassNames().contains(intfName)) {
+            } else if (ejbRemoteBusinessObjectImpl != null
+                && ejbDesc.getRemoteBusinessClassNames().contains(intfName)) {
 
                 // Create a new client object from the stub for this
                 // business interface.
                 String generatedIntf = EJBUtils.getGeneratedRemoteIntfName(intfName);
 
-                java.rmi.Remote stub =
-                    ejbRemoteBusinessObjectImpl.getStub(generatedIntf);
+                java.rmi.Remote stub = ejbRemoteBusinessObjectImpl.getStub(generatedIntf);
 
                 try {
-                    businessObject = (T) EJBUtils.createRemoteBusinessObject
-                        (container.getClassLoader(), intfName, stub);
-                } catch(Exception e) {
-
-                    IllegalStateException ise = new IllegalStateException
-                        ("Error creating remote business object for " +
-                         intfName);
-                    ise.initCause(e);
-                    throw ise;
+                    businessObject = (T) EJBUtils.createRemoteBusinessObject( //
+                        container.getClassLoader(), intfName, stub);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Error creating remote business object for " + intfName, e);
                 }
 
-            } else if( ejbDesc.isLocalBean() && intfName.equals( ejbDesc.getEjbClassName() ) ) {
-
-                businessObject = (T) optionalEjbLocalBusinessObjectImpl.
-                        getClientObject(ejbDesc.getEjbClassName());
-
+            } else if (ejbDesc.isLocalBean() && intfName.equals(ejbDesc.getEjbClassName())) {
+                businessObject = (T) optionalEjbLocalBusinessObjectImpl.getClientObject(ejbDesc.getEjbClassName());
             }
         }
 
         if (businessObject == null) {
-            throw new IllegalStateException("Invalid business interface : " +
-                    businessInterface + " for ejb " + ejbDesc.getName());
+            throw new IllegalStateException(
+                "Invalid business interface : " + businessInterface + " for ejb " + ejbDesc.getName());
         }
 
         return businessObject;
     }
 
     @Override
-    public Class getInvokedBusinessInterface()
-            throws IllegalStateException {
+    public Class getInvokedBusinessInterface() throws IllegalStateException {
 
         Class businessInterface = null;
-
         try {
             ComponentInvocation inv = EjbContainerUtilImpl.getInstance().getCurrentInvocation();
-
-            if ((inv != null) && (inv instanceof EjbInvocation)) {
+            if (inv != null && (inv instanceof EjbInvocation)) {
                 EjbInvocation invocation = (EjbInvocation) inv;
                 if (invocation.isBusinessInterface) {
                     businessInterface = invocation.clientInterface;
-                    if( container.isLocalBeanClass(invocation.clientInterface.getName()) ) {
+                    if (container.isLocalBeanClass(invocation.clientInterface.getName())) {
                         businessInterface = container.getEJBClass();
                     }
 
                 }
             }
         } catch (Exception e) {
-            IllegalStateException ise = new IllegalStateException();
-            ise.initCause(e);
-            throw ise;
+            throw new IllegalStateException(e);
         }
 
         if (businessInterface == null) {
-            throw new IllegalStateException("Attempt to call " +
-                    "getInvokedBusinessInterface outside the scope of a business " +
-                    "method");
+            throw new IllegalStateException(
+                "Attempt to call getInvokedBusinessInterface outside the scope of a business method");
         }
 
         return businessInterface;
@@ -244,8 +220,7 @@ public abstract class AbstractSessionContextImpl
                     throw new IllegalStateException("Must be invoked from an async method");
                 }
                 if( (invocation.method.getReturnType() == Void.TYPE) ) {
-                    throw new IllegalStateException("Must be invoked from a method with a Future<V> " +
-                                                    "return type");
+                    throw new IllegalStateException("Must be invoked from a method with a Future<V> return type");
                 }
                 return invocation.getWasCancelCalled();
             }
@@ -255,8 +230,7 @@ public abstract class AbstractSessionContextImpl
             throw ise;
         }
 
-        throw new IllegalStateException("Attempt to invoke wasCancelCalled from " +
-                                        "outside an ejb invocation");
+        throw new IllegalStateException("Attempt to invoke wasCancelCalled from outside an ejb invocation");
     }
 
     @Override
@@ -272,9 +246,8 @@ public abstract class AbstractSessionContextImpl
     public void checkTimerServiceMethodAccess()
             throws IllegalStateException {
         // checks that apply to both stateful AND stateless
-        if ((state == BeanState.CREATED) || inEjbRemove) {
-            throw new IllegalStateException
-                    ("EJB Timer method calls cannot be called in this context");
+        if (state == BeanState.CREATED || inEjbRemove) {
+            throw new IllegalStateException("EJB Timer method calls cannot be called in this context");
         }
     }
 

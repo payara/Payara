@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.annotation.impl;
 
@@ -282,16 +282,21 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     @Override
     public Set<Class> getElements() {
-        Set<Class> elements = new HashSet<Class>();
+        return getElements(entries);
+    }
+
+    @Override
+    public Set<Class> getElements(Set<String> classNames) {
+        Set<Class> elements = new HashSet<>();
         if (getClassLoader() == null) {
             deplLogger.log(Level.SEVERE,
                            NO_CLASSLOADER);
             return elements;
         }        
 
-        for (String className : entries) {
+        for (String className : classNames) {
             if (deplLogger.isLoggable(Level.FINE)) {
-                deplLogger.fine("Getting " + className);
+                deplLogger.log(Level.FINE, "Getting {0}", className);
             }
             try {                
                 elements.add(classLoader.loadClass(className));

@@ -85,7 +85,6 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
@@ -363,15 +362,9 @@ public class SunDeploymentManager implements DeploymentManager {
     */
     @Override
     public DeploymentConfiguration createConfiguration(DeployableObject dObj) throws InvalidModuleException {
-        try {
-            SunDeploymentConfiguration deploymentConfiguration = new SunDeploymentConfiguration(dObj);
-            deploymentConfiguration.setDeploymentManager(this);
-            return deploymentConfiguration;
-        } catch(ConfigurationException e) {
-            InvalidModuleException ime = new InvalidModuleException(e.getMessage());
-            ime.initCause(e);
-            throw ime;
-        }
+        SunDeploymentConfiguration deploymentConfiguration = new SunDeploymentConfiguration(dObj);
+        deploymentConfiguration.setDeploymentManager(this);
+        return deploymentConfiguration;
     }
 
     @Override

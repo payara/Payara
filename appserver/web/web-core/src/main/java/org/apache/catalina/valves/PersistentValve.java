@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -97,10 +98,9 @@ public class PersistentValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
-
     }
 
 
@@ -118,8 +118,8 @@ public class PersistentValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
-     public int invoke(Request request, Response response)
-         throws IOException, ServletException {
+    @Override
+     public int invoke(Request request, Response response) throws IOException, ServletException {
 
         // Select the Context to be used for this Request
         Context context = request.getContext();
@@ -172,6 +172,7 @@ public class PersistentValve
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response)
                                     throws IOException, ServletException{
         Context context = request.getContext();

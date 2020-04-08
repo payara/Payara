@@ -144,13 +144,13 @@ EXAMPLES
                ...
                property.administrative.domain.name
                resources
-               resources.jdbc-connection-pool.DerbyPool
-               resources.jdbc-connection-pool.DerbyPool.property.DatabaseName
-               resources.jdbc-connection-pool.DerbyPool.property.Password
-               resources.jdbc-connection-pool.DerbyPool.property.PortNumber
-               resources.jdbc-connection-pool.DerbyPool.property.User
-               resources.jdbc-connection-pool.DerbyPool.property.connectionAttributes
-               resources.jdbc-connection-pool.DerbyPool.property.serverName
+               resources.jdbc-connection-pool.H2Pool
+               resources.jdbc-connection-pool.H2Pool.property.DatabaseName
+               resources.jdbc-connection-pool.H2Pool.property.Password
+               resources.jdbc-connection-pool.H2Pool.property.PortNumber
+               resources.jdbc-connection-pool.H2Pool.property.User
+               resources.jdbc-connection-pool.H2Pool.property.connectionAttributes
+               resources.jdbc-connection-pool.H2Pool.property.serverName
                resources.jdbc-connection-pool.__TimerPool
                resources.jdbc-connection-pool.__TimerPool.property.connectionAttributes
                resources.jdbc-connection-pool.__TimerPool.property.databaseName
@@ -198,4 +198,4 @@ SEE ALSO
 
        asadmin(1M)
 
-Java EE 8                         14 Sep 2009               dotted-names(5ASC)
+Java EE 8                         19 Dec 2019               dotted-names(5ASC)

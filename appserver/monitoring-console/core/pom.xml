@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.monitoring-console</groupId>
         <artifactId>monitoring-console</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.internal.monitoring-console</groupId>
@@ -57,6 +57,10 @@
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
@@ -80,9 +84,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

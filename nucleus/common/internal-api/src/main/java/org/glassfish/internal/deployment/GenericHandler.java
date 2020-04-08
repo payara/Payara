@@ -150,11 +150,15 @@ public abstract class GenericHandler implements ArchiveHandler {
         String appName = null;
         if (nameProvider != null) {
             appName = nameProvider.getNameFor(archive, context);
+
             if (appName != null) {
+                if (originalAppName != null && appName.equals(archive.getName())) {
+                    appName = originalAppName;
+                }
                 return appName;
             }
         }
-        
+
         if (originalAppName != null) {
             return originalAppName;
         }

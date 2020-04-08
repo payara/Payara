@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>nucleus-microprofile</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>microprofile-config-service</artifactId>
@@ -102,7 +102,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
     </dependencies>
 </project>

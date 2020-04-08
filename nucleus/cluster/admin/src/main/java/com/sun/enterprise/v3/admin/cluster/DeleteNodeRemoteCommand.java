@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
-import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
@@ -87,28 +87,28 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     private static final String NL = System.getProperty("line.separator");
-    
+
     @Param(name = "name", primary = true)
     String name;
-    
+
     @Param(optional = true, defaultValue = "false")
     boolean uninstall;
-    
+
     @Param(optional = true, defaultValue = "false")
     boolean force;
-    
+
     @Inject
     protected ServiceLocator serviceLocator;
-    
+
     @Inject
     private CommandRunner commandRunner;
-    
+
     @Inject
     IterableProvider<Node> nodeList;
-    
+
     @Inject
     Nodes nodes;
-    
+
     protected String remotepassword;
     protected String sshkeypassphrase;
     protected Logger logger;
@@ -132,7 +132,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
-        
+
         String type = node.getType();
         if (type == null || type.equals("CONFIG")) {
             // No node to delete nothing to do here
@@ -150,14 +150,17 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
             SshConnector sshC = node.getSshConnector();
             SshAuth sshAuth = sshC.getSshAuth();
 
-            if (sshAuth.getPassword() != null)
-                info.add(PARAM_REMOTEPASSWORD, sshAuth.getPassword());
+            if (sshAuth.getPassword() != null) {
+                info.add(PARAM_SSHPASSWORD, sshAuth.getPassword());
+            }
 
-            if (sshAuth.getKeyPassphrase() != null)
+            if (sshAuth.getKeyPassphrase() != null) {
                 info.add(PARAM_SSHKEYPASSPHRASE, sshAuth.getKeyPassphrase());
+            }
 
-            if (sshAuth.getKeyfile() != null)
+            if (sshAuth.getKeyfile() != null) {
                 info.add(PARAM_SSHKEYFILE, sshAuth.getKeyfile());
+            }
 
             info.add(PARAM_INSTALLDIR, node.getInstallDir());
             info.add(PARAM_REMOTEPORT, sshC.getSshPort());
@@ -170,7 +173,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         ParameterMap commandParameters = new ParameterMap();
         commandParameters.add("DEFAULT", name);
         commandInvocation.parameters(commandParameters);
-        
+
         commandInvocation.execute();
 
         // Uninstall Payara after deleting the node
@@ -184,17 +187,17 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
     /**
      * Prepares for invoking uninstall-node on DAS
-     * 
+     *
      * @param ctx command context
      * @return true if uninstall-node succeeds, false otherwise
      */
     private boolean uninstallNode(AdminCommandContext ctx, ParameterMap map, Node node) {
         boolean res = false;
 
-        remotepassword = map.getOne(PARAM_REMOTEPASSWORD);
+        remotepassword = map.getOne(PARAM_SSHPASSWORD);
         sshkeypassphrase = map.getOne(PARAM_SSHKEYPASSPHRASE);
 
-        ArrayList<String> command = new ArrayList<String>();
+        ArrayList<String> command = new ArrayList<>();
 
         command.add(getUninstallCommandName());
         command.add("--installdir");
@@ -223,13 +226,13 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         } else {
             report.setMessage(firstErrorMessage);
         }
-        
+
         return res;
     }
 
     /**
      * Invokes install-node using ProcessManager and returns the exit message/status.
-     * 
+     *
      * @param cmdLine list of args
      * @param output contains output message
      * @return exit status of uninstall-node
@@ -237,7 +240,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private int execCommand(List<String> cmdLine, StringBuilder output) {
         int exit = -1;
 
-        List<String> fullcommand = new ArrayList<String>();
+        List<String> fullcommand = new ArrayList<>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
         if (!StringUtils.ok(installDir)) {
             throw new IllegalArgumentException(Strings.get("create.node.ssh.no.installdir"));
@@ -248,7 +251,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
         // if password auth is used for deleting the node, use the same auth mechanism for
         // uinstall-node as well. The passwords are passed directly through input stream
-        List<String> passwords = new ArrayList<String>();
+        List<String> passwords = new ArrayList<>();
         if (remotepassword != null) {
             fullcommand.add("--passwordfile");
             fullcommand.add("-");
@@ -259,19 +262,21 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         fullcommand.addAll(cmdLine);
 
         ProcessManager processManager = new ProcessManager(fullcommand);
-        if (!passwords.isEmpty())
+        if (!passwords.isEmpty()) {
             processManager.setStdinLines(passwords);
+        }
 
         if (logger.isLoggable(INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));
         }
-        
+
         processManager.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
 
-        if (logger.isLoggable(FINER))
+        if (logger.isLoggable(FINER)) {
             processManager.setEcho(true);
-        else
+        } else {
             processManager.setEcho(false);
+        }
 
         try {
             exit = processManager.execute();

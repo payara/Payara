@@ -37,18 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli.cluster;
 
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_OFF;
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_ON;
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_NORMAL;
-import static com.sun.enterprise.admin.cli.CLIConstants.WALL_CLOCK_START_PROP;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
-import static org.glassfish.api.admin.RuntimeType.DAS;
+import com.sun.enterprise.admin.launcher.GFLauncher;
+import com.sun.enterprise.admin.launcher.GFLauncherException;
+import com.sun.enterprise.admin.launcher.GFLauncherFactory;
+import com.sun.enterprise.admin.launcher.GFLauncherInfo;
+import com.sun.enterprise.admin.servermgmt.cli.StartServerCommand;
+import com.sun.enterprise.admin.servermgmt.cli.StartServerHelper;
+import com.sun.enterprise.universal.xml.MiniXmlParserException;
+import com.sun.enterprise.util.ObjectAnalyzer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,14 +62,15 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.admin.launcher.GFLauncher;
-import com.sun.enterprise.admin.launcher.GFLauncherException;
-import com.sun.enterprise.admin.launcher.GFLauncherFactory;
-import com.sun.enterprise.admin.launcher.GFLauncherInfo;
-import com.sun.enterprise.admin.servermgmt.cli.StartServerCommand;
-import com.sun.enterprise.admin.servermgmt.cli.StartServerHelper;
-import com.sun.enterprise.universal.xml.MiniXmlParserException;
-import com.sun.enterprise.util.ObjectAnalyzer;
+import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_OFF;
+import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_ON;
+import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_NORMAL;
+import static com.sun.enterprise.admin.cli.CLIConstants.WALL_CLOCK_START_PROP;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static org.glassfish.api.admin.RuntimeType.DAS;
 
 /**
  * Start a local server instance.
@@ -90,7 +90,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
 
     @Param(name = "dry-run", shortName = "n", optional = true, defaultValue = "false")
     private boolean dryRun;
-    
+
     @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "600")
     private int timeout; // In Seconds, by default 10 minutes for historical reasons
@@ -98,12 +98,12 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
     private StartServerHelper startServerHelper;
     private GFLauncherInfo launcherInfo;
     private GFLauncher launcher;
-    
+
     @Override
     public RuntimeType getType() {
         return RuntimeType.INSTANCE;
     }
-    
+
     /**
      * Create a launcher for the instance specified by arguments to this command. The launcher is for a server of the
      * specified type. Sets the launcher and info fields.
@@ -141,7 +141,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
         if (!getServerDirs().getServerDir().isDirectory()) {
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
         }
-        
+
         if (timeout < 1) {
             throw new CommandException("Timeout must be at least 1 second long.");
         }
@@ -172,7 +172,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             createLauncher();
 
             startServerHelper = new StartServerHelper(
-                    logger, programOpts.isTerse(), getServerDirs(), launcher, getMasterPassword(), debug);
+                    logger, programOpts.isTerse(), getServerDirs(), launcher, getMasterPassword());
 
             if (!startServerHelper.prepareForLaunch()) {
                 return ERROR;
@@ -182,7 +182,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
                 if (logger.isLoggable(FINE)) {
                     logger.fine(Strings.get("dry_run_msg"));
                 }
-                
+
                 List<String> cmd = getLauncher().getCommandLine();
                 StringBuilder sb = new StringBuilder();
                 for (String s : cmd) {
@@ -216,16 +216,16 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
                         }
 
                     if (env.debug()) {
-                        System.setProperty(WALL_CLOCK_START_PROP, "" + System.currentTimeMillis());
+                        System.setProperty(WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
                     }
-                    
+
                     getLauncher().relaunch();
                 }
 
             } else {
                 startServerHelper.waitForServer(timeout, SECONDS);
                 startServerHelper.report();
-                
+
                 return SUCCESS;
             }
         } catch (GFLauncherException gfle) {
@@ -234,13 +234,13 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             throw new CommandException(me);
         }
     }
-   
+
 
     /**
      * Return the asadmin command line arguments necessary to start this server instance.
      */
     private String[] respawnArgs() {
-        List<String> args = new ArrayList<String>(15);
+        List<String> args = new ArrayList<>(15);
         args.addAll(asList(programOpts.getProgramArguments()));
 
         // now the start-local-instance specific arguments
@@ -263,12 +263,11 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             args.add(node);
         }
         if (ok(instanceName))
+         {
             args.add(instanceName); // the operand
-
-        if (logger.isLoggable(FINER)) {
-            logger.finer("Respawn args: " + args.toString());
         }
-        
+
+        logger.finer(() -> "Respawn args: " + args);
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;

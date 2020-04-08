@@ -200,18 +200,25 @@ public final class WebAndEjbToJaasBridge {
         }
     }
 
+    public static void doX500Login(Subject subject, String appModuleID) {
+        doX500Login(subject, CertificateRealm.AUTH_TYPE, appModuleID);
+    }
+
     /**
-     * A special case login for X500Name credentials. This is invoked for certificate login because the
-     * containers extract the X.500 name from the X.509 certificate before calling into this class.
+     * A special case login for X500Name credentials.This is invoked for
+     * certificate login because the containers extract the X.500 name from the
+     * X.509 certificate before calling into this class.
      *
+     * @param subject
+     * @param realmName
+     * @param appModuleID
      * @throws LoginException when login fails
      *
      */
-    public static void doX500Login(Subject subject, String appModuleID) {
+    public static void doX500Login(Subject subject, String realmName, String appModuleID) {
         _logger.fine("Processing X.500 name login.");
 
         String user = null;
-        String realmName = null;
         try {
             X500Principal x500principal = getPublicCredentials(subject, X500Principal.class);
             if (x500principal == null) {
@@ -232,7 +239,7 @@ public final class WebAndEjbToJaasBridge {
             // Of course, bug 4646134 needs to be kept in mind at all times, even though time has
             // forgotten what 4646134 was.
 
-            Realm realm = Realm.getInstance(CertificateRealm.AUTH_TYPE);
+            Realm realm = Realm.getInstance(realmName);
 
             if (realm instanceof CertificateRealm) { // Should always be true
 
@@ -248,13 +255,11 @@ public final class WebAndEjbToJaasBridge {
 
                 // The name that the cert realm decided to set as the caller principal name
                 user = certRealm.authenticate(subject, x500principal);
-                realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);
             } else {
                 // Should never come here
                 _logger.warning(certLoginBadRealmError);
-                realmName = realm.getName();
                 setSecurityContext(user, subject, realmName);
             }
 

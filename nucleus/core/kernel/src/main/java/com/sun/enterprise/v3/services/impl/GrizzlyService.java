@@ -85,6 +85,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -96,6 +97,7 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
 import org.glassfish.common.util.Constants;
+import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
@@ -183,6 +185,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     public GrizzlyService() {
         futures = new ArrayList<>();
         monitoring = new GrizzlyMonitoring();
+    }
+
+    static {
+        MonitoringDataCollection.register(CountStatistic.class,
+                (collector, count) -> collector.collect(count.getName(), count.getCount()));
     }
 
     @Override

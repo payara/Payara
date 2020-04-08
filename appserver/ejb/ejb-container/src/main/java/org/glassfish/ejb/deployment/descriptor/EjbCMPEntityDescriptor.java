@@ -45,6 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.BeanMethodCalculatorImpl;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Locale;
@@ -110,26 +111,23 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
     }
 
     @Override
-    public Vector getFields() {
-        Vector fields = new Vector();
+    public Vector<Field> getFields() {
         if( isEJB20() ) {
             // All cmp "fields" are abstract, so we can't construct
             // java.lang.reflect.Field elements from them.  Use
             // getFieldDescriptors() instead.
-        } else {
-            fields = super.getFields();
+            return new Vector<>();
         }
-        return fields;
+        return super.getFields();
     }
 
     @Override
-    public Vector getFieldDescriptors() {
-        Vector fieldDescriptors = new Vector();
+    public Vector<FieldDescriptor> getFieldDescriptors() {
+        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
         if( isEJB20() ) {
             try {
                 ClassLoader cl = getEjbBundleDescriptor().getClassLoader();
-                BeanMethodCalculatorImpl bmc = new BeanMethodCalculatorImpl();
-                fieldDescriptors = bmc.getPossibleCmpCmrFields(cl, this.getEjbClassName());
+                fieldDescriptors = BeanMethodCalculatorImpl.getPossibleCmpCmrFields(cl, this.getEjbClassName());
             } catch(Throwable t) {
                 String errorMsg = localStrings.getLocalString
                     ("enterprise.deployment.errorloadingejbclass",
@@ -191,10 +189,10 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
     }
 
     @Override
-    public Vector getPossibleTransactionAttributes() {
-        Vector txAttributes = null;
+    public Vector<ContainerTransaction> getPossibleTransactionAttributes() {
+        Vector<ContainerTransaction> txAttributes = null;
         if( isEJB20() ) {
-            txAttributes = new Vector();
+            txAttributes = new Vector<>();
             txAttributes.add(new ContainerTransaction
                 (ContainerTransaction.REQUIRED, ""));
             txAttributes.add(new ContainerTransaction
@@ -271,12 +269,9 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
         return ejbImplementationImplClassName;
     }
 
-    public static Vector getPossibleCmpCmrFields(ClassLoader cl,
-                                                 String className)
-        throws Exception {
-
-        Vector fieldDescriptors = new Vector();
-        Class theClass = cl.loadClass(className);
+    public static Vector<FieldDescriptor> getPossibleCmpCmrFields(ClassLoader cl, String className) throws Exception {
+        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
+        Class<?> theClass = cl.loadClass(className);
 
         // Start with all *public* methods
         Method[] methods = theClass.getMethods();

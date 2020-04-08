@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
@@ -91,13 +91,19 @@
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
+        <!-- Used only for LogFilterForInstance -->
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>trilead-ssh2-repackaged</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

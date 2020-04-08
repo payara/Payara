@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -395,6 +396,7 @@ public class FactoryCreateRule extends Rule {
      *
      * @param attributes The attribute list of this element
      */
+    @Override
     public void begin(String namespace, String name, Attributes attributes) throws Exception {
         
         if (ignoreCreateExceptions) {
@@ -407,8 +409,7 @@ public class FactoryCreateRule extends Rule {
                 Object instance = getFactory(attributes).createObject(attributes);
                 
                 if (digester.log.isLoggable(Level.FINE)) {
-                    digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
-                            "} New " + instance.getClass().getName());
+                    digester.log.log(Level.FINE, "[FactoryCreateRule]'{'{0}'}' New {1}", new Object[]{digester.match, instance.getClass().getName()});
                 }
                 digester.push(instance);
                 exceptionIgnoredStack.push(Boolean.FALSE);
@@ -416,10 +417,10 @@ public class FactoryCreateRule extends Rule {
             } catch (Exception e) {
                 // log message and error
                 if (digester.log.isLoggable(Level.INFO)) {
-                    digester.log.log(Level.INFO, "[FactoryCreateRule] Create exception ignored: " +
-                        ((e.getMessage() == null) ? e.getClass().getName() : e.getMessage()));
+                    digester.log.log(Level.INFO, "[FactoryCreateRule] Create exception ignored: {0}",
+                            (e.getMessage() == null) ? e.getClass().getName() : e.getMessage());
                     if (digester.log.isLoggable(Level.FINE)) {
-                        digester.log.log(Level.FINE, "[FactoryCreateRule] Ignored exception:" + e.getMessage());
+                        digester.log.log(Level.FINE, "[FactoryCreateRule] Ignored exception:{0}", e.getMessage());
                     }
                 }
                 exceptionIgnoredStack.push(Boolean.TRUE);
@@ -430,8 +431,7 @@ public class FactoryCreateRule extends Rule {
             Object instance = getFactory(attributes).createObject(attributes);
             
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
-                        "} New " + instance.getClass().getName());
+                digester.log.log(Level.FINE, "[FactoryCreateRule]'{'{0}'}' New {1}", new Object[]{digester.match, instance.getClass().getName()});
             }
             digester.push(instance);
         }
@@ -441,6 +441,7 @@ public class FactoryCreateRule extends Rule {
     /**
      * Process the end of this element.
      */
+    @Override
     public void end(String namespace, String name) throws Exception {
         
         // check if object was created 
@@ -450,7 +451,7 @@ public class FactoryCreateRule extends Rule {
                 exceptionIgnoredStack != null &&
                 !(exceptionIgnoredStack.empty())) {
                 
-            if ((exceptionIgnoredStack.pop()).booleanValue()) {
+            if (exceptionIgnoredStack.pop()) {
                 // creation exception was ignored
                 // nothing was put onto the stack
                 if (digester.log.isLoggable(Level.FINEST)) {
@@ -462,8 +463,7 @@ public class FactoryCreateRule extends Rule {
 
         Object top = digester.pop();
         if (digester.log.isLoggable(Level.FINE)) {
-            digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
-                    "} Pop " + top.getClass().getName());
+            digester.log.log(Level.FINE, "[FactoryCreateRule]'{'{0}'}' Pop {1}", new Object[]{digester.match, top.getClass().getName()});
         }
 
     }
@@ -472,6 +472,7 @@ public class FactoryCreateRule extends Rule {
     /**
      * Clean up after parsing is complete.
      */
+    @Override
     public void finish() throws Exception {
 
         if (attributeName != null) {
@@ -484,6 +485,7 @@ public class FactoryCreateRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("FactoryCreateRule[");
@@ -524,8 +526,7 @@ public class FactoryCreateRule extends Rule {
                 }
             }
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
-                        "} New factory " + realClassName);
+                digester.log.log(Level.FINE, "[FactoryCreateRule]'{'{0}'}' New factory {1}", new Object[]{digester.match, realClassName});
             }
             Class<?> clazz = digester.getClassLoader().loadClass(realClassName);
             creationFactory = (ObjectCreationFactory)

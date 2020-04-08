@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -45,7 +46,7 @@
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}" 
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}"
         guiOnLoad="showSshPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1PropId}',  '#{pageSession.pswdAliasPropId}');
                    showPswdSection('#{pageSession.winPsSelected}', '#{pageSession.winPs1PropId}',  '#{pageSession.winPswdAliasPropId}'); " >
 <!define name="content">
@@ -91,7 +92,8 @@
 
     />
     </event>
-<sun:form id="propertyForm" autoComplete="off">
+
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 #include "/cluster/node/nodeAttr.inc"
 

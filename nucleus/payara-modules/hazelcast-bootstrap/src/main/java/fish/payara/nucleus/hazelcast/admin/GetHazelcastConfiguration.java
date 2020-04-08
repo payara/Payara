@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2014-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2014-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,7 +103,6 @@ public class GetHazelcastConfiguration implements AdminCommand {
        
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        StringBuilder builder = new StringBuilder();
         String headers[] = {"Property Name","PropertyValue","Scope"};
         
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
@@ -125,6 +124,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"MulticastPort",runtimeConfiguration.getMulticastPort(),"Domain"});
         columnFormatter.addRow(new Object[]{"Kubernetes Namespace",runtimeConfiguration.getKubernetesNamespace(),"Domain"});
         columnFormatter.addRow(new Object[]{"Kubernetes Service Name",runtimeConfiguration.getKubernetesServiceName(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Encrypt Datagrid", runtimeConfiguration.getDatagridEncryptionEnabled(), "Domain"});
         columnFormatter.addRow(new Object[]{"Enabled",nodeConfiguration.getEnabled(),"Config"});
         columnFormatter.addRow(new Object[]{"JNDIName",nodeConfiguration.getJNDIName(),"Config"});
         columnFormatter.addRow(new Object[]{"Cache Manager JNDI Name",nodeConfiguration.getCacheManagerJNDIName(),"Config"});
@@ -137,6 +137,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"Scheduled Executor Pool Size",nodeConfiguration.getScheduledExecutorPoolSize(),"Config"});
         columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
         columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
+        columnFormatter.addRow(new Object[]{"Config Specific Data Grid Start Port",nodeConfiguration.getConfigSpecificDataGridStartPort(),"Config"});
         
         Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
@@ -170,6 +171,8 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("publicAddress", nodeConfiguration.getPublicAddress());
         map.put("kubernetesNamespace", runtimeConfiguration.getKubernetesNamespace());
         map.put("kubernetesServiceName", runtimeConfiguration.getKubernetesServiceName());
+        map.put("configSpecificDataGridStartPort",nodeConfiguration.getConfigSpecificDataGridStartPort());
+        map.put("encryptDatagrid", runtimeConfiguration.getDatagridEncryptionEnabled());
         
         extraProps.put("getHazelcastConfiguration",map);
                 

@@ -43,45 +43,30 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.samples.ejb-http-remoting</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>api</artifactId>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <name>Payara Samples - EJB http remoting - common api</name>
     <dependencies>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
-            <version>1.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>1.1.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>8.0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>

@@ -42,6 +42,7 @@ package fish.payara.micro.boot;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import java.io.File;
+import java.util.function.Consumer;
 
 /**
  *
@@ -287,6 +288,32 @@ public interface PayaraMicroBoot {
      * @return
      */
     PayaraMicroBoot setApplicationDomainXML(String domainXml);
+
+    /**
+     * Register a handler for executing admin commands at pre-boot time.
+     * Handler will be called with reference to {@link AdminCommandRunner} before instance starts.
+     * It offers way of changing domain configuration by means of running command {@code set}.
+     * The commands will be only executed on the instance that is booted.
+     *
+     * Only single handler can be registered.
+     *
+     * @param handler
+     * @return
+     */
+    PayaraMicroBoot setPreBootHandler(Consumer<AdminCommandRunner> handler);
+
+    /**
+     * Register a handler for executing admin commands at post-boot time.
+     * Handler will be called with reference to {@link AdminCommandRunner} after all services start, but before deployment starts.
+     * All commands available over {@code asadmin} command are valid in this phase.
+     * The commands will be only executed on the instance starting up, not in any cluster it may have formed.
+     *
+     * Only single handler can be registered
+     *
+     * @param handler
+     * @return
+     */
+    PayaraMicroBoot setPostBootHandler(Consumer<AdminCommandRunner> handler);
 
     /**
      * Sets the maximum number of ports to check if free for autobinding

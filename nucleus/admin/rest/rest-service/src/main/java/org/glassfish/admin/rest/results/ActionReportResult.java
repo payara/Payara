@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.results;
 
@@ -55,8 +55,8 @@ import org.jvnet.hk2.config.ConfigBean;
  * @author Ludovic Champenois
  */
 public class ActionReportResult extends Result {
-    private RestActionReporter message;
-    private OptionsResult metaData;
+    private final RestActionReporter reporter;
+    private final OptionsResult metaData;
     private ConfigBean entity;
     private String commandDisplayName = null;
     private LeafResource.LeafContent leafContent = null;
@@ -68,11 +68,6 @@ public class ActionReportResult extends Result {
     public void setLeafContent(LeafContent leafContent) {
         this.leafContent = leafContent;
     }
-
-
-    /**
-     * Constructor
-     */
 
     public ActionReportResult(RestActionReporter r) {
         this(null, r);
@@ -88,18 +83,18 @@ public class ActionReportResult extends Result {
     }
 
     public ActionReportResult(String name, RestActionReporter r) {
-        this(name, r, new OptionsResult());    
+        this(name, r, new OptionsResult());
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData) {
-        this.name = name;
-        message = r;
+        super(name);
+        reporter = r;
         this.metaData = metaData;
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData, String displayName) {
-        this.name = name;
-        message = r;
+        super(name);
+        reporter = r;
         this.metaData = metaData;
         commandDisplayName = displayName;
     }
@@ -107,7 +102,7 @@ public class ActionReportResult extends Result {
      * Returns the result string this object represents
      */
     public ActionReporter getActionReport() {
-        return message;
+        return reporter;
     }
 
     /**
@@ -116,7 +111,7 @@ public class ActionReportResult extends Result {
     public String getCommandDisplayName() {
         return commandDisplayName;
     }
-    
+
     /**
      * change display name for command associated with the command resource.
      */
@@ -132,5 +127,11 @@ public class ActionReportResult extends Result {
 
     public ConfigBean getEntity() {
         return entity;
+    }
+
+
+    @Override
+    public String toString() {
+        return super.toString() + "[actionReport: " + getActionReport() + "]";
     }
 }

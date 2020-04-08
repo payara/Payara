@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -125,7 +125,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.flashlight</groupId>
@@ -166,7 +165,6 @@
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>${jsonp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>

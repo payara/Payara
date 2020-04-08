@@ -42,6 +42,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <ejb-jar>
   <display-name>RosterEJBJAR</display-name>
   <enterprise-beans>

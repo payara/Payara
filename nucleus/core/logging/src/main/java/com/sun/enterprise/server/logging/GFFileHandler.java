@@ -150,7 +150,7 @@ public class GFFileHandler extends StreamHandler implements
     /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
 
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(5000);
+    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(10000);
 
     /**Rotation can be done in 3 ways: <ol>
      * <li> Based on the Size: Rotate when some Threshold number of bytes are

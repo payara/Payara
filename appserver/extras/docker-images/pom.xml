@@ -4,70 +4,97 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
     <name>Payara Docker Images</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.distributions</groupId>
-            <artifactId>payara</artifactId>
-            <version>${project.version}</version>
-            <type>glassfish-distribution</type>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>server-full</module>
+        <module>server-node</module>
+        <module>micro</module>
+        <module>tests</module>
+    </modules>
+
+    <properties>
+        <payara.version>${project.version}</payara.version>
+        <dockerBaseDir>${project.build.directory}/docker-work-dir</dockerBaseDir>
+        <dockerRepositoryName>payara/${project.artifactId}</dockerRepositoryName>
+        <!-- use false for faster testing, but you depend on cached results then -->
+        <docker.noCache>true</docker.noCache>
+        <dockerfile.tag>${payara.version}</dockerfile.tag>
+        <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
+        <docker.java.tag>8u232</docker.java.tag>
+        <docker.java.image>${docker.java.repository}:${docker.java.tag}</docker.java.image>
+        <docker.payara.domainName>production</docker.payara.domainName>
+    </properties>
 
     <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>fish.payara.distributions</groupId>
-                                    <artifactId>payara</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default</id>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repository>payara/server-node</repository>
-                    <dockerfile>src/main/resources/payaraserver-node/Dockerfile</dockerfile>
-                    <buildArgs>
-                        <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>
-                        <!-- Dockerfile currently requires this script to be called 'entrypoint.sh' -->
-                        <ENTRYPOINT_SCRIPT>src/main/resources/payaraserver-node/entrypoint.sh</ENTRYPOINT_SCRIPT>
-                    </buildArgs>
-                    <skipDockerInfo>true</skipDockerInfo>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.33.0</version>
+                    <extensions>true</extensions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
+    <profiles>
+        <profile>
+            <id>generate-docker-images-only-if-dockerfile-exists</id>
+            <activation>
+                <file>
+                    <exists>src/main/docker/Dockerfile</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${dockerRepositoryName}</name>
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${dockerfile.tag}</tag>
+                                        </tags>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

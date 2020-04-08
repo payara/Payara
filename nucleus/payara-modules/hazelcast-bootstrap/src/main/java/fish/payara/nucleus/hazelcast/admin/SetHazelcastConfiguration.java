@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
-@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DOMAIN})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
@@ -95,7 +96,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Set Hazelcast Configuration")
 })
 public class SetHazelcastConfiguration implements AdminCommand, DeploymentTargetResolver {
-
+    
     @Inject
     protected Logger logger;
 
@@ -203,6 +204,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Param(name = "autoIncrementPort", optional = true)
     private Boolean autoIncrementPort;
+  
+    @Param(name = "configSpecificDataGridStartPort", optional = true, alias = "configspecificdatagridstartport")
+    private String configSpecificDataGridStartPort;
+
+    @Param(name = "encryptDatagrid", optional = true, alias = "encryptdatagrid")
+    private Boolean encryptDatagrid;
     
     @Inject
     ServiceLocator serviceLocator;
@@ -212,8 +219,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Override
     public void execute(AdminCommandContext context) {
-
-        final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -233,22 +238,19 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
-                        }
+                        }                        
                         if (multiCastGroup != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastGroup(multiCastGroup);
-                        }
+                        }                        
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
                         }
-
                         if (configFile != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
-
                         if (hostawarePartitioning != null) {
                             hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
                         }
-
                         if (hzClusterName != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupName(hzClusterName);
                         }
@@ -287,6 +289,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (autoIncrementPort != null) {
                             hazelcastRuntimeConfigurationProxy.setAutoIncrementPort(autoIncrementPort.toString());
+                        }
+                        if (encryptDatagrid != null) {
+                            hazelcastRuntimeConfigurationProxy.setDatagridEncryptionEnabled(encryptDatagrid.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
@@ -346,6 +351,11 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                             if (publicAddress != null) {
                                 hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
                             }
+                            if (configSpecificDataGridStartPort != null) {
+                                if (!configToApply.isDas()) {
+                                    hazelcastRuntimeConfigurationProxy.setConfigSpecificDataGridStartPort(configSpecificDataGridStartPort);
+                                }
+                            }
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return null;
                         }
@@ -354,7 +364,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    actionReport.setMessage(ex.getCause().getMessage());
+                } else {
+                    actionReport.setMessage(ex.getMessage());
+                }
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -378,10 +393,14 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 }
             }
 
+            if (encryptDatagrid != null && encryptDatagrid) {
+                checkForDatagridKey(actionReport);
+            }
+
         }
 
     }
-
+    
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
 
         // for all affected targets restart hazelcast. 
@@ -456,5 +475,14 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             result = target;
         }
         return result;
+    }
+
+    private void checkForDatagridKey(ActionReport actionReport) {
+        File datagridKey = new File(server.getConfigDirPath().getPath() + File.separator + "datagrid-key");
+        if (!datagridKey.exists()) {
+            actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
+            actionReport.appendMessage("Could not find datagrid-key in domain config directory. Please ensure" +
+                    " that you generate one before restarting the domain.");
+        }
     }
 }

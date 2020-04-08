@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,10 @@
 package fish.payara.jmx.monitoring;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.admin.amx.config.AMXConfiguration;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
@@ -48,38 +51,35 @@ import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import java.util.ArrayList;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
-import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
-import fish.payara.admin.amx.config.AMXConfiguration;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import java.beans.PropertyVetoException;
-import java.util.concurrent.ScheduledFuture;
+
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the
@@ -158,7 +158,7 @@ public class JMXMonitoringService implements EventListener {
 
             formatter = new JMXMonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
 
-            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "JMX Monitoring Service will startup");
 
             if (Boolean.valueOf(configuration.getAmx())) {
                 AMXConfiguration amxConfig = habitat.getService(AMXConfiguration.class);
@@ -217,7 +217,7 @@ public class JMXMonitoringService implements EventListener {
      */
     private void shutdownMonitoringService() {
         if (monitoringFuture != null) {
-            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "JMX Monitoring Service will shutdown");
             monitoringFuture.cancel(false);
             monitoringFuture = null;
         }

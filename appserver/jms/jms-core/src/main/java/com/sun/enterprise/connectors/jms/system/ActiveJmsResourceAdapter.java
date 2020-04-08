@@ -37,34 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
-
-import java.lang.reflect.Method;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SocketChannel;
-import java.rmi.Naming;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ResourceAdapterInternalException;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -108,15 +83,40 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.logging.LogDomains;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SocketChannel;
+import java.rmi.Naming;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.resource.spi.ResourceAdapterInternalException;
 import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
@@ -126,27 +126,19 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Singleton;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.ORBLocator;
-import org.glassfish.api.logging.LogHelper;
 import org.jvnet.hk2.config.types.Property;
-
-//import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
 
 
 /**
@@ -877,7 +869,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String propertyPrefix = fullprefix + "property.";
 
         if(dbJdbcUrl != null) {
-		if ("derby".equals(dbVendor))
+		if ("h2".equals(dbVendor))
 			dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
 		else
 			dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);

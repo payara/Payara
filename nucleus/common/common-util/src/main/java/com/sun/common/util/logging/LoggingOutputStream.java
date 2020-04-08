@@ -134,7 +134,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
                 }
             }
         };
-        pump.setName("logging output pump");
+        pump.setName("Logging output pump");
         pump.setDaemon(true);
         pump.start();
     }

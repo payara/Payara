@@ -45,17 +45,16 @@
     <modules>
         <module>api</module>
         <module>server-app</module>
-        <module>client</module>
     </modules>
 
     <!--
-        This test needs to have no dependencies other than the ejb-http-remoting 
+        This test needs to have no dependencies other than the ejb-http-remoting
         module. Make sure that no dependencies are added to the parent.
     -->
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-aggregator</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <artifactId>payara-samples</artifactId>
+        <version>5.202-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
 
@@ -66,18 +65,8 @@
 
     <profiles>
         <profile>
-            <id>payara-server-managed</id>
-            <modules>
-                <module>api</module>
-                <module>server-app</module>
-                <module>client</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>payara-server-remote</id>
-            <modules>
-                <module>api</module>
-                <module>server-app</module>
+        	<id>unstable</id>
+        	<modules>
                 <module>client</module>
             </modules>
         </profile>
@@ -88,7 +77,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M2</version>
                 <inherited>false</inherited>
                 <executions>
                     <execution>
@@ -102,6 +90,11 @@
                                     <excludes>
                                         <exclude>*:*</exclude>
                                     </excludes>
+                                    <includes>
+                                        <include>com.sun:tools-jar</include>
+                                        <include>junit:junit</include>
+                                        <include>org.hamcrest:hamcrest-core</include>
+                                    </includes>
                                     <message>This module cannot inherit any dependencies to keep children's classpaths clean</message>
                                 </bannedDependencies>
                             </rules>

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>minnow</artifactId>
     <name>Glassfish Minnow Featureset</name>
@@ -115,6 +115,12 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>appserver-core</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

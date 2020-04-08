@@ -71,6 +71,7 @@ public class GFDomainXml extends DomainXml {
                         public Thread newThread(Runnable r) {
                             Thread t = Executors.defaultThreadFactory().newThread(r);
                             t.setDaemon(true);
+                            t.setName("GF Domain XML");
                             t.setContextClassLoader(habitat.<ServerContext>getService(ServerContext.class).getCommonClassLoader());
                             return t;
                         }

@@ -41,204 +41,234 @@
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import java.util.Properties;
-import org.glassfish.config.support.Constants;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.glassfish.config.support.Constants;
+import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
 
 /**
  * Implementation for Connection Pool validation.
- * Following validations are done :
- * - Validation of datasource/driver classnames when resource type is not null 
- * - Max pool size to be always higher than steady pool size
- * - Check if statement wrapping is on when certain features are enabled.
- * 
+ *
+ * Following validations are done:
+ * <ul>
+ * <li>Validation of datasource/driver classnames when resource type is not null
+ * <li>Max pool size to be always higher than steady pool size
+ * <li>Check if statement wrapping is on when certain features are enabled.
+ * </lu>
+ *
  * @author Shalini M
  */
-public class JdbcConnectionPoolValidator
-    implements ConstraintValidator<JdbcConnectionPoolConstraint, ResourcePool> {
-    
+public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConnectionPoolConstraint, ResourcePool> {
+
     protected ConnectionPoolErrorMessages poolFaults;
-    
+
+
+    @Override
     public void initialize(final JdbcConnectionPoolConstraint constraint) {
         this.poolFaults = constraint.value();
     }
 
-    public String getParsedVariable(String variableToRetrieve) {
 
-        String[] variableReference = variableToRetrieve.split("=");
-
-        if (variableReference.length == 1) {
-            //We got a system variable as no split occured
-            return System.getProperty(variableReference[0]);
-        }
-
-        String variableToFind = variableReference[1];
-
-        switch (variableReference[0]) {
-            case "ENV":
-                //Check environment variables for requested value
-                String varValue = System.getenv(variableToFind);
-                if (varValue != null && !varValue.isEmpty()) {
-                    return varValue;
-                }
-                break;
-            case "MPCONFIG":
-                //Check microprofile config for requested value
-                Config config = ConfigProvider.getConfig();
-                varValue = config.getValue(variableToFind, String.class);
-                if (varValue != null && !varValue.isEmpty()) {
-                    return varValue;
-                }
-                break;
-        }
-        
-        //If this point is reached, the variable value could not be found
-        return null; 
-    }
-    
     @Override
-    public boolean isValid(final ResourcePool pool,
-        final ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(final ResourcePool pool, final ConstraintValidatorContext context) {
+        if (!JdbcConnectionPool.class.isInstance(pool)) {
+            return true;
+        }
+        // original code allowed this. Why?
+        if (this.poolFaults == null) {
+            return true;
+        }
+        final JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
+        switch (poolFaults) {
+            case POOL_SIZE_STEADY:
+                return validateSteadyPoolSize(jdbcPool);
+            case POOL_SIZE_MAX:
+                return validateMaxPoolSize(jdbcPool);
+            case STMT_WRAPPING_DISABLED:
+                return validateWrapping(jdbcPool);
+            case TABLE_NAME_MANDATORY:
+                return validateTableConnectionValidation(jdbcPool);
+            case CUSTOM_VALIDATION_CLASS_NAME_MANDATORY:
+                return validateClassConnectionValidation(jdbcPool);
+            case RES_TYPE_MANDATORY:
+                return validateResourceType(jdbcPool);
+            default:
+                return true;
+        }
+    }
 
-        if(poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
-            if(pool instanceof JdbcConnectionPool) {
-                
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String maxPoolSize = jdbcPool.getMaxPoolSize();
-                String steadyPoolSize = jdbcPool.getSteadyPoolSize();
-                
-                int maxPoolSizeValue = 0;
-                int steadyPoolSizeValue = 0;
-                
-                if (steadyPoolSize == null) {
-                    steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
-                } else if(steadyPoolSize.startsWith("$")) {
-                    steadyPoolSize = getParsedVariable(steadyPoolSize.substring(2, steadyPoolSize.length() - 1));
-                    if(steadyPoolSize == null) return false;
-                }
-                
-                if (maxPoolSize == null) {
-                    maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
-                } else if(maxPoolSize.startsWith("$")) {
-                    maxPoolSize = getParsedVariable(maxPoolSize.substring(2, maxPoolSize.length() - 1));
-                    if(maxPoolSize == null) return false;
-                }
-                
-                try {
-                    maxPoolSizeValue = Integer.parseInt(maxPoolSize);
-                    steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
-                } catch(NumberFormatException nfe) {
-                    System.out.println("Exception occured whilst parsing value to int: \n - " + nfe.getMessage());
+
+    private boolean validateSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
+        final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        return steadyPoolSize != null && steadyPoolSize >= 0;
+    }
+
+
+    private boolean validateMaxPoolSize(final JdbcConnectionPool jdbcPool) {
+        final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        final String propertyValue = jdbcPool.getMaxPoolSize();
+        final String value = propertyValue == null ? Constants.DEFAULT_MAX_POOL_SIZE : propertyValue;
+        final Integer maxPoolSize = toInteger(resolve(value));
+        if (maxPoolSize == null || maxPoolSize < 1) {
+            return false;
+        }
+        if (steadyPoolSize != null && steadyPoolSize > maxPoolSize) {
+            return false;
+        }
+        return true;
+    }
+
+
+    private boolean validateWrapping(final JdbcConnectionPool jdbcPool) {
+        final String stmtCacheSize = jdbcPool.getStatementCacheSize();
+        final String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
+        final boolean wrappingEnabled = isTrue(jdbcPool.getWrapJdbcObjects());
+        if (!wrappingEnabled && !isEmpty(jdbcPool.getSqlTraceListeners())) {
+            return false;
+        }
+        if (!wrappingEnabled && isPositiveInt(stmtCacheSize)) {
+            return false;
+        }
+        if (!wrappingEnabled && isPositiveInt(stmtLeakTimeout)) {
+            return false;
+        }
+        if (!wrappingEnabled && isTrue(jdbcPool.getStatementLeakReclaim())) {
+            return false;
+        }
+        return true;
+    }
+
+
+    private boolean validateTableConnectionValidation(final JdbcConnectionPool jdbcPool) {
+        if (isTrue(jdbcPool.getIsConnectionValidationRequired())) {
+            if ("table".equals(jdbcPool.getConnectionValidationMethod())) {
+                if (isEmpty((jdbcPool.getValidationTableName()))) {
                     return false;
-                }
-                
-                if (maxPoolSizeValue < steadyPoolSizeValue 
-                        || steadyPoolSizeValue <= 0 
-                        || maxPoolSizeValue <= 0) {
-                    //Value(s) are invalid so return error
-                    return false;
-                }
-            }
-        }
-        
-        if(poolFaults == ConnectionPoolErrorMessages.STMT_WRAPPING_DISABLED) {
-            if(pool instanceof JdbcConnectionPool) {
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String stmtCacheSize = jdbcPool.getStatementCacheSize();
-                String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
-                
-                // PAYARA-661 allow empty "" sql trace listeners
-                if (jdbcPool.getSqlTraceListeners() != null && !jdbcPool.getSqlTraceListeners().isEmpty()) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (stmtCacheSize != null && Integer.parseInt(stmtCacheSize) != 0) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (stmtLeakTimeout != null && Integer.parseInt(stmtLeakTimeout) != 0) {
-                    if (!Boolean.parseBoolean(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (Boolean.valueOf(jdbcPool.getStatementLeakReclaim())) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        if(poolFaults == ConnectionPoolErrorMessages.TABLE_NAME_MANDATORY){
-            if(pool instanceof JdbcConnectionPool){
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                if (Boolean.valueOf(jdbcPool.getIsConnectionValidationRequired())) {
-                    if ("table".equals(jdbcPool.getConnectionValidationMethod())) {
-                        if(jdbcPool.getValidationTableName() == null || jdbcPool.getValidationTableName().equals("")){
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        if(poolFaults == ConnectionPoolErrorMessages.CUSTOM_VALIDATION_CLASS_NAME_MANDATORY){
-            if(pool instanceof JdbcConnectionPool){
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                if (Boolean.valueOf(jdbcPool.getIsConnectionValidationRequired())) {
-                    if ("custom-validation".equals(jdbcPool.getConnectionValidationMethod())) {
-                        if(jdbcPool.getValidationClassname() == null || jdbcPool.getValidationClassname().equals("")){
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (poolFaults == ConnectionPoolErrorMessages.RES_TYPE_MANDATORY) {
-            if (pool instanceof JdbcConnectionPool) {
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String resType = jdbcPool.getResType();
-                String dsClassName = jdbcPool.getDatasourceClassname();
-                String driverClassName = jdbcPool.getDriverClassname();
-                if (resType == null) {
-                    //One of each datasource/driver classnames must be provided.
-                    if ((dsClassName == null || dsClassName.equals("")) &&
-                            (driverClassName == null || driverClassName.equals(""))) {
-                        return false;
-                    } else {
-                        //Check if both are provided and if so, return false
-                        if (dsClassName != null && driverClassName != null) {
-                            return false;
-                        }
-                    }
-                } else if (resType.equals("javax.sql.DataSource") ||
-                        resType.equals("javax.sql.ConnectionPoolDataSource") ||
-                        resType.equals("javax.sql.XADataSource")) {
-                    //Then datasourceclassname cannot be empty
-                    if (dsClassName == null || dsClassName.equals("")) {
-                        return false;
-                    }
-                } else if (resType.equals("java.sql.Driver")) {
-                    //Then driver classname cannot be empty
-                    if (driverClassName == null || driverClassName.equals("")) {
-                        return false;
-                    }
                 }
             }
         }
         return true;
     }
+
+
+    private boolean validateClassConnectionValidation(final JdbcConnectionPool jdbcPool) {
+        if (isTrue(jdbcPool.getIsConnectionValidationRequired())) {
+            if ("custom-validation".equals(jdbcPool.getConnectionValidationMethod())) {
+                if (isEmpty(jdbcPool.getValidationClassname())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    private boolean validateResourceType(final JdbcConnectionPool jdbcPool) {
+        final String resType = jdbcPool.getResType();
+        final String dsClassName = jdbcPool.getDatasourceClassname();
+        final String driverClassName = jdbcPool.getDriverClassname();
+        if (resType == null) {
+            // One of each datasource/driver classnames must be provided.
+            if (isEmpty(dsClassName) && isEmpty(driverClassName)) {
+                return false;
+            }
+            // Check if both are provided and if so, return false
+            if (dsClassName != null && driverClassName != null) {
+                return false;
+            }
+        } else if (resType.equals("javax.sql.DataSource") //
+            || resType.equals("javax.sql.ConnectionPoolDataSource") //
+            || resType.equals("javax.sql.XADataSource")) {
+            if (isEmpty(dsClassName)) {
+                return false;
+            }
+        } else if (resType.equals("java.sql.Driver")) {
+            if (isEmpty(driverClassName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private Integer getSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
+        final String property = jdbcPool.getSteadyPoolSize();
+        return toInteger(resolve(property == null ? Constants.DEFAULT_STEADY_POOL_SIZE : property));
+    }
+
+
+    private String resolve(final String propertyValue) {
+        if (propertyValue.startsWith("$")) {
+            return getParsedVariable(propertyValue.substring(2, propertyValue.length() - 1));
+        }
+        return propertyValue;
+    }
+
+
+    private String getParsedVariable(final String variableToRetrieve) {
+
+        final String[] variableReference = variableToRetrieve.split("=");
+        if (variableReference.length == 1) {
+            // We got a system variable as no split occured
+            return System.getProperty(variableReference[0]);
+        }
+
+        final String variableToFind = variableReference[1];
+        switch (variableReference[0]) {
+            case "ENV":
+                // Check environment variables for requested value
+                String varValue = System.getenv(variableToFind);
+                if (!isEmpty(varValue)) {
+                    return varValue;
+                }
+                break;
+            case "MPCONFIG":
+                // Check microprofile config for requested value
+                final Config config = ConfigProvider.getConfig();
+                varValue = config.getValue(variableToFind, String.class);
+                if (!isEmpty(varValue)) {
+                    return varValue;
+                }
+                break;
+        }
+
+        // If this point is reached, the variable value could not be found
+        return null;
+    }
+
+
+    private boolean isEmpty(final String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+
+    private boolean isPositiveInt(final String value) {
+        try {
+            return !isEmpty(value) && Integer.parseInt(value) > 0;
+        } catch (final NumberFormatException e) {
+            return false;
+        }
+    }
+
+
+    private boolean isTrue(final String value) {
+        return Boolean.parseBoolean(value);
+    }
+
+
+    private Integer toInteger(final String resolvedValue) {
+        if (isEmpty(resolvedValue)) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(resolvedValue);
+        } catch (final NumberFormatException nfe) {
+            return null;
+        }
+    }
 }
-
-
-
-
-

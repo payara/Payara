@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,35 @@
 
 package fish.payara.samples.classpath.embeddedvsjersey;
 
-import org.junit.Test;
+import java.io.IOException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
+import org.glassfish.grizzly.PortRange;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
+import org.junit.Test;
+
+/**
+ * Tests if it is possible to use jersey client with embedded payara on the classpath.
+ * Response does not matter, it is only required to execute the request.
+ */
 public class JerseyClasspathTest {
 
     @Test
-    public void jerseyShouldInitialize() {
-        Client client = ClientBuilder.newClient();
-        client.target("http://localhost:8080").request().buildGet();
+    public void jerseyShouldInitialize() throws IOException {
+        HttpServer server = HttpServer.createSimpleServer();
+        NetworkListener listener = new NetworkListener("my-listener", "127.0.0.1", new PortRange(1025, 65535), true);
+        server.addListener(listener);
+
+        try {
+            server.start();
+    
+            Client client = ClientBuilder.newClient();
+            client.target("http://127.0.0.1:" + listener.getPort()).request().get();
+        } finally {
+            server.shutdownNow();
+        }
     }
 }

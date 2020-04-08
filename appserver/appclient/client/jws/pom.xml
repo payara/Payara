@@ -48,7 +48,6 @@
         <groupId>fish.payara.server.internal.appclient</groupId>
         <artifactId>client</artifactId>
         <version>4.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-jws</artifactId>

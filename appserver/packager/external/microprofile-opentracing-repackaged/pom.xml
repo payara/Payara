@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>microprofile-opentracing-repackaged</artifactId>
@@ -93,7 +93,6 @@
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
-            <version>${microprofile-opentracing.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -128,7 +128,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     // issue 4629. 0 means a bean can remain idle indefinitely.
     private static final int MIN_IDLE_TIMEOUT = 0;
 
-    private String appEJBName_;
+    private final String appEJBName_;
     private MessageBeanClient messageBeanClient_;
 
     private AbstractPool messageBeanPool_;
@@ -140,7 +140,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     private Class<?> messageBeanSubClass_;
 
         // TODO : remove
-    private int statMessageCount = 0;
+    private final int statMessageCount = 0;
 
     private TransactedPoolManager poolMgr;
     private final Class<?> messageListenerType_;
@@ -175,8 +175,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             // access to the message bean class.
             Method[] msgListenerMethods = msgBeanDesc.getMessageListenerInterfaceMethods(loader);
 
-            for (int i = 0; i < msgListenerMethods.length; i++) {
-                Method next = msgListenerMethods[i];
+            for (Method next : msgListenerMethods) {
                 addInvocationInfo(next, MethodDescriptor.EJB_BEAN, null);
             }
 
@@ -273,7 +272,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     }
 
     @Override
-    protected final boolean isCreateHomeFinder(Method method) {
+    protected boolean isCreateHomeFinder(Method method) {
         return false;
     }
 
@@ -398,6 +397,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         return sbuf.toString();
     }
 
+    @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
         if (isBeanManagedTran) {
@@ -414,14 +414,17 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         throw new Exception("Can't set EJB Home on Message-driven bean");
     }
 
+    @Override
     public EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         throw new EJBException("No EJBObject for message-driven beans");
     }
 
+    @Override
     public EJBObjectImpl createEJBObjectImpl() throws CreateException {
         throw new EJBException("No EJBObject for message-driven beans");
     }
 
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
             boolean local) throws RemoveException, EJBException {
         throw new EJBException("not used in message-driven beans");
@@ -492,11 +495,13 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * 18.3.1 says that discarding an EJB means that no methods other than
      * finalize() should be invoked on it.
      */
+    @Override
     protected void forceDestroyBean(EJBContextImpl sc) {
         MessageBeanContextImpl mbc = (MessageBeanContextImpl)sc;
 
-        if (mbc.isInState(BeanState.DESTROYED))
+        if (mbc.isInState(BeanState.DESTROYED)) {
             return;
+        }
 
         // mark context as destroyed
         mbc.setState(BeanState.DESTROYED);
@@ -505,6 +510,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     }
 
     // This particular preInvoke signature not used
+    @Override
     public void preInvoke(EjbInvocation inv) {
         throw new EJBException("preInvoke(Invocation) not supported");
     }
@@ -748,7 +754,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     }
 
     @Override
-    protected EJBContextImpl _constructEJBContextImpl(Object instance) {
+    protected MessageBeanContextImpl _constructEJBContextImpl(Object instance) {
         return new MessageBeanContextImpl(instance, this);
     }
 
@@ -866,7 +872,11 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         return false;
     }
 
+    /**
+     * @deprecated not called and not used in Payara 5
+     */
     // default
+    @Deprecated
     public void activateEJB(Object ctx, Object instanceKey) {
     }
 
@@ -954,7 +964,9 @@ public final class MessageBeanContainer extends BaseContainer implements Message
                         // wait in loop to guard against spurious wake-up
                         do {
                             long timeTillTimeout = maxWaitTime - System.currentTimeMillis();
-                            if (timeTillTimeout <= 0) break;
+                            if (timeTillTimeout <= 0) {
+                                break;
+                            }
                             task.wait(timeTillTimeout);
                         } while (!task.isDone());
                     }
@@ -1051,7 +1063,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
         _logger.log(Level.FINE, "containers.mdb.shutdown_cleanup_start",
                 appEJBName_);
-        monitorOn = false;
         cleanupResources();
         _logger.log(Level.FINE, "containers.mdb.shutdown_cleanup_end",
                 appEJBName_);
@@ -1355,6 +1366,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         return statMessageCount;
     }
 
-    public enum MessageDeliveryType { Message, Timer };
+    public enum MessageDeliveryType { Message, Timer }
 
 }

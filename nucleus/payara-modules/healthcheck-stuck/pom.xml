@@ -46,8 +46,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>healthcheck-stuck</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -70,6 +69,10 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
         </dependency>
     </dependencies>
 

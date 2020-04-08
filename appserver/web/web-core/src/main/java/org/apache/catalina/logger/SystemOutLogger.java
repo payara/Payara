@@ -55,9 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.logger;
-
 
 /**
  * Simple implementation of <b>Logger</b> that writes to System.out.
@@ -67,10 +67,7 @@ package org.apache.catalina.logger;
  * @author Craig R. McClanahan
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:46 $
  */
-
-public class SystemOutLogger
-    extends LoggerBase {
-
+public class SystemOutLogger extends LoggerBase {
 
     // ----------------------------------------------------- Instance Variables
 
@@ -93,10 +90,9 @@ public class SystemOutLogger
      * @param msg A <code>String</code> specifying the message to be written
      *  to the log file
      */
+    @Override
     public void log(String msg) {
-
         System.out.println(msg);
-
     }
 
 

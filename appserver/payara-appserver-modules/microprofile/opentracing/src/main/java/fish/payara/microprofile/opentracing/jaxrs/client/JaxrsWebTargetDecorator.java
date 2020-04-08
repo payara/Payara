@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import java.net.URI;
 import java.util.Map;
+
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
@@ -49,17 +50,17 @@ import javax.ws.rs.core.UriBuilder;
 
 /**
  * Decorator class used for returning a decorated InvocationBuilder.
- * 
+ *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 class JaxrsWebTargetDecorator implements WebTarget {
 
     protected WebTarget webTarget;
-    
+
     public JaxrsWebTargetDecorator(WebTarget webTarget) {
         this.webTarget = webTarget;
     }
-    
+
     @Override
     public URI getUri() {
         return this.webTarget.getUri();
@@ -191,5 +192,5 @@ class JaxrsWebTargetDecorator implements WebTarget {
         webTarget = webTarget.register(component, contracts);
         return this;
     }
-    
+
 }

@@ -40,8 +40,9 @@
 
 package org.glassfish.api.event;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * Extensible list of event types.
@@ -52,34 +53,29 @@ import java.util.Map;
  * @author dochez
  */
 public final class EventTypes<T> {
-    
-    private final static Map<String, EventTypes> EVENTS=new HashMap<String, EventTypes>();
 
-    
+    private static final Map<String, EventTypes<?>> EVENTS = new ConcurrentHashMap<>();
+
     // stock events.
     public static final String SERVER_STARTUP_NAME = "server_startup";
     public static final String SERVER_READY_NAME = "server_ready";
     public static final String PREPARE_SHUTDOWN_NAME = "prepare_shutdown";
     public static final String SERVER_SHUTDOWN_NAME = "server_shutdown";
 
-    public static final EventTypes SERVER_STARTUP = create(SERVER_STARTUP_NAME);
-    public static final EventTypes SERVER_READY = create(SERVER_READY_NAME);
-    public static final EventTypes SERVER_SHUTDOWN = create(SERVER_SHUTDOWN_NAME);
-    public static final EventTypes PREPARE_SHUTDOWN = create(PREPARE_SHUTDOWN_NAME);
+    public static final EventTypes<?> SERVER_STARTUP = create(SERVER_STARTUP_NAME);
+    public static final EventTypes<?> SERVER_READY = create(SERVER_READY_NAME);
+    public static final EventTypes<?> SERVER_SHUTDOWN = create(SERVER_SHUTDOWN_NAME);
+    public static final EventTypes<?> PREPARE_SHUTDOWN = create(PREPARE_SHUTDOWN_NAME);
 
-    public static EventTypes create(String name) {
+    public static EventTypes<?> create(String name) {
         return create(name, null);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> EventTypes<T> create(String name, Class<T> hookType) {
-        synchronized(EVENTS) {
-            if (!EVENTS.containsKey(name)) {
-                EVENTS.put(name, new EventTypes(name, hookType));
-            }
-        }
-        return EVENTS.get(name);
-    }    
-    
+        return (EventTypes<T>) EVENTS.computeIfAbsent(name, key -> new EventTypes<>(key, hookType));
+    }
+
     private final String name;
     private final Class<T> hookType;
 
@@ -87,7 +83,7 @@ public final class EventTypes<T> {
         this.name = name;
         this.hookType = hookType;
     }
-    
+
     public String type() {
         return name;
     }
@@ -96,14 +92,33 @@ public final class EventTypes<T> {
         return hookType;
     }
 
-
+    /**
+     * @param e not null
+     * @return the events hook or null in case the given event is not matching this type
+     * @deprecated Use {@link #onMatch(org.glassfish.api.event.EventListener.Event, Consumer)} instead
+     */
+    @Deprecated
     public T getHook(EventListener.Event<T> e) {
         if (e.is(this)) {
             return e.hook();
         }
         return null;
     }
-    
+
+    /**
+     * Runs the given processor {@link Consumer} with the {@link EventListener.Event#hook()} if the event type matches
+     * this type.
+     *
+     * @param e         the event to process by the processor, not null
+     * @param processor the code to run with the event hook, not null
+     */
+    @SuppressWarnings("unchecked")
+    public void onMatch(EventListener.Event<?> e, Consumer<T> processor) {
+        if (e.is(this)) {
+            processor.accept((T) e.hook());
+        }
+    }
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -115,7 +130,7 @@ public final class EventTypes<T> {
         if (null == o) return false;
         if (getClass() != o.getClass()) return false;
 
-        return name.equals(((EventTypes) o).name);
+        return name.equals(((EventTypes<?>) o).name);
     }
 
     /**
@@ -126,6 +141,6 @@ public final class EventTypes<T> {
     @Override
     public int hashCode() {
         return name.hashCode();
-    }      
-    
+    }
+
 }

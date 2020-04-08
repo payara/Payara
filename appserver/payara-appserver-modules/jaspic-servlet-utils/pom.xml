@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>jaspic-servlet-utils</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -67,7 +67,6 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
         </dependency>
     </dependencies>
 </project>

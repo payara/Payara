@@ -1585,15 +1585,15 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Reconfigures the access log of this VirtualServer with its updated access log related properties.
-     */
+     */ 
     void reconfigureAccessLog(String globalAccessLogBufferSize, String globalAccessLogWriteInterval, ServiceLocator services, Domain domain,
-            boolean globalAccessLoggingEnabled) {
+            boolean globalAccessLoggingEnabled, String globalAccessLogPrefix) {
         try {
             if (accessLogValve.isStarted()) {
                 accessLogValve.stop();
             }
             boolean start = accessLogValve.updateVirtualServerProperties(vsBean.getId(), vsBean, domain, services, globalAccessLogBufferSize,
-                    globalAccessLogWriteInterval);
+                    globalAccessLogWriteInterval, globalAccessLogPrefix);
             if (start && isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
                 enableAccessLogging();
             } else {

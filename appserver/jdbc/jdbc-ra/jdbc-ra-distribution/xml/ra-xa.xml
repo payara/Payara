@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
@@ -147,22 +148,22 @@
                 <config-property>
                     <config-property-name>PortNumber</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>1521</config-property-value>
+                    <config-property-value>9092</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>User</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value>sa</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>Password</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value></config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>DatabaseName</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>testdb</config-property-value>
+                    <config-property-value>test</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>DataSourceName</config-property-name>
@@ -172,7 +173,7 @@
                 <config-property>
                     <config-property-name>Description</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>Derby driver XA Datasource</config-property-value>
+                    <config-property-value>H2 driver XA Datasource</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>NetworkProtocol</config-property-name>
@@ -202,7 +203,7 @@
                 <config-property>
                     <config-property-name>ClassName</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>org.apache.derby.jdbc.ClientXADataSource</config-property-value>
+                    <config-property-value>org.h2.jdbcx.JdbcDataSource</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>ConnectionValidationRequired</config-property-name>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  *
- * @author Andrew Pielage
+ * @author Andrew Pielage (initial)
+ * @author Jan Bernitt (change to pool size)
  */
 @Service(name = "set-fault-tolerance-configuration")
 @PerLookup
@@ -74,42 +75,58 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Sets the Fault Tolerance Configuration")
 })
 public class SetFaultToleranceConfigurationCommand implements AdminCommand {
-    
+
     private static final Logger logger = Logger.getLogger(SetFaultToleranceConfigurationCommand.class.getName());
-    
+
     @Inject
     private Target targetUtil;
-    
-    @Param(optional = true, alias = "managedexecutorservicename")
+
+    @Param(optional = true, alias = "managedexecutorservicename", obsolete = true)
     private String managedExecutorServiceName;
 
-    @Param(optional = true, alias = "managedscheduledexecutorservicename")
+    @Param(optional = true, alias = "managedscheduledexecutorservicename", obsolete = true)
     private String managedScheduledExecutorServiceName;
-    
+
+    @Param(optional = true, alias = "async-max-pool-size")
+    private Integer asyncMaxPoolSize;
+
+    @Param(optional = true, alias = "delay-max-pool-size")
+    private Integer delayMaxPoolSize;
+
+    @Param(optional = true, alias = "async-pool-keep-alive")
+    private Integer _asyncPoolKeepAliveInSeconds;
+
+    @Param(optional = true, alias = "cleanup-interval")
+    private Integer _cleanupIntervalInMinutes;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
-    
+
     @Override
     public void execute(AdminCommandContext acc) {
         Config targetConfig = targetUtil.getConfig(target);
         FaultToleranceServiceConfiguration faultToleranceServiceConfiguration = targetConfig
                 .getExtensionByType(FaultToleranceServiceConfiguration.class);
-        
+
         try {
             ConfigSupport.apply((FaultToleranceServiceConfiguration configProxy) -> {
-                if (managedExecutorServiceName != null) {
-                    configProxy.setManagedExecutorService(managedExecutorServiceName);
+                if (asyncMaxPoolSize != null) {
+                    configProxy.setAsyncMaxPoolSize(asyncMaxPoolSize <= 0 ? null : asyncMaxPoolSize.toString());
                 }
-                
-                if (managedScheduledExecutorServiceName != null) {
-                    configProxy.setManagedScheduledExecutorService(managedScheduledExecutorServiceName);
+                if (delayMaxPoolSize != null) {
+                    configProxy.setDelayMaxPoolSize(delayMaxPoolSize <= 0 ? null : delayMaxPoolSize.toString());
                 }
-                
+                if (_asyncPoolKeepAliveInSeconds != null) {
+                    configProxy.setAsyncPoolKeepAliveInSeconds(_asyncPoolKeepAliveInSeconds.toString());
+                }
+                if (_cleanupIntervalInMinutes != null) {
+                    configProxy.setCleanupIntervalInMinutes(_cleanupIntervalInMinutes.toString());
+                }
                 return null;
             }, faultToleranceServiceConfiguration);
         } catch (TransactionFailure ex) {
             acc.getActionReport().failure(logger, "Failed to update Fault Tolerance configuration", ex);
         }
     }
-    
+
 }

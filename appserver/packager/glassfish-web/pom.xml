@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-web</artifactId>
@@ -148,6 +148,11 @@
                 <dependency>
                     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
                     <artifactId>openid-client-integration</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.server.internal.security</groupId>
+                    <artifactId>realm-stores</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>

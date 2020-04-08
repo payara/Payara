@@ -40,15 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates] -->
 
 <project name="v3-targets" default="all" basedir=".">
     
-    <property name="db.root" value="${glassfish.home}/javadb"/>
+    <property name="db.root" value="${glassfish.home}/h2db"/>
     <property name="db.classpath" value="${db.root}/lib"/>
     <property name="dist.dir" value="${ws.root}/dist/${testsuite.name}"/>
-    <!--<property name="db.classpath" value="${db.root}/lib/derby.jar:${db.root}/lib/derbyclient.jar:${db.root}/lib/derbynet.jar"/>-->
-
 
 <target name="setOSConditions">
   <condition property="isUnix">
@@ -97,21 +95,35 @@
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message">
-	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:connectionAttributes=\;create\=true:Password=APP:User=APP QLJdbcPool"/>
+	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\:h2\:tcp\:\/\/localhost\:9092/~/test|sa\; TestJdbcPool"/>
+    </exec>
+    <echo message="${message}"/>
+</target>
+
+<target name="create-jdbc-resource" depends="setOSConditions,asenv-unix,asenv-windows">
+    <exec executable="${ASADMIN}" outputproperty="message">
+        <arg line="create-jdbc-resource --port 4848 --enabled=true --poolName=TestJdbcPool jdbc/__Test"/>
     </exec>
     <echo message="${message}"/>
 </target>
 
 <target name="ping-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-        <arg line="ping-connection-pool --port 4848 QLJdbcPool"/>
+        <arg line="ping-connection-pool --port 4848 TestJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>
 
+    <target name="delete-jdbc-resource" depends="setOSConditions,asenv-unix,asenv-windows">
+        <exec executable="${ASADMIN}" outputproperty="message1">
+            <arg line="delete-jdbc-resource --port 4848 jdbc/__Test"/>
+        </exec>
+        <echo message="${message1}"/>
+    </target>
+
 <target name="delete-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-	<arg line="delete-jdbc-connection-pool --port 4848 QLJdbcPool"/>
+	<arg line="delete-jdbc-connection-pool --port 4848 TestJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>

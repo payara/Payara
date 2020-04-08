@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.connectors.config.validators;
 
 import org.glassfish.connectors.config.ConnectorConnectionPool;
@@ -49,49 +50,57 @@ import org.glassfish.config.support.Constants;
 
 /**
  * Implementation for Connection Pool validation.
- * Following validations are done :
- * - Validation of datasource/driver classnames when resource type is not null 
- * - Max pool size to be always higher than steady pool size
- * - Check if statement wrapping is on when certain features are enabled.
- * 
+ * Following validations are done:
+ * <ul>
+ * <li>Validation of datasource/driver classnames when resource type is not null
+ * <li>Max pool size to be always higher than steady pool size
+ * <li>Check if statement wrapping is on when certain features are enabled.
+ * </ul>
+ *
  * @author Shalini M
  */
-public class ConnectionPoolValidator
-    implements ConstraintValidator<ConnectionPoolConstraint, ResourcePool> {
-    
+public class ConnectionPoolValidator implements ConstraintValidator<ConnectionPoolConstraint, ResourcePool> {
+
     protected ConnectionPoolErrorMessages poolFaults;
-    
+
+
+    @Override
     public void initialize(final ConnectionPoolConstraint constraint) {
         this.poolFaults = constraint.value();
     }
 
-    @Override
-    public boolean isValid(final ResourcePool pool,
-        final ConstraintValidatorContext constraintValidatorContext) {
 
-        if (poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
-            if (pool instanceof ConnectorConnectionPool) {
-                ConnectorConnectionPool connPool = (ConnectorConnectionPool) pool;
-                String maxPoolSize = connPool.getMaxPoolSize();
-                String steadyPoolSize = connPool.getSteadyPoolSize();
-                if(steadyPoolSize == null) {
-                    steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
-                }
-                if (maxPoolSize == null) {
-                    maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
-                }
-                if (Integer.parseInt(maxPoolSize) <
-                        (Integer.parseInt(steadyPoolSize))) {
-                    //max pool size fault
-                    return false;
-                }                
-            }
+    @Override
+    public boolean isValid(final ResourcePool pool, final ConstraintValidatorContext constraintValidatorContext) {
+        if (!ConnectorConnectionPool.class.isInstance(pool)) {
+            return true;
+        }
+        final ConnectorConnectionPool connPool = (ConnectorConnectionPool) pool;
+        if (poolFaults == ConnectionPoolErrorMessages.POOL_SIZE_STEADY) {
+            return getSteadyPoolSize(connPool) >= 0;
+        } else if (poolFaults == ConnectionPoolErrorMessages.POOL_SIZE_MAX) {
+            final int steadyPoolSize = getSteadyPoolSize(connPool);
+            final int maxPoolSize = getMaxPoolSize(connPool);
+            return maxPoolSize > 0 && maxPoolSize >= steadyPoolSize;
         }
         return true;
     }
+
+
+    private int getSteadyPoolSize(ConnectorConnectionPool pool) {
+        return toInt(pool.getSteadyPoolSize(), Constants.DEFAULT_STEADY_POOL_SIZE);
+    }
+
+
+    private int getMaxPoolSize(final ConnectorConnectionPool pool) {
+        return toInt(pool.getMaxPoolSize(), Constants.DEFAULT_MAX_POOL_SIZE);
+    }
+
+
+    private int toInt(final String valueToParse, final String defaultValue) {
+        if (valueToParse == null) {
+            return Integer.parseInt(defaultValue);
+        }
+        return Integer.parseInt(valueToParse);
+    }
 }
-
-
-
-
-

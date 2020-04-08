@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,9 @@
 package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
-import fish.payara.opentracing.OpenTracingService;
 import fish.payara.requesttracing.jaxrs.client.SpanPropagator;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+
+import java.util.Locale;
 
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.CompletionStageRxInvoker;
@@ -56,11 +55,10 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.util.Locale;
 
 /**
  * Decorator class used for instrumenting asynchronous clients.
- * 
+ *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
@@ -106,7 +104,7 @@ class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
     public AsyncInvoker async() {
         // Instrument invocation builder with OpenTracing
         instrumentInvocationBuilder();
-        
+
         // Return the asynchronous invoker - end of the decorated chain.
         return this.invocationBuilder.async();
     }

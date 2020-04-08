@@ -55,13 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.logging.Level;
@@ -106,7 +106,7 @@ public final class PasswdUserDatabase
     /**
      * The set of home directories for all defined users, keyed by username.
      */
-    private Hashtable<String, String> homes = new Hashtable<String, String>();
+    private final Hashtable<String, String> homes = new Hashtable<String, String>();
 
 
     /**
@@ -121,10 +121,9 @@ public final class PasswdUserDatabase
     /**
      * Return the UserConfig listener with which we are associated.
      */
+    @Override
     public UserConfig getUserConfig() {
-
         return (this.userConfig);
-
     }
 
 
@@ -133,6 +132,7 @@ public final class PasswdUserDatabase
      *
      * @param userConfig The new UserConfig listener
      */
+    @Override
     public void setUserConfig(UserConfig userConfig) {
 
         this.userConfig = userConfig;
@@ -149,20 +149,18 @@ public final class PasswdUserDatabase
      *
      * @param user User for which a home directory should be retrieved
      */
+    @Override
     public String getHome(String user) {
-
         return homes.get(user);
-
     }
 
 
     /**
      * Return an enumeration of the usernames defined on this server.
      */
+    @Override
     public Enumeration<String> getUsers() {
-
         return (homes.keys());
-
     }
 
 

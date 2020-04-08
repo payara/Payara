@@ -43,20 +43,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.samples.ejb-http-remoting</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>server-app</artifactId>
     <packaging>war</packaging>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <name>Payara Samples - EJB http remoting - server application</name>
 
     <dependencies>
         <dependency>
@@ -64,21 +60,10 @@
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>8.0.1</version>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.2</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>

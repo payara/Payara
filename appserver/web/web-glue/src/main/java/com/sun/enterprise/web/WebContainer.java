@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -48,6 +48,7 @@ import static com.sun.enterprise.web.Constants.ACCESS_LOGGING_ENABLED;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_PROPERTY;
 import static com.sun.enterprise.web.Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_PREFIX;
 import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
 import static com.sun.enterprise.web.Constants.ERROR_REPORT_VALVE;
 import static com.sun.enterprise.web.Constants.SSO_ENABLED;
@@ -179,7 +180,6 @@ import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -209,6 +209,8 @@ import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import com.sun.enterprise.v3.services.impl.ContainerMapper;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
@@ -216,7 +218,7 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
-import org.glassfish.deployment.common.DeploymentProperties;
+import java.util.Optional;
 
 /**
  * Web container service
@@ -259,7 +261,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private ComponentEnvManager componentEnvManager;
 
     @Inject
-    @Optional
+    @org.jvnet.hk2.annotations.Optional
     private DasConfig dasConfig;
 
     @Inject
@@ -281,7 +283,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private JavaEEIOUtils javaEEIOUtils;
 
     @Inject
-    @Optional
+    @org.jvnet.hk2.annotations.Optional
     private JCDIService cdiService;
 
     @Inject
@@ -297,6 +299,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Transactions transactions;
+
+    @Inject
+    private HotDeployService hotDeployService;
 
     @Inject
     private LoggingRuntime loggingRuntime;
@@ -328,6 +333,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     protected String globalAccessLogWriteInterval;
 
+    /**
+     * AccessLog prefix
+     */
+    protected String globalAccessLogPrefix;
+    
     /**
      * The default-redirect port
      */
@@ -1071,6 +1081,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         globalAccessLoggingEnabled = ConfigBeansUtilities.toBoolean(httpService.getAccessLoggingEnabled());
         globalAccessLogWriteInterval = httpService.getAccessLog().getWriteIntervalSeconds();
         globalAccessLogBufferSize = httpService.getAccessLog().getBufferSizeBytes();
+        globalAccessLogPrefix = httpService.getAccessLog().getPropertyValue(Constants.ACCESS_LOG_PREFIX);
         if (httpServiceProps != null) {
             for (Property httpServiceProp : httpServiceProps) {
                 String propName = httpServiceProp.getName();
@@ -1204,7 +1215,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         PEAccessLogValve accessLogValve = virtualServer.getAccessLogValve();
         boolean startAccessLog = accessLogValve.configure(
                 virtualServerId, vsBean, httpService, domain, serviceLocator, webContainerFeatureFactory, globalAccessLogBufferSize,
-                globalAccessLogWriteInterval);
+                globalAccessLogWriteInterval, globalAccessLogPrefix);
         
         if (startAccessLog && virtualServer.isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
             virtualServer.addValve((GlassFishValve) accessLogValve);
@@ -1540,7 +1551,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @return
      */
     public List<Result<WebModule>> loadWebModule(WebModuleConfig webModuleConfig, String j2eeApplication, Properties deploymentProperties) {
-        List<Result<WebModule>> results = new ArrayList<Result<WebModule>>();
+        List<Result<WebModule>> results = new ArrayList<>();
         
         String virtualServerIds = webModuleConfig.getVirtualServers();
         List<String> virtualServers = parseStringList(virtualServerIds, " ,");
@@ -1692,7 +1703,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         Map<String, AdHocServletInfo> adHocSubtrees = null;
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
-              Boolean hotDeploy = dc != null ? dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class) : false;
+            Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
             if (webModule instanceof AdHocWebModule) {
                 /*
                  * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
@@ -1717,13 +1728,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  */
                 webModule.setAvailable(true);
                 return webModule;
-            } else if(Boolean.TRUE.equals(hotDeploy)){
+            } else if (appState.get().isActive()) {
                 webModule.stop();
-                _embedded.updateContext(webModule,
-                        virtualServer.getDefaultContextXmlLocation(),
-                        virtualServer.getDefaultWebXmlLocation(),
-                        useDOLforDeployment, webModuleConfig);
-                processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+                if (webModule.getWebModuleConfig() != webModuleConfig
+                        || webModule.getWebBundleDescriptor() != webModuleConfig.getDescriptor()) {
+                    _embedded.updateContext(webModule,
+                            virtualServer.getDefaultContextXmlLocation(),
+                            virtualServer.getDefaultWebXmlLocation(),
+                            useDOLforDeployment, webModuleConfig);
+                    processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+                }
+                processWebAppClassLoader(webModule, webModuleConfig);
                 webModule.start();
                 return webModule;
             } else {
@@ -1799,6 +1814,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setParentClassLoader(parentLoader);
 
        processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
+       processWebAppClassLoader(webModule, webModuleConfig);
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
@@ -1894,8 +1910,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             webModule.setAlternateDocBases(virtualServer.getProperties());
         }
 
+        // Configure the session manager and other related settings
+        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
+    }
+
+    private void processWebAppClassLoader(WebModule webModule, WebModuleConfig webModuleConfig) {
+        WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
+
         // Configure the class loader delegation model, classpath etc
-        Loader loader = webModule.configureLoader(iasBean);
+        Loader loader = webModule.configureLoader(webModule.getIasWebAppConfigBean());
 
         // Set the class loader on the DOL object
         if (webBundleDescriptor != null && webBundleDescriptor.hasWebServices()) {
@@ -1907,9 +1930,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 ((ContextConfig) listener).setClassLoader(webModuleConfig.getAppClassLoader());
             }
         }
-
-        // Configure the session manager and other related settings
-        webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
     }
     
     private List<String> getServletNames(WebBundleDescriptor webBundleDescriptor) {
@@ -2568,7 +2588,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             updateHostProperties(vsBean, prop.getName(), prop.getValue(), securityService, virtualServer);
         }
         virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-        virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+        virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
 
         // old listener names
         List<String> oldListenerList = StringUtils.parseStringList(vsBean.getNetworkListeners(), ",");
@@ -2720,13 +2740,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         } else if ("setCacheControl".equals(name)) {
             virtualServer.configureCacheControl(value);
         } else if (ACCESS_LOGGING_ENABLED.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix); 
+        } else if (ACCESS_LOG_PREFIX.equals(name)) {
+            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if ("allowRemoteHost".equals(name) || "denyRemoteHost".equals(name)) {
             virtualServer.configureRemoteHostFilterValve();
         } else if ("allowRemoteAddress".equals(name) || "denyRemoteAddress".equals(name)) {
@@ -2771,7 +2793,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         globalAccessLogWriteInterval = httpService.getAccessLog().getWriteIntervalSeconds();
         globalAccessLogBufferSize = httpService.getAccessLog().getBufferSizeBytes();
         globalAccessLoggingEnabled = ConfigBeansUtilities.toBoolean(httpService.getAccessLoggingEnabled());
-
+        globalAccessLogPrefix = httpService.getAccessLog().getPropertyValue(Constants.ACCESS_LOG_PREFIX);
         // for availability-service.web-container-availability
         webContainerFeatureFactory = getWebContainerFeatureFactory();
 
@@ -2779,7 +2801,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             VirtualServer vs = (VirtualServer) getEngine().findChild(virtualServer.getId());
             if (vs != null) {
                 vs.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled);
+                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
                 updateHost(virtualServer);
             }
         }

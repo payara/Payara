@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -88,8 +88,8 @@ import com.sun.enterprise.util.StringUtils;
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean = Nodes.class,
-        opType = POST, 
-        path = "create-node-config", 
+        opType = POST,
+        path = "create-node-config",
         description = "Create Node Config")
 })
 public class CreateNodeConfigCommand implements AdminCommand {
@@ -105,7 +105,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
 
     @Param(name = "installdir", optional = true)
     String installdir;
-    
+
     @Inject
     private CommandRunner commandRunner;
 
@@ -126,14 +126,14 @@ public class CreateNodeConfigCommand implements AdminCommand {
             if (!actualInstallDir.exists()) {
                 report.setMessage(Strings.get("invalid.installdir", installdir));
                 report.setActionExitCode(FAILURE);
-                
+
                 return;
             }
         }
-        
+
         CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_create-node", report, context.getSubject());
         ParameterMap commandParameters = new ParameterMap();
-        
+
         commandParameters.add("DEFAULT", name);
         if (StringUtils.ok(nodedir)) {
             commandParameters.add(PARAM_NODEDIR, nodedir);
@@ -145,7 +145,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
             commandParameters.add(PARAM_NODEHOST, nodehost);
         }
         commandParameters.add(PARAM_TYPE, "CONFIG");
-        
+
         commandInvocation.parameters(commandParameters);
         commandInvocation.execute();
 

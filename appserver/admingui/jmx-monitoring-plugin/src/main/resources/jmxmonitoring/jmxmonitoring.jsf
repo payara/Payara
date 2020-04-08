@@ -2,7 +2,7 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,24 +50,36 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <event>
         <!beforeCreate
             
-        getRequestValue(key="configName" value="#{pageSession.configName}");
-         setPageSessionAttribute(key="JMXMONITORING_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration"); 
-
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-jmx-monitoring-configuration?target=#{pageSession.configName}"  
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="JMXMONITORING_CONFIG_URL", value="#{pageSession.parentUrl}/monitoring-service-configuration"); 
+        setSessionAttribute(key="jmxConfigSubtabs" value="jmxConfigGeneralSubTab");
+         
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-jmx-monitoring-configuration?target=#{pageSession.encodedConfigName}"  
                 method="GET" result="#{requestScope.resp}"); 
                 
         gf.restRequest(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}/monitored-attribute.json" method="GET" result="#{requestScope.propTable}")
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.monitoredAttributes}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.jmxmonitoringConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedConfigName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+        
         if (#{pageSession.valueMap['enabled']}=true) {
-            setPageSessionAttribute(key="enabledSelected", value="true");
+            setPageSessionAttribute(key="jmxLoggingEnabledSelected", value="true");
         }
 
+        setPageSessionAttribute(key="AMX_URL", value="#{pageSession.parentUrl}/amx-configuration");
+        gf.getEntityAttrs(endpoint="#{pageSession.AMX_URL}", valueMap="#{pageSession.amxMap}");
+        mapPut(map="#{pageSession.amxMap}" key="target" value="#{pageSession.encodedConfigName}"); 
+        setPageSessionAttribute(key="amxEnabledSelected", value="false");
+        if (#{pageSession.amxMap['enabled']}=true) {
+            setPageSessionAttribute(key="amxEnabledSelected", value="true");
+        }
+        
+        setPageSessionAttribute(key="amxDynamic", value="true");
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
         
@@ -79,11 +91,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         }
         py.sortHealthcheckEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
-
+        
         />
     </event>
              <sun:form id="propertyForm">
 #include "/common/monitor/monitoringConfigTabs.inc"
+#include "/jmxmonitoring/jmxmonitoringSubTabs.inc
 #include "/common/shared/alertMsg.inc"
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njmx.jmxmonitoring.Title}" helpText="$resource{i18njmx.jmxmonitoring.PageHelp}">
@@ -92,17 +105,23 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                  <!command
-                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.jmxLoggingEnabledSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                     mapPut(map="#{pageSession.amxMap}" key="enabled" value="#{pageSession.amxEnabledSelected}");
+                     mapPut(map="#{pageSession.amxMap}" key="dynamic" value="#{pageSession.amxDynamic}");
                      prepareSuccessfulMsg();
                      gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-jmx-monitoring-configuration" 
                      attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
 
+                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-amx-enabled" 
+                     attrs="#{pageSession.amxMap}" convertToFalse="#{pageSession.convertToFalseList}"
+                     );
+                    
                      if (#{pageSession.hasPropertyTable}) {
                         javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
                      }
-                     py.updateNotifiers(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                     py.updateNotifiers(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.encodedConfigName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
 
                     />
             </sun:button>
@@ -111,19 +130,29 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <!-- PropertySheet .... -->
     <sun:propertySheet id="propertySheet">			 
         <!-- Text Field section -->
-        #include "/common/shared/configNameSection.inc"
-        <sun:propertySheetSection id="propertSectionTextField">
+#include "/common/shared/configNameSection.inc"
 
-            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Enabled}" helpText="$resource{i18njmx.jmxmonitoring.EnabledHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
+        <sun:propertySheetSection id="amxPropertySection" label="$resource{i18njmx.jmxmonitoring.AMXTitle}">
+            <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.AMXEnabled}" helpText="$resource{i18njmx.jmxmonitoring.AMXEnabledHelp}">
+                <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxEnabledSelected}" selectedValue="true"/>
             </sun:property>
-            <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.DynamicHelp}">
+            <sun:property id="amxDynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.AMXDynamic}" helpText="$resource{i18njmx.jmxmonitoring.AMXDynamicHelp}">
+                <sun:checkbox id="amxDynamic" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxDynamic}" selectedValue="true"/>
+            </sun:property>
+        </sun:propertySheetSection>
+
+        <sun:propertySheetSection id="jmxMonitoringLoggingPropertySection" label="$resource{i18njmx.jmxmonitoring.logging.Title}">
+
+            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.logging.Enabled}" helpText="$resource{i18njmx.jmxmonitoring.logging.EnabledHelp}">
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.jmxLoggingEnabledSelected}" selectedValue="true"/>
+            </sun:property>
+            <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.logging.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.logging.DynamicHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
             </sun:property>
-            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.TimeLabel}" helpText="$resource{i18njmx.jmxmonitoring.TimeLabelHelpText}">
+            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.logging.TimeLabel}" helpText="$resource{i18njmx.jmxmonitoring.logging.TimeLabelHelpText}">
                 <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['logfrequency']}"/>
             </sun:property>                            
-            <sun:property id="logfrequencyunitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.UnitLabelHelp}">
+            <sun:property id="logfrequencyunitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.logging.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.logging.UnitLabelHelp}">
                 <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['logfrequencyunit']}" 
                               labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
             </sun:property>                        
@@ -145,7 +174,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text.prefix}" />
                 <sun:hyperlink
                     toolTip="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text}"
-                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                    url="/payaraExtras/notification/notification.jsf?configName=#{encodedConfigName}">
                     <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text}" />
                 </sun:hyperlink>
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text.suffix}" />

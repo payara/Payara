@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -62,18 +63,22 @@ public final class IterableAdapter<T> implements Iterable<T> {
         this.en = en;
     }
 
+    @Override
     public Iterator<T> iterator() {
 
         return new Iterator<T>() {
 
+            @Override
             public boolean hasNext() {
                 return en.hasMoreElements();
             }
 
+            @Override
             public T next() {
                 return en.nextElement();
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException(
                     "remove not supported");

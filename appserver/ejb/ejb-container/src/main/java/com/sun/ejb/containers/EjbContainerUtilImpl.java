@@ -43,6 +43,7 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.base.io.EJBObjectInputStreamHandler;
 import com.sun.ejb.base.io.EJBObjectOutputStreamHandler;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -54,6 +55,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
@@ -83,6 +85,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.Synchronization;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -494,6 +497,19 @@ public class EjbContainerUtilImpl
                     _logger.log(Level.FINE, "Found {0}", config);
                 }
                 if (config != null) {
+                    ejbt = config.getExtensionByType(EjbContainer.class).getEjbTimerService();
+                }
+            } else if (domain.getDeploymentGroupNamed(target) != null) {
+                DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+                List<Server> instances = deploymentGroup.getInstances();
+                if (instances.isEmpty()) {
+                    _logger.log(Level.WARNING,
+                            "Deployment targets deployment group {0} that has no instances. Cannot instantiate timer service",
+                            target);
+                } else {
+                    Config config = instances.get(0).getConfig();
+                    _logger.log(Level.INFO,
+                            "Timer Service configuration {0} will be used to prepare timers", config.getName());
                     ejbt = config.getExtensionByType(EjbContainer.class).getEjbTimerService();
                 }
             }

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-jpa</artifactId>
     <name>Glassfish JPA Package</name>
@@ -159,7 +159,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-            <version>${eclipselink.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>

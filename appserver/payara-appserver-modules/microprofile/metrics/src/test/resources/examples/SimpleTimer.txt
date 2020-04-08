@@ -1,0 +1,5 @@
+# TYPE application_response_time_total counter
+# HELP application_response_time_total The number of calls to this REST endpoint #(1)
+application_response_time_total 12
+# TYPE application_response_time_elapsedTime_seconds gauge
+application_response_time_elapsedTime_seconds 12.3

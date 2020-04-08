@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-metrics</artifactId>
@@ -84,12 +84,10 @@
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
-            <version>${microprofile-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -109,7 +107,20 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

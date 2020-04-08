@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.web;
 
 /**
@@ -110,6 +110,8 @@ public final class Constants {
 
     public static final String ACCESS_LOG_WRITE_INTERVAL_PROPERTY =
         "accessLogWriteInterval";
+    
+    public static final String ACCESS_LOG_PREFIX = "accessLogPrefix";
 
     public static final String ACCESS_LOGGING_ENABLED = "accessLoggingEnabled";
 

@@ -46,17 +46,13 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>console-web-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Admin Console Web Container Plugin</name>
     <description>Web container plugin bundle for GlassFish Admin Console</description>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
 
     <build>
         <plugins>
@@ -115,6 +111,10 @@
             <artifactId>web-gui-plugin-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

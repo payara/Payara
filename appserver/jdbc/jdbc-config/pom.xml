@@ -44,8 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jdbc</groupId>
         <artifactId>jdbc</artifactId>
-        <version>5.194-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jdbc-config</artifactId>
@@ -53,7 +52,7 @@
     <name>JDBC Config Module</name>
 
     <dependencies>
-	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
@@ -71,6 +70,17 @@
             <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
-	</dependency>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>4.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

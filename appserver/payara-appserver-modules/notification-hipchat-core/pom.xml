@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.194-SNAPSHOT</version>
+        <version>5.202-SNAPSHOT</version>
     </parent>
     <artifactId>notification-hipchat-core</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -61,15 +61,11 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee.api.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

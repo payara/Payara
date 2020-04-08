@@ -38,19 +38,21 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -63,12 +65,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
-import org.glassfish.admin.rest.utils.ResourceUtil;
+
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+
 import org.glassfish.admin.rest.resources.TemplateExecCommand;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.ParameterMap;
@@ -127,7 +135,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         RestActionReporter actionReport = new RestActionReporter();
         getSystemProperties(properties, getEntity(), false);
 
-        actionReport.getExtraProperties().put("systemProperties", new ArrayList(properties.values()));
+        actionReport.getExtraProperties().put("systemProperties", new ArrayList<>(properties.values()));
         if (properties.isEmpty()) {
             actionReport.getTopMessagePart().setMessage("Nothing to list."); // i18n
         }
@@ -136,13 +144,14 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     @POST
     public Response create(Map<String, String> data) {
-	Response resp = deleteRemovedProperties(data);
-        return (resp == null) ? saveProperties(data) : resp;
+        return saveProperties(data);
     }
 
     @PUT
     public Response update(Map<String, String> data) {
-        return saveProperties(data);
+        data.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().isEmpty());
+        Response resp = deleteRemovedProperties(data.keySet());
+        return (resp == null) ? saveProperties(data) : resp;
     }
 
     @Path("{Name}/")
@@ -240,28 +249,61 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return null;
     }
 
-    protected String convertPropertyMapToString(Map<String, String> data) {
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            final String value = entry.getValue();
-            if ((value != null) && !value.isEmpty()) {
-                options.append(sep)
-                        .append(entry.getKey())
-                        .append("=")
-                        .append(value.replaceAll(":", "\\\\:").replaceAll("=", "\\\\="));
-                sep = ":";
-            }
-        }
-
-        return options.toString();
-    }
-
+    /**
+     * Saves the passed map of system properties. Any entry with a null or empty
+     * value will be deleted with the delete-system-property command, and the rest
+     * will then be created with create-system-properties.
+     * 
+     * @param data a map of properties to create or delete
+     * @return the result of the command
+     */
     protected Response saveProperties(Map<String, String> data) {
         return saveProperties(null, data);
     }
 
+    /**
+     * Saves the passed map of system properties. Any entry with a null or empty
+     * value will be deleted with the delete-system-property command, and the rest
+     * will then be created with create-system-properties.
+     * 
+     * @param parent the name of the parent object of the target
+     * @param data   a map of properties to create or delete
+     * @return the result of the command
+     */
     protected Response saveProperties(String parent, Map<String, String> data) {
+
+        // Prepare all empty properties for explicit deletion
+        Collection<String> emptyProps = new HashSet<>();
+        Iterator<Entry<String, String>> dataIterator = data.entrySet().iterator();
+        while (dataIterator.hasNext()) {
+            Entry<String, String> dataEntry = dataIterator.next();
+            String value = dataEntry.getValue();
+            if (value == null || value.isEmpty()) {
+                dataIterator.remove();
+                emptyProps.add(dataEntry.getKey());
+            }
+        }
+
+        // Delete the prepared properties for deletion
+        if (!emptyProps.isEmpty()) {
+            Response response = deleteProperties(parent, emptyProps);
+            if (data.isEmpty() || response.getStatus() != HttpURLConnection.HTTP_OK) {
+                return response;
+            }
+        }
+
+        return createProperties(null, data);
+    }
+
+    /**
+     * Create some system properties using the create-system-properties asadmin
+     * command.
+     * 
+     * @param parent the name of the parent object of the target
+     * @param data   a map of properties to create
+     * @return the result of the command
+     */
+    protected Response createProperties(String parent, Map<String, String> data) {
         String propertiesString = convertPropertyMapToString(data);
 
         data = new HashMap<String, String>();
@@ -280,6 +322,54 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return Response.status(status).entity(results).build();
     }
 
+    /**
+     * Delete some system properties using the delete-system-property asadmin
+     * command and aggregating the results.
+     * 
+     * @param parent    the name of the parent object of the target
+     * @param propNames the names of the properties to delete
+     * @return the result of the commands
+     */
+    protected Response deleteProperties(String parent, Collection<String> propNames) {
+        int status = HttpURLConnection.HTTP_OK;
+
+        // Prepare a report for aggregating results
+        RestActionReporter report = new RestActionReporter();
+        report.setActionExitCode(ExitCode.SUCCESS);
+        report.setMessage("");
+
+        for (String propName : propNames) {
+            // Delete the property
+            Response response = deleteProperty(null, propName);
+
+            ActionReportResult result = (ActionReportResult) response.getEntity();
+            ActionReport resultReport = result.getActionReport();
+            ExitCode responseExitCode = resultReport.getActionExitCode();
+
+            // Put the results into the aggregator report
+            if (!responseExitCode.equals(ExitCode.SUCCESS)) {
+                report.setActionExitCode(responseExitCode);
+                if (responseExitCode.equals(ExitCode.FAILURE)) {
+                    status = HttpURLConnection.HTTP_INTERNAL_ERROR;
+                }
+            }
+            report.getExtraProperties().putAll(resultReport.getExtraProperties());
+            report.setMessage((report.getMessage() + "\n" + resultReport.getMessage()).trim());
+            if (response.getStatus() != HttpURLConnection.HTTP_OK){
+                return response;
+            }
+        }
+
+        return Response.status(status).entity(report).build();
+    }
+
+    /**
+     * Delete a system property using the delete-system-property asadmin command.
+     * 
+     * @param parent   the name of the parent object of the target
+     * @param propName the name of the property to delete
+     * @return the result of the command
+     */
     protected Response deleteProperty(String parent, String propName) {
         ParameterMap pm = new ParameterMap();
         pm.add("DEFAULT", propName);
@@ -296,8 +386,13 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return Response.status(status).entity(results).build();
     }
 
-    //returns null if successful or the Response which contains the error msg.
-    protected Response deleteRemovedProperties(Map<String,String> newProps) {
+    /**
+     * Delete any properties not contained in the passed collection.
+     * 
+     * @param newProps the properties to not delete
+     * @return null if successful or a Response which contains the error message
+     */
+    private Response deleteRemovedProperties(Collection<String> newProps) {
         List<String> existingList = new ArrayList<>();
         Dom parent = getEntity();
         List<Dom> existingProps;
@@ -314,7 +409,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
         //delete the props thats no longer in the new list.
         for(String onePropName : existingList){
-            if (!newProps.containsKey(onePropName)){
+            if (!newProps.contains(onePropName)){
                 Response resp = deleteProperty(null, onePropName);
                 if (resp.getStatus() != HttpURLConnection.HTTP_OK){
                     return resp;
@@ -322,5 +417,22 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
             }
         }
         return null;
+    }
+
+    protected String convertPropertyMapToString(Map<String, String> data) {
+        StringBuilder options = new StringBuilder();
+        String sep = "";
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            final String value = entry.getValue();
+            if ((value != null) && !value.isEmpty()) {
+                options.append(sep)
+                        .append(entry.getKey())
+                        .append("=")
+                        .append(value.replaceAll(":", "\\\\:").replaceAll("=", "\\\\="));
+                sep = ":";
+            }
+        }
+
+        return options.toString();
     }
 }

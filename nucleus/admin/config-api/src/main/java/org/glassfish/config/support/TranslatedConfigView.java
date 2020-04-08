@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -143,7 +144,7 @@ public class TranslatedConfigView implements ConfigView {
 
             while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String matchValue = m3.group(2).trim();
-                Config config = ConfigProvider.getConfig();
+                Config config = configResolver().getConfig();
                 Optional<String> newValue = config.getOptionalValue(matchValue,String.class);
                 if (newValue != null && newValue.isPresent()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
@@ -251,6 +252,15 @@ public class TranslatedConfigView implements ConfigView {
             );
         }
         return domainPasswordAliasStore;
+    }
+
+    private static ConfigProviderResolver configResolver() {
+        if (habitat != null) {
+            return AccessController.doPrivileged((PrivilegedAction<ConfigProviderResolver>)
+                    () -> habitat.getService(ConfigProviderResolver.class));
+        } else {
+            throw new IllegalStateException("Trying to access MP Config before Service Locator started");
+        }
     }
     
    /**

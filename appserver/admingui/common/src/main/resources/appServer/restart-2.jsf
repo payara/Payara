@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [Payara Foundation] 
+    Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
 -->
 
 <!-- restart-2.jsf -->
@@ -90,57 +90,13 @@
     </tr>
     <tr>
       <td class="LogMidBnd">&nbsp;</td>
-      <td class="LogCntTd" style="background-image: url(/resource/images/backimage.jpg);background-repeat:no-repeat;background-position:left top;" height="435" align="center" valign="middle">
-      <!--<td class="LogCntTd" style="background-repeat:no-repeat;background-position:left top;" height="435" align="center" valign="middle">-->
-        <table border="0" background="/resource/images/dot.gif" cellpadding="0" cellspacing="0" width="100%" title="">
-          <tr>
-            <td width="150"><img src="/resource/images/dot.gif" width="150" height="245" alt="" /></td>
-            <td width="415" valign="top" align="left">&nbsp;
-
-              <table border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td><div class="logLbl"><span class="LblLev2Txt">
-</f:verbatim>
-                       <sun:staticText text="$resource{i18n.restart.RestartHeading}  "  />
-<f:verbatim>
-                    </span></div></td>
-                </tr>
-                <tr>
-                    <td><div class="logLblLst"><span class="LblLev2Txt">
-                </span></div></td>
-                </tr>
-                <tr>
-
-                    <td><div class="logLbl"><span class="LblLev2Txt">
-</f:verbatim>
-                    <sun:staticText text="#{pageSession.url2}" >
-                        <!beforeCreate
-                            //we have to get the scheme and port number from domain.xml instead of from #{request} because user may have changed this.
-                            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/network-config/network-listeners/network-listener/admin-listener", valueMap="#{requestScope.portMap}");
-                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/network-config/network-listeners/network-listener/admin-listener/find-http-protocol"
-                                   method="GET"
-                                   result="#{requestScope.output}" );
-                            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/network-config/protocols/protocol/#{requestScope.output.data.properties.protocol}", valueMap="#{requestScope.schemeMap}");
-                            setAttribute(key="scheme" value="http");
-                            if(#{requestScope.schemeMap.securityEnabled}){
-                                setAttribute(key="scheme", value="https");
-                            }
-                            setAttribute(key="url" value="#{requestScope.scheme}://#{request.serverName}:#{requestScope.portMap.port}");
-                            setPageSessionAttribute(key="url2", value="$resource{i18n.restart.RestartContinue, #{requestScope.url}}")
-                        />
-                    </sun:staticText>
-<f:verbatim>
-                    </span></div></td>
-                </tr>
-              </table>
-            </td>
-          <td>&nbsp;</td>
-          </tr>
-        </table>
-      </td>
+      </f:verbatim>
+        <event>
+            <!afterCreate
+                includeFirstIntegrationPoint(type="fish.payara.admingui:restarttd" root="$this{component}");
+            />
+        </event>
+      <f:verbatim>
       <td class="LogMidBnd">&nbsp;</td>
     </tr>
     <tr class="LogBotBnd">
