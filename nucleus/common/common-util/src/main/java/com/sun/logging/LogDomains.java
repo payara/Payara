@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * Class LogDomains
  */
 public class LogDomains {
-    
+
     private LogDomains() {}
 
     /**
@@ -298,41 +298,46 @@ public class LogDomains {
     public static final String PAAS_LOGGER = DOMAIN_ROOT + "org.glassfish.paas";
 
     /**
-     * Returns initialized logger using resource bundle found by the class's
-     * classloader.
+     * Returns initialized logger using resource bundle found by the class's classloader. <br>
+     * Logger name will be constructed as namePrefix.clazz.getName()
      *
-     * @param clazz
-     * @param name
-     * @return
+     * @param clazz - owner of the logger instance.
+     * @param namePrefix - logger name prefix
+     * @return {@link Logger}
      */
-    public static Logger getLogger(final Class clazz, final String namePrefix) {
+    public static Logger getLogger(final Class<?> clazz, final String namePrefix) {
         return getLogger(clazz, namePrefix, true);
     }
 
 
     /**
-     * Returns initialized logger. If the resourceBundleLookup is true, tries to
-     * find and load the LogStrings.properties via the clazz's classloader.
+     * Returns initialized logger. If the resourceBundleLookup is true, tries to find and load the
+     * LogStrings.properties via the clazz's classloader. <br>
+     * Logger name will be constructed as namePrefix.clazz.getName()
      *
-     * @param clazz
-     * @param name
-     * @return
+     * @param clazz - owner of the logger instance.
+     * @param namePrefix - logger name prefix
+     * @param resourceBundleLookup - if true, this call will directly try to find the resource
+     *            bundle for the logger.
+     * @return {@link Logger}
      */
-    public static Logger getLogger(final Class clazz, final String namePrefix, final boolean resourceBundleLookup) {
-        final ClassLoader contextClassLoader = resourceBundleLookup ? clazz.getClassLoader() : null;
-        return getLogger(clazz, namePrefix, contextClassLoader);
+    public static Logger getLogger(final Class<?> clazz, final String namePrefix, final boolean resourceBundleLookup) {
+        final ClassLoader resourceBundleLoader = resourceBundleLookup ? clazz.getClassLoader() : null;
+        return getLogger(clazz, namePrefix, resourceBundleLoader);
     }
 
+
     /**
-     * Returns initialized logger. If the resourceBundleLoader is not null,
-     * tries to find and load the LogStrings.properties.
+     * Returns initialized logger. If the resourceBundleLoader is not null, tries to find and load
+     * the LogStrings.properties.
      *
-     * @param clazz
-     * @param namePrefix
-     * @param resourceBundleLoader
-     * @return
+     * @param clazz - owner of the logger instance.
+     * @param namePrefix - logger name prefix
+     * @param rbLoader - if not null, this call will directly try to find the resource bundle
+     *            for thelogger.
+     * @return {@link Logger}
      */
-    public static Logger getLogger(final Class clazz, final String namePrefix, final ClassLoader resourceBundleLoader) {
+    public static Logger getLogger(final Class<?> clazz, final String namePrefix, final ClassLoader rbLoader) {
         final String loggerName = getLoggerName(clazz, namePrefix);
 
         final LogManager logManager = LogManager.getLogManager();
@@ -343,10 +348,10 @@ public class LogDomains {
 
         final String rbName = getResourceBundleNameForDomainRoot(namePrefix);
         final ResourceBundle resourceBundle;
-        if (resourceBundleLoader == null) {
+        if (rbLoader == null) {
             resourceBundle = null;
         } else {
-            resourceBundle = getResourceBundle(rbName, clazz, resourceBundleLoader);
+            resourceBundle = getResourceBundle(rbName, clazz, rbLoader);
         }
 
         // we should only add a logger of the same name at time.
@@ -369,11 +374,13 @@ public class LogDomains {
         if (classBundle != null) {
             return classBundle;
         }
-        Logger.getAnonymousLogger().log(Level.INFO, "Cannot find the resource bundle for the name {0} for {1} using {2}", new Object[]{name, clazz, resourceBundleLoader});
+        Logger.getAnonymousLogger().log(Level.INFO,
+            "Cannot find the resource bundle for the name {0} for {1} using {2}",
+            new Object[] {name, clazz, resourceBundleLoader});
         return null;
     }
 
-    private static ResourceBundle findResourceBundle(final String name, final Class clazz,
+    private static ResourceBundle findResourceBundle(final String name, final Class<?> clazz,
             final ClassLoader classLoader) {
         final ResourceBundle packageRootBundle = tryTofindResourceBundle(name, classLoader);
         if (packageRootBundle != null) {
@@ -396,7 +403,7 @@ public class LogDomains {
         return null;
     }
 
-    private static String getLoggerName(Class clazz, String logDomainsConstantName) {
+    private static String getLoggerName(Class<?> clazz, String logDomainsConstantName) {
         String pkgName = clazz.getPackage().getName();
         String loggerName = logDomainsConstantName + "." + pkgName;
         return loggerName;
