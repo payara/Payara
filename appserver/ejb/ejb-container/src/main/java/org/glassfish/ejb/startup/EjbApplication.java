@@ -49,11 +49,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.AbstractSingletonContainer;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.SecurityLifecycle;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
@@ -88,6 +90,11 @@ public class EjbApplication
     private static final Logger _logger =
                 LogDomains.getLogger(EjbApplication.class, LogDomains.EJB_LOGGER);
 
+    // must be already set before using this service.
+    @SuppressWarnings("unused")
+    @Inject
+    private SecurityLifecycle securityLifecycle;
+
     private EjbBundleDescriptorImpl ejbBundle;
     private Collection<EjbDescriptor> ejbs;
     private Collection<Container> containers = new ArrayList<>();
@@ -97,8 +104,6 @@ public class EjbApplication
     private ServiceLocator services;
 
     private SingletonLifeCycleManager singletonLCM;
-
-    private PolicyLoader policyLoader;
 
     private boolean initializeInOrder;
 
@@ -120,7 +125,6 @@ public class EjbApplication
         this.ejbAppClassLoader = cl;
         this.dc = dc;
         this.services = services;
-        this.policyLoader = services.getService(PolicyLoader.class);
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
@@ -208,8 +212,6 @@ public class EjbApplication
         }
 
         try {
-            policyLoader.loadPolicy();
-
             for (EjbDescriptor desc : ejbs) {
 
                 // Initialize each ejb container (setup component environment, register JNDI objects, etc.)
