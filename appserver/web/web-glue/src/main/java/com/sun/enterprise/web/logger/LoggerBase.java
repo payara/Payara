@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.web.logger;
 
 import org.apache.catalina.Container;
@@ -52,7 +54,7 @@ import java.io.PrintWriter;
 
 /**
  * Convenience base class for <b>Logger</b> implementations.  The only
- * method that must be implemented is 
+ * method that must be implemented is
  * <code>write(String msg, int verbosity)</code>, plus any property
  * setting and lifecycle methods required for configuration.
  *
@@ -83,6 +85,7 @@ abstract class LoggerBase implements Logger {
     /**
      * Return the Container with which this Logger has been associated.
      */
+    @Override
     public Container getContainer() {
         return (container);
     }
@@ -92,6 +95,7 @@ abstract class LoggerBase implements Logger {
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
 
         Container oldContainer = this.container;
@@ -104,25 +108,9 @@ abstract class LoggerBase implements Logger {
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
         return (info);
-    }
-
-    /**
-     * Logger interface method (ignored)
-     */
-    public int getVerbosity() {
-        //Ignored
-        return -1;
-    }
-
-    /**
-     * Logger interface method (ignored)
-     *
-     * @param verbosity The new verbosity level
-     */
-    public void setVerbosity(int verbosity) {
-        //Ignored
     }
 
     // --------------------------------------------------------- Public Methods
@@ -132,6 +120,7 @@ abstract class LoggerBase implements Logger {
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -139,11 +128,12 @@ abstract class LoggerBase implements Logger {
     /**
      * Writes the specified message to a servlet log file, usually an event
      * log.  The name and type of the servlet log is specific to the
-     * servlet container. 
+     * servlet container.
      *
      * @param msg A <code>String</code> specifying the message to be
      *  written to the log file
      */
+    @Override
     public void log(String msg) {
         write(msg, DEBUG);
     }
@@ -159,6 +149,7 @@ abstract class LoggerBase implements Logger {
      * @param exception An <code>Exception</code> to be reported
      * @param msg The associated message string
      */
+    @Override
     public void log(Exception exception, String msg) {
         log(msg, exception);
     }
@@ -173,6 +164,7 @@ abstract class LoggerBase implements Logger {
      *  exception
      * @param throwable The <code>Throwable</code> error or exception
      */
+    @Override
     public void log(String msg, Throwable throwable) {
         write(msg, throwable, ERROR);
     }
@@ -186,6 +178,7 @@ abstract class LoggerBase implements Logger {
      *  written to the log file
      * @param verbosity Verbosity level of this message
      */
+    @Override
     public void log(String message, int verbosity) {
         write(message, verbosity);
     }
@@ -200,6 +193,7 @@ abstract class LoggerBase implements Logger {
      * @param throwable The <code>Throwable</code> error or exception
      * @param verbosity Verbosity level of this message
      */
+    @Override
     public void log(String message, Throwable throwable, int verbosity) {
         write(message, throwable, verbosity);
     }
@@ -209,6 +203,7 @@ abstract class LoggerBase implements Logger {
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -219,10 +214,11 @@ abstract class LoggerBase implements Logger {
         writer.println(msg);
         throwable.printStackTrace(writer);
         Throwable rootCause = null;
-        if (throwable instanceof LifecycleException)
+        if (throwable instanceof LifecycleException) {
             rootCause = ((LifecycleException) throwable).getCause();
-        else if (throwable instanceof ServletException)
+        } else if (throwable instanceof ServletException) {
             rootCause = ((ServletException) throwable).getRootCause();
+        }
         if (rootCause != null) {
             writer.println("----- Root Cause -----");
             rootCause.printStackTrace(writer);

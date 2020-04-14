@@ -43,7 +43,6 @@ package com.sun.enterprise.web.logger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Formatter;
-
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -61,12 +60,13 @@ public class FileLoggerHandlerFactory implements PostConstruct {
     private Formatter logFormatter;
 
     private static ConcurrentMap<String, FileLoggerHandler> map =
-        new ConcurrentHashMap<String, FileLoggerHandler>();
+        new ConcurrentHashMap<>();
 
+    @Override
     public void postConstruct() {
     }
 
-    public synchronized FileLoggerHandler getHandler(String logFile) {
+    public synchronized FileLoggerHandler getHandler(final String logFile) {
         FileLoggerHandler handler = map.get(logFile);
         if (handler == null) {
             handler = new FileLoggerHandler(logFile);

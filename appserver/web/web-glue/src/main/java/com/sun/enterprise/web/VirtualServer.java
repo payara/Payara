@@ -66,12 +66,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.servlet.http.Cookie;
@@ -169,13 +169,13 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
+import com.sun.enterprise.web.logger.VirtualServerPayaraLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 
 import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLogger;
 
 /**
  * Standard implementation of a virtual server (aka virtual host) in the Payara Server.
@@ -787,11 +787,10 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
     }
 
-    private void setLogger(Logger newLogger, String logLevel) {
+    private void setLogger(Logger newLogger) {
         _logger = newLogger;
         // wrap into a cataline logger
         CatalinaLogger catalinaLogger = new CatalinaLogger(newLogger);
-        catalinaLogger.setLevel(logLevel);
         setLogger(catalinaLogger);
     }
 
@@ -810,10 +809,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * @param vsDocroot
      * @param vsLogFile
      * @param logServiceFile
-     * @param logLevel
      */
-    public void configure(String vsID, com.sun.enterprise.config.serverbeans.VirtualServer vsBean, String vsDocroot, String vsLogFile, MimeMap vsMimeMap,
-            String logServiceFile, String logLevel) {
+    public void configure(String vsID, com.sun.enterprise.config.serverbeans.VirtualServer vsBean, String vsDocroot,
+        String vsLogFile, MimeMap vsMimeMap, String logServiceFile) {
         setDebug(debug);
         setAppBase(vsDocroot);
         setName(vsID);
@@ -857,7 +855,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             setIsActive(Boolean.parseBoolean(state));
         }
 
-        setLogFile(vsLogFile, logLevel, logServiceFile);
+        setLogFile(vsLogFile, logServiceFile);
     }
 
     /**
@@ -894,21 +892,23 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Configures this virtual server with the specified log file.
      *
      * @param logFile the value of the virtual server's log-file attribute in the domain.xml.
-     * @param logLevel the verbosity of the logger.
+     * @param handlerLevel the verbosity of the logger.
      * @param logServiceFile the file used for the log service.
      */
-    synchronized void setLogFile(String logFile, String logLevel, String logServiceFile) {
-        _logger.log(Level.CONFIG, "setLogFile(logFile={0}, logLevel={1}, logServiceFile={2})",
-            new Object[] {logFile, logLevel, logServiceFile});
+    synchronized void setLogFile(String logFile, String logServiceFile) {
+        _logger.log(Level.CONFIG, "setLogFile(logFile={0}, logServiceFile={1})",
+            new Object[] {logFile, logServiceFile});
 
         /*
          * Configure separate logger for this virtual server only if 'log-file' attribute of this <virtual-server> and 'file'
          * attribute of <log-service> are different (See 6189219).
          */
-        boolean customLog = (logFile != null && logServiceFile != null && !new File(logFile).equals(new File(logServiceFile)));
+        boolean customLog = (logFile != null && logServiceFile != null
+            && !new File(logFile).equals(new File(logServiceFile)));
 
         boolean logFileChanged = logFile != null
-                && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile())) || fileLoggerHandler == null);
+            && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile()))
+                || fileLoggerHandler == null);
 
         /*
          * Exit early if the log file isn't being changed.
@@ -925,109 +925,55 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         // Store new logger to replace current one
-        Logger newLogger = null;
-
-        /*
-         * If the file is being changed to the log service file, reset the logger.
-         */
+        // append the _logger name with ".vs.<virtual-server-id>" if it doesn't already have it
+        final LogManager logManager = LogManager.getLogManager();
+        final String lname = DEFAULT_LOGGER.getName() + ".vs." + getID();
+        if (logManager.getLogger(lname) == null) {
+            final Logger newLogger = new VirtualServerPayaraLogger(lname, rb);
+            logManager.addLogger(newLogger);
+        }
+        final Logger newLogger = Objects.requireNonNull(logManager.getLogger(lname),
+            "Failed to get or create a logger " + lname);
         if (!customLog) {
-            newLogger = _logger;
             for (Handler h : _logger.getHandlers()) {
                 newLogger.removeHandler(h);
             }
             newLogger.setUseParentHandlers(true);
-        } else {
-            // append the _logger name with "._vs.<virtual-server-id>" if it doesn't already have it
-            String lname = _logger.getName();
-            if (!lname.endsWith("._vs." + getID())) {
-                lname = _logger.getName() + "._vs." + getID();
-            }
-            newLogger = LogManager.getLogManager().getLogger(lname);
-            if (newLogger == null) {
-                newLogger = new PayaraLogger(lname) {
-                    // set thread id, see LogDomains.getLogger method
-                    @Override
-                    public void log(LogRecord record) {
-                        if (record.getResourceBundle() == null) {
-                            ResourceBundle bundle = getResourceBundle();
-                            if (bundle != null) {
-                                record.setResourceBundle(bundle);
-                            }
-                        }
-                        record.setThreadID((int) Thread.currentThread().getId());
-                        super.log(record);
-                    }
-
-                    // use the same resource bundle as default vs logger
-                    @Override
-                    public ResourceBundle getResourceBundle() {
-                        return rb;
-                    }
-
-                    @Override
-                    public synchronized void addHandler(Handler handler) {
-                        super.addHandler(handler);
-                        if (handler instanceof FileLoggerHandler) {
-                            ((FileLoggerHandler) handler).associate();
-                        }
-                    }
-
-                    @Override
-                    public synchronized void removeHandler(Handler handler) {
-                        if (!(handler instanceof FileLoggerHandler)) {
-                            super.removeHandler(handler);
-                        } else {
-                            boolean hasHandler = false;
-                            Handler[] hs = getHandlers();
-                            if (hs != null) {
-                                for (Handler h : hs) {
-                                    if (h == handler) {
-                                        hasHandler = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (hasHandler) {
-                                super.removeHandler(handler);
-                                ((FileLoggerHandler) handler).disassociate();
-                            }
-                        }
-                    }
-                };
-
-                LogManager.getLogManager().addLogger(newLogger);
-            }
-
-            // remove old handlers if necessary
-            Handler[] handlers = newLogger.getHandlers();
-            if (handlers != null) {
-                for (Handler h : handlers) {
-                    newLogger.removeHandler(h);
-                }
-            }
-
-            // add all handlers from root which are not PayaraLogHandlers
-            LogManager logManager = LogManager.getLogManager();
-            Logger rootLogger = logManager.getLogger(PayaraLogManager.ROOT_LOGGER_NAME);
-            _logger.finest(() -> "rootLogger=" + rootLogger);
-            if (rootLogger != null) {
-                Handler[] rootHandlers = rootLogger.getHandlers();
-                if (rootHandlers != null) {
-                    for (Handler h : rootHandlers) {
-                        if (!(h instanceof PayaraLogHandler)) {
-                            newLogger.addHandler(h);
-                        }
-                    }
-                }
-            }
-
-            // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
-            newLogger.addHandler(fileLoggerHandler);
-            newLogger.setUseParentHandlers(false);
+            setLogger(newLogger);
+            return;
         }
 
-        setLogger(newLogger, logLevel);
+        // remove old handlers if necessary
+        // FIXME: does not respect the configuration - why?
+        final Handler[] originalLoggerHandlers = newLogger.getHandlers();
+        if (originalLoggerHandlers != null) {
+            for (Handler h : originalLoggerHandlers) {
+                newLogger.removeHandler(h);
+            }
+        }
+
+        // FIXME: takes handlers only from root logger! What about intermediate?
+        // add all handlers from root which are not PayaraLogHandlers
+        final Logger rootLogger = logManager.getLogger(PayaraLogManager.ROOT_LOGGER_NAME);
+        _logger.finest(() -> "rootLogger=" + rootLogger);
+        if (rootLogger != null) {
+            final Handler[] rootHandlers = rootLogger.getHandlers();
+            if (rootHandlers != null) {
+                for (Handler h : rootHandlers) {
+                    // FIXME: controversial.
+                    // FIXME: Don't use parent handlers (setUseParentHandlers(false)), but uses them.
+                    if (!(h instanceof PayaraLogHandler)) {
+                        newLogger.addHandler(h);
+                    }
+                }
+            }
+        }
+
+        // create and add new handler
+        fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
+        newLogger.addHandler(fileLoggerHandler);
+        newLogger.setUseParentHandlers(false);
+        setLogger(newLogger);
     }
 
     /**
@@ -1536,7 +1482,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Sets all the monitoring probes used in the virtual server
-     * 
+     *
      * @param globalAccessLoggingEnabled
      * @see org.glassfish.grizzly.http.HttpProbe
      */
@@ -2180,8 +2126,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             close(fileLoggerHandler);
             fileLoggerHandler = null;
         }
-        setLogger(_logger, "INFO");
-
+        setLogger(_logger);
         super.stop();
     }
 

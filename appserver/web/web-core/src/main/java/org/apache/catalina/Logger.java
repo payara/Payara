@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina;
 
 
@@ -83,15 +85,15 @@ public interface Logger {
      * by the underlying logger.
      */
 
-    public static final int FATAL = Integer.MIN_VALUE;
+    int FATAL = Integer.MIN_VALUE;
 
-    public static final int ERROR = 1;
+    int ERROR = 1;
 
-    public static final int WARNING = 2;
+    int WARNING = 2;
 
-    public static final int INFORMATION = 3;
+    int INFORMATION = 3;
 
-    public static final int DEBUG = 4;
+    int DEBUG = 4;
 
 
     // ------------------------------------------------------------- Properties
@@ -100,7 +102,7 @@ public interface Logger {
     /**
      * Return the Container with which this Logger has been associated.
      */
-    public Container getContainer();
+    Container getContainer();
 
 
     /**
@@ -108,7 +110,7 @@ public interface Logger {
      *
      * @param container The associated Container
      */
-    public void setContainer(Container container);
+    void setContainer(Container container);
 
 
     /**
@@ -116,23 +118,7 @@ public interface Logger {
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
-    public String getInfo();
-
-
-    /**
-     * Return the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     */
-    public int getVerbosity();
-
-
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     *
-     * @param verbosity The new verbosity level
-     */
-    public void setVerbosity(int verbosity);
+    String getInfo();
 
 
     // --------------------------------------------------------- Public Methods
@@ -143,7 +129,7 @@ public interface Logger {
      *
      * @param listener The listener to add
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener);
+    void addPropertyChangeListener(PropertyChangeListener listener);
 
 
     /**
@@ -154,7 +140,7 @@ public interface Logger {
      * @param message A <code>String</code> specifying the message to be
      *  written to the log file
      */
-    public void log(String message);
+    void log(String message);
 
 
     /**
@@ -168,7 +154,7 @@ public interface Logger {
      * @param exception An <code>Exception</code> to be reported
      * @param msg The associated message string
      */
-    public void log(Exception exception, String msg);
+    void log(Exception exception, String msg);
 
 
     /**
@@ -181,7 +167,7 @@ public interface Logger {
      *  exception
      * @param throwable The <code>Throwable</code> error or exception
      */
-    public void log(String message, Throwable throwable);
+    void log(String message, Throwable throwable);
 
 
     /**
@@ -193,7 +179,7 @@ public interface Logger {
      *  written to the log file
      * @param verbosity Verbosity level of this message
      */
-    public void log(String message, int verbosity);
+    void log(String message, int verbosity);
 
 
     /**
@@ -206,7 +192,7 @@ public interface Logger {
      * @param throwable The <code>Throwable</code> error or exception
      * @param verbosity Verbosity level of this message
      */
-    public void log(String message, Throwable throwable, int verbosity);
+    void log(String message, Throwable throwable, int verbosity);
 
 
     /**
@@ -214,7 +200,7 @@ public interface Logger {
      *
      * @param listener The listener to remove
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener);
+    void removePropertyChangeListener(PropertyChangeListener listener);
 
 
 }

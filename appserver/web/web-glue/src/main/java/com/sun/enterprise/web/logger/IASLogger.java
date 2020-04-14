@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.logger;
 
@@ -72,7 +73,7 @@ public final class IASLogger extends LoggerBase {
      * Name of the method invoking the log method.
      */
     private String _methodname;
-    
+
     /**
      * The descriptive information about this implementation.
      */
@@ -105,23 +106,31 @@ public final class IASLogger extends LoggerBase {
      * Logs the message to the JDK 1.4 logger that handles all log
      * messages for the iPlanet Application Server.
      */
+    @Override
     protected void write(String msg, int verbosity) {
-        
-        if (_logger == null)
+
+        if (_logger == null) {
             return;
+        }
 
-        Level level = Level.INFO;
-
-        if (verbosity == FATAL)
-            level = (Level)IASLevel.FATAL;
-        else if (verbosity == ERROR)
-            level = Level.SEVERE;
-        else if (verbosity == WARNING)
-            level = Level.WARNING;
-        else if (verbosity == INFORMATION)
-            level = Level.INFO;
-        else if (verbosity == DEBUG)
-            level = Level.FINER;
+        final Level level;
+        switch (verbosity) {
+            case FATAL:
+                level = IASLevel.FATAL;
+                break;
+            case ERROR:
+                level = Level.SEVERE;
+                break;
+            case WARNING:
+                level = Level.WARNING;
+                break;
+            case DEBUG:
+                level = Level.FINER;
+                break;
+            default:
+                level = Level.INFO;
+                break;
+        }
 
         inferCaller();
         _logger.logp(level, _classname, _methodname, msg);
@@ -138,8 +147,7 @@ public final class IASLogger extends LoggerBase {
         StackTraceElement stack[] = (new Throwable()).getStackTrace();
         _classname = "";
         _methodname = "";
-        for (int ix=0; ix < stack.length; ix++) {
-	    StackTraceElement frame = stack[ix];
+        for (StackTraceElement frame : stack) {
 	    _classname = frame.getClassName();
 	    if (!_classname.startsWith("com.sun.enterprise.web.logger")) {
 		// We've found the relevant frame. Get Method Name.

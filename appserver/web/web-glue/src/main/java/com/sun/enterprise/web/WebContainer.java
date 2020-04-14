@@ -292,7 +292,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     private WebConnector jkConnector;
 
-    private String logLevel = "INFO";
 
     /**
      * Allow disabling accessLog mechanism
@@ -321,13 +320,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     protected ServerEnvironment instance = null;
-
-    /**
-     * Controls the verbosity of the web container subsystem's debug messages.
-     * <p/>
-     * This value is non-zero only when the iAS level is one of FINE, FINER or FINEST.
-     */
-    protected int _debug = 0;
 
     /**
      * Absolute path for location where all the deployed standalone modules are stored for this Server Instance.
@@ -449,7 +441,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             webContainerFeatureFactory = getWebContainerFeatureFactory();
 
             configureDynamicReloadingSettings();
-            setDebugLevel();
 
             String maxDepth = null;
             org.glassfish.web.config.serverbeans.WebContainer configWC = serverConfig
@@ -477,24 +468,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 logServiceFile = currentLogFile.getAbsolutePath();
             }
 
-            Level level = Logger.getLogger("org.apache.catalina.level").getLevel();
-            if (level != null) {
-                logLevel = level.getName();
-            }
-
             _embedded = serviceLocator.getService(EmbeddedWebContainer.class);
             _embedded.setWebContainer(this);
             _embedded.setLogServiceFile(logServiceFile);
-            _embedded.setLogLevel(logLevel);
             _embedded.setFileLoggerHandlerFactory(fileLoggerHandlerFactory);
-            _embedded.setWebContainerFeatureFactory(webContainerFeatureFactory);
 
             _embedded.setCatalinaHome(instance.getInstanceRoot().getAbsolutePath());
             _embedded.setCatalinaBase(instance.getInstanceRoot().getAbsolutePath());
             _embedded.setUseNaming(false);
-            if (_debug > 1) {
-                _embedded.setDebug(_debug);
-            }
 
             _embedded.setLogger(new IASLogger(logger));
             engine = _embedded.createEngine();
@@ -1302,10 +1283,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         for (NetworkListener listener : listeners) {
             if (Boolean.valueOf(listener.getEnabled())) {
                 listenerNames.add(listener.getName());
-                logger.fine(VIRTUAL_SERVER_SET_LISTENER_NAME);
+                logger.log(FINE, VIRTUAL_SERVER_SET_LISTENER_NAME,
+                    new Object[] {virtualServer.getID(), listener.getName()});
             } else {
                 if (virtualServer.getName().equalsIgnoreCase(ADMIN_VS)) {
-                    throw new IllegalArgumentException(format(rb.getString(MUST_NOT_DISABLE), listener.getName(), virtualServer.getName()));
+                    throw new IllegalArgumentException(
+                        format(rb.getString(MUST_NOT_DISABLE), listener.getName(), virtualServer.getName()));
                 }
             }
         }
@@ -1313,7 +1296,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         if (addJkListenerName && (!listenerNames.contains(jkConnector.getName()))) {
             listenerNames.add(jkConnector.getName());
             if (logger.isLoggable(FINE)) {
-                logger.log(FINE, VIRTUAL_SERVER_SET_JK_LISTENER_NAME, new Object[] { virtualServer.getID(), jkConnector.getName() });
+                logger.log(FINE, VIRTUAL_SERVER_SET_JK_LISTENER_NAME,
+                    new Object[] {virtualServer.getID(), jkConnector.getName()});
             }
         }
 
@@ -1389,27 +1373,23 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     public void loadSystemDefaultWebModules() {
         for (VirtualServer virtualServer : getVirtualServers()) {
-
-            /*
-             * Let AdminConsoleAdapter handle any requests for the root context of the '__asadmin' virtual-server, see
-             * https://glassfish.dev.java.net/issues/show_bug.cgi?id=5664
-             */
+            // Let AdminConsoleAdapter handle any requests for the root context of the '__asadmin' virtual-server
             if (ADMIN_VS.equals(virtualServer.getName())) {
                 continue;
             }
 
             // Create default web module off of virtual server's docroot if necessary
-            String defaultPath = null;
-            WebModuleConfig webModuleConfig = virtualServer.createSystemDefaultWebModuleIfNecessary(serviceLocator.getService(WebArchivist.class));
-            if (webModuleConfig != null) {
+            final WebArchivist webArchivist = serviceLocator.getService(WebArchivist.class);
+            final WebModuleConfig webModuleConfig = virtualServer.createSystemDefaultWebModuleIfNecessary(webArchivist);
+            final String defaultPath;
+            if (webModuleConfig == null) {
+                defaultPath = null;
+            } else {
                 defaultPath = webModuleConfig.getContextPath();
                 loadStandaloneWebModule(virtualServer, webModuleConfig);
             }
-
-            if (logger.isLoggable(INFO)) {
-                logger.log(INFO, VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE, new Object[] { virtualServer.getName(), defaultPath });
-            }
-
+            logger.log(INFO, VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE,
+                new Object[] {virtualServer.getName(), defaultPath});
         }
 
     }
@@ -1545,15 +1525,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param deploymentProperties
      * @return
      */
-    public List<Result<WebModule>> loadWebModule(WebModuleConfig webModuleConfig, String j2eeApplication, Properties deploymentProperties) {
+    public List<Result<WebModule>> loadWebModule(WebModuleConfig webModuleConfig, String j2eeApplication,
+        Properties deploymentProperties) {
+        logger.finest(() -> String.format(
+            "loadWebModule(\n  webModuleConfig=%s,\n  j2eeApplication=%s,\n  deploymentProperties=%s)",
+            webModuleConfig, j2eeApplication, deploymentProperties));
         List<Result<WebModule>> results = new ArrayList<>();
-
         String virtualServerIds = webModuleConfig.getVirtualServers();
         List<String> virtualServers = parseStringList(virtualServerIds, " ,");
         if (virtualServers == null || virtualServers.isEmpty()) {
-            if (logger.isLoggable(INFO)) {
-                logger.log(INFO, WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS, webModuleConfig.getName());
-            }
+            logger.log(INFO, WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS, webModuleConfig.getName());
             return results;
         }
 
@@ -1660,7 +1641,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     /**
      * Creates and configures a web module and adds it to the specified virtual server.
      */
-    private WebModule loadWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig, String j2eeApplication, Properties deploymentProperties) throws Exception {
+    private WebModule loadWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig,
+        String j2eeApplication, Properties deploymentProperties) throws Exception {
+        logger.finest(
+            () -> String.format("loadWebModule(\n  virtualServer=%s,\n  webModuleConfig=%s,"
+                + "\n  j2eeApplication=%s,\n  deploymentProperties=%s)",
+                virtualServer, webModuleConfig, j2eeApplication, deploymentProperties));
         DeploymentContext dc = webModuleConfig.getDeploymentContext();
         String webModuleName = webModuleConfig.getName();
         String webModuleContextPath = webModuleConfig.getContextPath();
@@ -1742,7 +1728,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
 
         if (logger.isLoggable(FINEST)) {
-            logger.log(FINEST, WEB_MODULE_LOADING, new Object[]{ webModuleName, virtualServer.getID(), displayContextPath });
+            logger.log(FINEST, WEB_MODULE_LOADING,
+                new Object[] {webModuleName, virtualServer.getID(), displayContextPath});
         }
 
         webModule = (WebModule)
@@ -1930,9 +1917,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param defaultContextPath The context path of the web module that has been designated as the virtual server's new
      * default web module, or null if the virtual server no longer has any default-web-module
      */
-
     protected void updateDefaultWebModule(VirtualServer virtualServer, String[] listenerNames,
         WebModuleConfig webModuleConfig) throws LifecycleException {
+        logger.finest(
+            () -> String.format("updateDefaultWebModule(virtualServer=%s, listenerNames=%s, webModuleConfig=%s)",
+                virtualServer, Arrays.toString(listenerNames), webModuleConfig));
 
         String defaultContextPath = null;
         if (webModuleConfig != null) {
@@ -2176,21 +2165,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
     }
 
-    /**
-     * Sets the debug level for Catalina's containers based on the logger's log level.
-     */
-    private void setDebugLevel() {
-        Level logLevel = logger.getLevel() != null ? logger.getLevel() : Level.INFO;
-        if (logLevel.equals(Level.FINE)) {
-            _debug = 1;
-        } else if (logLevel.equals(Level.FINER)) {
-            _debug = 2;
-        } else if (logLevel.equals(Level.FINEST)) {
-            _debug = 5;
-        } else {
-            _debug = 0;
-        }
-    }
 
     /**
      * Get the lifecycle listeners associated with this lifecycle. If this Lifecycle has no listeners registered, a
@@ -2554,7 +2528,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.setBean(vsBean);
 
         String vsLogFile = vsBean.getLogFile();
-        virtualServer.setLogFile(vsLogFile, logLevel, logServiceFile);
+        virtualServer.setLogFile(vsLogFile, logServiceFile);
 
         virtualServer.configureState();
 
@@ -3090,13 +3064,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webStatsProviderBootstrap = serviceLocator.getService(WebStatsProviderBootstrap.class);
     }
 
-    /*
+    /**
      * Loads the class with the given name using the common classloader, which is responsible for loading any classes from
      * the domain's lib directory
      *
      * @param className the name of the class to load
      */
-
     public Class<?> loadCommonClass(String className) throws Exception {
         return classLoaderHierarchy.getCommonClassLoader().loadClass(className);
     }

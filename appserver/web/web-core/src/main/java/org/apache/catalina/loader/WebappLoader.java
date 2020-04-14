@@ -1224,22 +1224,21 @@ public class WebappLoader
     }
 
     // try to extract the classpath from a loader that is not URLClassLoader
-    private String getClasspath( ClassLoader loader ) {
+    private String getClasspath(ClassLoader loader) {
+        // FIXME: it never worked. Try to set javax.enterprise.web.core.level=ALL
         try {
-            Method m=loader.getClass().getMethod("getClasspath", new Class[] {});
-            if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "getClasspath {0}", m);
-            Object o=m.invoke( loader, new Object[] {} );
-            if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "gotClasspath {0}", o);
-            if (o instanceof String )
-                return (String)o;
+            Method m = loader.getClass().getMethod("getClasspath");
+            log.log(Level.FINEST, "getClasspath {0}", m);
+            Object o = m.invoke(loader);
+            log.log(Level.FINEST, "gotClasspath {0}", o);
+            if (o instanceof String) {
+                return (String) o;
+            }
             return null;
         } catch (Exception ex) {
-            if (log.isLoggable(Level.FINEST))
-                log.log(Level.FINEST, "getClasspath ", ex);
+            log.log(Level.FINEST, "getClasspath ", ex);
+            return null;
         }
-        return null;
     }
 
     /**

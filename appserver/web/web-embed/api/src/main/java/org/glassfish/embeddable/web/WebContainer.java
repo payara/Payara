@@ -37,22 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.embeddable.web;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.logging.Level;
 
-import org.glassfish.embeddable.web.config.WebContainerConfig;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.web.config.WebContainerConfig;
 
 /**
  * Class representing an embedded web container, which supports the
  * programmatic creation of different types of web protocol listeners
  * and virtual servers, and the registration of static and dynamic
  * web resources into the URI namespace.
- * 
+ *
  * WebContainer service can be accessed using GlassFish instance.
  *
  * <p/> Usage example:
@@ -97,8 +97,8 @@ public interface WebContainer {
      *
      * @param config the embedded instance configuration
      */
-    public void setConfiguration(WebContainerConfig config);
-    
+    void setConfiguration(WebContainerConfig config);
+
     /**
      * Creates a <tt>Context</tt> and configures it with the given
      * docroot and classloader.
@@ -117,7 +117,7 @@ public interface WebContainer {
      *
      * @see VirtualServer#addContext
      */
-    public Context createContext(File docRoot);
+    Context createContext(File docRoot);
 
     /**
      * Creates a <tt>Context</tt> and configures it with the given
@@ -141,7 +141,7 @@ public interface WebContainer {
      *
      * @see VirtualServer#addContext
      */
-    public Context createContext(File docRoot, ClassLoader classLoader);
+    Context createContext(File docRoot, ClassLoader classLoader);
 
     /**
      * Creates a <tt>Context</tt>, configures it with the given
@@ -160,7 +160,7 @@ public interface WebContainer {
      *
      * @return the new <tt>Context</tt>
      */
-    public Context createContext(File docRoot, String contextRoot,
+    Context createContext(File docRoot, String contextRoot,
                                  ClassLoader classLoader);
 
     /**
@@ -178,7 +178,7 @@ public interface WebContainer {
      * @throws GlassFishException if the given <tt>context</tt> fails
      * to be started
      */
-    public void addContext(Context context, String contextRoot)
+    void addContext(Context context, String contextRoot)
         throws ConfigException, GlassFishException;
 
     /**
@@ -190,7 +190,7 @@ public interface WebContainer {
      * @throws GlassFishException if an error occurs during the stopping
      * or removal of the given <tt>context</tt>
      */
-    public void removeContext(Context context)
+    void removeContext(Context context)
         throws ConfigException, GlassFishException;
 
     /**
@@ -200,7 +200,7 @@ public interface WebContainer {
      * @param id the id of the new <tt>WebListener</tt>
      * @param c the class from which to instantiate the
      * <tt>WebListener</tt>
-     * 
+     *
      * @return the new <tt>WebListener</tt> instance
      *
      * @throws  IllegalAccessException if the given <tt>Class</tt> or
@@ -225,7 +225,7 @@ public interface WebContainer {
      * of this class
      * </ul>
      */
-    public <T extends WebListener> T createWebListener(String id, Class<T> c)
+    <T extends WebListener> T createWebListener(String id, Class<T> c)
         throws InstantiationException, IllegalAccessException;
 
     /**
@@ -243,7 +243,7 @@ public interface WebContainer {
      * @throws GlassFishException if the given <tt>webListener</tt> fails
      * to be started
      */
-    public void addWebListener(WebListener webListener)
+    void addWebListener(WebListener webListener)
         throws ConfigException, GlassFishException;
 
     /**
@@ -255,16 +255,16 @@ public interface WebContainer {
      * <tt>null</tt> if no <tt>WebListener</tt> with that id has been
      * registered with this <tt>WebContainer</tt>
      */
-    public WebListener getWebListener(String id);
+    WebListener getWebListener(String id);
 
     /**
      * Gets the collection of <tt>WebListener</tt> instances registered
      * with this <tt>WebContainer</tt>.
-     * 
+     *
      * @return the (possibly empty) collection of <tt>WebListener</tt>
      * instances registered with this <tt>WebContainer</tt>
      */
-    public Collection<WebListener> getWebListeners();
+    Collection<WebListener> getWebListeners();
 
     /**
      * Stops the given <tt>webListener</tt> and removes it from this
@@ -276,34 +276,34 @@ public interface WebContainer {
      * @throws GlassFishException if an error occurs during the stopping
      * or removal of the given <tt>webListener</tt>
      */
-    public void removeWebListener(WebListener webListener)
+    void removeWebListener(WebListener webListener)
         throws GlassFishException;
 
     /**
      * Creates a <tt>VirtualServer</tt> with the given id and docroot, and
      * maps it to the given <tt>WebListener</tt> instances.
-     * 
+     *
      * @param id the id of the <tt>VirtualServer</tt>
      * @param docRoot the docroot of the <tt>VirtualServer</tt>
-     * @param webListeners the list of <tt>WebListener</tt> instances from 
+     * @param webListeners the list of <tt>WebListener</tt> instances from
      * which the <tt>VirtualServer</tt> will receive requests
-     * 
+     *
      * @return the new <tt>VirtualServer</tt> instance
      */
-    public VirtualServer createVirtualServer(String id,
+    VirtualServer createVirtualServer(String id,
         File docRoot, WebListener...  webListeners);
-    
+
     /**
      * Creates a <tt>VirtualServer</tt> with the given id and docroot, and
      * maps it to all <tt>WebListener</tt> instances.
-     * 
+     *
      * @param id the id of the <tt>VirtualServer</tt>
      * @param docRoot the docroot of the <tt>VirtualServer</tt>
-     * 
+     *
      * @return the new <tt>VirtualServer</tt> instance
-     */    
-    public VirtualServer createVirtualServer(String id, File docRoot);
-    
+     */
+    VirtualServer createVirtualServer(String id, File docRoot);
+
     /**
      * Adds the given <tt>VirtualServer</tt> to this
      * <tt>WebContainer</tt>.
@@ -319,7 +319,7 @@ public interface WebContainer {
      * @throws GlassFishException if the given <tt>virtualServer</tt> fails
      * to be started
      */
-    public void addVirtualServer(VirtualServer virtualServer)
+    void addVirtualServer(VirtualServer virtualServer)
         throws ConfigException, GlassFishException;
 
     /**
@@ -331,16 +331,16 @@ public interface WebContainer {
      * <tt>null</tt> if no <tt>VirtualServer</tt> with that id has been
      * registered with this <tt>WebContainer</tt>
      */
-    public VirtualServer getVirtualServer(String id);
+    VirtualServer getVirtualServer(String id);
 
     /**
      * Gets the collection of <tt>VirtualServer</tt> instances registered
      * with this <tt>WebContainer</tt>.
-     * 
+     *
      * @return the (possibly empty) collection of <tt>VirtualServer</tt>
      * instances registered with this <tt>WebContainer</tt>
      */
-    public Collection<VirtualServer> getVirtualServers();
+    Collection<VirtualServer> getVirtualServers();
 
     /**
      * Stops the given <tt>virtualServer</tt> and removes it from this
@@ -352,14 +352,6 @@ public interface WebContainer {
      * @throws GlassFishException if an error occurs during the stopping
      * or removal of the given <tt>virtualServer</tt>
      */
-    public void removeVirtualServer(VirtualServer virtualServer)
+    void removeVirtualServer(VirtualServer virtualServer)
         throws GlassFishException;
-    
-    /**
-     * Sets log level
-     * 
-     * @param level log level
-     */
-    public void setLogLevel(Level level);
-       
 }

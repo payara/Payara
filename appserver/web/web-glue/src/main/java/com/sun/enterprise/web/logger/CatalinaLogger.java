@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.logger;
 
@@ -71,46 +72,28 @@ public final class CatalinaLogger extends LoggerBase {
             return;
         }
 
-        Level level = Level.INFO;
-
-        if (verbosity == FATAL) {
-            level = IASLevel.FATAL;
-        } else if (verbosity == ERROR) {
-            level = Level.SEVERE;
-        } else if (verbosity == WARNING) {
-            level = Level.WARNING;
-        } else if (verbosity == INFORMATION) {
-            level = Level.INFO;
-        } else if (verbosity == DEBUG) {
-            level = Level.FINER;
+        final Level level;
+        switch (verbosity) {
+            case FATAL:
+                level = IASLevel.FATAL;
+                break;
+            case ERROR:
+                level = Level.SEVERE;
+                break;
+            case WARNING:
+                level = Level.WARNING;
+                break;
+            case INFORMATION:
+                level = Level.INFO;
+                break;
+            case DEBUG:
+                level = Level.FINER;
+                break;
+            default:
+                level = Level.INFO;
+                break;
         }
 
         logger.log(level, msg);
-    }
-
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     *
-     * @param logLevel The new verbosity level, as a string
-     */
-    public void setLevel(String logLevel) {
-        if ("SEVERE".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.SEVERE);
-        } else if ("WARNING".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.WARNING);
-        } else if ("INFO".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.INFO);
-        } else if ("CONFIG".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.CONFIG);
-        } else if ("FINE".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.FINE);
-        } else if ("FINER".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.FINER);
-        } else if ("FINEST".equalsIgnoreCase(logLevel)) {
-            logger.setLevel(Level.FINEST);
-        } else {
-            logger.setLevel(Level.INFO);
-        }
     }
 }

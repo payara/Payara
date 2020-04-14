@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.apache.catalina.logger;
 
@@ -93,7 +93,7 @@ import java.util.logging.Logger;
  * @version $Revision: 1.4 $ $Date: 2006/10/07 01:14:23 $
  */
 public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
-    
+
      protected static final Logger log = LogFacade.getLogger();
      protected static final ResourceBundle rb = log.getResourceBundle();
 
@@ -111,7 +111,7 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
      */
     protected int debug = 0;
 
-    
+
     /**
      * The descriptive information about this implementation.
      */
@@ -199,79 +199,6 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
     }
 
 
-    /**
-     * Return the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     */
-     @Override
-    public int getVerbosity() {
-        return (this.verbosity);
-    }
-
-
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     *
-     * @param verbosity The new verbosity level
-     */
-    @Override
-    public void setVerbosity(int verbosity) {
-        this.verbosity = verbosity;
-    }
-
-
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     *
-     * @param verbosityLevel The new verbosity level, as a string
-     */
-    public void setVerbosityLevel(String verbosity) {
-
-        if ("FATAL".equalsIgnoreCase(verbosity))
-            this.verbosity = FATAL;
-        else if ("ERROR".equalsIgnoreCase(verbosity))
-            this.verbosity = ERROR;
-        else if ("WARNING".equalsIgnoreCase(verbosity))
-            this.verbosity = WARNING;
-        else if ("INFORMATION".equalsIgnoreCase(verbosity))
-            this.verbosity = INFORMATION;
-        else if ("DEBUG".equalsIgnoreCase(verbosity))
-            this.verbosity = DEBUG;
-
-    }
-
-
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     *
-     * @param verbosityLevel The new verbosity level, as a string
-     */
-    public void setLevel(String logLevel) {
-            
-        if ("SEVERE".equalsIgnoreCase(logLevel)) {
-            log.setLevel(Level.SEVERE);
-        } else if ("WARNING".equalsIgnoreCase(logLevel)) {
-            log.setLevel(Level.WARNING);
-        } else if ("INFO".equalsIgnoreCase(logLevel)) {
-           log.setLevel(Level.INFO);
-        } else if ("CONFIG".equalsIgnoreCase(logLevel)) {
-           log.setLevel(Level.CONFIG);
-        } else if ("FINE".equalsIgnoreCase(logLevel)) {
-            log.setLevel(Level.FINE);
-        } else if ("FINER".equalsIgnoreCase(logLevel)) {
-            log.setLevel(Level.FINER);
-        } else if ("FINEST".equalsIgnoreCase(logLevel)) {
-            log.setLevel(Level.FINEST);
-        } else {
-            log.setLevel(Level.INFO);
-        }
-        
-    }
-
-
     public void addHandler(Handler handler) {
         log.setUseParentHandlers(false);
         handler.setLevel(log.getLevel());
@@ -342,10 +269,11 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
         writer.println(msg);
         throwable.printStackTrace(writer);
         Throwable rootCause = null;
-        if (throwable instanceof LifecycleException)
+        if (throwable instanceof LifecycleException) {
             rootCause = ((LifecycleException) throwable).getCause();
-        else if (throwable instanceof ServletException)
+        } else if (throwable instanceof ServletException) {
             rootCause = ((ServletException) throwable).getRootCause();
+        }
         if (rootCause != null) {
             writer.println("----- Root Cause -----");
             rootCause.printStackTrace(writer);
@@ -416,23 +344,23 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
     }
 
     public void init() {
-        
+
     }
-    
+
     public void destroy() {
-        
+
     }
-    
+
     public ObjectName createObjectName() {
         if(log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, "createObjectName with {0}", container);
         }
         // register
         try {
-            StandardEngine engine=null;            
+            StandardEngine engine=null;
             String suffix="";
             if( container instanceof StandardEngine ) {
-                engine=(StandardEngine)container;                
+                engine=(StandardEngine)container;
             } else if( container instanceof StandardHost ) {
                 engine=(StandardEngine)container.getParent();
                 suffix=",host=" + container.getName();
@@ -443,7 +371,7 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
                     path = "/";
                 }
                 engine=(StandardEngine)container.getParent().getParent();
-                suffix= ",path=" + path + ",host=" + 
+                suffix= ",path=" + path + ",host=" +
                         container.getParent().getName();
             } else {
                 log.log(Level.SEVERE, LogFacade.UNKNOWN_CONTAINER_EXCEPTION);
@@ -461,7 +389,7 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
 
 
    // ------------------------------------------------------ Lifecycle Methods
-    
+
     /**
      * Add a lifecycle event listener to this component.
      *
@@ -497,17 +425,17 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
     /**
      * Prepare for the beginning of active use of the public methods of this
      * component.  This method should be called after <code>configure()</code>,
-     * and before any of the public methods of the component are utilized.     
+     * and before any of the public methods of the component are utilized.
      *
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
     @Override
     public void start() throws LifecycleException {
-                                                                
+
         // register this logger
-        if ( getObjectName()==null ) {   
-            ObjectName oname = createObjectName();   
+        if ( getObjectName()==null ) {
+            ObjectName oname = createObjectName();
             try {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Registering logger {0}", oname);
@@ -516,17 +444,17 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
                 String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),
                                                   oname);
                 log.log(Level.SEVERE, msg, ex);
-            }      
-        }     
+            }
+        }
 
-    }                         
-                              
-                              
-    /**                       
+    }
+
+
+    /**
      * Gracefully terminate the active use of the public methods of this
      * component.  This method should be the last one called on a given
      * instance of this component.
-     *                        
+     *
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
@@ -534,8 +462,8 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
     public void stop() throws LifecycleException {
 
         // unregister this logger
-        if ( getObjectName()!=null ) {   
-            ObjectName oname = createObjectName();   
+        if ( getObjectName()!=null ) {
+            ObjectName oname = createObjectName();
             try {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Unregistering logger {0}", oname);
@@ -544,8 +472,8 @@ public class LoggerBase implements Lifecycle, org.apache.catalina.Logger {
                 String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),
                         oname);
                 log.log(Level.SEVERE, msg, ex);
-            }      
-        }  
+            }
+        }
     }
-  
+
 }
