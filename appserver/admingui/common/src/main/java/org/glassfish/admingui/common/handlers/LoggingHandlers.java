@@ -38,18 +38,10 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
- 
-/*
- * InstanceHandler.java
- *
- * Created on August 10, 2006, 2:32 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+
+
 /**
- *
  * @author anilam
  */
 package org.glassfish.admingui.common.handlers;
@@ -204,12 +196,12 @@ public class LoggingHandlers {
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoFile") ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation") ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams") ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.logtoFile") ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.logtoConsole") ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.multiLineMode") ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.rotationOnDateChange" ) ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.compressOnRotation") ||
+                      key.equals("fish.payara.logging.jul.PayaraLogHandler.logStandardStreams") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"))
