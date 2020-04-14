@@ -41,60 +41,38 @@
 
 package com.sun.enterprise.web;
 
-import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
-import static com.sun.enterprise.util.StringUtils.parseStringList;
-import static com.sun.enterprise.util.io.FileUtils.makeFriendlyFilename;
-import static com.sun.enterprise.web.Constants.ACCESS_LOGGING_ENABLED;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_PROPERTY;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_PREFIX;
-import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
-import static com.sun.enterprise.web.Constants.ERROR_REPORT_VALVE;
-import static com.sun.enterprise.web.Constants.SSO_ENABLED;
-import static java.text.MessageFormat.format;
-import static java.util.Arrays.stream;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import static java.util.stream.Collectors.toList;
-import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
-import static org.glassfish.api.event.EventTypes.PREPARE_SHUTDOWN;
-import static org.glassfish.api.web.Constants.ADMIN_VS;
-import static org.glassfish.internal.deployment.Deployment.ALL_APPLICATIONS_PROCESSED;
-import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_FAILURE;
-import static org.glassfish.internal.deployment.Deployment.UNDEPLOYMENT_FAILURE;
-import static org.glassfish.web.LogFacade.CANNOT_UPDATE_NON_EXISTENCE_VS;
-import static org.glassfish.web.LogFacade.DEFAULT_WEB_MODULE_CONFLICT;
-import static org.glassfish.web.LogFacade.DEFAULT_WEB_MODULE_ERROR;
-import static org.glassfish.web.LogFacade.DISABLE_WEB_MODULE_ERROR;
-import static org.glassfish.web.LogFacade.DUPLICATE_CONTEXT_ROOT;
-import static org.glassfish.web.LogFacade.DUPLICATE_HOST_NAME;
-import static org.glassfish.web.LogFacade.EXCEPTION_DURING_DESTROY;
-import static org.glassfish.web.LogFacade.EXCEPTION_SET_SCHEMAS_DTDS_LOCATION;
-import static org.glassfish.web.LogFacade.HTTP_LISTENER_CREATED;
-import static org.glassfish.web.LogFacade.INVALID_ENCODED_CONTEXT_ROOT;
-import static org.glassfish.web.LogFacade.JK_LISTENER_CREATED;
-import static org.glassfish.web.LogFacade.LISTENER_REFERENCED_BY_HOST_NOT_EXIST;
-import static org.glassfish.web.LogFacade.LOADING_WEB_MODULE;
-import static org.glassfish.web.LogFacade.LOAD_WEB_MODULE_ERROR;
-import static org.glassfish.web.LogFacade.MAX_DISPATCH_DEPTH_SET;
-import static org.glassfish.web.LogFacade.MUST_NOT_DISABLE;
-import static org.glassfish.web.LogFacade.UNABLE_TO_SET_CONTEXT_ROOT;
-import static org.glassfish.web.LogFacade.UNABLE_TO_START_WEB_CONTAINER;
-import static org.glassfish.web.LogFacade.UNABLE_TO_STOP_WEB_CONTAINER;
-import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_CREATED;
-import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_INVALID_DOCROOT;
-import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE;
-import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_SET_JK_LISTENER_NAME;
-import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_SET_LISTENER_NAME;
-import static org.glassfish.web.LogFacade.VS_UPDATED_NETWORK_LISTENERS;
-import static org.glassfish.web.LogFacade.WEB_CONTAINER_NOT_STARTED;
-import static org.glassfish.web.LogFacade.WEB_MODULE_LOADING;
-import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS;
-import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_TO_VS;
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.security.ee.SecurityDeployer;
+import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.server.logging.LoggingRuntime;
+import com.sun.enterprise.util.Result;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
+import com.sun.enterprise.v3.services.impl.ContainerMapper;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
+import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
+import com.sun.enterprise.web.logger.IASLogger;
+import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
+import com.sun.enterprise.web.reconfig.WebConfigListener;
+
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 
 import java.io.File;
 import java.net.BindException;
@@ -109,6 +87,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -187,37 +166,32 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.container.common.spi.JCDIService;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.security.ee.SecurityDeployer;
-import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.server.logging.LoggingRuntime;
-import com.sun.enterprise.util.Result;
-import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.hotdeploy.ApplicationState;
-import fish.payara.nucleus.hotdeploy.HotDeployService;
-import com.sun.enterprise.v3.services.impl.ContainerMapper;
-import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
-import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
-import com.sun.enterprise.web.logger.IASLogger;
-import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.enterprise.web.reconfig.WebConfigListener;
-import java.util.Optional;
+import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
+import static com.sun.enterprise.util.StringUtils.parseStringList;
+import static com.sun.enterprise.util.io.FileUtils.makeFriendlyFilename;
+import static com.sun.enterprise.web.Constants.ACCESS_LOGGING_ENABLED;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_PREFIX;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_PROPERTY;
+import static com.sun.enterprise.web.Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY;
+import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
+import static com.sun.enterprise.web.Constants.ERROR_REPORT_VALVE;
+import static com.sun.enterprise.web.Constants.SSO_ENABLED;
+import static java.text.MessageFormat.format;
+import static java.util.Arrays.stream;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
+import static org.glassfish.api.event.EventTypes.PREPARE_SHUTDOWN;
+import static org.glassfish.api.web.Constants.ADMIN_VS;
+import static org.glassfish.internal.deployment.Deployment.ALL_APPLICATIONS_PROCESSED;
+import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_FAILURE;
+import static org.glassfish.internal.deployment.Deployment.UNDEPLOYMENT_FAILURE;
+import static org.glassfish.web.LogFacade.*;
 
 /**
  * Web container service
@@ -341,12 +315,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * The default-redirect port
      */
     protected int defaultRedirectPort = -1;
-
-    /**
-     * <tt>false</tt> when the Grizzly File Cache is enabled. When disabled the Servlet Container temporary Naming cache is
-     * used when loading the resources.
-     */
-    // protected boolean catalinaCachingAllowed = true;
 
     @Inject
     protected ServerEnvironment instance = null;
@@ -1386,9 +1354,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     /**
      * Configures a default web module for each virtual server based on the virtual server's docroot if a virtual server
      * does not specify any default-web-module, and none of its web modules are loaded at "/"
-     * <p/>
+     * <p>
      * Needed in postConstruct before Deployment.ALL_APPLICATIONS_PROCESSED for "jsp from docroot before web container
      * start" scenario
+     *
+     * @see AdminConsoleAdapter -
      */
     public void loadSystemDefaultWebModules() {
         for (VirtualServer virtualServer : getVirtualServers()) {
@@ -1484,7 +1454,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     public void loadDefaultWebModule(VirtualServer virtualServer) {
 
-        String defaultPath = null;
+        final String defaultPath;
         WebModuleConfig wmInfo = virtualServer.getDefaultWebModule(domain, serviceLocator.<WebArchivist>getService(WebArchivist.class), appRegistry);
         if (wmInfo != null) {
             defaultPath = wmInfo.getContextPath();
@@ -1499,7 +1469,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             // Create default web module off of virtual
             // server's docroot if necessary
             wmInfo = virtualServer.createSystemDefaultWebModuleIfNecessary(serviceLocator.getService(WebArchivist.class));
-            if (wmInfo != null) {
+            if (wmInfo == null) {
+                defaultPath = null;
+            } else {
                 defaultPath = wmInfo.getContextPath();
                 loadStandaloneWebModule(virtualServer, wmInfo);
             }
@@ -1681,14 +1653,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModuleConfig.setWorkDirBase(_appsWorkRoot);
         webModuleConfig.setStubBaseDir(appsStubRoot);
 
-        String displayContextPath;
-        if (webModuleContextPath.length() == 0) {
+        final String displayContextPath;
+        if (webModuleContextPath.isEmpty()) {
             displayContextPath = "/";
         } else {
             displayContextPath = webModuleContextPath;
         }
 
-        File docBase;
+        final File docBase;
         if (JWS_APPCLIENT_MODULE_NAME.equals(webModuleName)) {
             docBase = new File(System.getProperty("com.sun.aas.installRoot"));
         } else {
@@ -1755,16 +1727,13 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setUseNaming(false);
 
         // Set JSR 77 object name and attributes
-        Engine engine = (Engine) virtualServer.getParent();
-        if (engine != null) {
-            webModule.setEngineName(engine.getName());
-            webModule.setJvmRoute(engine.getJvmRoute());
+        Engine vsContainer = (Engine) virtualServer.getParent();
+        if (vsContainer != null) {
+            webModule.setEngineName(vsContainer.getName());
+            webModule.setJvmRoute(vsContainer.getJvmRoute());
         }
-        String j2eeServer = _serverContext.getInstanceName();
-        String domain = _serverContext.getDefaultDomainName();
-        webModule.setDomain(domain);
-
-        webModule.setJ2EEServer(j2eeServer);
+        webModule.setDomain(_serverContext.getDefaultDomainName());
+        webModule.setJ2EEServer(_serverContext.getInstanceName());
         webModule.setJ2EEApplication(j2eeApplication);
         webModule.setCacheControls(virtualServer.getCacheControls());
         webModule.setBean(webModuleConfig.getBean());
@@ -1776,22 +1745,18 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             webModule.addAdHocSubtrees(adHocSubtrees);
         }
 
-        // Object containing web.xml information
-        WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
-
-        // Set the context root
-        if (webBundleDescriptor != null) {
-            webModule.setContextRoot(webBundleDescriptor.getContextRoot());
-        } else {
-            // Should never happen.
+        final WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
+        if (webBundleDescriptor == null) {
             logger.log(WARNING, UNABLE_TO_SET_CONTEXT_ROOT, webModuleConfig);
+        } else {
+            webModule.setContextRoot(webBundleDescriptor.getContextRoot());
         }
 
         //
         // Ensure that the generated directory for JSPs in the document root
         // (i.e. those that are serviced by a system default-web-module)
         // is different for each virtual server.
-        String webModuleWorkDir = webModuleConfig.getWorkDir();
+        final String webModuleWorkDir = webModuleConfig.getWorkDir();
         if (webModuleWorkDir != null) {
             StringBuilder workDir = new StringBuilder(webModuleConfig.getWorkDir());
             if (webModuleName.equals(DEFAULT_WEB_MODULE_NAME)) {
@@ -1814,29 +1779,15 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
-
         if (webBundleDescriptor != null) {
-            String resourceType = webModuleConfig.getObjectType();
-            boolean isSystem = resourceType != null && resourceType.startsWith("system-");
-
-            // Security will generate policy for system default web module
-            // TODO : v3 : dochez Need to remove dependency on security
-            Realm realm = serviceLocator.getService(Realm.class);
-            if ("null".equals(j2eeApplication)) {
-
-                // Standalone webapps inherit the realm referenced by the virtual server on which they are being deployed, unless they
-                // specify their own
-                if (realm != null && realm instanceof RealmInitializer) {
-                    ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem, virtualServer.getAuthRealmName());
-                    webModule.setRealm(realm);
-                }
-            } else {
-                if (realm != null && realm instanceof RealmInitializer) {
-                    ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem, null);
-                    webModule.setRealm(realm);
-                }
+            final boolean isSystem = webModuleConfig.isSystemObjectType();
+            final Realm realm = serviceLocator.getService(Realm.class);
+            logger.finest(() -> "Realm provided by the service locator: " + realm);
+            if (realm instanceof RealmInitializer) {
+                ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem,
+                    virtualServer.getAuthRealmName());
             }
-
+            webModule.setRealm(realm);
             // post processing DOL object for standalone web module
             if (webBundleDescriptor.getApplication() != null && webBundleDescriptor.getApplication().isVirtual()) {
                 webBundleDescriptor.visit(new WebValidatorWithoutCL());
@@ -1888,12 +1839,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
 
         // Object containing sun-web.xml information
-        SunWebAppImpl iasBean = null;
-
         // The default context is the only case when wbd == null
-        if (webBundleDescriptor != null) {
-            iasBean = (SunWebAppImpl) webBundleDescriptor.getSunDescriptor();
-        }
+        final SunWebAppImpl iasBean = webBundleDescriptor == null ? null
+            : (SunWebAppImpl) webBundleDescriptor.getSunDescriptor();
 
         // set the sun-web config bean
         webModule.setIasWebAppConfigBean(iasBean);
@@ -1942,7 +1890,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         return servletNames;
     }
 
-    /*
+    /**
      * Updates the given virtual server with the given default path.
      *
      * The given default path corresponds to the context path of one of the web contexts deployed on the virtual server that
@@ -1956,16 +1904,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * default web module, or null if the virtual server no longer has any default-web-module
      */
 
-    protected void updateDefaultWebModule(VirtualServer virtualServer, String[] listenerNames, WebModuleConfig webModuleConfig) throws LifecycleException {
+    protected void updateDefaultWebModule(VirtualServer virtualServer, String[] listenerNames,
+        WebModuleConfig webModuleConfig) throws LifecycleException {
 
         String defaultContextPath = null;
         if (webModuleConfig != null) {
             defaultContextPath = webModuleConfig.getContextPath();
-        }
-
-        if (defaultContextPath != null && !defaultContextPath.startsWith("/")) {
-            defaultContextPath = "/" + defaultContextPath;
-            webModuleConfig.getDescriptor().setContextRoot(defaultContextPath);
+            if (defaultContextPath != null && !defaultContextPath.startsWith("/")) {
+                defaultContextPath = "/" + defaultContextPath;
+                webModuleConfig.getDescriptor().setContextRoot(defaultContextPath);
+            }
         }
 
         Connector[] connectors = _embedded.findConnectors();
@@ -2174,12 +2122,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     private void configureDynamicReloadingSettings() {
         if (dasConfig != null) {
-            String seconds = dasConfig.getDynamicReloadPollIntervalInSeconds();
-            if (seconds != null) {
-                try {
-                } catch (NumberFormatException e) {
-                }
-            }
+            // TODO: dead code removed, but this still can have side effects.
+            dasConfig.getDynamicReloadPollIntervalInSeconds();
         }
     }
 

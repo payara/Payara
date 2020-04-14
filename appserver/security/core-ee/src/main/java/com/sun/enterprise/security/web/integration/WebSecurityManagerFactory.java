@@ -37,11 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.FINE;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
+import com.sun.enterprise.security.factory.SecurityManagerFactory;
+import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
+import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
+import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -57,12 +61,8 @@ import javax.security.jacc.PolicyContextException;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.factory.SecurityManagerFactory;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
-import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.CONFIG;
 
 /**
  * @author JeanFrancois Arcand
@@ -72,18 +72,18 @@ import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
 @Singleton
 public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
-    private static Logger logger = Logger.getLogger(SECURITY_LOGGER);
+    private static final Logger logger = Logger.getLogger(SECURITY_LOGGER);
 
-    private WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
-    
+    private final WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
+
     public final PolicyContextHandlerImpl pcHandlerImpl = (PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance();
 
     public final Map<String, Principal> adminPrincipalsPerApp = new ConcurrentHashMap<>();
     public final Map<String, Principal> adminGroupsPerApp = new ConcurrentHashMap<>();
 
     // Stores the Context IDs to application names for standalone web applications
-    private Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
-    private Map<String, Map<String, JaccWebAuthorizationManager>> SECURITY_MANAGERS = new HashMap<>();
+    private final Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
+    private final Map<String, Map<String, JaccWebAuthorizationManager>> SECURITY_MANAGERS = new HashMap<>();
 
     public WebSecurityManagerFactory() {
         // Registers the JACC policy handlers, which provide objects JACC Providers and other code can use
@@ -100,15 +100,13 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
         if (manager == null || !register) {
             try {
-                
                 // Create a new JaccWebAuthorizationManager for this context
-                
                 probeProvider.securityManagerCreationStartedEvent(webBundleDescriptor.getModuleID());
-                
+
                 // As "side-effect" of constructing the manager, the web constraints in the web bundle
                 // descriptor will be translated to permissions and loaded into a JACC policy configuration
                 manager = new JaccWebAuthorizationManager(webBundleDescriptor, context, this, register);
-                
+
                 probeProvider.securityManagerCreationEndedEvent(webBundleDescriptor.getModuleID());
 
                 if (register) {
@@ -116,8 +114,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
                     probeProvider.securityManagerCreationEvent(contextId);
                 }
             } catch (PolicyContextException e) {
-                logger.log(FINE, "[Web-Security] FATAL Exception. Unable to create WebSecurityManager: " + e.getMessage());
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Unable to create WebSecurityManager", e);
             }
         }
 
@@ -143,10 +140,10 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
     public <T> void addManagerToApp(String contextId, String name, String appName, JaccWebAuthorizationManager manager) {
         addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, contextId, name, appName, manager);
     }
-    
-    
+
+
     // ### PrincipalGroupFactoryImpl backing
-    
+
     public void addAdminPrincipal(String username, String realmName, Principal principal) {
         adminPrincipalsPerApp.put(realmName + username, principal);
     }
@@ -154,7 +151,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
     public void addAdminGroup(String group, String realmName, Principal principal) {
         adminGroupsPerApp.put(realmName + group, principal);
     }
-    
+
     public Principal getAdminPrincipal(String username, String realmName) {
         return adminPrincipalsPerApp.get(realmName + username);
     }

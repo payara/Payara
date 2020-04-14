@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import com.sun.enterprise.deployment.Application;
@@ -103,6 +103,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -113,6 +114,7 @@ import static com.sun.enterprise.security.SecurityContext.setUnauthenticatedCont
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
 import static com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator.HTTP_DIGEST;
 import static com.sun.logging.LogDomains.WEB_LOGGER;
+import static java.lang.String.format;
 import static java.net.URLEncoder.encode;
 import static java.security.AccessController.doPrivileged;
 import static java.util.Arrays.asList;
@@ -137,8 +139,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public static final String BASIC = "BASIC";
     public static final String FORM = "FORM";
 
-    private static final Logger logger = LogDomains.getLogger(RealmAdapter.class, WEB_LOGGER);
-    private static final ResourceBundle resourceBundle = logger.getResourceBundle();
+    private static final Logger LOG = LogDomains.getLogger(RealmAdapter.class, WEB_LOGGER);
+    private static final ResourceBundle resourceBundle = LOG.getResourceBundle();
 
     private WebBundleDescriptor webDescriptor;
     private HashMap<String, String> runAsPrincipals;
@@ -220,34 +222,38 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         this.moduleID = moduleID;
     }
 
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param bundleDescriptor must be an instance of {@link WebBundleDescriptor}
+     */
     @Override
-    public void initializeRealm(Object descriptor, boolean isSystemApp, String realmName) {
-        webDescriptor = (WebBundleDescriptor) descriptor;
-
-        this.realmName = computeRealmName(webDescriptor, realmName);
-
+    public void initializeRealm(Object bundleDescriptor, boolean isSystemApp, String defaultRealmName) {
+        webDescriptor = (WebBundleDescriptor) bundleDescriptor;
+        LOG.config(
+            () -> format("initializeRealm(bundleDescriptor.appContextId=%s, isSystemApp=%s, defaultRealmName=%s)",
+                webDescriptor.getAppContextId(), isSystemApp, defaultRealmName));
+        realmName = computeRealmName(defaultRealmName);
         jaccContextId = JaccWebAuthorizationManager.getContextID(webDescriptor);
-
-        runAsPrincipals = new HashMap<String, String>();
-
+        runAsPrincipals = new HashMap<>();
         for (WebComponentDescriptor componentDescriptor : webDescriptor.getWebComponentDescriptors()) {
             RunAsIdentityDescriptor runAsDescriptor = componentDescriptor.getRunAsIdentity();
 
             if (runAsDescriptor != null) {
                 String principal = runAsDescriptor.getPrincipal();
                 String servlet = componentDescriptor.getCanonicalName();
-
                 if (principal == null || servlet == null) {
-                    logger.warning("web.realmadapter.norunas");
+                    LOG.warning("web.realmadapter.norunas");
                 } else {
                     runAsPrincipals.put(servlet, principal);
-                    logger.fine("Servlet " + servlet + " will run-as: " + principal);
+                    LOG.fine(() -> "Servlet " + servlet + " will run-as: " + principal);
                 }
             }
         }
 
         moduleID = webDescriptor.getModuleID();
-        jaspicRealm = new JaspicRealm(this.realmName, isSystemApp, webDescriptor, requestTracing);
+        jaspicRealm = new JaspicRealm(realmName, isSystemApp, webDescriptor, requestTracing);
         cNonceValidator = new CNonceValidator(webDescriptor, appCNonceCacheMapProvider, cNonceCacheFactoryProvider);
     }
 
@@ -432,33 +438,25 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             throw iex;
         } catch (Throwable ex) {
             sendServiceUnavailable(response, ex);
-
             return AUTHENTICATED_NOT_AUTHORIZED;
         }
 
         if (isGranted) {
-
             if (hasRequestPrincipal(request)) {
-
                 disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
-
                 if (ssoEnabled) {
                     HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
-
                     if (!getJaccWebAuthorizationManager(true).isPermitAll(httpServletRequest)) {
-
                         // Create a session for protected SSO association
                         httpServletRequest.getSession(true);
                     }
                 }
             }
-
             return AUTHENTICATE_NOT_NEEDED;
         }
 
         if (hasRequestPrincipal(request)) {
             sendForbidden(response);
-
             return AUTHENTICATED_NOT_AUTHORIZED;
         }
 
@@ -503,6 +501,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         return realmName;
     }
 
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param container - must be an instance of {@link Container}
+     */
     @Override
     public void setVirtualServer(Object container) {
         jaspicRealm.setVirtualServer((Container) container);
@@ -519,14 +523,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 jaccWebAuthorizationManager.release();
                 jaccWebAuthorizationManager.destroy();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, "Failed to release and destroy the jaccWebAuthorizationManager", ex);
             }
 
             jaccWebAuthorizationManager = webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
-
-            if (logger.isLoggable(FINE)) {
-                logger.fine("JaccWebAuthorizationManager for " + jaccContextId + " has been updated");
-            }
+            LOG.fine(() -> "JaccWebAuthorizationManager for " + jaccContextId + " has been updated");
         }
     }
 
@@ -542,15 +543,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     @Override
     public Principal authenticate(String username, char[] password) {
-        if (logger.isLoggable(FINE)) {
-            logger.fine("Tomcat callback for authenticate user/password");
-            logger.fine("usename = " + username);
-        }
-
+        LOG.finest(() -> format("authenticate(username=%s, password)", username));
         if (authenticate(username, password, null, null)) {
             return new WebPrincipal(username, password, SecurityContext.getCurrent());
         }
-
         return null;
     }
 
@@ -563,14 +559,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public Principal authenticate(HttpServletRequest httpServletRequest) {
         DigestAlgorithmParameter[] params;
         String username;
-
         try {
             params = getDigestParameters(httpServletRequest);
             username = getDigestKey(params).getUsername();
         } catch (Exception le) {
-            if (logger.isLoggable(WARNING)) {
-                logger.log(WARNING, "web.login.failed", le.toString());
-            }
+            LOG.log(WARNING, "web.login.failed", (Object) le);
             return null;
         }
 
@@ -615,7 +608,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         } catch (IOException iex) {
             throw iex;
         } catch (Throwable ex) {
-            logger.log(SEVERE, "web_server.excep_authenticate_realmadapter", ex);
+            LOG.log(SEVERE, "web_server.excep_authenticate_realmadapter", ex);
             ((HttpServletResponse) response.getResponse()).sendError(SC_SERVICE_UNAVAILABLE);
             response.setDetailMessage(resourceBundle.getString("realmBase.forbidden"));
 
@@ -668,17 +661,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         if (authorizationManager == null) {
             return false;
         }
-
         String servletName = getCanonicalName(request);
-
         boolean isGranted = authorizationManager.hasRoleRefPermission(servletName, role, principal);
-
-        if (logger.isLoggable(FINE)) {
-            logger.fine(
-                "Checking if servlet " + servletName + " with principal " + principal +
-                " has role " + role + " isGranted: " + isGranted);
-        }
-
+        LOG.fine(() -> "Checking if servlet " + servletName + " with principal " + principal +
+            " has role " + role + " isGranted: " + isGranted);
         return isGranted;
     }
 
@@ -740,13 +726,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     public JaccWebAuthorizationManager getJaccWebAuthorizationManager(boolean logNull) {
         if (jaccWebAuthorizationManager == null) {
-
             synchronized (this) {
                 jaccWebAuthorizationManager = webSecurityManagerFactory.getManager(jaccContextId, null, false);
             }
-
             if (jaccWebAuthorizationManager == null && logNull) {
-                logger.log(WARNING, "realmAdapter.noWebSecMgr", jaccContextId);
+                LOG.log(WARNING, "realmAdapter.noWebSecMgr", jaccContextId);
             }
         }
 
@@ -762,15 +746,15 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * @return Principal for the user username HERCULES:add
      */
     public Principal createFailOveredPrincipal(String username) {
-        logger.log(FINEST, "IN createFailOveredPrincipal ({0})", username);
+        LOG.log(FINEST, "createFailOveredPrincipal ({0})", username);
 
         // Set the appropriate security context
         loginForRunAs(username);
         SecurityContext securityContext = SecurityContext.getCurrent();
-        logger.log(FINE, "Security context is {0}", securityContext);
+        LOG.log(FINE, "Security context is {0}", securityContext);
 
         Principal principal = new WebPrincipal(username, (char[]) null, securityContext);
-        logger.log(INFO, "Principal created for FailOvered user {0}", principal);
+        LOG.log(INFO, "Principal created for FailOvered user {0}", principal);
 
         return principal;
     }
@@ -829,9 +813,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             // Set the run-as principal into SecurityContext
             loginForRunAs(runAs);
 
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("run-as principal for " + servletName + " set to: " + runAs);
-            }
+            LOG.fine(() -> "run-as principal for " + servletName + " set to: " + runAs);
         }
     }
 
@@ -895,66 +877,43 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private boolean authenticate(String username, char[] password, X509Certificate[] certs, DigestAlgorithmParameter[] digestParams) {
         try {
             if (certs != null) {
-
                 // Certificate credential used to authenticate
-
                 WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
             } else if (digestParams != null) {
-
                 // Digest credential used to authenticate
-
                 WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
-            }
-            else {
-
+            } else {
                 // Username/password credential used to authenticate
-
                 WebAndEjbToJaasBridge.login(username, password, realmName);
             }
-
-            if (logger.isLoggable(FINE)) {
-                logger.log(FINE, "Web login succeeded for: " + username);
-            }
-
+            LOG.log(FINE, () -> "Web login succeeded for: " + username);
             return true;
-
         } catch (Exception le) {
-            if (logger.isLoggable(WARNING)) {
-                logger.log(WARNING, "web.login.failed", le.toString());
-                if (logger.isLoggable(FINE)) {
-                    logger.log(FINE, "Exception", le);
-                }
+            LOG.log(WARNING, "web.login.failed", (Object) le);
+            if (LOG.isLoggable(FINE)) {
+                LOG.log(FINE, "Web login failed for user " + username, le);
             }
+            return false;
         }
-
-        return false;
     }
 
-    private String computeRealmName(WebBundleDescriptor webDescriptor, String realmName) {
+    private String computeRealmName(String defaultRealmName) {
         Application application = webDescriptor.getApplication();
         LoginConfiguration loginConfig = webDescriptor.getLoginConfiguration();
         String computedRealmName = application.getRealm();
         if (computedRealmName == null && loginConfig != null) {
             computedRealmName = loginConfig.getRealmName();
         }
-        if (realmName != null && (computedRealmName == null || computedRealmName.equals(""))) {
-            computedRealmName = realmName;
+        if (defaultRealmName != null && (computedRealmName == null || computedRealmName.isEmpty())) {
+            computedRealmName = defaultRealmName;
         }
         return computedRealmName;
     }
 
     private void doLogout(HttpRequest request, boolean extensionEnabled) {
-        Context context = request.getContext();
-
-        Authenticator authenticator = null;
-        if (context != null) {
-            authenticator = context.getAuthenticator();
-        }
-
-        if (authenticator == null) {
-            throw new RuntimeException("Context or Authenticator is null");
-        }
-
+        final Context context = request.getContext();
+        final Authenticator authenticator = context == null ? null : context.getAuthenticator();
+        Objects.requireNonNull(authenticator, "Context or Authenticator is null");
         try {
             if (extensionEnabled) {
                 new AuthenticatorProxy(authenticator, null, null).logout(request);
@@ -1077,30 +1036,16 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         if (loginPage != null || errorPage != null) {
-
             String requestURI = request.getRequestPathMB().toString();
-
-            if (logger.isLoggable(FINE)) {
-                logger.fine("[Web-Security]  requestURI: " + requestURI + " loginPage: " + loginPage);
-            }
-
+            LOG.fine(() -> "[Web-Security]  requestURI: " + requestURI + " loginPage: " + loginPage);
             if (loginPage != null && loginPage.equals(requestURI)) {
-                if (logger.isLoggable(FINE)) {
-                    logger.fine(" Allow access to login page " + loginPage);
-                }
-
+                LOG.fine(() -> " Allow access to login page " + loginPage);
                 return true;
             } else if (errorPage != null && errorPage.equals(requestURI)) {
-                if (logger.isLoggable(FINE)) {
-                    logger.fine(" Allow access to error page " + errorPage);
-                }
-
+                LOG.fine(() -> " Allow access to error page " + errorPage);
                 return true;
             } else if (requestURI.endsWith(FORM_ACTION)) {
-                if (logger.isLoggable(FINE)) {
-                    logger.fine(" Allow access to username/password submission");
-                }
-
+                LOG.fine(" Allow access to username/password submission");
                 return true;
             }
         }
@@ -1110,10 +1055,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             request.setServletPath(getResourceName(httpServletRequest.getRequestURI(), httpServletRequest.getContextPath()));
         }
 
-        if (logger.isLoggable(FINE)) {
-            logger.fine("[Web-Security] [ hasResourcePermission ] Principal: " + httpServletRequest.getUserPrincipal() + " ContextPath: "
-                    + httpServletRequest.getContextPath());
-        }
+        LOG.fine(() -> "[Web-Security] [ hasResourcePermission ] Principal: " + httpServletRequest.getUserPrincipal()
+            + " ContextPath: " + httpServletRequest.getContextPath());
 
         JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(true);
         if (authorizationManager == null) {
@@ -1132,17 +1075,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
         // Is redirecting disabled?
         if (redirectPort <= 0) {
-            if (logger.isLoggable(INFO)) {
-                logger.fine("[Web-Security]  SSL redirect is disabled");
-            }
-
+            LOG.fine("[Web-Security]  SSL redirect is disabled");
             httpServletResponse.sendError(SC_FORBIDDEN, encode(httpServletRequest.getRequestURI(), "UTF-8"));
-
             return false;
         }
 
         StringBuilder file = new StringBuilder(httpServletRequest.getRequestURI());
-
         String requestedSessionId = httpServletRequest.getRequestedSessionId();
         if (requestedSessionId != null && httpServletRequest.isRequestedSessionIdFromURL()) {
             file.append(";" + Globals.SESSION_PARAMETER_NAME + "=");
@@ -1156,10 +1094,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         List<String> hostAndPort = getHostAndPort(request);
-
         try {
             httpServletResponse
-                    .sendRedirect(new URL("https", hostAndPort.get(0), Integer.parseInt((hostAndPort.get(1))), file.toString()).toString());
+                .sendRedirect(
+                    new URL("https", hostAndPort.get(0), Integer.parseInt((hostAndPort.get(1))), file.toString())
+                        .toExternalForm());
             return false;
         } catch (MalformedURLException e) {
             httpServletResponse.sendError(SC_INTERNAL_SERVER_ERROR, encode(httpServletRequest.getRequestURI(), "UTF-8"));
@@ -1284,44 +1223,32 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     private void logHasUserDataPermission(HttpServletRequest httpServletRequest) {
-        if (logger.isLoggable(FINE)) {
-            logger.fine(
-                "[Web-Security][ hasUserDataPermission ] Principal: " + httpServletRequest.getUserPrincipal() +
-                " ContextPath: " + httpServletRequest.getContextPath());
-        }
+        LOG.fine(() -> "[Web-Security][ hasUserDataPermission ] Principal: " + httpServletRequest.getUserPrincipal()
+            + " ContextPath: " + httpServletRequest.getContextPath());
     }
 
     private void logRequestSecure(HttpRequest request) {
-        if (logger.isLoggable(FINE)) {
-            logger.fine("[Web-Security] request.getRequest().isSecure(): " + request.getRequest().isSecure());
-        }
+        LOG.fine(() -> "[Web-Security] request.getRequest().isSecure(): " + request.getRequest().isSecure());
     }
 
     private void logSSLRedirect() {
-        if (logger.isLoggable(FINE)) {
-            logger.fine("[Web-Security] redirecting using SSL");
-        }
+        LOG.fine("[Web-Security] redirecting using SSL");
     }
 
     private void sendBadRequest(HttpResponse response, Exception e) throws IOException {
-        logger.log(WARNING, resourceBundle.getString("realmAdapter.badRequestWithId"), e);
-
+        LOG.log(WARNING, resourceBundle.getString("realmAdapter.badRequestWithId"), e);
         HttpServletResponse httpServletResponse  = (HttpServletResponse) response.getResponse();
-
         httpServletResponse.sendError(SC_BAD_REQUEST, resourceBundle.getString("realmAdapter.badRequest"));
     }
 
     private void sendForbidden(HttpResponse response) throws IOException {
         HttpServletResponse httpServletResponse  = (HttpServletResponse) response.getResponse();
-
         httpServletResponse.sendError(SC_FORBIDDEN, resourceBundle.getString("realmBase.forbidden"));
     }
 
     private void sendServiceUnavailable(HttpResponse response, Throwable e) throws IOException {
-        logger.log(SEVERE, "web_server.excep_authenticate_realmadapter", e);
-
+        LOG.log(SEVERE, "web_server.excep_authenticate_realmadapter", e);
         HttpServletResponse httpServletResponse  = (HttpServletResponse) response.getResponse();
-
         httpServletResponse.sendError(SC_SERVICE_UNAVAILABLE);
         response.setDetailMessage(resourceBundle.getString("realmBase.forbidden"));
     }
@@ -1331,14 +1258,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         PolicyContext.setContextID(null);
     }
 
-    // inner class extends AuthenticatorBase such that session registration
-    // of webtier can be invoked by RealmAdapter after authentication
-    // by authentication module.
-
-
-
-
-    // Moved from J2EEInstanceListener.java
     private SecurityContext getSecurityContextForPrincipal(Principal principal) {
         if (principal == null) {
             return null;
@@ -1406,7 +1325,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     @FunctionalInterface
-    public static interface IOSupplier<T> {
+    public interface IOSupplier<T> {
 
         /**
          * Gets a result.

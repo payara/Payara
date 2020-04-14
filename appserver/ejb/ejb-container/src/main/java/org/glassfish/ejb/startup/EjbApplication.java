@@ -84,38 +84,34 @@ import org.glassfish.pfl.dynamic.codegen.spi.Wrapper;
  */
 @Service(name = "ejb")
 @PerLookup
-public class EjbApplication
-        implements ApplicationContainer<Collection<EjbDescriptor>> {
+public class EjbApplication implements ApplicationContainer<Collection<EjbDescriptor>> {
 
-    private static final Logger _logger =
-                LogDomains.getLogger(EjbApplication.class, LogDomains.EJB_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(EjbApplication.class, LogDomains.EJB_LOGGER);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EjbApplication.class);
+
+    private static final String CONTAINER_LIST_KEY = "org.glassfish.ejb.startup.EjbContainerList";
+    private static final String EJB_APP_MARKED_AS_STARTED_STATUS = "org.glassfish.ejb.startup.EjbApplicationMarkedAsStarted";
+    static final String KEEP_STATE = "org.glassfish.ejb.startup.keepstate";
 
     // must be already set before using this service.
     @SuppressWarnings("unused")
     @Inject
     private SecurityLifecycle securityLifecycle;
 
-    private EjbBundleDescriptorImpl ejbBundle;
-    private Collection<EjbDescriptor> ejbs;
-    private Collection<Container> containers = new ArrayList<>();
-    private ClassLoader ejbAppClassLoader;
-    private DeploymentContext dc;
-    
-    private ServiceLocator services;
+    private final EjbBundleDescriptorImpl ejbBundle;
+    private final Collection<EjbDescriptor> ejbs;
+    private final Collection<Container> containers = new ArrayList<>();
+    private final ClassLoader ejbAppClassLoader;
+    private final DeploymentContext dc;
+
+    private final ServiceLocator services;
 
     private SingletonLifeCycleManager singletonLCM;
 
-    private boolean initializeInOrder;
+    private final boolean initializeInOrder;
 
     private volatile boolean started;
 
-    private static final String CONTAINER_LIST_KEY = "org.glassfish.ejb.startup.EjbContainerList";
-
-    private static final String EJB_APP_MARKED_AS_STARTED_STATUS = "org.glassfish.ejb.startup.EjbApplicationMarkedAsStarted";
-
-    static final String KEEP_STATE = "org.glassfish.ejb.startup.keepstate";
-    private static final LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(EjbApplication.class);
 
   public EjbApplication(
             EjbBundleDescriptorImpl bundle, DeploymentContext dc,
@@ -128,7 +124,7 @@ public class EjbApplication
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
-    
+
     @Override
     public Collection<EjbDescriptor> getDescriptor() {
         return ejbs;
@@ -163,7 +159,7 @@ public class EjbApplication
                 dc.addTransientAppMetaData(EJB_APP_MARKED_AS_STARTED_STATUS, Boolean.TRUE);
             }
         }
-        
+
         try {
             DeployCommandParameters params = ((DeploymentContext)startupContext).
                     getCommandParameters(DeployCommandParameters.class);
@@ -240,12 +236,12 @@ public class EjbApplication
             abortInitializationAfterException();
             throw new RuntimeException("EJB Container initialization error", t);
         } finally {
-            // clean up the thread local current classloader after codegen to ensure it isn't 
+            // clean up the thread local current classloader after codegen to ensure it isn't
             // referencing the deployed application
             CurrentClassLoader.set(this.getClass().getClassLoader());
             Wrapper._clear();
         }
-        
+
         return true;
     }
 
@@ -312,7 +308,7 @@ public class EjbApplication
 
         for (Container container : containers) {
             if( undeploy ) {
-                container.undeploy();      
+                container.undeploy();
             } else {
                 container.onShutdown();
             }
@@ -320,9 +316,9 @@ public class EjbApplication
                 container.getSecurityManager().destroy();
             }
         }
-        
+
         containers.clear();
-        
+
         return true;
     }
 
@@ -353,6 +349,7 @@ public class EjbApplication
      *
      * @return ClassLoader for this app
      */
+    @Override
     public ClassLoader getClassLoader() {
         return ejbAppClassLoader;
     }
@@ -418,7 +415,7 @@ public class EjbApplication
         }
         if(!isredeploy) {
             return false;
-        } 
+        }
 
         if (keepState == null) {
             Application app = bundleDesc.getApplication();

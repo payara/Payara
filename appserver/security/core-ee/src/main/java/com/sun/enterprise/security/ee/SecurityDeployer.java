@@ -87,6 +87,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
 import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
+import static java.util.logging.Level.CONFIG;
 import static java.util.logging.Level.WARNING;
 import static org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED;
 import static org.glassfish.internal.deployment.Deployment.APPLICATION_PREPARED;
@@ -103,7 +104,6 @@ import static org.glassfish.internal.deployment.Deployment.MODULE_LOADED;
 public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApplication> implements PostConstruct {
 
     private static final Logger _logger = LogDomains.getLogger(SecurityDeployer.class, LogDomains.SECURITY_LOGGER);
-
 
     // must be already set before using this service.
     @SuppressWarnings("unused")
@@ -253,19 +253,24 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @throws DeploymentException
      */
     public void loadPolicy(WebBundleDescriptor webDescriptor, boolean remove) throws DeploymentException {
+        if (webDescriptor == null) {
+            return;
+        }
         try {
-            if (webDescriptor != null) {
-                if (remove) {
-                    JaccWebAuthorizationManager authorizationManager = webSecurityManagerFactory.getManager(getContextID(webDescriptor), null, true);
-                    if (authorizationManager != null) {
-                        authorizationManager.release();
-                    }
+            if (remove) {
+                JaccWebAuthorizationManager authorizationManager = webSecurityManagerFactory
+                    .getManager(getContextID(webDescriptor), null, true);
+                if (authorizationManager != null) {
+                    authorizationManager.release();
                 }
-                webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
             }
-
-        } catch (Exception se) {
-            throw new DeploymentException("Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), se);
+            webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
+        } catch (Exception e) {
+            // log stacktrace and throw, because stacktrace of causes will be lost in DeploymentException
+            _logger.log(CONFIG,
+                "[Web-Security] FATAL Exception. Unable to create WebSecurityManager: " + e.getMessage(), e);
+            throw new DeploymentException(
+                "Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), e);
         }
     }
 
