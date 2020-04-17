@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import java.util.Map;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -80,6 +81,7 @@ public class SystemPropertyConfigSourceTest {
         System.out.println("getProperties");
         SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
         Properties expResult = System.getProperties();
+        Map<String, String> result = instance.getProperties();
         for (String stringPropertyName : expResult.stringPropertyNames()) {
             assertEquals(expResult.getProperty(stringPropertyName), instance.getValue(stringPropertyName));
         }
