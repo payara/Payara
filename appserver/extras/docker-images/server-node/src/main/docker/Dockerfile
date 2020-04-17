@@ -2,7 +2,7 @@ FROM @docker.java.image@
 
 ENV HOME_DIR=/opt/payara
 ENV PAYARA_DIR=${HOME_DIR}/@docker.payara.rootDirectoryName@ \
-    SCRIPT_DIR=/opt/payara\
+    SCRIPT_DIR=${HOME_DIR} \
     PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="" \
