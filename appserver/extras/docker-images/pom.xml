@@ -12,6 +12,7 @@
 
     <modules>
         <module>server-full</module>
+        <module>server-web</module>
         <module>server-node</module>
         <module>micro</module>
         <module>tests</module>
