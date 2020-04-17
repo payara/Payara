@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,77 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.Map;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-/**
- *
- * @author steve
- */
-public class EnvironmentConfigSourceTest {
-    
-    public EnvironmentConfigSourceTest() {
+import java.util.Properties;
+
+public class PayaraExpressionConfigSourceTest {
+
+    @Test
+    public void testTranslateSystemProperty() {
+        Properties properties = new Properties();
+        properties.put("fish.payara.expression.system", "${java.home}");
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
+
+        Assert.assertEquals(System.getProperty("java.home"), config.getValue("fish.payara.expression.system"));
     }
-    
-    @BeforeClass
-    public static void setUpClass() {
+
+    @Test
+    public void testTranslateEnvironmentProperty() {
+        Properties properties = new Properties();
+        properties.put("fish.payara.expression.env", "${ENV=PATH}");
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
+
+        Assert.assertEquals(System.getenv().get("PATH"), config.getValue("fish.payara.expression.env"));
     }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
+
+    @Test
+    public void testGetUndefinedProperty() {
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, new Properties());
+
+        Assert.assertNull(config.getValue("${java.home}"));
+        Assert.assertNull(config.getValue("java.home"));
+        Assert.assertNull(config.getValue("wibble"));
     }
 
     /**
-     * Test of getProperties method, of class EnvironmentConfigSource.
+     * Test to check
      */
     @Test
-    public void testGetProperties() {
-        System.out.println("getProperties");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        Map<String,String> environment = System.getenv();
-        for (String string : environment.keySet()) {
-            assertEquals(environment.get(string), instance.getValue(string));
-        }
+    public void testGetIncorrectProperty() {
+        Properties properties = new Properties();
+        properties.put("fish.payara.alias.incorrect", "java.home");
+        properties.put("fish.payara.alias.incorrect.system", "{wibbly.wobbly.timey.wimey}");
+        properties.put("fish.payara.alias.incorrect.env", "${ENV=wibbly.wobbly.timey.wimey}");
+        PayaraExpressionConfigSource config = new PayaraExpressionConfigSource(true, properties);
 
+        Assert.assertNull(config.getValue("fish.payara.alias.incorrect"));
+        Assert.assertNull(config.getValue("fish.payara.alias.incorrect.system"));
+        Assert.assertNull(config.getValue("fish.payara.alias.incorrect.env"));
     }
 
-    /**
-     * Test of getOrdinal method, of class EnvironmentConfigSource.
-     */
-    @Test
-    public void testGetOrdinal() {
-        System.out.println("getOrdinal");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        int expResult = 300;
-        int result = instance.getOrdinal();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getName method, of class EnvironmentConfigSource.
-     */
-    @Test
-    public void testGetName() {
-        System.out.println("getName");
-        EnvironmentConfigSource instance = new EnvironmentConfigSource();
-        String expResult = "Environment";
-        String result = instance.getName();
-        assertEquals(expResult, result);
-    }
-    
 }

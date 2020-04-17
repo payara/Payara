@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,71 +37,64 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.HashMap;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.config.support.TranslatedConfigView;
+
 import java.util.Map;
 import java.util.Properties;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ServerContext;
+import java.util.stream.Collectors;
 
 /**
+ * Config source for the payara-expression-config.properties file. This config source runs properties through the
+ * TranslatedConfigView class to perform substitutions on aliases, system properties, and environment variables.
  *
- * @author Steve Millidge (Payara Foundation)
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class SystemPropertyConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PayaraExpressionConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    // Provides access to information on the server including;
-    // command line, initial context, service locator, installation
-    // Classloaders, config root for the server
-    private ServerContext context;
+    private final Properties properties;
 
-    public SystemPropertyConfigSource() {
-        context = Globals.getDefaultHabitat().getService(ServerContext.class);
-    }
-
-    /**
-     * Only use in unit tests
-     * @param test
-     */
-    SystemPropertyConfigSource(boolean test) {
-        super(test);
-    }
-
-
-
-    @Override
-    public Map<String, String> getProperties() {
-        Properties props = System.getProperties();
-        HashMap<String, String> result = new HashMap<>(props.size());
-        for (String propertyName : props.stringPropertyNames()) {
-            result.put(propertyName, props.getProperty(propertyName));
-        }
-        return result;
+    public PayaraExpressionConfigSource(Properties properties) {
+        super();
+        this.properties = properties;
     }
 
     @Override
     public int getOrdinal() {
-        return 400;
+        return Integer.parseInt(configService.getMPConfig().getPayaraExpressionPropertiesOrdinality());
     }
 
     @Override
-    public String getValue(String propertyName) {
-        String result;
-        result = System.getProperty(propertyName);
-        if (result == null && context != null) {
-            result = context.getConfigBean().getSystemPropertyValue(propertyName);
-            if (result == null) {
-                result = domainConfiguration.getSystemPropertyValue(propertyName);
-            }
+    public Map<String, String> getProperties() {
+        return properties.entrySet().stream().collect(
+                Collectors.toMap(e -> e.getKey().toString(), e -> getValue(e.getValue().toString())));
+    }
+
+    @Override
+    public String getValue(String property) {
+        String payaraExpression = properties.getProperty(property);
+
+        // Null check for payaraExpression done in TranslatedConfigView.expandValue(payaraExpression)
+        String value = TranslatedConfigView.expandValue(payaraExpression);
+
+        // If returned value is null, or is the same as the pre-expanded payaraExpression, this means no match was found
+        if (value == null || value.equals(payaraExpression)) {
+            return null;
         }
-        return result;
+
+        return value;
     }
 
     @Override
     public String getName() {
-        return "SystemProperty";
+        return "Payara Expression Properties";
     }
 
+    PayaraExpressionConfigSource(boolean test, Properties properties) {
+        super(test);
+        this.properties = properties;
+    }
 }
