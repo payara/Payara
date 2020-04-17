@@ -13,6 +13,10 @@ pipeline {
     tools {
         jdk "zulu-8"
     }
+    environment {
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
+    }
     stages {
         stage('Report') {
             steps {

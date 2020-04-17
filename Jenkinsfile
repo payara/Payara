@@ -8,6 +8,10 @@ pipeline {
     options {
         disableConcurrentBuilds()
     }
+    environment {
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
+    }
     tools {
         jdk "zulu-8"
     }
