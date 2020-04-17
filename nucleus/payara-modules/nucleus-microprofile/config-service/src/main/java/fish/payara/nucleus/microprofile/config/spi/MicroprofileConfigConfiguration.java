@@ -53,45 +53,42 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
     
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
-    void setDomainOrdinality(String message);
+    public void setDomainOrdinality(String message);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
     String getConfigOrdinality();
-    void setConfigOrdinality(String message);
+    public void setConfigOrdinality(String message);    
     
     @Attribute(defaultValue = "130", dataType = Integer.class)
     String getServerOrdinality();
-    void setServerOrdinality(String message);
+    public void setServerOrdinality(String message);
 
     @Attribute(defaultValue = "140", dataType = Integer.class)
     String getApplicationOrdinality();
-    void setApplicationOrdinality(String message);
+    public void setApplicationOrdinality(String message);    
 
     @Attribute(defaultValue = "150", dataType = Integer.class)
     String getModuleOrdinality();
-    void setModuleOrdinality(String message);
+    public void setModuleOrdinality(String message);    
 
     @Attribute(defaultValue = "160", dataType = Integer.class)
     String getClusterOrdinality();
-    void setClusterOrdinality(String message);
+    public void setClusterOrdinality(String message);    
     
     @Attribute(defaultValue = "115", dataType = Integer.class)
     String getJNDIOrdinality();
-    void setJNDIOrdinality(String message);
+    public void setJNDIOrdinality(String message);  
     
     @Attribute(defaultValue = "secrets", dataType = String.class)
     String getSecretDir();
-    void setSecretDir(String directory);
+    public void setSecretDir(String directory);
     
     @Attribute(defaultValue = "90", dataType = Integer.class)
     String getSecretDirOrdinality();
-    void setSecretDirOrdinality(String message);
+    public void setSecretDirOrdinality(String message);  
 
     @Attribute(defaultValue = "105", dataType = Integer.class)
-    String getPasswordOrdinality();
-    void setPasswordOrdinality(String message);
-
-    @Attribute(defaultValue = "170", dataType = Integer.class)
-    String getPayaraExpressionPropertiesOrdinality();
-    void setPayaraExpressionPropertiesOrdinality(String message);
+    public String getPasswordOrdinality();
+    public void setPasswordOrdinality(String message);
+    
 }

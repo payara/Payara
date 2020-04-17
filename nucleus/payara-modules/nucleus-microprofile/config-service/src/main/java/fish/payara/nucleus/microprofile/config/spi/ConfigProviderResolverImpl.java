@@ -62,7 +62,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
-import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -120,7 +119,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
     private static final String CUSTOM_CONVERTERS_KEY = "MICROPROFILE_CUSTOM_CONVERTERS";
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
-    private final static String APP_EXPRESSION_METADATA_KEY = "payara.microprofile.config.expression";
 
     @Inject
     private InvocationManager invocationManager;
@@ -275,7 +273,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         if (info != null) {
             result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
             if (result == null) {
-                // rebuild it from scratch
+                // rebuild it form scratch
                 result = getConfig(info);
             }
         }
@@ -300,10 +298,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
             for (Properties props : getDeployedApplicationProperties(appName)) {
-                sources.add(new PropertiesConfigSource(props));
-            }
-            for (Properties props : getDeployedApplicationPayaraExpressionConfigProperties(appName)) {
-                sources.add(new PayaraExpressionConfigSource(props));
+                sources.add(new PropertiesConfigSource(props, appName));
             }
         }
         return sources;
@@ -346,7 +341,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = Collections.emptyList();
+        List<Properties> result = Collections.EMPTY_LIST;
         if (info != null) {
             List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_METADATA_KEY, LinkedList.class);
             if (transientAppMetaData != null) {
@@ -368,18 +363,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                         break;
                     }
                 }
-            }
-        }
-        return result;
-    }
-
-    public List<Properties> getDeployedApplicationPayaraExpressionConfigProperties(String applicationName) {
-        ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = Collections.emptyList();
-        if (info != null) {
-            List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, LinkedList.class);
-            if (transientAppMetaData != null) {
-                result = transientAppMetaData;
             }
         }
         return result;
@@ -449,15 +432,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             // Read application defined properties and add as transient metadata
             appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
             appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-        LinkedList<Properties> appPayaraExpressionConfigProperties = new LinkedList<>();
-        info.addTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, appPayaraExpressionConfigProperties);
-        try {
-            // Read application defined expression properties and add as transient metadata
-            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/payara-expression-config.properties"));
-            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/payara-expression-config.properties"));
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

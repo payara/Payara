@@ -79,6 +79,7 @@ public class EnvironmentConfigSourceTest {
     public void testGetProperties() {
         System.out.println("getProperties");
         EnvironmentConfigSource instance = new EnvironmentConfigSource();
+        Map<String, String> result = instance.getProperties();
         Map<String,String> environment = System.getenv();
         for (String string : environment.keySet()) {
             assertEquals(environment.get(string), instance.getValue(string));

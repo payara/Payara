@@ -51,9 +51,11 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 public class PropertiesConfigSource implements ConfigSource {
     
     private final Properties props;
+    private final String appName;
 
-    public PropertiesConfigSource(Properties props) {
+    public PropertiesConfigSource(Properties props, String appName) {
         this.props = props;
+        this.appName = appName;
     }
     
     @Override
