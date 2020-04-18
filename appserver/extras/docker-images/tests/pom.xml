@@ -94,6 +94,7 @@
                     <argLine>
                     -Ddockerfile.tag=${dockerfile.tag}
                     -Dpasswordfile=${project.build.testOutputDirectory}/passwordfile.txt
+                    -DtestContainersWorkDir=${project.build.directory}/test-containers
                     </argLine>
                 </configuration>
             </plugin>

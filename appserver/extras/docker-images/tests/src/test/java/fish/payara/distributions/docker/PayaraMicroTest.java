@@ -76,6 +76,7 @@ public class PayaraMicroTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(PayaraMicroTest.class);
     private static final Class<TestServlet> SERVLET_CLASS = TestServlet.class;
+    private static final File TC_DIR = new File(System.getProperty("testContainersWorkDir"));
     private static final File WAR_FILE = createWar();
     private static final String WEBAPP_CONTEXT = "/" + WAR_FILE.getName().substring(0, WAR_FILE.getName().length() - 4);
 
@@ -89,7 +90,8 @@ public class PayaraMicroTest {
     private static File createWar() {
         try {
             final WebArchive war = ShrinkWrap.create(WebArchive.class).addClass(SERVLET_CLASS);
-            final File warFileOnHost = File.createTempFile(TestServlet.class.getSimpleName(), ".war");
+            TC_DIR.mkdirs();
+            final File warFileOnHost = new File(TC_DIR, TestServlet.class.getSimpleName() + "WebApp.war");
             war.as(ZipExporter.class).exportTo(warFileOnHost, true);
             return warFileOnHost;
         } catch (Exception e) {
