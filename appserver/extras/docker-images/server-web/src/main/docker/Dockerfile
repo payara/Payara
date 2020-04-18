@@ -20,6 +20,8 @@ ENV HOME_DIR=/opt/payara\
     ADMIN_PASSWORD=admin \
     # Utility environment variables
     JVM_ARGS=\
+    MEM_MAX_RAM_PERCENTAGE=70.0 \
+    MEM_XSS=512k \
     PAYARA_ARGS=\
     DEPLOY_PROPS=\
     POSTBOOT_COMMANDS=/opt/payara/config/post-boot-commands.asadmin\
@@ -35,26 +37,26 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
 RUN true \
     # Install dependencies
     && apt-get update \
-    && apt-get install -y coreutils gpg \
+    && apt-get install -y gpg \
     && rm -rf /var/lib/apt/lists/* \
     # Create and set the Payara user and working directory owned by the new user
-    && groupadd --gid 1000 payara \
-    && useradd -u 1000 -M -s /bin/bash -d ${HOME_DIR} payara -g payara \
+    && addgroup --gid 1000 payara \
+    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
     && echo payara:payara | chpasswd \
     && mkdir -p ${DEPLOY_DIR} \
     && mkdir -p ${CONFIG_DIR} \
     && mkdir -p ${SCRIPT_DIR} \
     && chown -R payara: ${HOME_DIR} \
     # Verify tini
-    && gpg --batch --keyserver "hkp://ipv4.pool.sks-keyservers.net" --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
-    && gpg --batch --verify /tini.asc /tini \
+    && gpg --verbose --keyserver @docker.keyserver.url@ --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
+    && gpg --verify /tini.asc \
     && chmod +x /tini \
     && true
 
 USER payara
 WORKDIR ${HOME_DIR}
 
-COPY --chown=payara:payara maven/artifacts/payara5 ${PAYARA_DIR}/
+COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}/
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 
 RUN true \
@@ -66,14 +68,12 @@ RUN true \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain ${DOMAIN_NAME} \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} enable-secure-admin \
     && for MEMORY_JVM_OPTION in \
-       $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]"); \
+       $(${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]\|Xss"); \
        do\
          ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options $MEMORY_JVM_OPTION;\
        done \
-    # FIXME: when upgrading this container to Java 10+, this needs to be changed to
-    #        '-XX:+UseContainerSupport' and '-XX:MaxRAMPercentage'
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options \
-      '-XX\:+UnlockExperimentalVMOptions:-XX\:+IgnoreUnrecognizedVMOptions:-XX\:+UseCGroupMemoryLimitForHeap:-XX\:MaxRAMFraction=1' \
+      '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}' \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
       set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} \
