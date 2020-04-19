@@ -41,28 +41,28 @@
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Properties;
 
-/**
- * Created by IntelliJ IDEA.
- * User: naman
- * Date: 19 Jul, 2010
- * Time: 5:02:25 PM
- * To change this template use File | Settings | File Templates.
- */
+import javax.inject.Inject;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 @ExecuteOn({RuntimeType.INSTANCE})
 @Service(name = "_get-log-file")

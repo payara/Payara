@@ -422,7 +422,7 @@ public class LogFilterForInstance {
             loggingDir = node.getInstallDir() + File.separator + "glassfish" + File.separator + "nodes"
                     + File.separator + sNode + File.separator + instanceName + File.separator + "logs";
         } else {
-            // this code is used when user changes the attributes value(com.sun.enterprise.server.logging.GFFileHandler.file) in
+            // this code is used when user changes the attributes value(fish.payara.logging.jul.PayaraLogHandler.file) in
             // logging.properties file to something else.
             loggingDir = instanceLogFileDirectory.substring(0, instanceLogFileDirectory.lastIndexOf(File.separator));
         }
@@ -441,7 +441,7 @@ public class LogFilterForInstance {
             loggingDir = node.getInstallDir() + File.separator + "glassfish" + File.separator + "nodes"
                     + File.separator + sNode + File.separator + instanceName + File.separator + "logs";
         } else {
-            // this code is used when user changes the attributes value(com.sun.enterprise.server.logging.GFFileHandler.file) in
+            // this code is used when user changes the attributes value(fish.payara.logging.jul.PayaraLogHandler.file) in
             // logging.properties file to something else.
             loggingDir = instanceLogFileDirectory.substring(0, instanceLogFileDirectory.lastIndexOf(File.separator));
         }

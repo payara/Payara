@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
@@ -73,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
  * Set Log Attributes Command
  *
  * Updates one or more loggers' attributes
- * 
+ *
  * @author naman mehta
  * @since 3.1
  */
@@ -84,7 +84,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("set.log.attributes")
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.POST, path = "set-log-attributes", description = "set-log-attributes") })
+    @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.POST, path = "set-log-attributes", description = "set-log-attributes")})
 public class SetLogAttributes implements AdminCommand {
 
     private static final String LINE_SEP = System.lineSeparator();
@@ -116,49 +116,50 @@ public class SetLogAttributes implements AdminCommand {
     @Inject
     UnprocessedConfigListener ucl;
 
-    String[] validAttributes = {"handlers", "handlerServices",
-        "java.util.logging.ConsoleHandler.formatter",
-        "com.sun.enterprise.server.logging.GFFileHandler.file",
-        "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes",
-        "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency",
-        "java.util.logging.FileHandler.formatter",
-        "com.sun.enterprise.server.logging.GFFileHandler.formatter",
-        "java.util.logging.FileHandler.limit",
-        "com.sun.enterprise.server.logging.GFFileHandler.logtoFile",
-        "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
-        "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes",
-        "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
-        "com.sun.enterprise.server.logging.GFFileHandler.alarms",
-        "java.util.logging.FileHandler.count",
-        "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours",
-        "log4j.logger.org.hibernate.validator.util.Version",
-        "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles",
-        "java.util.logging.FileHandler.pattern",
-        "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
-        "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
-        "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
-        "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
-        "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
-        "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams",
-        "fish.payara.logging.jul.formatter.UniformLogFormatter.ansiColor",
-        "fish.payara.logging.jul.formatter.UniformLogFormatter.infoColor",
-        "fish.payara.logging.jul.formatter.UniformLogFormatter.warnColor",
-        "fish.payara.logging.jul.formatter.UniformLogFormatter.severeColor",
-        "fish.payara.logging.jul.formatter.UniformLogFormatter.loggerColor",
-        "fish.payara.logging.jul.formatter.ODLLogFormatter.ansiColor",
-        "fish.payara.logging.jul.formatter.ODLLogFormatter.loggerColor",
-        "fish.payara.logging.jul.formatter.ODLLogFormatter.infoColor",
-        "fish.payara.logging.jul.formatter.ODLLogFormatter.warnColor",
-        "fish.payara.logging.jul.formatter.ODLLogFormatter.severeColor",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
-        "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
+    String[] validAttributes = { //
+            "handlers",
+            "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
+            "fish.payara.logging.jul.PayaraLogHandler.file",
+            "fish.payara.logging.jul.PayaraLogHandler.rotationTimelimitInMinutes",
+            "fish.payara.logging.jul.PayaraLogHandler.flushFrequency",
+            "fish.payara.logging.jul.PayaraLogHandler.formatter",
+            "fish.payara.logging.jul.PayaraLogHandler.logtoFile",
+            "fish.payara.logging.jul.PayaraLogHandler.logtoConsole",
+            "fish.payara.logging.jul.PayaraLogHandler.rotationLimitInBytes",
+            "fish.payara.logging.jul.PayaraLogHandler.alarms",
+            "fish.payara.logging.jul.PayaraLogHandler.retainErrorsStasticsForHours",
+            "fish.payara.logging.jul.PayaraLogHandler.maxHistoryFiles",
+            "fish.payara.logging.jul.PayaraLogHandler.rotationOnDateChange",
+            "fish.payara.logging.jul.PayaraLogHandler.logFormatDateFormat",
+            "fish.payara.logging.jul.PayaraLogHandler.excludeFields",
+            "fish.payara.logging.jul.PayaraLogHandler.multiLineMode",
+            "fish.payara.logging.jul.PayaraLogHandler.compressOnRotation",
+            "fish.payara.logging.jul.PayaraLogHandler.logStandardStreams",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter.ansiColor",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter.infoColor",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter.warnColor",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter.severeColor",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter.loggerColor",
+            "fish.payara.logging.jul.formatter.ODLLogFormatter.ansiColor",
+            "fish.payara.logging.jul.formatter.ODLLogFormatter.loggerColor",
+            "fish.payara.logging.jul.formatter.ODLLogFormatter.infoColor",
+            "fish.payara.logging.jul.formatter.ODLLogFormatter.warnColor",
+            "fish.payara.logging.jul.formatter.ODLLogFormatter.severeColor",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
+            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
+            "fish.payara.deprecated.jsonlogformatter.underscoreprefix", //
+            "java.util.logging.ConsoleHandler.formatter",
+            "java.util.logging.FileHandler.count",
+            "java.util.logging.FileHandler.formatter",
+            "java.util.logging.FileHandler.limit",
+            "java.util.logging.FileHandler.pattern", //
+        };
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
@@ -166,10 +167,9 @@ public class SetLogAttributes implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        StringBuilder sbfSuccessMsg = new StringBuilder(LINE_SEP);
+        final StringBuilder sbfSuccessMsg = new StringBuilder(LINE_SEP);
         boolean success = false;
         boolean invalidAttribute = false;
-
         Map<String, String> m = new HashMap<>();
         try {
             for (final Object key : properties.keySet()) {
@@ -177,31 +177,14 @@ public class SetLogAttributes implements AdminCommand {
                 final String att_value = (String) properties.get(att_name);
                 // that is is a valid level
                 if (validate) {
-                    boolean vlAttribute = false;
-                    for (String attrName : validAttributes) {
-                        if (attrName.equals(att_name)) {
-                            try {
-                                logManager.validateProp(att_name, att_value);
-                            } catch (ValidationException e) {
-                                // Add in additional error message information if present
-                                if (e.getMessage() != null) {
-                                    report.setMessage(e.getMessage() + "\n");
-                                }
-
-                                break;
-                            }
-                            m.put(att_name, att_value);
-                            vlAttribute = true;
-                            sbfSuccessMsg.append(localStrings.getLocalString(
-                                    "set.log.attribute.properties",
-                                    "{0} logging attribute set with value {1}.",
-                                    att_name, att_value)).append(LINE_SEP);
-                        }
-                    }
-
-                    if (!vlAttribute) {
-                        report.appendMessage(localStrings.getLocalString("set.log.attribute.invalid",
-                                "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
+                    final boolean vlAttribute = isValid(att_name, att_value, report);
+                    if (vlAttribute) {
+                        m.put(att_name, att_value);
+                        sbfSuccessMsg.append(localStrings.getLocalString(
+                            "set.log.attribute.properties",
+                            "{0} logging attribute set with value {1}.",
+                            att_name, att_value)).append(LINE_SEP);
+                    } else {
                         invalidAttribute = true;
                         break;
                     }
@@ -246,6 +229,28 @@ public class SetLogAttributes implements AdminCommand {
                     "Could not set logging attributes for {0}.", target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
+    }
+
+
+    private boolean isValid(final String att_name, final String att_value, final ActionReport report) {
+        // TODO: use map
+        for (final String attrName : validAttributes) {
+            if (attrName.equals(att_name)) {
+                try {
+                    logManager.validateProp(att_name, att_value);
+                    return true;
+                } catch (ValidationException e) {
+                    // Add in additional error message information if present
+                    if (e.getMessage() != null) {
+                        report.setMessage(e.getMessage() + "\n");
+                        return false;
+                    }
+                }
+            }
+        }
+        report.appendMessage(localStrings.getLocalString("set.log.attribute.invalid",
+            "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
+        return false;
     }
 
 }

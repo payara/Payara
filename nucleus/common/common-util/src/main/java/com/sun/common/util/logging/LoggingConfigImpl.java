@@ -447,12 +447,12 @@ public class LoggingConfigImpl implements LoggingConfig {
             // Convert the name in domain.xml to the name in logging.properties if needed
             key = xmltoPropsMap.getOrDefault(key, key);
 
-            if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
+            if (key != null && key.equals("fish.payara.logging.jul.PayaraLogHandler.file")) {
                 return props.getProperty(key);
             }
         }
 
-        // If "com.sun.enterprise.server.logging.GFFileHandler.file" not found, check "java.util.logging.FileHandler.pattern"
+        // If "fish.payara.logging.jul.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
         // This property can have been set by Payara Micro when using the --logtofile
         return props.getProperty("java.util.logging.FileHandler.pattern");
     }

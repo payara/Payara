@@ -398,7 +398,7 @@ public class LogFilter {
                 if (!instanceLogFile.exists()) {
                     instanceLogFile = new File(loggingDir + File.separator + "server.log");
                 } else if (!instanceLogFile.exists()) {
-                    // this code is used when user changes the attributes value(com.sun.enterprise.server.logging.GFFileHandler.file) in
+                    // this code is used when user changes the attributes value(fish.payara.logging.jul.PayaraLogHandler.file) in
                     // logging.properties file to something else.
                     loggingDir = instanceLogFileName.substring(0, instanceLogFileName.lastIndexOf(File.separator));
                     instanceLogFile = new File(loggingDir + File.separator + logFileName);
