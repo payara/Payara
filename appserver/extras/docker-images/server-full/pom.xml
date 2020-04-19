@@ -11,11 +11,16 @@
     <name>Payara Docker Images - Server Full</name>
 
     <properties>
-        <dockerRepositoryName>payara/server-full</dockerRepositoryName>
-        <docker.keyserver.url>hkp://ipv4.pool.sks-keyservers.net</docker.keyserver.url>
+        <docker.payara.repository>payara/server-full</docker.payara.repository>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>basic-docker-image</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
         <dependency>
             <groupId>fish.payara.distributions</groupId>
             <artifactId>payara</artifactId>

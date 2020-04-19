@@ -63,7 +63,7 @@ public class PayaraContainer extends GenericContainer<PayaraContainer> {
 
     /**
      * Container created from basic repository name, tag is detected from JVM option
-     * - use -Ddockerfile.tag set to test options (see maven surefire documentation or pom.xml)
+     * - use -Ddocker.payara.tag set to test options (see maven surefire documentation or pom.xml)
      *
      * @param baseRepositoryName
      */
@@ -100,7 +100,7 @@ public class PayaraContainer extends GenericContainer<PayaraContainer> {
 
 
     private static String getTagFromJvmOption() {
-        final String tag = System.getProperty("dockerfile.tag");
+        final String tag = System.getProperty("docker.payara.tag");
         return Objects.requireNonNull(tag, "tag is null");
     }
 

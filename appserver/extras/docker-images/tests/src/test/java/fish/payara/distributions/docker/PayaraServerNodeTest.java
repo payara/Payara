@@ -46,11 +46,13 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -83,7 +85,8 @@ public class PayaraServerNodeTest {
     private final PayaraContainer node = new PayaraContainer("payara/server-node").withExposedPorts(NODE_HTTP_PORT) //
         .withEnv("PAYARA_DAS_HOST", "host.testcontainers.internal")
         .withEnv("PAYARA_DAS_PORT", Integer.toString(DAS.getMappedPort(DAS_ADMIN_PORT)))
-        .withEnv("DOCKER_CONTAINER_IP", "host.testcontainers.internal");
+        .withEnv("DOCKER_CONTAINER_IP", "host.testcontainers.internal") //
+        .withStartupTimeout(Duration.ofSeconds(10));
 
     @BeforeAll
     public static void initDAS() throws Exception {
@@ -99,6 +102,7 @@ public class PayaraServerNodeTest {
 
 
     @Test
+    @Timeout(value = 15)
     public void testStartedServerEndpoints() throws Exception {
         assertTrue(node.isRunning(), "server is running");
         assertAll( //
