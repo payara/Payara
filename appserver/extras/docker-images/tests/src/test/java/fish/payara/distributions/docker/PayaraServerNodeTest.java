@@ -86,7 +86,7 @@ public class PayaraServerNodeTest {
         .withEnv("PAYARA_DAS_HOST", "host.testcontainers.internal")
         .withEnv("PAYARA_DAS_PORT", Integer.toString(DAS.getMappedPort(DAS_ADMIN_PORT)))
         .withEnv("DOCKER_CONTAINER_IP", "host.testcontainers.internal") //
-        .withStartupTimeout(Duration.ofSeconds(10));
+        .withStartupTimeout(Duration.ofSeconds(30));
 
     @BeforeAll
     public static void initDAS() throws Exception {
@@ -102,7 +102,7 @@ public class PayaraServerNodeTest {
 
 
     @Test
-    @Timeout(value = 15)
+    @Timeout(value = 30)
     public void testStartedServerEndpoints() throws Exception {
         assertTrue(node.isRunning(), "server is running");
         assertAll( //
