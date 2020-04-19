@@ -1,9 +1,6 @@
-FROM @docker.java.image@
+FROM payara/basic:@docker.payara.tag@
 
-ENV HOME_DIR=/opt/payara
-ENV PAYARA_DIR=${HOME_DIR}/@docker.payara.rootDirectoryName@ \
-    SCRIPT_DIR=${HOME_DIR} \
-    PAYARA_DAS_HOST="localhost" \
+ENV PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="" \
     PAYARA_CONFIG_NAME="" \
@@ -14,20 +11,10 @@ ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
-    && mkdir ${HOME_DIR} \
-    && mkdir ${PAYARA_DIR} \
-    && mkdir ${PAYARA_PASSWORD_FILE_DIR} \
-    && addgroup --gid 1000 payara \
-    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
-    && echo payara:payara | chpasswd \
-    && chown -R payara:payara ${HOME_DIR} \
+    && mkdir -p ${PAYARA_PASSWORD_FILE_DIR} \
     && true
 
-USER payara
-WORKDIR ${HOME_DIR}
-
 COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}
-COPY --chown=payara:payara maven/bin/* ${HOME_DIR}
+COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}
 
-# Start the instance
 ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"

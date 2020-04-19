@@ -92,7 +92,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                    -Ddockerfile.tag=${dockerfile.tag}
+                    -Ddocker.payara.tag=${docker.payara.tag}
                     -Dpasswordfile=${project.build.testOutputDirectory}/passwordfile.txt
                     -DtestContainersWorkDir=${project.build.directory}/test-containers
                     </argLine>
