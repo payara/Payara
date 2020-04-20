@@ -37,11 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
+import java.io.StringReader;
 import java.util.regex.Pattern;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonReader;
 
 /**
  * Helper class that provides methods to detect the log format of a record. 
@@ -85,6 +89,21 @@ public class LogFormatHelper {
                 && countOccurrences(line, '[') > 4) {
             return true;
         } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Determines whether the given line is the beginning of a JSON log record.
+     * @param line String to test if json
+     * @return If the line is valid JSON
+     */
+    public static boolean isJSONFormatLogHeader(String line) {
+        JsonReader reader = Json.createReader(new StringReader(line));
+        try {
+            reader.read();
+            return true;
+        } catch (JsonException ex ) {
             return false;
         }
     }
