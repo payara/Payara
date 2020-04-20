@@ -422,7 +422,7 @@ public class InvocationManagerImplTest {
         if (handler != null) {
             assertPostCalledTimes(times, handler, level1, level2);
         }
-        manager.postInvoke(level2);
+        manager.postInvoke(level1);
         assertNull(manager.getCurrentInvocation());
     }
 
@@ -448,7 +448,7 @@ public class InvocationManagerImplTest {
         if (handler != null) {
             assertPostCalledTimes(times, handler, outer, inner);
         }
-        manager.postInvoke(inner);
+        manager.postInvoke(outer);
         assertNull(manager.getCurrentInvocation());
         assertNull(manager.getPreviousInvocation());
         assertEquals(emptyList(), manager.getAllInvocations());

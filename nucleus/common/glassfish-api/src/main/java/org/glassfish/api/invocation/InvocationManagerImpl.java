@@ -42,12 +42,14 @@ package org.glassfish.api.invocation;
 
 import static java.lang.ThreadLocal.withInitial;
 import static java.util.Collections.emptyList;
+import static java.util.logging.Level.WARNING;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVICE_STARTUP;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,9 +57,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -71,9 +73,11 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class InvocationManagerImpl implements InvocationManager {
 
+    private static final Logger LOGGER = Logger.getLogger(InvocationManagerImpl.class.getName());
+
     private final InheritableThreadLocal<InvocationFrames> framesByThread;
-    private final ThreadLocal<Deque<ApplicationEnvironment>> appEnvironments = withInitial(ConcurrentLinkedDeque::new);
-    private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ConcurrentLinkedDeque::new);
+    private final ThreadLocal<Deque<ApplicationEnvironment>> appEnvironments = withInitial(ArrayDeque::new);
+    private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ArrayDeque::new);
     private final ConcurrentMap<ComponentInvocationType, ListComponentInvocationHandler> typeHandlers = new ConcurrentHashMap<>();
     private final ComponentInvocationHandler allTypesHandler;
 
@@ -173,7 +177,11 @@ public class InvocationManagerImpl implements InvocationManager {
             throw new InvocationException();
         }
 
-        iter.next(); // the last is the current is "invocation"
+        ComponentInvocation current = iter.next(); // the last is the current is "invocation"
+        if (invocation != current) {
+            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected {0} but was: {1}",
+                    new Object[] { current, invocation });
+        }
         ComponentInvocation prev = iter.hasNext() ? iter.next() : null;
 
         ComponentInvocationType type = invocation.getInvocationType();
@@ -295,7 +303,7 @@ public class InvocationManagerImpl implements InvocationManager {
     }
 
 
-    static final class InvocationFrames extends ConcurrentLinkedDeque<ComponentInvocation> {
+    static final class InvocationFrames extends ArrayDeque<ComponentInvocation> {
 
         private static final long serialVersionUID = 1L;
 
