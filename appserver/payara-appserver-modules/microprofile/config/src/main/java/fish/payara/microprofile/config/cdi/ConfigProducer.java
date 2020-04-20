@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,12 +81,12 @@ public class ConfigProducer {
     public Config getConfig() {
         return new InjectedPayaraConfig(ConfigProvider.getConfig(), im.getCurrentInvocation().getAppName());
     }
-    
+
     /**
      * Producer method for Sets
      * @param <T> Type
      * @param ip Injection Point
-     * @return 
+     * @return
      */
     @Produces
     @ConfigProperty
@@ -98,17 +98,18 @@ public class ConfigProducer {
         if (type instanceof ParameterizedType) {
             // it is an Optional
             // get the class of the generic parameterized Optional
-            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
-            result = config.getSetValues(property.name(),property.defaultValue(), clazzValue);
-        }        
-        return result;        
+            @SuppressWarnings("unchecked")
+            Class<T> clazzValue = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
+            result = config.getSetValues(property.name(), property.defaultValue(), clazzValue);
+        }
+        return result;
     }
-    
+
     /**
-     * Producer method for Lists 
+     * Producer method for Lists
      * @param <T> Type
      * @param ip Injection Point
-     * @return 
+     * @return
      */
     @Produces
     @ConfigProperty
@@ -120,9 +121,10 @@ public class ConfigProducer {
         if (type instanceof ParameterizedType) {
             // it is an Optional
             // get the class of the generic parameterized Optional
-            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+            @SuppressWarnings("unchecked")
+            Class<T> clazzValue = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
             result = config.getListValues(property.name(),property.defaultValue(), clazzValue);
-        }        
+        }
         return result;
     }
 
@@ -131,25 +133,26 @@ public class ConfigProducer {
      * and of the type specified
      * @param <T>
      * @param ip
-     * @return 
+     * @return
      */
     @Produces
     @ConfigProperty
     public <T> Optional<T> getOptionalProperty(InjectionPoint ip) {
-        
+
         // gets the config property annotation
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
         PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Optional result = Optional.empty();
-        
+        Optional<T> result = Optional.empty();
+
         Type type = ip.getType();
         if (type instanceof ParameterizedType) {
             // it is an Optional
             // get the class of the generic parameterized Optional
-            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
-            
+            @SuppressWarnings("unchecked")
+            Class<T> clazzValue = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
+
             // use the config to get a converted version of the property
-            Object value = config.getValue(property.name(), property.defaultValue(),clazzValue);
+            T value = config.getValue(property.name(), property.defaultValue(),clazzValue);
             if (value != null && !value.toString().equals(ConfigProperty.UNCONFIGURED_VALUE)) {
                 result = Optional.ofNullable(value);
             }

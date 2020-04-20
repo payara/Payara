@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,56 +39,74 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import javax.validation.constraints.Min;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
+ * The configuration that configures the semantics of the MP {@link Config} implementation.
+ *
+ * First of all this is the ordinality for the different types of {@link ConfigSource}s.
+ * The source with the highest ordinality takes precedence.
+ *
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
 @Configured(name="microprofile-config")
-public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
-    
+public interface MicroprofileConfigConfiguration extends ConfigExtension {
+
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
-    public void setDomainOrdinality(String message);
+    public void setDomainOrdinality(String ordinality);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
     String getConfigOrdinality();
-    public void setConfigOrdinality(String message);    
-    
+    public void setConfigOrdinality(String ordinality);
+
     @Attribute(defaultValue = "130", dataType = Integer.class)
     String getServerOrdinality();
-    public void setServerOrdinality(String message);
+    public void setServerOrdinality(String ordinality);
 
     @Attribute(defaultValue = "140", dataType = Integer.class)
     String getApplicationOrdinality();
-    public void setApplicationOrdinality(String message);    
+    public void setApplicationOrdinality(String ordinality);
 
     @Attribute(defaultValue = "150", dataType = Integer.class)
     String getModuleOrdinality();
-    public void setModuleOrdinality(String message);    
+    public void setModuleOrdinality(String ordinality);
 
     @Attribute(defaultValue = "160", dataType = Integer.class)
     String getClusterOrdinality();
-    public void setClusterOrdinality(String message);    
-    
+    public void setClusterOrdinality(String ordinality);
+
     @Attribute(defaultValue = "115", dataType = Integer.class)
     String getJNDIOrdinality();
-    public void setJNDIOrdinality(String message);  
-    
+    public void setJNDIOrdinality(String ordinality);
+
     @Attribute(defaultValue = "secrets", dataType = String.class)
     String getSecretDir();
-    public void setSecretDir(String directory);
-    
+    public void setSecretDir(String ordinality);
+
     @Attribute(defaultValue = "90", dataType = Integer.class)
     String getSecretDirOrdinality();
-    public void setSecretDirOrdinality(String message);  
+    public void setSecretDirOrdinality(String ordinality);
 
     @Attribute(defaultValue = "105", dataType = Integer.class)
     public String getPasswordOrdinality();
-    public void setPasswordOrdinality(String message);
-    
+    public void setPasswordOrdinality(String ordinality);
+
+    /**
+     * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
+     *         {@link ConfigSource} do become visible after a maximum of this duration. When set to zero or less caching
+     *         is disabled.
+     */
+    @Min(0)
+    @Attribute(defaultValue = "60", dataType = Integer.class)
+    public String getCacheDurationSeconds();
+    public void setCacheDurationSeconds(String cacheDurationSeconds);
+
 }
