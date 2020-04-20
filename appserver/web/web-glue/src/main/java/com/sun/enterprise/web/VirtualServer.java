@@ -183,7 +183,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private static final String SSO_REAP_INTERVAL = "sso-reap-interval-seconds";
     private static final String DISABLED = "disabled";
     private static final String ON = "on";
-    
+
     /**
      * The descriptive information about this implementation.
      */
@@ -219,7 +219,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      *
      * - state (disabled/off) - redirects
      */
-    private VirtualServerPipeline vsPipeline;
+    private final VirtualServerPipeline vsPipeline;
 
     /*
      * The original (standard) pipeline of this VirtualServer.
@@ -227,7 +227,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Only one (custom or original) pipeline may be active at any given time. Any updates (such as adding or removing
      * valves) to the currently active pipeline are propagated to the other.
      */
-    private Pipeline origPipeline;
+    private final Pipeline origPipeline;
 
     /**
      * The id of this virtual server as specified in the configuration.
@@ -269,7 +269,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * This valve is activated, that is, added to this virtual server's pipeline, only when access logging has been enabled.
      * When acess logging has been disabled, this valve is removed from this virtual server's pipeline.
      */
-    private PEAccessLogValve accessLogValve;
+    private final PEAccessLogValve accessLogValve;
 
     // The value of the ssoCookieSecure property
     private String ssoCookieSecure;
@@ -351,7 +351,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Gets the config bean associated with this VirtualServer.
-     * 
+     *
      * @return
      */
     public com.sun.enterprise.config.serverbeans.VirtualServer getBean() {
@@ -360,7 +360,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Sets the config bean for this VirtualServer
-     * 
+     *
      * @param vsBean
      */
     public void setBean(com.sun.enterprise.config.serverbeans.VirtualServer vsBean) {
@@ -376,7 +376,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Sets the mime map for this VirtualServer
-     * 
+     *
      * @param mimeMap
      */
     public void setMimeMap(MimeMap mimeMap) {
@@ -406,6 +406,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         this.services = services;
     }
 
+    @Override
     public String getInfo() {
         return _info;
     }
@@ -431,7 +432,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         if (defaultContextPath != null && "/".equals(contextRoot)) {
             return super.findChild(defaultContextPath);
         }
-        
+
         return super.findChild(contextRoot);
     }
 
@@ -474,7 +475,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     /**
      * Adds the given Tomcat-style valve to the currently active pipeline, keeping the pipeline that is not currently active
      * in sync.
-     * 
+     *
      * @param valve
      */
     @Override
@@ -504,7 +505,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         if (services == null) {
             return null;
         }
-        
+
         return services.getService(ConfigBeansUtilities.class);
     }
 
@@ -561,13 +562,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         String defaultWebModuleId = getDefaultWebModuleID();
         if (defaultWebModuleId != null) {
-            
+
             // Check if the default-web-module is part of an ee-application
             webModuleConfig = findWebModuleInJ2eeApp(domain.getApplications(), defaultWebModuleId, appRegistry);
             if (webModuleConfig == null) {
                 String contextRoot = null;
                 String location = null;
-                
+
                 ConfigBeansUtilities configBeansUtilities = getConfigBeansUtilities();
                 if (configBeansUtilities != null) {
                     contextRoot = configBeansUtilities.getContextRoot(defaultWebModuleId);
@@ -578,12 +579,12 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                     WebBundleDescriptorImpl webBundleDescriptorImpl = webArchivist.getDefaultWebXmlBundleDescriptor();
                     webBundleDescriptorImpl.setName(DEFAULT_WEB_MODULE_NAME);
                     webBundleDescriptorImpl.setContextRoot(contextRoot);
-                    
+
                     webModuleConfig = new WebModuleConfig();
                     webModuleConfig.setLocation(new File(location));
                     webModuleConfig.setDescriptor(webBundleDescriptorImpl);
                     webModuleConfig.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
-                    webModuleConfig.setAppClassLoader(privileged(() -> 
+                    webModuleConfig.setAppClassLoader(privileged(() ->
                         new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), webBundleDescriptorImpl.getApplication())));
                 }
             }
@@ -604,7 +605,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * This method should be invoked only after all the standalone modules and the modules within j2ee-application elements
      * have been added to this virtual server's list of modules (only then will one know whether the user has already
      * configured a default web module or not).
-     * 
+     *
      * @param webArchivist
      * @return
      */
@@ -627,7 +628,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             webModuleConfig.setLocation(new File(docroot));
             webModuleConfig.setDescriptor(webBundleDescriptor);
             webModuleConfig.setParentLoader(serverContext.getCommonClassLoader());
-            
+
             WebappClassLoader loader = privileged(() -> new WebappClassLoader(serverContext.getCommonClassLoader(), getApplication(webBundleDescriptor)));
             loader.start();
             webModuleConfig.setAppClassLoader(loader);
@@ -635,23 +636,23 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         return webModuleConfig;
     }
-    
+
     private Application getApplication(WebBundleDescriptorImpl webBundleDescriptor) {
         if (webBundleDescriptor.getApplication() == null) {
             Application application = Application.createApplication();
             application.setVirtual(true);
             application.setName(DEFAULT_WEB_MODULE_NAME);
-            
+
             webBundleDescriptor.setApplication(application);
         }
-        
+
         return webBundleDescriptor.getApplication();
     }
 
     /**
      * Returns the id of the default web module for this virtual server as specified in the 'default-web-module' attribute
      * of the 'virtual-server' element.
-     * 
+     *
      * @return
      */
     protected String getDefaultWebModuleID() {
@@ -659,7 +660,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         if ("".equals(webModuleId)) {
             webModuleId = null;
         }
-        
+
         if (webModuleId != null && _logger.isLoggable(FINE)) {
             _logger.log(FINE, VS_DEFAULT_WEB_MODULE, new Object[] { webModuleId, _id });
         }
@@ -686,7 +687,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             // Check for '#' separator
             separatorIndex = id.indexOf('#');
         }
-        
+
         if (separatorIndex != -1) {
             String appID = id.substring(0, separatorIndex);
             String moduleID = id.substring(separatorIndex + 1);
@@ -708,11 +709,11 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 WebBundleDescriptorImpl webBundleDescriptorImpl = app.getModuleByTypeAndUri(WebBundleDescriptorImpl.class, moduleID);
                 String webUri = webBundleDescriptorImpl.getModuleDescriptor().getArchiveUri();
                 String contextRoot = webBundleDescriptorImpl.getModuleDescriptor().getContextRoot();
-                
+
                 if (moduleID.equals(webUri)) {
                     webBundleDescriptorImpl.setName(moduleID);
                     webBundleDescriptorImpl.setContextRoot(contextRoot);
-                    
+
                     webModuleConfig = new WebModuleConfig();
                     webModuleConfig.setDescriptor(webBundleDescriptorImpl);
                     webModuleConfig.setLocation(new File(new StringBuilder(location)
@@ -720,7 +721,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                                                                 .append(moduleDir)
                                                                 .toString()));
                     webModuleConfig.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
-                    webModuleConfig.setAppClassLoader(privileged(() -> 
+                    webModuleConfig.setAppClassLoader(privileged(() ->
                         new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), app)));
 
                 }
@@ -743,7 +744,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * private String getVirtualServers(String appName) { String ret = null; Server server =
      * Globals.getDefaultHabitat().forContract(Server.class).get(); for (ApplicationRef appRef : server.getApplicationRef())
      * { if (appRef.getRef().equals(appName)) { return appRef.getVirtualServers(); } }
-     * 
+     *
      * return ret; }
      */
 
@@ -800,7 +801,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Configures this virtual server.
-     * 
+     *
      * @param vsID
      * @param vsBean
      * @param vsDocroot
@@ -1029,8 +1030,8 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     void configureAliases() {
         List hosts = StringUtils.parseStringList(vsBean.getHosts(), ",");
-        for (int i = 0; i < hosts.size(); i++) {
-            String alias = hosts.get(i).toString();
+        for (Object host : hosts) {
+            String alias = host.toString();
             if (!alias.equalsIgnoreCase("localhost") && !alias.equalsIgnoreCase("localhost.localdomain")) {
                 addAlias(alias);
             }
@@ -1054,24 +1055,27 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * @param securityService The security-service element from domain.xml
      */
     void configureAuthRealm(SecurityService securityService) {
+        _logger.finest(() -> String.format("configureAuthRealm(securityService=%s)", securityService));
         List<Property> properties = vsBean.getProperty();
-        if (properties != null && properties.size() > 0) {
+        if (properties != null && !properties.isEmpty()) {
             for (Property property : properties) {
                 if (property != null && "authRealm".equals(property.getName())) {
                     authRealmName = property.getValue();
                     if (authRealmName != null) {
-                        AuthRealm realm = null;
+                        AuthRealm validAuthRealm = null;
                         List<AuthRealm> authRealms = securityService.getAuthRealm();
                         if (authRealms != null && authRealms.size() > 0) {
                             for (AuthRealm authRealm : authRealms) {
                                 if (authRealm != null && authRealm.getName().equals(authRealmName)) {
-                                    realm = authRealm;
+                                    _logger.config(() -> "Using realm '" + authRealmName
+                                        + "' for the security service '" + securityService + "'");
+                                    validAuthRealm = authRealm;
                                     break;
                                 }
                             }
                         }
 
-                        if (realm == null) {
+                        if (validAuthRealm == null) {
                             _logger.log(SEVERE, INVALID_AUTH_REALM, new Object[] { getID(), authRealmName });
                         }
                     }
@@ -1115,8 +1119,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     protected void addListener(String listenerName) {
         Object listener = safeLoadInstance(listenerName);
 
-        if (listener == null)
+        if (listener == null) {
             return;
+        }
 
         if (listener instanceof ContainerListener) {
             addContainerListener((ContainerListener) listener);
@@ -1174,27 +1179,27 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             String status = null;
 
             String[] errorParams = propValue.split(" ");
-            for (int j = 0; j < errorParams.length; j++) {
+            for (String errorParam : errorParams) {
 
-                if (errorParams[j].startsWith("path=")) {
+                if (errorParam.startsWith("path=")) {
                     if (path != null) {
                         _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "path" });
                     }
-                    path = errorParams[j].substring("path=".length());
+                    path = errorParam.substring("path=".length());
                 }
 
-                if (errorParams[j].startsWith("reason=")) {
+                if (errorParam.startsWith("reason=")) {
                     if (reason != null) {
                         _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "reason" });
                     }
-                    reason = errorParams[j].substring("reason=".length());
+                    reason = errorParam.substring("reason=".length());
                 }
 
-                if (errorParams[j].startsWith("code=")) {
+                if (errorParam.startsWith("code=")) {
                     if (status != null) {
                         _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "code" });
                     }
-                    status = errorParams[j].substring("code=".length());
+                    status = errorParam.substring("code=".length());
                 }
             }
 
@@ -1245,34 +1250,34 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             String escape = null;
 
             String[] redirectParams = propValue.split(" ");
-            for (int j = 0; j < redirectParams.length; j++) {
+            for (String redirectParam : redirectParams) {
 
-                if (redirectParams[j].startsWith("from=")) {
+                if (redirectParam.startsWith("from=")) {
                     if (from != null) {
                         _logger.log(Level.WARNING, LogFacade.REDIRECT_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "from" });
                     }
-                    from = redirectParams[j].substring("from=".length());
+                    from = redirectParam.substring("from=".length());
                 }
 
-                if (redirectParams[j].startsWith("url=")) {
+                if (redirectParam.startsWith("url=")) {
                     if (url != null) {
                         _logger.log(Level.WARNING, LogFacade.REDIRECT_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "url" });
                     }
-                    url = redirectParams[j].substring("url=".length());
+                    url = redirectParam.substring("url=".length());
                 }
 
-                if (redirectParams[j].startsWith("url-prefix=")) {
+                if (redirectParam.startsWith("url-prefix=")) {
                     if (urlPrefix != null) {
                         _logger.log(Level.WARNING, LogFacade.REDIRECT_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "url-prefix" });
                     }
-                    urlPrefix = redirectParams[j].substring("url-prefix=".length());
+                    urlPrefix = redirectParam.substring("url-prefix=".length());
                 }
 
-                if (redirectParams[j].startsWith("escape=")) {
+                if (redirectParam.startsWith("escape=")) {
                     if (escape != null) {
                         _logger.log(Level.WARNING, LogFacade.REDIRECT_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "escape" });
                     }
-                    escape = redirectParams[j].substring("escape=".length());
+                    escape = redirectParam.substring("escape=".length());
                 }
             }
 
@@ -1585,7 +1590,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Reconfigures the access log of this VirtualServer with its updated access log related properties.
-     */ 
+     */
     void reconfigureAccessLog(String globalAccessLogBufferSize, String globalAccessLogWriteInterval, ServiceLocator services, Domain domain,
             boolean globalAccessLoggingEnabled, String globalAccessLogPrefix) {
         try {
@@ -1676,8 +1681,8 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         if (p != null) {
             GlassFishValve[] valves = p.getValves();
             if (valves != null) {
-                for (int i = 0; i < valves.length; i++) {
-                    if (valves[i] instanceof PEAccessLogValve) {
+                for (GlassFishValve valve : valves) {
+                    if (valve instanceof PEAccessLogValve) {
                         return true;
                     }
                 }
@@ -1790,7 +1795,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Sets the grizzly service to be used
-     * 
+     *
      * @param grizzlyService
      */
     void setGrizzlyService(GrizzlyService grizzlyService) {
@@ -1799,7 +1804,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Sets the Web Container for the virtual server
-     * 
+     *
      * @param webContainer
      */
     void setWebContainer(WebContainer webContainer) {
@@ -1810,7 +1815,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     private VirtualServerConfig config;
 
-    private List<WebListener> listeners = new ArrayList<WebListener>();
+    private List<WebListener> listeners = new ArrayList<>();
 
     /**
      * Sets the docroot of this <tt>VirtualServer</tt>.
@@ -1857,7 +1862,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      *
      * <p>
      * If this <tt>VirtualServer</tt> has already been started, the given <tt>context</tt> will be started as well.
-     * 
+     *
      * @throws org.glassfish.embeddable.GlassFishException
      */
     @Override
@@ -1872,20 +1877,22 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         if (!contextRoot.startsWith("/")) {
             contextRoot = "/" + contextRoot;
         }
-        
+
         ExtendedDeploymentContext deploymentContext = null;
 
         try {
-            if (factory == null)
+            if (factory == null) {
                 factory = services.getService(ArchiveFactory.class);
+            }
 
             ContextFacade facade = (ContextFacade) context;
             File docRoot = facade.getDocRoot();
             ClassLoader classLoader = facade.getClassLoader();
             ReadableArchive archive = factory.openArchive(docRoot);
 
-            if (report == null)
+            if (report == null) {
                 report = new PlainTextActionReporter();
+            }
 
             ServerEnvironment env = services.getService(ServerEnvironment.class);
 
@@ -1898,8 +1905,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
             ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, archive, params, env);
 
-            if (deployment == null)
+            if (deployment == null) {
                 deployment = services.getService(Deployment.class);
+            }
 
             ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive);
             if (archiveHandler == null) {
@@ -2046,7 +2054,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     /**
      * Stops the given <tt>context</tt> and removes it from this <tt>VirtualServer</tt>.
-     * 
+     *
      * @throws org.glassfish.embeddable.GlassFishException
      */
     @Override
@@ -2117,7 +2125,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     @Override
     public Collection<Context> getContexts() {
-        Collection<Context> ctxs = new ArrayList<Context>();
+        Collection<Context> ctxs = new ArrayList<>();
         for (Container container : findChildren()) {
             if (container instanceof Context) {
                 ctxs.add((Context) container);
@@ -2378,7 +2386,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private List<NetworkListener> getGrizzlyNetworkListeners() {
         List<String> listenerList = StringUtils.parseStringList(vsBean.getNetworkListeners(), ",");
         String[] listeners = (listenerList != null) ? listenerList.toArray(new String[listenerList.size()]) : new String[0];
-        List<NetworkListener> networkListeners = new ArrayList<NetworkListener>();
+        List<NetworkListener> networkListeners = new ArrayList<>();
 
         for (String listener : listeners) {
             for (NetworkListener networkListener : serverConfig.getNetworkConfig().getNetworkListeners().getNetworkListener()) {

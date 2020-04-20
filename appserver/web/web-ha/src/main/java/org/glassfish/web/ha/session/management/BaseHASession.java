@@ -225,39 +225,39 @@ public abstract class BaseHASession extends StandardSession
     /**
      * Return a string representation of this object.
      */
-    public String superToString() {
+    private CharSequence superToString() {
 
-        StringBuilder sb = new StringBuilder(1000);
+        final StringBuilder sb = new StringBuilder(1000);
         sb.append("BaseHASession[");
         sb.append(id);
         sb.append("]");
 
         sb.append("\n");
-        sb.append("isValid:" + this.isValid);
+        sb.append("isValid:").append(getIsValid());
 
-        if (this.isValid) {
-            Enumeration<String> attrNamesEnum = getAttributeNames();
+        if (getIsValid()) {
+            final Enumeration<String> attrNamesEnum = getAttributeNamesInternal();
             while(attrNamesEnum.hasMoreElements()) {
-                String nextAttrName = attrNamesEnum.nextElement();
-                Object nextAttrValue = getAttributeInternal(nextAttrName);
+                final String nextAttrName = attrNamesEnum.nextElement();
+                final Object nextAttrValue = getAttributeInternal(nextAttrName);
                 sb.append("\n");
-                sb.append("attrName = " + nextAttrName);
-                sb.append(" : attrValue = " + nextAttrValue);
+                sb.append("attrName = ").append(nextAttrName);
+                sb.append(" : attrValue = ").append(nextAttrValue);
             }
         }
 
-        return sb.toString();
+        return sb;
         // END S1AS
     }
 
+    @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(200);
-        //sb.append(super.toString());
-        sb.append(this.superToString());
-        sb.append(" ssoid: " + this.getSsoId());
-        sb.append(" userName: " + this.getUserName());
-        sb.append(" version: " + this.getVersion());
-        sb.append(" persistent: " + this.isPersistent());
+        final StringBuilder sb = new StringBuilder(1200);
+        sb.append(superToString());
+        sb.append(" ssoid: ").append(getSsoId());
+        sb.append(" userName: ").append(getUserName());
+        sb.append(" version: ").append(getVersion());
+        sb.append(" persistent: ").append(isPersistent());
         return sb.toString();
     }
 
