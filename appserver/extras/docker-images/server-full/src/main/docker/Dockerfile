@@ -13,8 +13,8 @@ ENV DOMAIN_NAME=@docker.payara.domainName@ \
     POSTBOOT_COMMANDS=${CONFIG_DIR}/post-boot-commands.asadmin \
     DEPLOY_PROPS=""
 
-COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}/
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
+COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}/
 
 RUN true \
     && echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/tmpfile \

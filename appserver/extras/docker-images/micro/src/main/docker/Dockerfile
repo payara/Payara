@@ -26,8 +26,8 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
+COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
 ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
 CMD ["--deploymentDir","/opt/payara/deployments"]
