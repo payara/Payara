@@ -116,7 +116,8 @@ public class PayaraConfig implements Config {
     }
 
     private <T> T getValueUncached(String propertyName, Class<T> propertyType) {
-        return convertString(getStringValue(propertyName), propertyType);
+        String stringValue = getStringValue(propertyName);
+        return stringValue == null ? null : convertString(stringValue, propertyType);
     }
 
     @SuppressWarnings("unchecked")
@@ -177,6 +178,9 @@ public class PayaraConfig implements Config {
     }
 
     private <T> List<T> convertToList(String stringValue, Class<T> elementType) {
+        if (stringValue == null) {
+            return null;
+        }
         String keys[] = splitValue(stringValue);
         List<T> result = new ArrayList<>(keys.length);
         for (String key : keys) {
@@ -201,6 +205,9 @@ public class PayaraConfig implements Config {
     }
 
     private <T> Set<T> convertToSet(String stringValue, Class<T> elementType) {
+        if (stringValue == null) {
+            return null;
+        }
         String keys[] = splitValue(stringValue);
         Set<T> result = new HashSet<>(keys.length);
         for (String key : keys) {
@@ -215,7 +222,7 @@ public class PayaraConfig implements Config {
             if (stringValue == null) {
                 stringValue = defaultValue;
             }
-            return convertString(stringValue, type);
+            return stringValue == null ? null : convertString(stringValue, type);
         });
     }
 
@@ -308,9 +315,6 @@ public class PayaraConfig implements Config {
     }
 
     private static String[] splitValue(String value) {
-        if (value == null) {
-            return new String[0];
-        }
         String keys[] = value.split("(?<!\\\\),");
         for (int i=0; i < keys.length; i++) {
             keys[i] = keys[i].replaceAll("\\\\,", ",");

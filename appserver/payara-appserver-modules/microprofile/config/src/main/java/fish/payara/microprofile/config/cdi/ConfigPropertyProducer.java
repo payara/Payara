@@ -96,12 +96,13 @@ public class ConfigPropertyProducer {
             result = config.getValue(name, property.defaultValue(),(Class<?>)type);
         } else if ( type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
-            if (List.class.equals(ptype.getRawType())) {
-                result = config.getListValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);
-            } else if (Set.class.equals(ptype.getRawType())) {
-                result = config.getSetValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);
+            Type rawType = ptype.getRawType();
+            if (List.class.equals(rawType)) {
+                result = config.getListValues(name, property.defaultValue(), getElementTypeFrom(ptype));
+            } else if (Set.class.equals(rawType)) {
+                result = config.getSetValues(name, property.defaultValue(), getElementTypeFrom(ptype));
             } else {
-                result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+                result = config.getValue(name, (Class<?>) rawType);
             }
         }
 
@@ -109,6 +110,16 @@ public class ConfigPropertyProducer {
             throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
         }
         return result;
+    }
+
+    private static Class<?> getElementTypeFrom(ParameterizedType collectionType) {
+        Type elementType = collectionType.getActualTypeArguments()[0];
+        if (!(elementType instanceof Class)) {
+            throw new DeploymentException(
+                    "Only config values of lists and sets of non generic types (Class types) are supported but found: "
+                            + collectionType);
+        }
+        return (Class<?>) elementType;
     }
 
 }
