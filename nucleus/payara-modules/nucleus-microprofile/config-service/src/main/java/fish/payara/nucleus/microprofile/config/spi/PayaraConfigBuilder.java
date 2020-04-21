@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
@@ -58,18 +60,16 @@ import org.eclipse.microprofile.config.spi.Converter;
  */
 public class PayaraConfigBuilder implements ConfigBuilder {
 
-    LinkedList<ConfigSource> sources;
-    Map<Type, Converter> converters;
-    ConfigProviderResolverImpl resolver;
-    ClassLoader loader;
+    private final LinkedList<ConfigSource> sources = new LinkedList<>();
+    private final Map<Class<?>, Converter<?>> converters = new HashMap<>();
+    private final ConfigProviderResolverImpl resolver;
+    private ClassLoader loader;
 
     public PayaraConfigBuilder(ConfigProviderResolverImpl resolver, ClassLoader loader) {
         this.resolver = resolver;
-        sources = new LinkedList<>();
-        converters = new HashMap<>();
         this.loader = loader;
     }
-    
+
     public PayaraConfigBuilder(ConfigProviderResolverImpl resolver) {
         this(resolver,Thread.currentThread().getContextClassLoader());
     }
@@ -88,7 +88,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder addDiscoveredConverters() {
-        Map<Type, Converter> discoveredConverters = resolver.getDiscoveredConverters(resolver.getAppInfo(loader));
+        Map<Class<?>, Converter<?>> discoveredConverters = resolver.getDiscoveredConverters(resolver.getAppInfo(loader));
         converters.putAll(discoveredConverters);
         return this;
     }
@@ -114,12 +114,12 @@ public class PayaraConfigBuilder implements ConfigBuilder {
     @Override
     public Config build() {
         this.converters.putAll(resolver.getDefaultConverters());
-        return new PayaraConfig(sources, converters);
+        return new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(resolver.getCacheDurationSeconds()));
     }
 
     @Override
     public <T> ConfigBuilder withConverter(Class<T> type, int i, Converter<T> cnvrtr) {
-        Converter old = converters.get(type);
+        Converter<?> old = converters.get(type);
         if (old != null) {
             if (i > getPriority(old)) {
                 this.converters.put(type, cnvrtr);
@@ -130,23 +130,31 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         return this;
     }
 
-    public static Type getTypeForConverter(Converter converter) {
-        // add each converter to the map for later lookup
-        Type types[] = converter.getClass().getGenericInterfaces();
+    public static Class<?> getTypeForConverter(Converter<?> converter) {
+       return getTypeForConverter(converter.getClass());
+    }
+
+    public static Class<?> getTypeForConverter(Class<?> converter) {
+        Type types[] = converter.getGenericInterfaces();
         for (Type type : types) {
             if (type instanceof ParameterizedType) {
-                Type args[] = ((ParameterizedType) type).getActualTypeArguments();
-                if (args.length >= 1) {
-                    // check if there is one there already
-                    return args[0];
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                if (parameterizedType.getRawType() == Converter.class) {
+                    Type forType = parameterizedType.getActualTypeArguments()[0];
+                    if (forType instanceof Class) {
+                        return (Class<?>) forType;
+                    }
+                    if (forType instanceof ParameterizedType) {
+                        return (Class<?>) ((ParameterizedType) forType).getRawType();
+                    }
                 }
             }
         }
         return null;
     }
-    
-        
-    private int getPriority(Converter converter) {
+
+
+    private static int getPriority(Converter<?> converter) {
         int result = 100;
         Priority annotation = converter.getClass().getAnnotation(Priority.class);
         if (annotation != null) {
@@ -154,20 +162,20 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         }
         return result;
     }
-    
-        
-    private void addConvertersToMap(List<Converter> convertersList) {
-        for (Converter converter : convertersList) {
-            Type cType = getTypeForConverter(converter);
-            if (cType != null) { 
-                Converter old = converters.get(cType);
+
+
+    private void addConvertersToMap(List<Converter<?>> convertersList) {
+        for (Converter<?> converter : convertersList) {
+            Class<?> type = getTypeForConverter(converter);
+            if (type != null) {
+                Converter<?> old = converters.get(type);
                 if (old != null) {
                     if (getPriority(converter) > getPriority(old)) {
-                        this.converters.put(cType, converter);
+                        this.converters.put(type, converter);
                     }
                 }else {
-                    this.converters.put(cType, converter);
-                } 
+                    this.converters.put(type, converter);
+                }
             }
         }
     }

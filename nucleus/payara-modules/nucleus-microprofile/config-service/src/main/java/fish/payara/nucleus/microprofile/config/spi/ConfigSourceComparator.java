@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.nucleus.microprofile.config.spi;
 
 import java.util.Comparator;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
@@ -53,7 +54,7 @@ public class ConfigSourceComparator implements Comparator<ConfigSource>{
         int res = -1*(o1.getOrdinal() - o2.getOrdinal());
         if (res != 0)
             return res;
-        return o1.getName().compareTo(o2.getName());
+        return Comparator.nullsLast(String::compareTo).compare(o1.getName(), o2.getName());
     }
 
 }

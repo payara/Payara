@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,18 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.nucleus.microprofile.config.spi;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.getTypeForConverter;
+import static org.junit.Assert.assertEquals;
+
+import java.math.BigInteger;
+import java.util.function.Supplier;
+
+import org.eclipse.microprofile.config.spi.Converter;
+import org.junit.Test;
 
 /**
+ * Tests the {@link PayaraConfigBuilder} helpers.
  *
- * @author steve
+ * @author Jan Bernitt
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({ SecretsDirConfigSourceTest.class })
-public class NewTestSuite {
+@SuppressWarnings("synthetic-access")
+public class PayaraConfigBuilderTest {
 
+    private static class SimpleTypeConverter implements Converter<BigInteger> {
 
+        @Override
+        public BigInteger convert(String value) {
+            return new BigInteger(value);
+        }
+    }
+
+    @Test
+    public void convertersCanReturnSimpleTypes() {
+        assertEquals(BigInteger.class, getTypeForConverter(new SimpleTypeConverter()));
+    }
+
+    private static class SupplierTypeConverter implements Converter<Supplier<String>> {
+
+        @Override
+        public Supplier<String> convert(String value) {
+            return () -> value;
+        }
+    }
+
+    @Test
+    public void convertersCanReturnParameterizedTypes() {
+        assertEquals(Supplier.class, getTypeForConverter(new SupplierTypeConverter()));
+    }
 }

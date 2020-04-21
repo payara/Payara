@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,26 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import javax.validation.constraints.Min;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
+ * The configuration that configures the semantics of the MP {@link Config} implementation.
+ *
+ * First of all this is the ordinality for the different types of {@link ConfigSource}s.
+ * The source with the highest ordinality takes precedence.
+ *
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
 @Configured(name="microprofile-config")
-public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
-    
+public interface MicroprofileConfigConfiguration extends ConfigExtension {
+
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
     void setDomainOrdinality(String message);
@@ -94,4 +102,14 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
     @Attribute(defaultValue = "170", dataType = Integer.class)
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
+
+    /**
+     * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
+     *         {@link ConfigSource} do become visible after a maximum of this duration. When set to zero or less caching
+     *         is disabled.
+     */
+    @Min(0)
+    @Attribute(defaultValue = "60", dataType = Integer.class)
+    String getCacheDurationSeconds();
+    void setCacheDurationSeconds(String cacheDurationSeconds);
 }
