@@ -61,43 +61,47 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
 
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
-    public void setDomainOrdinality(String ordinality);
+    void setDomainOrdinality(String message);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
     String getConfigOrdinality();
-    public void setConfigOrdinality(String ordinality);
-
+    void setConfigOrdinality(String message);
+    
     @Attribute(defaultValue = "130", dataType = Integer.class)
     String getServerOrdinality();
-    public void setServerOrdinality(String ordinality);
+    void setServerOrdinality(String message);
 
     @Attribute(defaultValue = "140", dataType = Integer.class)
     String getApplicationOrdinality();
-    public void setApplicationOrdinality(String ordinality);
+    void setApplicationOrdinality(String message);
 
     @Attribute(defaultValue = "150", dataType = Integer.class)
     String getModuleOrdinality();
-    public void setModuleOrdinality(String ordinality);
+    void setModuleOrdinality(String message);
 
     @Attribute(defaultValue = "160", dataType = Integer.class)
     String getClusterOrdinality();
-    public void setClusterOrdinality(String ordinality);
-
+    void setClusterOrdinality(String message);
+    
     @Attribute(defaultValue = "115", dataType = Integer.class)
     String getJNDIOrdinality();
-    public void setJNDIOrdinality(String ordinality);
-
+    void setJNDIOrdinality(String message);
+    
     @Attribute(defaultValue = "secrets", dataType = String.class)
     String getSecretDir();
-    public void setSecretDir(String ordinality);
-
+    void setSecretDir(String directory);
+    
     @Attribute(defaultValue = "90", dataType = Integer.class)
     String getSecretDirOrdinality();
-    public void setSecretDirOrdinality(String ordinality);
+    void setSecretDirOrdinality(String message);
 
     @Attribute(defaultValue = "105", dataType = Integer.class)
-    public String getPasswordOrdinality();
-    public void setPasswordOrdinality(String ordinality);
+    String getPasswordOrdinality();
+    void setPasswordOrdinality(String message);
+
+    @Attribute(defaultValue = "170", dataType = Integer.class)
+    String getPayaraExpressionPropertiesOrdinality();
+    void setPayaraExpressionPropertiesOrdinality(String message);
 
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
@@ -106,7 +110,6 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
      */
     @Min(0)
     @Attribute(defaultValue = "60", dataType = Integer.class)
-    public String getCacheDurationSeconds();
-    public void setCacheDurationSeconds(String cacheDurationSeconds);
-
+    String getCacheDurationSeconds();
+    void setCacheDurationSeconds(String cacheDurationSeconds);
 }

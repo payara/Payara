@@ -42,26 +42,25 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigView;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.logging.Logger;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
@@ -124,11 +123,10 @@ public class TranslatedConfigView implements ConfigView {
             if(!doSubstitution.get()) {
                 return value;
             }
-            
-           
+
             if (domainPasswordAliasStore() != null) {
                 if (getAlias(stringValue, ALIAS_TOKEN) != null) {
-                    try{
+                    try {
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
                         Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.aliaserror", stringValue, e.getLocalizedMessage()));
@@ -136,29 +134,26 @@ public class TranslatedConfigView implements ConfigView {
                     }
                 }
             }
-            
+
             String origValue = stringValue;
-            
+
             int i = 0;            // Perform Environment variable substitution
             Matcher m3 = mpConfigP.matcher(stringValue);
 
             while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String matchValue = m3.group(2).trim();
                 Config config = configResolver().getConfig();
-                Optional<String> newValue = config.getOptionalValue(matchValue,String.class);
+                Optional<String> newValue = config.getOptionalValue(matchValue, String.class);
                 if (newValue != null && newValue.isPresent()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
                     m3.reset(stringValue);
-                } 
-                i++;     
+                }
+                i++;
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
                 Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
-            }  
-            
-            
-            
-            
+            }
+
             i = 0;            // Perform Environment variable substitution
             Matcher m2 = envP.matcher(stringValue);
 
@@ -168,12 +163,12 @@ public class TranslatedConfigView implements ConfigView {
                 if (newValue != null) {
                     stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
                     m2.reset(stringValue);
-                } 
-                i++;     
+                }
+                i++;
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
                 Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
-            }            
+            }
 
             // Perform system property substitution in the value
             // The loop limit is imposed to prevent infinite looping to values
@@ -187,13 +182,12 @@ public class TranslatedConfigView implements ConfigView {
                     stringValue = m.replaceFirst(
                             Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
                     m.reset(stringValue);
-                } 
-                i++;     
+                }
+                i++;
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
                 Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
             }
-            
 
             return stringValue;
             
@@ -263,7 +257,7 @@ public class TranslatedConfigView implements ConfigView {
         }
     }
     
-   /**
+    /**
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
@@ -272,7 +266,7 @@ public class TranslatedConfigView implements ConfigView {
      */
     public static String getAlias(String propName, String token)
     {
-       String aliasName=null;
+       String aliasName = null;
        String starter = "${" + token + "="; //no space is allowed in starter
        String ender   = "}";
 
@@ -302,6 +296,4 @@ public class TranslatedConfigView implements ConfigView {
         }
         return new String(domainPasswordAliasStore.get(an));
     }
-
-
 }
