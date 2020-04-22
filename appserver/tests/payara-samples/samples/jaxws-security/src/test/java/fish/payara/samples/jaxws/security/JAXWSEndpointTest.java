@@ -64,6 +64,7 @@ public abstract class JAXWSEndpointTest {
     protected URL baseUrl;
 
     protected URL serviceUrl;
+    protected final InsecureSSLConfigurator insecureSSLConfigurator = new InsecureSSLConfigurator();
 
     public static WebArchive createBaseDeployment() {
         return PayaraTestShrinkWrap

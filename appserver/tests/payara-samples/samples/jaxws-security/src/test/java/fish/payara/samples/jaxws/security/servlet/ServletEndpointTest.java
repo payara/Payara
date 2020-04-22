@@ -40,8 +40,7 @@
 package fish.payara.samples.jaxws.security.servlet;
 
 import fish.payara.samples.*;
-import fish.payara.samples.jaxws.security.CalculatorService;
-import fish.payara.samples.jaxws.security.JAXWSEndpointTest;
+import fish.payara.samples.jaxws.security.*;
 import java.io.*;
 
 import java.net.*;
@@ -75,61 +74,16 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 
-    private SSLSocketFactory previousSSLFactory;
-    private HostnameVerifier previousHostnameVerifier;
-    
     @Before
     public void setUp() throws MalformedURLException, KeyManagementException, NoSuchAlgorithmException {
         URL baseHttpsUrl = ServerOperations.toContainerHttps(baseUrl);
         serviceUrl = new URL(baseHttpsUrl, "CalculatorService");
-
-        switchToTrustingSSLFactory();
-        switchToAllHostsVerifier();
-    }
-
-    private void switchToAllHostsVerifier() {
-        previousHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        });
-    }
-
-    private void switchToTrustingSSLFactory() throws KeyManagementException, NoSuchAlgorithmException {
-        SSLSocketFactory trustingFactory = createTrustingSocketFactory();
-        previousSSLFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
-        HttpsURLConnection.setDefaultSSLSocketFactory(trustingFactory);
-    }
-
-    private SSLSocketFactory createTrustingSocketFactory() throws KeyManagementException, NoSuchAlgorithmException {
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[]{
-            new X509TrustManager() {
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-
-                public void checkClientTrusted(
-                        java.security.cert.X509Certificate[] certs, String authType) {
-                }
-
-                public void checkServerTrusted(
-                        java.security.cert.X509Certificate[] certs, String authType) {
-                }
-            }
-        };
-// Install the all-trusting trust manager
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        return sc.getSocketFactory();
+        insecureSSLConfigurator.enableInsecureSSL();
     }
 
     @After
-    public void cleanUp() throws MalformedURLException {
-        HttpsURLConnection.setDefaultSSLSocketFactory(previousSSLFactory);
-        HttpsURLConnection.setDefaultHostnameVerifier(previousHostnameVerifier);
+    public void cleanUp() {
+        insecureSSLConfigurator.revertSSLConfiguration();
     }
 
     @Test
