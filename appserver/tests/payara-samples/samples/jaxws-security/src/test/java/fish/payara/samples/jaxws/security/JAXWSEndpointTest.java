@@ -75,7 +75,7 @@ public abstract class JAXWSEndpointTest {
     @BeforeClass
     public static void configureServer() {
         ServerOperations.setupContainerFileIdentityStore("myCustomRealm");
-        ServerOperations.addUserToContainerIdentityStore("myCustomRealm", "tester", "calculator");
+        ServerOperations.addUserToContainerIdentityStore("myCustomRealm", "tester", "hello");
         ServerOperations.addUserToContainerIdentityStore("myCustomRealm", "testernotallowed", "");
     }
 

@@ -20,7 +20,6 @@
     </login-config>
     
     <security-role>
-        <description>Role for users authenticated to call eCommerceWS</description>
-        <role-name>calculator</role-name>
+        <role-name>hello</role-name>
     </security-role>    
 </web-app>

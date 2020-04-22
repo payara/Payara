@@ -42,23 +42,16 @@ package fish.payara.samples.jaxws.security.servlet;
 import fish.payara.cdi.auth.roles.RolesPermitted;
 import javax.enterprise.context.Dependent;
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 @WebService(serviceName="CalculatorService")
 @Dependent
-@RolesPermitted("calculator")
 public class CalculatorService {
 
-    /** Calculates the sum of two numbers
-     *
-     * @param x integer number
-     * @param y integer number
-     * @return sum of two numbers
-     */
-    @WebMethod(operationName = "add")
-    public int add(@WebParam(name = "x")int x, @WebParam(name = "y")int y) {
-        return x+y;
+    @WebMethod(operationName = "helloRestricted")
+    @RolesPermitted("hello")
+    public String helloRestricted() {
+        return "Hello, world!";
     }
 
 }
