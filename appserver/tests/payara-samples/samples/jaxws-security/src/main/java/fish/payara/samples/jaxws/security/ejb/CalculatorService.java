@@ -42,23 +42,16 @@ package fish.payara.samples.jaxws.security.ejb;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 @WebService(serviceName="CalculatorService")
 @Stateless
-@RolesAllowed("calculator")
 public class CalculatorService {
 
-    /** Calculates the sum of two numbers
-     *
-     * @param x integer number
-     * @param y integer number
-     * @return sum of two numbers
-     */
-    @WebMethod(operationName = "add")
-    public int add(@WebParam(name = "x")int x, @WebParam(name = "y")int y) {
-        return x+y;
+    @WebMethod(operationName = "helloRestricted")
+    @RolesAllowed("hello")
+    public String helloRestricted() {
+        return "Hello, world!";
     }
 
 }
