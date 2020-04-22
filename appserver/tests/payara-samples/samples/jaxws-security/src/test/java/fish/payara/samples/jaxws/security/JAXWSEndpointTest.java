@@ -58,7 +58,7 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class JAXWSEndpointTest {
 
-    private static final String WEBAPP_SRC_ROOT = "src/main/webapp";
+    protected static final String WEBAPP_SRC_ROOT = "src/main/webapp";
 
     @ArquillianResource
     protected URL baseUrl;
@@ -69,10 +69,7 @@ public abstract class JAXWSEndpointTest {
     public static WebArchive createBaseDeployment() {
         return PayaraTestShrinkWrap
                 .getWebArchive()
-                .addPackage(JAXWSEndpointTest.class.getPackage())
-                .addAsWebInfResource(new File(WEBAPP_SRC_ROOT, "WEB-INF/web.xml"))
-                .addAsWebInfResource(new File(WEBAPP_SRC_ROOT, "WEB-INF/wsit-fish.payara.samples.jaxws.security.CalculatorService.xml"));
-
+                .addAsWebInfResource(new File(WEBAPP_SRC_ROOT, "WEB-INF/web.xml"));
     }
 
     @BeforeClass
@@ -128,7 +125,7 @@ public abstract class JAXWSEndpointTest {
         assertEquals("HTTP Response Code", 200, serviceConnection.getResponseCode());
     }
 
-    protected final void assertResponseIsAuthFailed(HttpsURLConnection serviceConnection) throws IOException {
+    protected final void assertResponseFailedWithMessage(HttpsURLConnection serviceConnection, String errorMessage) throws IOException {
         String responseText;
         try {
             responseText = readTextFromInputStream(serviceConnection.getInputStream());
@@ -138,23 +135,9 @@ public abstract class JAXWSEndpointTest {
         }
 
         Assert.assertTrue("Response code starts with 5", isBetween(serviceConnection.getResponseCode(), 500, 600) );
-        Assert.assertThat(responseText, CoreMatchers.containsString("Authentication of Username Password Token Failed"));
+        Assert.assertThat(responseText, CoreMatchers.containsString(errorMessage));
     }
     
-    protected final void assertResponseIsNotPermitted(HttpsURLConnection serviceConnection) throws IOException {
-        String responseText;
-        try {
-            responseText = readTextFromInputStream(serviceConnection.getInputStream());
-            System.out.println("Unexpected OK Response: \n\n" + responseText);
-        } catch (IOException e) {
-            responseText = readTextFromInputStream(serviceConnection.getErrorStream());
-        }
-
-        Assert.assertTrue("Response code starts with 5", isBetween(serviceConnection.getResponseCode(), 500, 600) );
-        Assert.assertThat(responseText, CoreMatchers.containsString("Caller was not permitted access"));
-    }
-    
-
     private boolean isBetween(int value, int minInclusive, int maxExclusive) {
         boolean ok = minInclusive <= value && value < maxExclusive;
         if (!ok) {

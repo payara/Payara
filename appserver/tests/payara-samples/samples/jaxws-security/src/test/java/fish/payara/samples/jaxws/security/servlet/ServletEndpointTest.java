@@ -40,7 +40,7 @@
 package fish.payara.samples.jaxws.security.servlet;
 
 import fish.payara.samples.*;
-import fish.payara.samples.jaxws.security.*;
+import fish.payara.samples.jaxws.security.JAXWSEndpointTest;
 import java.io.*;
 
 import java.net.*;
@@ -57,21 +57,21 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 /**
- * Test case for CUSTCOM-247 - Custom realm defined in web.xml isn't used for SOAP services secured using WS security policy
+ * Test case for CUSTCOM-247 - Custom realm defined in web.xml isn't used for
+ * SOAP services secured using WS security policy
  */
 @RunWith(PayaraArquillianTestRunner.class)
-@FixMethodOrder(NAME_ASCENDING)
 @SincePayara("5.202")
 public class ServletEndpointTest extends JAXWSEndpointTest {
 
     @Deployment
     public static WebArchive createDeployment() {
         return createBaseDeployment()
-                .addPackage(CalculatorService.class.getPackage())
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
+                .addPackage(ServletEndpointTest.class.getPackage())
+                .addAsWebInfResource(new File(WEBAPP_SRC_ROOT, "WEB-INF/wsit-fish.payara.samples.jaxws.security.servlet.CalculatorService.xml"));
     }
 
     @Before
@@ -100,7 +100,7 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
 
         HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
-        assertResponseIsAuthFailed(serviceConnection);
+        assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
 
     }
 
@@ -109,7 +109,7 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
 
         HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
-        assertResponseIsNotPermitted(serviceConnection);
+        assertResponseFailedWithMessage(serviceConnection, "Caller was not permitted access");
 
     }
 
