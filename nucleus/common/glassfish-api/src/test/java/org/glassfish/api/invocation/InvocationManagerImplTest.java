@@ -48,6 +48,7 @@ import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocati
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -332,6 +333,30 @@ public class InvocationManagerImplTest {
         assertSame(method, manager.peekWebServiceMethod());
         manager.popWebServiceMethod();
         assertNull(manager.peekWebServiceMethod());
+    }
+
+    @Test
+    public void toStringDoesNotThrowException() {
+        ComponentInvocation ci = newInvocation(SERVLET_INVOCATION);
+        assertNotNull(ci.toString()); // test bare instance
+        ci.setAppName("appName");
+        ci.setInstanceName("instanceName");
+        ci.setComponentId("componentId");
+        ci.setContainer("container");
+        assertEquals(Integer.toHexString(System.identityHashCode(ci)) + "@" + ci.getClass().getName() + "\n" +
+                "\tcomponentId=componentId\n" +
+                "\ttype=SERVLET_INVOCATION\n" +
+                "\tinstance=instanceName\n" +
+                "\tcontainer=container\n" +
+                "\tappName=appName\n", ci.toString());
+        ci.setInstanceName(null);
+        ci.setInstance("instance");
+        assertEquals(Integer.toHexString(System.identityHashCode(ci)) + "@" + ci.getClass().getName() + "\n" +
+                "\tcomponentId=componentId\n" +
+                "\ttype=SERVLET_INVOCATION\n" +
+                "\tinstance=instance\n" +
+                "\tcontainer=container\n" +
+                "\tappName=appName\n", ci.toString());
     }
 
     private static void runInChildThread(Runnable test) throws InterruptedException {
