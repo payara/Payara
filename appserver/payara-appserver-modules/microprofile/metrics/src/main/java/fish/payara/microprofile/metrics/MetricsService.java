@@ -60,6 +60,7 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -396,15 +397,16 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     public String getApplicationName() {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
-        if (invocationManager.getCurrentInvocation() == null) {
+        ComponentInvocation current = invocationManager.getCurrentInvocation();
+        if (current == null) {
             return invocationManager.peekAppEnvironment().getName();
         }
-        String appName = invocationManager.getCurrentInvocation().getAppName();
+        String appName = current.getAppName();
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getModuleName();
+            appName = current.getModuleName();
         }
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getComponentId();
+            appName = current.getComponentId();
         }
         return appName;
     }
