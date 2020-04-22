@@ -8,6 +8,6 @@
       </wsse:Security>
    </soapenv:Header>
    <soapenv:Body>
-      <calc:hello/>
+      <calc:helloRestricted/>
    </soapenv:Body>
 </soapenv:Envelope>

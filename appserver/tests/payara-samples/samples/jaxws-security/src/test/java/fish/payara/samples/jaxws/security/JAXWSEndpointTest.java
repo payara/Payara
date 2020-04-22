@@ -119,7 +119,7 @@ public abstract class JAXWSEndpointTest {
             serviceConnection.getInputStream();
         } catch (IOException e) {
             String text = readTextFromInputStream(serviceConnection.getErrorStream());
-            System.out.println("Error Response: \n\n" + text);
+            System.out.println("Unexpected Error Response: \n\n" + text);
         }
 
         assertEquals("HTTP Response Code", 200, serviceConnection.getResponseCode());

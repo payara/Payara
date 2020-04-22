@@ -88,29 +88,30 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
 
     @Test
     @RunAsClient
-    public void testPermittedSoapRequest() throws IOException, URISyntaxException {
-
+    public void testUnrestrictedSoapRequest() throws IOException, URISyntaxException {
         HttpsURLConnection serviceConnection = sendSoapHttpRequest("request.xml");
         assertResponseOK(serviceConnection);
+    }
 
+    @Test
+    @RunAsClient
+    public void testPermittedSoapRequest() throws IOException, URISyntaxException {
+        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-restricted.xml");
+        assertResponseOK(serviceConnection);
     }
 
     @Test
     @RunAsClient
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
-
         HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
         assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
-
     }
 
     @Test
     @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
-
         HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
         assertResponseFailedWithMessage(serviceConnection, "Caller was not permitted access");
-
     }
 
 }
