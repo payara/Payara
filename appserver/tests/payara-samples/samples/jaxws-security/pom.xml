@@ -11,10 +11,6 @@
     <artifactId>jaxws-security</artifactId>
     <packaging>jar</packaging>
     <name>Payara Samples - JAX-WS - Security</name>
-    <properties>
-        <!-- Exclude unstable tests -->
-        <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -35,13 +31,4 @@
         </dependency>
     </dependencies>
     
-    <profiles>
-        <profile>
-            <id>unstable</id>
-            <properties>
-                <!-- Include all test, including unstable -->
-                <excludedGroups></excludedGroups>
-            </properties>
-        </profile>
-    </profiles>
 </project>
