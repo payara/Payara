@@ -39,64 +39,80 @@
  */
 package fish.payara.samples.jaxws.security.ejb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
+import fish.payara.samples.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.SincePayara;
 import fish.payara.samples.jaxws.security.JAXWSEndpointTest;
+import java.io.File;
+import java.io.IOException;
+import java.net.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import javax.net.ssl.HttpsURLConnection;
 import org.junit.*;
+import org.junit.experimental.categories.Category;
 
-/**
- * @author Arjan Tijms
- */
 @RunWith(PayaraArquillianTestRunner.class)
-@FixMethodOrder(NAME_ASCENDING)
-@SincePayara("5.193")
-@Ignore
+@SincePayara("5.202")
+@Category(Unstable.class)
 public class EJBEndpointTest extends JAXWSEndpointTest {
 
     @Deployment
     public static WebArchive createDeployment() {
         return createBaseDeployment()
-                .addPackage(EJBEndpointTest.class.getPackage());
+                .addPackage(EJBEndpointTest.class.getPackage())
+                .addAsWebInfResource(new File(WEBAPP_SRC_ROOT, "WEB-INF/wsit-fish.payara.samples.jaxws.security.ejb.CalculatorService.xml"));
+
     }
 
-    private Service jaxwsEndPointService;
-
     @Before
-    public void setupClass() throws MalformedURLException {
-        URL rootUrl = new URL(baseUrl.getProtocol(), baseUrl.getHost(), baseUrl.getPort(), "");
-        
-        jaxwsEndPointService = Service.create(
-            // The WSDL file used to create this service is fetched from the application we deployed
-            // above using the createDeployment() method.
-                
-            new URL(rootUrl, "JAXWSEndPointImplementationService/JAXWSEndPointImplementation?wsdl"),
-            new QName("http://ejb.endpoint.jaxws.samples.payara.fish/", "JAXWSEndPointImplementationService"));
+    public void setUp() throws MalformedURLException, KeyManagementException, NoSuchAlgorithmException {
+        URL baseHttpsUrl = ServerOperations.toContainerHttps(baseUrl);
+        URL rootUrl = new URL(baseHttpsUrl.getProtocol(), baseHttpsUrl.getHost(), baseHttpsUrl.getPort(), "");
+        serviceUrl = new URL(rootUrl, "CalculatorService/CalculatorService");
+        insecureSSLConfigurator.enableInsecureSSL();
+    }
+
+    @After
+    public void cleanUp() {
+        insecureSSLConfigurator.revertSSLConfiguration();
     }
 
     @Test
     @RunAsClient
-    public void test1RequestFromClient() throws MalformedURLException {
-//        assertEquals("Hi Payara!", jaxwsEndPointService
-//                .getPort(JAXWSEndPointInterface.class)
-//                .sayHi("Payara!"));
+    public void testPermittedSoapRequest() throws IOException, URISyntaxException {
+
+        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request.xml");
+        assertResponseOK(serviceConnection);
+
     }
-    
+
+    @Test
+    @RunAsClient
+    public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
+
+        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
+        assertResponseFailedWithMessage(serviceConnection, "Client not authorized");
+
+    }
+
+    @Test
+    @RunAsClient
+    public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
+
+        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
+        assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
+
+    }
+
 }
