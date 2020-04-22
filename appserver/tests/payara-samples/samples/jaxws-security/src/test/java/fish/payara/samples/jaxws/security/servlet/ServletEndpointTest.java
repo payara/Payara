@@ -150,4 +150,13 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
 
     }
 
+    @Test
+    @RunAsClient
+    public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
+
+        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
+        assertResponseIsNotPermitted(serviceConnection);
+
+    }
+
 }
