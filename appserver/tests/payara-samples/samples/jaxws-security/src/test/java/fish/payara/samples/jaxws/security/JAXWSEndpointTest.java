@@ -65,7 +65,7 @@ public abstract class JAXWSEndpointTest {
 
     protected URL serviceUrl;
     protected final InsecureSSLConfigurator insecureSSLConfigurator = new InsecureSSLConfigurator();
-
+    
     public static WebArchive createBaseDeployment() {
         return PayaraTestShrinkWrap
                 .getWebArchive()
@@ -119,7 +119,7 @@ public abstract class JAXWSEndpointTest {
             serviceConnection.getInputStream();
         } catch (IOException e) {
             String text = readTextFromInputStream(serviceConnection.getErrorStream());
-            System.out.println("Unexpected Error Response: \n\n" + text);
+            log("Unexpected Error Response: \n\n" + text);
         }
 
         assertEquals("HTTP Response Code", 200, serviceConnection.getResponseCode());
@@ -129,7 +129,7 @@ public abstract class JAXWSEndpointTest {
         String responseText;
         try {
             responseText = readTextFromInputStream(serviceConnection.getInputStream());
-            System.out.println("Unexpected OK Response: \n\n" + responseText);
+            log("Unexpected OK Response: \n\n" + responseText);
         } catch (IOException e) {
             responseText = readTextFromInputStream(serviceConnection.getErrorStream());
         }
@@ -141,9 +141,13 @@ public abstract class JAXWSEndpointTest {
     private boolean isBetween(int value, int minInclusive, int maxExclusive) {
         boolean ok = minInclusive <= value && value < maxExclusive;
         if (!ok) {
-            System.out.println("Value is " + value);
+            log("Value is " + value);
         }
         return ok;
+    }
+
+    private void log(String text) {
+        System.out.println("\n" + text);
     }
 
 }
