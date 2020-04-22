@@ -54,4 +54,9 @@ public class CalculatorService {
         return "Hello, world!";
     }
 
+    @WebMethod(operationName = "hello")
+    public String hello() {
+        return "Hello, world!";
+    }
+
 }
