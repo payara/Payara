@@ -39,33 +39,39 @@
  */
 package fish.payara.samples.jaxws.security.ejb;
 
-import fish.payara.samples.*;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.ServerOperations;
+import fish.payara.samples.SincePayara;
+import fish.payara.samples.Unstable;
+import fish.payara.samples.jaxws.security.JAXWSEndpointTest;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.HttpsURLConnection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import fish.payara.samples.jaxws.security.JAXWSEndpointTest;
-import java.io.File;
-import java.io.IOException;
-import java.net.*;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import javax.net.ssl.HttpsURLConnection;
-import org.junit.*;
-import org.junit.experimental.categories.Category;
-
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 @SincePayara("5.202")
 @Category(Unstable.class)
 public class EJBEndpointTest extends JAXWSEndpointTest {
+
+    private HttpsURLConnection serviceConnection;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -85,27 +91,31 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
 
     @After
     public void cleanUp() {
+        if (serviceConnection != null) {
+            serviceConnection.disconnect();
+            serviceConnection = null;
+        }
         insecureSSLConfigurator.revertSSLConfiguration();
     }
 
     @Test
     @RunAsClient
     public void testUnrestrictedSoapRequest() throws IOException, URISyntaxException {
-        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request.xml");
+        serviceConnection = sendSoapHttpRequest("request.xml");
         assertResponseOK(serviceConnection);
     }
 
     @Test
     @RunAsClient
     public void testPermittedSoapRequest() throws IOException, URISyntaxException {
-        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-restricted.xml");
+        serviceConnection = sendSoapHttpRequest("request-restricted.xml");
         assertResponseOK(serviceConnection);
     }
 
     @Test
     @RunAsClient
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
-        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
+        serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
         assertResponseFailedWithMessage(serviceConnection, "Client not authorized");
 
     }
@@ -113,7 +123,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     @Test
     @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
-        HttpsURLConnection serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
+        serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
         assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
     }
 
