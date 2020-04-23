@@ -23,6 +23,7 @@
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
+        <module>jaxws-security</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>oauth2</module>
