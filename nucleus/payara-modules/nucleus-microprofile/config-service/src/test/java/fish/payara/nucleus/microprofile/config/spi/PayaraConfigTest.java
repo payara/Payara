@@ -131,23 +131,15 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void undefinedPropertiesThrowsExcetion() {
-        try {
-            config.getValue("undefined", String.class);
-            fail("Expected NoSuchElementException");
-        } catch (NoSuchElementException ex) {
-            assertEquals("Unable to find property with name undefined", ex.getMessage());
-        }
+    public void undefinedPropertyThrowsExcetion() {
+        assertException(NoSuchElementException.class, "Unable to find property with name undefined",
+                () -> config.getValue("undefined", String.class));
     }
 
     @Test
     public void unknownConversionThrowsExcetion() {
-        try {
-            config.getValue("key1", CharSequence.class);
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("Unable to convert value to type java.lang.CharSequence", ex.getMessage());
-        }
+        assertException(IllegalArgumentException.class, "Unable to convert value to type java.lang.CharSequence",
+                () -> config.getValue("key1", CharSequence.class));
     }
 
     @Test
@@ -179,7 +171,7 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void steValueAllowSingleElement() {
+    public void setValueAllowSingleElement() {
         assertEquals(new HashSet<>(asList("value1")), config.getSetValues("key1", "default", String.class));
         assertEquals(new HashSet<>(asList(1)), config.getSetValues("int1", "42", Integer.class));
     }
@@ -193,7 +185,25 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void nonExistingPropertyReturnsEmptyOptional() {
+    public void undefinedSetPropertyThrowsExcetion() {
+        assertException(NoSuchElementException.class, "Unable to find property with name undefined-set",
+                () -> config.getListValues("undefined-set", null, String.class));
+    }
+
+    @Test
+    public void undefinedListPropertyThrowsExcetion() {
+        assertException(NoSuchElementException.class, "Unable to find property with name undefined-list",
+                () -> config.getListValues("undefined-list", null, String.class));
+    }
+
+    @Test
+    public void undefinedArrayPropertyThrowsExcetion() {
+        assertException(NoSuchElementException.class, "Unable to find property with name undefined-array",
+                () -> config.getValue("undefined-array", String[].class));
+    }
+
+    @Test
+    public void undefinedPropertyReturnsEmptyOptional() {
         assertEquals(Optional.empty(), config.getOptionalValue("nonExisting", String.class));
     }
 
@@ -241,5 +251,15 @@ public class PayaraConfigTest {
         when(source.getPropertyNames()).thenReturn(properties.keySet());
         when(source.getValue(anyString())).thenAnswer(invocation -> properties.get(invocation.getArgument(0)));
         return source;
+    }
+
+    private static void assertException(Class<? extends Exception> expectedException, String expectedMsg, Runnable test) {
+        try {
+            test.run();
+            fail("Expected " + expectedException.getName());
+        } catch (Exception ex) {
+            assertEquals(expectedException, ex.getClass());
+            assertEquals(expectedMsg, ex.getMessage());
+        }
     }
 }
