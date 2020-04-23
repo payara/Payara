@@ -39,22 +39,30 @@
  */
 package fish.payara.samples.jaxws.security;
 
-import java.net.URL;
+import fish.payara.samples.PayaraTestShrinkWrap;
+import fish.payara.samples.ServerOperations;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 
-import fish.payara.samples.PayaraTestShrinkWrap;
-import fish.payara.samples.ServerOperations;
-import java.io.*;
-import java.net.ProtocolException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import javax.net.ssl.HttpsURLConnection;
-import org.hamcrest.CoreMatchers;
-import org.junit.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public abstract class JAXWSEndpointTest {
 
@@ -65,7 +73,7 @@ public abstract class JAXWSEndpointTest {
 
     protected URL serviceUrl;
     protected final InsecureSSLConfigurator insecureSSLConfigurator = new InsecureSSLConfigurator();
-    
+
     public static WebArchive createBaseDeployment() {
         return PayaraTestShrinkWrap
                 .getWebArchive()
@@ -86,17 +94,15 @@ public abstract class JAXWSEndpointTest {
         serviceConnection.setRequestMethod("POST");
         serviceConnection.setDoInput(true);
         serviceConnection.setDoOutput(true);
-        try (InputStream requestStream = this.getClass().getResourceAsStream(requestFile)) {
+        try (InputStream requestStream = getClass().getResourceAsStream(requestFile)) {
             pipe(requestStream, serviceConnection.getOutputStream());
         }
-        serviceConnection.getOutputStream().close();
         return serviceConnection;
     }
 
-    protected final void pipe(InputStream in, OutputStream out) throws IOException {
+    private final void pipe(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int size;
-
         while ((size = in.read(buffer)) != -1) {
             out.write(buffer, 0, size);
         }
@@ -104,7 +110,7 @@ public abstract class JAXWSEndpointTest {
 
     protected final String readTextFromInputStream(InputStream inputStream) throws IOException {
         StringBuilder sb = new StringBuilder();
-        try (Reader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
+        try (Reader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             char[] buffer = new char[1024];
             int size;
             while ((size = reader.read(buffer)) != -1) {
@@ -134,10 +140,10 @@ public abstract class JAXWSEndpointTest {
             responseText = readTextFromInputStream(serviceConnection.getErrorStream());
         }
 
-        Assert.assertTrue("Response code starts with 5", isBetween(serviceConnection.getResponseCode(), 500, 600) );
-        Assert.assertThat(responseText, CoreMatchers.containsString(errorMessage));
+        assertTrue("Response code starts with 5", isBetween(serviceConnection.getResponseCode(), 500, 600) );
+        assertThat(responseText, CoreMatchers.containsString(errorMessage));
     }
-    
+
     private boolean isBetween(int value, int minInclusive, int maxExclusive) {
         boolean ok = minInclusive <= value && value < maxExclusive;
         if (!ok) {
