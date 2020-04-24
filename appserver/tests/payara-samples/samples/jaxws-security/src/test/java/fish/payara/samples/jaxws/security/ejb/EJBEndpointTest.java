@@ -116,7 +116,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     @RunAsClient
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
-        assertResponseFailedWithMessage(serviceConnection, "Client not authorized");
+        assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
 
     }
 
@@ -124,7 +124,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
-        assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
+        assertResponseFailedWithMessage(serviceConnection, "Client not authorized");
     }
 
 }
