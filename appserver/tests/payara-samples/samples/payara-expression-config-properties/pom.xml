@@ -56,6 +56,11 @@
     <name>Payara Samples - Payara Expression MicroProfile Config Properties</name>
     <description>Sample that demonstrates translation of expressions and variables</description>
 
+    <properties>
+        <enforcer.skip>true</enforcer.skip>
+        <maven.test.skip>true</maven.test.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
@@ -76,9 +81,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
                 <executions>
                     <execution>
                         <id>enforce-environment-variable-is-set</id>
@@ -89,12 +92,16 @@
                             <rules>
                                 <requireEnvironmentVariable>
                                     <variableName>Dibbles</variableName>
-                                    <message>Missing environment variable Dibbles - it should be set to ${Dabbles} (literal). Make sure you set it globally and restart the server.
+                                    <message>
+                                    Missing environment variable Dibbles - it should be set to \${Dabbles} (literal).
+                                    Make sure you set it globally and restart the server.
                                     </message>
                                 </requireEnvironmentVariable>
                                 <requireEnvironmentVariable>
                                     <variableName>Bibbly</variableName>
-                                    <message>Missing environment variable Bibbly - it should be set to Bibbles. Make sure you set it globally and restart the server.
+                                    <message>
+                                    Missing environment variable Bibbly - it should be set to Bibbles.
+                                    Make sure you set it globally and restart the server.
                                     </message>
                                 </requireEnvironmentVariable>
                             </rules>
@@ -105,4 +112,19 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>auto-skip-test</id>
+            <activation>
+                <property>
+                    <name>env.Bibbly</name>
+                    <value>Bibbles</value>
+                </property>
+            </activation>
+            <properties>
+                <enforcer.skip>false</enforcer.skip>
+                <maven.test.skip>false</maven.test.skip>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -46,16 +46,13 @@
                 <module>samples-programmatic</module>
             </modules>
         </profile>
-    	<profile>
-    		<id>unstable</id>
-    		<modules>
-    			<module>classpath</module>
-    		</modules>
-                <properties>
-                    <!-- Include all test, including unstable -->
-                    <excludedGroups></excludedGroups>
-                </properties>
-    	</profile>
+        <profile>
+            <id>unstable</id>
+            <properties>
+                <!-- Include all test, including unstable -->
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
     </profiles>
 
     <repositories>
@@ -86,7 +83,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>1.5.0.Final</version>
+                <version>1.6.0.Final</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -238,6 +235,7 @@
                         <systemPropertyVariables>
                             <isUsingMicroProfile>${micro.isActive}</isUsingMicroProfile>
                         </systemPropertyVariables>
+                        <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
                 <plugin>

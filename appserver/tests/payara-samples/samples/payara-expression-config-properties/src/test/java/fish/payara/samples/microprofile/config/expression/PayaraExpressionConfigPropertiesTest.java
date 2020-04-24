@@ -41,10 +41,16 @@ package fish.payara.samples.microprofile.config.expression;
 
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+
 import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -54,14 +60,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Paths;
-
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible
 public class PayaraExpressionConfigPropertiesTest {
 

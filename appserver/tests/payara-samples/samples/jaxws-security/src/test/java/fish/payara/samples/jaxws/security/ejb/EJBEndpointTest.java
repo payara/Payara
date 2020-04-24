@@ -66,9 +66,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 @RunWith(PayaraArquillianTestRunner.class)
-@NotMicroCompatible
+@NotMicroCompatible("JAX-WS is not supported on Micro")
 @SincePayara("5.202")
 @Category(Unstable.class)
+// fails from two reasons:
+// 1) bug in Payara - reproducer, needs investigation
+// 2) grizzly SSL is incompatible with JDK8u242 and later
 public class EJBEndpointTest extends JAXWSEndpointTest {
 
     private HttpsURLConnection serviceConnection;
@@ -120,6 +123,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
 
     }
 
+    // passes on JDK 8u232 and older
     @Test
     @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {

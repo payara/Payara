@@ -15,14 +15,28 @@
       with client code in unexpected ways.
     </description>
 
-	<profiles>
-		<profile>
-			<id>unstable</id>
-		    <modules>
-		        <module>embedded-vs-jersey</module>
-		    </modules>
-		</profile>
-	</profiles>
+    <modules>
+        <module>embedded-vs-jersey</module>
+    </modules>
+
+  <profiles>
+        <!-- This module starts embedded on same ports which are already used by the remote server -->
+        <profile>
+            <id>payara-server-remote</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

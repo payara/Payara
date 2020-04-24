@@ -41,8 +41,8 @@ package fish.payara.samples.formauth;
 
 
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -66,6 +66,7 @@ import static org.junit.Assert.assertEquals;
  * Verifies that the {@code fish.payara.permittedFormBasedAuthHttpMethods} system property has an effect.
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class PermittedFormBasedAuthHttpMethodsTest {
 
     @ArquillianResource

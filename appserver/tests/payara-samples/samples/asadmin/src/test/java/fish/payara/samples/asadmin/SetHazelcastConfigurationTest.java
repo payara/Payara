@@ -39,15 +39,22 @@
  */
 package fish.payara.samples.asadmin;
 
+import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
+import fish.payara.samples.Unstable;
+
 import org.glassfish.embeddable.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
-
-import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
+import org.junit.experimental.categories.Category;
 
 /**
  * Verifies the correctness of the {@code SetHazelcastConfiguration} command.
  */
+@Category(Unstable.class)
+// Fails from two reasons:
+// 1) Requires completely new domain. Side effects of other tests break this one.
+// 2) On JDK8 fails because of usage of @Category annotation which has problems with
+//    this bug: https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8209742 (fixed in JDK11)
 public class SetHazelcastConfigurationTest extends AsadminTest {
 
     private HazelcastRuntimeConfiguration config;
@@ -57,26 +64,24 @@ public class SetHazelcastConfigurationTest extends AsadminTest {
         config = getDomainExtensionByType(HazelcastRuntimeConfiguration.class);
     }
 
+
     @Test
     public void autoIncrementPort() {
-        CommandResult result = asadmin("set-hazelcast-configuration",
-                "--autoIncrementPort", "true");
-        assertSuccess(result); 
+        CommandResult result = asadmin("set-hazelcast-configuration", "--autoIncrementPort", "true");
+        assertSuccess(result);
         assertTrue(config.getAutoIncrementPort());
-        result = asadmin("set-hazelcast-configuration",
-                "--autoIncrementPort", "false");
+        result = asadmin("set-hazelcast-configuration", "--autoIncrementPort", "false");
         assertSuccess(result);
         assertFalse(config.getAutoIncrementPort());
     }
 
+
     @Test
     public void dataGridEncryptionWarning() {
-        CommandResult result = asadmin("set-hazelcast-configuration",
-                "--encryptdatagrid", "true");
+        CommandResult result = asadmin("set-hazelcast-configuration", "--encryptdatagrid", "true");
         assertWarning(result);
         assertContains("Could not find datagrid-key", result.getOutput());
-        result = asadmin("set-hazelcast-configuration",
-                "--encryptdatagrid", "false");
+        result = asadmin("set-hazelcast-configuration", "--encryptdatagrid", "false");
         assertSuccess(result);
     }
 }
