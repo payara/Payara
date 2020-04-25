@@ -126,5 +126,22 @@
                 <maven.test.skip>false</maven.test.skip>
             </properties>
         </profile>
+        <!-- This module depends on starting the domain with the environment variables. -->
+        <!-- If the domain is already started without these env options, test fails. -->
+        <profile>
+            <id>payara-server-remote</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
     </profiles>
 </project>

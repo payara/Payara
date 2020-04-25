@@ -55,10 +55,11 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>
@@ -95,20 +96,26 @@ public class PayaraExpressionConfigPropertiesTest {
 
     @Test
     public void testAliasSubstitution() throws Exception {
-        TextPage page = new WebClient().getPage(url + "ConfigServlet");
-        System.out.println(page.getContent());
+        try (WebClient client = new WebClient()) {
+            TextPage page = client.getPage(url + "ConfigServlet");
+            System.out.println(page.getContent());
 
-        Assert.assertTrue("Expected \"Normal Notation\" to give wobbles",
+            assertTrue("Expected \"Normal Notation\" to give wobbles",
                 page.getContent().contains("Normal Notation: wobbles"));
-        Assert.assertTrue("Expected \"Substitution Notation\" to give wobbles",
+            assertTrue("Expected \"Substitution Notation\" to give wobbles",
                 page.getContent().contains("Substitution Notation: wobbles"));
-        Assert.assertTrue("Expected \"Password Alias from File\" to give wobbles",
+            assertTrue("Expected \"Password Alias from File\" to give wobbles",
                 page.getContent().contains("Password Alias from File: wobbles"));
-        Assert.assertTrue("Expected \"System Property Alias from File\" to give Tiddles!",
+            assertTrue("Expected \"System Property Alias from File\" to give Tiddles!",
                 page.getContent().contains("System Property Alias from File: Tiddles!"));
-        Assert.assertTrue("Expected \"Environment Variable Alias referencing System Property Alias from File\" to give Dobbles",
-                page.getContent().contains("Environment Variable Alias referencing System Property Alias from File: Dobbles"));
-        Assert.assertTrue("Expected \"Environment Variable Alias and System Property Alias from File (same property)\" to give Bibbles and Bobbles",
-                page.getContent().contains("Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
+            assertTrue(
+                "Expected \"Environment Variable Alias referencing System Property Alias from File\" to give Dobbles",
+                page.getContent()
+                    .contains("Environment Variable Alias referencing System Property Alias from File: Dobbles"));
+            assertTrue(
+                "Expected \"Environment Variable Alias and System Property Alias from File (same property)\" to give Bibbles and Bobbles",
+                page.getContent().contains(
+                    "Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
+        }
     }
 }
