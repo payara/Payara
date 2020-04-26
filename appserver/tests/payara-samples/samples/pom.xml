@@ -15,6 +15,8 @@
     <name>Payara Samples - Profiled Tests</name>
 
     <modules>
+        <!-- This module must run first, because it collides with some change made by other test(s) -->
+        <module>payara-expression-config-properties</module>
         <module>asadmin</module>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
@@ -30,7 +32,6 @@
         <module>microprofile-endpoints</module>
         <module>oauth2</module>
         <module>openid</module>
-        <module>payara-expression-config-properties</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
