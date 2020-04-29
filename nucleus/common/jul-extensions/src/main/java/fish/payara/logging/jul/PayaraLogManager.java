@@ -407,10 +407,10 @@ public class PayaraLogManager extends LogManager {
                 }
             }
 
-            final Predicate<Handler> isReady = h -> !PayaraLogHandler.class.isInstance(h)
+            final Predicate<Handler> isReadyPredicate = h -> !PayaraLogHandler.class.isInstance(h)
                 || PayaraLogHandler.class.cast(h).isReady();
             final List<Handler> handlers = getAllHandlers();
-            if (handlers.isEmpty() || handlers.stream().allMatch(isReady)) {
+            if (handlers.isEmpty() || handlers.stream().allMatch(isReadyPredicate)) {
                 setLoggingStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
                 if (flushAction != null) {
                     try {

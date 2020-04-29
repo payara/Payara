@@ -42,7 +42,6 @@ package com.sun.enterprise.server.logging.jul;
 
 import fish.payara.logging.jul.JulConfigurationFactory;
 import fish.payara.logging.jul.LoggingConfigurationHelper;
-import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 
 import java.util.logging.Formatter;
@@ -55,7 +54,7 @@ public class ExtendedJulConfigurationFactory extends JulConfigurationFactory {
 
     @Override
     public boolean configureFormatter(final Formatter formatter, final LoggingConfigurationHelper helper) {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class,
+        PayaraLoggingTracer.trace(ExtendedJulConfigurationFactory.class,
             () -> "configureFormatter(formatter=" + formatter + ", helper)");
         if (super.configureFormatter(formatter, helper)) {
             return true;

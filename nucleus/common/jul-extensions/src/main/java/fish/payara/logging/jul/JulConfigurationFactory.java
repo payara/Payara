@@ -125,7 +125,7 @@ public class JulConfigurationFactory {
      * @return true if formatter matched list of known formatters and was configured.
      */
     public boolean configureFormatter(final Formatter formatter, final LoggingConfigurationHelper helper) {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class,
+        PayaraLoggingTracer.trace(JulConfigurationFactory.class,
             () -> "configureFormatter(formatter=" + formatter + ", helper)");
         if (formatter instanceof UniformLogFormatter) {
             configureUniformLogFormatter((UniformLogFormatter) formatter, helper);
