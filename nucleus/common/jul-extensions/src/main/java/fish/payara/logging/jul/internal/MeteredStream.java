@@ -44,14 +44,18 @@ public final class MeteredStream extends OutputStream {
     private final AtomicLong written;
     private volatile boolean isOpen;
 
-    public MeteredStream(OutputStream out, long written) {
+    /**
+     * @param out wrapped targed output stream
+     * @param written initial value, usually size of the output file which already exists.
+     */
+    public MeteredStream(final OutputStream out, final long written) {
         this.out = out;
         this.written = new AtomicLong(written);
-        isOpen = true;
+        this.isOpen = true;
     }
 
     /**
-     * @return count of bytes written by this stream instance.
+     * @return count of bytes written by this stream instance plus number given in constructor
      */
     public long getBytesWritten() {
         return this.written.get();

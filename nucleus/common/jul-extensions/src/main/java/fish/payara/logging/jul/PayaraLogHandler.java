@@ -49,58 +49,40 @@ import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.internal.EnhancedLogRecord;
 import fish.payara.logging.jul.internal.LogRecordBuffer;
-import fish.payara.logging.jul.internal.MeteredStream;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
+import fish.payara.logging.jul.rotation.LogFileManager;
 import fish.payara.logging.jul.rotation.LogRotationTimerTask;
 import fish.payara.logging.jul.rotation.PeriodicalLogRotationTimerTask;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.security.PrivilegedAction;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
-import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
-import java.util.zip.GZIPOutputStream;
-
+import static fish.payara.logging.jul.internal.PayaraLoggingTracer.error;
+import static fish.payara.logging.jul.internal.PayaraLoggingTracer.trace;
 import static java.security.AccessController.doPrivileged;
+import static java.util.logging.Level.INFO;
 
 /**
  * @author David Matejcek
  */
-// FIXME: uses the file until the end, but another run is already starting. _ThreadName=FelixStartLevel vs _ThreadName=main
+// FIXME: uses the file until the end, but another run is already starting. _ThreadName=FelixStartLevel vs _ThreadName=main - verify if it is still a problem!
 public class PayaraLogHandler extends StreamHandler implements LogEventBroadcaster, ExternallyManagedLogHandler {
 
     private static final String LOGGER_NAME_STDOUT = "javax.enterprise.logging.stdout";
     private static final String LOGGER_NAME_STDERR = "javax.enterprise.logging.stderr";
     private static final Logger STDOUT_LOGGER = Logger.getLogger(LOGGER_NAME_STDOUT);
     private static final Logger STDERR_LOGGER = Logger.getLogger(LOGGER_NAME_STDERR);
-    private static final Logger LOG = Logger.getLogger(PayaraLogHandler.class.getName());
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
-
-    private static final String LOG_ROTATE_DATE_FORMAT = "yyyy-MM-dd'T'HH-mm-ss";
-    private static final String GZIP_EXTENSION = ".gz";
-
-    // This is a OutputStream to keep track of number of bytes
-    // written out to the stream
-    // FIXME: can be null if there are no rolling limit set
-    private MeteredStream meter;
 
     private LoggingOutputStream stdoutOutputStream;
     private LoggingOutputStream stderrOutputStream;
@@ -110,12 +92,12 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     private PayaraLogHandlerConfiguration configuration;
 
-    private final Object rotationLock = new Object();
     private final Timer rotationTimer = new Timer("log-rotation-timer-for-" + getClass().getSimpleName());
     private final List<LogEventListener> logEventListeners = new ArrayList<>();
 
     private volatile PayaraLogHandlerStatus status;
     private LoggingPump pump;
+    private LogFileManager logFileManager;
 
     public PayaraLogHandler() {
         this(new JulConfigurationFactory().createPayaraLogHandlerConfiguration(PayaraLogHandler.class, "server.log"));
@@ -123,7 +105,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
     public PayaraLogHandler(final PayaraLogHandlerConfiguration configuration) {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "PayaraLogHandler(configuration=" + configuration + ")");
+        trace(PayaraLogHandler.class, () -> "PayaraLogHandler(configuration=" + configuration + ")");
         // parent StreamHandler already set level, filter, encoding and formatter.
         setLevel(configuration.getLevel());
         setEncoding(configuration.getEncoding());
@@ -135,6 +117,10 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
+    /**
+     * @return true if the configuration is complete and the handler is capable to immediately start
+     *         processing the data.
+     */
     public boolean isReady() {
         return status == PayaraLogHandlerStatus.ON;
     }
@@ -168,10 +154,23 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
     public synchronized void reconfigure(final PayaraLogHandlerConfiguration newConfiguration) {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "reconfigure(configuration=" + configuration + ")");
+        trace(PayaraLogHandler.class, () -> "reconfigure(configuration=" + configuration + ")");
+        // stop using output, but allow collecting records. Logging system can continue to work.
         this.status = PayaraLogHandlerStatus.ACCEPTING;
+        if (this.rotationTimerTask != null) {
+            // to avoid another task from last configuration runs it's action.
+            this.rotationTimerTask.cancel();
+            this.rotationTimerTask = null;
+        }
+        // stop pump. If reconfiguration would fail, it is better to leave it down.
+        // records from the buffer will be processed if the last configuration was valid.
         stopPump();
+        if (this.logFileManager != null) {
+            this.logFileManager.disableOutput();
+            this.logFileManager = null;
+        }
         this.configuration = newConfiguration;
+
         try {
             this.status = startLoggingIfPossible();
         } catch (final Exception e) {
@@ -181,86 +180,10 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
-    private PayaraLogHandlerStatus startLoggingIfPossible() {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, "startLoggingIfPossible()");
-
-        if (!this.configuration.isLogToFile() || this.configuration.getLogFile() == null) {
-            PayaraLoggingTracer.trace(PayaraLogHandler.class, "Configuration is incomplete, but acceptation will start.");
-            return PayaraLogHandlerStatus.ACCEPTING;
-        }
-
-        closeOutputStream();
-
-        final Formatter formatter = configuration.getFormatterConfiguration();
-        if (formatter instanceof AnsiColorFormatter) {
-            ((AnsiColorFormatter) formatter).setDelegate(this.configuration.getFormatterDelegate());
-        }
-        if (BroadcastingFormatter.class.isInstance(formatter)) {
-            final BroadcastingFormatter broadcast = (BroadcastingFormatter) formatter;
-            broadcast.setProductId(this.configuration.getProductId());
-            broadcast.setLogEventBroadcaster(this);
-        }
-        final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
-        if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
-            rotate(this);
-        }
-        setFormatter(formatter);
-
-        if (this.configuration.isRotationOnDateChange()) {
-            initRotationOnDateChange();
-        } else if (this.configuration.getRotationTimeLimitValue() > 0) {
-            initRotationOnTimeLimit();
-        }
-
-        openOutputStream(this.configuration.getLogFile());
-
-        // enable only if everything else was ok to prevent situation when
-        // something would break and we would redirect STDOUT+STDERR
-        if (this.configuration.isLogStandardStreams()) {
-            initStandardStreamsLogging();
-        } else if (PayaraLogManager.isPayaraLogManager()) {
-            PayaraLogManager.getLogManager().resetStandardOutputs();
-        }
-
-        this.pump = new LoggingPump("PayaraLogHandler log pump");
-        this.pump.start();
-        return PayaraLogHandlerStatus.ON;
-    }
-
-
-    private synchronized void stopPump() {
-        if (this.pump != null) {
-            this.pump.interrupt();
-            this.pump = null;
-        }
-        drainAllPendingRecords();
-        flush();
-    }
-
-
+    // this is only to be able to provide the handle to the LogFileManager
     @Override
-    public synchronized void close() {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, "close()");
-        this.status = PayaraLogHandlerStatus.OFF;
-        stopPump();
-        try {
-            if (PayaraLogManager.isPayaraLogManager()) {
-                PayaraLogManager.getLogManager().resetStandardOutputs();
-            }
-            if (this.stdoutOutputStream != null) {
-                this.stdoutOutputStream.close();
-                this.stdoutOutputStream = null;
-            }
-
-            if (this.stderrOutputStream != null) {
-                this.stderrOutputStream.close();
-                this.stderrOutputStream = null;
-            }
-        } catch (IOException e) {
-            PayaraLoggingTracer.error(PayaraLogHandler.class, "close partially failed!", e);
-        }
-
-        super.close();
+    public void setOutputStream(OutputStream out) throws SecurityException {
+        super.setOutputStream(out);
     }
 
 
@@ -274,8 +197,8 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             return;
         }
         if (this.status == PayaraLogHandlerStatus.ACCEPTING) {
-            // configuration is incomplete, but acceptation can start
-            // this prevents deadlocks.
+            // The configuration is incomplete, but acceptation can start.
+            // This prevents deadlocks.
             // At this state we cannot decide if the record is loggable
             logRecordBuffer.add(MSG_RESOLVER.resolve(record));
             return;
@@ -296,12 +219,14 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     @Override
     public boolean isLoggable(final LogRecord record) {
-        return this.configuration.isLogToFile() && super.isLoggable(record);
+        // pump might be closed, super.isLoggable would refuse all records then.
+        return this.configuration.isLogToFile()
+            && (this.status == PayaraLogHandlerStatus.ACCEPTING || super.isLoggable(record));
     }
 
 
     @Override
-    public void informLogEventListeners(LogEvent logEvent) {
+    public void informLogEventListeners(final LogEvent logEvent) {
         for (LogEventListener listener : logEventListeners) {
             listener.messageLogged(logEvent);
         }
@@ -311,26 +236,124 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     @Override
     public void flush() {
         super.flush();
-        if (this.configuration != null && this.configuration.getLimitForFileRotation() > 0 && meter != null
-            && meter.getBytesWritten() >= this.configuration.getLimitForFileRotation()) {
-            // If we have written more than the limit set for the
-            // file, or rotation requested from the Timer Task or LogMBean
-            // start fresh with a new file after renaming the old file.
-            rotate();
+        if (this.logFileManager != null) {
+            this.logFileManager.rollIfFileTooBig();
+        }
+    }
+
+
+    /**
+     * First stops all dependencies using this handler (changes status to
+     * {@link PayaraLogHandlerStatus#OFF}, then closes all resources managed
+     * by this handler and finally closes the output stream.
+     */
+    @Override
+    public synchronized void close() {
+        trace(PayaraLogHandler.class, "close()");
+        this.status = PayaraLogHandlerStatus.OFF;
+        stopPump();
+        try {
+            if (PayaraLogManager.isPayaraLogManager()) {
+                PayaraLogManager.getLogManager().resetStandardOutputs();
+            }
+            if (this.stdoutOutputStream != null) {
+                this.stdoutOutputStream.close();
+                this.stdoutOutputStream = null;
+            }
+
+            if (this.stderrOutputStream != null) {
+                this.stderrOutputStream.close();
+                this.stderrOutputStream = null;
+            }
+        } catch (IOException e) {
+            error(PayaraLogHandler.class, "close partially failed!", e);
+        }
+
+        if (this.logFileManager != null) {
+            this.logFileManager.disableOutput();
         }
     }
 
 
     @Override
     public String toString() {
-        return super.toString() + "[status=" + status + ", buffer=" + this.logRecordBuffer + ", file="
-            + configuration.getLogFile() + "]";
+        return super.toString() + "[status=" + status + ", buffer=" + this.logRecordBuffer //
+            + ", file=" + this.configuration.getLogFile() + "]";
     }
+
+
+    private PayaraLogHandlerStatus startLoggingIfPossible() {
+        trace(PayaraLogHandler.class, "startLoggingIfPossible()");
+
+        if (!this.configuration.isLogToFile()) {
+            trace(PayaraLogHandler.class, "logToFile is false, the handler will not process any records.");
+            return PayaraLogHandlerStatus.OFF;
+        }
+        if (this.configuration.getLogFile() == null) {
+            trace(PayaraLogHandler.class, "Configuration is incomplete, but acceptation will start.");
+            return PayaraLogHandlerStatus.ACCEPTING;
+        }
+
+        this.logFileManager = new LogFileManager(this.configuration.getLogFile(),
+            this.configuration.getLimitForFileRotation(), this.configuration.isCompressionOnRotation(),
+            this.configuration.getMaxHistoryFiles(), this::setOutputStream, super::close);
+
+        final Formatter formatter = configuration.getFormatterConfiguration();
+        if (formatter instanceof AnsiColorFormatter) {
+            ((AnsiColorFormatter) formatter).setDelegate(this.configuration.getFormatterDelegate());
+        }
+        if (BroadcastingFormatter.class.isInstance(formatter)) {
+            final BroadcastingFormatter broadcast = (BroadcastingFormatter) formatter;
+            broadcast.setProductId(this.configuration.getProductId());
+            broadcast.setLogEventBroadcaster(this);
+        }
+        final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
+        if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
+            this.logFileManager.roll();
+        }
+        setFormatter(formatter);
+        this.logFileManager.enableOutput();
+        updateRollSchedule();
+
+        // enable only if everything else was ok to prevent situation when
+        // something would break and we would redirect STDOUT+STDERR
+        if (this.configuration.isLogStandardStreams()) {
+            initStandardStreamsLogging();
+        } else if (PayaraLogManager.isPayaraLogManager()) {
+            PayaraLogManager.getLogManager().resetStandardOutputs();
+        }
+
+        this.pump = new LoggingPump("PayaraLogHandler log pump");
+        this.pump.start();
+        return PayaraLogHandlerStatus.ON;
+    }
+
+
+    private synchronized void stopPump() {
+        trace(PayaraLogHandler.class, "stopPump()");
+        if (this.pump != null) {
+            this.pump.interrupt();
+            this.pump = null;
+        }
+        // we cannot publish anything if we don't have the stream configured.
+        if (this.logFileManager != null && this.logFileManager.isOutputEnabled()) {
+            // This protects us from the risk that this thread will not be fast enough to process
+            // all records and more is still coming. Records which would come after this
+            // process started will not be processed.
+            long counter = this.logRecordBuffer.getSize();
+            while (counter-- >= 0) {
+                if (!publishRecord(this.logRecordBuffer.poll())) {
+                    return;
+                }
+            }
+        }
+    }
+
 
     // FIXME move to a class responsible for maintaining stderr/stdout
     private void initStandardStreamsLogging() {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, "initStandardStreamsLogging()");
-        this.stdoutOutputStream = new LoggingOutputStream(STDOUT_LOGGER, Level.INFO, 5000);
+        trace(PayaraLogHandler.class, "initStandardStreamsLogging()");
+        this.stdoutOutputStream = new LoggingOutputStream(STDOUT_LOGGER, INFO, 5000);
         LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
 
@@ -340,115 +363,37 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         System.setErr(perr);
     }
 
-    private void initRotationOnDateChange() {
+
+    public synchronized void roll() {
+        trace(PayaraLogHandler.class, "roll()");
+        final PrivilegedAction<Void> action = () -> {
+            this.logFileManager.roll();
+            updateRollSchedule();
+            return null;
+        };
+        doPrivileged(action);
+    }
+
+
+    private void updateRollSchedule() {
+        trace(PayaraLogHandler.class, "updateRollSchedule()");
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
         }
         if (this.configuration.isRotationOnDateChange()) {
-           final LogRotationTimerTask task = new DailyLogRotationTimerTask(this::rotate);
-           scheduleNew(task);
-        }
-    }
-
-    private void initRotationOnTimeLimit() {
-        if (rotationTimerTask != null) {
-            rotationTimerTask.cancel();
-        }
-        if (!this.configuration.isRotationOnDateChange() && this.configuration.getRotationTimeLimitValue() > 0) {
+            this.rotationTimerTask = new DailyLogRotationTimerTask(this::scheduledRoll);
+            this.rotationTimer.schedule(rotationTimerTask, rotationTimerTask.computeDelayInMillis());
+        } else if (this.configuration.getRotationTimeLimitValue() > 0) {
             final long delayInMillis = this.configuration.getRotationTimeLimitValue() * 60 * 1000L;
-            final LogRotationTimerTask task = new PeriodicalLogRotationTimerTask(this::rotate, delayInMillis);
-            scheduleNew(task);
+            this.rotationTimerTask = new PeriodicalLogRotationTimerTask(this::scheduledRoll, delayInMillis);
+            this.rotationTimer.schedule(rotationTimerTask, rotationTimerTask.computeDelayInMillis());
         }
     }
 
-    private void scheduleNew(final LogRotationTimerTask timerTask) {
-        rotationTimerTask = timerTask;
-        rotationTimer.schedule(rotationTimerTask, rotationTimerTask.computeDelayInMillis());
-    }
 
-    private void scheduleNext() {
-        if (rotationTimerTask == null) {
-            return;
-        }
-        rotationTimerTask.cancel();
-        rotationTimerTask = rotationTimerTask.createNewTask();
-        rotationTimer.schedule(rotationTimerTask, rotationTimerTask.computeDelayInMillis());
-    }
-
-
-    public void rotate() {
-        rotate(this);
-    }
-
-
-    /**
-     * A Simple rotate method to close the old file and start the new one
-     * when the limit is reached.
-     */
-    private static void rotate(final PayaraLogHandler handler) {
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "rotate(handler=" + handler + "");
-
-        handler.log(Level.INFO, "Executing log rotation action for file: {0} ...", handler.configuration.getLogFile());
-        final PrivilegedAction<Void> action = () -> {
-            synchronized (handler.rotationLock) {
-                // schedule next execution, it has no effect on current execution.
-                handler.scheduleNext();
-
-                if (handler.meter != null && handler.meter.getBytesWritten() <= 0) {
-                    return null;
-                }
-                handler.closeOutputStream();
-                try {
-                    if (!handler.configuration.getLogFile().exists()) {
-                        final File creatingDeletedLogFile = handler.configuration.getLogFile();
-                        creatingDeletedLogFile.createNewFile();
-                        return null;
-                    }
-                    handler.log(Level.INFO, "Rotating log file: {0}", handler.configuration.getLogFile());
-                    final File oldFile = handler.configuration.getLogFile();
-                    final String renamedFileName = handler.configuration.getLogFile() + "_"
-                        + DateTimeFormatter.ofPattern(LOG_ROTATE_DATE_FORMAT).format(LocalDateTime.now());
-                    File rotatedFile = new File(renamedFileName);
-                    boolean renameSuccess = oldFile.renameTo(rotatedFile);
-                    if (!renameSuccess) {
-                        // If we don't succeed with file rename which
-                        // most likely can happen on Windows because
-                        // of multiple file handles opened. We go through
-                        // Plan B to copy bytes explicitly to a renamed
-                        // file.
-                        Files.copy(handler.configuration.getLogFile().toPath(), rotatedFile.toPath(),
-                            StandardCopyOption.ATOMIC_MOVE);
-                        final File freshServerLogFile = handler.configuration.getLogFile();
-                        // We do this to make sure that server.log
-                        // contents are flushed out to start from a
-                        // clean file again after the rename..
-                        final FileOutputStream fo = new FileOutputStream(freshServerLogFile);
-                        fo.close();
-                    }
-                    final FileOutputStream oldFileFO = new FileOutputStream(oldFile);
-                    oldFileFO.close();
-                    handler.openOutputStream(handler.configuration.getLogFile());
-                    if (handler.configuration.isCompressionOnRotation()) {
-                        boolean compressed = handler.gzipFile(rotatedFile);
-                        if (compressed) {
-                            boolean deleted = rotatedFile.delete();
-                            if (!deleted) {
-                                throw new IOException(
-                                    "Could not delete uncompressed log file: " + rotatedFile.getAbsolutePath());
-                            }
-                        } else {
-                            throw new IOException("Could not compress log file: " + rotatedFile.getAbsolutePath());
-                        }
-                    }
-
-                    handler.cleanUpHistoryLogFiles();
-                } catch (Exception ix) {
-                    new ErrorManager().error("Error, could not rotate log file", ix, ErrorManager.GENERIC_FAILURE);
-                }
-                return null;
-            }
-        };
-        doPrivileged(action);
+    private void scheduledRoll() {
+        this.logFileManager.rollIfFileNotEmpty();
+        updateRollSchedule();
     }
 
 
@@ -467,138 +412,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
-    /**
-     * Creates the file and initialized MeteredStream and passes it on to
-     * Superclass (java.util.logging.StreamHandler).
-     */
-    private void openOutputStream(final File file) {
-        PayaraLoggingTracer.trace(getClass(), () -> "openOutputStream(" + file + ")");
-        // check that the parent directory exists.
-        File parent = file.getParentFile();
-        if (!parent.exists() && !parent.mkdirs()) {
-            throw new IllegalStateException("Failed to create the parent directory " + parent.getAbsolutePath());
-        }
-        try {
-            FileOutputStream fout = new FileOutputStream(file, true);
-            BufferedOutputStream bout = new BufferedOutputStream(fout);
-            this.meter = new MeteredStream(bout, file.length());
-            setOutputStream(this.meter);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not open file for logging: " + file, e);
-        }
-    }
-
-
-    private void closeOutputStream() {
-        super.close();
-    }
-
-
-    /**
-     * cleanup the history log file based on attributes set under logging.properties file".
-     * <p/>
-     * If it is defined with valid number, we only keep that number of history logfiles;
-     * If "max_history_files" is defined without value, then default that number to be 10;
-     * If "max_history_files" is defined with value 0, any number of history files are kept.
-     */
-    private void cleanUpHistoryLogFiles() {
-        if (this.configuration.getMaxHistoryFiles() == 0) {
-            return;
-        }
-
-        synchronized (this.rotationLock) {
-            File dir = this.configuration.getLogFile().getParentFile();
-            String logFileName = this.configuration.getLogFile().getName();
-            if (dir == null) {
-                return;
-            }
-            File[] fset = dir.listFiles();
-            List<String> candidates = new ArrayList<>();
-            for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
-                    && fset[i].getName().startsWith(logFileName)) {
-                    candidates.add(fset[i].getAbsolutePath());
-                }
-            }
-            if (candidates.size() <= this.configuration.getMaxHistoryFiles()) {
-                return;
-            }
-            Object[] paths = candidates.toArray();
-            Arrays.sort(paths);
-            try {
-                for (int i = 0; i < paths.length - this.configuration.getMaxHistoryFiles(); i++) {
-                    File file = new File((String) paths[i]);
-                    boolean delFile = file.delete();
-                    if (!delFile) {
-                        throw new IOException("Could not delete log file: " + file.getAbsolutePath());
-                    }
-                }
-            } catch (Exception e) {
-                new ErrorManager().error("FATAL ERROR: COULD NOT DELETE LOG FILE.", e, ErrorManager.GENERIC_FAILURE);
-            }
-        }
-    }
-
-
-
-    /**
-     * Checks if the file is not null, if it does not need property evaluation, if it is absolute
-     * path and if it is not a directory, then it can be used for logging.
-     *
-     * @param file
-     * @return same file if it is usable for logging output
-     */
-    private static File getUsableFile(final File file) {
-        if (file == null || file.getPath().contains("${") || !file.isAbsolute() || file.isDirectory()) {
-            return null;
-        }
-        return file;
-    }
-
-
-    private boolean gzipFile(File infile) {
-        try ( //
-            FileInputStream fis = new FileInputStream(infile); //
-            FileOutputStream fos = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION); //
-            GZIPOutputStream gzos = new GZIPOutputStream(fos) //
-        ) { //
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) != -1) {
-                gzos.write(buffer, 0, len);
-            }
-            gzos.finish();
-            return true;
-        } catch (IOException ix) {
-            new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
-            return false;
-        }
-    }
-
-    private void drainAllPendingRecords() {
-        if (this.logRecordBuffer == null || this.configuration == null || !this.configuration.isLogToFile()) {
-            return;
-        }
-        while (true) {
-            if (!publishRecord(this.logRecordBuffer.poll())) {
-                return;
-            }
-        }
-    }
-
-
-    /**
-     * Safe logging usable before it is configured.
-     */
-    private void log(final Level level, final String messageKey, final Object... messageParameters) {
-        final LogRecord logRecord = new LogRecord(level, messageKey);
-        logRecord.setThreadID((int) Thread.currentThread().getId());
-        logRecord.setLoggerName(getClass().getName());
-        logRecord.setParameters(messageParameters);
-        LOG.log(logRecord);
-    }
-
-
     private final class LoggingPump extends Thread {
 
         private LoggingPump(String threadName) {
@@ -610,8 +423,8 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
         @Override
         public void run() {
-            PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "Logging pump for " + logRecordBuffer + " started.");
-            while (configuration.isLogToFile() && status == PayaraLogHandlerStatus.ON) {
+            trace(PayaraLogHandler.class, () -> "Logging pump for " + logRecordBuffer + " started.");
+            while (configuration.isLogToFile() && isReady()) {
                 try {
                     publishBatchFromBuffer();
                 } catch (Exception e) {
@@ -623,7 +436,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
         /**
-         * 5005
          * Retrieves the LogRecord from our Queue and store them in the file
          */
         private void publishBatchFromBuffer() {

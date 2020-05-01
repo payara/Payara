@@ -66,10 +66,4 @@ public class PeriodicalLogRotationTimerTask extends LogRotationTimerTask {
     public long computeDelayInMillis() {
         return delay;
     }
-
-
-    @Override
-    public PeriodicalLogRotationTimerTask createNewTask() {
-        return new PeriodicalLogRotationTimerTask(this.action, computeDelayInMillis());
-    }
 }

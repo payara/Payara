@@ -43,10 +43,16 @@ package fish.payara.logging.jul.rotation;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Special {@link LogRotationTimerTask} used for scheduling of the log file rotation on the start
  * of each day.
+ * <p>
+ * If we would use the {@link Timer#scheduleAtFixedRate(TimerTask, long, long)}, it would
+ * not respect changes in local time (summer/winter), so that is the reason why we implemented
+ * this.
  */
 public class DailyLogRotationTimerTask extends LogRotationTimerTask {
 
@@ -68,11 +74,5 @@ public class DailyLogRotationTimerTask extends LogRotationTimerTask {
         final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay();
         return now.until(nextMidnight, ChronoUnit.MILLIS);
-    }
-
-
-    @Override
-    public DailyLogRotationTimerTask createNewTask() {
-        return new DailyLogRotationTimerTask(this.action);
     }
 }

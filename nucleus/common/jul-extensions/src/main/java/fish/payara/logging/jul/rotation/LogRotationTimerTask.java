@@ -49,7 +49,7 @@ import java.util.TimerTask;
  */
 public abstract class LogRotationTimerTask extends TimerTask {
 
-    protected final LogFileRotationImplementation action;
+    private final LogFileRotationImplementation action;
 
 
     /**
@@ -66,15 +66,8 @@ public abstract class LogRotationTimerTask extends TimerTask {
     public abstract long computeDelayInMillis();
 
 
-    /**
-     * @return new task based on this, but still not scheduled yet.
-     */
-    public abstract LogRotationTimerTask createNewTask();
-
-
     @Override
     public void run() {
         action.execute();
     }
-
 }

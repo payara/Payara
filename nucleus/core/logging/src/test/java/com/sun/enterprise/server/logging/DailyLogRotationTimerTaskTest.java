@@ -45,7 +45,6 @@ import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -64,8 +63,6 @@ public class DailyLogRotationTimerTaskTest {
         assertEquals("task is not scheduled yet", 0L, task.scheduledExecutionTime());
         task.run();
         assertEquals("run() did not execute the action", MESSAGE, message.toString());
-        final DailyLogRotationTimerTask next = task.createNewTask();
-        assertNotSame("next != task", next, task);
     }
 
 }

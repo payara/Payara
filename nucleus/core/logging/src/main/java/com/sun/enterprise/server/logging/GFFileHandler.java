@@ -82,7 +82,7 @@ public class GFFileHandler implements LoggingRuntime {
     public void rotate() {
         final PayaraLogHandler payaraLogHandler = getLogHandler();
         if (payaraLogHandler != null) {
-            payaraLogHandler.rotate();
+            payaraLogHandler.roll();
         }
     }
 
