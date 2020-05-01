@@ -178,9 +178,9 @@ public class InvocationManagerImpl implements InvocationManager {
         }
 
         ComponentInvocation current = iter.next(); // the last is the current is "invocation"
-        if (invocation != current) {
-            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected {0} but was: {1}",
-                    new Object[] { current, invocation });
+        if (!isEqual(invocation, current)) {
+            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}\nfor caller:\n{2}",
+                    new Object[] { current, invocation, Arrays.toString(Thread.currentThread().getStackTrace()) });
         }
         ComponentInvocation prev = iter.hasNext() ? iter.next() : null;
 
@@ -204,6 +204,10 @@ public class InvocationManagerImpl implements InvocationManager {
                 typeHandler.afterPostInvoke(type, prev, invocation);
             }
         }
+    }
+
+    private static boolean isEqual(ComponentInvocation a, ComponentInvocation b) {
+        return a == b || a.getClass() == b.getClass() && a.equals(b);
     }
 
     /**
