@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2020 Payara Foundation and/or its affiliates
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -65,17 +65,23 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+
 import java.lang.String;
 import java.security.*;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 /**
  * This class implements the Tomcat InstanceListener interface and handles the INIT,DESTROY and SERVICE, FILTER events.
- * 
+ *
  * @author Vivek Nagar
  * @author Tony Ng
  */
@@ -91,10 +97,12 @@ public final class J2EEInstanceListener implements InstanceListener {
     private boolean initialized = false;
 
     private AppServSecurityContext securityContext;
+    private Map<String, ComponentInvocation> eventInvocationsByWebModuleIdAndInstance = new ConcurrentHashMap<>();
 
     public J2EEInstanceListener() {
     }
 
+    @Override
     public void instanceEvent(InstanceEvent event) {
         Context context = (Context) event.getWrapper().getParent();
         if (!(context instanceof WebModule)) {
@@ -147,7 +155,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         if (!(context instanceof WebModule)) {
             return;
         }
-        
+
         WebModule wm = (WebModule) context;
 
         Object instance;
@@ -225,15 +233,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         // END OF IASRI 4713234
         // END IASRI 4688449
 
-        ComponentInvocation inv;
-        if (eventType == InstanceEvent.EventType.BEFORE_INIT_EVENT) {
-            // The servletName is not avaiable from servlet instance before servlet init.
-            // We have to pass the servletName to ComponentInvocation so it can be retrieved
-            // in RealmAdapter.getServletName().
-            inv = new WebComponentInvocation(wm, instance, event.getWrapper().getName());
-        } else {
-            inv = new WebComponentInvocation(wm, instance);
-        }
+        ComponentInvocation inv = getComponentInvocation(event, eventType, wm, instance);
 
         try {
             im.preInvoke(inv);
@@ -251,6 +251,20 @@ public final class J2EEInstanceListener implements InstanceListener {
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         }
+    }
+
+    private ComponentInvocation getComponentInvocation(InstanceEvent event, InstanceEvent.EventType eventType,
+            WebModule wm, Object instance) {
+        String key = wm.getID() + ":"+(instance == null ? 0 : toHexString(identityHashCode(instance)));
+        return eventInvocationsByWebModuleIdAndInstance.computeIfAbsent(key, k -> {
+            if (eventType == InstanceEvent.EventType.BEFORE_INIT_EVENT) {
+                // The servletName is not avaiable from servlet instance before servlet init.
+                // We have to pass the servletName to ComponentInvocation so it can be retrieved
+                // in RealmAdapter.getServletName().
+                return new WebComponentInvocation(wm, instance, event.getWrapper().getName());
+            }
+            return new WebComponentInvocation(wm, instance);
+        });
     }
 
     private static javax.security.auth.AuthPermission doAsPrivilegedPerm = new javax.security.auth.AuthPermission("doAsPrivileged");
@@ -312,7 +326,7 @@ public final class J2EEInstanceListener implements InstanceListener {
             _logger.log(Level.SEVERE, msg, ie);
         }
 
-        ComponentInvocation inv = new WebComponentInvocation(wm, instance);
+        ComponentInvocation inv = getComponentInvocation(event, eventType, wm, instance);
         try {
             im.postInvoke(inv);
         } catch (Exception ex) {

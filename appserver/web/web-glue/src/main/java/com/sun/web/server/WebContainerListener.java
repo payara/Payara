@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.web.server;
 
@@ -56,15 +56,17 @@ import javax.validation.ValidatorFactory;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 /**
- * This class implements the Tomcat ContainerListener interface and handles Context and 
+ * This class implements the Tomcat ContainerListener interface and handles Context and
  * Session related events.
- * 
+ *
  * @author Tony Ng
  */
 public final class WebContainerListener implements ContainerListener {
@@ -73,8 +75,8 @@ public final class WebContainerListener implements ContainerListener {
 
     private static final ResourceBundle rb = _logger.getResourceBundle();
 
-    static private HashSet<String> beforeEvents = new HashSet<String>();
-    static private HashSet<String> afterEvents = new HashSet<String>();
+    static private HashSet<String> beforeEvents = new HashSet<>();
+    static private HashSet<String> afterEvents = new HashSet<>();
 
     static {
         // preInvoke events
@@ -140,6 +142,7 @@ public final class WebContainerListener implements ContainerListener {
     private InvocationManager invocationMgr;
     private InjectionManager injectionMgr;
     private NamedNamingObjectProxy validationNamingProxy;
+    private Map<String, ComponentInvocation> eventInvocationByWebModuleId = new ConcurrentHashMap<>();
 
     public WebContainerListener(InvocationManager invocationMgr, InjectionManager injectionMgr,
             NamedNamingObjectProxy validationNamingProxy) {
@@ -148,6 +151,7 @@ public final class WebContainerListener implements ContainerListener {
         this.validationNamingProxy = validationNamingProxy;
     }
 
+    @Override
     public void containerEvent(ContainerEvent event) {
         if(_logger.isLoggable(Level.FINEST)) {
 	    _logger.log(Level.FINEST, LogFacade.CONTAINER_EVENT,
@@ -161,7 +165,7 @@ public final class WebContainerListener implements ContainerListener {
         try {
             WebModule wm = (WebModule) event.getContainer();
             if (beforeEvents.contains(type)) {
-                preInvoke(wm);
+                preInvoke(getComponentInvocation(wm));
 
                 if ( type.equals(ContainerEvent.BEFORE_CONTEXT_DESTROYED ) ) {
                     try {
@@ -183,11 +187,13 @@ public final class WebContainerListener implements ContainerListener {
                         type.equals(ContainerEvent.AFTER_CONTEXT_DESTROYED)) {
                     preDestroy(event);
                 }
-                postInvoke(wm);
+
+                postInvoke(getComponentInvocation(wm));
             } else if (ContainerEvent.PRE_DESTROY.equals(type)) {
-                preInvoke(wm);
+                ComponentInvocation inv = getComponentInvocation(wm);
+                preInvoke(inv);
                 preDestroy(event);
-                postInvoke(wm);
+                postInvoke(inv);
             }
         } catch (Throwable t) {
             String msg = rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
@@ -197,15 +203,15 @@ public final class WebContainerListener implements ContainerListener {
         }
     }
 
-    private void preInvoke(WebModule ctx) {
-        WebModule wm = (WebModule)ctx;
-        ComponentInvocation inv = new WebComponentInvocation(wm);
+    private ComponentInvocation getComponentInvocation(WebModule wm) {
+        return eventInvocationByWebModuleId.computeIfAbsent(wm.getID(), id -> new WebComponentInvocation(wm));
+    }
+
+    private void preInvoke(ComponentInvocation inv) {
         invocationMgr.preInvoke(inv);
     }
 
-    private void postInvoke(WebModule ctx) {
-        WebModule wm = (WebModule)ctx;
-        ComponentInvocation inv = new WebComponentInvocation(wm);
+    private void postInvoke(ComponentInvocation inv) {
         invocationMgr.postInvoke(inv);
     }
 
