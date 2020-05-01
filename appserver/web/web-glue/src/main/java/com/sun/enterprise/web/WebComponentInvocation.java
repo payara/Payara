@@ -162,6 +162,11 @@ public class WebComponentInvocation extends ComponentInvocation {
     }
 
     @Override
+    public int hashCode() {
+        return instance == null ? container.hashCode() : container.hashCode() ^ instance.hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof WebComponentInvocation)) {
             return false;
