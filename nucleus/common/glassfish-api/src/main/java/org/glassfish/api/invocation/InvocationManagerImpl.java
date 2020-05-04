@@ -179,7 +179,7 @@ public class InvocationManagerImpl implements InvocationManager {
         }
 
         ComponentInvocation current = iter.next(); // the last is the current is "invocation"
-        if (!isEqual(invocation, current)) {
+        if (isInconsistentUse(invocation, current)) {
             LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}",
                     new Object[] { current, invocation });
             LOGGER.log(Level.FINE, "Stacktrace: ",
@@ -191,26 +191,32 @@ public class InvocationManagerImpl implements InvocationManager {
         ComponentInvocationHandler typeHandler = typeHandlers.get(type);
         try {
             if (allTypesHandler != null) {
-                allTypesHandler.beforePostInvoke(type, prev, invocation);
+                allTypesHandler.beforePostInvoke(type, prev, current);
             }
             if (typeHandler != null) {
-                typeHandler.beforePostInvoke(type, prev, invocation);
+                typeHandler.beforePostInvoke(type, prev, current);
             }
         } finally {
             // pop the stack
             frames.removeLast();
 
             if (allTypesHandler != null) {
-                allTypesHandler.afterPostInvoke(type, prev, invocation);
+                allTypesHandler.afterPostInvoke(type, prev, current);
             }
             if (typeHandler != null) {
-                typeHandler.afterPostInvoke(type, prev, invocation);
+                typeHandler.afterPostInvoke(type, prev, current);
             }
         }
     }
 
-    private static boolean isEqual(ComponentInvocation a, ComponentInvocation b) {
-        return a == b || a.getClass() == b.getClass() && a.equals(b);
+    private static boolean isInconsistentUse(ComponentInvocation a, ComponentInvocation b) {
+        if (a == null || b == null) {
+            return a != b;
+        }
+        if (a.getClass() != b.getClass()) {
+            return true;
+        }
+        return a != b && !a.getClass().getSimpleName().equals("WebComponentInvocation"); // Effectively we ignore WebComponentInvocations for now
     }
 
     /**

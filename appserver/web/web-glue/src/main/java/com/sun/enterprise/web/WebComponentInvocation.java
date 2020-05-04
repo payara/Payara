@@ -47,7 +47,6 @@ import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.SingleThreadModel;
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 public class WebComponentInvocation extends ComponentInvocation {
 
@@ -70,12 +69,12 @@ public class WebComponentInvocation extends ComponentInvocation {
         container = wm;
         this.instance = instance;
         setResourceTableKey(_getResourceTableKey());
-
+        
         moduleName = wm.getModuleName();
         appName = wm.getWebBundleDescriptor().getApplication().getAppName();
         registrationName = wm.getWebBundleDescriptor().getApplication().getRegistrationName();
     }
-
+    
     public WebComponentInvocation(WebModule wm, Object instance, String instanceName) {
       this(wm, instance);
       setInstanceName(instanceName);
@@ -160,19 +159,5 @@ public class WebComponentInvocation extends ComponentInvocation {
             }
             return eq;
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(container, instance);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof WebComponentInvocation)) {
-            return false;
-        }
-        WebComponentInvocation other = (WebComponentInvocation) obj;
-        return container == other.container && instance == other.instance;
     }
 }
