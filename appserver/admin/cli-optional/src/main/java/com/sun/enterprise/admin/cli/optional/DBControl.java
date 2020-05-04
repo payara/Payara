@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,10 +84,10 @@ public abstract class DBControl {
                 }
 
                 // Redirect stdout and stderr to a file
-                try (PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true)) {
-                    System.setOut(printStream);
-                    System.setErr(printStream);
-                }
+                PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true);
+                System.setOut(printStream);
+                System.setErr(printStream);
+                
             } catch (Throwable t) {
                 t.printStackTrace();
                 // Exit with an error code of 2
