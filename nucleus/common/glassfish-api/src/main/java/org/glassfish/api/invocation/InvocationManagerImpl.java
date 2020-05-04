@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -179,8 +180,10 @@ public class InvocationManagerImpl implements InvocationManager {
 
         ComponentInvocation current = iter.next(); // the last is the current is "invocation"
         if (!isEqual(invocation, current)) {
-            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}\nfor caller:\n{2}",
-                    new Object[] { current, invocation, Arrays.toString(Thread.currentThread().getStackTrace()) });
+            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}",
+                    new Object[] { current, invocation });
+            LOGGER.log(Level.FINE, "Stacktrace: ",
+                    new IllegalStateException("This exception is not thrown, it is only to trace the invocation"));
         }
         ComponentInvocation prev = iter.hasNext() ? iter.next() : null;
 

@@ -47,6 +47,7 @@ import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.SingleThreadModel;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 public class WebComponentInvocation extends ComponentInvocation {
 
@@ -163,7 +164,7 @@ public class WebComponentInvocation extends ComponentInvocation {
 
     @Override
     public int hashCode() {
-        return instance == null ? container.hashCode() : container.hashCode() ^ instance.hashCode();
+        return Objects.hash(container, instance);
     }
 
     @Override
