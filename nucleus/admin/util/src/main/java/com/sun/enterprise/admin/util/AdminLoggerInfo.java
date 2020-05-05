@@ -136,14 +136,6 @@ public class AdminLoggerInfo {
     static final String mISSremstateerror = LOGMSG_PREFIX + "-00009";
 
     @LogMessageInfo(
-            message = "It appears that server [{0}:{1}] does not accept secure connections. Retry with --secure=false.",
-            cause = "An attempt to invoke a command on another server failed.", 
-            action = "Check that the server is configured to accept secure connections.",
-            publish = true,
-            level = "SEVERE")
-    public static final String mServerIsNotSecure = LOGMSG_PREFIX + "-00010";
-    
-    @LogMessageInfo(
             message = "An unexpected exception occurred.",
             cause = "An unexpected exception occurred.", 
             action = "Check the server logs and contact Payara Support",
@@ -158,16 +150,7 @@ public class AdminLoggerInfo {
             publish = true,
             level = "SEVERE")
     public static final String mSecureAdminEmptyPassword = LOGMSG_PREFIX + "-00012";
-   
-    @LogMessageInfo(
-            message = "Can not put data to cache under key {0}",
-            cause = "While invoking a command on another server, this server is unable"
-                + " to cache the meta data related to the command.", 
-            action = "Check the server logs and contact Payara Support",
-            publish = true,
-            level = "WARNING")
-    public static final String mCantPutToCache = LOGMSG_PREFIX + "-00013";
-     
+
     @LogMessageInfo(
             message = "An admin request arrived from {0} with the domain identifier {1} "
                 + "which does not match the domain identifier {2} configured for this "

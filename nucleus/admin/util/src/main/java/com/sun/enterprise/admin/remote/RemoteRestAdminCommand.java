@@ -51,7 +51,6 @@ import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriter;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
-import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import java.io.*;
 import java.net.*;
@@ -1230,8 +1229,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 try {
                     boolean serverAppearsSecure = NetUtils.isSecurePort(host, port);
                     if (!serverAppearsSecure && secure) {
-                        logger.log(Level.SEVERE, AdminLoggerInfo.mServerIsNotSecure,
-                                new Object[] { host, port });
+                        logger.log(Level.SEVERE,
+                            "It appears that server [{0}:{1}] does not accept secure connections."
+                            + " Retry with --secure=false.",
+                            new Object[] {host, port});
                     }
                     throw new CommandException(se);
                 } catch(IOException io) {
@@ -1503,7 +1504,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                         AdminCacheUtils.getCache().put(createCommandCacheKey(), forCache.toString());
                     } catch (Exception ex) {
                         if (logger.isLoggable(Level.WARNING)) {
-                            logger.log(Level.WARNING, AdminLoggerInfo.mCantPutToCache,
+                            logger.log(Level.WARNING, "Can not put data to cache under key {0}",
                                     new Object[] { createCommandCacheKey() });
                         }
                     }
