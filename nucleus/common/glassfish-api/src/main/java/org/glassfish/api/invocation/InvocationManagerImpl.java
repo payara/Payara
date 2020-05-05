@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -178,9 +179,11 @@ public class InvocationManagerImpl implements InvocationManager {
         }
 
         ComponentInvocation current = iter.next(); // the last is the current is "invocation"
-        if (invocation != current) {
-            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected {0} but was: {1}",
+        if (isInconsistentUse(invocation, current)) {
+            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}",
                     new Object[] { current, invocation });
+            LOGGER.log(Level.FINE, "Stacktrace: ",
+                    new IllegalStateException("This exception is not thrown, it is only to trace the invocation"));
         }
         ComponentInvocation prev = iter.hasNext() ? iter.next() : null;
 
@@ -188,22 +191,32 @@ public class InvocationManagerImpl implements InvocationManager {
         ComponentInvocationHandler typeHandler = typeHandlers.get(type);
         try {
             if (allTypesHandler != null) {
-                allTypesHandler.beforePostInvoke(type, prev, invocation);
+                allTypesHandler.beforePostInvoke(type, prev, current);
             }
             if (typeHandler != null) {
-                typeHandler.beforePostInvoke(type, prev, invocation);
+                typeHandler.beforePostInvoke(type, prev, current);
             }
         } finally {
             // pop the stack
             frames.removeLast();
 
             if (allTypesHandler != null) {
-                allTypesHandler.afterPostInvoke(type, prev, invocation);
+                allTypesHandler.afterPostInvoke(type, prev, current);
             }
             if (typeHandler != null) {
-                typeHandler.afterPostInvoke(type, prev, invocation);
+                typeHandler.afterPostInvoke(type, prev, current);
             }
         }
+    }
+
+    private static boolean isInconsistentUse(ComponentInvocation a, ComponentInvocation b) {
+        if (a == null || b == null) {
+            return a != b;
+        }
+        if (a.getClass() != b.getClass()) {
+            return true;
+        }
+        return a != b && !a.getClass().getSimpleName().equals("WebComponentInvocation"); // Effectively we ignore WebComponentInvocations for now
     }
 
     /**
