@@ -30,7 +30,7 @@ RUN true \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options \
       '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}' \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
-      set-log-attributes fish.payara.logging.jul.PayaraLogHandler.logtoFile=false \
+      set-log-attributes @docker.payara.serverLogHandler.class@.logtoFile=false \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} \
     && rm -rf \
         /tmp/password-change-file.txt \

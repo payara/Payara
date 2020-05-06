@@ -24,6 +24,7 @@
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
+        <docker.payara.serverLogHandler.class>fish.payara.logging.jul.PayaraLogHandler</docker.payara.serverLogHandler.class>
     </properties>
 
     <build>
