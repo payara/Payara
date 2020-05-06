@@ -206,8 +206,8 @@
         <concurrent.version>1.0.payara-p2</concurrent.version>
         <asm.version>7.3.1</asm.version>
         <monitoring-console-api.version>1.0</monitoring-console-api.version>
-        <monitoring-console-process.version>1.1-SNAPSHOT</monitoring-console-process.version>
-        <monitoring-console-webapp.version>1.1-SNAPSHOT</monitoring-console-webapp.version>
+        <monitoring-console-process.version>1.1</monitoring-console-process.version>
+        <monitoring-console-webapp.version>1.1</monitoring-console-webapp.version>
 
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
     </properties>
