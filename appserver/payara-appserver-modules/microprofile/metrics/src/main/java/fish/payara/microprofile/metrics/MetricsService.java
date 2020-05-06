@@ -213,12 +213,15 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         while (metricID != null) {
             MonitoringDataCollector metricCollector = tagCollector(metricID, collector);
             Metadata metadata = state.registry.getMetadata(metricID.getName());
-            String name = "Count";
-            if (metadata.getTypeRaw() == MetricType.GAUGE) {
-                name = getMetricUnitSuffix(metadata.getUnit());
+            String suffix = "Count";
+            String property = "Count";
+            boolean isGauge = metadata.getTypeRaw() == MetricType.GAUGE;
+            if (isGauge) {
+                suffix = getMetricUnitSuffix(metadata.getUnit());
+                property = "Value";
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
-            metricCollector.annotate(toName(metricID, name), 0, false, metadataToAnnotations(metadata));
+            metricCollector.annotate(toName(metricID, suffix), 0, false, metadataToAnnotations(metadata, property));
             metricID = state.registeredNotAnnotated.poll();
         }
     }
@@ -238,13 +241,14 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
-    private static String[] metadataToAnnotations(Metadata metadata) {
+    private static String[] metadataToAnnotations(Metadata metadata, String property) {
         return new String[] {
                 "Name", metadata.getName(), //
                 "Type", metadata.getType(), //
                 "Unit", metadata.getUnit().orElse(MetricUnits.NONE), //
                 "DisplayName", metadata.getDisplayName(), //
-                "Discription", metadata.getDescription().orElse("")
+                "Discription", metadata.getDescription().orElse(""),
+                "Property", property
         };
     }
 
