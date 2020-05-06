@@ -247,7 +247,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 "Type", metadata.getType(), //
                 "Unit", metadata.getUnit().orElse(MetricUnits.NONE), //
                 "DisplayName", metadata.getDisplayName(), //
-                "Discription", metadata.getDescription().orElse(""),
+                "Description", metadata.getDescription().orElse(""),
                 "Property", property
         };
     }
