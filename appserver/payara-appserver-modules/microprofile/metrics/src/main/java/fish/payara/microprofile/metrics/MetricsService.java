@@ -218,7 +218,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 name = getMetricUnitSuffix(metadata.getUnit());
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
-            metricCollector.annotate(toName(metricID, name), 0, true, metadataToAnnotations(metadata));
+            metricCollector.annotate(toName(metricID, name), 0, false, metadataToAnnotations(metadata));
             metricID = state.registeredNotAnnotated.poll();
         }
     }
