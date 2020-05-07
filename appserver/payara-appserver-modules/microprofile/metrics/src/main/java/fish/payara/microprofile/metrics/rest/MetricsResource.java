@@ -50,9 +50,11 @@ import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -77,7 +79,7 @@ import org.glassfish.internal.api.Globals;
 public class MetricsResource extends HttpServlet {
     private static final Logger LOG = Logger.getLogger(MetricsResource.class.getName());
     private static final String APPLICATION_WILDCARD = "application/*";
-    private static final Pattern PATTERN_Q_PART = Pattern.compile("[q\\s]+=\\s*(.+)");
+    private static final Pattern PATTERN_Q_PART = Pattern.compile("\\s*q\\s*=\\s*(.+)");
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
@@ -166,27 +168,15 @@ public class MetricsResource extends HttpServlet {
         }
         switch (method) {
         case GET:
-            // application/json;q=0.1,text/plain;q=.9 or application/json; q=0.1, text/plain; q=.9
-            String[] acceptFormats = accept.split(",");
-            float qJsonValue = 0;
-            float qTextFormat = 0;
-            for (String format : acceptFormats) {
-                if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
-                    qTextFormat = parseQValue(format);
-                } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
-                    qJsonValue = parseQValue(format);
-                } // else { no other formats supported by Payara, ignored }
+            Optional<String> selectedFormat = parseMetricsAcceptHeader(accept);
+
+            if (selectedFormat.isPresent()) {
+                return selectedFormat.get();
             }
 
-            // if neither JSON or plain text are supported
-            if (qJsonValue == 0 && qTextFormat == 0) {
-                response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
-                return null;
-            }
-            if (qJsonValue > qTextFormat) {
-                return MediaType.APPLICATION_JSON;
-            }
-            return MediaType.TEXT_PLAIN;
+            response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
+            return null;
+
         case OPTIONS:
             if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
                 return APPLICATION_JSON;
@@ -196,33 +186,47 @@ public class MetricsResource extends HttpServlet {
         default:
             response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
         }
+
         return null;
     }
 
+    static Optional<String> parseMetricsAcceptHeader(String accept) {
+        String[] acceptFormats = accept.split(",");
+        double qJsonValue = 0;
+        double qTextFormat = 0;
+        for (String format : acceptFormats) {
+            if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
+                qTextFormat = parseQValue(format);
+            } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
+                qJsonValue = parseQValue(format);
+            } // else { no other formats supported by Payara, ignored }
+        }
 
-    private static float parseQValue(final String format) {
-        final String[] parts = format.split(";");
-        if (parts.length == 1) {
-            // q not set -> default = 1.0
-            return 1f;
+        // if neither JSON or plain text are supported
+        if (qJsonValue == 0 && qTextFormat == 0) {
+            return Optional.empty();
         }
-        if (parts.length == 2) {
-            // q=xxx
-            final Matcher matcher = PATTERN_Q_PART.matcher(parts[1]);
-            if (matcher.find()) {
-                return toFloat(matcher.group(1));
-            }
+        if (qJsonValue > qTextFormat) {
+            return Optional.of(MediaType.APPLICATION_JSON);
         }
-        // invalid q value
-        return 0f;
+        return Optional.of(MediaType.TEXT_PLAIN);
     }
 
-    private static float toFloat(final String text) {
+    private static double parseQValue(final String format) {
+        return Stream.of(format.split(";")).skip(1)
+                .map(PATTERN_Q_PART::matcher)
+                .filter(Matcher::find)
+                .mapToDouble(m -> toDouble(m.group(1)))
+                .findFirst()
+                .orElse(0);
+    }
+
+    private static double toDouble(final String text) {
         try {
             if (text.startsWith(".")) {
-                return Float.parseFloat("0" + text);
+                return Double.parseDouble("0" + text);
             }
-            return Float.parseFloat(text);
+            return Double.parseDouble(text);
         } catch (final NumberFormatException e) {
             LOG.warning(() -> "Invalid q value in " + ACCEPT + " header: " + text);
             return 0f;
