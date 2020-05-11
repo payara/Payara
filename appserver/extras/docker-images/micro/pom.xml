@@ -11,7 +11,7 @@
     <name>Payara Docker Images - Micro</name>
 
     <properties>
-        <dockerRepositoryName>payara/micro</dockerRepositoryName>
+        <docker.payara.repository>payara/micro</docker.payara.repository>
         <docker.java.repository>azul/zulu-openjdk-alpine</docker.java.repository>
     </properties>
 

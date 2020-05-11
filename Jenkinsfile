@@ -8,6 +8,10 @@ pipeline {
     options {
         disableConcurrentBuilds()
     }
+    environment {
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
+    }
     tools {
         jdk "zulu-8"
     }
@@ -65,6 +69,25 @@ pipeline {
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
+            }
+        }
+        stage('Run Payara Samples Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -V -B -ff clean install -Ppayara-server-managed \
+                -Dpayara.version=${pom.version} \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Dpayara_domain=${DOMAIN_NAME} \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all \
+                -Dsurefire.rerunFailingTestsCount=2 \
+                -f appserver/tests/payara-samples """
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+               always {
+                   junit '**/target/surefire-reports/*.xml'
+               }
             }
         }
         stage('Checkout EE8 Tests') {

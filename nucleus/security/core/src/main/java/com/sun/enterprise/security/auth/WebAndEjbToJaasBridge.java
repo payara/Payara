@@ -216,7 +216,8 @@ public final class WebAndEjbToJaasBridge {
      *
      */
     public static void doX500Login(Subject subject, String realmName, String appModuleID) {
-        _logger.fine("Processing X.500 name login.");
+        _logger.finest(() -> String.format("doX500Login(subject=%s, realmName=%s, appModuleID=%s)",
+            subject, realmName, appModuleID));
 
         String user = null;
         try {

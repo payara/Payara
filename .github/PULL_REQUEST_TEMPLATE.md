@@ -1,48 +1,24 @@
 <!--- Title your PR with a Jira reference (if available) followed by brief description - for example: "PAYARA-1234 Add readme file" -->
 
 # Description
-This is a bug fix / feature. <!-- delete/modify as applicable-->
-
-<!-- fixes GitHub issue? - provide a link to that issue here -->
-
-<!-- Provide some context here -->
-
-<!--- Please provide enough information here about the what and why of your change. Target for developers of any experience level to understand -->
+<!-- Is this a fix or a feature? Does it address a GH issue? This section should be understandable by any developer without much background reading -->
 
 # Important Info
-
-### Dependant PRs <!-- delete as applicable -->
-<!--- Link any related or dependant PRs here with brief description why -->
-
-### Blockers <!-- delete as applicable -->
-<!-- Detail any blockers with links/info -->
+### Blockers
+<!--- Link any related or dependant PRs or issues here with brief description why -->
 
 # Testing
-
 ### New tests
-<!-- Link to the test suite PR or provide info -->
+<!-- Link tests if they can be found in another repository or another PR -->
 
 ### Testing Performed
-<!--- Please describe how you tested these changes.  -->
-
-### Test suites executed
-<!-- Which test suites did you run this against? Keep corresponding items. Feel free to add others, for example bug reproducer project. -->
-- Quicklook
-- Payara Samples
-- Java EE7 Samples
-- Java EE8 Samples
-- Payara Private Tests
-- Payara Microprofile TCKs Runner
-- Jakarta TCKs
-- Mojarra
-- Cargo Tracker
+<!--- Please describe how you tested these changes. Which test suites did you run?  -->
 
 ### Testing Environment
 <!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
 
 # Documentation
-<!-- Link to the documentation PR where applicable -->
+<!-- Link documentation if a PR exists -->
 
 # Notes for Reviewers
-<!-- Please give notes for any reviewers. The code should explain itself, but where should they start? Do you want feedback on anything specific? -->
-<!-- Have you tagged any appropriate reviewers?-->
+<!-- Any further information for reviewers such as where to start reviewing. Commits should already be clean and the code should already be understandable without this. -->

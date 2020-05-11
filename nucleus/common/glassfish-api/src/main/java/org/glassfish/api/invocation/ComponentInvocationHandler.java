@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2020 Payara Foundation and/or its affiliates
 package org.glassfish.api.invocation;
 
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
@@ -53,43 +54,23 @@ import org.jvnet.hk2.annotations.Contract;
 public interface ComponentInvocationHandler {
 
     /**
-     * Called <b>before</b> the curInv is pushed into the invocation stack.
-     *
-     * @param invType
-     * @param prevInv
-     * @param newInv
-     * @throws InvocationException
+     * Called <b>before</b> the cur is pushed into the invocation stack.
      */
-    void beforePreInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException;
+    void beforePreInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur) throws InvocationException;
 
     /**
-     * Called <b>after</b> the curInv has been pushed into the invocation stack.
-     *
-     * @param invType
-     * @param prevInv
-     * @param curInv
-     * @throws InvocationException
+     * Called <b>after</b> the cur has been pushed into the invocation stack.
      */
-    void afterPreInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException;
+    void afterPreInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur) throws InvocationException;
 
     /**
-     * Called <b>before</b> the curInv has been popped from the invocation stack.
-     *
-     * @param invType
-     * @param prevInv
-     * @param curInv
-     * @throws InvocationException
+     * Called <b>before</b> the cur has been popped from the invocation stack.
      */
-    void beforePostInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException;
+    void beforePostInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur) throws InvocationException;
 
     /**
      * Called <b>after</b> the curInv has been popped from the invocation stack.
-     *
-     * @param invType
-     * @param prevInv
-     * @param curInv
-     * @throws InvocationException
      */
-    void afterPostInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException;
+    void afterPostInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur) throws InvocationException;
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import static java.util.Collections.unmodifiableMap;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,17 +70,16 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
         findFile();
         loadProperties();
     }
-    
+
     SecretsDirConfigSource(Path directory) {
         super(true);
         secretsDir = directory;
         loadProperties();
-
     }
 
     @Override
     public Map<String, String> getProperties() {
-        return properties;
+        return unmodifiableMap(properties);
     }
 
     @Override

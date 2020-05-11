@@ -698,9 +698,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
     }
 
 
-    /**
-     * Return the <code>isValid</code> flag for this session.
-     */
     @Override
     public boolean isValid() {
 
@@ -716,15 +713,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
             return true;
         }
 
-        /* SJSAS 6329289
-        if (maxInactiveInterval >= 0) {
-            long timeNow = System.currentTimeMillis();
-            int timeIdle = (int) ((timeNow - thisAccessedTime) / 1000L);
-            if (timeIdle >= maxInactiveInterval) {
-                expire(true);
-            }
-        }
-        */
         // START SJSAS 6329289
         if (hasExpired()) {
             expire(true);
@@ -1311,6 +1299,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  Java Servlet API.
      */
     @Override
+    @Deprecated
     public HttpSessionContext getSessionContext() {
         if (sessionContext == null)
             sessionContext = new StandardSessionContext();
@@ -1357,13 +1346,22 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public Enumeration<String> getAttributeNames() {
 
-        if (!isValid())
+        if (!isValid()) {
             throw new IllegalStateException
-                ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
+              ("getAttributeNames: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
+        }
 
+        return getAttributeNamesInternal();
 
-        return (new Enumerator<>(attributes.keySet(), true));
+    }
 
+    /**
+     * Returns names of attributes even for expired session.
+     *
+     * @return names of attributes ignoring state of session
+     */
+    protected Enumerator<String> getAttributeNamesInternal() {
+        return new Enumerator<>(attributes.keySet(), true);
     }
 
 
@@ -1380,6 +1378,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>getAttribute()</code>
      */
     @Override
+    @Deprecated
     public Object getValue(String name) {
         return (getAttribute(name));
     }
@@ -1396,6 +1395,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>getAttributeNames()</code>
      */
     @Override
+    @Deprecated
     public String[] getValueNames() {
 
         if (!isValid())
@@ -1640,6 +1640,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>setAttribute()</code>
      */
     @Override
+    @Deprecated
     public void putValue(String name, Object value) {
         setAttribute(name, value);
     }
@@ -1787,6 +1788,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      *  <code>removeAttribute()</code>
      */
     @Override
+    @Deprecated
     public void removeValue(String name) {
         removeAttribute(name);
     }
@@ -2457,7 +2459,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
  * @deprecated As of Java Servlet API 2.1 with no replacement.  The
  *  interface will be removed in a future version of this API.
  */
-
+@Deprecated
 final class StandardSessionContext implements HttpSessionContext {
 
 
@@ -2472,6 +2474,7 @@ final class StandardSessionContext implements HttpSessionContext {
      *  and will be removed in a future version of the API.
      */
     @Override
+    @Deprecated
     public Enumeration<String> getIds() {
         return (new Enumerator<>(dummy));
     }
@@ -2488,6 +2491,7 @@ final class StandardSessionContext implements HttpSessionContext {
      *  future version of the API.
      */
     @Override
+    @Deprecated
     public HttpSession getSession(String id) {
         return (null);
     }

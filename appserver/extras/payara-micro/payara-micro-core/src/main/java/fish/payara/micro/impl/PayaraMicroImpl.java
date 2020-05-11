@@ -1048,7 +1048,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             return runtime;
         } catch (Exception ex) {
             try {
-                gf.dispose();
+                if (gf != null) {
+                    gf.dispose();
+                }
             } catch (GlassFishException ex1) {
                 LOGGER.log(Level.SEVERE, null, ex1);
             }
