@@ -1696,7 +1696,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  */
                 webModule.setAvailable(true);
                 return webModule;
-            } else if (appState.get().isActive()) {
+            } else if (appState.filter(ApplicationState::isActive).isPresent()) {
                 webModule.stop();
                 if (webModule.getWebModuleConfig() != webModuleConfig
                         || webModule.getWebBundleDescriptor() != webModuleConfig.getDescriptor()) {
