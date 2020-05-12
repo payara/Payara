@@ -70,4 +70,22 @@ public class AcceptContentTypeTest {
         assertEquals(Optional.of("text/plain"),
                 parseMetricsAcceptHeader("text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2"));
     }
+
+    @Test
+    public void withoutPreference() {
+        assertEquals(Optional.of("text/plain"),
+                parseMetricsAcceptHeader("application/json, text/plain"));
+    }
+
+    @Test
+    public void withDefaultPreference() {
+        assertEquals(Optional.of("application/json"),
+                parseMetricsAcceptHeader("text/plain;q=0.5, application/json"));
+    }
+
+    @Test
+    public void usualBrowserAccept() {
+        assertEquals(Optional.of("text/plain"),
+                parseMetricsAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
+    }
 }

@@ -218,7 +218,7 @@ public class MetricsResource extends HttpServlet {
                 .filter(Matcher::find)
                 .mapToDouble(m -> toDouble(m.group(1)))
                 .findFirst()
-                .orElse(0);
+                .orElse(1);
     }
 
     private static double toDouble(final String text) {
