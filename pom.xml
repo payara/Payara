@@ -208,7 +208,6 @@
         <monitoring-console-api.version>1.1</monitoring-console-api.version>
         <monitoring-console-process.version>1.2</monitoring-console-process.version>
         <monitoring-console-webapp.version>1.2</monitoring-console-webapp.version>
-
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
     </properties>
 
