@@ -122,5 +122,11 @@
             <artifactId>jakarta.json</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Needed for static initialization of MetricsResource in a test -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
