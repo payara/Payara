@@ -100,7 +100,7 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>payara-jul-extensions</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>

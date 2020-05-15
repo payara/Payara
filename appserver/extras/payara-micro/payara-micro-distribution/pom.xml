@@ -404,7 +404,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>payara-jul-extensions</artifactId>
-            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
