@@ -236,7 +236,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
         Optional<OpenIdState> receivedState = OpenIdState.from(request.getParameter(STATE));
         String redirectURI = configuration.buildRedirectURI(request);
-        if (receivedState.isPresent() && redirectURI.contains(request.getServletPath())) {
+        if (receivedState.isPresent()) {
             if (!request.getRequestURL().toString().equals(redirectURI)) {
                 LOGGER.log(INFO, "OpenID Redirect URL {0} not matched with request URL {1}", new Object[]{redirectURI, request.getRequestURL().toString()});
                 return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
@@ -271,7 +271,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         String errorDescription = request.getParameter(ERROR_DESCRIPTION_PARAM);
         if (!isEmpty(error)) {
             // Error responses sent to the redirect_uri
-            LOGGER.log(WARNING, "Error occurred in reciving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
+            LOGGER.log(WARNING, "Error occurred in receiving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
         stateController.remove(configuration, httpContext);
