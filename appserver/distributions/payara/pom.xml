@@ -56,10 +56,6 @@
 
     <description>This pom describes how to assemble the Payara Distribution</description>
 
-    <properties>
-        <deploy.skip>false</deploy.skip>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
