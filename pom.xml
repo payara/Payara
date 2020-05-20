@@ -127,7 +127,7 @@
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.2.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>3.0.3.payara-p1</jakarta.el.version>
+        <jakarta.el.version>3.0.3.payara-p2</jakarta.el.version>
         <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
