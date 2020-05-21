@@ -9,13 +9,11 @@ pipeline {
     }
     environment {
         MP_METRICS_TAGS='tier=integration'
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
     }
     tools {
         jdk "zulu-8"
-    }
-    environment {
-        Dibbles = "\${Dabbles}"
-        Bibbly = "Bibbles"
     }
     stages {
         stage('Report') {
