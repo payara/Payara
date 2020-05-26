@@ -41,7 +41,9 @@ package fish.payara.certificate.management.admin;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.cluster.SynchronizeInstanceCommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
@@ -52,7 +54,6 @@ import fish.payara.certificate.management.CertificateManagementUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
@@ -99,31 +100,9 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-//            RemoteCLICommand helperCommand = new RemoteCLICommand(helperCommandName, programOpts, env);
-
-            String altnamesString = "";
-            if (altnames != null) {
-                for (String altname : altnames) {
-                    altnamesString += altname + ";";
-                }
-                altnamesString = altnamesString.substring(0, altnamesString.length() - 1);
-            }
-
-//            return helperCommand.execute(helperCommandName,
-//                    "--distinguishedname", dn,
-//                    "--alternativenames", altnamesString,
-//                    "--listener", listener,
-//                    "--instance_name", target,
-//                    "--reload", String.valueOf(reload),
-//                    "--alias", alias);
-
-            GenerateSelfSignedCertificateLocalInstanceCommand helperCommand = Globals.getDefaultBaseServiceLocator().getService(GenerateSelfSignedCertificateLocalInstanceCommand.class);
-
-
-
-            helperCommand.executeCommand();
-
-
+            GenerateSelfSignedCertificateLocalInstanceCommand helperCommand = new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
+            helperCommand.validate();
+            return helperCommand.executeCommand();
 
 
         }
@@ -167,7 +146,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
         }
 
 
-
         return 0;
     }
 
@@ -184,5 +162,125 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
         }
 
         return password;
+    }
+
+    private class GenerateSelfSignedCertificateLocalInstanceCommand extends SynchronizeInstanceCommand {
+
+        public GenerateSelfSignedCertificateLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
+            super.programOpts = programOpts;
+            super.env = env;
+        }
+
+        @Override
+        protected void validate() throws CommandException {
+            if (ok(target))
+                instanceName = target;
+            super.validate();
+        }
+
+        @Override
+        protected int executeCommand() throws CommandException {
+            String password = "";
+            boolean alreadySynced = false;
+            try {
+                File domainXml = getDomainXml();
+                if (!domainXml.exists()) {
+                    logger.info("No domain.xml found, syncing with the DAS...");
+                    synchronizeInstance();
+                    alreadySynced = true;
+                }
+
+                MiniXmlParser parser = new MiniXmlParser(domainXml, target);
+                keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, instanceDir);
+                truststore = CertificateManagementUtils.resolveTrustStore(parser, listener, instanceDir);
+                password = getPassword(parser, listener);
+            } catch (MiniXmlParserException miniXmlParserException) {
+                throw new CommandException("Error parsing domain.xml", miniXmlParserException);
+            }
+
+            // If the target is not the DAS and is configured to use the default key or trust store, sync with the
+            // DAS instead
+            boolean defaultKeystore = keystore.getAbsolutePath()
+                    .equals(CertificateManagementUtils.DEFAULT_KEYSTORE
+                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
+            boolean defaultTruststore = truststore.getAbsolutePath()
+                    .equals(CertificateManagementUtils.DEFAULT_TRUSTSTORE
+                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
+
+            if (defaultKeystore || defaultTruststore) {
+                logger.warning("The target instance is using the default key or trust store, any new certificates"
+                        + " added directly to instance stores would be lost upon next sync.");
+                if (reload) {
+                    if (!alreadySynced) {
+                        logger.warning("Syncing with the DAS instead of generating a new certificate");
+                        synchronizeInstance();
+                    }
+
+                    // Reload Keystore and Truststores
+                    // TO-DO
+                } else {
+                    logger.info("Skipping sync with the DAS since --reload wasn't enabled");
+                }
+
+                if (defaultKeystore && defaultTruststore) {
+                    // Do nothing
+                } else if (defaultKeystore) {
+                    logger.info("Please add self-signed certificate to truststore manually");
+                    // TO-DO
+                    // logger.info("Look at using asadmin command 'add-to-truststore'");
+                } else {
+                    logger.info("Please add self-signed certificate to keystore manually");
+                    // TO-DO
+                    // logger.info("Look at using asadmin command 'add-to-keystore'");
+                }
+
+                return CLIConstants.WARNING;
+            }
+
+            // Run keytool command to generate self-signed cert
+            KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
+                    CertificateManagementUtils.constructGenerateCertKeytoolCommand(keystore, password, alias, dn, altnames),
+                    60);
+            try {
+                keytoolExecutor.execute("keystoreNotCreated", keystore);
+            } catch (RepositoryException re) {
+                logger.severe(re.getCause().getMessage()
+                        .replace("keytool error: java.lang.Exception: ", "")
+                        .replace("keytool error: java.io.IOException: ", ""));
+                return CLIConstants.ERROR;
+            }
+
+            // Run keytool command to place self-signed cert in truststore
+            keytoolExecutor = new KeystoreManager.KeytoolExecutor(CertificateManagementUtils.constructImportCertKeytoolCommand(
+                    keystore, truststore, password, alias),
+                    60);
+
+            try {
+                keytoolExecutor.execute("certNotTrusted", keystore);
+            } catch (RepositoryException re) {
+                logger.severe(re.getCause().getMessage()
+                        .replace("keytool error: java.lang.Exception: ", "")
+                        .replace("keytool error: java.io.IOException: ", ""));
+                return CLIConstants.ERROR;
+            }
+
+
+            return 0;
+        }
+
+        private String getPassword(MiniXmlParser parser, String listener) throws MiniXmlParserException, CommandException {
+            String password = "";
+            if (listener != null) {
+                // Check if listener has a password set
+                password = CertificateManagementUtils.getPasswordFromListener(parser, listener);
+            }
+
+            // Default to using the master password
+            if (ok(password)) {
+                password = getMasterPassword();
+            }
+
+            return password;
+        }
     }
 }
