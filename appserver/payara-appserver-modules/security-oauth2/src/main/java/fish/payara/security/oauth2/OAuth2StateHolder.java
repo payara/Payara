@@ -49,7 +49,7 @@ import java.util.Optional;
  * @author jonathan
  * @since 4.1.2.172
  */
-//@SessionScoped
+@SessionScoped
 public class OAuth2StateHolder implements OAuth2AccessToken {
 
     /**
