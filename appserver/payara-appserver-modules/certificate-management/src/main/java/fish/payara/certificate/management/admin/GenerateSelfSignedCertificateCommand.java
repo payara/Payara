@@ -81,9 +81,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target;
 
-    @Param(name = "reload", optional = true)
-    private boolean reload;
-
     @Param(name = "alias", primary = true)
     private String alias;
 
@@ -103,8 +100,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
             GenerateSelfSignedCertificateLocalInstanceCommand helperCommand = new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
             helperCommand.validate();
             return helperCommand.executeCommand();
-
-
         }
 
         String password = "";
@@ -144,7 +139,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
                     .replace("keytool error: java.io.IOException: ", ""));
             return CLIConstants.ERROR;
         }
-
 
         return 0;
     }
@@ -210,16 +204,10 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
             if (defaultKeystore || defaultTruststore) {
                 logger.warning("The target instance is using the default key or trust store, any new certificates"
                         + " added directly to instance stores would be lost upon next sync.");
-                if (reload) {
-                    if (!alreadySynced) {
-                        logger.warning("Syncing with the DAS instead of generating a new certificate");
-                        synchronizeInstance();
-                    }
 
-                    // Reload Keystore and Truststores
-                    // TO-DO
-                } else {
-                    logger.info("Skipping sync with the DAS since --reload wasn't enabled");
+                if (!alreadySynced) {
+                    logger.warning("Syncing with the DAS instead of generating a new certificate");
+                    synchronizeInstance();
                 }
 
                 if (defaultKeystore && defaultTruststore) {
