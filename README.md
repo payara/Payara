@@ -10,7 +10,7 @@ Visit [www.payara.fish](http://www.payara.fish) for full 24/7 support and lots o
 
 Information about the open source project is on the [GitHub project page](https://payara.github.io/Payara/).
 
-**Full Payara Server 5 and Payara Micro documentation:** https://payara.gitbooks.io/payara-server/content/ 
+**Full Payara Server 5 and Payara Micro documentation:** https://docs.payara.fish/
 
 Payara Server 5 is an open source, cloud-native middleware platform (drop in replacement for GlassFish Server Open Source) supporting reliable and secure deployments of Java EE (Jakarta EE) applications on premise, in the cloud, or hybrid environments. Monthly releases, bug fixes and a 10-year support lifecycle optimizes Payara Server for production deployments. Payara Server is aggressively compatible with common ecosystem components and ensures future compliance with Jakarta EE. Patches include patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. 
 
