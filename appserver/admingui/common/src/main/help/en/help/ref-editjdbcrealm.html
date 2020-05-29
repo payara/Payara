@@ -15,7 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 <p><a id="ref-editjdbcrealm" name="ref-editjdbcrealm"></a><a id="GHCOM00102" name="GHCOM00102"></a></p>
 
 <h4><a id="sthref204" name="sthref204"></a><a id="sthref205" name="sthref205"></a>Properties Specific to the <code>JDBCRealm</code> Class</h4>
@@ -98,7 +98,8 @@ asadmin&gt; <b>get server.security-service.property.default-digest-algorithm</b>
 </dd>
 <dt>Encoding</dt>
 <dd>
-<p>The encoding. Allowed values are <code>Hex</code> and <code>Base64</code>. If <code>digest-algorithm</code> is specified, the default is <code>Hex</code>. If <code>digest-algorithm</code> is not specified, by default no encoding is specified.</p>
+<p>The encoding. Allowed values are <code>Hex</code>, <code>Base64</code> and <code>Hashed</code>. If <code>digest-algorithm</code> is specified, the default is <code>Hex</code>. If <code>digest-algorithm</code> is not specified, by default no encoding is specified.</p>
+<p>If the encoding is <code>Hashed</code>, passwords in the database are assumed to be in format MD5(username:realm:password).</p>
 </dd>
 <dt>Charset</dt>
 <dd>
