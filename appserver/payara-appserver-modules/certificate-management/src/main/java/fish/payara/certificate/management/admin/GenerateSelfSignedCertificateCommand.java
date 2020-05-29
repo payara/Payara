@@ -53,18 +53,24 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.certificate.management.CertificateManagementUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
 import java.util.logging.Logger;
 
+/**
+ * CLI command for generating self-signed certificates and placing them in an instance or listener's key
+ * and trust stores.
+ *
+ * @author Andrew Pielage
+ */
 @Service(name = "generate-self-signed-certificate")
 @PerLookup
 public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
 
     private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
-    private static final String helperCommandName = "_generate-self-signed-certificate-local-instance";
 
     @Param(name = "domain_name", optional = true)
     private String domainName0;
@@ -86,6 +92,9 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
 
     private File keystore;
     private File truststore;
+    private char[] keystorePassword;
+    private char[] truststorePassword;
+    private char[] masterPassword;
 
     @Override
     protected void validate() throws CommandException {
@@ -97,39 +106,129 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            GenerateSelfSignedCertificateLocalInstanceCommand helperCommand = new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
-            helperCommand.validate();
-            return helperCommand.executeCommand();
+            GenerateSelfSignedCertificateLocalInstanceCommand localInstanceCommand =
+                    new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
+            localInstanceCommand.validate();
+            return localInstanceCommand.executeCommand();
         }
 
-        String password = "";
+        // Parse the location of the key and trust stores, and the passwords required to access them
         try {
             MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
             keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, getDomainRootDir());
             truststore = CertificateManagementUtils.resolveTrustStore(parser, listener, getDomainRootDir());
-            password = getPassword(parser, listener);
+            getStorePasswords(parser, listener, getDomainRootDir());
         } catch (MiniXmlParserException miniXmlParserException) {
             throw new CommandException("Error parsing domain.xml", miniXmlParserException);
         }
 
         // Run keytool command to generate self-signed cert and place in keystore
+        try {
+            addToKeystore();
+        } catch (CommandException ce) {
+            return CLIConstants.ERROR;
+        }
+
+        try {
+            addToTruststore();
+        } catch (CommandException ce) {
+            return CLIConstants.WARNING;
+        }
+
+        return CLIConstants.SUCCESS;
+    }
+
+    /**
+     * Gets the passwords for the key and trust store.
+     *
+     * @param parser    The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener  The name of the HTTP or IIOP listener to get the key or trust store passwords from. Can be null.
+     * @param serverDir The directory of the target instance, used for accessing the domain-passwords store
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     * @throws CommandException       If there's an issue getting the master password
+     */
+    private void getStorePasswords(MiniXmlParser parser, String listener, File serverDir)
+            throws MiniXmlParserException, CommandException {
+        if (listener != null) {
+            // Check if listener has a password set
+            keystorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "key-store-password");
+            truststorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "trust-store-password");
+        }
+
+        if (keystorePassword != null || keystorePassword.length > 0) {
+            // Expand alias if required
+            if (new String(keystorePassword).startsWith("${ALIAS=")) {
+                JCEKSDomainPasswordAliasStore passwordAliasStore = new JCEKSDomainPasswordAliasStore(
+                        serverDir.getPath() + File.separator + "config" + File.separator +
+                                "domain-passwords", masterPassword());
+                keystorePassword = passwordAliasStore.get(
+                        TranslatedConfigView.getAlias(new String(keystorePassword), "ALIAS"));
+            }
+        } else {
+            // Default to master
+            keystorePassword = masterPassword();
+        }
+
+        if (truststorePassword != null && truststorePassword.length > 0) {
+            // Expand alias if required
+            if (new String(truststorePassword).startsWith("${ALIAS=")) {
+                JCEKSDomainPasswordAliasStore passwordAliasStore = new JCEKSDomainPasswordAliasStore(
+                        serverDir.getPath() + File.separator + "config" + File.separator + "domain-passwords",
+                        masterPassword());
+                truststorePassword = passwordAliasStore.get(
+                        TranslatedConfigView.getAlias(new String(truststorePassword), "ALIAS"));
+            }
+        } else {
+            // Default to master
+            truststorePassword = masterPassword();
+        }
+    }
+
+    /**
+     * Gets the master password
+     *
+     * @return The master password in a char array
+     * @throws CommandException If there's an issue getting the master password
+     */
+    private char[] masterPassword() throws CommandException {
+        if (masterPassword == null || masterPassword.length == 0) {
+            masterPassword = getMasterPassword().toCharArray();
+        }
+
+        return masterPassword;
+    }
+
+    /**
+     * Generates a self-signed certificate and adds it to the target key store
+     *
+     * @throws CommandException If there's an issue adding the certificate to the key store
+     */
+    private void addToKeystore() throws CommandException {
+        // Run keytool command to generate self-signed cert
         KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementUtils.constructGenerateCertKeytoolCommand(
-                        keystore, password, alias, dn, altnames),
-                60);
+                CertificateManagementUtils.constructGenerateCertKeytoolCommand(keystore, keystorePassword,
+                        alias, dn, altnames), 60);
+
         try {
             keytoolExecutor.execute("certNotCreated", keystore);
         } catch (RepositoryException re) {
             logger.severe(re.getCause().getMessage()
                     .replace("keytool error: java.lang.Exception: ", "")
                     .replace("keytool error: java.io.IOException: ", ""));
-            return CLIConstants.ERROR;
+            throw new CommandException(re);
         }
+    }
 
+    /**
+     * Adds the self-signed certificate to the target trust store
+     *
+     * @throws CommandException If there's an issue adding the certificate to the trust store
+     */
+    private void addToTruststore() throws CommandException {
         // Run keytool command to place self-signed cert in truststore
-        keytoolExecutor = new KeystoreManager.KeytoolExecutor(CertificateManagementUtils.constructImportCertKeytoolCommand(
-                keystore, truststore, password, alias),
-                60);
+        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
+                CertificateManagementUtils.constructImportCertKeytoolCommand(keystore, truststore, keystorePassword,
+                        truststorePassword, alias), 60);
 
         try {
             keytoolExecutor.execute("certNotTrusted", keystore);
@@ -137,27 +236,13 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
             logger.severe(re.getCause().getMessage()
                     .replace("keytool error: java.lang.Exception: ", "")
                     .replace("keytool error: java.io.IOException: ", ""));
-            return CLIConstants.ERROR;
+            throw new CommandException(re);
         }
-
-        return 0;
     }
 
-    private String getPassword(MiniXmlParser parser, String listener) throws MiniXmlParserException, CommandException {
-        String password = "";
-        if (listener != null) {
-            // Check if listener has a password set
-            password = CertificateManagementUtils.getPasswordFromListener(parser, listener);
-        }
-
-        // Default to using the master password
-        if (!ok(password)) {
-            password = getMasterPassword();
-        }
-
-        return password;
-    }
-
+    /**
+     * Local instance (non-DAS) version of the parent command. Not intended for use as a standalone CLI command.
+     */
     private class GenerateSelfSignedCertificateLocalInstanceCommand extends SynchronizeInstanceCommand {
 
         public GenerateSelfSignedCertificateLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
@@ -174,7 +259,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
 
         @Override
         protected int executeCommand() throws CommandException {
-            String password = "";
             boolean alreadySynced = false;
             try {
                 File domainXml = getDomainXml();
@@ -187,7 +271,7 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
                 MiniXmlParser parser = new MiniXmlParser(domainXml, target);
                 keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, instanceDir);
                 truststore = CertificateManagementUtils.resolveTrustStore(parser, listener, instanceDir);
-                password = getPassword(parser, listener);
+                getStorePasswords(parser, listener, instanceDir);
             } catch (MiniXmlParserException miniXmlParserException) {
                 throw new CommandException("Error parsing domain.xml", miniXmlParserException);
             }
@@ -225,50 +309,20 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
                 return CLIConstants.WARNING;
             }
 
-            // Run keytool command to generate self-signed cert
-            KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                    CertificateManagementUtils.constructGenerateCertKeytoolCommand(keystore, password, alias, dn, altnames),
-                    60);
+            // Run keytool command to generate self-signed cert and place in keystore
             try {
-                keytoolExecutor.execute("keystoreNotCreated", keystore);
-            } catch (RepositoryException re) {
-                logger.severe(re.getCause().getMessage()
-                        .replace("keytool error: java.lang.Exception: ", "")
-                        .replace("keytool error: java.io.IOException: ", ""));
+                addToKeystore();
+            } catch (CommandException ce) {
                 return CLIConstants.ERROR;
             }
 
-            // Run keytool command to place self-signed cert in truststore
-            keytoolExecutor = new KeystoreManager.KeytoolExecutor(CertificateManagementUtils.constructImportCertKeytoolCommand(
-                    keystore, truststore, password, alias),
-                    60);
-
             try {
-                keytoolExecutor.execute("certNotTrusted", keystore);
-            } catch (RepositoryException re) {
-                logger.severe(re.getCause().getMessage()
-                        .replace("keytool error: java.lang.Exception: ", "")
-                        .replace("keytool error: java.io.IOException: ", ""));
-                return CLIConstants.ERROR;
+                addToTruststore();
+            } catch (CommandException ce) {
+                return CLIConstants.WARNING;
             }
 
-
-            return 0;
-        }
-
-        private String getPassword(MiniXmlParser parser, String listener) throws MiniXmlParserException, CommandException {
-            String password = "";
-            if (listener != null) {
-                // Check if listener has a password set
-                password = CertificateManagementUtils.getPasswordFromListener(parser, listener);
-            }
-
-            // Default to using the master password
-            if (ok(password)) {
-                password = getMasterPassword();
-            }
-
-            return password;
+            return CLIConstants.SUCCESS;
         }
     }
 }

@@ -47,6 +47,11 @@ import java.util.Map;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
+/**
+ * Helper methods for various Certificate Management commands.
+ *
+ * @author Andrew Pielage
+ */
 public class CertificateManagementUtils {
 
     public static final String DEFAULT_KEYSTORE = "${com.sun.aas.instanceRoot}"
@@ -54,7 +59,17 @@ public class CertificateManagementUtils {
     public static final String DEFAULT_TRUSTSTORE = "${com.sun.aas.instanceRoot}"
             + File.separator + "config" + File.separator + "cacerts.jks";
 
-    public static File resolveKeyStore(MiniXmlParser parser, String listener, File instanceDir) throws MiniXmlParserException {
+    /**
+     * Determines and returns the key store.
+     *
+     * @param parser      The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener    The name of the HTTP or IIOP listener to get the key store from. Can be null.
+     * @param instanceDir The directory of the target instance, used for relative paths
+     * @return The key store of the target
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     */
+    public static File resolveKeyStore(MiniXmlParser parser, String listener, File instanceDir)
+            throws MiniXmlParserException {
         File keystore = null;
         if (listener != null) {
             // Check if listener is an HTTP listener
@@ -79,7 +94,17 @@ public class CertificateManagementUtils {
         return keystore;
     }
 
-    public static File resolveTrustStore(MiniXmlParser parser, String listener, File instanceDir) throws MiniXmlParserException {
+    /**
+     * Determines and returns the trust store.
+     *
+     * @param parser      The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener    The name of the HTTP or IIOP listener to get the trust store from. Can be null.
+     * @param instanceDir The directory of the target instance, used for relative paths
+     * @return The trust store of the target
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     */
+    public static File resolveTrustStore(MiniXmlParser parser, String listener, File instanceDir)
+            throws MiniXmlParserException {
         File truststore = null;
         if (listener != null) {
             // Check if listener is an HTTP listener
@@ -104,26 +129,56 @@ public class CertificateManagementUtils {
         return truststore;
     }
 
-    private static File getStoreFromHttpListeners(MiniXmlParser parser, String listener, String store, File instanceDir) throws MiniXmlParserException {
+    /**
+     * Gets the store from a target HTTP listener
+     *
+     * @param parser         The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener       The name of the HTTP listener to get the store from.
+     * @param storeAttribute The name of the store attribute to get (should be "key-store" or "trust-store")
+     * @param instanceDir    The directory of the target instance, used for relative paths
+     * @return The store of the target, or null if no matching listener or no store configured
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     */
+    private static File getStoreFromHttpListeners(MiniXmlParser parser, String listener,
+            String storeAttribute, File instanceDir) throws MiniXmlParserException {
         for (Map<String, String> listenerAttributes : parser.getProtocolAttributes()) {
             if (listenerAttributes.get("name").equals(listener)) {
                 // Get the keystore from the listener if it has a custom one
-                return getStoreFromListenerAttribute(listenerAttributes.get(store), instanceDir);
+                return getStoreFromListenerAttribute(listenerAttributes.get(storeAttribute), instanceDir);
             }
         }
         return null;
     }
 
-    private static File getStoreFromIiopListeners(MiniXmlParser parser, String listener, String store, File instanceDir) throws MiniXmlParserException {
+    /**
+     * Gets the store from a target IIOP listener
+     *
+     * @param parser         The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener       The name of the IIOP listener to get the store from.
+     * @param storeAttribute The name of the store attribute to get (should be "key-store" or "trust-store")
+     * @param instanceDir    The directory of the target instance, used for relative paths
+     * @return The store of the target, or null if no matching listener or no store configured
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     */
+    private static File getStoreFromIiopListeners(MiniXmlParser parser, String listener,
+            String storeAttribute, File instanceDir) throws MiniXmlParserException {
         for (Map<String, String> listenerAttributes : parser.getIiopSslAttributes()) {
             if (listenerAttributes.get("id").equals(listener)) {
                 // Get the keystore from the listener if it has a custom one
-                return getStoreFromListenerAttribute(listenerAttributes.get(store), instanceDir);
+                return getStoreFromListenerAttribute(listenerAttributes.get(storeAttribute), instanceDir);
             }
         }
         return null;
     }
 
+    /**
+     * Helper method that returns the store from a target listener's config attribute,
+     * making any relative paths absolute.
+     *
+     * @param storePath   The path to the store to return as a {@link File}
+     * @param instanceDir The instance directory, used for making relative paths absolute
+     * @return The absolute path of the target store, or null if no store given
+     */
     private static File getStoreFromListenerAttribute(String storePath, File instanceDir) {
         if (!ok(storePath)) {
             return null;
@@ -137,9 +192,19 @@ public class CertificateManagementUtils {
         return store;
     }
 
-    private static File getStoreFromJvmOptions(MiniXmlParser parser, String store, File instanceDir) throws MiniXmlParserException {
+    /**
+     * Gets the store from a target config's JVM options
+     *
+     * @param parser      The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param storeName   The JVM option name of the store (should be keyStore or trustStore)
+     * @param instanceDir The instance directory, used for SystemProperty substitution
+     * @return The absolute path of the target store
+     * @throws MiniXmlParserException If there's an issue reading the domain.xml
+     */
+    private static File getStoreFromJvmOptions(MiniXmlParser parser, String storeName, File instanceDir)
+            throws MiniXmlParserException {
         for (MiniXmlParser.JvmOption jvmOption : parser.getJvmOptions()) {
-            if (jvmOption.toString().startsWith("-Djavax.net.ssl." + store + "=")) {
+            if (jvmOption.toString().startsWith("-Djavax.net.ssl." + storeName + "=")) {
                 return new File(jvmOption.toString().split("=")[1]
                         .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
             }
@@ -147,9 +212,21 @@ public class CertificateManagementUtils {
         return null;
     }
 
-    public static String[] constructGenerateCertKeytoolCommand(File keystore, String password, String alias, String dname, String[] altnames) {
-        String[] keytoolCmd = new String[]{"-genkeypair", "-keyalg", "RSA", "-keystore", keystore.getAbsolutePath(), "-alias", alias, "-dname", dname,
-                "-validity", "365", "-keypass", password, "-storepass", password};
+    /**
+     * Constructs the command to pass to keytool for creating a self-signed cert
+     *
+     * @param keystore The key store to add the certificate to
+     * @param password The password for the key store
+     * @param alias    The alias of the certificate
+     * @param dname    The distinguished name of the certificate
+     * @param altnames The alternative names of the certificate
+     * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
+     */
+    public static String[] constructGenerateCertKeytoolCommand(File keystore, char[] password,
+            String alias, String dname, String[] altnames) {
+        String[] keytoolCmd = new String[]{"-genkeypair", "-keyalg", "RSA", "-keystore", keystore.getAbsolutePath(),
+                "-alias", alias, "-dname", dname,
+                "-validity", "365", "-keypass", new String(password), "-storepass", new String(password)};
 
         if (altnames != null && altnames.length != 0) {
             keytoolCmd = addSubjectAlternativeNames(keytoolCmd, altnames);
@@ -158,6 +235,13 @@ public class CertificateManagementUtils {
         return keytoolCmd;
     }
 
+    /**
+     * Helper method that formats the String array of alternative names into the format that the keytool expects.
+     *
+     * @param keytoolCmd       The String array containing the keytool command before alternative names have been added.
+     * @param alternativeNames The String array containing the alternatives names
+     * @return A String array of the original keytool command with the alternative names added
+     */
     protected static String[] addSubjectAlternativeNames(String[] keytoolCmd, String[] alternativeNames) {
         // Create a new array to make room for the extra commands
         String[] expandedKeytoolCmd = new String[keytoolCmd.length + 2];
@@ -183,29 +267,51 @@ public class CertificateManagementUtils {
         return expandedKeytoolCmd;
     }
 
-    public static String[] constructImportCertKeytoolCommand(File keystore, File truststore, String password, String alias) {
+    /**
+     * Constructs the command to pass to keytool for adding the self-signed cert to the trust store
+     *
+     * @param keystore           The target key store that the certificate was added to
+     * @param truststore         The target trust store to add the certificate to
+     * @param keystorePassword   The password for the key store
+     * @param truststorePassword The password for the trust store
+     * @param alias              The alias of the certificate
+     * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
+     */
+    public static String[] constructImportCertKeytoolCommand(File keystore, File truststore, char[] keystorePassword,
+            char[] truststorePassword, String alias) {
         String[] keytoolCmd = new String[]{"-importkeystore", "-srckeystore", keystore.getAbsolutePath(),
                 "-destkeystore", truststore.getAbsolutePath(), "-srcalias", alias, "-destalias", alias,
-                "-srcstorepass", password, "-deststorepass", password,
-                "-srckeypass", password, "-destkeypass", password};
+                "-srcstorepass", new String(keystorePassword), "-deststorepass", new String(truststorePassword),
+                "-srckeypass", new String(keystorePassword), "-destkeypass", new String(truststorePassword),
+                "-noprompt"};
 
         return keytoolCmd;
     }
 
-    public static String getPasswordFromListener(MiniXmlParser parser, String listener) throws MiniXmlParserException {
-        String password = "";
+    /**
+     *
+     *
+     * @param parser The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener The name of the listener to get the password from.
+     * @param attribute The name of the store password attribute (should be key-store-password or trust-store-password)
+     * @return A char array containing the password of the target listener, or null if no matches or password found
+     * @throws MiniXmlParserException if there's an issue reading the domain.xml
+     */
+    public static char[] getPasswordFromListener(MiniXmlParser parser, String listener, String attribute)
+            throws MiniXmlParserException {
+        char[] password = null;
         for (Map<String, String> listenerAttributes : parser.getProtocolAttributes()) {
             if (listenerAttributes.get("name").equals(listener)) {
                 // Get the keystore from the listener if it has a custom one
-                password = listenerAttributes.get("password");
+                password = listenerAttributes.get(attribute).toCharArray();
             }
         }
 
-        if (!ok(password)) {
+        if (password == null || password.length == 0) {
             for (Map<String, String> listenerAttributes : parser.getIiopSslAttributes()) {
                 if (listenerAttributes.get("id").equals(listener)) {
                     // Get the keystore from the listener if it has a custom one
-                    password = listenerAttributes.get("password");
+                    password = listenerAttributes.get(attribute).toCharArray();
                 }
             }
         }
