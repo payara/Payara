@@ -52,6 +52,7 @@ import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
 import fish.payara.security.openid.controller.StateController;
 import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.openid.domain.LogoutConfiguration;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
 import fish.payara.security.openid.domain.RefreshTokenImpl;
@@ -216,13 +217,28 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
                 throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
             }
 
-            LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
-            if (this.context.getAccessToken().isExpired()) {
-                // Access Token expired
+            LogoutConfiguration logout = configuration.getLogoutConfiguration();
+            boolean accessTokenExpired = this.context.getAccessToken().isExpired();
+            boolean identityTokenExpired = this.context.getIdentityToken().isExpired();
+            if (logout.isIdentityTokenExpiry()) {
+                LOGGER.log(Level.FINE, "UserPrincipal is set, check if Identity Token is valid.");
+            }
+            if (logout.isAccessTokenExpiry()) {
+                LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
+            }
+
+            if((logout.isAccessTokenExpiry() && accessTokenExpired)
+                    || (logout.isIdentityTokenExpiry() && identityTokenExpired)) {
                 if (configuration.isTokenAutoRefresh()) {
-                    LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
-                    return this.reAuthenticate(request, response, httpContext);
+                    if (accessTokenExpired) {
+                        LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+                    }
+                    if (identityTokenExpired) {
+                        LOGGER.fine("Identity Token is expired. Request new Identity Token with Refresh Token.");
+                    }
+                    return this.reAuthenticate(httpContext);
                 } else {
+                    redirectToLogoutScreen(httpContext);
                     return SEND_FAILURE;
                 }
             } else {
@@ -304,35 +320,57 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         }
     }
 
-    private AuthenticationStatus reAuthenticate(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            HttpMessageContext httpContext) throws AuthenticationException {
+    private AuthenticationStatus reAuthenticate(HttpMessageContext httpContext) throws AuthenticationException {
+        synchronized (this.getSessionLock(httpContext.getRequest())) {
+            boolean accessTokenExpired = this.context.getAccessToken().isExpired();
+            boolean identityTokenExpired = this.context.getIdentityToken().isExpired();
+            if (accessTokenExpired || identityTokenExpired) {
 
-        synchronized (this.getSessionLock(request)) {
-            if (this.context.getAccessToken().isExpired()) {
-                // Access Token expired
-                LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+                if (accessTokenExpired) {
+                    LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+                }
+                if (identityTokenExpired) {
+                    LOGGER.fine("Identity Token is expired. Request new Identity Token with Refresh Token.");
+                }
 
                 AuthenticationStatus refreshStatus = this.context.getRefreshToken()
                         .map(rt -> this.refreshTokens(httpContext, rt))
                         .orElse(AuthenticationStatus.SEND_FAILURE);
 
                 if (refreshStatus != AuthenticationStatus.SUCCESS) {
-                    LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
-                    try {
-                        request.logout();
-                    } catch (ServletException ex) {
-                        LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
-                    }
-                    // Redirect user to OpenID connect provider for re-authentication
-                    return authenticationController.authenticateUser(configuration, httpContext);
+                    LOGGER.log(Level.FINE, "Failed to refresh token (Refresh Token might be invalid).");
+                    redirectToLogoutScreen(httpContext);
                 }
+                return refreshStatus;
             }
-
         }
 
         return SUCCESS;
+    }
+
+    private void redirectToLogoutScreen(HttpMessageContext httpContext) {
+        HttpServletRequest request = httpContext.getRequest();
+        HttpServletResponse response = httpContext.getResponse();
+        try {
+            request.logout();
+        } catch (ServletException ex) {
+            LOGGER.log(WARNING, "Failed to logout the user.", ex);
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        if (!isEmpty(configuration.getLogoutConfiguration().getRedirectURI())) {
+            try {
+                response.sendRedirect(configuration.getLogoutConfiguration().buildRedirectURI(request));
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            // Redirect user to OpenID connect provider for re-authentication
+            authenticationController.authenticateUser(configuration, httpContext);
+        }
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {

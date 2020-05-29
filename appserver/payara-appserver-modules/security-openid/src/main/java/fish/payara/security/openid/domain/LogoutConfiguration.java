@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -37,87 +37,63 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid.api;
+package fish.payara.security.openid.domain;
 
-import java.io.Serializable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import static fish.payara.security.openid.domain.OpenIdConfiguration.BASE_URL_EXPRESSION;
+import javax.servlet.http.HttpServletRequest;
 
 /**
- * Class to hold state of OpenId
- * <p>
- * This is used in the authentication mechanism to both help prevent CSRF and to
- * pass data to the callback page.
  *
  * @author Gaurav Gupta
- * @author jonathan
  */
-public class OpenIdState implements Serializable {
+public class LogoutConfiguration {
+    
+    private String redirectURI;
+    
+    private boolean accessTokenExpiry;
+    
+    private boolean identityTokenExpiry;
 
-    private static final long serialVersionUID = 1L;
-
-    private final String state;
-
-    /**
-     * Creates a new instance with a random UUID as the state.
-     */
-    public OpenIdState(){
-        state = UUID.randomUUID().toString();
+    public String getRedirectURI() {
+        return redirectURI;
     }
 
-    /**
-     * Creates a new instance set the state to what is in the constructor.
-     * <p>
-     * This can be used so that the callback page knows the originating page,
-     * but is not used by the
-     * {@link fish.payara.security.openid.OpenIdAuthenticationMechanism} by
-     * default
-     *
-     * @param state the state to encapsulate
-     */
-    public OpenIdState(String state){
-        this.state = state;
+    public LogoutConfiguration setRedirectURI(String redirectURI) {
+        this.redirectURI = redirectURI;
+        return this;
     }
-
-    /**
-     * Factory method which creates an {@link OpenIdState} if the
-     * state provided is not NULL or empty.
-     * @param state the state to create an {@link OpenIdState} from
-     * @return an {@link OpenIdState} if the state provided is not NULL or empty
-     */
-    public static Optional<OpenIdState> from(String state) {
-        if (state == null || "".equals(state.trim())) {
-            return Optional.empty();
+    
+    public String buildRedirectURI(HttpServletRequest request) {
+        if (redirectURI.contains(BASE_URL_EXPRESSION)) {
+            String baseURL = request.getRequestURL().substring(0, request.getRequestURL().length() - request.getRequestURI().length())
+                    + request.getContextPath();
+            return redirectURI.replace(BASE_URL_EXPRESSION, baseURL);
         }
-        return Optional.of(new OpenIdState(state.trim()));
+        return redirectURI;
     }
 
-    /**
-     * Gets the state
-     *
-     * @return the state
-     */
-    public String getValue() {
-        return state;
+    public boolean isAccessTokenExpiry() {
+        return accessTokenExpiry;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof OpenIdState) {
-            return Objects.equals(this.state, ((OpenIdState)obj).state);
-        }
-        return false;
+    public LogoutConfiguration setAccessTokenExpiry(boolean accessTokenExpiry) {
+        this.accessTokenExpiry = accessTokenExpiry;
+        return this;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.state);
+    public boolean isIdentityTokenExpiry() {
+        return identityTokenExpiry;
+    }
+
+    public LogoutConfiguration setIdentityTokenExpiry(boolean identityTokenExpiry) {
+        this.identityTokenExpiry = identityTokenExpiry;
+        return this;
     }
 
     @Override
     public String toString() {
-        return state;
+        return "LogoutConfiguration{" + "redirectURI=" + redirectURI + ", accessTokenExpiry=" + accessTokenExpiry + ", identityTokenExpiry=" + identityTokenExpiry + '}';
     }
-
+    
+    
 }

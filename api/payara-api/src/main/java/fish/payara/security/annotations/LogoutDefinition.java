@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -37,46 +37,63 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid.api;
+package fish.payara.security.annotations;
 
-import java.util.Map;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Identity tokens is a security token that issued in authentication flow
- * process.
+ * {@link LogoutDefinition} annotation defines logout and RP session management
+ * configuration in openid connect client.
  *
  * @author jGauravGupta
  */
-public interface IdentityToken {
-
+@Retention(RUNTIME)
+public @interface LogoutDefinition {
+    
     /**
-     * The identity token
+     * The Microprofile Config key for the post logout redirect URI is <code>{@value}</code>
+     */
+    public static final String OPENID_MP_POST_LOGOUT_REDIRECT_URI = "payara.security.openid.logout.redirectURI";
+    
+    /**
+     * Optional. the RP is requesting that the End-User's User Agent be
+     * redirected after a logout has been performed. The value MUST have been
+     * previously registered with the OP, either using the
+     * post_logout_redirect_uris Registration parameter or via another
+     * mechanism.
+     *
+     * To set this using Microprofile Config use
+     * {@code payara.security.openid.logout.redirectURI}
      *
      * @return
      */
-    public String getToken();
+    String redirectURI() default "";
 
     /**
-     * Gets the identity token's claims that was received from the OpenId
-     * Connect provider
+     * The Microprofile Config key for session timeout on the expiry of Access
+     * Tokens is <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_LOGOUT_ON_ACCESS_TOKEN_EXPIRY = "payara.security.openid.logout.access.token.expiry";
+
+    /**
+     * Session timeout on the expiry of Access Token.
      *
      * @return
      */
-    Map<String, Object> getClaims();
+    boolean accessTokenExpiry() default false;
 
     /**
-     * Gets the identity token's claim based on requested key type.
+     * The Microprofile Config key for session timeout on the expiry of Identity
+     * Tokens is <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_LOGOUT_ON_IDENTITY_TOKEN_EXPIRY = "payara.security.openid.logout.access.token.expiry";
+
+    /**
+     * Session timeout on the expiry of Identity Token.
      *
-     * @param key
      * @return
      */
-    Object getClaim(String key);
+    boolean identityTokenExpiry() default false;
 
-    /**
-     * Checks if the Identity Token is expired.
-     *
-     * @return {@code true}, if identity token is expired or it will be expired in
-     * the next X milliseconds configured by user.
-     */
-    boolean isExpired();
 }

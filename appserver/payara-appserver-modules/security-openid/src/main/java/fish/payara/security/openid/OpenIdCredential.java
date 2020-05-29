@@ -72,7 +72,7 @@ public class OpenIdCredential implements Credential {
         this.httpContext = httpContext;
         this.configuration = configuration;
 
-        this.identityToken = new IdentityTokenImpl(tokensObject.getString(IDENTITY_TOKEN));
+        this.identityToken = new IdentityTokenImpl(configuration, tokensObject.getString(IDENTITY_TOKEN));
         String accessTokenString = tokensObject.getString(ACCESS_TOKEN, null);
         Long expiresIn = null;
         if(nonNull(tokensObject.getJsonNumber(EXPIRES_IN))){
