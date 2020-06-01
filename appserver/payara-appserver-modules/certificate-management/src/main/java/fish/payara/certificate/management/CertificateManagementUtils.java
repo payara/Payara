@@ -289,10 +289,8 @@ public class CertificateManagementUtils {
     }
 
     /**
-     *
-     *
-     * @param parser The {@link MiniXmlParser} for extracting info from the domain.xml
-     * @param listener The name of the listener to get the password from.
+     * @param parser    The {@link MiniXmlParser} for extracting info from the domain.xml
+     * @param listener  The name of the listener to get the password from.
      * @param attribute The name of the store password attribute (should be key-store-password or trust-store-password)
      * @return A char array containing the password of the target listener, or null if no matches or password found
      * @throws MiniXmlParserException if there's an issue reading the domain.xml
