@@ -41,6 +41,7 @@ package fish.payara.monitoring.runtime;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static org.jvnet.hk2.config.Dom.unwrap;
 
 import java.beans.PropertyChangeEvent;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,6 +90,7 @@ import fish.payara.monitoring.adapt.GroupData;
 import fish.payara.monitoring.adapt.GroupDataRepository;
 import fish.payara.monitoring.adapt.MonitoringConsole;
 import fish.payara.monitoring.adapt.MonitoringConsoleFactory;
+import fish.payara.monitoring.adapt.MonitoringConsolePageConfig;
 import fish.payara.monitoring.adapt.MonitoringConsoleRuntime;
 import fish.payara.monitoring.adapt.MonitoringConsoleWatchConfig;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -102,7 +105,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 /**
  * This implementation of the {@link MonitoringConsoleRuntime} connects the Payara independent parts of the monitoring
  * console with the Payara server.
- * 
+ *
  * The most complicated aspect about the implementation is the way it is bootstrapped. By implementing
  * {@link ApplicationLifecycleInterceptor} it forces the creation of an instance of this {@link Service} even though it
  * is not otherwise referenced within the HK2 context. As this happens fairly early in the bootstrapping it then
@@ -110,14 +113,15 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
  * the {@link EventTypes#SERVER_READY} is received. This makes sure the bootstrapping of the console runtime does not
  * alter the order of services created by starting to collect data from services that implement
  * {@link MonitoringDataSource} or {@link MonitoringWatchSource}.
- * 
+ *
  * @author Jan Bernitt
  * @since 5.201
  */
 @Service
 public class MonitoringConsoleRuntimeImpl
         implements ConfigListener, ApplicationLifecycleInterceptor, EventListener,
-        MonitoringConsoleRuntime, MonitoringConsoleWatchConfig, GroupDataRepository {
+        MonitoringConsoleRuntime, MonitoringConsoleWatchConfig, MonitoringConsolePageConfig,
+        GroupDataRepository {
 
     private static final Logger LOGGER = Logger.getLogger("monitoring-console-core");
 
@@ -254,8 +258,8 @@ public class MonitoringConsoleRuntimeImpl
 
     @Override
     public void add(String name, String watchJson) {
-        runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND, 
-                "add-watch-name", name, 
+        runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND,
+                "add-watch-name", name,
                 "add-watch-json", watchJson);
     }
 
@@ -266,7 +270,48 @@ public class MonitoringConsoleRuntimeImpl
 
     @Override
     public Iterable<String> list() {
-        return config.getCustomWatchValues();
+        return unmodifiableList(config.getCustomWatchValues());
+    }
+
+    @Override
+    public MonitoringConsolePageConfig getPageConfig() {
+        return this;
+    }
+
+    @Override
+    public String getPage(String name) {
+        List<String> values = config.getPageValues();
+        List<String> names = config.getPageNames();
+        int index = names.indexOf(name);
+        if (index < 0) {
+            throw new NoSuchElementException("Page does not exist: " + name);
+        }
+        String page = values.get(index);
+        checkPageId(name, page); // this should just protect against the mostly theoretical chance that names and values are not in sync when accessed
+        return page;
+    }
+
+    @Override
+    public void putPage(String name, String pageJson) {
+        if (pageJson == null || pageJson.isEmpty() || "{}".equals(pageJson)) {
+            runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND, "remove-page", name);
+        } else {
+            checkPageId(name, pageJson);
+            runCommand(SET_MONITORING_CONSOLE_CONFIGURATION_COMMAND,
+                    "add-page-name", name,
+                    "add-page-json", pageJson);
+        }
+    }
+
+    private static void checkPageId(String name, String pageJson) {
+        if (pageJson.indexOf("\"id\":\"" + name + "\"") < 0) {
+            throw new IllegalArgumentException("Page JSON id did not match given name.");
+        }
+    }
+
+    @Override
+    public Iterable<String> listPages() {
+        return unmodifiableList(config.getPageNames());
     }
 
     private void runCommand(String name, String... params) {
@@ -322,13 +367,13 @@ public class MonitoringConsoleRuntimeImpl
 
     @Override
     public void before(Phase phase, ExtendedDeploymentContext context) {
-        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup 
+        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup
         // even through it is not needed by any other service but we know all ApplicationLifecycleInterceptor are resolved
     }
 
     @Override
     public void after(Phase phase, ExtendedDeploymentContext context) {
-        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup 
+        // This is implemented as an ugly work-around to get the runtime service bootstrapped on startup
         // even through it is not needed by any other service but we know all ApplicationLifecycleInterceptor are resolved
     }
 }

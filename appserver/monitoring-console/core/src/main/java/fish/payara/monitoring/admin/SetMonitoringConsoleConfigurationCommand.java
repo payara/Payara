@@ -115,6 +115,18 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
     @Param(optional = true, alias = "remove-watch")
     private String _removeWatch;
 
+    @SuppressWarnings("squid:S116")
+    @Param(optional = true, alias = "add-page-name")
+    private String _addPageName;
+
+    @SuppressWarnings("squid:S116")
+    @Param(optional = true, alias = "add-page-json")
+    private String _addPageJson;
+
+    @SuppressWarnings("squid:S116")
+    @Param(optional = true, alias = "remove-page")
+    private String _removePage;
+
     @Inject
     protected CommandRunner commandRunner;
 
@@ -155,35 +167,45 @@ public class SetMonitoringConsoleConfigurationCommand implements AdminCommand {
                         configProxy.getDisabledWatchNames().remove(_enableWatch);
                     }
                     if (isDefined(_addWatchName) && isDefined(_addWatchJson)) {
-                        List<String> customWatchNames = configProxy.getCustomWatchNames();
-                        List<String> customWatchValues = configProxy.getCustomWatchValues();
-                        int index = customWatchNames.indexOf(_addWatchName);
-                        if (index >= 0) {
-                            customWatchNames.remove(index);
-                            if (index < customWatchValues.size()) {
-                                customWatchValues.remove(index);
-                            }
-                        } 
-                        customWatchNames.add(_addWatchName);
-                        customWatchValues.add(_addWatchJson);
+                        add(_addWatchName, _addWatchJson, configProxy.getCustomWatchNames(), configProxy.getCustomWatchValues());
                     }
                     if (isDefined(_removeWatch)) {
-                        List<String> customWatchNames = configProxy.getCustomWatchNames();
-                        int index = customWatchNames.indexOf(_removeWatch);
-                        if (index >= 0) {
-                            customWatchNames.remove(index);
-                            List<String> customWatchValues = configProxy.getCustomWatchValues();
-                            if (index < customWatchValues.size()) {
-                                customWatchValues.remove(index);
-                            }
-                        }
+                        remove(_removeWatch, configProxy.getCustomWatchNames(), configProxy.getCustomWatchValues());
                         configProxy.getDisabledWatchNames().remove(_removeWatch);
+                    }
+                    if (isDefined(_addPageName) && isDefined(_addPageJson)) {
+                        add(_addPageName, _addPageJson, configProxy.getPageNames(), configProxy.getPageValues());
+                    }
+                    if (isDefined(_removePage)) {
+                        remove(_removePage, configProxy.getPageNames(), configProxy.getPageValues());
                     }
                     return null;
                 }
             }, config);
         } catch (TransactionFailure ex) {
             context.getActionReport().failure(LOGGER, "Failed to update Monitoring Console configuration", ex);
+        }
+    }
+
+    static void add(String name, String value, List<String> names, List<String> values) {
+        int index = names.indexOf(name);
+        if (index >= 0) {
+            names.remove(index);
+            if (index < values.size()) {
+                values.remove(index);
+            }
+        }
+        names.add(name);
+        values.add(value);
+    }
+
+    static void remove(String name, List<String> names, List<String> values) {
+        int index = names.indexOf(name);
+        if (index >= 0) {
+            names.remove(index);
+            if (index < values.size()) {
+                values.remove(index);
+            }
         }
     }
 
