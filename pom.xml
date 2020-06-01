@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.202-SNAPSHOT</version>
+    <version>5.2020.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -61,7 +61,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.202-SNAPSHOT</tag>
+        <tag>payara-server-5.2020.2-SNAPSHOT</tag>
     </scm>
 
     <distributionManagement>
@@ -121,13 +121,13 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p10</grizzly.version>
+        <grizzly.version>2.4.4.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
         <jersey.version>2.30.payara-p2</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.2.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>3.0.3.payara-p1</jakarta.el.version>
+        <jakarta.el.version>3.0.3.payara-p2</jakarta.el.version>
         <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
@@ -159,7 +159,7 @@
         <jakarta.interceptor-api.version>1.2.5</jakarta.interceptor-api.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
         <cdi-api.version>2.0.2</cdi-api.version>
-        <weld.version>3.1.2.Final</weld.version>
+        <weld.version>3.1.4.Final</weld.version>
         <weld-api.version>3.1.Final</weld-api.version>
         <jakarta.security.enterprise-api.version>1.0.2</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>1.1-b01.payara-p3</jakarta.security.enterprise.version>
@@ -206,8 +206,8 @@
         <concurrent.version>1.0.payara-p2</concurrent.version>
         <asm.version>7.3.1</asm.version>
         <monitoring-console-api.version>1.0</monitoring-console-api.version>
-        <monitoring-console-process.version>1.0</monitoring-console-process.version>
-        <monitoring-console-webapp.version>1.0</monitoring-console-webapp.version>
+        <monitoring-console-process.version>1.1</monitoring-console-process.version>
+        <monitoring-console-webapp.version>1.1</monitoring-console-webapp.version>
 
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
     </properties>

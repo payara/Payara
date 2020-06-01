@@ -486,7 +486,7 @@
       <system-property name="JMX_SYSTEM_CONNECTOR_PORT" value="28686" />
       <system-property name="OSGI_SHELL_TELNET_PORT" value="26666" />
       <system-property name="JAVA_DEBUGGER_PORT" value="29009" />
-      <system-property name="HZ_LISTENER_PORT" value="" />
+      <system-property name="HZ_LISTENER_PORT" value="5900" />
       <system-property name="fish.payara.classloading.delegate" value="false" />
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".." />
     </config>
