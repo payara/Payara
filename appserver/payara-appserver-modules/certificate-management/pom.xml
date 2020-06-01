@@ -53,6 +53,17 @@
     <name>Payara Certificate Management</name>
     <description>Commands and Services for generating and managing SSL/TLS certificates</description>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.1</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
