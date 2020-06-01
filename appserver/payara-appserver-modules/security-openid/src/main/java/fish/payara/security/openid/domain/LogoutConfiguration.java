@@ -47,12 +47,23 @@ import javax.servlet.http.HttpServletRequest;
  * @author Gaurav Gupta
  */
 public class LogoutConfiguration {
-    
+
+    private boolean notifyProvider;
+
     private String redirectURI;
-    
+
     private boolean accessTokenExpiry;
-    
+
     private boolean identityTokenExpiry;
+
+    public boolean isNotifyProvider() {
+        return notifyProvider;
+    }
+
+    public LogoutConfiguration setNotifyProvider(boolean notifyProvider) {
+        this.notifyProvider = notifyProvider;
+        return this;
+    }
 
     public String getRedirectURI() {
         return redirectURI;
@@ -62,7 +73,7 @@ public class LogoutConfiguration {
         this.redirectURI = redirectURI;
         return this;
     }
-    
+
     public String buildRedirectURI(HttpServletRequest request) {
         if (redirectURI.contains(BASE_URL_EXPRESSION)) {
             String baseURL = request.getRequestURL().substring(0, request.getRequestURL().length() - request.getRequestURI().length())
@@ -92,8 +103,7 @@ public class LogoutConfiguration {
 
     @Override
     public String toString() {
-        return "LogoutConfiguration{" + "redirectURI=" + redirectURI + ", accessTokenExpiry=" + accessTokenExpiry + ", identityTokenExpiry=" + identityTokenExpiry + '}';
+        return "LogoutConfiguration{" + "notifyProvider=" + notifyProvider + ", redirectURI=" + redirectURI + ", accessTokenExpiry=" + accessTokenExpiry + ", identityTokenExpiry=" + identityTokenExpiry + '}';
     }
-    
-    
+
 }

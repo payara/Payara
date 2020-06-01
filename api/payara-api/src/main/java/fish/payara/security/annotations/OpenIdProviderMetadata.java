@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * {@link OpenIdProviderMetadata} annotation overrides the opeid connect
+ * {@link OpenIdProviderMetadata} annotation overrides the openid connect
  * provider's endpoint value, discovered using providerUri.
  *
  * @author Gaurav Gupta
@@ -76,7 +76,7 @@ public @interface OpenIdProviderMetadata {
     public static final String OPENID_MP_TOKEN_ENDPOINT = "payara.security.openid.provider.tokenEndpoint";
 
     /**
-     * Required. The URL for the OAuth2 provider to give the authorisation token
+     * Required. The URL for the OAuth2 provider to give the authorization token
      * <p>
      * To set this using Microprofile Config use
      * {@code payara.security.openid.provider.tokenEndpoint}
@@ -103,6 +103,24 @@ public @interface OpenIdProviderMetadata {
      * @return
      */
     String userinfoEndpoint() default "";
+
+    /**
+     * The Microprofile Config key for the end session Endpoint is
+     * <code>{@value}</code>
+     */
+    public static final String OPENID_MP_END_SESSION_ENDPOINT = "payara.security.openid.provider.endSessionEndpoint";
+
+    /**
+     * Optional. OP endpoint to notify that the End-User has logged out of the
+     * site and might want to log out of the OP as well.
+     * <p>
+     * To set this using Microprofile Config use
+     * {@code payara.security.openid.provider.endSessionEndpoint}
+     * </p>
+     *
+     * @return
+     */
+    String endSessionEndpoint() default "";
 
     /**
      * The Microprofile Config key for the jwks uri is <code>{@value}</code>

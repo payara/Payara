@@ -43,9 +43,11 @@ import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
+import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_HINT;
 import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
+import static fish.payara.security.openid.api.OpenIdConstant.POST_LOGOUT_REDIRECT_URI;
 import fish.payara.security.openid.api.OpenIdState;
 import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.controller.AuthenticationController;
@@ -90,6 +92,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
@@ -351,6 +354,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     private void redirectToLogoutScreen(HttpMessageContext httpContext) {
         HttpServletRequest request = httpContext.getRequest();
         HttpServletResponse response = httpContext.getResponse();
+        LogoutConfiguration logout = configuration.getLogoutConfiguration();
         try {
             request.logout();
         } catch (ServletException ex) {
@@ -361,9 +365,26 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             session.invalidate();
         }
 
-        if (!isEmpty(configuration.getLogoutConfiguration().getRedirectURI())) {
+        /**
+         * See section 5. RP-Initiated Logout
+         * https://openid.net/specs/openid-connect-session-1_0.html#RPLogout
+         */
+        if (logout.isNotifyProvider()
+                && !isEmpty(configuration.getProviderMetadata().getEndSessionEndpoint())) {
+            UriBuilder logoutURI = UriBuilder.fromUri(configuration.getProviderMetadata().getEndSessionEndpoint())
+                    .queryParam(ID_TOKEN_HINT, context.getIdentityToken().getToken());
+            if (!isEmpty(logout.getRedirectURI())) {
+                // User Agent redirected to POST_LOGOUT_REDIRECT_URI after a logout operation performed in OP.
+                logoutURI.queryParam(POST_LOGOUT_REDIRECT_URI, logout.buildRedirectURI(request));
+            }
             try {
-                response.sendRedirect(configuration.getLogoutConfiguration().buildRedirectURI(request));
+                response.sendRedirect(logoutURI.toString());
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        } else if (!isEmpty(logout.getRedirectURI())) {
+            try {
+                response.sendRedirect(logout.buildRedirectURI(request));
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
