@@ -41,7 +41,7 @@
     
     <profiles>
         <profile>
-            <id>micro-tests</id>
+            <id>payara-micro-managed</id>
             <modules>
                 <module>samples-programmatic</module>
             </modules>
