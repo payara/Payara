@@ -107,32 +107,13 @@ public class PayaraConfig implements Config {
         return ttl;
     }
 
-    private static String getCacheKey(String propertyName, Class<?> propertyType, Class<?> elementType) {
-        String key = propertyType.getName();
-        if (elementType != null) {
-            key += ":" + elementType.getName();
-        }
-        return key + ":" + propertyName;
-    }
-
-    private <T> T getValueUncached(String propertyName, Class<T> propertyType) {
-        String stringValue = getStringValue(propertyName);
-        return stringValue == null ? null : convertString(stringValue, propertyType);
-    }
-
     @SuppressWarnings("unchecked")
-    private <T> T getValueCached(String propertyName, Class<T> propertyType, Class<?> elementType, BiFunction<String, Class<T>, T> getUncached) {
-        return ttl > 0
-                ? (T) cachedValuesByProperty.compute(getCacheKey(propertyName, propertyType, elementType),
-                    (key, entry) -> entry != null && currentTimeMillis() < entry.expires
-                        ? entry
-                        : new CacheEntry(getUncached.apply(propertyName, propertyType), currentTimeMillis() + ttl)).value
-                : getUncached.apply(propertyName, propertyType);
-    }
-
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        T value = getValueCached(propertyName, propertyType, null, this::getValueUncached);
+        if (propertyType == ConfigValueResolver.class) {
+            return (T) new ConfigValueResolverImpl(this, propertyName);
+        }
+        T value = getValueInternal(propertyName, propertyType);
         if (value == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
@@ -141,7 +122,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        return Optional.ofNullable(getValueCached(propertyName, propertyType, null, this::getValueUncached));
+        return Optional.ofNullable(getValueInternal(propertyName, propertyType));
     }
 
     @Override
@@ -161,6 +142,34 @@ public class PayaraConfig implements Config {
     public Set<Class<?>> getConverterTypes() {
         return converters.keySet();
     }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getValue(String propertyName, String defaultValue, String cacheKey, Converter<T> converter, Long ttl) {
+        long entryTTL = ttl == null ? this.ttl : ttl.longValue();
+        if (entryTTL <= 0) {
+            return getValueConverted(propertyName, defaultValue, converter);
+        }
+        final long now = currentTimeMillis();
+        return (T) cachedValuesByProperty.compute(cacheKey, (key, entry) -> {
+            if (entry != null && now < entry.expires) {
+                return entry;
+            }
+            return new CacheEntry(getValueConverted(propertyName, defaultValue, converter), now + entryTTL);
+        }).value;
+    }
+
+    private <T> T getValueConverted(String propertyName, String defaultValue, Converter<T> converter) {
+        String stringValue = getStringValue(propertyName);
+        if (stringValue == null) {
+            return defaultValue == null ? null : converter.convert(defaultValue);
+        }
+        return converter.convert(stringValue);
+    }
+    private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
+        return getValue(propertyName, null, propertyType.getName() + ":" + propertyName, getConverter(propertyType), null);
+    }
+
+
 
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
         @SuppressWarnings("unchecked")
@@ -239,6 +248,21 @@ public class PayaraConfig implements Config {
     @SuppressWarnings("unchecked")
     private <T> Converter<T> getConverter(Class<T> propertyType) {
         Class<T> type = (Class<T>) boxedTypeOf(propertyType);
+        // if it is an array convert arrays
+        if (propertyType.isArray()) {
+            // find converter for the array type
+            Class<?> componentClazz = propertyType.getComponentType();
+            Converter<?> converter = getConverter(componentClazz);
+
+            // array convert
+            String keys[] = splitValue(value);
+            Object arrayResult = Array.newInstance(componentClazz, keys.length);
+            for (int i = 0; i < keys.length; i++) {
+                Array.set(arrayResult, i, converter.convert(keys[i]));
+            }
+            return (T) arrayResult;
+        }
+
 
         Converter<?> converter = converters.get(type);
 
@@ -292,21 +316,6 @@ public class PayaraConfig implements Config {
 
     @SuppressWarnings("unchecked")
     private <T> T convertString(String value, Class<T> propertyType) {
-        // if it is an array convert arrays
-        if (propertyType.isArray()) {
-            // find converter for the array type
-            Class<?> componentClazz = propertyType.getComponentType();
-            Converter<?> converter = getConverter(componentClazz);
-
-            // array convert
-            String keys[] = splitValue(value);
-            Object arrayResult = Array.newInstance(componentClazz, keys.length);
-            for (int i = 0; i < keys.length; i++) {
-                Array.set(arrayResult, i, converter.convert(keys[i]));
-            }
-            return (T) arrayResult;
-        }
-        // find a converter
         Converter<T> converter = getConverter(propertyType);
         if (converter == null) {
             throw new IllegalArgumentException("No converter for class " + propertyType);

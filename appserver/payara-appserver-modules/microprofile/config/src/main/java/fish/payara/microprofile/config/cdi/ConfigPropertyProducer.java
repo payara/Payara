@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -49,6 +49,8 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.enterprise.inject.spi.InjectionPoint;
+
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -72,7 +74,7 @@ public class ConfigPropertyProducer {
     public static final Object getGenericProperty(InjectionPoint ip) {
         Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
-        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
+        Config config = ConfigProvider.getConfig();
 
         String name = property.name();
         if (name.isEmpty()) {
@@ -93,14 +95,26 @@ public class ConfigPropertyProducer {
 
         Type type = ip.getType();
         if (type instanceof Class) {
-            result = config.getValue(name, property.defaultValue(),(Class<?>)type);
+            result = config.getValue(name, ConfigValueResolver.class)
+                    .acceptEmpty()
+                    .throwOnMissingProperty()
+                    .withDefault(property.defaultValue())
+                    .as((Class<?>)type).get();
         } else if ( type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
             Type rawType = ptype.getRawType();
             if (List.class.equals(rawType)) {
-                result = config.getListValues(name, property.defaultValue(), getElementTypeFrom(ptype));
+                result = config.getValue(name, ConfigValueResolver.class)
+                    .acceptEmpty()
+                    .throwOnMissingProperty()
+                    .withDefault(property.defaultValue())
+                    .asList(getElementTypeFrom(ptype));
             } else if (Set.class.equals(rawType)) {
-                result = config.getSetValues(name, property.defaultValue(), getElementTypeFrom(ptype));
+                result = config.getValue(name, ConfigValueResolver.class)
+                    .acceptEmpty()
+                    .throwOnMissingProperty()
+                    .withDefault(property.defaultValue())
+                    .asSet(getElementTypeFrom(ptype));
             } else {
                 result = config.getValue(name, (Class<?>) rawType);
             }
