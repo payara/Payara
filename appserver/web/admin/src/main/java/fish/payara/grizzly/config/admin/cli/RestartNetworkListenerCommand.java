@@ -39,10 +39,8 @@
  */
 package fish.payara.grizzly.config.admin.cli;
 
-import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -61,79 +59,53 @@ import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@Service(name = "set-network-listener-security-configuration")
+@Service(name = "restart-network-listeners")
 @PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean = NetworkListeners.class,
             opType = RestEndpoint.OpType.POST,
-            description = "Configures security aspect of network listeners")
+            description = "Restarts all network listeners")
 })
-public class SetNetworkListenerSecurityConfiguration implements AdminCommand {
-
-    private static final Logger LOGGER = Logger.getLogger(SetNetworkListenerSecurityConfiguration.class.getName());
+public class RestartNetworkListenerCommand implements AdminCommand {
 
     @Inject
     private Target targetUtil;
 
+    @Inject
+    private GrizzlyService service;
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target;
 
-    @Param(name = "reset", optional = true)
-    private Boolean reset;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
 
         Config config = targetUtil.getConfig(target);
-        if (reset != null && reset.booleanValue()) {
-            for (NetworkListener listener : config.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
-                if ("true".equals(listener.getEnabled())) {
-                    try {
-                        updateListener(listener, false);
-                        try {
-                            updateListener(listener, true);
-                        } catch (TransactionFailure ex) {
-                            updateReportWithFailure(report, listener, ex, "Failed to enable network listener {0}, {1}");
-                            return;
-                        }
-                    } catch (TransactionFailure e) {
-                        updateReportWithFailure(report, listener, e, "Failed to disable network listener {0}, {1}");
-                        return;
-                    }
-                    if (!report.hasFailures()) {
-                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    }
+        for (NetworkListener listener : config.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
+            try {
+                if (!"admin-listener".equals(listener.getName())) {
+                    service.restartNetworkListener(listener, 10, TimeUnit.SECONDS);
                 }
+            } catch (Exception ex) {
+                report.setMessage(MessageFormat.format("Failed to restart listener {0}, {1}", listener.getName(),
+                        (ex.getMessage() == null ? "No reason given" : ex.getMessage())));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setFailureCause(ex);
+                return;
+            }
+            if (!report.hasFailures()) {
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         }
     }
 
-    private static void updateListener(NetworkListener listener, boolean enabled) throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
-            @Override
-            public Object run(final NetworkListener listenerProxy) throws PropertyVetoException, TransactionFailure {
-                listenerProxy.setEnabled(Boolean.valueOf(enabled).toString());
-                return null;
-            }
-
-        }, listener);
-    }
-
-    private static void updateReportWithFailure(ActionReport report, NetworkListener listener, TransactionFailure ex, String msg) {
-        LOGGER.log(Level.SEVERE, null, ex);
-        report.setMessage(MessageFormat.format(msg, listener.getName(),
-                (ex.getMessage() == null ? "No reason given" : ex.getMessage())));
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setFailureCause(ex);
-    }
 }
