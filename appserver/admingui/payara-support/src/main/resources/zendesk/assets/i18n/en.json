@@ -1,7 +1,7 @@
 {
-  "Payara Support": "Payara Support",
+  "Payara Support": "Payara Enterprise Support Services",
   "Email address": "Email address",
-  "Insert Zendesk`s email and password to get OauthToken to communicate": "Use your Payara Support portal credentials to log in.",
+  "Insert Zendesk`s email and password to get OauthToken to communicate": "Use your Payara Customer Hub credentials to log in.",
   "Password": "Password",
   "Insert password to login into Zendesk, it not will be stored": "Insert password to login, it not will be stored",
   "Please sign in": "Please sign in",
@@ -70,7 +70,7 @@
   "Awaiting Fix Confirmation": "Awaiting Fix Confirmation",
   "Fix Released": "Fix Released",
   "Solution Provided": "Solution Provided",
-  "Unsupported? Hire support now!": "Unsupported? Get support now!",
+  "Unsupported? Hire support now!": "Running Payara Server in Production? Get Payara Enterprise Now!",
   "Save": "Save",
   "Discard": "Discard",
   "Edit": "Edit",
