@@ -39,7 +39,6 @@
  */
 package fish.payara.certificate.management.admin;
 
-import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
@@ -50,8 +49,8 @@ import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.certificate.management.CertificateManagementUtils;
 import fish.payara.certificate.management.CertificateManagementKeytoolCommands;
+import fish.payara.certificate.management.CertificateManagementUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.config.support.TranslatedConfigView;
@@ -59,28 +58,13 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
-import java.util.logging.Logger;
 
-/**
- * CLI command for generating self-signed certificates and placing them in an instance or listener's key
- * and trust stores.
- *
- * @author Andrew Pielage
- */
-@Service(name = "generate-self-signed-certificate")
+@Service(name = "generate-csr")
 @PerLookup
-public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
-
-    private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
+public class GenerateCsrCommand extends LocalDomainCommand {
 
     @Param(name = "domain_name", optional = true)
     private String domainName0;
-
-    @Param(name = "distinguishedname", alias = "dn")
-    private String dn;
-
-    @Param(name = "alternativenames", optional = true, alias = "altnames", separator = ';')
-    private String[] altnames;
 
     @Param(name = "listener", optional = true)
     private String listener;
@@ -92,9 +76,7 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     private String alias;
 
     private File keystore;
-    private File truststore;
     private char[] keystorePassword;
-    private char[] truststorePassword;
     private char[] masterPassword;
 
     @Override
@@ -107,36 +89,55 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            GenerateSelfSignedCertificateLocalInstanceCommand localInstanceCommand =
-                    new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
+            GenerateCsrLocalInstanceCommand localInstanceCommand =
+                    new GenerateCsrLocalInstanceCommand(programOpts, env);
             localInstanceCommand.validate();
             return localInstanceCommand.executeCommand();
         }
 
-        // Parse the location of the key and trust stores, and the passwords required to access them
+        // Parse the location of the key store, and the password required to access it
         try {
             MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
             keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, getDomainRootDir());
-            truststore = CertificateManagementUtils.resolveTrustStore(parser, listener, getDomainRootDir());
             getStorePasswords(parser, listener, getDomainRootDir());
         } catch (MiniXmlParserException miniXmlParserException) {
             throw new CommandException("Error parsing domain.xml", miniXmlParserException);
         }
 
-        // Run keytool command to generate self-signed cert and place in keystore
+        File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
+
+        // Run keytool command to generate CSR and place in csrLocation
         try {
-            addToKeystore();
+            generateCsr(csrLocation);
         } catch (CommandException ce) {
             return CLIConstants.ERROR;
         }
 
-        try {
-            addToTruststore();
-        } catch (CommandException ce) {
-            return CLIConstants.WARNING;
-        }
-
         return CLIConstants.SUCCESS;
+    }
+
+    /**
+     * Generates a CSR
+     *
+     * @throws CommandException If there's an issue adding the certificate to the key store
+     */
+    private void generateCsr(File csrLocation) throws CommandException {
+        // Run keytool command to generate self-signed cert
+        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
+                CertificateManagementKeytoolCommands.constructGenerateCertRequestKeytoolCommand(
+                        keystore, keystorePassword,
+                        new File(csrLocation.getAbsolutePath() + File.separator + alias + ".csr"),
+                        alias),
+                60);
+
+        try {
+            keytoolExecutor.execute("csrNotCreated", keystore);
+        } catch (RepositoryException re) {
+            logger.severe(re.getCause().getMessage()
+                    .replace("keytool error: java.lang.Exception: ", "")
+                    .replace("keytool error: java.io.IOException: ", ""));
+            throw new CommandException(re);
+        }
     }
 
     /**
@@ -153,7 +154,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
         if (listener != null) {
             // Check if listener has a password set
             keystorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "key-store-password");
-            truststorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "trust-store-password");
         }
 
         if (keystorePassword != null && keystorePassword.length > 0) {
@@ -168,20 +168,6 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
         } else {
             // Default to master
             keystorePassword = masterPassword();
-        }
-
-        if (truststorePassword != null && truststorePassword.length > 0) {
-            // Expand alias if required
-            if (new String(truststorePassword).startsWith("${ALIAS=")) {
-                JCEKSDomainPasswordAliasStore passwordAliasStore = new JCEKSDomainPasswordAliasStore(
-                        serverDir.getPath() + File.separator + "config" + File.separator + "domain-passwords",
-                        masterPassword());
-                truststorePassword = passwordAliasStore.get(
-                        TranslatedConfigView.getAlias(new String(truststorePassword), "ALIAS"));
-            }
-        } else {
-            // Default to master
-            truststorePassword = masterPassword();
         }
     }
 
@@ -200,53 +186,11 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
     }
 
     /**
-     * Generates a self-signed certificate and adds it to the target key store
-     *
-     * @throws CommandException If there's an issue adding the certificate to the key store
-     */
-    private void addToKeystore() throws CommandException {
-        // Run keytool command to generate self-signed cert
-        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructGenerateCertKeytoolCommand(keystore, keystorePassword,
-                        alias, dn, altnames), 60);
-
-        try {
-            keytoolExecutor.execute("certNotCreated", keystore);
-        } catch (RepositoryException re) {
-            logger.severe(re.getCause().getMessage()
-                    .replace("keytool error: java.lang.Exception: ", "")
-                    .replace("keytool error: java.io.IOException: ", ""));
-            throw new CommandException(re);
-        }
-    }
-
-    /**
-     * Adds the self-signed certificate to the target trust store
-     *
-     * @throws CommandException If there's an issue adding the certificate to the trust store
-     */
-    private void addToTruststore() throws CommandException {
-        // Run keytool command to place self-signed cert in truststore
-        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructImportCertKeytoolCommand(keystore, truststore, keystorePassword,
-                        truststorePassword, alias), 60);
-
-        try {
-            keytoolExecutor.execute("certNotTrusted", keystore);
-        } catch (RepositoryException re) {
-            logger.severe(re.getCause().getMessage()
-                    .replace("keytool error: java.lang.Exception: ", "")
-                    .replace("keytool error: java.io.IOException: ", ""));
-            throw new CommandException(re);
-        }
-    }
-
-    /**
      * Local instance (non-DAS) version of the parent command. Not intended for use as a standalone CLI command.
      */
-    private class GenerateSelfSignedCertificateLocalInstanceCommand extends SynchronizeInstanceCommand {
+    private class GenerateCsrLocalInstanceCommand extends SynchronizeInstanceCommand {
 
-        public GenerateSelfSignedCertificateLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
+        public GenerateCsrLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
             super.programOpts = programOpts;
             super.env = env;
         }
@@ -260,70 +204,31 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
 
         @Override
         protected int executeCommand() throws CommandException {
-            boolean alreadySynced = false;
             try {
                 File domainXml = getDomainXml();
                 if (!domainXml.exists()) {
                     logger.info("No domain.xml found, syncing with the DAS...");
                     synchronizeInstance();
-                    alreadySynced = true;
                 }
 
                 MiniXmlParser parser = new MiniXmlParser(domainXml, target);
                 keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, instanceDir);
-                truststore = CertificateManagementUtils.resolveTrustStore(parser, listener, instanceDir);
                 getStorePasswords(parser, listener, instanceDir);
             } catch (MiniXmlParserException miniXmlParserException) {
                 throw new CommandException("Error parsing domain.xml", miniXmlParserException);
             }
 
-            // If the target is not the DAS and is configured to use the default key or trust store, sync with the
-            // DAS instead
-            boolean defaultKeystore = keystore.getAbsolutePath()
-                    .equals(CertificateManagementUtils.DEFAULT_KEYSTORE
-                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
-            boolean defaultTruststore = truststore.getAbsolutePath()
-                    .equals(CertificateManagementUtils.DEFAULT_TRUSTSTORE
-                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
+            File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
 
-            if (defaultKeystore || defaultTruststore) {
-                logger.warning("The target instance is using the default key or trust store, any new certificates"
-                        + " added directly to instance stores would be lost upon next sync.");
-
-                if (!alreadySynced) {
-                    logger.warning("Syncing with the DAS instead of generating a new certificate");
-                    synchronizeInstance();
-                }
-
-                if (defaultKeystore && defaultTruststore) {
-                    // Do nothing
-                } else if (defaultKeystore) {
-                    logger.info("Please add self-signed certificate to truststore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-truststore'");
-                } else {
-                    logger.info("Please add self-signed certificate to keystore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-keystore'");
-                }
-
-                return CLIConstants.WARNING;
-            }
-
-            // Run keytool command to generate self-signed cert and place in keystore
+            // Run keytool command to generate CSR and place in csrLocation
             try {
-                addToKeystore();
+                generateCsr(csrLocation);
             } catch (CommandException ce) {
                 return CLIConstants.ERROR;
             }
 
-            try {
-                addToTruststore();
-            } catch (CommandException ce) {
-                return CLIConstants.WARNING;
-            }
-
             return CLIConstants.SUCCESS;
         }
+
     }
 }
