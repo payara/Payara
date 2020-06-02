@@ -74,7 +74,6 @@
         <module>opentracing-cdi</module>
         <module>jaxrs-client-tracing</module>
         <module>yubikey-authentication</module>
-        <module>certificate-management</module>
         <module>microprofile</module>
         <module>security-oauth2</module>
         <module>security-openid</module>

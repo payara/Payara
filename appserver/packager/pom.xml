@@ -173,7 +173,6 @@
         <module>microprofile-package</module>
         <module>opentracing-jaxws-package</module>
         <module>monitoring-console</module>
-        <module>certificate-management</module>
     </modules>
     
     <properties>
