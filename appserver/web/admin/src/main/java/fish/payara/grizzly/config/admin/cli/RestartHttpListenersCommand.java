@@ -45,10 +45,13 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -57,10 +60,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
@@ -76,18 +82,42 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 public class RestartHttpListenersCommand implements AdminCommand {
 
     @Inject
+    private Domain domain;
+
+    @Inject
+    private ServiceLocator locator;
+
+    @Inject
     private Target targetUtil;
 
     @Inject
     private GrizzlyService service;
 
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true)
     private String target;
 
+    @Param(name = "all", optional = true)
+    private Boolean all;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
+
+        if (all != null && target == null) {
+            ExitCode exitCode = ClusterOperationUtil.replicateCommand("restart-http-listeners", FailurePolicy.Ignore, FailurePolicy.Ignore,
+                        FailurePolicy.Error, domain.getAllTargets(), context, new ParameterMap(), locator);
+            report.setActionExitCode(exitCode);
+        }
+        if (report.hasFailures()) {
+            return;
+        }
+        if (target != null && all != null) {
+            report.setMessage("--all used together with --target and is ignored.");
+            report.setActionExitCode(ExitCode.WARNING);
+        }
+        if (target == null) {
+            target = SystemPropertyConstants.DAS_SERVER_NAME;
+        }
 
         Config config = targetUtil.getConfig(target);
         for (NetworkListener listener : config.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
@@ -98,12 +128,12 @@ public class RestartHttpListenersCommand implements AdminCommand {
             } catch (Exception ex) {
                 report.setMessage(MessageFormat.format("Failed to restart listener {0}, {1}", listener.getName(),
                         (ex.getMessage() == null ? "No reason given" : ex.getMessage())));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setActionExitCode(ExitCode.FAILURE);
                 report.setFailureCause(ex);
                 return;
             }
-            if (!report.hasFailures()) {
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            if (!report.hasFailures() && !report.hasWarnings()) {
+                report.setActionExitCode(ExitCode.SUCCESS);
             }
         }
     }
