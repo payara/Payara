@@ -70,6 +70,7 @@ public class ServerLogTest extends RestManagementTest {
                     startupLine = true;
                 }
                 if (startupLine) {
+                    System.err.println(line);
                     // Flag a warning if found
                     if (line.contains("WARNING") || line.contains("ERROR")) {
                         warningFound = true;
