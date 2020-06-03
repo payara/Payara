@@ -66,14 +66,14 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@Service(name = "restart-network-listeners")
+@Service(name = "restart-http-listeners")
 @PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean = NetworkListeners.class,
             opType = RestEndpoint.OpType.POST,
-            description = "Restarts all network listeners")
+            description = "Restarts all HTTP listeners")
 })
-public class RestartNetworkListenerCommand implements AdminCommand {
+public class RestartHttpListenersCommand implements AdminCommand {
 
     @Inject
     private Target targetUtil;
