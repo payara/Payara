@@ -104,11 +104,9 @@ public class GenerateCsrCommand extends LocalDomainCommand {
             throw new CommandException("Error parsing domain.xml", miniXmlParserException);
         }
 
-        File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
-
         // Run keytool command to generate CSR and place in csrLocation
         try {
-            generateCsr(csrLocation);
+            generateCsr();
         } catch (CommandException ce) {
             return CLIConstants.ERROR;
         }
@@ -121,7 +119,13 @@ public class GenerateCsrCommand extends LocalDomainCommand {
      *
      * @throws CommandException If there's an issue adding the certificate to the key store
      */
-    private void generateCsr(File csrLocation) throws CommandException {
+    private void generateCsr() throws CommandException {
+        // Get CSR install dir and ensure it actually exists
+        File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
+        if (!csrLocation.exists()) {
+            csrLocation.mkdir();
+        }
+
         // Run keytool command to generate self-signed cert
         KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
                 CertificateManagementKeytoolCommands.constructGenerateCertRequestKeytoolCommand(
@@ -218,11 +222,9 @@ public class GenerateCsrCommand extends LocalDomainCommand {
                 throw new CommandException("Error parsing domain.xml", miniXmlParserException);
             }
 
-            File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
-
             // Run keytool command to generate CSR and place in csrLocation
             try {
-                generateCsr(csrLocation);
+                generateCsr();
             } catch (CommandException ce) {
                 return CLIConstants.ERROR;
             }
