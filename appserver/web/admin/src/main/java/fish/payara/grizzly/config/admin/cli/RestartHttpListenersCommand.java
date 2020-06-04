@@ -93,7 +93,7 @@ public class RestartHttpListenersCommand implements AdminCommand {
     @Inject
     private GrizzlyService service;
 
-    @Param(name = "target", optional = true)
+    @Param(name = "target", optional = true, primary = true)
     private String target;
 
     @Param(name = "all", optional = true)
@@ -102,8 +102,8 @@ public class RestartHttpListenersCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-
-        if (all != null && target == null) {
+        boolean isAll = all != null && all.booleanValue();
+        if (isAll && target == null) {
             ExitCode exitCode = ClusterOperationUtil.replicateCommand("restart-http-listeners", FailurePolicy.Ignore, FailurePolicy.Ignore,
                         FailurePolicy.Error, domain.getAllTargets(), context, new ParameterMap(), locator);
             report.setActionExitCode(exitCode);
@@ -111,7 +111,7 @@ public class RestartHttpListenersCommand implements AdminCommand {
         if (report.hasFailures()) {
             return;
         }
-        if (target != null && all != null) {
+        if (target != null && isAll) {
             report.setMessage("--all used together with --target and is ignored.");
             report.setActionExitCode(ExitCode.WARNING);
         }
