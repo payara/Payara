@@ -51,9 +51,6 @@ import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.admin.report.DoNothingActionReporter;
-import com.sun.enterprise.universal.process.Jps;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -63,7 +60,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -117,9 +113,6 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @Rank(Constants.DEFAULT_IMPLEMENTATION_RANK) // This should be the default impl if no name is specified
 public class AppServerStartup implements PostConstruct, ModuleStartup {
-    enum State {
-        INITIAL, STARTING, STARTED, SHUTDOWN_REQUESTED, SHUTTING_DOWN, SHUT_DOWN;
-    }
     
     StartupContext context;
 
@@ -136,11 +129,13 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     @Inject
     ModulesRegistry systemRegistry;
 
-    @Override
     @Inject
     public void setStartupContext(StartupContext context) {
         this.context = context;
     }
+
+    @Inject
+    ExecutorService executor;
 
     @Inject
     Events events;
@@ -171,7 +166,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
      * as long as GlassFish kernel is up.
      */
     private Thread serverThread;
-    private AtomicReference<State> state = new AtomicReference<>(State.INITIAL);
+    private boolean shutdownSignal = false;
     
     private final static String THREAD_POLICY_PROPERTY = "org.glassfish.startupThreadPolicy";
     private final static String MAX_STARTUP_THREAD_PROPERTY = "org.glassfish.maxStartupThreads";
@@ -225,18 +220,10 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             // See issue #5596 to know why we set context CL as common CL.
             Thread.currentThread().setContextClassLoader(
                     commonCLS.getCommonClassLoader());
-            if (state.compareAndSet(State.INITIAL, State.STARTING) || state.compareAndSet(State.SHUT_DOWN, State.STARTING)) {
-                doStart();
-            } else {
-                throw new GlassFishException("Server cannot start, because it's in state "+state.get());
-            }
+            doStart();
         } catch (GlassFishException ex) {
             throw new RuntimeException (ex);
         } finally {
-            if (!state.compareAndSet(State.STARTING, State.STARTED)) {
-                // the state is no longer STARTING, therefore it has to be SHUTDOWN_REQUESTED
-                stop();
-            }
             // reset the context classloader. See issue GLASSFISH-15775
             Thread.currentThread().setContextClassLoader(origCL);
         }
@@ -267,7 +254,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 latch.countDown();
 
                 synchronized (this) {
-                    while (state.get() != AppServerStartup.State.SHUT_DOWN ) {
+                    while (!shutdownSignal) {
                         try {
                             wait(); // Wait indefinitely until shutdown is requested
                         }
@@ -428,6 +415,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                     if (future.get(3, TimeUnit.SECONDS).isFailure()) {
                         final Throwable t = future.get().exception();
                         logger.log(Level.SEVERE, KernelLoggerInfo.startupFatalException, t);
+                        events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
                         shutdown();
                         return false;
                     }
@@ -478,23 +466,31 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         logger.log(level, sb.toString());
     }
 
+    // TODO(Sahoo): Revisit this method after discussing with Jerome.
     private void shutdown() {
-        if (    state.compareAndSet(State.STARTING, State.SHUTDOWN_REQUESTED) ||
-                state.compareAndSet(State.INITIAL, State.SHUT_DOWN)) {
-            // SHUTDOWN_REQUESTED is handled at end of START
-            // INITIAL --> SHUT_DOWN is trivial case of shutdown before we started
-            return;
-        }
-        // state doesn't change on SHUT_DOWN, SHUTTING_DOWN and SHUTDOWN_REQUESTED
-        if (state.compareAndSet(State.STARTED, State.SHUTDOWN_REQUESTED)) {
-            // directly stop only if server already completed startup sequence
-            stop();
+        CommandRunner runner = commandRunnerProvider.get();
+
+        if (runner!=null) {
+           final ParameterMap params = new ParameterMap();
+            // By default we don't want to shutdown forcefully, as that will cause the VM to exit and that's not
+            // a very good behavior for a code known to be embedded in other processes.
+        final boolean noForcedShutdown =
+                Boolean.parseBoolean(context.getArguments().getProperty(
+                        com.sun.enterprise.glassfish.bootstrap.Constants.NO_FORCED_SHUTDOWN, "true"));
+            if (noForcedShutdown) {
+                params.set("force", "false");
+            }
+            final InternalSystemAdministrator kernelIdentity = locator.getService(InternalSystemAdministrator.class);
+            if (env.isDas()) {
+                runner.getCommandInvocation("stop-domain", new DoNothingActionReporter(), kernelIdentity.getSubject()).parameters(params).execute();
+            } else {
+                runner.getCommandInvocation("_stop-instance", new DoNothingActionReporter(), kernelIdentity.getSubject()).parameters(params).execute();
+            }
         }
     }
 
-    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public synchronized void stop() {
-        state.set(State.SHUTTING_DOWN);
         if(env.getStatus() == ServerEnvironment.Status.stopped) {
             // During shutdown because of shutdown hooks, we can be stopped multiple times.
             // In such a case, ignore any subsequent stop operations.
@@ -507,21 +503,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         } catch (Exception e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
         }
-        
-            String s;
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec("netstat -plten |grep java");
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            while ((s = br.readLine()) != null) {
-                System.out.println("line: " + s);
-            }
-            p.waitFor();
-            System.out.println("exit: " + p.exitValue());
-            p.destroy();
-        } catch (Exception e) {
-        }
 
         // deactivate the run level services
         try {
@@ -530,22 +511,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
         }
 
-       
-        try {
-            p = Runtime.getRuntime().exec("netstat -plten |grep java");
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            while ((s = br.readLine()) != null) {
-                System.out.println("line: " + s);
-            }
-            p.waitFor();
-            System.out.println("exit: " + p.exitValue());
-            p.destroy();
-        } catch (Exception e) {
-        }
-       
-          
-        System.out.println("jps id is ================================ " + Jps.getPid("ASMain"));
         // first send the shutdown event synchronously
         env.setStatus(ServerEnvironment.Status.stopped);
         try {
@@ -562,10 +527,11 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
 
         logger.info(KernelLoggerInfo.shutdownFinished);
 
-        state.set(State.SHUT_DOWN);
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
             synchronized (serverThread) {
+                shutdownSignal = true;
+                
                 serverThread.notify();
             }
             try {
@@ -577,9 +543,11 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     }
 
     /**
-     * Proceed to the given run level.
+     * Proceed to the given run level using the given {@link AppServerActivator}.
      *
      * @param runLevel   the run level to proceed to
+     * @param activator  an {@link AppServerActivator activator} used to
+     *                   activate/deactivate the services
      * @return false if an error occurred that required server shutdown; true otherwise
      */
     private boolean proceedTo(int runLevel) {
@@ -726,7 +694,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     private class MasterRunLevelListener implements RunLevelListener {
         private final RunLevelController controller;
         
-        private volatile boolean forcedShutdown = false;
+        private boolean forcedShutdown = false;
         
         private MasterRunLevelListener(RunLevelController controller) {
             this.controller = controller;
@@ -761,6 +729,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             
             if (controller.getCurrentRunLevel() >= InitRunLevel.VAL) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, info.getError());
+                events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
             }
             
             forcedShutdown = true;
