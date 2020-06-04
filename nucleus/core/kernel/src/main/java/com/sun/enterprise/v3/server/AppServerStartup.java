@@ -51,6 +51,9 @@ import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.admin.report.DoNothingActionReporter;
+import com.sun.enterprise.universal.process.Jps;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -504,6 +507,21 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         } catch (Exception e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
         }
+        
+            String s;
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec("netstat -plten |grep java");
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+            while ((s = br.readLine()) != null) {
+                System.out.println("line: " + s);
+            }
+            p.waitFor();
+            System.out.println("exit: " + p.exitValue());
+            p.destroy();
+        } catch (Exception e) {
+        }
 
         // deactivate the run level services
         try {
@@ -512,6 +530,22 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
         }
 
+       
+        try {
+            p = Runtime.getRuntime().exec("netstat -plten |grep java");
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+            while ((s = br.readLine()) != null) {
+                System.out.println("line: " + s);
+            }
+            p.waitFor();
+            System.out.println("exit: " + p.exitValue());
+            p.destroy();
+        } catch (Exception e) {
+        }
+       
+          
+        System.out.println("jps id is ================================ " + Jps.getPid("ASMain"));
         // first send the shutdown event synchronously
         env.setStatus(ServerEnvironment.Status.stopped);
         try {
