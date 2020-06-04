@@ -43,6 +43,7 @@ pipeline {
                 success{
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara5/glassfish/logs/server.log'
                 }
             }
         }
