@@ -301,7 +301,9 @@ public class CertificateManagementUtils {
         for (Map<String, String> listenerAttributes : parser.getProtocolAttributes()) {
             if (listenerAttributes.get("name").equals(listener)) {
                 // Get the keystore from the listener if it has a custom one
-                password = listenerAttributes.get(attribute).toCharArray();
+                if (listenerAttributes.get(attribute) != null) {
+                    password = listenerAttributes.get(attribute).toCharArray();
+                }
             }
         }
 
@@ -309,7 +311,9 @@ public class CertificateManagementUtils {
             for (Map<String, String> listenerAttributes : parser.getIiopSslAttributes()) {
                 if (listenerAttributes.get("id").equals(listener)) {
                     // Get the keystore from the listener if it has a custom one
-                    password = listenerAttributes.get(attribute).toCharArray();
+                    if (listenerAttributes.get(attribute) != null) {
+                        password = listenerAttributes.get(attribute).toCharArray();
+                    }
                 }
             }
         }

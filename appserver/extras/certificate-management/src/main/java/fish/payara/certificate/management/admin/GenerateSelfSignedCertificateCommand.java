@@ -155,7 +155,7 @@ public class GenerateSelfSignedCertificateCommand extends LocalDomainCommand {
             truststorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "trust-store-password");
         }
 
-        if (keystorePassword != null || keystorePassword.length > 0) {
+        if (keystorePassword != null && keystorePassword.length > 0) {
             // Expand alias if required
             if (new String(keystorePassword).startsWith("${ALIAS=")) {
                 JCEKSDomainPasswordAliasStore passwordAliasStore = new JCEKSDomainPasswordAliasStore(
