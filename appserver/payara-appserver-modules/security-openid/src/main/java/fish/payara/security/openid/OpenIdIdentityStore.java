@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
-import java.security.Principal;
 import java.util.HashSet;
 import java.util.Map;
 import static java.util.Objects.isNull;
@@ -113,9 +112,12 @@ public class OpenIdIdentityStore implements IdentityStore {
             context.setClaims(userInfo);
         }
 
+        context.setCallerName(getCallerName(configuration));
+        context.setCallerGroups(getCallerGroups(configuration));
+
         return new CredentialValidationResult(
-                getCallerName(configuration),
-                getGroups(configuration)
+                context.getCallerName(),
+                context.getCallerGroups()
         );
     }
 
@@ -134,7 +136,7 @@ public class OpenIdIdentityStore implements IdentityStore {
         return callerName;
     }
 
-    private Set<String> getGroups(OpenIdConfiguration configuration) {
+    private Set<String> getCallerGroups(OpenIdConfiguration configuration) {
         Set<String> groups = new HashSet<>();
         String callerGroupsClaim = configuration.getClaimsConfiguration().getCallerGroupsClaim();
         JsonArray groupsUserinfoClaim

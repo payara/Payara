@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Optional;
 import java.util.logging.Level;
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
@@ -235,21 +236,22 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
         Optional<OpenIdState> receivedState = OpenIdState.from(request.getParameter(STATE));
         String redirectURI = configuration.buildRedirectURI(request);
-        if (receivedState.isPresent()
-                && request.getRequestURL().toString().equals(redirectURI)) {
-
-            Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
-            if (expectedState.isPresent()) {
-                if (expectedState.equals(receivedState)) {
-                    // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
-                    return validateAuthorizationCode(httpContext);
-                } else {
-                    LOGGER.fine("Inconsistent received state, value not matched");
-                    return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
-                }
-            } else {
-                LOGGER.fine("Expected state not found");
+        if (receivedState.isPresent()) {
+            if (!request.getRequestURL().toString().equals(redirectURI)) {
+                LOGGER.log(INFO, "OpenID Redirect URL {0} not matched with request URL {1}", new Object[]{redirectURI, request.getRequestURL().toString()});
+                return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
             }
+            Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
+            if (!expectedState.isPresent()) {
+                LOGGER.fine("Expected state not found");
+                return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
+            }
+            if (!expectedState.equals(receivedState)) {
+                LOGGER.fine("Inconsistent received state, value not matched");
+                return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
+            }
+            // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
+            return validateAuthorizationCode(httpContext);
         }
         return httpContext.doNothing();
     }
@@ -269,7 +271,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         String errorDescription = request.getParameter(ERROR_DESCRIPTION_PARAM);
         if (!isEmpty(error)) {
             // Error responses sent to the redirect_uri
-            LOGGER.log(WARNING, "Error occurred in reciving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
+            LOGGER.log(WARNING, "Error occurred in receiving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
         stateController.remove(configuration, httpContext);
