@@ -30,8 +30,8 @@ OPTIONS
            Displays the help text for the subcommand.
 
        --domain_name
-           The unique name of the domain you want to start. This operand is
-           optional, defaulting to domain1 if not provided.
+           The unique name of the domain to add the certificate to. This operand
+           is optional, defaulting to domain1 if not provided.
 
        --domaindir
            The domain root directory, which contains the directory of the
@@ -71,7 +71,7 @@ EXAMPLES
 
                asadmin> generate-self-signed-certificate --dn "CN=test.payara.fish" test_cert1
 
-       Example 2, Created a Self-Signed Certificate for a Listener
+       Example 2, Create a Self-Signed Certificate for a Listener
 
            This example creates a self-signed certificate with alternative
            names for the http-listner-2 listener of an instance named Guppy1.
