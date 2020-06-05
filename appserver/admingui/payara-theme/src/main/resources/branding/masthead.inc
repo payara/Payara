@@ -45,7 +45,7 @@
               style="border-width: 0px"
               productImageDescription="$resource{theme.productName}"
               productImageWidth="191"
-              productImageHeight="91"
+              productImageHeight="116"
               userInfo="#{userName}"  userInfoLabel="$resource{i18n.masthead.userInfoLabel}"
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
