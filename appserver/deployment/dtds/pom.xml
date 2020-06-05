@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.3-SNAPSHOT</version>
     </parent>
     <artifactId>dtds</artifactId>
     <packaging>distribution-fragment</packaging>
