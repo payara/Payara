@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -327,11 +327,6 @@
                 <groupId>jakarta.transaction</groupId>
                 <artifactId>jakarta.transaction-api</artifactId>
                 <version>${jakarta.transaction-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.transaction.cdi</groupId>
-                <artifactId>jakarta.transaction.cdi-api</artifactId>
-                <version>${jakarta.transaction.cdi-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.rpc</groupId>
@@ -814,6 +809,13 @@
                 <artifactId>flatten-maven-plugin</artifactId>
                 <configuration>
                     <flattenMode>bom</flattenMode>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
         </plugins>

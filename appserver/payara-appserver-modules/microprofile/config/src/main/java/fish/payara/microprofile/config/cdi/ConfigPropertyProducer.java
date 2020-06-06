@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -59,14 +58,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * @author Steve Millidge (Payara Foundation)
  */
 public class ConfigPropertyProducer {
-    
+
     /**
-     * General producer method for injecting a property into a field annotated 
+     * General producer method for injecting a property into a field annotated
      * with the @ConfigProperty annotation.
      * Note this does not have @Produces annotation as a synthetic bean using this method
      * is created in the CDI Extension.
      * @param ip
-     * @return 
+     * @return
      */
     @ConfigProperty
     @Dependent
@@ -74,12 +73,12 @@ public class ConfigPropertyProducer {
         Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
         PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        
+
         String name = property.name();
         if (name.isEmpty()) {
             // derive the property name from the injection point
-            Class beanClass = null;
-            Bean bean = ip.getBean();
+            Class<?> beanClass = null;
+            Bean<?> bean = ip.getBean();
             if (bean == null) {
                 Member member = ip.getMember();
                 beanClass = member.getDeclaringClass();
@@ -91,25 +90,36 @@ public class ConfigPropertyProducer {
             sb.append(ip.getMember().getName());
             name =  sb.toString();
         }
-        
-        Type type = ip.getType();      
+
+        Type type = ip.getType();
         if (type instanceof Class) {
             result = config.getValue(name, property.defaultValue(),(Class<?>)type);
         } else if ( type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
-            if (List.class.equals(ptype.getRawType())) {
-                result = config.getListValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);
-            } else if (Set.class.equals(ptype.getRawType())) {
-                result = config.getSetValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);                
+            Type rawType = ptype.getRawType();
+            if (List.class.equals(rawType)) {
+                result = config.getListValues(name, property.defaultValue(), getElementTypeFrom(ptype));
+            } else if (Set.class.equals(rawType)) {
+                result = config.getSetValues(name, property.defaultValue(), getElementTypeFrom(ptype));
             } else {
-                result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+                result = config.getValue(name, (Class<?>) rawType);
             }
         }
-        
+
         if (result == null) {
             throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
         }
         return result;
+    }
+
+    private static Class<?> getElementTypeFrom(ParameterizedType collectionType) {
+        Type elementType = collectionType.getActualTypeArguments()[0];
+        if (!(elementType instanceof Class)) {
+            throw new DeploymentException(
+                    "Only config values of lists and sets of non generic types (Class types) are supported but found: "
+                            + collectionType);
+        }
+        return (Class<?>) elementType;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -113,8 +113,25 @@ public final class RetryPolicy extends Policy {
         return this != NONE;
     }
 
-    public boolean retryOn(Exception ex) {
-        return isCaught(ex, retryOn) && !isCaught(ex, abortOn);
+    /**
+     * Should a retry occur then the given {@link Throwable} is thrown?
+     *
+     * Relevant section from {@link Retry} javadocs:
+     * <blockquote>
+     * When a method returns and the retry policy is present, the following rules are applied:
+     * <ol>
+     * <li>If the method returns normally (doesn't throw), the result is simply returned.
+     * <li>Otherwise, if the thrown object is assignable to any value in the {@link #abortOn()} parameter, the thrown object is rethrown.
+     * <li>Otherwise, if the thrown object is assignable to any value in the {@link #retryOn()} parameter, the method call is retried.
+     * <li>Otherwise the thrown object is rethrown.
+     * </ol>
+     * </blockquote>
+     * 
+     * @param ex an {@link Error} or an {@link Exception}
+     * @return true, if a retry should occur, else false.
+     */
+    public boolean retryOn(Throwable ex) {
+        return !isCaught(ex, abortOn) && isCaught(ex, retryOn);
     }
 
     public Long timeoutTimeNow() {

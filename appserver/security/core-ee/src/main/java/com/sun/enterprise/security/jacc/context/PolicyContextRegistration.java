@@ -37,8 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.context;
+
+import java.util.logging.Logger;
+
+import javax.security.jacc.PolicyContextException;
+import javax.security.jacc.PolicyContextHandler;
 
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
@@ -49,33 +54,31 @@ import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.
 import static java.util.logging.Level.SEVERE;
 import static javax.security.jacc.PolicyContext.registerHandler;
 
-import java.util.logging.Logger;
-
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.PolicyContextHandler;
-
 public class PolicyContextRegistration {
-    
+    private static final Logger LOG = Logger.getLogger(PolicyContextRegistration.class.getName());
+
     /**
      * This method registers the policy handlers, which provide objects JACC Providers
      * and other code can use.
-     * 
+     *
      * <p>
      * Note, in a full EE environment with CDI, only the JACC unique SUBJECT is typically
-     * really useful. 
+     * really useful.
      */
     public static void registerPolicyHandlers() {
+        LOG.finest("registerPolicyHandlers()");
         try {
             PolicyContextHandler policyContextHandler = PolicyContextHandlerImpl.getInstance();
-            
+
             registerHandler(ENTERPRISE_BEAN, policyContextHandler, true);
             registerHandler(SUBJECT, policyContextHandler, true);
             registerHandler(EJB_ARGUMENTS, policyContextHandler, true);
             registerHandler(SOAP_MESSAGE, policyContextHandler, true);
             registerHandler(HTTP_SERVLET_REQUEST, policyContextHandler, true);
             registerHandler(REUSE, policyContextHandler, true);
+            LOG.config("Policy handlers successfully registered.");
         } catch (PolicyContextException ex) {
-            Logger.getLogger(PolicyContextRegistration.class.getSimpleName()).log(SEVERE, null, ex);
+            LOG.log(SEVERE, "Failed to register policy handlers!", ex);
         }
     }
 

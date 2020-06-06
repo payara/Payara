@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -50,6 +52,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -70,10 +74,13 @@ import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.HISTOGRAM;
 import static org.eclipse.microprofile.metrics.MetricType.METERED;
+import static org.eclipse.microprofile.metrics.MetricType.SIMPLE_TIMER;
 import static org.eclipse.microprofile.metrics.MetricType.TIMER;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
@@ -83,6 +90,8 @@ import org.eclipse.microprofile.metrics.Timer;
  */
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
+
+    private static final Logger LOGGER = Logger.getLogger(MetricRegistryImpl.class.getName());
 
     static final class MetricFamily<T extends Metric> {
         final Metadata metadata;
@@ -102,6 +111,21 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
+    private final Clock clock;
+    private final List<MetricRegistrationListener> listeners = new ArrayList<>();
+
+    public MetricRegistryImpl() {
+        this(Clock.defaultClock());
+    }
+
+    public MetricRegistryImpl(Clock clock) {
+        this.clock = clock;
+    }
+
+    public MetricRegistryImpl addListener(MetricRegistrationListener listener) {
+        listeners.add(listener);
+        return this;
+    }
 
     @Override
     public Counter counter(String name) {
@@ -141,6 +165,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public Meter meter(Metadata metadata) {
          return findMetricOrCreate(metadata, METERED);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(String name) {
+        return findMetricOrCreate(name, SIMPLE_TIMER, new Tag[0]);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(Metadata metadata) {
+        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, new Tag[0]);
     }
 
     @Override
@@ -194,6 +228,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
+    public SimpleTimer simpleTimer(String name, Tag... tags) {
+        return findMetricOrCreate(name, SIMPLE_TIMER, tags);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(Metadata metadata, Tag... tags) {
+        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, tags);
+    }
+
+    @Override
     public Timer timer(String name, Tag... tags) {
         return findMetricOrCreate(name, TIMER, tags);
     }
@@ -223,8 +267,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Gauge> getGauges(MetricFilter metricFilter) {
-        return findMetrics(Gauge.class, metricFilter);
+    public SortedMap<MetricID, Gauge> getGauges(MetricFilter filter) {
+        return findMetrics(Gauge.class, filter);
     }
 
     @Override
@@ -233,8 +277,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter metricFilter) {
-        return findMetrics(ConcurrentGauge.class, metricFilter);
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter filter) {
+        return findMetrics(ConcurrentGauge.class, filter);
     }
 
     @Override
@@ -243,8 +287,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Counter> getCounters(MetricFilter metricFilter) {
-        return findMetrics(Counter.class, metricFilter);
+    public SortedMap<MetricID, Counter> getCounters(MetricFilter filter) {
+        return findMetrics(Counter.class, filter);
     }
 
     @Override
@@ -253,8 +297,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Histogram> getHistograms(MetricFilter metricFilter) {
-        return findMetrics(Histogram.class, metricFilter);
+    public SortedMap<MetricID, Histogram> getHistograms(MetricFilter filter) {
+        return findMetrics(Histogram.class, filter);
     }
 
     @Override
@@ -263,8 +307,18 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Meter> getMeters(MetricFilter metricFilter) {
-        return findMetrics(Meter.class, metricFilter);
+    public SortedMap<MetricID, Meter> getMeters(MetricFilter filter) {
+        return findMetrics(Meter.class, filter);
+    }
+
+    @Override
+    public SortedMap<MetricID, SimpleTimer> getSimpleTimers() {
+        return getSimpleTimers(ALL);
+    }
+
+    @Override
+    public SortedMap<MetricID, SimpleTimer> getSimpleTimers(MetricFilter filter) {
+        return findMetrics(SimpleTimer.class, filter);
     }
 
     @Override
@@ -273,8 +327,8 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public SortedMap<MetricID, Timer> getTimers(MetricFilter metricFilter) {
-        return findMetrics(Timer.class, metricFilter);
+    public SortedMap<MetricID, Timer> getTimers(MetricFilter filter) {
+        return findMetrics(Timer.class, filter);
     }
 
     @Override
@@ -284,7 +338,7 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<String, Metadata> getMetadata() {
-        return metricsFamiliesByName.entrySet().stream().collect(toMap(Entry::getKey, 
+        return metricsFamiliesByName.entrySet().stream().collect(toMap(Entry::getKey,
                 e -> e.getValue().metadata));
     }
 
@@ -314,7 +368,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         while (familyIter.hasNext()) {
             MetricFamily<?> family = familyIter.next();
             Iterator<? extends Entry<MetricID, ? extends Metric>> metricIter = family.metrics.entrySet().iterator();
-            while (metricIter.hasNext()) { 
+            while (metricIter.hasNext()) {
                 Entry<MetricID, ? extends Metric> entry = metricIter.next();
                 if (filter.matches(entry.getKey(), entry.getValue())) {
                     remove(entry.getKey()); // OBS! it is important to not use the iterator.remove() so that the family is removed "atomically" when empty
@@ -341,11 +395,16 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
-        return findMetricOrCreate(Metadata.builder().withName(name).withType(metricType).build(), true, tags);
+        Metadata metadata = Metadata.builder()
+                .withName(name)
+                .withType(metricType)
+                .withOptionalDisplayName(null)
+                .build();
+        return findMetricOrCreate(metadata, true, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, Tag... tags) {
-        return findMetricOrCreate(Metadata.builder(metadata).withType(metricType).build(), false, tags);
+        return findMetricOrCreate(withType(metadata, metricType), false, tags);
     }
 
     @SuppressWarnings("unchecked")
@@ -360,10 +419,10 @@ public class MetricRegistryImpl extends MetricRegistry {
             checkSameType(metricID.getName(), metadata, family.metadata);
             return register(metadata, useExistingMetadata, null, tags);
         }
-        if (useExistingMetadata && metadata.getType() != family.metadata.getType() 
+        if (useExistingMetadata && metadata.getType() != family.metadata.getType()
                 || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
-                    String.format("Tried to retrieve metric with conflicting metadata, looking for %s, got %s",
+                    String.format("Tried to lookup a metric with conflicting metadata, looup is %s, existing is %s",
                             metadata.toString(), family.metadata.toString()));
         }
         return (T) existing;
@@ -388,7 +447,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     @SuppressWarnings("unchecked")
     private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
         if (metadata.getTypeRaw() == MetricType.INVALID) {
-            metadata = Metadata.builder(metadata).withType(MetricType.from(metric.getClass())).build();
+            metadata = withType(metadata, MetricType.from(metric.getClass()));
         }
         String name = metadata.getName();
         checkNameIsNotNullOrEmpty(name);
@@ -401,7 +460,7 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         final Metadata newMetadata = metadata;
         final T newMetric = metric != null ? metric : (T) createMetricInstance(newMetadata);
-        MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name, 
+        MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
         if (family.metadata != newMetadata) {
@@ -411,7 +470,18 @@ public class MetricRegistryImpl extends MetricRegistry {
         if (current != newMetric) {
             checkNotAGauge(name, newMetadata);
         }
+        notifyRegistrationListeners(metricID);
         return current;
+    }
+
+    private void notifyRegistrationListeners(MetricID metricID) {
+        for (MetricRegistrationListener l : listeners) {
+            try {
+                l.onRegistration(metricID, this);
+            } catch (RuntimeException ex) {
+                LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
+            }
+        }
     }
 
     private static void checkNameIsNotNullOrEmpty(String name) {
@@ -471,13 +541,13 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
     }
 
-    private static Metric createMetricInstance(Metadata metadata) {
+    private Metric createMetricInstance(Metadata metadata) {
         String name = metadata.getName();
         switch (metadata.getTypeRaw()) {
         case COUNTER:
             return new CounterImpl();
         case CONCURRENT_GAUGE:
-            return new ConcurrentGaugeImpl();
+            return new ConcurrentGaugeImpl(clock);
         case GAUGE:
             throw new IllegalArgumentException(String.format("Unsupported operation for Gauge ['%s']", name));
         case METERED:
@@ -485,7 +555,9 @@ public class MetricRegistryImpl extends MetricRegistry {
         case HISTOGRAM:
             return new HistogramImpl();
         case TIMER:
-            return new TimerImpl();
+            return new TimerImpl(clock);
+        case SIMPLE_TIMER:
+            return new SimpleTimerImpl(clock);
         case INVALID:
         default:
             throw new IllegalStateException("Invalid metric type : " + metadata.getTypeRaw());
@@ -511,12 +583,12 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     public Set<MetricID> getMetricsIDs(String name) {
         MetricFamily<?> family = metricsFamiliesByName.get(name);
-        return family == null ? emptySet() : unmodifiableSet(family.metrics.keySet()); 
+        return family == null ? emptySet() : unmodifiableSet(family.metrics.keySet());
     }
 
     public Map<MetricID, Metric> getMetrics(String name) {
         MetricFamily<?> family = metricsFamiliesByName.get(name);
-        return family == null 
+        return family == null
                 ? emptyMap()
                 : unmodifiableMap(family.metrics);
     }
@@ -536,5 +608,18 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
         }
         return str.toString();
+    }
+
+    /**
+     * This is a workaround to prevent setting display name field as side effect of using
+     * {@link Metadata#builder(Metadata)}. It does not prevent the issue in case the type needs setting but it can if it
+     * does not need to be set. There is no API way to make the resulting {@link Metadata} identical in case the type is
+     * set.
+     */
+    private static Metadata withType(Metadata metadata, MetricType type) {
+        if (type == metadata.getTypeRaw()) {
+            return metadata; // already set
+        }
+        return Metadata.builder(metadata).withType(type).build();
     }
 }

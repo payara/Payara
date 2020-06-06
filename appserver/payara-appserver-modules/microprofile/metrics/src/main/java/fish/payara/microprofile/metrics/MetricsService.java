@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,9 +40,8 @@
 package fish.payara.microprofile.metrics;
 
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
-import fish.payara.microprofile.metrics.cdi.MetricsHelper;
-import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
+import fish.payara.microprofile.metrics.impl.MetricRegistrationListener;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
@@ -52,14 +51,20 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 
+import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -79,7 +84,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.ToLongFunction;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.MetricID;
 
@@ -104,7 +109,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     @Inject
     MetricsServiceConfiguration configuration;
-    
+
     @Inject
     private ServerEnvironment serverEnv;
 
@@ -124,11 +129,30 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     private List<MBeanMetadata> unresolvedVendorMetadataList;
 
-    private final Map<String, MetricRegistryImpl> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
+    /**
+     * A record per registry so that any registry related state can be created or removed consistently to avoid memory
+     * leaks or complicated cleanup work of related state that can be disposed in connection with the registry.
+     */
+    private static final class MetricRegistryState implements MetricRegistrationListener {
 
-    public MetricsService() {
+        final MetricRegistryImpl registry = new MetricRegistryImpl();
+        final Queue<MetricID> registeredNotAnnotated = new ConcurrentLinkedQueue<>();
+
+        public MetricRegistryState() {
+            registry.addListener(this);
+        }
+
+        @Override
+        public void onRegistration(MetricID registered, MetricRegistry registry) {
+            registeredNotAnnotated.add(registered);
+        }
 
     }
+
+    /**
+     * stores registries of base, vendor, app1, app2, ... app(n) etc
+     */
+    private final Map<String, MetricRegistryState> registriesByName = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -151,40 +175,112 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         if (!isEnabled())
             return;
         MonitoringDataCollector metricsCollector = rootCollector.in("metric");
-        for (Entry<String, ? extends MetricRegistry> registry : REGISTRIES.entrySet()) {
-            collectRegistry(registry, metricsCollector);
+        for (MetricRegistryState state : registriesByName.values()) {
+            collectRegistry(state, metricsCollector);
         }
     }
 
-    private static void collectRegistry(Entry<String, ? extends MetricRegistry> registry, MonitoringDataCollector collector) {
-        for (Entry<MetricID, Gauge> gauge : registry.getValue().getGauges().entrySet()) {
-            Object value = gauge.getValue().getValue();
-            if (value instanceof Number) {
-                tagCollector(gauge.getKey(), collector).collect(toName(gauge.getKey()), ((Number) value));
+    private static void collectRegistry(MetricRegistryState state, MonitoringDataCollector collector) {
+        processMetadataToAnnotations(state, collector);
+        // OBS: this way of iterating the metrics in the registry is optimal because of its internal data organisation
+        for (String name : state.registry.getNames()) {
+            for (Entry<MetricID, Metric> entry : state.registry.getMetrics(name).entrySet()) {
+                MetricID metricID = entry.getKey();
+                Metric metric = entry.getValue();
+                MonitoringDataCollector metricCollector = tagCollector(metricID, collector);
+                if (metric instanceof Counting) {
+                    metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
+                }
+                if (metric instanceof SimpleTimer) {
+                    metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
+                }
+                if (metric instanceof Timer) {
+                    metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
+                }
+                if (metric instanceof Gauge) {
+                    Object value = ((Gauge<?>) metric).getValue();
+                    if (value instanceof Number) {
+                        metricCollector.collect(toName(metricID,
+                                getMetricUnitSuffix(state.registry.getMetadata(name).getUnit())), ((Number) value));
+                    }
+                }
             }
         }
-        collectMetrics(registry.getValue().getCounters(), counter -> counter.getCount(), collector);
-        collectMetrics(registry.getValue().getConcurrentGauges(), gauge -> gauge.getCount(), collector);
-        collectMetrics(registry.getValue().getHistograms(), histogram -> histogram.getCount(), collector);
-        collectMetrics(registry.getValue().getMeters(), meter -> meter.getCount(), collector);
-        collectMetrics(registry.getValue().getTimers(), timer -> timer.getCount(), collector);
     }
 
-    private static <T extends Metric> void collectMetrics(Map<MetricID, T> metrics, ToLongFunction<T> count, 
-            MonitoringDataCollector collector) {
-        for (Entry<MetricID, T> metric : metrics.entrySet()) {
-            tagCollector(metric.getKey(), collector).collect(toName(metric.getKey()), count.applyAsLong(metric.getValue()));
+    private static void processMetadataToAnnotations(MetricRegistryState state, MonitoringDataCollector collector) {
+        MetricID metricID = state.registeredNotAnnotated.poll();
+        while (metricID != null) {
+            MonitoringDataCollector metricCollector = tagCollector(metricID, collector);
+            Metadata metadata = state.registry.getMetadata(metricID.getName());
+            String suffix = "Count";
+            String property = "Count";
+            boolean isGauge = metadata.getTypeRaw() == MetricType.GAUGE;
+            if (isGauge) {
+                suffix = getMetricUnitSuffix(metadata.getUnit());
+                property = "Value";
+            }
+            // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
+            metricCollector.annotate(toName(metricID, suffix), 0, false, metadataToAnnotations(metadata, property));
+            metricID = state.registeredNotAnnotated.poll();
         }
     }
 
-    private static CharSequence toName(MetricID metric) {
+    private static String getMetricUnitSuffix(Optional<String> unit) {
+        if (!unit.isPresent()) {
+            return "";
+        }
+        String value = unit.get();
+        if (MetricUnits.NONE.equalsIgnoreCase(value) || value.isEmpty()) {
+            return "";
+        }
+        return toFirstLetterUpperCase(value);
+    }
+
+    private static String toFirstLetterUpperCase(String value) {
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
+    }
+
+    private static String[] metadataToAnnotations(Metadata metadata, String property) {
+        return new String[] {
+                "Name", metadata.getName(), //
+                "Type", metadata.getType(), //
+                "Unit", metadata.getUnit().orElse(MetricUnits.NONE), //
+                "DisplayName", metadata.getDisplayName(), //
+                "Description", metadata.getDescription().orElse(""),
+                "Property", property
+        };
+    }
+
+    private static String toName(MetricID metric, String suffix) {
         String name = metric.getName();
-        return name.indexOf(' ') < 0 ? name : name.replace(' ', '.'); // trying to avoid replace
+        if (name.indexOf(' ') >= 0) { // trying to avoid replace
+            name = name.replace(' ', '_');
+        } else {
+            int dotIndex = name.indexOf('.');
+            if (dotIndex > 0) {
+                name = name.substring(dotIndex + 1);
+            }
+            if (name.indexOf('.') > 0) {
+                String[] words = name.split("\\.");
+                name = "";
+                for (String word : words) {
+                    name += toFirstLetterUpperCase(word);
+                }
+            }
+        }
+        name = toFirstLetterUpperCase(name);
+        return name.endsWith(suffix) || suffix.isEmpty() ? name : name + suffix;
     }
 
     private static MonitoringDataCollector tagCollector(MetricID metric, MonitoringDataCollector collector) {
         Map<String, String> tags = metric.getTags();
         if (tags.isEmpty()) {
+            String name = metric.getName();
+            int dotIndex = name.indexOf('.');
+            if (dotIndex > 0 ) {
+                return collector.group(name.substring(0, dotIndex));
+            }
             return collector;
         }
         StringBuilder tag = new StringBuilder();
@@ -193,9 +289,9 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 tag.append('_');
             }
             if (!"name".equals(e.getKey())) {
-                tag.append(e.getKey().replace(' ', '.'));
+                tag.append(e.getKey().replace(' ', '_'));
             }
-            tag.append(e.getValue().replace(' ', '.'));
+            tag.append(e.getValue().replace(' ', '_'));
         }
         return collector.group(tag);
     }
@@ -264,10 +360,10 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         }
     }
 
-    private MBeanMetadataConfig getConfig() {   
-        InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
+    private MBeanMetadataConfig getConfig() {
+        InputStream defaultConfig = MetricsService.class.getResourceAsStream("/metrics.xml");
         MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
-          
+
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
@@ -275,7 +371,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 MBeanMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MBeanMetadataConfig.class);
                 config.addBaseMetadata(extraConfig.getBaseMetadata());
                 config.addVendorMetadata(extraConfig.getVendorMetadata());
-                
+
             } catch (FileNotFoundException ex) {
                 //ignore
             }
@@ -309,89 +405,67 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return Boolean.parseBoolean(metricsServiceConfiguration.getSecurityEnabled());
     }
 
-    public <T extends Metric> T getApplicationMetric(MetricID metricID, Class<T> type) throws NoSuchRegistryException {
-        return getRegistryInternal(getApplicationName()).getMetric(metricID, type);
-    }
-
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
-        return getRegistry(registryName).getMetrics();
-    }
-
-    public Map<String, Metadata> getMetadataAsMap(String registryName) throws NoSuchRegistryException {
-        return getRegistry(registryName).getMetadata();
+    public <T extends Metric> T getApplicationMetric(MetricID metricID, Class<T> type) {
+        return getOrAddRegistryInternal(getApplicationName()).getMetric(metricID, type);
     }
 
     public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException {
         return getRegistryInternal(registryName).getMetricsIDs(metricName);
     }
 
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException {
-        return getRegistryInternal(registryName).getMetrics(metricName);
-    }
-
-    public Map<String, Metadata> getMetadataAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
-        Metadata metadata = getRegistryInternal(registryName).getMetadata(metricName);
-        if (metadata != null) {
-            return Collections.singletonMap(metricName, metadata);
-        }
-        throw new NoSuchMetricException(metricName);
-    }
-
     /**
      * Returns the Metrics registry based on respective registry name
-     * 
+     *
      * @param registryName
-     * @return 
-     * @throws fish.payara.microprofile.metrics.exception.NoSuchRegistryException 
-     */ 
+     * @return
+     * @throws fish.payara.microprofile.metrics.exception.NoSuchRegistryException
+     */
     public MetricRegistry getRegistry(String registryName) throws NoSuchRegistryException {
         return getRegistryInternal(registryName);
     }
 
     private MetricRegistryImpl getRegistryInternal(String registryName) throws NoSuchRegistryException {
-        MetricRegistryImpl registry = REGISTRIES.get(registryName.toLowerCase());
-        if (registry == null) {
+        MetricRegistryState state = registriesByName.get(registryName.toLowerCase());
+        if (state == null) {
             throw new NoSuchRegistryException(registryName);
         }
-        return registry;
+        return state.registry;
     }
 
-    public Set<String> getApplicationRegistryNames() {
-        Set<String> applicationRegistries = new HashSet<>(REGISTRIES.keySet());
-        applicationRegistries.remove(BASE.getName());
-        applicationRegistries.remove(VENDOR.getName());
-        return applicationRegistries;
-    }
-    
     public Set<String> getAllRegistryNames() {
-        return REGISTRIES.keySet();
+        return registriesByName.keySet();
     }
-        
+
     /**
-     * Returns the Metrics registry based on respective registry name, 
+     * Returns the Metrics registry based on respective registry name,
      * if not available then add the new MetricRegistry instance
-     * 
+     *
      * @param registryName
-     * @return 
-     */    
+     * @return
+     */
     public MetricRegistry getOrAddRegistry(String registryName) {
-        return REGISTRIES.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryImpl());
+        return getOrAddRegistryInternal(registryName);
     }
-    
+
+    private MetricRegistryImpl getOrAddRegistryInternal(String registryName) {
+        return registriesByName.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryState()).registry;
+    }
+
     public MetricRegistry getApplicationRegistry() {
         return getOrAddRegistry(getApplicationName());
     }
 
     /**
      * Remove the Metrics registry
-     * 
+     *
      * @param registryName
-     * @return 
+     * @return
      */
     public MetricRegistry removeRegistry(String registryName) {
-        return REGISTRIES.remove(registryName.toLowerCase());
+        MetricRegistryState state = registriesByName.remove(registryName.toLowerCase());
+        return state == null ? null : state.registry;
     }
-    
+
     /**
      * Adds an application to the enabled map
      *
@@ -418,15 +492,16 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     public String getApplicationName() {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
-        if (invocationManager.getCurrentInvocation() == null) {
+        ComponentInvocation current = invocationManager.getCurrentInvocation();
+        if (current == null) {
             return invocationManager.peekAppEnvironment().getName();
         }
-        String appName = invocationManager.getCurrentInvocation().getAppName();
+        String appName = current.getAppName();
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getModuleName();
+            appName = current.getModuleName();
         }
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getComponentId();
+            appName = current.getComponentId();
         }
         return appName;
     }

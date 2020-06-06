@@ -39,14 +39,9 @@
  */
 package org.glassfish.cluster.ssh.util;
 
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
-import static com.sun.enterprise.util.StringUtils.ok;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.glassfish.internal.api.RelativePathResolver;
 
 /**
@@ -60,11 +55,9 @@ public final class DcomUtils {
     }
 
     public static String resolvePassword(String raw) {
-
         try {
             return RelativePathResolver.getRealPasswordFromAlias(raw);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return raw;
         }
     }

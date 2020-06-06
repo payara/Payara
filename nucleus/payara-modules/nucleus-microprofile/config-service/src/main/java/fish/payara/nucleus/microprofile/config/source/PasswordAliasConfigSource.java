@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,20 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -53,7 +63,7 @@ import org.glassfish.internal.api.Globals;
 public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
-    
+    private static final String ALIAS_TOKEN = "ALIAS";
     
     public PasswordAliasConfigSource() {
         store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
@@ -70,7 +80,7 @@ public class PasswordAliasConfigSource extends PayaraConfigSource implements Con
         Map<String,String> properties = new HashMap<>();
         if (store != null) {
             Iterator<String> keys = store.keys();
-            while(keys.hasNext()){
+            while (keys.hasNext()){
                 String key = keys.next();
                 properties.put(key, new String(store.get(key)));
             }
@@ -80,10 +90,30 @@ public class PasswordAliasConfigSource extends PayaraConfigSource implements Con
 
     @Override
     public String getValue(String name) {
-        String value = null;
-        if (store != null && name != null && store.containsKey(name)) {
-            value = new String(store.get(name));
+        if (name == null || store == null) {
+            return null;
         }
+
+        String value = null;
+
+        // Attempt to match literally against password store
+        if (store.containsKey(name)) {
+            value = new String(store.get(name));
+        } else {
+            // Check if the property being asked for is in the format ${ALIAS=xxx} and get the password associated with the alias if so
+            if (TranslatedConfigView.getAlias(name, ALIAS_TOKEN) != null) {
+                try {
+                    value = TranslatedConfigView.getRealPasswordFromAlias(name);
+                } catch (IllegalArgumentException iae) {
+                    Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINEST, iae.getMessage());
+                } catch (IOException | CertificateException | NoSuchAlgorithmException |
+                        UnrecoverableKeyException | KeyStoreException exception) {
+                    Logger.getLogger(PasswordAliasConfigSource.class.getName()).log(Level.FINE,
+                            "Exception caught reading from Password Alias store", exception);
+                }
+            }
+        }
+
         return value;
     }
 

@@ -79,24 +79,24 @@ import com.sun.enterprise.util.cluster.RemoteType;
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean = Nodes.class,
-        opType = POST, 
-        path = "create-node-ssh", 
+        opType = POST,
+        path = "create-node-ssh",
         description = "Create Node SSH")
 })
 public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
-    
+
     @Param(name = "sshport", optional = true, defaultValue = NODE_DEFAULT_SSH_PORT)
     private String sshport;
-    
+
     @Param(name = "sshuser", optional = true, defaultValue = NODE_DEFAULT_REMOTE_USER)
     private String sshuser;
-    
+
     @Param(name = "sshpassword", optional = true, password = true)
     private String sshpassword;
-    
+
     @Param(name = "sshkeyfile", optional = true)
     private String sshkeyfile;
-    
+
     @Param(name = "sshkeypassphrase", optional = true, password = true)
     private String sshkeypassphrase;
 
@@ -170,20 +170,20 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
 
     /**
      * Get list of password file entries
-     * 
+     *
      * @return List
      */
     @Override
     protected List<String> getPasswords() {
-        List<String> passwords = new ArrayList<String>();
-        
+        List<String> passwords = new ArrayList<>();
+
         NodeUtils nUtils = new NodeUtils(serviceLocator, logger);
         passwords.add("AS_ADMIN_SSHPASSWORD=" + nUtils.sshL.expandPasswordAlias(remotePassword));
 
         if (sshkeypassphrase != null) {
             passwords.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nUtils.sshL.expandPasswordAlias(sshkeypassphrase));
         }
-        
+
         return passwords;
     }
 

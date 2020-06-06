@@ -179,7 +179,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueInterruptQueueing_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter);
     }
 
@@ -217,7 +217,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueInterruptExecuting_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter);
     }
 
@@ -249,7 +249,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueCompleteWithException_Method(Future<Void> waiter) throws Exception {
         if (waiter == this.commonWaiter)
             return bodyWaitThenReturnSuccess(waiter);
         return bodyWaitThenReturn(waiter, () -> {
@@ -287,13 +287,57 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
-    public CompletionStage<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws Exception {
+    public Future<String> bulkheadWithQueueThrowsException_Method(Future<Void> waiter) throws Exception {
         if (waiter == this.commonWaiter) {
             return bodyWaitThenReturnSuccess(waiter);
         }
         return bodyWaitThenReturn(waiter, () -> {
             throw SIMULATED_METHOD_ERROR;
         });
+    }
+
+    @Test
+    public void bulkheadWithoutQueueWithAsyncCompletionStageExitsOnCompletion() {
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        waitUntilPermitsAquired(2, 0);
+        assertFurtherThreadThrowsBulkheadException();
+        assertEquals(2, threadsEntered.size());
+        assertEquals(2, threadsExited.size());
+        waitSome(50);
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 0)
+    public CompletionStage<String> bulkheadWithoutQueueWithAsyncCompletionStageExitsOnCompletion_Method(
+            Future<Void> waiter) throws Exception {
+        return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
+    }
+
+    @Test
+    public void bulkheadWithQueueWithAsyncCompletionStageExitsOnCompletion() {
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+        waitUntilPermitsAquired(2, 2);
+        assertFurtherThreadThrowsBulkheadException();
+        assertEquals(2, threadsEntered.size());
+        assertEquals(2, threadsExited.size());
+        waitSome(50);
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        assertEquals(4, threadsEntered.size());
+        assertEquals(4, threadsExited.size());
+    }
+
+    @Asynchronous
+    @Bulkhead(value = 2, waitingTaskQueue = 2)
+    public CompletionStage<String> bulkheadWithQueueWithAsyncCompletionStageExitsOnCompletion_Method(
+            Future<Void> waiter) throws Exception {
+        return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
     }
 
     private void callAndWait(int expectedMaxConcurrentExecutions) {

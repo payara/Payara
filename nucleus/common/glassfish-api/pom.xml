@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>  
     
@@ -105,7 +105,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <optional>true</optional>
-      </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
 

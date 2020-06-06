@@ -51,7 +51,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 /**
  * Configuration for the monitoring console core.
  * This is first of all the data and watch collection and evaluation.
- * 
+ *
  * @author Jan Bernitt
  * @since 5.201
  */
@@ -61,7 +61,7 @@ public interface MonitoringConsoleConfiguration extends DomainExtension {
     /**
      * Note that this is not reflecting whether or not the monitoring data is collected.
      * This is controlled by the general monitoring configuration.
-     * 
+     *
      * @return True, if monitoring console web-app is deployed, else false.
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
@@ -85,5 +85,17 @@ public interface MonitoringConsoleConfiguration extends DomainExtension {
      */
     @Element
     List<String> getCustomWatchValues();
+
+    /**
+     * @return Names of MC (client) pages
+     */
+    @Element
+    List<String> getPageNames();
+
+    /**
+     * @return JSON values of the MC (client) pages (index is same in {@link #getPageNames()})
+     */
+    @Element
+    List<String> getPageValues();
 
 }

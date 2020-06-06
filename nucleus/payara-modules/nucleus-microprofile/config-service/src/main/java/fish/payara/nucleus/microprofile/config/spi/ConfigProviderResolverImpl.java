@@ -39,9 +39,10 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.getTypeForConverter;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +63,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
+import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -113,11 +117,14 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
 @RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
+    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
     private static final String CUSTOM_CONVERTERS_KEY = "MICROPROFILE_CUSTOM_CONVERTERS";
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
+    private final static String APP_EXPRESSION_METADATA_KEY = "payara.microprofile.config.expression";
 
     @Inject
     private InvocationManager invocationManager;
@@ -165,6 +172,17 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             configuration = context.getConfigBean().getConfig().getExtensionByType(MicroprofileConfigConfiguration.class);
         }
         return configuration;
+    }
+
+    int getCacheDurationSeconds() {
+        if (serverLevelConfig != null) {
+            java.util.Optional<Integer> cacheDuration = serverLevelConfig.getOptionalValue(MP_CONFIG_CACHE_DURATION,
+                    Integer.class);
+            if (cacheDuration.isPresent()) {
+                return cacheDuration.get();
+            }
+        }
+        return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
     }
 
     @Override
@@ -232,10 +250,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
                 converters.putAll(getDefaultConverters());
-                serverLevelConfig = new PayaraConfig(sources, converters);
+                serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
             }
         } else { // look for an application specific one
@@ -244,12 +262,12 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters);
+                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -272,7 +290,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         if (info != null) {
             result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
             if (result == null) {
-                // rebuild it form scratch
+                // rebuild it from scratch
                 result = getConfig(info);
             }
         }
@@ -297,16 +315,20 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
             for (Properties props : getDeployedApplicationProperties(appName)) {
-                sources.add(new PropertiesConfigSource(props, appName));
+                sources.add(new PropertiesConfigSource(props));
+            }
+            for (Properties props : getDeployedApplicationPayaraExpressionConfigProperties(appName)) {
+                sources.add(new PayaraExpressionConfigSource(props));
             }
         }
         return sources;
     }
+
     List<ConfigSource> getDefaultSources() {
         return getDefaultSources(null);
     }
 
-    List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
+    private List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
         String appName = null;
         String moduleName = null;
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
@@ -340,7 +362,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = Collections.EMPTY_LIST;
+        List<Properties> result = Collections.emptyList();
         if (info != null) {
             List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_METADATA_KEY, LinkedList.class);
             if (transientAppMetaData != null) {
@@ -362,6 +384,18 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                         break;
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+    public List<Properties> getDeployedApplicationPayaraExpressionConfigProperties(String applicationName) {
+        ApplicationInfo info = applicationRegistry.get(applicationName);
+        List<Properties> result = Collections.emptyList();
+        if (info != null) {
+            List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, LinkedList.class);
+            if (transientAppMetaData != null) {
+                result = transientAppMetaData;
             }
         }
         return result;
@@ -391,8 +425,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    Map<Type,Converter> getDefaultConverters() {
-        Map<Type,Converter> result = new HashMap<>();
+    Map<Class<?>,Converter<?>> getDefaultConverters() {
+        Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
@@ -402,18 +436,19 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(Class.class, new ClassConverter());
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
+        result.put(Short.class, new ShortConverter());
         return result;
 
     }
 
-    Map<Type, Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
-        Map<Type, Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
+    Map<Class<?>, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Class<?>, Converter<?>> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
             converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
-            for (Converter converter : serviceLoader) {
-                Type type = PayaraConfigBuilder.getTypeForConverter(converter);
+            for (Converter<?> converter : serviceLoader) {
+                Class<?> type = getTypeForConverter(converter);
                 if (type != null) {
                     converters.put(type,converter);
                 }
@@ -423,7 +458,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return converters;
     }
 
-    private void initialiseApplicationConfig(ApplicationInfo info) {
+    private static void initialiseApplicationConfig(ApplicationInfo info) {
         LinkedList<Properties> appConfigProperties = new LinkedList<>();
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
@@ -433,9 +468,18 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+        LinkedList<Properties> appPayaraExpressionConfigProperties = new LinkedList<>();
+        info.addTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, appPayaraExpressionConfigProperties);
+        try {
+            // Read application defined expression properties and add as transient metadata
+            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/payara-expression-config.properties"));
+            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/payara-expression-config.properties"));
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
-    private List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+    private static List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
         List<Properties> props = new ArrayList<>();
         // Read application defined properties and add as transient metadata
         Enumeration<URL> resources = appClassLoader.getResources(fileName);

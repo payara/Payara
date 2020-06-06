@@ -41,6 +41,7 @@ package fish.payara.security.openid.api;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.Set;
 import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,7 +66,7 @@ public interface OpenIdContext extends Serializable {
      *
      * @return
      */
-    String getCallerGroups();
+    Set<String> getCallerGroups();
 
     /**
      * Subject Identifier. A locally unique and never reassigned identifier

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.cluster</groupId>
         <artifactId>cluster</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>    
     <artifactId>cluster-admin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -105,6 +105,11 @@
         <dependency>
             <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>trilead-ssh2-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

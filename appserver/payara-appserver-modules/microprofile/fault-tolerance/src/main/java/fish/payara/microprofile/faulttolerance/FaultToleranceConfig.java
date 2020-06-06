@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -188,6 +188,10 @@ public interface FaultToleranceConfig {
         return annotation.failOn();
     }
 
+    default Class<? extends Throwable>[] skipOn(CircuitBreaker annotation) {
+        return annotation.skipOn();
+    }
+
     default long delay(CircuitBreaker annotation) {
         return annotation.delay();
     }
@@ -245,5 +249,13 @@ public interface FaultToleranceConfig {
 
     default String fallbackMethod(Fallback annotation) {
         return annotation.fallbackMethod();
+    }
+
+    default Class<? extends Throwable>[] applyOn(Fallback annotation) {
+        return annotation.applyOn();
+    }
+
+    default Class<? extends Throwable>[] skipOn(Fallback annotation) {
+        return annotation.skipOn();
     }
 }

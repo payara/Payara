@@ -72,12 +72,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.control.RequestContextController;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -90,7 +93,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * Base Service for MicroProfile Fault Tolerance.
- * 
+ *
  * @author Andrew Pielage
  * @author Jan Bernitt (2.0)
  */
@@ -159,7 +162,7 @@ public class FaultToleranceServiceImpl
         int cleaned = 0;
         for (String key : new HashSet<>(methodByTargetObjectAndName.keySet())) {
             try {
-                Object newValue = methodByTargetObjectAndName.compute(key, 
+                Object newValue = methodByTargetObjectAndName.compute(key,
                         (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
                 if (newValue == null) {
                     cleaned++;
@@ -179,7 +182,7 @@ public class FaultToleranceServiceImpl
     }
 
     private int getMaxAsyncPoolSize() {
-        return config == null ? 1000 : parseInt(config.getAsyncMaxPoolSize());
+        return config == null ? 2000 : parseInt(config.getAsyncMaxPoolSize());
     }
 
     private int getAsyncPoolKeepAliveInSeconds() {
@@ -196,6 +199,13 @@ public class FaultToleranceServiceImpl
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info.getName());
             FaultTolerancePolicy.clean();
+        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            if (asyncExecutorService != null) {
+                asyncExecutorService.shutdownNow();
+            }
+            if (delayExecutorService != null) {
+                delayExecutorService.shutdownNow();
+            }
         }
     }
 
@@ -239,7 +249,7 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        return configByApplication.computeIfAbsent(getApplicationContext(context), 
+        return configByApplication.computeIfAbsent(getApplicationContext(context),
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
@@ -269,7 +279,7 @@ public class FaultToleranceServiceImpl
     private String getApplicationContext(InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         String appName = currentInvocation.getAppName();
-        return appName != null ? appName : "common"; 
+        return appName != null ? appName : "common";
     }
 
     @Override
@@ -287,7 +297,7 @@ public class FaultToleranceServiceImpl
         }
     }
 
-    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
+    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
             InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         span.addSpanTag("App Name", currentInvocation.getAppName());
@@ -298,21 +308,24 @@ public class FaultToleranceServiceImpl
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+            RequestContextController requestContextController) {
         FaultToleranceMethodContextImpl methodContext = methodByTargetObjectAndName //
-                .computeIfAbsent(getTargetMethodId(context), key -> createMethodContext(key, context));
+                .computeIfAbsent(getTargetMethodId(context),
+                        key -> createMethodContext(key, context, requestContextController));
         return methodContext.in(context, policy);
     }
 
-    private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context) {
+    private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
+            RequestContextController requestContextController) {
         MetricRegistry metricRegistry = getApplicationMetricRegistry();
-        FaultToleranceMetrics metrics = metricRegistry == null 
+        FaultToleranceMetrics metrics = metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
         asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
         asyncExecutorService.setKeepAliveTime(getAsyncPoolKeepAliveInSeconds(), TimeUnit.SECONDS);
         logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
-        return new FaultToleranceMethodContextImpl(this, metrics, asyncExecutorService,
+        return new FaultToleranceMethodContextImpl(requestContextController, this, metrics, asyncExecutorService,
                 delayExecutorService, context.getTarget());
     }
 

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -137,7 +137,7 @@ public class JdbcConnectionPoolValidatorTest {
         try {
             this.validator.isValid(pool, null);
             fail("Expected exception, because we don't have any microprofile impl here.");
-        } catch (final ExceptionInInitializerError e) {
+        } catch (final Exception e) {
             assertEquals("root cause.message", "No ConfigProviderResolver implementation found!",
                 ExceptionUtil.getRootCause(e).getMessage());
         }

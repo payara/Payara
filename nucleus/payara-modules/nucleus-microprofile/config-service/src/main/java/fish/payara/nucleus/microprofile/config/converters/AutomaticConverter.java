@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,16 +46,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
+ * Automatic {@link Converter}s are created "on the fly" in case no {@link Converter} as found but the target type has a
+ * suitable factory {@link Method} or {@link Constructor}.
  *
  * @author steve
  */
-public class AutomaticConverter implements Converter<Object> {
+public class AutomaticConverter {
 
     /**
      * Return implicit converter for a class following section "Automatic Converters" of the spec, if class has
@@ -65,60 +66,65 @@ public class AutomaticConverter implements Converter<Object> {
      * @param <T> target type of property
      * @return Optional of converter using a method found in the class, empty if none were found
      */
-    public static <T> Optional<Converter<T>> forType(Type generalType) {
-        if (!(generalType instanceof Class)) {
-            return Optional.empty();
-        }
-        Class<T> type = (Class<T>)generalType;
+    public static <T> Optional<Converter<T>> forType(Class<T> type) {
         return Stream.<Supplier<Converter<T>>>of(
                 () -> forMethod(type, "of", String.class),
                 () -> forMethod(type, "valueOf", String.class),
-                () -> forConstructor(type, String.class),
-                () -> forMethod(type, "parse", CharSequence.class))
+                () -> forMethod(type, "parse", CharSequence.class),
+                () -> forConstructor(type, String.class))
                 .map(Supplier::get)
                 .filter(converter -> converter != null)
                 .findFirst();
     }
 
-    private Method conversionMethod;
-    private Constructor constructor;
-    
-    private AutomaticConverter(Method method) {
-        conversionMethod = method;
-    }
-    
-    private AutomaticConverter(Constructor method) {
-        constructor = method;
-    }
+    private static final class MethodConverter<T> implements Converter<T> {
 
-    @Override
-    public Object convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        private final Method conversionMethod;
 
-        if (conversionMethod != null) {
+        MethodConverter(Method conversionMethod) {
+            this.conversionMethod = conversionMethod;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T convert(String value) {
+            if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
             try {
-                return conversionMethod.invoke(null, value);
+                return (T) conversionMethod.invoke(null, value);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
             }
-        } else if (constructor != null) {
+        }
+    }
+
+    private static final class ConstructorConverter<T> implements Converter<T> {
+
+        private final Constructor<T> constructor;
+
+        ConstructorConverter(Constructor<T> constructor) {
+            this.constructor = constructor;
+        }
+
+        @Override
+        public T convert(String value) {
+            if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
             try {
                 return constructor.newInstance(value);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
             }
         }
-        throw new IllegalStateException("CommonSenseConverter created without constructor or method to call");
     }
 
     private static <T> Converter<T> forMethod(Class<T> type, String method, Class<?>... argumentTypes) {
         try {
             Method factoryMethod = type.getMethod(method, argumentTypes);
-            if (Modifier.isStatic(factoryMethod.getModifiers()) && Modifier.isPublic(factoryMethod.getModifiers())) {
-                return (Converter<T>) new AutomaticConverter(factoryMethod);
-            } else {
-                return null;
+            if (Modifier.isStatic(factoryMethod.getModifiers())
+                    && Modifier.isPublic(factoryMethod.getModifiers())
+                    && factoryMethod.getReturnType() == type) {
+                return new MethodConverter<>(factoryMethod);
             }
+            return null;
         } catch (NoSuchMethodException | SecurityException e) {
             return null;
         }
@@ -128,10 +134,9 @@ public class AutomaticConverter implements Converter<Object> {
         try {
             Constructor<T> constructor = type.getConstructor(argumentTypes);
             if (Modifier.isPublic(constructor.getModifiers())) {
-                return (Converter<T>) new AutomaticConverter(constructor);
-            } else {
-                return null;
+                return new ConstructorConverter<>(constructor);
             }
+            return null;
         } catch (NoSuchMethodException | SecurityException e) {
             return null;
         }

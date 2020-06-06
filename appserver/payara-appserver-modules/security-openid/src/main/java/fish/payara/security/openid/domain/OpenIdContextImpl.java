@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.Optional;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import java.util.Set;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -73,7 +74,7 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
 public class OpenIdContextImpl implements OpenIdContext {
 
     private String callerName;
-    private String callerGroups;
+    private Set<String> callerGroups;
     private String tokenType;
     private AccessToken accessToken;
     private IdentityToken identityToken;
@@ -97,11 +98,11 @@ public class OpenIdContextImpl implements OpenIdContext {
     }
 
     @Override
-    public String getCallerGroups() {
+    public Set<String> getCallerGroups() {
         return callerGroups;
     }
 
-    public void setCallerGroups(String callerGroups) {
+    public void setCallerGroups(Set<String> callerGroups) {
         this.callerGroups = callerGroups;
     }
 

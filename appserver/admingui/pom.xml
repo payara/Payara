@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
@@ -108,7 +108,6 @@
         <module>cluster</module>
         <module>reference-manual</module>
         <module>payara-theme</module>
-        <module>payara-enterprise-theme</module>
         <module>web</module>
         <module>gf-admingui-connector</module>
         <module>jts</module>
@@ -173,7 +172,7 @@
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <woodstock-dojo-ajax-nodemo.version>0.4.4</woodstock-dojo-ajax-nodemo.version>
         <woodstock-jsf.version>4.0.2.10.payara-p16</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p17</woodstock-jsf-suntheme.version>
+        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p18</woodstock-jsf-suntheme.version>
         <woodstock-json.version>1.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>
@@ -231,13 +230,6 @@
                 <artifactId>webui-jsf-suntheme</artifactId>
                 <version>${woodstock-jsf-suntheme.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf-suntheme</artifactId>
-                <version>${woodstock-jsf-suntheme.version}</version>
-                <scope>provided</scope>
-                <classifier>enterprise</classifier>
             </dependency>
             <dependency>
                 <groupId>com.sun.woodstock.dependlibs</groupId>

@@ -42,6 +42,7 @@ package fish.payara.security.oauth2;
 import fish.payara.security.oauth2.api.OAuth2AccessToken;
 import java.time.Instant;
 import java.util.Optional;
+import javax.enterprise.context.SessionScoped;
 
 /**
  * Class to hold state of OAuth2 token as returned by the provider
@@ -49,7 +50,7 @@ import java.util.Optional;
  * @author jonathan
  * @since 4.1.2.172
  */
-//@SessionScoped
+@SessionScoped
 public class OAuth2StateHolder implements OAuth2AccessToken {
 
     /**

@@ -8,6 +8,7 @@ SYNOPSIS
            [--nodehost node-host]
            [--installdir as-install-parent] [--nodedir node-dir]
            [--sshport ssh-port] [--sshuser ssh-user]
+           [--sshauthtype {KEY|PASSWORD}]
            [--sshkeyfile ssh-keyfile]
            [--force={false|true}]
            node-name
@@ -90,6 +91,14 @@ OPTIONS
 
            If the --nodehost option is set to localhost, the --sshuser option
            is ignored.
+
+       --sshauthtype
+           This parameter forces password or key authentication, but usually
+           is not required, because authentication type will be selected
+           automatically based on provided --sshkeyfile or --passwordfile
+           with AS_ADMIN_SSHPASSWORD inside.
+           But if it is used, the command will use only parameters
+           meaningful for the selected authentication type.
 
        --sshkeyfile
            The absolute path to the SSH private key file for user that the

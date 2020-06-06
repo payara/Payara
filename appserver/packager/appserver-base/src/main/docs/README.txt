@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 5.201!
+Thank you for downloading Payara Server 5.2020.2!
 
 Here are a few short steps to get you started...
 
@@ -17,7 +17,7 @@ TLS 1.3 is supported on JDK 8 with Azul Zulu 1.8.222+ only and all JDK 11 versio
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.201.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.2020.2.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -50,13 +50,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 5.201 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-201.html
+Make sure to also check the Payara Server 5.2020.2 Release Notes as they contain important information: https://docs.payara.fish/docs/5.2020.2/release-notes/release-notes-2020.2.html
 
 
 5. Documentation
 ================
 
-Payara Server 5.201 Release Notes: https://docs.payara.fish/release-notes/release-notes-201.html
+Payara Server 5.2020.2 Release Notes: https://docs.payara.fish/docs/5.2020.2/release-notes/release-notes-2020.2.html
 
 Payara Server Documentation: https://docs.payara.fish/
 
@@ -65,17 +65,22 @@ Payara Server GitHub Project: https://github.com/payara/Payara
 Payara Community: http://www.payara.fish/community
 
 
-6. Need support?
+6. Are You Using Payara Server for Mission Critical Production Environments?
 ============
+Payara Server Enterprise is optimised for mission critical production systems in any environment: on premise, in the cloud, or hybrid. Payara Server is aggressively compatible with the ecosystem components you're already using, provides broad integration with cloud vendors, and support for Docker and Kubernetes. Development
+in collaboration with an industry-leading DevOps team and the global Payara community ensures Payara Server Enterprise is the best option for production Jakarta EE applications today and for the future.
 
-Migrating to Payara Server or Payara Micro? Our Migration & Project Support is offered through a flat fee per year regardless of the size of your environment and supports an unlimited number of units in development.
+Payara Server Enterprise subscriptions include:
 
-Need help with the Payara Platform in production? Payara Enterprise offers software, security, stability, and support directly from Engineers.
+* Choice of support: Migration & Project Support, 24x7, or 10x5 plans
+* Monthly releases, bug fixes, and patches
+* 10-year software lifecycle
+* Access to add-on Payara Accelerator consultancy services
 
-Learn more about Payara support options: https://www.payara.fish/support/
+Learn more about Payara Server Enterprise: https://www.payara.fish/support/
 
 
 7. Follow us
 ============
 
-Make sure to follow @Payara_Fish on Twitter and read The Payara Blog (http://blog.payara.fish/) to get the latest news on Payara.
+Make sure to follow @Payara_Fish on Twitter and read The Payara Tech Blog (http://blog.payara.fish/) to get the latest news on Payara.

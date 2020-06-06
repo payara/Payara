@@ -134,7 +134,7 @@ abstract class AbstractBulkheadTest {
     static class InOut {
         static final Object IN = new Object();
 
-        Object result;
+        volatile Object result;
         final Thread t;
         final int inCount;
 
@@ -165,7 +165,7 @@ abstract class AbstractBulkheadTest {
     private final Map<Thread, Exception> executionErrorsByThread = new ConcurrentHashMap<>();
 
     /*
-     * Helpers 
+     * Helpers
      */
 
     Thread callBulkheadWithNewThreadAndWaitFor(CompletableFuture<Void> waiter) {
@@ -200,10 +200,8 @@ abstract class AbstractBulkheadTest {
                 value = ((CompletionStage<?>) res).toCompletableFuture().get();
             } else if (res instanceof Future<?>) {
                 value = ((Future<?>) res).get();
-            } 
-            if (value != null) {
-                executionResultsByThread.put(currentThread, value.toString());
             }
+            executionResultsByThread.put(currentThread, value == null ? null : value.toString());
             setThreadResult(currentThread, value);
         } catch (Exception e) {
             executionErrorsByThread.put(currentThread, e);
@@ -247,16 +245,30 @@ abstract class AbstractBulkheadTest {
     }
 
     void assertExecutionResult(String expected, Thread... forThreads) {
+        waitUntilThreadResultIsPresent(forThreads);
         for (Thread t : forThreads) {
             String actual = executionResultsByThread.get(t);
             if (!expected.equals(actual)) {
-                assertEquals("Unexpected result for thread " + t.getName() + ", processing was " + threadsInOut,
+                assertEquals("Unexpected result for thread " + t.getName() + ", processing was " + threadsInOut
+                                + ", thead exception " + executionErrorsByThread.get(t),
                         expected, actual);
             }
         }
     }
 
+    private void waitUntilThreadResultIsPresent(Thread... forThreads) {
+        waitSomeUntil(() -> {
+            for (Thread t : forThreads) {
+                if (!executionResultsByThread.containsKey(t) && !executionErrorsByThread.containsKey(t)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
     void assertExecutionError(Exception expected, Thread... forThreads) {
+        waitUntilThreadResultIsPresent(forThreads);
         for (Thread t : forThreads) {
             assertEqualExceptions(expected, executionErrorsByThread.get(t));
         }
@@ -333,7 +345,7 @@ abstract class AbstractBulkheadTest {
         return policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
-    CompletionStage<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
+    CompletableFuture<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturn(waiter, () -> CompletableFuture.completedFuture("Success"));
     }
 
@@ -355,6 +367,27 @@ abstract class AbstractBulkheadTest {
         } finally {
             threadsExited.add(currentThread);
             threadsInOut.add(new InOut(currentThread, concurrentExecutionsCount.getAndDecrement(), null));
+        }
+    }
+
+    CompletionStage<String> bodyReturnThenWaitOnCompletionWithSuccess(Future<Void> waiter) {
+        return bodyReturnThenWaitOnCompletion(waiter, () -> "Success");
+    }
+
+    <T> CompletionStage<T> bodyReturnThenWaitOnCompletion(Future<Void> waiter, Supplier<T> result) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            threadsEntered.add(currentThread);
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    waiter.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw null;
+                }
+                return result.get();
+            });
+        } finally {
+            threadsExited.add(currentThread);
         }
     }
 
@@ -394,7 +427,7 @@ abstract class AbstractBulkheadTest {
     }
 
     private static void waitUntilAllThreadsDone(List<Thread> threads) {
-        waitSomeUnit(() -> {
+        waitSomeUntil(() -> {
             for (Thread t : threads) {
                 if (t.isAlive())
                     return false;
@@ -404,7 +437,7 @@ abstract class AbstractBulkheadTest {
     }
 
     void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
-        waitSomeUnit(() -> {
+        waitSomeUntil(() -> {
             BlockingQueue<Thread> queue = this.concurrentExecutions.get();
             int actualConcurrentExecutions = queue == null ? 0 : queue.size();
             return concurrentExecutions == actualConcurrentExecutions
@@ -412,7 +445,7 @@ abstract class AbstractBulkheadTest {
         });
     }
 
-    static void waitSomeUnit(BooleanSupplier test) {
+    static void waitSomeUntil(BooleanSupplier test) {
         long delayMs = 4;
         while (!test.getAsBoolean()) {
             waitSome(delayMs);

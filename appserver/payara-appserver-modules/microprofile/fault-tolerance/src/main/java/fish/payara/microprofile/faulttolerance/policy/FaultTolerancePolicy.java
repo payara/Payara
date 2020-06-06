@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -265,9 +266,9 @@ public final class FaultTolerancePolicy implements Serializable {
         try {
             metrics.incrementInvocationsTotal();
             return processAsynchronousStage(ftmContext, metrics);
-        } catch (Exception e) {
+        } catch (Exception | Error ex) {
             metrics.incrementInvocationsFailedTotal();
-            throw e;
+            throw ex;
         }
     }
 
@@ -328,7 +329,10 @@ public final class FaultTolerancePolicy implements Serializable {
         invocation.trace("executeFallbackMethod");
         try {
             return processRetryStage(invocation);
-        } catch (Exception ex) {
+        } catch (Exception | Error ex) {
+            if (!fallback.isFallbackApplied(ex)) {
+                throw ex;
+            }
             invocation.metrics.incrementFallbackCallsTotal();
             if (fallback.isHandlerPresent()) {
                 logger.log(Level.FINE, "Using fallback class: {0}", fallback.value.getName());
@@ -368,9 +372,12 @@ public final class FaultTolerancePolicy implements Serializable {
                     invocation.metrics.incrementRetryCallsSucceededRetriedTotal();
                 }
                 return resultValue;
-            } catch (Exception ex) {
+            } catch (Exception | Error ex) {
                 boolean timedOut = retryTimeoutTime != null && System.currentTimeMillis() >= retryTimeoutTime;
-                if (attemptsLeft <= 0 || !retry.retryOn(ex) || timedOut) {
+                if (!timedOut && !retry.retryOn(ex)) {
+                    throw ex; // counts as "success"
+                }
+                if (timedOut || attemptsLeft <= 0) {
                     logger.log(Level.FINE, "Retry attemp failed. Giving up{0}", timedOut ? " due to time-out." : ".");
                     invocation.metrics.incrementRetryCallsFailedTotal();
                     throw ex;
@@ -394,17 +401,29 @@ public final class FaultTolerancePolicy implements Serializable {
             invocation.timeoutIfConcludedConcurrently();
             return asyncAttempt;
         } catch (ExecutionException ex) { // this ExecutionException is from calling get() above in case completed exceptionally
-            if (ex.getCause() instanceof ExecutionException) { 
+            Throwable cause = ex.getCause();
+            if (cause instanceof ExecutionException) { 
                 // this cause ExecutionException is caused by annotated method returned a Future that completed exceptionally
                 if (asynchronous.isSuccessWhenCompletedExceptionally()) {
                     CompletableFuture<Object> exceptionalResult = new CompletableFuture<>();
-                    exceptionalResult.completeExceptionally(ex.getCause().getCause()); // unwrap
+                    exceptionalResult.completeExceptionally(cause.getCause()); // unwrap
                     return exceptionalResult;
                 }
-                throw (Exception) ex.getCause().getCause(); // for retry handling return plain cause
+                rethrow(cause.getCause()); // for retry handling return plain cause
             }
-            throw (Exception) ex.getCause();
+            rethrow(cause);
+            return null; // not reachable
         }
+    }
+
+    private static void rethrow(Throwable t) throws Exception {
+        if (t instanceof Exception) {
+            throw (Exception)t;
+        }
+        if (t instanceof Error) {
+            throw (Error) t;
+        }
+        throw new ExecutionException(t);
     }
 
     /**
@@ -432,9 +451,9 @@ public final class FaultTolerancePolicy implements Serializable {
             logger.log(Level.FINER, "Proceeding half open CircuitBreaker context");
             try {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
-            } catch (Exception ex) {
+            } catch (Exception | Error ex) {
                 invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
-                if (circuitBreaker.failOn(ex)) {
+                if (circuitBreaker.isFailure(ex)) {
                     logger.log(Level.FINE, "Exception causes CircuitBreaker to transit: half-open => open");
                     openCircuit(invocation, state);
                 }
@@ -447,15 +466,16 @@ public final class FaultTolerancePolicy implements Serializable {
             return resultValue;
         case CLOSED:
             logger.log(Level.FINER, "Proceeding closed CircuitBreaker context");
-            Exception failedOn = null;
+            Throwable failedOn = null;
             try {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
                 state.recordClosedOutcome(true);
-            } catch (Exception ex) {
-                if (circuitBreaker.failOn(ex)) {
+            } catch (Exception | Error ex) {
+                if (circuitBreaker.isFailure(ex)) {
                     state.recordClosedOutcome(false);
                     invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 } else {
+                    state.recordClosedOutcome(true);
                     invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
                 }
                 failedOn = ex;
@@ -465,7 +485,7 @@ public final class FaultTolerancePolicy implements Serializable {
                 openCircuit(invocation, state);
             }
             if (failedOn != null) {
-                throw failedOn;
+                rethrow(failedOn);
             }
             invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
             return resultValue;
@@ -518,7 +538,7 @@ public final class FaultTolerancePolicy implements Serializable {
         } catch (TimeoutException ex) {
             logger.log(Level.FINE, "Execution timed out.");
             throw ex;
-        } catch (Exception ex) {
+        } catch (Exception | Error ex) {
             if (timedOut.get() || System.currentTimeMillis() > timeoutTime) {
                 logger.log(Level.FINE, "Execution timed out.");
                 throw new TimeoutException(ex);
@@ -539,6 +559,7 @@ public final class FaultTolerancePolicy implements Serializable {
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
         final boolean async = isAsynchronous();
+        final boolean exitOnCompletion = async && bulkhead.exitOnCompletion;
         final int runCapacity = bulkhead.value;
         final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
@@ -566,9 +587,10 @@ public final class FaultTolerancePolicy implements Serializable {
                     }
                     logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
                     long waitingSince = System.nanoTime();
+                    final Thread currentThread = Thread.currentThread();
                     try {
                         // can we run now?
-                        running.put(Thread.currentThread());
+                        running.put(currentThread);
                     } finally {
                         if (async) {
                             invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
@@ -579,15 +601,28 @@ public final class FaultTolerancePolicy implements Serializable {
                     try {
                         logger.log(Level.FINE, "Entered bulkhead execution.");
                         // ok, lets run
-                        return proceed(invocation);
+                        Object res = proceed(invocation);
+                        if (!exitOnCompletion) {
+                            return res;
+                        }
+                        return ((CompletionStage<?>) res).whenComplete((value, exception) -> {
+                            invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
+                            // successful or not, we are out...
+                            running.remove(currentThread);
+                            queuingOrRunning.decrementAndGet();
+                        });
                     } finally {
-                        invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
-                        // successful or not, we are out...
-                        running.remove(Thread.currentThread());
+                        if (!exitOnCompletion) {
+                            invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
+                            // successful or not, we are out...
+                            running.remove(currentThread);
+                        }
                     }
                 } finally {
                     // no we are leaving get out of queue area as well
-                    queuingOrRunning.decrementAndGet();
+                    if (!exitOnCompletion) {
+                        queuingOrRunning.decrementAndGet();
+                    }
                 }
             }
         }

@@ -47,16 +47,12 @@
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Distribution</name>
     <packaging>glassfish-distribution</packaging>
     <description>This pom describes how to assemble the Payara Web Distribution</description>
-
-    <properties>
-        <deploy.skip>false</deploy.skip>
-    </properties>
 
     <build>
         <testSourceDirectory>src/test/java</testSourceDirectory>
@@ -97,6 +93,21 @@
                         <id>validate-xml-files</id>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <pomElements>
+                        <dependencies>remove</dependencies>
+                    </pomElements>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

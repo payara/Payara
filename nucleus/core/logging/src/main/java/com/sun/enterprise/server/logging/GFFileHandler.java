@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -60,7 +60,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
@@ -201,6 +200,7 @@ public class GFFileHandler extends StreamHandler implements
         String strLine;
         int odlFormatter = 0;
         int uniformLogFormatter = 0;
+        int jsonLogFormatter = 0;
         int otherFormatter = 0;
         boolean mustRotate = false;
 
@@ -213,6 +213,9 @@ public class GFFileHandler extends StreamHandler implements
                     } else if (LogFormatHelper.isODLFormatLogHeader(strLine)) {
                         // for ODL formatter
                         odlFormatter++;
+                    } else if (LogFormatHelper.isJSONFormatLogHeader(strLine)) {
+                        //for JSON Log format
+                        jsonLogFormatter++;
                     } else {
                         otherFormatter++;  // for other formatter
                     }
@@ -236,6 +239,8 @@ public class GFFileHandler extends StreamHandler implements
             currentFileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
         } else if (uniformLogFormatter > 0) {
             currentFileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
+        } else if (jsonLogFormatter > 0) {
+            currentFileHandlerFormatter = "fish.payara.enterprise.server.logging.JSONLogFormatter";
         }
 
         String propertyValue = manager.getProperty(className + ".logtoFile");

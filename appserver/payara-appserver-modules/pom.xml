@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>payara-appserver-modules</artifactId>
@@ -74,20 +74,10 @@
         <module>opentracing-cdi</module>
         <module>jaxrs-client-tracing</module>
         <module>yubikey-authentication</module>
+        <module>microprofile</module>
+        <module>security-oauth2</module>
+        <module>security-openid</module>
+        <module>healthcheck-checker</module>
     </modules>
-    <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <modules>
-                <module>microprofile</module>
-                <module>security-oauth2</module>
-                <module>security-openid</module>
-                <module>healthcheck-checker</module> <!-- as it depends on microprofile -->
-            </modules>
-        </profile>
-    </profiles>
 </project>
 
