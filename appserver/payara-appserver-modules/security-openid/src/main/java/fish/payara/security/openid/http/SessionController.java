@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,8 @@
 package fish.payara.security.openid.http;
 
 import java.util.Optional;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -49,21 +50,23 @@ import javax.servlet.http.HttpSession;
  */
 public class SessionController implements HttpStorageController {
 
-    private final HttpMessageContext httpContext;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
-    public SessionController(HttpMessageContext httpContext) {
-        this.httpContext = httpContext;
+    public SessionController(HttpServletRequest request, HttpServletResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     @Override
     public void store(String name, String value, Integer maxAge) {
-        HttpSession session = httpContext.getRequest().getSession();
+        HttpSession session = request.getSession();
         session.setAttribute(name, value);
     }
 
     @Override
     public Optional<Object> get(String name) {
-        HttpSession session = httpContext.getRequest().getSession(false);
+        HttpSession session = request.getSession(false);
         if (session != null) {
             return Optional.ofNullable(session.getAttribute(name));
         } else {
@@ -78,7 +81,7 @@ public class SessionController implements HttpStorageController {
 
     @Override
     public void remove(String name) {
-        HttpSession session = httpContext.getRequest().getSession(false);
+        HttpSession session = request.getSession(false);
         if (session != null) {
             session.removeAttribute(name);
         }

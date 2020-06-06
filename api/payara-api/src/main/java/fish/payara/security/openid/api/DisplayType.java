@@ -42,7 +42,7 @@ package fish.payara.security.openid.api;
 import static java.util.Objects.isNull;
 
 /**
- * Display specifies how the Authorization Server displays the authentication 
+ * Display specifies how the Authorization Server displays the authentication
  * and consent user interface pages to the End-User.
  *
  * @author Gaurav Gupta
@@ -50,31 +50,28 @@ import static java.util.Objects.isNull;
 public enum DisplayType {
 
     /**
-     * The Authorization Server should display authentication and consent UI 
-     * consistent with a full User-Agent page view. If the display parameter is 
+     * The Authorization Server should display authentication and consent UI
+     * consistent with a full User-Agent page view. If the display parameter is
      * not specified this is the default display mode.
-     * 
+     *
      */
     PAGE,
-
     /**
-     * The Authorization Server SHOULD display authentication and consent UI 
+     * The Authorization Server should display authentication and consent UI
      * consistent with a popup User-Agent window.
-     * 
+     *
      */
     POPUP,
-
     /**
-     * The Authorization Server SHOULD display authentication and consent UI 
+     * The Authorization Server should display authentication and consent UI
      * consistent with a device that leverages a touch interface.
-     * 
+     *
      */
     TOUCH,
-
     /**
-     * The Authorization Server SHOULD display authentication and consent UI 
+     * The Authorization Server should display authentication and consent UI
      * consistent with a "feature phone" type display.
-     * 
+     *
      */
     WAP;
 

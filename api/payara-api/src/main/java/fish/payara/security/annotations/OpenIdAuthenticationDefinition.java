@@ -337,7 +337,8 @@ public @interface OpenIdAuthenticationDefinition {
 
     /**
      * Optional. Enables or disables the automatically performed refresh of
-     * Access and Identity Token.
+     * Access and Identity Token. If refresh token operation failed then logout
+     * the End-User from RP's application.
      *
      * @return {@code true}, if Access and Identity Token shall be refreshed
      * automatically when they are expired.

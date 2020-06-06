@@ -230,20 +230,18 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
                 LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
             }
 
-            if((logout.isAccessTokenExpiry() && accessTokenExpired)
-                    || (logout.isIdentityTokenExpiry() && identityTokenExpired)) {
-                if (configuration.isTokenAutoRefresh()) {
-                    if (accessTokenExpired) {
-                        LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
-                    }
-                    if (identityTokenExpired) {
-                        LOGGER.fine("Identity Token is expired. Request new Identity Token with Refresh Token.");
-                    }
-                    return this.reAuthenticate(httpContext);
-                } else {
-                    redirectToLogoutScreen(httpContext);
-                    return SEND_FAILURE;
+            if ((accessTokenExpired || identityTokenExpired) && configuration.isTokenAutoRefresh()) {
+                if (accessTokenExpired) {
+                    LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
                 }
+                if (identityTokenExpired) {
+                    LOGGER.fine("Identity Token is expired. Request new Identity Token with Refresh Token.");
+                }
+                return this.reAuthenticate(httpContext);
+            } else if ((logout.isAccessTokenExpiry() && accessTokenExpired)
+                    || (logout.isIdentityTokenExpiry() && identityTokenExpired)) {
+                context.logout(request, response);
+                return SEND_FAILURE;
             } else {
                 return SUCCESS;
             }
@@ -257,7 +255,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
         if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
             // (1) The End-User is not already authenticated
-            return authenticationController.authenticateUser(configuration, httpContext);
+            return authenticationController.authenticateUser(configuration, request, response);
         }
 
         Optional<OpenIdState> receivedState = OpenIdState.from(request.getParameter(STATE));
@@ -265,7 +263,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         if (receivedState.isPresent()
                 && request.getRequestURL().toString().equals(redirectURI)) {
 
-            Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
+            Optional<OpenIdState> expectedState = stateController.get(configuration, request, response);
             if (expectedState.isPresent()) {
                 if (expectedState.equals(receivedState)) {
                     // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
@@ -292,6 +290,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      */
     private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
         HttpServletRequest request = httpContext.getRequest();
+        HttpServletResponse response = httpContext.getResponse();
         String error = request.getParameter(ERROR_PARAM);
         String errorDescription = request.getParameter(ERROR_DESCRIPTION_PARAM);
         if (!isEmpty(error)) {
@@ -299,13 +298,13 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             LOGGER.log(WARNING, "Error occurred in reciving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
-        stateController.remove(configuration, httpContext);
+        stateController.remove(configuration, request, response);
 
         LOGGER.finer("Authorization Code received, now fetching Access token & Id token");
 
-        Response response = tokenController.getTokens(configuration, request);
-        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
-        if (response.getStatus() == Status.OK.getStatusCode()) {
+        Response tokenResponse = tokenController.getTokens(configuration, request);
+        JsonObject tokensObject = readJsonObject(tokenResponse.readEntity(String.class));
+        if (tokenResponse.getStatus() == Status.OK.getStatusCode()) {
             // Successful Token Response
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
@@ -324,6 +323,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private AuthenticationStatus reAuthenticate(HttpMessageContext httpContext) throws AuthenticationException {
+        HttpServletRequest request = httpContext.getRequest();
+        HttpServletResponse response = httpContext.getResponse();
         synchronized (this.getSessionLock(httpContext.getRequest())) {
             boolean accessTokenExpired = this.context.getAccessToken().isExpired();
             boolean identityTokenExpired = this.context.getIdentityToken().isExpired();
@@ -342,56 +343,13 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
                 if (refreshStatus != AuthenticationStatus.SUCCESS) {
                     LOGGER.log(Level.FINE, "Failed to refresh token (Refresh Token might be invalid).");
-                    redirectToLogoutScreen(httpContext);
+                    context.logout(request, response);
                 }
                 return refreshStatus;
             }
         }
 
         return SUCCESS;
-    }
-
-    private void redirectToLogoutScreen(HttpMessageContext httpContext) {
-        HttpServletRequest request = httpContext.getRequest();
-        HttpServletResponse response = httpContext.getResponse();
-        LogoutConfiguration logout = configuration.getLogoutConfiguration();
-        try {
-            request.logout();
-        } catch (ServletException ex) {
-            LOGGER.log(WARNING, "Failed to logout the user.", ex);
-        }
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-
-        /**
-         * See section 5. RP-Initiated Logout
-         * https://openid.net/specs/openid-connect-session-1_0.html#RPLogout
-         */
-        if (logout.isNotifyProvider()
-                && !isEmpty(configuration.getProviderMetadata().getEndSessionEndpoint())) {
-            UriBuilder logoutURI = UriBuilder.fromUri(configuration.getProviderMetadata().getEndSessionEndpoint())
-                    .queryParam(ID_TOKEN_HINT, context.getIdentityToken().getToken());
-            if (!isEmpty(logout.getRedirectURI())) {
-                // User Agent redirected to POST_LOGOUT_REDIRECT_URI after a logout operation performed in OP.
-                logoutURI.queryParam(POST_LOGOUT_REDIRECT_URI, logout.buildRedirectURI(request));
-            }
-            try {
-                response.sendRedirect(logoutURI.toString());
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        } else if (!isEmpty(logout.getRedirectURI())) {
-            try {
-                response.sendRedirect(logout.buildRedirectURI(request));
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        } else {
-            // Redirect user to OpenID connect provider for re-authentication
-            authenticationController.authenticateUser(configuration, httpContext);
-        }
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
@@ -423,7 +381,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private void updateContext(JsonObject tokensObject) {
-        context.setProviderMetadata(configuration.getProviderMetadata().getDocument());
+        context.setOpenIdConfiguration(configuration);
         context.setTokenType(tokensObject.getString(TOKEN_TYPE, null));
 
         String refreshToken = tokensObject.getString(REFRESH_TOKEN, null);
