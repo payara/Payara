@@ -42,6 +42,7 @@ package fish.payara.certificate.management.admin;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.cluster.SynchronizeInstanceCommand;
+import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
@@ -52,6 +53,16 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.Collection;
 
 /**
  *
@@ -193,7 +204,79 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
-    protected class AbstractLocalInstanceCertManagementCommand extends SynchronizeInstanceCommand {
+    protected void parseTrustStore() throws CommandException {
+        try {
+            MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
+            truststore = CertificateManagementDomainConfigUtils.resolveTrustStore(parser, listener, getDomainRootDir());
+            getTrustStorePassword(parser, listener, getDomainRootDir());
+        } catch (MiniXmlParserException miniXmlParserException) {
+            throw new CommandException("Error parsing domain.xml", miniXmlParserException);
+        }
+    }
+
+    protected void addToKeyStore(File file) throws CommandException {
+        try {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(new FileInputStream(keystore), keystorePassword);
+            addToStore(store, file, keystore, keystorePassword);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    protected void addToTrustStore(File file) throws CommandException {
+        try {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(new FileInputStream(truststore), truststorePassword);
+            addToStore(store, file, truststore, truststorePassword);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    protected void addToStore(KeyStore store, File file, File keyOrTrustStore, char[] password)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        KeystoreManager manager = new KeystoreManager();
+        Collection<? extends Certificate> certs = manager.readPemCertificateChain(file);
+        for (Certificate cert : certs) {
+            store.setCertificateEntry(userArgAlias, cert);
+        }
+        try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
+            store.store(out, password);
+            out.flush();
+        }
+    }
+
+    protected void removeFromKeyStore() throws CommandException {
+        try {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(new FileInputStream(keystore), keystorePassword);
+            removeFromStore(store, keystore, keystorePassword);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    protected void removeFromTrustStore() throws CommandException {
+        try {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(new FileInputStream(truststore), truststorePassword);
+            removeFromStore(store, truststore, truststorePassword);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    protected void removeFromStore(KeyStore store, File keyOrTrustStore, char[] password)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        store.deleteEntry(userArgAlias);
+        try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
+            store.store(out, password);
+            out.flush();
+        }
+    }
+
+    protected abstract class AbstractLocalInstanceCertManagementCommand extends SynchronizeInstanceCommand {
         protected boolean alreadySynced = false;
         protected boolean defaultKeystore = false;
         protected boolean defaultTruststore = false;
@@ -245,6 +328,23 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             }
         }
 
+        protected void parseTrustStore() throws CommandException {
+            try {
+                File domainXml = getDomainXml();
+                if (!domainXml.exists()) {
+                    logger.info("No domain.xml found, syncing with the DAS...");
+                    synchronizeInstance();
+                    alreadySynced = true;
+                }
+
+                MiniXmlParser parser = new MiniXmlParser(domainXml, target);
+                truststore = CertificateManagementDomainConfigUtils.resolveTrustStore(parser, listener, instanceDir);
+                getTrustStorePassword(parser, listener, instanceDir);
+            } catch (MiniXmlParserException miniXmlParserException) {
+                throw new CommandException("Error parsing domain.xml", miniXmlParserException);
+            }
+        }
+
         protected boolean checkDefaultKeyOrTrustStore() {
             defaultKeystore = keystore.getAbsolutePath()
                     .equals(CertificateManagementDomainConfigUtils.DEFAULT_KEYSTORE
@@ -254,6 +354,22 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
                             .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
 
             return defaultKeystore || defaultTruststore;
+        }
+
+        protected boolean checkDefaultKeyStore() {
+            defaultKeystore = keystore.getAbsolutePath()
+                    .equals(CertificateManagementDomainConfigUtils.DEFAULT_KEYSTORE
+                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
+
+            return defaultKeystore;
+        }
+
+        protected boolean checkDefaultTrustStore() {
+            defaultTruststore = truststore.getAbsolutePath()
+                    .equals(CertificateManagementDomainConfigUtils.DEFAULT_TRUSTSTORE
+                            .replace("${com.sun.aas.instanceRoot}", instanceDir.getAbsolutePath()));
+
+            return defaultTruststore;
         }
 
 
