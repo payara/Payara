@@ -77,8 +77,8 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            RemoveExpiredCertsCommand.RemoveExpiredCertsLocalInstanceCommand localInstanceCommand =
-                    new RemoveExpiredCertsCommand.RemoveExpiredCertsLocalInstanceCommand(programOpts, env);
+            RemoveExpiredCertsLocalInstanceCommand localInstanceCommand =
+                    new RemoveExpiredCertsLocalInstanceCommand(programOpts, env);
             localInstanceCommand.validate();
             return localInstanceCommand.executeCommand();
         }
