@@ -53,6 +53,8 @@ import java.io.File;
 import java.util.logging.Logger;
 
 /**
+ * Command to add a key or certificate to the target instance or listener's key store.
+ *
  * @author Jonathan Coustick
  * @author Andrew Pielage
  */

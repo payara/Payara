@@ -52,6 +52,8 @@ import org.jvnet.hk2.annotations.Service;
 import java.util.logging.Logger;
 
 /**
+ * Command to remove a key or certificate from the target instance or listener's key store.
+ *
  * @author Jonathan Coustick
  * @author Andrew Pielage
  */

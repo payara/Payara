@@ -65,7 +65,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author jonathan coustick
+ * Command to remove all expired certificates from the target instance or listener's key and trust stores.
+ *
+ * @author Jonathan Coustick
+ * @author Andrew Pielage
  */
 @Service(name = "remove-expired-certificates")
 @PerLookup
