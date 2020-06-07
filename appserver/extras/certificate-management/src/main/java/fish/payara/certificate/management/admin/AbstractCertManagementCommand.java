@@ -65,7 +65,7 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 
 /**
- *
+ * Parent class from which other certificate management commands can extend. Contains the common methods and params.
  */
 public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
@@ -183,6 +183,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         return masterPassword;
     }
 
+    /**
+     * Parses the key & trust store locations and their passwords from the domain.xml
+     *
+     * @throws CommandException if there's an issue parsing the domain.xml
+     */
     protected void parseKeyAndTrustStores() throws CommandException {
         try {
             MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
@@ -194,6 +199,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Parses the key store location and its password from the domain.xml
+     *
+     * @throws CommandException if there's an issue parsing the domain.xml
+     */
     protected void parseKeyStore() throws CommandException {
         try {
             MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
@@ -204,6 +214,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Parses the trust store location and its password from the domain.xml
+     *
+     * @throws CommandException if there's an issue parsing the domain.xml
+     */
     protected void parseTrustStore() throws CommandException {
         try {
             MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
@@ -214,6 +229,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Adds a certificate or key to the key store.
+     *
+     * @param file The key or certificate to add
+     * @throws CommandException If there's an issue accessing the key store
+     */
     protected void addToKeyStore(File file) throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -224,6 +245,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Adds a certificate or key to the trust store.
+     *
+     * @param file The key or certificate to add
+     * @throws CommandException If there's an issue accessing the trust store
+     */
     protected void addToTrustStore(File file) throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -234,7 +261,13 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
-    protected void addToStore(KeyStore store, File file, File keyOrTrustStore, char[] password)
+    /**
+     * Helper method to add a certificate or key to the key or trust store.
+     *
+     * @param file The key or certificate to add
+     * @throws CommandException If there's an issue accessing the key store
+     */
+    private void addToStore(KeyStore store, File file, File keyOrTrustStore, char[] password)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeystoreManager manager = new KeystoreManager();
         Collection<? extends Certificate> certs = manager.readPemCertificateChain(file);
@@ -247,6 +280,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Removes a certificate or key from the key store.
+     *
+     * @throws CommandException If there's an issue accessing the key store
+     */
     protected void removeFromKeyStore() throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -257,6 +295,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Removes a certificate or key from the trust store.
+     *
+     * @throws CommandException If there's an issue accessing the key store
+     */
     protected void removeFromTrustStore() throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -267,7 +310,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
-    protected void removeFromStore(KeyStore store, File keyOrTrustStore, char[] password)
+    /**
+     * Helper method to remove a certificate or key from the key or trust store.
+     *
+     * @throws CommandException If there's an issue accessing the key store
+     */
+    private void removeFromStore(KeyStore store, File keyOrTrustStore, char[] password)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         store.deleteEntry(userArgAlias);
         try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
@@ -276,7 +324,11 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
         }
     }
 
+    /**
+     * Parent class for the local instance version of certificate management commands to inherit from.
+     */
     protected abstract class AbstractLocalInstanceCertManagementCommand extends SynchronizeInstanceCommand {
+
         protected boolean alreadySynced = false;
         protected boolean defaultKeystore = false;
         protected boolean defaultTruststore = false;
@@ -293,6 +345,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             super.validate();
         }
 
+        /**
+         * Parses the key & trust store locations and their passwords from the domain.xml, syncing with the DAS if
+         * the files are not yet present
+         *
+         * @throws CommandException If there's an issue parsing the domain.xml
+         */
         protected void parseKeyAndTrustStores() throws CommandException {
             try {
                 File domainXml = getDomainXml();
@@ -311,6 +369,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             }
         }
 
+        /**
+         * Parses the key store location and its password from the domain.xml, syncing with the DAS if
+         * the files are not yet present
+         *
+         * @throws CommandException if there's an issue parsing the domain.xml
+         */
         protected void parseKeyStore() throws CommandException {
             try {
                 File domainXml = getDomainXml();
@@ -328,6 +392,12 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             }
         }
 
+        /**
+         * Parses the trust store location and its password from the domain.xml, syncing with the DAS if
+         * the files are not yet present
+         *
+         * @throws CommandException if there's an issue parsing the domain.xml
+         */
         protected void parseTrustStore() throws CommandException {
             try {
                 File domainXml = getDomainXml();
@@ -345,6 +415,10 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             }
         }
 
+        /**
+         * Resolves the key and trust store locations and checks if either are set to the default value
+         * @return true if either the key or trust store are set to default
+         */
         protected boolean checkDefaultKeyOrTrustStore() {
             defaultKeystore = keystore.getAbsolutePath()
                     .equals(CertificateManagementDomainConfigUtils.DEFAULT_KEYSTORE
@@ -356,6 +430,10 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             return defaultKeystore || defaultTruststore;
         }
 
+        /**
+         * Resolves the key store location and checks if it is set to the default value
+         * @return true if the key store is set to default
+         */
         protected boolean checkDefaultKeyStore() {
             defaultKeystore = keystore.getAbsolutePath()
                     .equals(CertificateManagementDomainConfigUtils.DEFAULT_KEYSTORE
@@ -364,6 +442,10 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             return defaultKeystore;
         }
 
+        /**
+         * Resolves the trust store location and checks if it is set to the default value
+         * @return true if the trust store is set to default
+         */
         protected boolean checkDefaultTrustStore() {
             defaultTruststore = truststore.getAbsolutePath()
                     .equals(CertificateManagementDomainConfigUtils.DEFAULT_TRUSTSTORE
