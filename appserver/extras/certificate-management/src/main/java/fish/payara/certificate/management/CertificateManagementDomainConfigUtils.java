@@ -48,11 +48,11 @@ import java.util.Map;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
- * Helper methods for various Certificate Management commands.
+ * Helper methods for various Certificate Management commands pertaining to Domain config parsing.
  *
  * @author Andrew Pielage
  */
-public class CertificateManagementUtils {
+public class CertificateManagementDomainConfigUtils {
 
     public static final String DEFAULT_KEYSTORE = "${com.sun.aas.instanceRoot}"
             + File.separator + "config" + File.separator + "keystore.jks";

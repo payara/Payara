@@ -42,18 +42,12 @@ package fish.payara.certificate.management.admin;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
-import com.sun.enterprise.admin.cli.cluster.SynchronizeInstanceCommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
-import com.sun.enterprise.universal.xml.MiniXmlParser;
-import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.certificate.management.CertificateManagementKeytoolCommands;
-import fish.payara.certificate.management.CertificateManagementUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -61,27 +55,14 @@ import java.io.File;
 
 @Service(name = "generate-csr")
 @PerLookup
-public class GenerateCsrCommand extends LocalDomainCommand {
-
-    @Param(name = "domain_name", optional = true)
-    private String domainName0;
-
-    @Param(name = "listener", optional = true)
-    private String listener;
-
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
-    private String target;
+public class GenerateCsrCommand extends AbstractCertManagementCommand {
 
     @Param(name = "alias", primary = true)
     private String alias;
 
-    private File keystore;
-    private char[] keystorePassword;
-    private char[] masterPassword;
-
     @Override
     protected void validate() throws CommandException {
-        setDomainName(domainName0);
+        userArgAlias = alias;
         super.validate();
     }
 
@@ -96,13 +77,7 @@ public class GenerateCsrCommand extends LocalDomainCommand {
         }
 
         // Parse the location of the key store, and the password required to access it
-        try {
-            MiniXmlParser parser = new MiniXmlParser(getDomainXml(), target);
-            keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, getDomainRootDir());
-            getStorePasswords(parser, listener, getDomainRootDir());
-        } catch (MiniXmlParserException miniXmlParserException) {
-            throw new CommandException("Error parsing domain.xml", miniXmlParserException);
-        }
+        parseKeyStore();
 
         // Run keytool command to generate CSR and place in csrLocation
         try {
@@ -130,8 +105,8 @@ public class GenerateCsrCommand extends LocalDomainCommand {
         KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
                 CertificateManagementKeytoolCommands.constructGenerateCertRequestKeytoolCommand(
                         keystore, keystorePassword,
-                        new File(csrLocation.getAbsolutePath() + File.separator + alias + ".csr"),
-                        alias),
+                        new File(csrLocation.getAbsolutePath() + File.separator + userArgAlias + ".csr"),
+                        userArgAlias),
                 60);
 
         try {
@@ -145,82 +120,17 @@ public class GenerateCsrCommand extends LocalDomainCommand {
     }
 
     /**
-     * Gets the passwords for the key and trust store.
-     *
-     * @param parser    The {@link MiniXmlParser} for extracting info from the domain.xml
-     * @param listener  The name of the HTTP or IIOP listener to get the key or trust store passwords from. Can be null.
-     * @param serverDir The directory of the target instance, used for accessing the domain-passwords store
-     * @throws MiniXmlParserException If there's an issue reading the domain.xml
-     * @throws CommandException       If there's an issue getting the master password
-     */
-    private void getStorePasswords(MiniXmlParser parser, String listener, File serverDir)
-            throws MiniXmlParserException, CommandException {
-        if (listener != null) {
-            // Check if listener has a password set
-            keystorePassword = CertificateManagementUtils.getPasswordFromListener(parser, listener, "key-store-password");
-        }
-
-        if (keystorePassword != null && keystorePassword.length > 0) {
-            // Expand alias if required
-            if (new String(keystorePassword).startsWith("${ALIAS=")) {
-                JCEKSDomainPasswordAliasStore passwordAliasStore = new JCEKSDomainPasswordAliasStore(
-                        serverDir.getPath() + File.separator + "config" + File.separator +
-                                "domain-passwords", masterPassword());
-                keystorePassword = passwordAliasStore.get(
-                        TranslatedConfigView.getAlias(new String(keystorePassword), "ALIAS"));
-            }
-        } else {
-            // Default to master
-            keystorePassword = masterPassword();
-        }
-    }
-
-    /**
-     * Gets the master password
-     *
-     * @return The master password in a char array
-     * @throws CommandException If there's an issue getting the master password
-     */
-    private char[] masterPassword() throws CommandException {
-        if (masterPassword == null || masterPassword.length == 0) {
-            masterPassword = getMasterPassword().toCharArray();
-        }
-
-        return masterPassword;
-    }
-
-    /**
      * Local instance (non-DAS) version of the parent command. Not intended for use as a standalone CLI command.
      */
-    private class GenerateCsrLocalInstanceCommand extends SynchronizeInstanceCommand {
+    private class GenerateCsrLocalInstanceCommand extends AbstractLocalInstanceCertManagementCommand {
 
         public GenerateCsrLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
-            super.programOpts = programOpts;
-            super.env = env;
-        }
-
-        @Override
-        protected void validate() throws CommandException {
-            if (ok(target))
-                instanceName = target;
-            super.validate();
+            super(programOpts, env);
         }
 
         @Override
         protected int executeCommand() throws CommandException {
-            try {
-                File domainXml = getDomainXml();
-                if (!domainXml.exists()) {
-                    logger.info("No domain.xml found, syncing with the DAS...");
-                    synchronizeInstance();
-                }
-
-                MiniXmlParser parser = new MiniXmlParser(domainXml, target);
-                keystore = CertificateManagementUtils.resolveKeyStore(parser, listener, instanceDir);
-                getStorePasswords(parser, listener, instanceDir);
-            } catch (MiniXmlParserException miniXmlParserException) {
-                throw new CommandException("Error parsing domain.xml", miniXmlParserException);
-            }
+            parseKeyStore();
 
             // Run keytool command to generate CSR and place in csrLocation
             try {
